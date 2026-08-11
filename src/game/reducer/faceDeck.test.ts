@@ -1,0 +1,157 @@
+import { describe, expect, it } from "vitest";
+import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY } from "../content/cards.js";
+import {
+  ARCANE_ECHO_FACE,
+  naturalFaceId,
+  PROTOTYPE_FACE_DECK,
+  SPECIAL_FACE_CARDS,
+  syntheticFaceId,
+} from "../content/faces.js";
+import { DEFAULT_RULES_CONFIG } from "../model/config.js";
+import type { DieId } from "../model/ids.js";
+import { validateFaceDeck } from "../rules/faces.js";
+import { advance } from "./reduce.js";
+import {
+  forgeAction,
+  handCardIdAt,
+  newMatch,
+  P1,
+  withEnergy,
+  withHand,
+  withPhase,
+} from "../testing/scenario.js";
+
+describe("face deck", () => {
+  it("loads the prototype face deck into each player's face pool at setup", () => {
+    const state = newMatch();
+    expect(state.players[P1]?.facePool).toEqual([...PROTOTYPE_FACE_DECK]);
+    expect(validateFaceDeck(PROTOTYPE_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
+  });
+
+  it("refuses a face deck over the twelve-card cap", () => {
+    const oversized = [...PROTOTYPE_FACE_DECK, naturalFaceId("mechanical")];
+    const result = validateFaceDeck(oversized, DEFAULT_RULES_CONFIG);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/max 12/);
+  });
+
+  it("refuses more than three face cards of one attribute", () => {
+    const tooMany = [
+      naturalFaceId("corruption"),
+      naturalFaceId("corruption"),
+      naturalFaceId("corruption"),
+      naturalFaceId("corruption"),
+    ];
+    const result = validateFaceDeck(tooMany, DEFAULT_RULES_CONFIG);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/corruption/);
+  });
+
+  it("takes a face from the pool on first forge and leaves it out while installed", () => {
+    const state = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    const dieId = state.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("test: no die");
+
+    expect(state.players[P1]?.facePool).toContain(naturalFaceId("darkness"));
+
+    const forged = advance(
+      state,
+      forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4]),
+    );
+
+    expect(forged.ok).toBe(true);
+    if (!forged.ok) return;
+    expect(forged.state.players[P1]?.facePool).not.toContain(naturalFaceId("darkness"));
+    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(naturalFaceId("darkness"));
+  });
+
+  it("installs a generic synthetic when the card is not Echo-tagged", () => {
+    const state = withEnergy(
+      withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]),
+      P1,
+      10,
+    );
+    const dieId = state.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("test: no die");
+
+    const forged = advance(
+      state,
+      forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4]),
+    );
+
+    expect(forged.ok).toBe(true);
+    if (!forged.ok) return;
+    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("arcane"));
+  });
+
+  it("returns a displaced starting face to the pool when its last copy is gone", () => {
+    let state = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    const dieIds = state.players[P1]?.dieIds ?? [];
+    const shieldSlots: Array<{ dieId: DieId; slot: number }> = [];
+    for (const dieId of dieIds) {
+      const die = state.dice[dieId];
+      if (die === undefined) continue;
+      for (const slot of die.slots) {
+        if (slot.faceCardId.includes("shield")) {
+          shieldSlots.push({ dieId, slot: slot.index });
+        }
+      }
+    }
+    expect(shieldSlots.length).toBe(4);
+
+    for (const { dieId, slot } of shieldSlots) {
+      state = withEnergy(withHand(withPhase(state, "actions"), P1, [ECLIPSE]), P1, 10);
+      const result = advance(
+        state,
+        forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [slot]),
+      );
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      state = result.state;
+    }
+
+    expect(state.players[P1]?.facePool.some((id) => id.includes("shield"))).toBe(true);
+  });
+
+  it("catalogues every Figma special face", () => {
+    expect(SPECIAL_FACE_CARDS.map((face) => face.name)).toEqual([
+      "Arcane Echo",
+      "Blade Rain",
+      "Rending Claw",
+      "Crush",
+      "Forbidden Heritage",
+      "Pestilent Plague",
+    ]);
+  });
+
+  it("lets only Echo-tagged tactics forge Arcane Echo", () => {
+    const state = withEnergy(
+      withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY, ARCANE_ECHO]),
+      P1,
+      10,
+    );
+    const dieId = state.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("test: no die");
+
+    const library = advance(
+      state,
+      forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4]),
+    );
+    expect(library.ok).toBe(true);
+    if (!library.ok) return;
+    expect(library.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("arcane"));
+
+    const echoReady = withEnergy(
+      withHand(withPhase(library.state, "actions"), P1, [ARCANE_ECHO]),
+      P1,
+      10,
+    );
+    const echo = advance(
+      echoReady,
+      forgeAction(echoReady, P1, handCardIdAt(echoReady, P1, 0), dieId, [5]),
+    );
+    expect(echo.ok).toBe(true);
+    if (!echo.ok) return;
+    expect(echo.state.dice[dieId]?.slots[5]?.faceCardId).toBe(ARCANE_ECHO_FACE);
+  });
+});

@@ -1,0 +1,70 @@
+import type { Attribute } from "./attributes.js";
+import type { CreatureId, DieId, PlayerId, SymbolInstanceId } from "./ids.js";
+
+/**
+ * Shield is the one face that is not attribute-typed. Absorbing it protects the
+ * creature instead of fuelling its attacks, and because costs are written in
+ * attributes only, no card or attack can ever ask for it.
+ */
+export const SHIELD = "shield";
+export type ShieldSymbol = typeof SHIELD;
+
+/**
+ * What a die face can produce. Every face is attribute-typed except Shield, so
+ * a symbol is an attribute or a shield and nothing else. Bible §17's "Star" is
+ * legacy naming with no mechanical weight.
+ */
+export type SymbolType = Attribute | ShieldSymbol;
+
+export const isAttributeSymbol = (symbol: SymbolType): symbol is Attribute => symbol !== SHIELD;
+
+/**
+ * The five states SPDD §16 requires the engine to tell apart. Collapsing these
+ * into a count would make it impossible to honour the central rule that an
+ * absorbed symbol never reaches engine resolution.
+ *
+ * There is deliberately no "stored" state. Bible §21 floated storing a symbol
+ * and retaining a die as separate mechanics and asked for the terminology to be
+ * standardized; only retaining a die survives, so nothing outlives the turn.
+ */
+export type SymbolStatus =
+  /** Just generated; the absorption window is still open. */
+  | "rolled"
+  /** Absorption is closed and the engine may consume it this turn. */
+  | "available"
+  /** Taken by a creature; permanently out of engine resolution (bible §7). */
+  | "absorbed"
+  /** Held on a retained die rather than rerolled (bible §21). */
+  | "retained"
+  /** Spent. Kept in state so resource accounting is auditable. */
+  | "consumed";
+
+export interface SymbolInstance {
+  readonly id: SymbolInstanceId;
+  readonly ownerId: PlayerId;
+  readonly symbol: SymbolType;
+  readonly status: SymbolStatus;
+  /** Null when an effect created the symbol rather than a die roll. */
+  readonly sourceDieId: DieId | null;
+  readonly absorbedByCreatureId: CreatureId | null;
+}
+
+/**
+ * A cost, e.g. `{ martial: 1, wild: 1 }`. Attribute-keyed by construction:
+ * cards and attacks only ever speak in attributes, so Shield is unrepresentable
+ * here rather than merely discouraged.
+ */
+export type SymbolRequirement = Readonly<Partial<Record<Attribute, number>>>;
+
+/** A creature's absorbed fuel. Same shape as a cost, and compared against one. */
+export type AttributeTokens = Readonly<Partial<Record<Attribute, number>>>;
+
+export const requirementEntries = (
+  requirement: SymbolRequirement,
+): ReadonlyArray<readonly [Attribute, number]> =>
+  Object.entries(requirement).flatMap(([attribute, count]) =>
+    count === undefined || count <= 0 ? [] : [[attribute as Attribute, count] as const],
+  );
+
+export const requirementTotal = (requirement: SymbolRequirement): number =>
+  requirementEntries(requirement).reduce((total, [, count]) => total + count, 0);
