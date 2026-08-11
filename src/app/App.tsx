@@ -1,5 +1,6 @@
 import { CardCatalogue } from "@/ui/cards/CardCatalogue";
 import { DeckBuilder } from "@/ui/decks/DeckBuilder";
+import { Lobby } from "@/ui/match/Lobby";
 import { MatchBoard } from "@/ui/match/MatchBoard";
 import { useMatchStore, type MatchView } from "@/store/matchStore";
 
@@ -13,6 +14,7 @@ export function App() {
         <p className="mr-4 font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">
           Dice Skirmish
         </p>
+        <Tab active={view === "lobby"} onClick={() => setView("lobby")} label="Play" />
         <Tab active={view === "match"} onClick={() => setView("match")} label="Match" />
         <Tab active={view === "decks"} onClick={() => setView("decks")} label="Decks" />
         <Tab
@@ -22,7 +24,9 @@ export function App() {
         />
       </nav>
 
-      {view === "match" ? (
+      {view === "lobby" ? (
+        <Lobby />
+      ) : view === "match" ? (
         <MatchBoard />
       ) : view === "decks" ? (
         <DeckBuilder />

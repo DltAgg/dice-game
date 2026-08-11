@@ -32,13 +32,14 @@ src/
 │
 ├── store/                 Zustand match + deck stores
 ├── decks/                 DeckRepository (localStorage) + loadout helpers
-├── ui/                    React: match board, deck builder, catalogues
+├── networking/            PeerJS host/client adapters (no rules)
+├── ui/                    React: match board, lobby, deck builder, catalogues
 ├── app/                   Vite entry / shell
 └── architecture/          the purity guard
 ```
 
-Layers still to come — `networking/` — attach around the engine as adapters.
-None of them will hold rules.
+`networking/` wraps `advance()` on the host and ships JSON state to the guest.
+None of it holds rules.
 
 ## Why the engine is pure
 

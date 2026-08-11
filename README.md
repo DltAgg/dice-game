@@ -22,9 +22,9 @@ The design lives in [`competitive_dice_game_agent_bible.md`](./competitive_dice_
 |---|---|
 | Game engine | Dice, symbols, absorption, engine resolution, energy, shields, combat, cards (play/forge), face deck, victory |
 | Content | Faces, Figma creatures + prototype squad, tactic subset + English printings |
-| UI | **M3 hotseat match board** + **M4 deck builder** + Figma card catalogues |
+| UI | **M3** hotseat + **M4** deck builder + Figma catalogues |
 | Persistence | **M4** — `DeckRepository` over localStorage; tactics 50–60 / ≤4 copies |
-| Networking | Not started |
+| Networking | **M5** — PeerJS host authority (room create/join) |
 
 Unfinished catalogue effects are parked in
 [`docs/DEFERRED_CATALOGUE.md`](./docs/DEFERRED_CATALOGUE.md) for end-of-loop revisit.
@@ -38,7 +38,7 @@ npm run typecheck   # tsc --noEmit
 npm run test        # vitest, including the engine purity guard
 npm run test:watch
 npm run lint
-npm run dev         # local hotseat match + decks + catalogue
+npm run dev         # hotseat / online lobby + decks + catalogue
 ```
 
 ## Architecture

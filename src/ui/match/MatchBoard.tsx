@@ -39,10 +39,20 @@ import {
   type GameState,
   type PlayerId,
   type SymbolInstanceId,
+  type TurnPhase,
+  TURN_PHASE_ORDER,
 } from "@/game";
 import { MATCH_P1, MATCH_P2, useMatchStore } from "@/store/matchStore";
 import { useDeckStore } from "@/store/deckStore";
 import { PROTOTYPE_SAVED_DECK_ID } from "@/decks";
+
+const PHASE_LABELS: Record<TurnPhase, string> = {
+  roll: "Roll",
+  absorption: "Absorb",
+  engine: "Engine",
+  combat: "Combat",
+  actions: "Actions",
+};
 
 type Intent =
   | { readonly kind: "idle" }
@@ -75,6 +85,13 @@ export function MatchBoard() {
   const p1DeckId = useMatchStore((s) => s.p1DeckId);
   const p2DeckId = useMatchStore((s) => s.p2DeckId);
   const setMatchDecks = useMatchStore((s) => s.setMatchDecks);
+  const mode = useMatchStore((s) => s.mode);
+  const localPlayerId = useMatchStore((s) => s.localPlayerId);
+  const roomCode = useMatchStore((s) => s.roomCode);
+  const connectionStatus = useMatchStore((s) => s.connectionStatus);
+  const leaveOnline = useMatchStore((s) => s.leaveOnline);
+  const requestResync = useMatchStore((s) => s.requestResync);
+  const setView = useMatchStore((s) => s.setView);
   const decks = useDeckStore((s) => s.decks);
   const refreshDecks = useDeckStore((s) => s.refresh);
 
@@ -89,6 +106,11 @@ export function MatchBoard() {
   const finished = state.status === "finished";
   const pending = state.pendingDecision;
   const phase = state.phase;
+  const isOnline = mode !== "local";
+  const canAct = !isOnline || localPlayerId === activeId;
+  /** Bottom dock shows this seat's hand/pool — local seat online, active seat in hotseat. */
+  const dockPlayerId =
+    isOnline && localPlayerId !== null ? localPlayerId : activeId;
 
   useEffect(() => {
     setIntent({ kind: "idle" });
@@ -109,15 +131,56 @@ export function MatchBoard() {
   const clearIntent = () => setIntent({ kind: "idle" });
 
   const tryDispatch = (action: Parameters<typeof dispatch>[0]): boolean => {
+    if (isOnline && localPlayerId !== null && action.playerId !== localPlayerId) {
+      return false;
+    }
     const ok = dispatch(action);
     if (ok) clearIntent();
     return ok;
+  };
+
+  /** Auto-roll once per turn when the active seat enters the roll phase. */
+  const autoRolledKey = useRef<string | null>(null);
+  useEffect(() => {
+    if (finished || pending !== null || phase !== "roll" || !canAct) return;
+    if (isOnline && localPlayerId !== null && activeId !== localPlayerId) return;
+    const key = `${state.matchId}:${String(state.turn)}`;
+    if (autoRolledKey.current === key) return;
+    autoRolledKey.current = key;
+    dispatch({ type: "ROLL_DICE", playerId: activeId });
+  }, [
+    finished,
+    pending,
+    phase,
+    canAct,
+    isOnline,
+    localPlayerId,
+    state.matchId,
+    state.turn,
+    activeId,
+    dispatch,
+  ]);
+
+  const goToPhase = (target: TurnPhase) => {
+    if (!canAct || finished || pending !== null || phase === "roll") return;
+    const from = TURN_PHASE_ORDER.indexOf(phase);
+    const to = TURN_PHASE_ORDER.indexOf(target);
+    if (to <= from) return;
+    for (let step = from; step < to; step += 1) {
+      if (!tryDispatch({ type: "ADVANCE_PHASE", playerId: activeId })) break;
+    }
+  };
+
+  const endTurn = () => {
+    if (!canAct || finished || pending !== null) return;
+    tryDispatch({ type: "END_TURN", playerId: activeId });
   };
 
   const onCreatureClick = (creature: CreatureState) => {
     if (finished) return;
 
     if (pending?.type === "choose-creature") {
+      if (isOnline && localPlayerId !== null && pending.controllerId !== localPlayerId) return;
       if (pending.controllerId !== activeId) return;
       if (pending.filter === "ally" && creature.ownerId !== activeId) return;
       if (pending.filter === "enemy" && creature.ownerId === activeId) return;
@@ -130,6 +193,7 @@ export function MatchBoard() {
     }
 
     if (pending !== null) return;
+    if (!canAct) return;
 
     if (intent.kind === "absorb" && phase === "absorption" && creature.ownerId === activeId) {
       tryDispatch({
@@ -179,6 +243,7 @@ export function MatchBoard() {
   };
 
   const beginPlay = (card: CardInstance) => {
+    if (!canAct) return;
     if (card.ownerId !== activeId || finished || pending !== null || phase !== "actions") return;
     const def = getCard(card.cardId);
     if (def === undefined || !hasPlayableEffect(def)) return;
@@ -209,6 +274,7 @@ export function MatchBoard() {
   };
 
   const beginForge = (card: CardInstance) => {
+    if (!canAct) return;
     if (card.ownerId !== activeId || finished || pending !== null || phase !== "actions") return;
     setIntent({ kind: "forge", cardInstanceId: card.id });
   };
@@ -279,76 +345,87 @@ export function MatchBoard() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-3 px-4 py-2.5 sm:px-6">
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-2xl leading-none text-[var(--ink)] sm:text-3xl">
-              Local match
+              {isOnline ? (mode === "host" ? "Host match" : "Online match") : "Local match"}
             </h1>
             <p className="mt-1 text-xs text-[var(--ink-muted)] sm:text-sm">
-              Hotseat · seed {seed} · turn {state.turn} · phase{" "}
+              {isOnline ? (
+                <>
+                  Room <span className="font-mono text-[var(--accent)]">{roomCode}</span>
+                  {" · "}
+                  {connectionStatus}
+                  {" · you "}
+                  <span className="text-[var(--accent)]">{localPlayerId ?? "?"}</span>
+                </>
+              ) : (
+                <>Hotseat</>
+              )}
+              {" · seed "}
+              {seed} · turn {state.turn} · phase{" "}
               <span className="text-[var(--accent)]">{phase}</span> · active{" "}
               <span className="text-[var(--accent)]">{activeId}</span>
+              {!canAct && isOnline ? " · waiting for opponent" : null}
             </p>
           </div>
           <div className="flex flex-wrap items-end gap-2">
-            <label className="flex flex-col gap-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-              P1 deck
-              <select
-                className="rounded border border-stone-700 bg-stone-950 px-2 py-1.5 text-sm normal-case tracking-normal text-stone-200"
-                value={p1DeckId}
-                onChange={(event) => setMatchDecks(event.target.value, p2DeckId)}
-              >
-                {decks.map((deck) => (
-                  <option key={deck.id} value={deck.id}>
-                    {deck.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-              P2 deck
-              <select
-                className="rounded border border-stone-700 bg-stone-950 px-2 py-1.5 text-sm normal-case tracking-normal text-stone-200"
-                value={p2DeckId}
-                onChange={(event) => setMatchDecks(p1DeckId, event.target.value)}
-              >
-                {decks.map((deck) => (
-                  <option key={deck.id} value={deck.id}>
-                    {deck.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              className={btnClass}
-              onClick={() => newMatch(undefined, p1DeckId || PROTOTYPE_SAVED_DECK_ID, p2DeckId || PROTOTYPE_SAVED_DECK_ID)}
-            >
-              New match
-            </button>
-            {!finished && pending === null && phase === "roll" && (
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => tryDispatch({ type: "ROLL_DICE", playerId: activeId })}
-              >
-                Roll dice
-              </button>
+            {!isOnline && (
+              <>
+                <label className="flex flex-col gap-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
+                  P1 deck
+                  <select
+                    className="rounded border border-stone-700 bg-stone-950 px-2 py-1.5 text-sm normal-case tracking-normal text-stone-200"
+                    value={p1DeckId}
+                    onChange={(event) => setMatchDecks(event.target.value, p2DeckId)}
+                  >
+                    {decks.map((deck) => (
+                      <option key={deck.id} value={deck.id}>
+                        {deck.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
+                  P2 deck
+                  <select
+                    className="rounded border border-stone-700 bg-stone-950 px-2 py-1.5 text-sm normal-case tracking-normal text-stone-200"
+                    value={p2DeckId}
+                    onChange={(event) => setMatchDecks(p1DeckId, event.target.value)}
+                  >
+                    {decks.map((deck) => (
+                      <option key={deck.id} value={deck.id}>
+                        {deck.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  className={btnClass}
+                  onClick={() =>
+                    newMatch(
+                      undefined,
+                      p1DeckId || PROTOTYPE_SAVED_DECK_ID,
+                      p2DeckId || PROTOTYPE_SAVED_DECK_ID,
+                    )
+                  }
+                >
+                  New match
+                </button>
+              </>
             )}
-            {!finished && pending === null && phase !== "roll" && phase !== "actions" && (
-              <button
-                type="button"
-                className={btnClass}
-                onClick={() => tryDispatch({ type: "ADVANCE_PHASE", playerId: activeId })}
-              >
-                Next phase
-              </button>
-            )}
-            {!finished && pending === null && phase === "actions" && (
-              <button
-                type="button"
-                className={btnClass}
-                onClick={() => tryDispatch({ type: "END_TURN", playerId: activeId })}
-              >
-                End turn
-              </button>
+            {isOnline && (
+              <>
+                <button type="button" className={btnClass} onClick={() => setView("lobby")}>
+                  Lobby
+                </button>
+                <button type="button" className={btnClass} onClick={() => leaveOnline()}>
+                  Leave
+                </button>
+                {mode === "client" && (
+                  <button type="button" className={btnClass} onClick={() => requestResync()}>
+                    Resync
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -546,7 +623,12 @@ export function MatchBoard() {
         }
       />
 
-      <EnergyBar state={state} />
+      <EnergyBar
+        state={state}
+        canAct={canAct}
+        onGoToPhase={goToPhase}
+        onEndTurn={endTurn}
+      />
 
       <Battlefield
         state={state}
@@ -586,19 +668,20 @@ export function MatchBoard() {
         <div className="mx-auto flex max-w-5xl flex-col gap-3 overflow-visible px-4 py-3 sm:px-6">
           <SymbolPool
             state={state}
-            playerId={activeId}
+            playerId={dockPlayerId}
             phase={phase}
             selected={intent.kind === "absorb" ? intent.symbolId : null}
             onSelect={(symbolId) => {
-              if (phase !== "absorption") return;
+              if (!canAct || phase !== "absorption") return;
               setIntent({ kind: "absorb", symbolId });
             }}
           />
 
           <HandStrip
             state={state}
-            playerId={activeId}
+            playerId={dockPlayerId}
             phase={phase}
+            canAct={canAct}
             selected={
               intent.kind === "play" || intent.kind === "forge" ? intent.cardInstanceId : null
             }
@@ -696,31 +779,89 @@ function hintFor(intent: Intent, state: GameState): string {
 
   switch (state.phase) {
     case "roll":
-      return "Roll the dice. Overloads on showing faces fire immediately (not in engine), once per die that shows them.";
+      return "Dice roll automatically. Overloads on showing faces fire immediately (not in engine), once per die that shows them.";
     case "absorption":
-      return "Overloads already resolved on the roll. Select a rolled symbol to absorb, or leave it for the engine pool. Next phase when done.";
+      return "Overloads already resolved on the roll. Select a rolled symbol to absorb, or leave it for the engine pool. Use the phase bar to skip ahead or end turn.";
     case "engine":
-      return "Spend available pool symbols on engine abilities (not absorbed tokens). Disabled abilities lack the matching pool symbol. Then Next phase.";
+      return "Spend available pool symbols on engine abilities (not absorbed tokens). Disabled abilities lack the matching pool symbol. Skip phases or end turn from the bar.";
     case "combat":
-      return "Click your creature → attack → enemy. Then Next phase.";
+      return "Click your creature → attack → enemy. Skip phases or end turn from the bar.";
     case "actions":
-      return "Play or Forge from hand in this phase. Hover a card for its text. End turn when finished.";
+      return "Play or Forge from hand in this phase. Hover a card for its text. End turn from the phase bar when finished.";
     default:
       return "";
   }
 }
 
-function EnergyBar({ state }: { state: GameState }) {
+function EnergyBar({
+  state,
+  canAct,
+  onGoToPhase,
+  onEndTurn,
+}: {
+  state: GameState;
+  canAct: boolean;
+  onGoToPhase: (phase: TurnPhase) => void;
+  onEndTurn: () => void;
+}) {
   const p1 = energyAvailableTo(state.energy, MATCH_P1);
   const p2 = energyAvailableTo(state.energy, MATCH_P2);
+  const currentIndex = TURN_PHASE_ORDER.indexOf(state.phase);
+  const controlsLocked =
+    !canAct || state.status === "finished" || state.pendingDecision !== null;
+
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-[var(--accent)]/30 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 px-4 py-3 text-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--accent)]/30 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 px-4 py-3 text-sm">
       <span>
         P1 energy: <strong className="text-[var(--accent)]">{p1}</strong>
       </span>
-      <span className="font-mono text-[var(--ink-muted)]">
-        holder {state.energy.holderId} · {state.energy.value}
-      </span>
+      <div className="flex flex-wrap items-center justify-center gap-1">
+        {TURN_PHASE_ORDER.map((phase, index) => {
+          const isCurrent = index === currentIndex;
+          const isPast = index < currentIndex;
+          const canJump = !controlsLocked && !isPast && !isCurrent && state.phase !== "roll";
+          return (
+            <button
+              key={phase}
+              type="button"
+              disabled={controlsLocked || !canJump}
+              aria-current={isCurrent ? "step" : undefined}
+              title={
+                isCurrent
+                  ? `Current phase: ${PHASE_LABELS[phase]}`
+                  : canJump
+                    ? `Skip to ${PHASE_LABELS[phase]}`
+                    : PHASE_LABELS[phase]
+              }
+              className={
+                isCurrent
+                  ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-2.5 py-1 text-xs font-medium text-[var(--accent)] disabled:opacity-100"
+                  : canJump
+                    ? "rounded border border-stone-600 bg-stone-900/80 px-2.5 py-1 text-xs text-stone-200 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    : "rounded border border-stone-800 bg-stone-950/50 px-2.5 py-1 text-xs text-stone-600"
+              }
+              onClick={() => {
+                if (canJump) onGoToPhase(phase);
+              }}
+            >
+              {PHASE_LABELS[phase]}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          disabled={controlsLocked}
+          title="End turn"
+          className={
+            controlsLocked
+              ? "rounded border border-stone-800 bg-stone-950/50 px-2.5 py-1 text-xs text-stone-600"
+              : "rounded border border-amber-700/60 bg-amber-950/40 px-2.5 py-1 text-xs font-medium text-amber-200 hover:border-amber-500 hover:text-amber-100"
+          }
+          onClick={onEndTurn}
+        >
+          End turn
+        </button>
+      </div>
       <span>
         P2 energy: <strong className="text-[var(--accent)]">{p2}</strong>
       </span>
@@ -1312,6 +1453,7 @@ function HandStrip({
   state,
   playerId,
   phase,
+  canAct,
   selected,
   onPlay,
   onForge,
@@ -1320,6 +1462,7 @@ function HandStrip({
   state: GameState;
   playerId: PlayerId;
   phase: GameState["phase"];
+  canAct: boolean;
   selected: CardInstanceId | null;
   onPlay: (card: CardInstance) => void;
   onForge: (card: CardInstance) => void;
@@ -1327,6 +1470,7 @@ function HandStrip({
 }) {
   const hand = handOf(state, playerId);
   const actionsPhase = phase === "actions";
+  const actionsLive = actionsPhase && canAct;
   const [hoveredId, setHoveredId] = useState<CardInstanceId | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ left: number; bottom: number } | null>(null);
   const cardRefs = useRef<Map<CardInstanceId, HTMLDivElement>>(new Map());
@@ -1352,12 +1496,18 @@ function HandStrip({
   const hoveredDef =
     hoveredCard !== undefined ? getCard(hoveredCard.cardId) : undefined;
 
+  const statusHint = !canAct
+    ? " · opponent's turn"
+    : !actionsPhase
+      ? " · wait for actions"
+      : " · play or forge";
+
   return (
     <section className="rounded-lg border border-stone-800/80 bg-black/30 p-3">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
           Hand ({hand.length}) · {playerId}
-          {!actionsPhase ? " · wait for actions" : " · play or forge"}
+          {statusHint}
         </h2>
         {selected !== null && (
           <button type="button" className={btnClass} onClick={onCancel}>
@@ -1370,7 +1520,7 @@ function HandStrip({
           const def = getCard(card.cardId);
           if (def === undefined) return null;
           const isSelected = selected === card.id;
-          const canPlay = actionsPhase && hasPlayableEffect(def);
+          const canPlay = actionsLive && hasPlayableEffect(def);
 
           return (
             <div
@@ -1392,7 +1542,7 @@ function HandStrip({
                 {def.energyCost}E · {def.subtypes.join("/")}
               </p>
               <div className="mt-3 flex gap-2">
-                {actionsPhase && (
+                {actionsLive && (
                   <>
                     <button
                       type="button"
@@ -1407,7 +1557,11 @@ function HandStrip({
                     </button>
                   </>
                 )}
-                {!actionsPhase && <p className="text-[0.65rem] text-stone-600">Not this phase</p>}
+                {!actionsLive && (
+                  <p className="text-[0.65rem] text-stone-600">
+                    {!canAct ? "Waiting" : "Not this phase"}
+                  </p>
+                )}
               </div>
             </div>
           );
