@@ -10,6 +10,7 @@ import {
   getCard,
   getCreatureDefinition,
   getFaceCard,
+  type CardDefinition,
   type CardId,
   type CreatureDefinitionId,
   type FaceCardId,
@@ -20,8 +21,14 @@ import {
   type SavedDeckId,
 } from "@/decks";
 import { useDeckStore } from "@/store/deckStore";
+import { TacticCard } from "@/ui/cards/TacticCard";
+import { FaceCard } from "@/ui/cards/FaceCard";
 
 const creatureOptions = Object.values(CREATURES);
+
+type PreviewTarget =
+  | { readonly kind: "tactic"; readonly id: CardId }
+  | { readonly kind: "face"; readonly id: FaceCardId };
 
 function countOf<T extends string>(list: readonly T[], id: T): number {
   return list.filter((entry) => entry === id).length;
@@ -38,6 +45,34 @@ function removeOne<T extends string>(list: readonly T[], id: T): T[] {
   return [...list.slice(0, index), ...list.slice(index + 1)];
 }
 
+function uniqueSortedCounts<T extends string>(
+  list: readonly T[],
+  labelOf: (id: T) => string,
+): readonly { readonly id: T; readonly copies: number }[] {
+  const counts = new Map<T, number>();
+  for (const id of list) {
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([id, copies]) => ({ id, copies }))
+    .sort((a, b) => labelOf(a.id).localeCompare(labelOf(b.id)));
+}
+
+function matchesTacticQuery(card: CardDefinition, raw: string): boolean {
+  const q = raw.trim().toLowerCase();
+  if (q.length === 0) return true;
+  const haystack = [
+    card.name,
+    card.attribute,
+    ...card.subtypes,
+    card.rulesText,
+    card.duration ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(q);
+}
+
 export function DeckBuilder() {
   const decks = useDeckStore((s) => s.decks);
   const selectedId = useDeckStore((s) => s.selectedId);
@@ -47,6 +82,7 @@ export function DeckBuilder() {
   const get = useDeckStore((s) => s.get);
 
   const selected = selectedId !== null ? get(selectedId) : undefined;
+  const readonly = selected?.builtin === true;
 
   const [name, setName] = useState(selected?.name ?? "My deck");
   const [squad, setSquad] = useState<CreatureDefinitionId[]>([
@@ -57,6 +93,9 @@ export function DeckBuilder() {
     ...(selected?.faceDeck ?? PROTOTYPE_FACE_DECK),
   ]);
   const [message, setMessage] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [catalogueTab, setCatalogueTab] = useState<"tactics" | "faces">("tactics");
+  const [preview, setPreview] = useState<PreviewTarget | null>(null);
 
   const load = (id: SavedDeckId) => {
     const saved = get(id);
@@ -67,6 +106,7 @@ export function DeckBuilder() {
     setDeck([...saved.deck]);
     setFaceDeck([...saved.faceDeck]);
     setMessage(null);
+    setPreview(null);
   };
 
   const draft = useMemo(
@@ -75,6 +115,50 @@ export function DeckBuilder() {
   );
   const legality = validateSavedDeck(draft);
   const cfg = DEFAULT_RULES_CONFIG;
+
+  const deckEntries = useMemo(
+    () =>
+      uniqueSortedCounts(deck, (id) => getCard(id)?.name ?? id),
+    [deck],
+  );
+
+  const faceEntries = useMemo(
+    () =>
+      uniqueSortedCounts(faceDeck, (id) => getFaceCard(id)?.name ?? id),
+    [faceDeck],
+  );
+
+  const filteredTactics = useMemo(
+    () => ALL_CARDS.filter((card) => matchesTacticQuery(card, search)),
+    [search],
+  );
+
+  const filteredFaces = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (q.length === 0) return ALL_FACE_CARDS;
+    return ALL_FACE_CARDS.filter((face) => {
+      const hay = `${face.name} ${face.kind} ${face.symbol} ${face.rulesText}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [search]);
+
+  const resolvedPreview = useMemo((): PreviewTarget => {
+    if (preview !== null) return preview;
+    if (catalogueTab === "faces") {
+      const firstFace = faceEntries[0]?.id ?? ALL_FACE_CARDS[0]?.id;
+      if (firstFace !== undefined) return { kind: "face", id: firstFace };
+    }
+    const firstTactic = deckEntries[0]?.id ?? ALL_CARDS[0]?.id;
+    if (firstTactic !== undefined) return { kind: "tactic", id: firstTactic };
+    const fallbackFace = ALL_FACE_CARDS[0]?.id;
+    if (fallbackFace !== undefined) return { kind: "face", id: fallbackFace };
+    return { kind: "tactic", id: ALL_CARDS[0]!.id };
+  }, [preview, catalogueTab, deckEntries, faceEntries]);
+
+  const previewTactic =
+    resolvedPreview.kind === "tactic" ? getCard(resolvedPreview.id) : undefined;
+  const previewFace =
+    resolvedPreview.kind === "face" ? getFaceCard(resolvedPreview.id) : undefined;
 
   const onSave = (asNew: boolean) => {
     try {
@@ -101,16 +185,27 @@ export function DeckBuilder() {
   };
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6">
-      <header>
-        <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--ink)]">
-          Decks
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-[var(--ink-muted)]">
-          Build a loadout: three creatures, a tactics deck ({cfg.deckMinCards}–{cfg.deckMaxCards},
-          ≤{cfg.deckMaxCopiesPerCard} copies), and a face deck (up to {cfg.faceDeckMaxCards}).
-          Saved decks stay in this browser.
-        </p>
+    <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--ink)]">
+            Decks
+          </h1>
+          <p className="mt-1 max-w-xl text-sm text-[var(--ink-muted)]">
+            Hover any card to inspect it. Build a legal loadout (
+            {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
+            face deck ≤{cfg.faceDeckMaxCards}).
+          </p>
+        </div>
+        <label className="flex w-full max-w-xs flex-col gap-1 text-sm sm:w-56">
+          <span className="text-stone-400">Name</span>
+          <input
+            className="rounded border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            disabled={readonly}
+          />
+        </label>
       </header>
 
       <div className="flex flex-wrap gap-2">
@@ -131,27 +226,17 @@ export function DeckBuilder() {
         ))}
       </div>
 
-      <label className="flex max-w-md flex-col gap-1 text-sm">
-        <span className="text-stone-400">Name</span>
-        <input
-          className="rounded border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          disabled={selected?.builtin === true}
-        />
-      </label>
-
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
           Squad ({squad.length}/{cfg.creaturesPerPlayer})
         </h2>
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <div className="mt-2 grid gap-2 sm:grid-cols-3">
           {squad.map((definitionId, index) => (
             <select
               key={`squad-${String(index)}`}
               className="rounded border border-stone-700 bg-stone-950 px-2 py-2 text-sm text-stone-100"
               value={definitionId}
-              disabled={selected?.builtin === true}
+              disabled={readonly}
               onChange={(event) =>
                 setSquadSlot(index, event.target.value as CreatureDefinitionId)
               }
@@ -166,131 +251,331 @@ export function DeckBuilder() {
         </div>
       </section>
 
-      <section>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Tactics deck ({deck.length}/{cfg.deckMinCards}–{cfg.deckMaxCards})
-        </h2>
-        <ul className="mt-3 grid list-none gap-2 p-0 sm:grid-cols-2">
-          {ALL_CARDS.map((card) => {
-            const copies = countOf(deck, card.id);
-            return (
-              <li
-                key={card.id}
-                className="flex items-center justify-between gap-2 rounded border border-stone-800 bg-stone-950/80 px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm text-stone-100">{card.name}</p>
-                  <p className="text-xs capitalize text-stone-500">
-                    {card.attribute} · {copies}/{cfg.deckMaxCopiesPerCard}
-                  </p>
-                </div>
-                <div className="flex gap-1">
-                  <button
-                    type="button"
-                    className={btnTiny}
-                    disabled={selected?.builtin === true || copies >= cfg.deckMaxCopiesPerCard}
-                    onClick={() => setDeck(addCopy(deck, card.id, cfg.deckMaxCopiesPerCard))}
-                  >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    className={btnTiny}
-                    disabled={selected?.builtin === true || copies === 0}
-                    onClick={() => setDeck(removeOne(deck, card.id))}
-                  >
-                    −
-                  </button>
-                </div>
+      {/* Tactics (left) + preview/search (right): matched fixed height */}
+      <div className="grid h-[min(62vh,680px)] grid-cols-1 gap-4 lg:grid-cols-2">
+        <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-stone-800/80 bg-gradient-to-b from-stone-950/80 to-black/40 p-3 sm:p-4">
+          <div className="mb-2 flex shrink-0 items-baseline justify-between gap-2">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
+              Your tactics
+            </h2>
+            <span className="font-mono text-xs text-stone-500">
+              {deck.length}/{cfg.deckMinCards}–{cfg.deckMaxCards}
+            </span>
+          </div>
+          <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
+            {deckEntries.length === 0 && (
+              <li className="px-2 py-6 text-center text-sm text-stone-600">
+                No tactics yet — add some from the catalogue.
               </li>
-            );
-          })}
-        </ul>
-      </section>
+            )}
+            {deckEntries.map(({ id, copies }) => {
+              const card = getCard(id);
+              if (card === undefined) return null;
+              const active =
+                resolvedPreview.kind === "tactic" && resolvedPreview.id === id;
+              return (
+                <li key={id}>
+                  <DeckRow
+                    title={card.name}
+                    subtitle={`${card.attribute} · ${copies}/${cfg.deckMaxCopiesPerCard}`}
+                    copies={copies}
+                    maxCopies={cfg.deckMaxCopiesPerCard}
+                    active={active}
+                    readonly={readonly}
+                    onHover={() => setPreview({ kind: "tactic", id })}
+                    onAdd={() => setDeck(addCopy(deck, id, cfg.deckMaxCopiesPerCard))}
+                    onRemove={() => setDeck(removeOne(deck, id))}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
 
-      <section>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Face deck ({faceDeck.length}/{cfg.faceDeckMaxCards})
-        </h2>
-        <ul className="mt-3 grid list-none gap-2 p-0 sm:grid-cols-2">
-          {ALL_FACE_CARDS.map((face) => {
-            const copies = countOf(faceDeck, face.id);
-            return (
-              <li
-                key={face.id}
-                className="flex items-center justify-between gap-2 rounded border border-stone-800 bg-stone-950/80 px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm text-stone-100">{face.name}</p>
-                  <p className="text-xs capitalize text-stone-500">
-                    {face.kind} · {face.symbol} · ×{copies}
+        <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-stone-800/80 bg-gradient-to-b from-[#1c1814] to-stone-950/90">
+          <div className="flex h-1/2 min-h-0 flex-col overflow-y-auto overscroll-contain border-b border-stone-800/60 px-3 py-3">
+            <div className="m-auto flex flex-col items-center gap-2 py-1">
+              {previewTactic !== undefined && (
+                <>
+                  <TacticCard card={previewTactic} width={220} />
+                  <p className="max-w-sm text-center text-xs text-stone-500">
+                    {previewTactic.subtypes.join(" · ")} · {previewTactic.attribute}
+                    {previewTactic.rulesText
+                      ? ` — ${previewTactic.rulesText.slice(0, 120)}${previewTactic.rulesText.length > 120 ? "…" : ""}`
+                      : " — forge only"}
                   </p>
-                </div>
-                <div className="flex gap-1">
-                  <button
-                    type="button"
-                    className={btnTiny}
-                    disabled={
-                      selected?.builtin === true || faceDeck.length >= cfg.faceDeckMaxCards
+                </>
+              )}
+              {previewFace !== undefined && (
+                <>
+                  <FaceCard face={previewFace} width={180} />
+                  <p className="max-w-sm text-center text-xs text-stone-500">
+                    {previewFace.kind} · {previewFace.symbol}
+                    {previewFace.rulesText ? ` — ${previewFace.rulesText}` : ""}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex h-1/2 min-h-0 flex-col px-3 pb-3 pt-2">
+            <div className="mb-2 flex shrink-0 flex-wrap items-center gap-2">
+              <div className="flex rounded border border-stone-700 p-0.5">
+                <CatalogueTab
+                  label="Tactics"
+                  active={catalogueTab === "tactics"}
+                  onClick={() => {
+                    setCatalogueTab("tactics");
+                    setSearch("");
+                  }}
+                />
+                <CatalogueTab
+                  label="Faces"
+                  active={catalogueTab === "faces"}
+                  onClick={() => {
+                    setCatalogueTab("faces");
+                    setSearch("");
+                  }}
+                />
+              </div>
+              <label className="relative min-w-[10rem] flex-1">
+                <span className="sr-only">Search cards</span>
+                <input
+                  className="w-full rounded border border-stone-700 bg-stone-950 py-1.5 pl-3 pr-3 text-sm text-stone-100 placeholder:text-stone-600"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={
+                    catalogueTab === "tactics" ? "Search tactics…" : "Search faces…"
+                  }
+                />
+              </label>
+            </div>
+
+            <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
+              {catalogueTab === "tactics" &&
+                filteredTactics.map((card) => {
+                  const copies = countOf(deck, card.id);
+                  const active =
+                    resolvedPreview.kind === "tactic" && resolvedPreview.id === card.id;
+                  return (
+                    <li key={card.id}>
+                      <DeckRow
+                        title={card.name}
+                        subtitle={`${card.attribute} · in deck ${copies}/${cfg.deckMaxCopiesPerCard}`}
+                        copies={copies}
+                        maxCopies={cfg.deckMaxCopiesPerCard}
+                        active={active}
+                        readonly={readonly}
+                        onHover={() => setPreview({ kind: "tactic", id: card.id })}
+                        onAdd={() =>
+                          setDeck(addCopy(deck, card.id, cfg.deckMaxCopiesPerCard))
+                        }
+                        onRemove={() => setDeck(removeOne(deck, card.id))}
+                      />
+                    </li>
+                  );
+                })}
+              {catalogueTab === "tactics" && filteredTactics.length === 0 && (
+                <li className="py-8 text-center text-sm text-stone-600">No matching tactics</li>
+              )}
+
+              {catalogueTab === "faces" &&
+                filteredFaces.map((face) => {
+                  const copies = countOf(faceDeck, face.id);
+                  const active =
+                    resolvedPreview.kind === "face" && resolvedPreview.id === face.id;
+                  return (
+                    <li key={face.id}>
+                      <DeckRow
+                        title={face.name}
+                        subtitle={`${face.kind} · ${face.symbol} · in deck ×${copies}`}
+                        copies={copies}
+                        maxCopies={cfg.faceDeckMaxCards}
+                        active={active}
+                        readonly={readonly}
+                        addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
+                        onHover={() => setPreview({ kind: "face", id: face.id })}
+                        onAdd={() =>
+                          setFaceDeck(addCopy(faceDeck, face.id, cfg.faceDeckMaxCards))
+                        }
+                        onRemove={() => setFaceDeck(removeOne(faceDeck, face.id))}
+                      />
+                    </li>
+                  );
+                })}
+              {catalogueTab === "faces" && filteredFaces.length === 0 && (
+                <li className="py-8 text-center text-sm text-stone-600">No matching faces</li>
+              )}
+            </ul>
+          </div>
+        </section>
+      </div>
+
+      {/* Faces: full-width strip under both columns; wrap + scroll down */}
+      <section className="flex h-44 shrink-0 flex-col overflow-hidden rounded-xl border border-stone-800/80 bg-gradient-to-r from-stone-950 via-[#161310] to-stone-950 p-3 sm:p-4">
+        <div className="mb-2 flex shrink-0 items-baseline justify-between gap-2">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+            Your faces
+          </h2>
+          <span className="font-mono text-xs text-stone-500">
+            {faceDeck.length}/{cfg.faceDeckMaxCards}
+          </span>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
+          <ul className="flex list-none flex-wrap content-start gap-2 p-0">
+            {faceEntries.length === 0 && (
+              <li className="w-full py-4 text-center text-sm text-stone-600">
+                Empty face deck — switch the catalogue to Faces to add some.
+              </li>
+            )}
+            {faceEntries.map(({ id, copies }) => {
+              const face = getFaceCard(id);
+              if (face === undefined) return null;
+              const active =
+                resolvedPreview.kind === "face" && resolvedPreview.id === id;
+              return (
+                <li key={id} className="w-[calc(50%-0.25rem)] min-w-[10rem] sm:w-[calc(33.333%-0.375rem)] lg:w-[calc(25%-0.375rem)] xl:w-[calc(16.666%-0.417rem)]">
+                  <DeckRow
+                    title={face.name}
+                    subtitle={`${face.kind} · ${face.symbol}`}
+                    copies={copies}
+                    maxCopies={cfg.faceDeckMaxCards}
+                    active={active}
+                    readonly={readonly}
+                    addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
+                    onHover={() => setPreview({ kind: "face", id })}
+                    onAdd={() =>
+                      setFaceDeck(addCopy(faceDeck, id, cfg.faceDeckMaxCards))
                     }
-                    onClick={() => setFaceDeck(addCopy(faceDeck, face.id, cfg.faceDeckMaxCards))}
-                  >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    className={btnTiny}
-                    disabled={selected?.builtin === true || copies === 0}
-                    onClick={() => setFaceDeck(removeOne(faceDeck, face.id))}
-                  >
-                    −
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                    onRemove={() => setFaceDeck(removeOne(faceDeck, id))}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </section>
 
-      <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t border-stone-800 bg-[var(--felt-deep)]/95 py-4 backdrop-blur">
-        <p
-          className={
-            legality.ok ? "text-sm text-emerald-400" : "text-sm text-red-300"
-          }
-        >
+      <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-3 border-t border-stone-800 bg-[var(--felt-deep)]/95 py-4 backdrop-blur">
+        <p className={legality.ok ? "text-sm text-emerald-400" : "text-sm text-red-300"}>
           {legality.ok ? "Legal loadout" : legality.reason}
         </p>
-        <button type="button" className={btnClass} disabled={!legality.ok} onClick={() => onSave(false)}>
+        <button
+          type="button"
+          className={btnClass}
+          disabled={!legality.ok}
+          onClick={() => onSave(false)}
+        >
           Save
         </button>
-        <button type="button" className={btnClass} disabled={!legality.ok} onClick={() => onSave(true)}>
+        <button
+          type="button"
+          className={btnClass}
+          disabled={!legality.ok}
+          onClick={() => onSave(true)}
+        >
           Save as new
         </button>
         <button
           type="button"
           className={btnClass}
-          disabled={selected?.builtin === true || selectedId === null}
+          disabled={readonly || selectedId === null}
           onClick={onDelete}
         >
           Delete
         </button>
         {message !== null && <p className="text-sm text-stone-400">{message}</p>}
+        <p className="w-full text-xs text-stone-600 sm:ml-auto sm:w-auto">
+          Squad:{" "}
+          {squad.map((id) => getCreatureDefinition(id)?.name ?? id).join(" · ")}
+        </p>
       </div>
+    </div>
+  );
+}
 
-      <p className="text-xs text-stone-600">
-        Squad preview:{" "}
-        {squad.map((id) => getCreatureDefinition(id)?.name ?? id).join(" · ")}. Sample tactics:{" "}
-        {deck
-          .slice(0, 3)
-          .map((id) => getCard(id)?.name ?? id)
-          .join(", ")}
-        {deck.length > 3 ? "…" : ""}. Faces:{" "}
-        {faceDeck
-          .slice(0, 3)
-          .map((id) => getFaceCard(id)?.name ?? id)
-          .join(", ")}
-        {faceDeck.length > 3 ? "…" : ""}.
-      </p>
+function CatalogueTab({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={
+        active
+          ? "rounded px-2.5 py-1 text-xs text-[var(--accent)] bg-[var(--accent)]/15"
+          : "rounded px-2.5 py-1 text-xs text-stone-500 hover:text-stone-300"
+      }
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
+
+function DeckRow({
+  title,
+  subtitle,
+  copies,
+  maxCopies,
+  active,
+  readonly,
+  addDisabled = false,
+  onHover,
+  onAdd,
+  onRemove,
+}: {
+  title: string;
+  subtitle: string;
+  copies: number;
+  maxCopies: number;
+  active: boolean;
+  readonly: boolean;
+  addDisabled?: boolean;
+  onHover: () => void;
+  onAdd: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div
+      className={
+        active
+          ? "flex items-center justify-between gap-2 rounded border border-[var(--accent)]/50 bg-[var(--accent)]/10 px-3 py-2"
+          : "flex items-center justify-between gap-2 rounded border border-stone-800 bg-stone-950/70 px-3 py-2 hover:border-stone-600"
+      }
+      onMouseEnter={onHover}
+      onFocus={onHover}
+    >
+      <div className="min-w-0">
+        <p className="truncate text-sm text-stone-100">{title}</p>
+        <p className="truncate text-xs capitalize text-stone-500">{subtitle}</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <button
+          type="button"
+          className={btnTiny}
+          disabled={readonly || copies === 0}
+          aria-label={`Remove one ${title}`}
+          onClick={onRemove}
+        >
+          −
+        </button>
+        <span className="w-6 text-center font-mono text-xs text-stone-400">{copies}</span>
+        <button
+          type="button"
+          className={btnTiny}
+          disabled={readonly || copies >= maxCopies || addDisabled}
+          aria-label={`Add one ${title}`}
+          onClick={onAdd}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
