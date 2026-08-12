@@ -28,7 +28,8 @@ needs them — never as unreachable stubs.
 | **Reposition / push / swap** | Varcolac, Garuda, Twin Blades, Predator's Claws, … | Board positions exist; movers do not |
 | **On-damage triggers** | Venomous Fangs → apply toxin; Blade of Serene Light → heal | Hook after damage resolves |
 | **Roll-triggered equipment** | Black Plague (Corruption → 1 dmg) | Hook after roll / retain keep |
-| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, … | |
+| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, CSV face On absorb lines, … | |
+| **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Needs shared absorb hook before wiring `onRoll`-only halves |
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
 | **Attack-damage conditional buffs** | Varcolac passive (+1 after ally attack); War Banner (left ally) | |
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
@@ -130,6 +131,31 @@ Fast-game HP/cost variants from Figma are not encoded.
 | Forbidden Heritage | Opp draw, Retain, pay Energy to strip Corruption |
 | Pestilent Plague | Pestilence counters + adjacent forge + strip Corruption |
 | Great Spark / Rekindle | No printed rules yet |
+| **On-absorb face triggers** (shared) | All CSV synthetics below — absorb path does not exist |
+| Insight Rune | Roll: draw; absorb: dig top 2 |
+| Conversion Rune | Roll: convert Arcane→Natural; absorb: +Energy |
+| Resonance Rune | Roll: conditional Energy; absorb: treat Arcane as any |
+| Vital Spark | Roll: heal 1; absorb: prevent 1 |
+| Aegis | Roll: generate Shield; absorb: redirect damage |
+| Revelation | Roll: peek/bottom; absorb: heal if <½ Life |
+| Instinct | Roll: reposition; absorb: extra basic attack |
+| Primordial Fury | Roll: Energy if attacked; absorb: basic +1 |
+| Pack | Roll: adjacent → Wild; absorb: reposition |
+| Command | Roll: ally move; absorb: enemy move |
+| Impact | Roll: basic pushes; absorb: next attack +2 |
+| Formation | Roll: frontline Energy; absorb: +Defense |
+| Venom | Roll: apply toxin; absorb: next hit +1 |
+| Spores | Roll: extra toxin if already toxined; absorb: heal toxined ally |
+| Adaptive Toxin | Roll: cap toxin receive; absorb: remove markers → damage |
+| Stain | Roll: Corruption marker on synthetic; absorb: lock Corrupted face |
+| Infection | Roll: spread Corruption; absorb: opp loses Energy |
+| Decay | Roll: suppress Natural inherent; absorb: strip Corrupted → unusable symbol |
+| Gear | Roll: Energy if other Synthetic; absorb: forge costs −1 Energy |
+| Catalyst | Roll: Synthetic as any attr; absorb: copy Synthetic face effect |
+| Overcharge | Roll: optional Energy + skip next; absorb: resolve face effect twice |
+| Shadow Echo | Roll: discard→draw; absorb: GY card ≤2 cost |
+| Drain | Roll: opp loses Energy; absorb: transfer Energy |
+| Sacrifice | Roll: discard→2 Energy; absorb: discard→2 damage |
 
 Crush and Rending Claw are playable on roll.
 

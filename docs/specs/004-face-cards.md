@@ -1,7 +1,8 @@
 # 004 — Face cards and the face deck
 
 Status: **DEFERRED DEPTH** — catalogue + face-deck ledger; Crush / Rending Claw
-playable. Remaining specials in [`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+playable. Remaining specials (Figma + `synthetic_faces.csv`) in
+[`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
 Derived from the `Face card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, node `2:13`).
@@ -45,8 +46,36 @@ Shield (`+1 Shield`).
 | Crush | 3 | On roll: next attack +1 damage | |
 | Forbidden Heritage | 1 | Print only | Opponent draw, Retain, activated remove — OPEN |
 | Pestilent Plague | 2 | Print only | Pestilence counters + adjacent forge — OPEN |
+| Insight Rune | 2 | Print only | Roll draw + absorb dig — OPEN |
+| Conversion Rune | 2 | Print only | Convert symbol + absorb Energy — OPEN |
+| Resonance Rune | 2 | Print only | Conditional Energy + treat-as — OPEN |
+| Vital Spark | 2 | Print only | Heal + prevent — OPEN |
+| Aegis | 2 | Print only | Shield + redirect damage — OPEN |
+| Revelation | 2 | Print only | Deck peek + conditional heal — OPEN |
+| Instinct | 2 | Print only | Reposition + bonus basic — OPEN |
+| Primordial Fury | 2 | Print only | Conditional Energy + basic +1 — OPEN |
+| Pack | 2 | Print only | Adjacent Wild + reposition — OPEN |
+| Command | 2 | Print only | Ally / enemy move — OPEN |
+| Impact | 2 | Print only | Push + attack +2 — OPEN |
+| Formation | 2 | Print only | Frontline Energy / Defense — OPEN |
+| Venom | 2 | Print only | Apply toxin + next-hit bonus — OPEN |
+| Spores | 2 | Print only | Conditional toxin + heal toxined ally — OPEN |
+| Adaptive Toxin | 2 | Print only | Cap toxin / remove→damage — OPEN |
+| Stain | 2 | Print only | Corruption markers on faces — OPEN |
+| Infection | 2 | Print only | Spread Corruption / steal Energy — OPEN |
+| Decay | 2 | Print only | Suppress inherent / strip Corrupted — OPEN |
+| Gear | 2 | Print only | Synthetic Energy / forge discount — OPEN |
+| Catalyst | 2 | Print only | Treat-as / copy face effect — OPEN |
+| Overcharge | 2 | Print only | Optional Energy + skip next / double resolve — OPEN |
+| Shadow Echo | 2 | Print only | Discard-draw / GY recursion — OPEN |
+| Drain | 2 | Print only | Opp loses Energy / transfer — OPEN |
+| Sacrifice | 2 | Print only | Discard for Energy / discard for damage — OPEN |
 
 Great Spark and Rekindle appear as art on the page but have no printed rules text yet.
+The CSV batch (`synthetic_faces.csv`) uses **On roll** / **On absorb** clauses;
+absorb triggers are not modelled, so those faces stay print-only until that
+vocabulary exists (see `DEFERRED_CATALOGUE.md`). Portuguese *Sobrecarga* is
+catalogued as **Overcharge** to avoid colliding with the Overload tactic subtype.
 
 ## State Changes
 
@@ -62,7 +91,7 @@ No new actions. `FORGE_CARD` respects face forge restrictions.
 - [x] Correct overload capacities
 - [x] Echo forge restriction
 - [x] Crush and Rending Claw on-roll effects
-- [ ] Remaining special clauses (Echo copy, Blade Rain split, Heritage, Plague)
+- [ ] Remaining special clauses (Echo copy, Blade Rain split, Heritage, Plague, CSV Roll/Absorb faces)
 
 ## Tests
 

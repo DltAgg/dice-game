@@ -113,7 +113,7 @@ describe("face deck", () => {
     expect(state.players[P1]?.facePool.some((id) => id.includes("shield"))).toBe(true);
   });
 
-  it("catalogues every Figma special face", () => {
+  it("catalogues every printed special face", () => {
     expect(SPECIAL_FACE_CARDS.map((face) => face.name)).toEqual([
       "Arcane Echo",
       "Blade Rain",
@@ -121,6 +121,30 @@ describe("face deck", () => {
       "Crush",
       "Forbidden Heritage",
       "Pestilent Plague",
+      "Insight Rune",
+      "Conversion Rune",
+      "Resonance Rune",
+      "Vital Spark",
+      "Aegis",
+      "Revelation",
+      "Instinct",
+      "Primordial Fury",
+      "Pack",
+      "Command",
+      "Impact",
+      "Formation",
+      "Venom",
+      "Spores",
+      "Adaptive Toxin",
+      "Stain",
+      "Infection",
+      "Decay",
+      "Gear",
+      "Catalyst",
+      "Overcharge",
+      "Shadow Echo",
+      "Drain",
+      "Sacrifice",
     ]);
   });
 
