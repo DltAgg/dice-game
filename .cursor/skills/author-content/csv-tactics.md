@@ -1,0 +1,36 @@
+# CSV → tactic cards
+
+When the user supplies a CSV of tactics, columns are **exactly** this order:
+
+1. **Card text** — printed body (type line, forge, gates, rules; may be multiline)
+2. **Energy cost** — integer
+3. **Card name** — English display name
+
+Example:
+
+```csv
+Card text,Energy cost,Card name
+"Draw 2 cards and discard 1. Forge 1 Natural Darkness on your die.",3,Eclipse
+```
+
+If headers or order differ, **stop and confirm** before mass-authoring.
+
+## Process
+
+1. List every row with proposed: subtypes, attribute, forge, playable region, deferred gaps.
+2. Get alignment (or proceed if the user said to implement the batch).
+3. Author each row into `src/game/content/cards.ts` per [tactics.md](tactics.md).
+4. Update `docs/specs/002-card-layer.md` tables and `docs/DEFERRED_CATALOGUE.md`.
+5. Run DoD checks.
+
+## Classification cheat sheet
+
+| Text cues | Region |
+|---|---|
+| Instant / one-shot verbs (draw, deal, search…) | `effect` |
+| “Equip” / “whenever this creature…” standing | `equipment` |
+| “When this face is rolled” / face-only gate | `overload` |
+| “Active when:” / stays on field | `ritual` |
+| “None” / empty effect / forge-only | forge only |
+
+Do not build a permanent CSV importer unless the user asks for tooling.

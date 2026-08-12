@@ -1,0 +1,22 @@
+---
+description: Conventions when editing tactic, creature, or face catalogues
+globs: src/game/content/**/*
+alwaysApply: false
+---
+
+# Catalogue content
+
+Author definitions as TypeScript data in:
+
+- Tactics → `cards.ts`
+- Creatures → `creatures.ts`
+- Faces → `faces.ts`
+
+Rules:
+
+- `rulesText` / print fields are English authority for the UI.
+- Structured regions (`effect`, `equipment`, `overload`, `ritual`, attack `effect`, face `onRoll`) only when every clause is modelled.
+- Ids: `card-<kebab>`, `creature-<kebab>`, `face-natural|synthetic-<kebab>`, `attack-<creature>-<kebab>`.
+- `equipment` / `overload` / `ritual` subtypes must match their regions (and vice versa).
+- Update `docs/specs/002|003|004-*.md` and `docs/DEFERRED_CATALOGUE.md` when print coverage changes.
+- Follow `.cursor/skills/author-content/SKILL.md` for full workflows and templates.

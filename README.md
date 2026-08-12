@@ -63,3 +63,10 @@ code. Anything marked `ASSUMED` is reachable from `GameRulesConfig` or content
 data, so settling a question is a data edit rather than an engine change.
 
 Feature specifications live in [`docs/specs/`](./docs/specs).
+
+## Agent guidance
+
+AI agents should start at [`AGENTS.md`](./AGENTS.md). Commands and verification:
+[`TOOLS.md`](./TOOLS.md). Cursor skills live under [`.cursor/skills/`](./.cursor/skills/)
+(content authoring, engine work, match UI); persistent rules under
+[`.cursor/rules/`](./.cursor/rules/).

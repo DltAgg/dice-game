@@ -1,0 +1,16 @@
+---
+description: Core architecture and workflow for Dice Skirmish agents
+alwaysApply: true
+---
+
+# Dice Skirmish — core
+
+- Read `AGENTS.md` and `TOOLS.md` at the repo root before large changes.
+- Only `reduce()` / `advance()` may change game rules state.
+- Keep layers separate: `src/game` (pure rules) · `store` · `decks` · `networking` · `ui`.
+- Effects and abilities are data (discriminated unions), never functions.
+- Incomplete printed clauses → `docs/DEFERRED_CATALOGUE.md`, not approximate silent effects.
+- DoD: `npm run typecheck && npm test && npm run lint`.
+- Commit / push only when the user asks.
+- Content authoring → `.cursor/skills/author-content/SKILL.md`.
+- Engine/reducer work → `.cursor/skills/develop-engine/SKILL.md`.

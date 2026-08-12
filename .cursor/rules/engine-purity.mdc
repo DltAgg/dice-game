@@ -1,0 +1,23 @@
+---
+description: Keep the game engine pure — no I/O, UI, or networking inside src/game
+globs: src/game/**/*
+alwaysApply: false
+---
+
+# Engine purity
+
+`src/game` is the only rules authority and must stay deterministic and serializable.
+
+Forbidden inside `src/game`:
+
+- Imports of React, Zustand, PeerJS, nanoid, `@/ui`, `@/store`, `@/networking`, `@/decks`, `@/app`
+- `window`, `document`, `localStorage`, `fetch`, `WebSocket`
+- `Date.now()`, `Math.random()` — randomness only via injected `RNG`
+
+Prefer:
+
+- `advance(state, action)` outside injection tests
+- Extending `EffectDefinition` / content data over imperative special cases
+- Tests under `src/game/**/*.test.ts` and the purity guard in `src/architecture/engine-purity.test.ts`
+
+Illegal player moves return `ReduceResult` failure with the **original** state object — never throw for normal illegality.
