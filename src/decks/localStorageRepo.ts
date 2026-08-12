@@ -1,21 +1,13 @@
 import { nanoid } from "nanoid";
 import type { DeckRepository } from "./repository.js";
 import { buildPrototypeSavedDeck, PROTOTYPE_SAVED_DECK_ID } from "./prototype.js";
-import { DECK_SCHEMA_VERSION, type DeckDraft, type SavedDeck } from "./types.js";
-import { validateSavedDeck } from "./validate.js";
+import { DECK_SCHEMA_VERSION, type SavedDeck } from "./types.js";
 
 const STORAGE_KEY = "dice-skirmish.decks.v1";
 
 interface StorageBlob {
   readonly schemaVersion: number;
   readonly decks: readonly SavedDeck[];
-}
-
-function assertLegal(draft: DeckDraft): void {
-  const check = validateSavedDeck(draft);
-  if (!check.ok) {
-    throw new Error(`deck repository: ${check.reason}`);
-  }
 }
 
 function isSavedDeck(value: unknown): value is SavedDeck {
@@ -60,6 +52,10 @@ function listed(decks: readonly SavedDeck[]): SavedDeck[] {
   return [buildPrototypeSavedDeck(), ...decks.filter((d) => d.id !== PROTOTYPE_SAVED_DECK_ID)];
 }
 
+/**
+ * Persists drafts whether or not they are tournament-legal. Play / match setup
+ * must call `validateSavedDeck` (or `validateLoadout`) before starting a game.
+ */
 export function createLocalStorageDeckRepository(): DeckRepository {
   return {
     list: () => listed(readStorage()),
@@ -67,7 +63,6 @@ export function createLocalStorageDeckRepository(): DeckRepository {
     get: (id) => listed(readStorage()).find((deck) => deck.id === id),
 
     save: (draft, id) => {
-      assertLegal(draft);
       if (id === PROTOTYPE_SAVED_DECK_ID) {
         throw new Error("deck repository: cannot overwrite the prototype deck");
       }

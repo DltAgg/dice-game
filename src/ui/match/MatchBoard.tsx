@@ -44,7 +44,7 @@ import {
 } from "@/game";
 import { MATCH_P1, MATCH_P2, useMatchStore } from "@/store/matchStore";
 import { useDeckStore } from "@/store/deckStore";
-import { PROTOTYPE_SAVED_DECK_ID } from "@/decks";
+import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@/decks";
 
 const PHASE_LABELS: Record<TurnPhase, string> = {
   roll: "Roll",
@@ -92,6 +92,7 @@ export function MatchBoard() {
   const leaveOnline = useMatchStore((s) => s.leaveOnline);
   const requestResync = useMatchStore((s) => s.requestResync);
   const setView = useMatchStore((s) => s.setView);
+  const playBlockReason = useMatchStore((s) => s.playBlockReason);
   const decks = useDeckStore((s) => s.decks);
   const refreshDecks = useDeckStore((s) => s.refresh);
 
@@ -111,6 +112,13 @@ export function MatchBoard() {
   /** Bottom dock shows this seat's hand/pool — local seat online, active seat in hotseat. */
   const dockPlayerId =
     isOnline && localPlayerId !== null ? localPlayerId : activeId;
+
+  const canStartNewMatch = useMemo(() => {
+    const p1 = decks.find((deck) => deck.id === p1DeckId);
+    const p2 = decks.find((deck) => deck.id === p2DeckId);
+    if (p1 === undefined || p2 === undefined) return false;
+    return validateSavedDeck(p1).ok && validateSavedDeck(p2).ok;
+  }, [decks, p1DeckId, p2DeckId]);
 
   useEffect(() => {
     setIntent({ kind: "idle" });
@@ -379,6 +387,7 @@ export function MatchBoard() {
                     {decks.map((deck) => (
                       <option key={deck.id} value={deck.id}>
                         {deck.name}
+                        {validateSavedDeck(deck).ok ? "" : " (illegal)"}
                       </option>
                     ))}
                   </select>
@@ -393,6 +402,7 @@ export function MatchBoard() {
                     {decks.map((deck) => (
                       <option key={deck.id} value={deck.id}>
                         {deck.name}
+                        {validateSavedDeck(deck).ok ? "" : " (illegal)"}
                       </option>
                     ))}
                   </select>
@@ -400,6 +410,12 @@ export function MatchBoard() {
                 <button
                   type="button"
                   className={btnClass}
+                  disabled={!canStartNewMatch}
+                  title={
+                    canStartNewMatch
+                      ? "Start a new local match"
+                      : (playBlockReason ?? "Both decks must be legal")
+                  }
                   onClick={() =>
                     newMatch(
                       undefined,
@@ -410,6 +426,9 @@ export function MatchBoard() {
                 >
                   New match
                 </button>
+                {playBlockReason !== null && (
+                  <p className="basis-full text-xs text-red-300">{playBlockReason}</p>
+                )}
               </>
             )}
             {isOnline && (

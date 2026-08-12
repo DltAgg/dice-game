@@ -1,21 +1,16 @@
 import { nanoid } from "nanoid";
 import type { DeckRepository } from "./repository.js";
 import { buildPrototypeSavedDeck, PROTOTYPE_SAVED_DECK_ID } from "./prototype.js";
-import { DECK_SCHEMA_VERSION, type DeckDraft, type SavedDeck } from "./types.js";
-import { validateSavedDeck } from "./validate.js";
-
-function assertLegal(draft: DeckDraft): void {
-  const check = validateSavedDeck(draft);
-  if (!check.ok) {
-    throw new Error(`deck repository: ${check.reason}`);
-  }
-}
+import { DECK_SCHEMA_VERSION, type SavedDeck } from "./types.js";
 
 function withPrototype(decks: readonly SavedDeck[]): SavedDeck[] {
   const without = decks.filter((deck) => deck.id !== PROTOTYPE_SAVED_DECK_ID);
   return [buildPrototypeSavedDeck(), ...without];
 }
 
+/**
+ * In-memory repo for tests. Saves illegal drafts; play paths must validate.
+ */
 export function createMemoryDeckRepository(
   initial: readonly SavedDeck[] = [],
 ): DeckRepository {
@@ -27,7 +22,6 @@ export function createMemoryDeckRepository(
     get: (id) => decks.find((deck) => deck.id === id),
 
     save: (draft, id) => {
-      assertLegal(draft);
       if (id === PROTOTYPE_SAVED_DECK_ID) {
         throw new Error("deck repository: cannot overwrite the prototype deck");
       }

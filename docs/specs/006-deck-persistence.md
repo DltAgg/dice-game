@@ -54,7 +54,9 @@ the persistence boundary. Unknown schema versions are refused.
 
 ## UI
 
-- App shell **Decks** tab: name, squad, tactics list, face list, live legality
+- App shell **Decks** tab: name, squad, tactics list, face list, live legality;
+  illegal drafts may be saved for later editing
+- **Play** refuses illegal loadouts (local / host / join / new match)
 - New match picks P1/P2 saved loadouts (default: Prototype)
 
 ## Acceptance Criteria

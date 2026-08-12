@@ -191,11 +191,12 @@ export function DeckBuilder() {
           <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--ink)]">
             Decks
           </h1>
-          <p className="mt-1 max-w-xl text-sm text-[var(--ink-muted)]">
-            Hover any card to inspect it. Build a legal loadout (
-            {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
-            face deck ≤{cfg.faceDeckMaxCards}).
-          </p>
+        <p className="mt-1 max-w-xl text-sm text-[var(--ink-muted)]">
+          Hover any card to inspect it. Build a loadout (
+          {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
+          face deck ≤{cfg.faceDeckMaxCards}). Illegal drafts can be saved; Play refuses them until
+          they are legal.
+        </p>
         </div>
         <label className="flex w-full max-w-xs flex-col gap-1 text-sm sm:w-56">
           <span className="text-stone-400">Name</span>
@@ -458,22 +459,19 @@ export function DeckBuilder() {
 
       <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-3 border-t border-stone-800 bg-[var(--felt-deep)]/95 py-4 backdrop-blur">
         <p className={legality.ok ? "text-sm text-emerald-400" : "text-sm text-red-300"}>
-          {legality.ok ? "Legal loadout" : legality.reason}
+          {legality.ok
+            ? "Legal — ready to play"
+            : `Illegal (savable): ${legality.reason}`}
         </p>
         <button
           type="button"
           className={btnClass}
-          disabled={!legality.ok}
+          disabled={readonly}
           onClick={() => onSave(false)}
         >
           Save
         </button>
-        <button
-          type="button"
-          className={btnClass}
-          disabled={!legality.ok}
-          onClick={() => onSave(true)}
-        >
+        <button type="button" className={btnClass} onClick={() => onSave(true)}>
           Save as new
         </button>
         <button

@@ -11,6 +11,7 @@ import {
 import {
   createLocalStorageDeckRepository,
   PROTOTYPE_SAVED_DECK_ID,
+  validateSavedDeck,
   type SavedDeck,
   type SavedDeckId,
 } from "@/decks";
@@ -40,6 +41,18 @@ function loadoutOrPrototype(id: SavedDeckId | undefined): SavedDeck {
 
 function toWireLoadout(deck: SavedDeck): WireLoadout {
   return { squad: deck.squad, deck: deck.deck, faceDeck: deck.faceDeck };
+}
+
+/** Null when every id is a legal playable loadout. */
+function playBlockReasonFor(...ids: readonly SavedDeckId[]): string | null {
+  for (const id of ids) {
+    const deck = loadoutOrPrototype(id);
+    const check = validateSavedDeck(deck);
+    if (!check.ok) {
+      return `“${deck.name}” is not legal to play: ${check.reason}`;
+    }
+  }
+  return null;
 }
 
 function newMatchState(
@@ -72,12 +85,15 @@ export interface MatchStore {
   readonly roomCode: string | null;
   readonly connectionStatus: string;
   readonly onlineReady: boolean;
+  /** Why the last play/host/join/new-match attempt was refused (illegal loadout). */
+  readonly playBlockReason: string | null;
 
   setView: (view: MatchView) => void;
   setMatchDecks: (p1DeckId: SavedDeckId, p2DeckId: SavedDeckId) => void;
   newMatch: (seed?: number, p1DeckId?: SavedDeckId, p2DeckId?: SavedDeckId) => void;
   dispatch: (action: GameAction) => boolean;
   clearError: () => void;
+  clearPlayBlockReason: () => void;
 
   startLocal: (p1DeckId?: SavedDeckId, p2DeckId?: SavedDeckId) => void;
   hostRoom: (deckId?: SavedDeckId) => Promise<void>;
@@ -110,18 +126,25 @@ export const useMatchStore = create<MatchStore>((set, get) => {
     roomCode: null,
     connectionStatus: "local",
     onlineReady: false,
+    playBlockReason: null,
 
     setView: (view) => set({ view }),
 
-    setMatchDecks: (p1DeckId, p2DeckId) => set({ p1DeckId, p2DeckId }),
+    setMatchDecks: (p1DeckId, p2DeckId) => set({ p1DeckId, p2DeckId, playBlockReason: null }),
 
     newMatch: (nextSeed = Date.now() % 100_000, p1DeckId, p2DeckId) => {
       if (get().mode !== "local") return;
       const p1 = p1DeckId ?? get().p1DeckId;
       const p2 = p2DeckId ?? get().p2DeckId;
+      const blocked = playBlockReasonFor(p1, p2);
+      if (blocked !== null) {
+        set({ playBlockReason: blocked });
+        return;
+      }
       set({
         state: newMatchState(nextSeed, p1, p2),
         lastError: null,
+        playBlockReason: null,
         seed: nextSeed,
         p1DeckId: p1,
         p2DeckId: p2,
@@ -129,11 +152,17 @@ export const useMatchStore = create<MatchStore>((set, get) => {
     },
 
     clearError: () => set({ lastError: null }),
+    clearPlayBlockReason: () => set({ playBlockReason: null }),
 
     startLocal: (p1DeckId, p2DeckId) => {
       tearDownSessions();
       const p1 = p1DeckId ?? get().p1DeckId;
       const p2 = p2DeckId ?? get().p2DeckId;
+      const blocked = playBlockReasonFor(p1, p2);
+      if (blocked !== null) {
+        set({ playBlockReason: blocked, connectionStatus: "local", onlineReady: false });
+        return;
+      }
       const nextSeed = Date.now() % 100_000;
       set({
         mode: "local",
@@ -147,12 +176,18 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         p1DeckId: p1,
         p2DeckId: p2,
         lastError: null,
+        playBlockReason: null,
       });
     },
 
     hostRoom: async (deckId) => {
       tearDownSessions();
       const chosen = deckId ?? get().p1DeckId;
+      const blocked = playBlockReasonFor(chosen);
+      if (blocked !== null) {
+        set({ playBlockReason: blocked, connectionStatus: "local", onlineReady: false });
+        return;
+      }
       const loadout = toWireLoadout(loadoutOrPrototype(chosen));
       const roomCode = generateRoomCode();
       set({
@@ -164,6 +199,7 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         view: "match",
         p1DeckId: chosen,
         lastError: null,
+        playBlockReason: null,
       });
 
       try {
@@ -198,6 +234,11 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       tearDownSessions();
       const code = roomCode.trim().toUpperCase();
       const chosen = deckId ?? get().p2DeckId;
+      const blocked = playBlockReasonFor(chosen);
+      if (blocked !== null) {
+        set({ playBlockReason: blocked, connectionStatus: "local", onlineReady: false });
+        return;
+      }
       const loadout = toWireLoadout(loadoutOrPrototype(chosen));
       set({
         mode: "client",
@@ -208,6 +249,7 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         view: "match",
         p2DeckId: chosen,
         lastError: null,
+        playBlockReason: null,
       });
 
       try {

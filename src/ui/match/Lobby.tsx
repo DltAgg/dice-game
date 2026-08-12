@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { PROTOTYPE_SAVED_DECK_ID } from "@/decks";
+import { useEffect, useMemo, useState } from "react";
+import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck, type SavedDeck } from "@/decks";
 import { useDeckStore } from "@/store/deckStore";
 import { useMatchStore } from "@/store/matchStore";
 
@@ -13,6 +13,8 @@ export function Lobby() {
   const p2DeckId = useMatchStore((s) => s.p2DeckId);
   const setMatchDecks = useMatchStore((s) => s.setMatchDecks);
   const connectionStatus = useMatchStore((s) => s.connectionStatus);
+  const playBlockReason = useMatchStore((s) => s.playBlockReason);
+  const clearPlayBlockReason = useMatchStore((s) => s.clearPlayBlockReason);
 
   const [joinCode, setJoinCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -26,8 +28,22 @@ export function Lobby() {
       ? decks
       : [{ id: PROTOTYPE_SAVED_DECK_ID, name: "Prototype", builtin: true as const }];
 
+  const legalityById = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof validateSavedDeck>>();
+    for (const deck of decks) {
+      map.set(deck.id, validateSavedDeck(deck));
+    }
+    return map;
+  }, [decks]);
+
+  const p1Legal = legalityById.get(p1DeckId)?.ok !== false;
+  const p2Legal = legalityById.get(p2DeckId)?.ok !== false;
+  const p1Reason = legalityById.get(p1DeckId);
+  const p2Reason = legalityById.get(p2DeckId);
+
   const run = async (work: () => Promise<void>) => {
     setBusy(true);
+    clearPlayBlockReason();
     try {
       await work();
     } finally {
@@ -42,8 +58,8 @@ export function Lobby() {
           Play
         </h1>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Local hotseat on one machine, or host/join a PeerJS room. Online: the host runs the
-          rules; the guest sends intents only.
+          Local hotseat on one machine, or host/join a PeerJS room. Only legal loadouts can be
+          played (you can still save WIP decks from Decks).
         </p>
       </header>
 
@@ -56,19 +72,33 @@ export function Lobby() {
             label="P1 deck"
             value={p1DeckId}
             options={deckOptions}
-            onChange={(id) => setMatchDecks(id, p2DeckId)}
+            legalityById={legalityById}
+            onChange={(id) => {
+              clearPlayBlockReason();
+              setMatchDecks(id, p2DeckId);
+            }}
           />
           <DeckSelect
             label="P2 deck"
             value={p2DeckId}
             options={deckOptions}
-            onChange={(id) => setMatchDecks(p1DeckId, id)}
+            legalityById={legalityById}
+            onChange={(id) => {
+              clearPlayBlockReason();
+              setMatchDecks(p1DeckId, id);
+            }}
           />
         </div>
+        {!p1Legal && p1Reason !== undefined && !p1Reason.ok && (
+          <p className="text-xs text-red-300">P1: {p1Reason.reason}</p>
+        )}
+        {!p2Legal && p2Reason !== undefined && !p2Reason.ok && (
+          <p className="text-xs text-red-300">P2: {p2Reason.reason}</p>
+        )}
         <button
           type="button"
           className={btnPrimary}
-          disabled={busy}
+          disabled={busy || !p1Legal || !p2Legal}
           onClick={() => startLocal(p1DeckId, p2DeckId)}
         >
           Start local match
@@ -83,12 +113,19 @@ export function Lobby() {
           label="Your deck (P1)"
           value={p1DeckId}
           options={deckOptions}
-          onChange={(id) => setMatchDecks(id, p2DeckId)}
+          legalityById={legalityById}
+          onChange={(id) => {
+            clearPlayBlockReason();
+            setMatchDecks(id, p2DeckId);
+          }}
         />
+        {!p1Legal && p1Reason !== undefined && !p1Reason.ok && (
+          <p className="text-xs text-red-300">{p1Reason.reason}</p>
+        )}
         <button
           type="button"
           className={btnPrimary}
-          disabled={busy}
+          disabled={busy || !p1Legal}
           onClick={() => void run(() => hostRoom(p1DeckId))}
         >
           Host room
@@ -103,8 +140,15 @@ export function Lobby() {
           label="Your deck (P2)"
           value={p2DeckId}
           options={deckOptions}
-          onChange={(id) => setMatchDecks(p1DeckId, id)}
+          legalityById={legalityById}
+          onChange={(id) => {
+            clearPlayBlockReason();
+            setMatchDecks(p1DeckId, id);
+          }}
         />
+        {!p2Legal && p2Reason !== undefined && !p2Reason.ok && (
+          <p className="text-xs text-red-300">{p2Reason.reason}</p>
+        )}
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-stone-400">Room code</span>
           <input
@@ -118,13 +162,16 @@ export function Lobby() {
         <button
           type="button"
           className={btnPrimary}
-          disabled={busy || joinCode.trim().length < 4}
+          disabled={busy || !p2Legal || joinCode.trim().length < 4}
           onClick={() => void run(() => joinRoom(joinCode, p2DeckId))}
         >
           Join room
         </button>
       </section>
 
+      {playBlockReason !== null && (
+        <p className="text-sm text-red-300">{playBlockReason}</p>
+      )}
       {connectionStatus !== "local" && (
         <p className="text-sm text-stone-500">Status: {connectionStatus}</p>
       )}
@@ -136,11 +183,13 @@ function DeckSelect({
   label,
   value,
   options,
+  legalityById,
   onChange,
 }: {
   label: string;
   value: string;
-  options: readonly { readonly id: string; readonly name: string }[];
+  options: readonly Pick<SavedDeck, "id" | "name">[];
+  legalityById: ReadonlyMap<string, ReturnType<typeof validateSavedDeck>>;
   onChange: (id: string) => void;
 }) {
   return (
@@ -151,11 +200,15 @@ function DeckSelect({
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >
-        {options.map((deck) => (
-          <option key={deck.id} value={deck.id}>
-            {deck.name}
-          </option>
-        ))}
+        {options.map((deck) => {
+          const legal = legalityById.get(deck.id)?.ok !== false;
+          return (
+            <option key={deck.id} value={deck.id}>
+              {deck.name}
+              {legal ? "" : " (illegal)"}
+            </option>
+          );
+        })}
       </select>
     </label>
   );

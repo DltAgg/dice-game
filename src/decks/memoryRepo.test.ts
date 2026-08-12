@@ -23,16 +23,15 @@ describe("memory DeckRepository", () => {
     expect(repo.list()).toHaveLength(2);
   });
 
-  it("refuses an illegal draft", () => {
+  it("persists an illegal draft for later editing", () => {
     const repo = createMemoryDeckRepository();
-    expect(() =>
-      repo.save({
-        name: "Bad",
-        squad: PROTOTYPE_SQUAD,
-        deck: PROTOTYPE_DECK.slice(0, 10),
-        faceDeck: PROTOTYPE_FACE_DECK,
-      }),
-    ).toThrow(/min 50/);
+    const saved = repo.save({
+      name: "WIP",
+      squad: PROTOTYPE_SQUAD,
+      deck: PROTOTYPE_DECK.slice(0, 10),
+      faceDeck: PROTOTYPE_FACE_DECK,
+    });
+    expect(repo.get(saved.id)?.deck).toHaveLength(10);
   });
 
   it("cannot delete the prototype", () => {
