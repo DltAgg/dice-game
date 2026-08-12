@@ -38,6 +38,11 @@ const DURATION_LABEL: Readonly<Record<CardDuration, string>> = {
 
 export const attributeLabel = (attribute: Attribute): string => ATTRIBUTE_LABEL[attribute];
 
+/** Header cost glyph: fixed amount, or `?` for variable (pay 1+). */
+export function formatEnergyCost(card: CardDefinition): string {
+  return card.variableEnergy === true ? "?" : String(card.energyCost);
+}
+
 /** `[Tactic / Ritual / Reaction / Arcane]` */
 export function formatTypeLine(card: CardDefinition): string {
   const parts = [
@@ -67,6 +72,7 @@ export function formatRequirementLine(card: CardDefinition): string | null {
   if (requires === undefined) return null;
 
   const body = formatRequirementBody(requires);
+  if (body.length === 0) return null;
   if (card.subtypes.includes("ritual")) return `[Active when: ${body}]`;
   return `[Requires: ${body}]`;
 }

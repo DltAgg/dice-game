@@ -3,6 +3,7 @@ import {
   ARCANE_RESONANCE,
   ECLIPSE,
   LUMINAR_PRISM,
+  MARTIAL_BLESSING,
   PERSISTENT_INFECTION,
 } from "../content/cards.js";
 import { faceIdForSymbol } from "../content/faces.js";
@@ -260,5 +261,52 @@ describe("forging and face-card overloads", () => {
     expect(overloadsOf(second.state, P1)).toHaveLength(0);
     expect(graveyardOf(second.state, P1).some((card) => card.id === overloadId)).toBe(true);
     expect(eventTypes(second.state)).toContain("overload-detached");
+  });
+});
+
+describe("variable Energy costs (?)", () => {
+  it("pays the minimum (1) when energyPaid is omitted", () => {
+    const state = actionsReady([MARTIAL_BLESSING]);
+    const result = advance(state, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(state, P1, 0),
+      declaredFaceCardId: faceIdForSymbol("arcane"),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.energy).toEqual({ holderId: P1, value: 9 });
+    expect(overloadsOf(result.state, P1)).toHaveLength(1);
+  });
+
+  it("pays a declared amount above the minimum", () => {
+    const state = actionsReady([MARTIAL_BLESSING]);
+    const result = advance(state, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(state, P1, 0),
+      declaredFaceCardId: faceIdForSymbol("arcane"),
+      energyPaid: 4,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.energy).toEqual({ holderId: P1, value: 6 });
+  });
+
+  it("refuses energyPaid below the minimum", () => {
+    const state = actionsReady([MARTIAL_BLESSING]);
+    const result = advance(state, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(state, P1, 0),
+      declaredFaceCardId: faceIdForSymbol("arcane"),
+      energyPaid: 0,
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBe("INVALID_TARGET");
   });
 });

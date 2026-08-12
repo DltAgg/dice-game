@@ -128,15 +128,29 @@ export interface OverloadRegion {
  * once the orientation is `ready`.
  */
 export interface RitualRegion {
-  readonly activeWhen: SymbolRequirement;
+  /**
+   * Attribute gate that flips the ritual to ready. Absent when the print has
+   * no `[Active when: …]` (e.g. Paradox) — the ritual is ready as soon as it
+   * leaves preparing.
+   */
+  readonly activeWhen?: SymbolRequirement;
   readonly effects: readonly EffectDefinition[];
 }
 
 export interface CardDefinition {
   readonly id: CardId;
   readonly name: string;
-  /** The header cost, paid whichever region is used. */
+  /**
+   * Header Energy cost. Fixed cards pay exactly this; variable (`?`) cards pay
+   * at least this much (always 1) and may pay more — see `variableEnergy`.
+   */
   readonly energyCost: number;
+  /**
+   * Figma `?` cost: pay `energyCost` or more (declared as `energyPaid` on
+   * PLAY_CARD / FORGE_CARD). Extra spend is available for effects that scale
+   * off the amount paid once that vocabulary exists.
+   */
+  readonly variableEnergy?: boolean;
   readonly type: CardType;
   readonly subtypes: readonly CardSubtype[];
   readonly duration?: CardDuration;

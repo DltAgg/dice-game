@@ -24,6 +24,7 @@ export { ALL_CARDS, CARDS, PROTOTYPE_DECK, getCard } from "./content/cards.js";
 export {
   attributeLabel,
   formatEffectRegion,
+  formatEnergyCost,
   formatForgeLine,
   formatRequirementLine,
   formatTypeLine,

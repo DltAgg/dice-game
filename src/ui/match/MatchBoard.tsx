@@ -1539,7 +1539,7 @@ function HandStrip({
             >
               <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-500">
-                {def.energyCost}E · {def.subtypes.join("/")}
+                {def.variableEnergy === true ? "?" : def.energyCost}E · {def.subtypes.join("/")}
               </p>
               <div className="mt-3 flex gap-2">
                 {actionsLive && (
@@ -1578,7 +1578,9 @@ function HandStrip({
             role="tooltip"
           >
             <p className="text-sm font-medium text-stone-100">{hoveredDef.name}</p>
-            <p className="mt-1 text-xs text-stone-400">{hoveredDef.energyCost} Energy</p>
+            <p className="mt-1 text-xs text-stone-400">
+              {hoveredDef.variableEnergy === true ? "? (1+)" : hoveredDef.energyCost} Energy
+            </p>
             <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
               {[
                 formatTypeLine(hoveredDef),
@@ -1696,7 +1698,9 @@ function DiscardModal({
                 >
                   <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
                   <p className="text-xs text-stone-500">
-                    {def !== undefined ? `${def.energyCost}E · ${def.subtypes.join("/")}` : ""}
+                    {def !== undefined
+                      ? `${def.variableEnergy === true ? "?" : def.energyCost}E · ${def.subtypes.join("/")}`
+                      : ""}
                   </p>
                 </button>
               </li>

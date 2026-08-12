@@ -37,7 +37,7 @@ Six fields, in the order the layout presents them:
 | Field | Where | Notes |
 |---|---|---|
 | Name | header, left | |
-| Energy cost | header, right | `?` on cards not yet costed |
+| Energy cost | header, right | Integer, or `?` = variable pay-at-least-1 (see OPEN_DESIGN) |
 | Type line | text box, first line | `[Tactic / <subtype…> / <attribute>]` |
 | Forge region | text box | how many faces, of which kind and attribute, on which die |
 | Requirements | text box, bracketed | optional, and specific to the subtype |
@@ -113,8 +113,9 @@ card and an effect may demand more.
 
 ## The catalogue, translated
 
-Costs shown as `?` are uncosted in the file. Where the frame name and the
-printed name disagree, the printed name is used.
+Costs shown as `?` are **variable**: pay 1 or more Energy (`variableEnergy` in
+content). Where the frame name and the printed name disagree, the printed name
+is used.
 
 ### Aggro deck
 
@@ -159,7 +160,7 @@ printed name disagree, the printed name is used.
 | 2 | Arcane Amplifier | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* Generate 1 additional Arcane. |
 | 4 | Arcane Resonance | Tactic / Overload / Arcane | 1 Natural Arcane, your die | Generate 1 Arcane on one of your creatures. |
 | 3 | Calculated Sacrifice | Tactic / Instant / Corruption | 1 Natural Corruption, your die | Destroy 1 Equipment on an opposing creature. |
-| 3 | Eclipse | Tactic / Instant / Darkness | 1 Natural Darkness, your die | Draw 1 card and discard 1. |
+| 3 | Eclipse | Tactic / Instant / Darkness | 1 Natural Darkness, your die | Draw 2 cards and discard 1. |
 | 4 | Collapse of Reality | Tactic / Instant / Arcane | 1 Natural Arcane, your die | Convert up to two symbols into any other 2 Natural symbols. |
 | 4 | Dark Pact | Tactic / Instant / Darkness | 1 Synthetic Darkness, your die | Send 2 Tactic cards of different attributes from your deck to the graveyard. |
 | 6 | Mind Control | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |
@@ -196,7 +197,7 @@ already express.
 
 | In | Out, and why |
 |---|---|
-| Card model: name, cost, type, subtypes, attribute, forge region, requirements, effect, equipment, English `rulesText` | — |
+| Card model: name, cost (fixed or `?` / variable), type, subtypes, attribute, forge region, requirements, effect, equipment, English `rulesText` | — |
 | Deck, hand, graveyard, equipment, overload, ritual; opening 5; draw 1 per turn | — (no mulligan) |
 | Forging a Natural or Synthetic face onto your own die **or an opponent's**; **draw 1 per face forged** | — |
 | Playing an Instant for its effect, paying Energy | See DEFERRED_CATALOGUE (reaction chain, …) |

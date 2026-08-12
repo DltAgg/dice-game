@@ -1,5 +1,6 @@
 import {
   formatEffectRegion,
+  formatEnergyCost,
   formatForgeLine,
   formatTypeLine,
   type CardDefinition,
@@ -22,7 +23,7 @@ export interface TacticCardProps {
 
 export function TacticCard({ card, width = 280 }: TacticCardProps) {
   const effectLines = formatEffectRegion(card);
-  const costLabel = String(card.energyCost);
+  const costLabel = formatEnergyCost(card);
   const forge = formatForgeLine(card.forge);
 
   return (

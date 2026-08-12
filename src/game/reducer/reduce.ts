@@ -24,7 +24,11 @@ import {
 } from "../model/state.js";
 import { isAttributeSymbol } from "../model/symbols.js";
 import { createRng, type RNG } from "../rng/rng.js";
-import { attackDamageBonus, forgeExceedsAttributeLimit } from "../rules/cards.js";
+import {
+  attackDamageBonus,
+  forgeExceedsAttributeLimit,
+  resolveEnergyPayment,
+} from "../rules/cards.js";
 import { opponentOf } from "../rules/creatures.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../rules/dice.js";
 import { passEnergy, spendEnergy, type EnergySpendOutcome } from "../rules/energy.js";
@@ -118,6 +122,7 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.dieId,
         action.slotIndexes,
         action.faceCardId,
+        action.energyPaid,
       );
     case "PLAY_CARD":
       return playCard(
@@ -126,6 +131,7 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.cardInstanceId,
         action.declaredTargetCreatureId ?? null,
         action.declaredFaceCardId ?? null,
+        action.energyPaid,
       );
     case "ACTIVATE_RITUAL":
       return activateRitual(
@@ -576,6 +582,7 @@ function forgeCard(
   dieId: DieId,
   slotIndexes: readonly number[],
   faceCardId: FaceCardId,
+  energyPaid: number | undefined,
 ): GameError | null {
   // Play and forge share the actions window.
   if (draft.phase !== "actions") return "INVALID_PHASE";
@@ -655,7 +662,9 @@ function forgeCard(
   // The card is consumed by being installed, so it goes to the graveyard rather
   // than staying available to be played for its effect as well.
   moveCard(draft, cardInstanceId, "graveyard");
-  return settleTurnAfterSpend(draft, playerId, payEnergy(draft, playerId, definition.energyCost));
+  const cost = resolveEnergyPayment(definition, energyPaid);
+  if (cost === null) return "INVALID_TARGET";
+  return settleTurnAfterSpend(draft, playerId, payEnergy(draft, playerId, cost));
 }
 
 /**
@@ -669,6 +678,7 @@ function playCard(
   cardInstanceId: CardInstanceId,
   declaredTargetCreatureId: CreatureId | null,
   declaredFaceCardId: FaceCardId | null,
+  energyPaid: number | undefined,
 ): GameError | null {
   if (draft.phase !== "actions") return "INVALID_PHASE";
 
@@ -680,13 +690,13 @@ function playCard(
   if (definition === undefined) return "UNKNOWN_ENTITY";
 
   if (definition.equipment !== undefined) {
-    return equipCard(draft, playerId, cardInstanceId, definition, declaredTargetCreatureId);
+    return equipCard(draft, playerId, cardInstanceId, definition, declaredTargetCreatureId, energyPaid);
   }
   if (definition.overload !== undefined) {
-    return overloadCard(draft, playerId, cardInstanceId, definition, declaredFaceCardId);
+    return overloadCard(draft, playerId, cardInstanceId, definition, declaredFaceCardId, energyPaid);
   }
   if (definition.ritual !== undefined) {
-    return placeRitualCard(draft, playerId, cardInstanceId, definition);
+    return placeRitualCard(draft, playerId, cardInstanceId, definition, energyPaid);
   }
 
   const region = definition.effect;
@@ -711,7 +721,8 @@ function playCard(
 
   // Paid before the effect resolves, so a card that grants Energy adds to what
   // its own cost left behind instead of having the payment land on top of it.
-  const cost = definition.energyCost + (region.additionalEnergy ?? 0);
+  const cost = resolveEnergyPayment(definition, energyPaid, region.additionalEnergy ?? 0);
+  if (cost === null) return "INVALID_TARGET";
   const spend = payEnergy(draft, playerId, cost);
 
   // Pushed in reverse so the LIFO stack drains in printed order (draw before
@@ -737,6 +748,7 @@ function equipCard(
   cardInstanceId: CardInstanceId,
   definition: NonNullable<ReturnType<typeof getCard>>,
   declaredTargetCreatureId: CreatureId | null,
+  energyPaid: number | undefined,
 ): GameError | null {
   const region = definition.equipment;
   if (region === undefined) return "CARD_HAS_NO_EFFECT";
@@ -762,11 +774,14 @@ function equipCard(
 
   if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
 
+  const cost = resolveEnergyPayment(definition, energyPaid);
+  if (cost === null) return "INVALID_TARGET";
+
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
   moveCard(draft, cardInstanceId, "equipment");
   attachEquipment(draft, cardInstanceId, declaredTargetCreatureId);
 
-  const spend = payEnergy(draft, playerId, definition.energyCost);
+  const spend = payEnergy(draft, playerId, cost);
   return settleTurnAfterSpend(draft, playerId, spend);
 }
 
@@ -776,6 +791,7 @@ function overloadCard(
   cardInstanceId: CardInstanceId,
   definition: CardDefinition,
   declaredFaceCardId: FaceCardId | null,
+  energyPaid: number | undefined,
 ): GameError | null {
   if (declaredFaceCardId === null) return "INVALID_TARGET";
   if (!overloadFitsFace(draft, cardInstanceId, declaredFaceCardId, playerId)) {
@@ -784,11 +800,14 @@ function overloadCard(
 
   if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
 
+  const cost = resolveEnergyPayment(definition, energyPaid);
+  if (cost === null) return "INVALID_TARGET";
+
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
   moveCard(draft, cardInstanceId, "overload");
   attachOverload(draft, cardInstanceId, declaredFaceCardId);
 
-  const spend = payEnergy(draft, playerId, definition.energyCost);
+  const spend = payEnergy(draft, playerId, cost);
   return settleTurnAfterSpend(draft, playerId, spend);
 }
 
@@ -797,14 +816,18 @@ function placeRitualCard(
   playerId: PlayerId,
   cardInstanceId: CardInstanceId,
   definition: CardDefinition,
+  energyPaid: number | undefined,
 ): GameError | null {
   if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
+
+  const cost = resolveEnergyPayment(definition, energyPaid);
+  if (cost === null) return "INVALID_TARGET";
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
   moveCard(draft, cardInstanceId, "ritual");
   placeRitual(draft, cardInstanceId);
 
-  const spend = payEnergy(draft, playerId, definition.energyCost);
+  const spend = payEnergy(draft, playerId, cost);
   // A ritual that already meets its condition may flip to ready immediately.
   refreshRituals(draft, playerId);
   return settleTurnAfterSpend(draft, playerId, spend);
@@ -831,7 +854,10 @@ function activateRitual(
   const region = definition?.ritual;
   if (region === undefined) return "CARD_HAS_NO_EFFECT";
 
-  if (planConsumption(draft, playerId, region.activeWhen) === null) {
+  if (
+    region.activeWhen !== undefined &&
+    planConsumption(draft, playerId, region.activeWhen) === null
+  ) {
     return "INSUFFICIENT_SYMBOLS";
   }
 
@@ -872,7 +898,9 @@ function refreshRituals(draft: Draft, playerId: PlayerId): void {
     const region = card === undefined ? undefined : getCard(card.cardId)?.ritual;
     if (card === undefined || region === undefined) continue;
 
-    const active = planConsumption(draft, playerId, region.activeWhen) !== null;
+    const active =
+      region.activeWhen === undefined ||
+      planConsumption(draft, playerId, region.activeWhen) !== null;
     const orientation = card.ritualOrientation;
 
     if (orientation === "preparing" && active) {

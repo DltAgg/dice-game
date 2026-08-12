@@ -92,6 +92,26 @@ export const hasPlayableEffect = (definition: CardDefinition): boolean =>
   definition.overload !== undefined ||
   definition.ritual !== undefined;
 
+/**
+ * Resolves how much Energy a play or forge spends. Fixed costs ignore
+ * `energyPaid`. Variable (`?`) costs require an integer ≥ `energyCost`
+ * (defaulting to the minimum when omitted).
+ *
+ * Returns `null` when the declared payment is illegal.
+ */
+export function resolveEnergyPayment(
+  definition: CardDefinition,
+  energyPaid: number | undefined,
+  additionalEnergy = 0,
+): number | null {
+  if (definition.variableEnergy === true) {
+    const base = energyPaid ?? definition.energyCost;
+    if (!Number.isInteger(base) || base < definition.energyCost) return null;
+    return base + additionalEnergy;
+  }
+  return definition.energyCost + additionalEnergy;
+}
+
 /** Deck cards matching a search filter, in current deck order. */
 export function searchableInDeck(
   state: GameState,

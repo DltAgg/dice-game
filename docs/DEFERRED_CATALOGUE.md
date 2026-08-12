@@ -20,23 +20,29 @@ needs them — never as unreachable stubs.
 | **Reaction chain** (YGO-style LILO) | Runic Nullification, Prismatic Barrier as true prevent, Arcane Silence | Decided in OPEN_DESIGN; `resolutionStack` is the seed |
 | **Negate tactic effect** | Runic Nullification, Arcane Silence | Requires reaction window |
 | **Prevent N damage** (one-shot) | Prismatic Barrier (currently approximated as +2 Shield) | |
+| **Prevent + reflect** | Luminar Judgement | |
+| **Draw on prevent** | Glimmer | |
 | **Graveyard recursion** | Paradox | Eternal Darkness wired (`search-graveyard`) |
 | **Replay GY card effect** | Paradox | Ignore requirements |
 | **Symbol conversion** | Collapse of Reality, Void Summoner Rupture | Change rolled/available symbols |
 | **Reposition / push / swap** | Varcolac, Garuda, Twin Blades, Predator's Claws, … | Board positions exist; movers do not |
-| **On-damage triggers** | Venomous Fangs → apply toxin | Hook after damage resolves |
+| **On-damage triggers** | Venomous Fangs → apply toxin; Blade of Serene Light → heal | Hook after damage resolves |
 | **Roll-triggered equipment** | Black Plague (Corruption → 1 dmg) | Hook after roll / retain keep |
-| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, … | |
+| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, … | |
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
-| **Attack-damage conditional buffs** | Varcolac passive (+1 after ally attack) | |
+| **Attack-damage conditional buffs** | Varcolac passive (+1 after ally attack); War Banner (left ally) | |
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
 | **Multi-target damage split** | Blade Rain, Extermination | Player chooses distribution |
 | **Copy / re-apply die modifiers** | Arcane Echo tactic + face | |
-| **Forge-from-effect** (not PLAY forge region) | Corrupting Elder Contamination, Black Plague forge-on-opp already via region | Attack/effect-driven forge |
+| **Forge-from-effect** (not PLAY forge region) | Ritual of Contamination, Great Contamination, Corrupting Elder Contamination | Attack/effect-driven forge |
+| **Consume faces → damage** | Extermination | |
 | **Retain-from-effect** | Void Summoner Dimensional Rift, Forbidden Heritage | `RETAIN_DIE` exists; effect path does not |
 | **Destroy / strip overloads** | Mind Control | |
 | **Send cards deck → GY** | Dark Pact | |
-| **Continuous ritual once-per-turn** beyond Living Library | Serrated Stinger, Abyssal Sacrifice, … | Place/activate wired; more effect bodies missing |
+| **Continuous ritual standing triggers** | Serrated Stinger, Abyssal Sacrifice, … | Place/activate wired; trigger bodies missing |
+| **Toxin on all attacks this turn** | Toxic Blessing | |
+| **Reroll face once / self-damage** | Adrenaline | |
+| **Energy-spent scaling amounts** | Future `?` cards (e.g. spent N → draw) | Payment path exists; no effect reads `energyPaid` yet |
 | **Pestilence counters + adjacent forge** | Pestilent Plague face | |
 | **Face copy (echo)** | Arcane Echo face | Forge restriction exists; copy does not |
 | **Activated pay-Energy remove Corruption** | Forbidden Heritage, Pestilent Plague | |
@@ -50,32 +56,51 @@ needs them — never as unreachable stubs.
 Full English grammar is in `002`. Cards below either lack an `effect` /
 `equipment` / `overload` / `ritual` body, or only implement a subset.
 
-### In `src/game/content/cards.ts` but incomplete
+### In `src/game/content/cards.ts` — incomplete regions
 
 | Card | Gap |
 |---|---|
 | Runic Nullification | Place/ready works; negate on activate missing |
-| Arcane Echo (tactic) | Re-apply die modifiers |
+| Arcane Echo (tactic) | Re-apply die modifiers (forge-only play) |
 | Venomous Fangs | On-damage → toxin |
-| Eternal Darkness | — (`search-graveyard` wired) |
 | Black Plague | Equip works; Corruption roll → damage missing |
 | Prismatic Barrier | Approximated as shields, not true prevent |
+| Great Contamination | Ritual place; mass forge-on-opp deferred |
+| Extermination | Ritual place; consume + split damage deferred |
+| Paradox | Ritual place (no Active when); GY replay deferred |
+| Luminar Judgement | Forge-only; prevent+reflect deferred |
+| Glimmer | Forge-only; draw-on-prevent deferred |
+| Collapse of Reality | Forge-only; symbol convert deferred |
+| Dark Pact | Forge-only; deck→GY deferred |
+| Mind Control | Forge-only; strip overloads deferred |
+| Arcane Silence | Forge-only; negate deferred |
+| Ritual of Contamination | Forge-only; forge-from-effect deferred |
+| Blade of Serene Light | Equip; heal-on-damage deferred |
+| Archmage's Grimoire | Equip + attr gate; absorb→draw/discard deferred |
+| Tome of Interdiction | Equip; cost reduction deferred |
+| Abyssal Sacrifice | Ritual place; discard→generate Darkness deferred |
+| Mirrored Rune | Equip; absorb→copy deferred |
+| Toxic Blessing | Overload attach + Toxin gate; all-attacks toxin deferred |
+| Mutant Spores | Overload attach + Toxin gate; on-absorb heal deferred |
+| Wild Echo | Overload attach + Natural Wild gate; on-absorb generate deferred |
+| Adrenaline | Overload attach + Natural Wild gate; reroll clause deferred |
+| Rust | Overload attach + Natural Martial gate; ignore shield deferred |
+| Predator's Claws | Equip; absorb→move deferred |
+| Serrated Stinger | Ritual place; special→toxin deferred |
+| War Banner | Equip; left-ally +1 basic deferred |
+| Alpha's Hide | Equip; special→generate Wild deferred |
+| Toxic Heart | Equip; toxin-dmg→heal deferred |
+| Hunter's Collar | Equip; position→Martial deferred |
+| Insignia of Command | Equip + Martial gate; attack→reposition deferred |
+| Hunting Armour | Equip; first damage −1 deferred |
+| Twin Blades | Equip; basic→push deferred |
+| Wild Carapace | Equip; absorb Wild→heal deferred |
 
-### In Figma / `002` tables, not yet content-coded (or forge-only)
+### Fully wired (for reference)
 
-Aggro / control listings in `002` that are not in `CARDS` remain catalogue
-targets. Highest-signal unfinished effect shapes from those tables:
-
-| Shape | Example cards |
-|---|---|
-| Negate | Arcane Silence |
-| Mass forge / consume Corruption | Great Contamination, Extermination |
-| GY play / recursion | Paradox |
-| Overload standings (generate / reroll / ignore shield / toxin on attack) | Blessings, Adrenaline, Rust, Latent Corruption, … |
-| Equipment movers / buffs / heal-on-toxin | War Banner, Alpha's Hide, Toxic Heart, Hunter's Collar, … |
-| Reaction prevent / draw-on-prevent | Luminar Judgement, Glimmer |
-| Symbol convert / deck mill | Collapse of Reality, Dark Pact |
-| Strip overloads | Mind Control |
+Eclipse, Living Library, Luminar Prism, Arcane Resonance, Persistent Infection,
+Calculated Sacrifice, War Axe, Eternal Darkness, Latent Corruption, Arcane
+Amplifier, Blessing of the Hunt, Martial Blessing.
 
 ---
 
@@ -118,7 +143,7 @@ When returning here at the end of the product loop:
 2. Add **trigger hooks** (on-damage, on-roll equipment, on-absorb) as shared
    infrastructure, then wire Venomous Fangs / Black Plague / passives.
 3. Grow `EffectDefinition` only when a concrete card needs the member.
-4. Backfill Figma tactic rows into `CARDS` once their vocabulary exists.
+4. Finish deferred tactic shells against the same vocabulary.
 5. Finish face specials and creature riders against the same vocabulary.
 6. Re-measure first-player win rate (OPEN_DESIGN) after catalogue depth lands.
 

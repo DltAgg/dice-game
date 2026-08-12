@@ -50,6 +50,11 @@ export type GameAction =
       readonly slotIndexes: readonly number[];
       /** Face card chosen from the owner's pool or an already-installed copy. */
       readonly faceCardId: FaceCardId;
+      /**
+       * Required spend for `variableEnergy` cards (at least `energyCost`).
+       * Ignored for fixed-cost cards.
+       */
+      readonly energyPaid?: number;
     }
   /** The card's effect region — Instant resolve, Equipment attach, Overload attach, or Ritual place. */
   | {
@@ -59,6 +64,11 @@ export type GameAction =
       readonly declaredTargetCreatureId?: CreatureId;
       /** Required when playing an Overload onto a face card. */
       readonly declaredFaceCardId?: FaceCardId;
+      /**
+       * Required spend for `variableEnergy` cards (at least `energyCost`).
+       * Ignored for fixed-cost cards.
+       */
+      readonly energyPaid?: number;
     }
   /** Activates a ready Ritual on the engine field. */
   | {

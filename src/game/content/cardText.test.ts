@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { ECLIPSE, ETERNAL_DARKNESS, LIVING_LIBRARY, getCard } from "./cards.js";
+import {
+  ECLIPSE,
+  ETERNAL_DARKNESS,
+  LIVING_LIBRARY,
+  MARTIAL_BLESSING,
+  getCard,
+} from "./cards.js";
 import {
   formatEffectRegion,
+  formatEnergyCost,
   formatForgeLine,
   formatRequirementLine,
   formatTypeLine,
@@ -52,5 +59,11 @@ describe("English card printing", () => {
       "[Active when: 2× Darkness]",
       "Choose up to 3 cards in your graveyard and return them to your hand.",
     ]);
+  });
+
+  it("prints ? for variable Energy costs", () => {
+    const card = getCard(MARTIAL_BLESSING);
+    if (card === undefined) throw new Error("missing card");
+    expect(formatEnergyCost(card)).toBe("?");
   });
 });

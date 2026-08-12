@@ -39,6 +39,19 @@ different turn-end mechanisms. The decision:
   track size;
 - the starting player opens the match with 3.
 
+### Variable (`?`) tactic Energy costs
+
+**Status:** `DECIDED` · 2026-08-12 · `CardDefinition.variableEnergy` + `energyPaid` on
+`PLAY_CARD` / `FORGE_CARD`
+
+Figma header `?` is not "uncosted". It means **pay at least 1 Energy, and as
+much more as you want**. Catalogue entries use `energyCost: 1` with
+`variableEnergy: true`. The declared `energyPaid` must be an integer ≥ 1.
+
+Effects that scale off the amount spent (e.g. "spent 3: draw 1") are not yet in
+`EffectDefinition`; park those clauses in `DEFERRED_CATALOGUE.md` until a
+concrete card needs the amount-as-value vocabulary.
+
 ### Battlefield capacity
 
 **Status:** `DECIDED`
