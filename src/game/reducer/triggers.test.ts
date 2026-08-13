@@ -313,6 +313,8 @@ describe("on-absorb equipment", () => {
           attachedToCreatureId: null,
           attachedToFaceCardId: null,
           ritualOrientation: null,
+          ritualProgress: null,
+          ritualProgressCreditedThisTurn: null,
         },
       },
       players: {
@@ -613,7 +615,11 @@ describe("on-discard continuous ritual", () => {
       ...placed,
       cards: {
         ...placed.cards,
-        [ritualId]: { ...placed.cards[ritualId]!, ritualOrientation: "ready" },
+        [ritualId]: {
+          ...placed.cards[ritualId]!,
+          ritualOrientation: "ready",
+          ritualProgress: { arcane: 1, darkness: 1 },
+        },
       },
     };
     ready = withEnergy(withHand(withPhase(ready, "actions"), P1, [ECLIPSE]), P1, 10);

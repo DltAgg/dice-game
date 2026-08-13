@@ -23,7 +23,8 @@ import {
   type GameState,
   type TurnPhase,
 } from "../model/state.js";
-import { isAttributeSymbol } from "../model/symbols.js";
+import { isAttributeSymbol, requirementEntries, type AttributeTokens } from "../model/symbols.js";
+import type { Attribute } from "../model/attributes.js";
 import { createRng, type RNG } from "../rng/rng.js";
 import {
   attackDamageBonus,
@@ -41,7 +42,7 @@ import {
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
 } from "../rules/faces.js";
-import { planConsumption } from "../rules/symbols.js";
+import { availableSymbolCounts, planConsumption } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
 import { addToken, holdsTokens, removeTokens } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
@@ -997,7 +998,7 @@ function activateRitual(
 
   if (
     region.activeWhen !== undefined &&
-    planConsumption(draft, playerId, region.activeWhen) === null
+    !ritualProgressMeets(card.ritualProgress ?? {}, region.activeWhen)
   ) {
     return "INSUFFICIENT_SYMBOLS";
   }
@@ -1041,31 +1042,59 @@ function activateRitual(
 }
 
 /**
- * Flip ritual orientations against the current symbol pool. Preparing → ready
- * when Active when is met; ready → preparing if the condition lapses. Exhausted
- * rituals are not refreshed here — `resetExhaustedRituals` clears them at the
- * start of the owner's turn, before any symbols exist.
+ * Credit available symbols toward ritual Active-when progress. Printed gates
+ * use `Attr + Attr` (cumulative): at most one pip per attribute per turn.
+ * Preparing → ready when progress meets the gate; ready rituals stay ready
+ * even after the pool empties.
  */
 function refreshRituals(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
 
+  const available = availableSymbolCounts(draft, playerId);
+
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
     const region = card === undefined ? undefined : getCard(card.cardId)?.ritual;
     if (card === undefined || region === undefined) continue;
+    if (card.ritualOrientation === "exhausted") continue;
+
+    let progress: AttributeTokens = { ...(card.ritualProgress ?? {}) };
+    let credited: Attribute[] = [...(card.ritualProgressCreditedThisTurn ?? [])];
+
+    if (region.activeWhen !== undefined) {
+      for (const [attribute, needed] of requirementEntries(region.activeWhen)) {
+        if (credited.includes(attribute)) continue;
+        if ((progress[attribute] ?? 0) >= needed) continue;
+        if ((available[attribute] ?? 0) < 1) continue;
+        progress = { ...progress, [attribute]: (progress[attribute] ?? 0) + 1 };
+        credited = [...credited, attribute];
+      }
+    }
+
+    draft.cards[cardInstanceId] = {
+      ...card,
+      ritualProgress: progress,
+      ritualProgressCreditedThisTurn: credited,
+    };
 
     const active =
-      region.activeWhen === undefined ||
-      planConsumption(draft, playerId, region.activeWhen) !== null;
-    const orientation = card.ritualOrientation;
+      region.activeWhen === undefined || ritualProgressMeets(progress, region.activeWhen);
+    const orientation = draft.cards[cardInstanceId]?.ritualOrientation;
 
     if (orientation === "preparing" && active) {
       setRitualOrientation(draft, cardInstanceId, "ready");
-    } else if (orientation === "ready" && !active) {
-      setRitualOrientation(draft, cardInstanceId, "preparing");
     }
   }
+}
+
+function ritualProgressMeets(
+  progress: AttributeTokens,
+  requirement: import("../model/symbols.js").SymbolRequirement,
+): boolean {
+  return requirementEntries(requirement).every(
+    ([attribute, count]) => (progress[attribute] ?? 0) >= count,
+  );
 }
 
 /** Once-per-turn rituals come off diagonal at the start of the owner's turn. */
@@ -1075,8 +1104,29 @@ function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
 
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
-    if (card?.ritualOrientation === "exhausted") {
-      setRitualOrientation(draft, cardInstanceId, "preparing");
+    if (card === undefined) continue;
+
+    if (card.ritualOrientation === "exhausted") {
+      draft.cards[cardInstanceId] = {
+        ...card,
+        ritualOrientation: "preparing",
+        ritualProgress: {},
+        ritualProgressCreditedThisTurn: [],
+      };
+      emit(draft, {
+        type: "ritual-orientation-changed",
+        cardInstanceId,
+        orientation: "preparing",
+      });
+      continue;
+    }
+
+    // New turn: allow another cumulative pip per attribute.
+    if ((card.ritualProgressCreditedThisTurn?.length ?? 0) > 0) {
+      draft.cards[cardInstanceId] = {
+        ...card,
+        ritualProgressCreditedThisTurn: [],
+      };
     }
   }
 }

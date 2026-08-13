@@ -118,7 +118,11 @@ describe("reaction chain (008)", () => {
       ...p1Turn,
       cards: {
         ...p1Turn.cards,
-        [ritualId]: { ...p1Turn.cards[ritualId]!, ritualOrientation: "ready" as const },
+        [ritualId]: {
+          ...p1Turn.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 2 },
+        },
       },
     };
 
@@ -177,7 +181,11 @@ describe("reaction chain (008)", () => {
       ...p1Turn,
       cards: {
         ...p1Turn.cards,
-        [ritualId]: { ...p1Turn.cards[ritualId]!, ritualOrientation: "ready" as const },
+        [ritualId]: {
+          ...p1Turn.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 2 },
+        },
       },
     };
 
@@ -270,7 +278,11 @@ describe("reaction chain (008)", () => {
       ...withEclipse,
       cards: {
         ...withEclipse.cards,
-        [ritualId]: { ...withEclipse.cards[ritualId]!, ritualOrientation: "ready" as const },
+        [ritualId]: {
+          ...withEclipse.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 2 },
+        },
       },
     };
 

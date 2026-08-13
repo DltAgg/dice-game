@@ -234,7 +234,7 @@ describe("rituals on the field", () => {
     expect(eventTypes(result.state)).toContain("ritual-placed");
   });
 
-  it("flips to ready when Active when is met on entering engine", () => {
+  it("credits one Active-when pip per attribute per turn (cumulative +)", () => {
     const placed = advance(actionsReady([LIVING_LIBRARY]), {
       type: "PLAY_CARD",
       playerId: P1,
@@ -243,17 +243,33 @@ describe("rituals on the field", () => {
     expect(placed.ok).toBe(true);
     if (!placed.ok) return;
 
-    const withPool = withSymbols(withPhase(placed.state, "absorption"), P1, [
-      "arcane",
-      "arcane",
-    ]);
-    const result = advance(withPool, { type: "ADVANCE_PHASE", playerId: P1 });
+    // Two Arcane in one turn still only bank one pip.
+    const first = advance(
+      withSymbols(withPhase(placed.state, "absorption"), P1, ["arcane", "arcane"]),
+      { type: "ADVANCE_PHASE", playerId: P1 },
+    );
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(ritualsOf(first.state, P1)[0]?.ritualOrientation).toBe("preparing");
+    expect(ritualsOf(first.state, P1)[0]?.ritualProgress).toEqual({ arcane: 1 });
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.state.phase).toBe("engine");
-    expect(ritualsOf(result.state, P1)[0]?.ritualOrientation).toBe("ready");
-    expect(eventTypes(result.state)).toContain("ritual-orientation-changed");
+    // Next owner turn clears the per-turn credit; a second Arcane finishes the gate.
+    const afterP1End = advance(first.state, { type: "END_TURN", playerId: P1 });
+    expect(afterP1End.ok).toBe(true);
+    if (!afterP1End.ok) return;
+    const afterP2End = advance(afterP1End.state, { type: "END_TURN", playerId: P2 });
+    expect(afterP2End.ok).toBe(true);
+    if (!afterP2End.ok) return;
+
+    const second = advance(
+      withSymbols(withPhase(afterP2End.state, "absorption"), P1, ["arcane"]),
+      { type: "ADVANCE_PHASE", playerId: P1 },
+    );
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(ritualsOf(second.state, P1)[0]?.ritualOrientation).toBe("ready");
+    expect(ritualsOf(second.state, P1)[0]?.ritualProgress).toEqual({ arcane: 2 });
+    expect(eventTypes(second.state)).toContain("ritual-orientation-changed");
   });
 
   it("activates a ready Instant ritual and opens a deck search", () => {
@@ -297,7 +313,11 @@ describe("rituals on the field", () => {
       ...ready,
       cards: {
         ...ready.cards,
-        [ritualId]: { ...ready.cards[ritualId]!, ritualOrientation: "ready" as const },
+        [ritualId]: {
+          ...ready.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 2 },
+        },
       },
     };
 
@@ -365,6 +385,7 @@ describe("rituals on the field", () => {
           ...withDeck.cards[ritualId]!,
           zone: "ritual" as const,
           ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 2 },
         },
       },
       players: {
@@ -472,7 +493,11 @@ describe("rituals on the field", () => {
       ...ready,
       cards: {
         ...ready.cards,
-        [ritualId]: { ...ready.cards[ritualId]!, ritualOrientation: "ready" as const },
+        [ritualId]: {
+          ...ready.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { darkness: 2 },
+        },
       },
     };
 

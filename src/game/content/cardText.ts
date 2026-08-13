@@ -77,13 +77,8 @@ export function formatRequirementLine(card: CardDefinition): string | null {
 
 function formatRequirementBody(requirement: SymbolRequirement): string {
   const entries = requirementEntries(requirement);
-  // Rituals favour "2× Arcane"; instants favour "Arcane + Corruption".
-  if (entries.length === 1) {
-    const [attribute, count] = entries[0]!;
-    return count === 1
-      ? ATTRIBUTE_LABEL[attribute]
-      : `${String(count)}× ${ATTRIBUTE_LABEL[attribute]}`;
-  }
+  // Ritual Active-when and multi-attr gates print as `Attr + Attr` (cumulative /
+  // additive). Never `2× Attr` — that same-turn notation was retired.
   return entries
     .flatMap(([attribute, count]) =>
       Array.from({ length: count }, () => ATTRIBUTE_LABEL[attribute]),

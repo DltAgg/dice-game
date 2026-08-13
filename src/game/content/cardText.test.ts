@@ -32,7 +32,7 @@ describe("English card printing", () => {
   it("prints Active when for ritual requirements", () => {
     const card = getCard(LIVING_LIBRARY);
     if (card === undefined) throw new Error("missing card");
-    expect(formatRequirementLine(card)).toBe("[Active when: 2× Arcane]");
+    expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Arcane]");
   });
 
   it("prints None when the card forges only", () => {
@@ -56,7 +56,7 @@ describe("English card printing", () => {
     const card = getCard(ETERNAL_DARKNESS);
     if (card === undefined) throw new Error("missing card");
     expect(formatEffectRegion(card)).toEqual([
-      "[Active when: 2× Darkness]",
+      "[Active when: Darkness + Darkness]",
       "Choose up to 3 cards in your graveyard and return them to your hand.",
     ]);
   });

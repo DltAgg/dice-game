@@ -141,9 +141,11 @@ function buildCards(
     cardId,
     ownerId: playerId,
     zone: index < handSize ? "hand" : "deck",
-      attachedToCreatureId: null,
-      attachedToFaceCardId: null,
-      ritualOrientation: null,
+    attachedToCreatureId: null,
+    attachedToFaceCardId: null,
+    ritualOrientation: null,
+    ritualProgress: null,
+    ritualProgressCreditedThisTurn: null,
   }));
 
   return {

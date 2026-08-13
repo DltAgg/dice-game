@@ -76,7 +76,7 @@ are two independent fields.
 
 | Form | Meaning | Appears on |
 |---|---|---|
-| `[Active when: 2x Arcane]` | The ritual switches on at this attribute count | Ritual |
+| `[Active when: Arcane + Arcane]` | Cumulative gate (one pip per attribute per turn) | Ritual |
 | `[Requires: Arcane + Corruption]` | Gate on the effect | Instant |
 | `[Can only overload a Toxin face]` | Restricts the overload target | Overload |
 | `[This card may be equipped to a Martial creature]` | Restricts the equip target | Equipment |
@@ -122,7 +122,7 @@ is used.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: 2x Arcane.* Pay 3 Energy, negate the effect of 1 Tactic card. |
+| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 3 Energy, negate the effect of 1 Tactic card. |
 | 5 | Arcane Echo | Tactic / Instant / Arcane | 1 Synthetic Arcane, your die | Apply the modifiers of one of the dice again. |
 | ? | Blessing of the Hunt | Tactic / Overload / Arcane | 1 Natural Arcane, your die | On roll: generate Martial. |
 | ? | Martial Blessing | Tactic / Overload / Arcane | 1 Natural Arcane, your die | On roll: the next attack this turn deals +1 damage. |
@@ -136,7 +136,7 @@ is used.
 | 2 | Glimmer | Tactic / Reaction / Luminar | 1 Synthetic Luminar, your die | On prevent damage: draw 2 cards. |
 | 2 | Predator's Claws | Tactic / Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: this creature may move 1 position. |
 | 3 | Venomous Fangs | Tactic / Equipment / Wild | 1 Natural Wild, your die | On deal damage: apply 1 Toxin marker. |
-| 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Natural Wild, your die | *Active when: 1x Wild + 1x Toxin.* On special attack: apply 1 Toxin marker. |
+| 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Natural Wild, your die | *Active when: Wild + Toxin.* On special attack: apply 1 Toxin marker. |
 | 4 | War Banner | Tactic / Equipment / Wild | 1 Natural Wild, your die | On basic attack, allied creature to the left: deal +1 damage. |
 | 4 | Alpha's Hide | Tactic / Equipment / Wild | 1 Natural Wild, your die | On special attack: generate Wild on another card. |
 | 5 | Toxic Heart | Tactic / Equipment / Wild | 1 Natural Wild, your die | On toxin damage: heal 1 on this creature. |
@@ -151,11 +151,11 @@ is used.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 5 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: 1x Arcane and 2x Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
-| 6 | Extermination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: 3x Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
-| 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: 2x Arcane.* Add 2 Tactic cards from your deck to your hand. |
+| 5 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Arcane + Corruption + Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
+| 6 | Extermination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption + Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
+| 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Add 2 Tactic cards from your deck to your hand. |
 | 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Tactic card in your graveyard and use its effect immediately, ignoring its requirements. |
-| 5 | Eternal Darkness | Ritual / Instant / Arcane | 1 Synthetic Darkness, your die | *Active when: 2x Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
+| 5 | Eternal Darkness | Ritual / Instant / Arcane | 1 Synthetic Darkness, your die | *Active when: Darkness + Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
 | 4 | Latent Corruption | Tactic / Overload / Corruption | 1 Synthetic Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
 | 3 | Luminar Prism | Tactic / Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
 | 2 | Arcane Amplifier | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
@@ -171,7 +171,7 @@ is used.
 | 4 | Black Plague | Tactic / Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: this creature takes 1 damage. |
 | 2 | Archmage's Grimoire | Tactic / Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Arcane or Darkness: draw 1 card and discard 1. |
 | 3 | Tome of Interdiction | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane Tactic used each turn costs 1 less Energy. |
-| 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: 1x Arcane + 1x Darkness.* On discard: generate 1 Darkness. |
+| 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: Arcane + Darkness.* On discard: generate 1 Darkness. |
 | 3 | Mirrored Rune | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | On absorb Arcane: copy another symbol onto it. |
 
 ## Naming inconsistencies in the file

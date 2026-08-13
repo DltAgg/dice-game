@@ -49,7 +49,7 @@ interrupted.
 9. **Negate** targets the **top** chain link only. (`OPEN_DESIGN`; print:
    Runic Nullification, Arcane Silence — `002`.)
 10. **Runic Nullification.** Place as ritual (header Energy). `[Active when:
-    2× Arcane]` → ready. Activation pays **+3 Energy**, then negates the top
+    Arcane + Arcane]` (cumulative) → ready. Activation pays **+3 Energy**, then negates the top
     tactic link.
 11. **Arcane Silence.** Hand reaction; header cost 5; negate top tactic link.
 12. **No mid-conduct reactions.** While `pendingDecision` is `search-deck`,

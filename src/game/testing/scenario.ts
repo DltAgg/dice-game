@@ -103,6 +103,8 @@ export function withHand(
       attachedToCreatureId: null,
       attachedToFaceCardId: null,
       ritualOrientation: null,
+      ritualProgress: null,
+      ritualProgressCreditedThisTurn: null,
     };
     return id;
   });

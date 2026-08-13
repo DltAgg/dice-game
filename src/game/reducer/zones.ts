@@ -1,6 +1,8 @@
+import type { Attribute } from "../model/attributes.js";
 import type { CardZone, RitualOrientation } from "../model/cards.js";
 import type { BattlefieldPosition } from "../model/creatures.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
+import type { AttributeTokens } from "../model/symbols.js";
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
 import type { RNG } from "../rng/rng.js";
@@ -21,11 +23,16 @@ function clearAttachmentFields(to: CardZone): {
   attachedToCreatureId: CreatureId | null;
   attachedToFaceCardId: FaceCardId | null;
   ritualOrientation: RitualOrientation | null;
+  ritualProgress: AttributeTokens | null;
+  ritualProgressCreditedThisTurn: readonly Attribute[] | null;
 } {
+  const onRitual = to === "ritual";
   return {
     attachedToCreatureId: null,
     attachedToFaceCardId: null,
-    ritualOrientation: to === "ritual" ? "preparing" : null,
+    ritualOrientation: onRitual ? "preparing" : null,
+    ritualProgress: onRitual ? {} : null,
+    ritualProgressCreditedThisTurn: onRitual ? [] : null,
   };
 }
 
@@ -45,6 +52,9 @@ export function moveCard(draft: Draft, cardInstanceId: CardInstanceId, to: CardZ
     // Callers that need attachments set them after the move (attachEquipment /
     // attachOverload / placeRitual). Ritual keeps preparing until refreshed.
     ritualOrientation: to === "ritual" ? (card.ritualOrientation ?? "preparing") : null,
+    ritualProgress: to === "ritual" ? (card.ritualProgress ?? {}) : null,
+    ritualProgressCreditedThisTurn:
+      to === "ritual" ? (card.ritualProgressCreditedThisTurn ?? []) : null,
   };
   patchPlayer(draft, card.ownerId, {
     [from]: player[from].filter((id) => id !== cardInstanceId),
@@ -166,6 +176,8 @@ export function attachEquipment(
     zone: "equipment",
     attachedToFaceCardId: null,
     ritualOrientation: null,
+    ritualProgress: null,
+    ritualProgressCreditedThisTurn: null,
   };
   if (!creature.equipmentIds.includes(cardInstanceId)) {
     patchCreature(draft, creatureId, {
@@ -221,6 +233,8 @@ export function attachOverload(
     attachedToCreatureId: null,
     attachedToFaceCardId: faceCardId,
     ritualOrientation: null,
+    ritualProgress: null,
+    ritualProgressCreditedThisTurn: null,
   };
 
   emit(draft, {
@@ -275,6 +289,8 @@ export function placeRitual(draft: Draft, cardInstanceId: CardInstanceId): void 
     attachedToCreatureId: null,
     attachedToFaceCardId: null,
     ritualOrientation: "preparing",
+    ritualProgress: {},
+    ritualProgressCreditedThisTurn: [],
   };
   emit(draft, { type: "ritual-placed", cardInstanceId, playerId: card.ownerId });
 }

@@ -2,7 +2,7 @@ import type { Attribute } from "./attributes.js";
 import type { FaceKind } from "./dice.js";
 import type { EffectDefinition } from "./effects.js";
 import type { CardId, CardInstanceId, CreatureId, FaceCardId, PlayerId } from "./ids.js";
-import type { SymbolRequirement, SymbolType } from "./symbols.js";
+import type { SymbolRequirement, SymbolType, AttributeTokens } from "./symbols.js";
 
 /**
  * The card model, taken from the `Tactics card layout` template in the Card
@@ -220,9 +220,11 @@ export interface OverloadRegion {
  */
 export interface RitualRegion {
   /**
-   * Attribute gate that flips the ritual to ready. Absent when the print has
-   * no `[Active when: …]` (e.g. Paradox) — the ritual is ready as soon as it
-   * leaves preparing.
+   * Attribute gate that flips the ritual to ready. Progress is cumulative:
+   * printed as `Arcane + Arcane` (not `2× Arcane`). At most one pip per
+   * attribute is banked each turn while matching symbols are available.
+   * Absent when the print has no `[Active when: …]` (e.g. Paradox) — the
+   * ritual is ready as soon as it leaves preparing.
    */
   readonly activeWhen?: SymbolRequirement;
   /**
@@ -307,4 +309,15 @@ export interface CardInstance {
   readonly attachedToFaceCardId: FaceCardId | null;
   /** Set only while `zone === "ritual"`. */
   readonly ritualOrientation: RitualOrientation | null;
+  /**
+   * Cumulative Active-when progress while `zone === "ritual"`. Attributes are
+   * banked across turns (printed `Arcane + Arcane`); at most one pip per
+   * attribute is credited each turn. Null outside the ritual zone.
+   */
+  readonly ritualProgress: AttributeTokens | null;
+  /**
+   * Attributes already credited toward `ritualProgress` this turn. Cleared at
+   * the start of the owner's turn. Null outside the ritual zone.
+   */
+  readonly ritualProgressCreditedThisTurn: readonly Attribute[] | null;
 }
