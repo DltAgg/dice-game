@@ -3,7 +3,7 @@ import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
 import { resolveFaceForForge } from "../rules/faces.js";
 import type { CreatureState } from "../model/creatures.js";
-import { asAbilityId, asAttackId, type DieId, type PlayerId } from "../model/ids.js";
+import { asAbilityId, type DieId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols.js";
 import { handOf, searchableInDeck, searchableInGraveyard } from "../rules/cards.js";
@@ -22,8 +22,7 @@ import { advance } from "../reducer/reduce.js";
  * a victory state and to exercise each part of the engine on the way.
  */
 
-const MEND = asAbilityId("ability-mend");
-const RUNEBLAST = asAttackId("attack-runeblast");
+const MEND = asAbilityId("ability-garuda-mend");
 
 export interface AutoplayPolicy {
   /**
@@ -164,10 +163,11 @@ function fight(state: GameState, playerId: PlayerId): GameState {
     const definition = getCreatureDefinition(creature.definitionId);
     if (definition === undefined) continue;
 
-    // Runeblast burns its fuel; try the attacks that do not first.
-    const attacks = [...definition.attacks].sort((a, b) =>
-      a.id === RUNEBLAST ? 1 : b.id === RUNEBLAST ? -1 : 0,
-    );
+    // Prefer basics before multi-cost specials.
+    const attacks = [...definition.attacks].sort((a, b) => {
+      if (a.kind === b.kind) return 0;
+      return a.kind === "basic" ? -1 : 1;
+    });
 
     for (const attack of attacks) {
       if (attack.effect === undefined) continue;

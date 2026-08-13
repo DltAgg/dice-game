@@ -26,7 +26,7 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const SHIELD_STRIKE = asAttackId("attack-shield-strike");
+const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -157,12 +157,12 @@ describe("equipment", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
 
-    // Shield Strike is 3; War Axe adds 1.
+    // Heavy Axe is 3; War Axe adds 1.
     expect(after.creatures[targetId]?.damage).toBe(4);
   });
 
@@ -215,7 +215,7 @@ describe("equipment", () => {
 
     const combat = withTokens(
       withEnergy(
-        withPhase(withActivePlayer(withDamage(equipped, hostId, 9), P2), "combat"),
+        withPhase(withActivePlayer(withDamage(equipped, hostId, 10), P2), "combat"),
         P2,
         10,
       ),
@@ -228,7 +228,7 @@ describe("equipment", () => {
         type: "ATTACK",
         playerId: P2,
         attackerId: creatureIdAt(combat, P2, 0),
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: hostId,
       }),
     );

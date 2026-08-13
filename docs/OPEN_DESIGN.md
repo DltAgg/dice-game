@@ -91,8 +91,8 @@ the model:
 An attack names two costs. `requires` is **checked and not spent**, so a
 creature that has been fuelled stays fuelled and can attack every turn
 thereafter; `discards` is the part an attack actually burns, normally a subset
-of what it requires. Runeblast is the prototype's one discarding attack, which
-is what keeps the difference observable.
+of what it requires. No Figma attack currently prints a `discards` cost, so the
+difference is only exercised when content adds one.
 
 Fuel only exists once the turn is over, so **a creature can never attack on the
 turn it absorbed**. Bible §7 has the die sit on the creature and become a token
@@ -199,8 +199,8 @@ Effects that say "draw N and discard N" draw first, then open a
 Auto-discarding the front of the hand is gone — it silently ate the card just
 drawn when the hand was otherwise empty (Eclipse).
 
-Bulwark, the Warden's engine ability, also grants shields, so the engine has a
-route to defence that does not go through absorption.
+Bulwark on War Minotaur (vertical-slice engine ability) also grants shields, so
+the engine has a route to defence that does not go through absorption.
 
 ### Only "retain" exists; "store" is dropped
 
@@ -214,8 +214,9 @@ Consequences, all applied:
 - the `stored` symbol status is gone, and with it the rule that a stored symbol
   can pay a cost in place of a dice symbol;
 - the `store-symbol` effect is gone;
-- Rune Binder's "Channel" ability was replaced by "Rune Echo", which converts
-  arcane into a martial symbol in the pool rather than banking one;
+- early vertical-slice "Channel" / "Rune Echo" demo abilities on the removed
+  Rune Binder were retired with that creature; symbol conversion now lives on
+  printed faces / tactics and Varcolac's Hunt Call slice hook;
 - unabsorbed symbols expire at end of turn with no exceptions;
 - retaining a die is the only way to carry a result forward.
 

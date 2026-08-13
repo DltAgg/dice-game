@@ -33,7 +33,6 @@ export {
   ALL_CREATURES,
   CONTROL_SQUAD,
   CREATURES,
-  ENGINE_DEMO_SQUAD,
   PROTOTYPE_SQUAD,
   getCreatureDefinition,
 } from "./content/creatures.js";

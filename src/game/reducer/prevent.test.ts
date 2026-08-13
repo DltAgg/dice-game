@@ -24,7 +24,7 @@ import {
   withTokens,
 } from "../testing/scenario.js";
 
-const SHIELD_STRIKE = asAttackId("attack-shield-strike");
+const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 function combatWithAttacker(tokens: { martial: number }) {
   const base = withPhase(newMatch(), "combat");
@@ -59,7 +59,7 @@ describe("true prevent (009)", () => {
           type: "ATTACK",
           playerId: P1,
           attackerId: attacker,
-          attackId: SHIELD_STRIKE,
+          attackId: HEAVY_AXE,
           targetId: target,
         }),
       ),
@@ -87,7 +87,7 @@ describe("true prevent (009)", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: attacker,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: target,
       }),
     );
@@ -138,7 +138,7 @@ describe("true prevent (009)", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: attacker,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: target,
       }),
     );
@@ -190,7 +190,7 @@ describe("true prevent (009)", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: attacker,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: target,
       }),
     );
@@ -233,7 +233,7 @@ describe("true prevent (009)", () => {
           type: "ATTACK",
           playerId: P1,
           attackerId: attacker,
-          attackId: SHIELD_STRIKE,
+          attackId: HEAVY_AXE,
           targetId: target,
         }),
       ),
@@ -258,7 +258,7 @@ describe("true prevent (009)", () => {
           type: "ATTACK",
           playerId: P1,
           attackerId: attacker,
-          attackId: SHIELD_STRIKE,
+          attackId: HEAVY_AXE,
           targetId: target,
         }),
       ),
@@ -277,7 +277,7 @@ describe("true prevent (009)", () => {
           type: "ATTACK",
           playerId: P1,
           attackerId: attacker,
-          attackId: SHIELD_STRIKE,
+          attackId: HEAVY_AXE,
           targetId: target,
         }),
       ),
