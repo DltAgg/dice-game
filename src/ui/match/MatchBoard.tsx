@@ -9,7 +9,9 @@ import {
   formatAttackCost,
   formatAttackLine,
   formatEffectRegion,
+  formatEnergyCost,
   formatForgeLine,
+  formatRequirementLine,
   formatTypeLine,
   getCard,
   getCreatureDefinition,
@@ -20,6 +22,7 @@ import {
   isFaceCardInPool,
   legalTargetsFor,
   livingCreaturesOf,
+  ritualDurationOf,
   ritualsOf,
   rolledSymbols,
   searchableInDeck,
@@ -1033,24 +1036,121 @@ function Battlefield({
         )}
       </div>
       {rituals.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {rituals.map((card) => {
-            const def = getCard(card.cardId);
-            return (
-              <button
+        <div className="mt-3 border-t border-stone-800/80 pt-3">
+          <h3 className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
+            Rituals
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {rituals.map((card) => (
+              <RitualTile
                 key={card.id}
-                type="button"
-                className={btnClass}
-                disabled={!isActive || card.ritualOrientation !== "ready"}
-                onClick={() => onRitualActivate(card.id)}
-              >
-                {def?.name ?? card.cardId} ({card.ritualOrientation})
-              </button>
-            );
-          })}
+                card={card}
+                canActivate={isActive && card.ritualOrientation === "ready"}
+                onActivate={() => onRitualActivate(card.id)}
+              />
+            ))}
+          </div>
         </div>
       )}
     </section>
+  );
+}
+
+function RitualTile({
+  card,
+  canActivate,
+  onActivate,
+}: {
+  card: CardInstance;
+  canActivate: boolean;
+  onActivate: () => void;
+}) {
+  const def = getCard(card.cardId);
+  if (def === undefined) return null;
+
+  const orientation = card.ritualOrientation ?? "—";
+  const duration = ritualDurationOf(def);
+  const durationLabel =
+    duration === "continuous" ? "Continuous (stays)" : duration === "instant" ? "Leaves after activate" : null;
+  const activeWhen = formatRequirementLine(def);
+  const activateCost =
+    def.ritual?.additionalEnergy !== undefined && def.ritual.additionalEnergy > 0
+      ? `+${String(def.ritual.additionalEnergy)}E to activate`
+      : null;
+  const ready = card.ritualOrientation === "ready";
+  const preparing = card.ritualOrientation === "preparing";
+  const exhausted = card.ritualOrientation === "exhausted";
+
+  return (
+    <div
+      className={
+        ready
+          ? "group relative w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
+          : preparing
+            ? "group relative w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
+            : "group relative w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
+      }
+    >
+      <div
+        className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-1/2 z-40 hidden w-64 -translate-x-1/2 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+        role="tooltip"
+      >
+        <p className="text-sm font-medium text-stone-100">{def.name}</p>
+        <p className="mt-1 text-xs text-stone-400">
+          {formatEnergyCost(def)} Energy
+          {activateCost !== null ? ` · ${activateCost}` : ""}
+        </p>
+        <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
+          {orientation}
+          {durationLabel !== null ? ` · ${durationLabel}` : ""}
+        </p>
+        <div className="mt-2 space-y-1 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+          <p>{formatTypeLine(def)}</p>
+          <p className="text-stone-500">{formatForgeLine(def.forge)}</p>
+          {formatEffectRegion(def).map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          {(def.ritual?.standingAbilities?.length ?? 0) > 0 && (
+            <p className="text-stone-500">
+              Standing: {String(def.ritual?.standingAbilities?.length)} trigger
+              {(def.ritual?.standingAbilities?.length ?? 0) === 1 ? "" : "s"} while ready
+            </p>
+          )}
+        </div>
+      </div>
+
+      <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
+      <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
+        {formatEnergyCost(def)}E · {def.subtypes.join("/") || "ritual"}
+      </p>
+      <p
+        className={
+          ready
+            ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--accent)]"
+            : preparing
+              ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-amber-200/80"
+              : exhausted
+                ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-stone-500"
+                : "mt-1 text-[0.65rem] uppercase tracking-wider text-stone-500"
+        }
+      >
+        {orientation}
+      </p>
+      {activeWhen !== null && (
+        <p className="mt-1 truncate text-[0.65rem] text-stone-400">{activeWhen}</p>
+      )}
+      {durationLabel !== null && (
+        <p className="mt-0.5 text-[0.6rem] text-stone-600">{durationLabel}</p>
+      )}
+      <button
+        type="button"
+        className={`mt-2 w-full ${canActivate ? btnPrimary : `${btnClass} opacity-40`}`}
+        disabled={!canActivate}
+        onClick={onActivate}
+      >
+        Activate
+      </button>
+    </div>
   );
 }
 
