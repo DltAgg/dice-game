@@ -18,6 +18,7 @@ import {
 import { fail, ok, type ReduceResult } from "../model/result.js";
 import {
   TURN_PHASE_ORDER,
+  type ChainLink,
   type EnergyTrack,
   type GameState,
   type TurnPhase,
@@ -42,6 +43,19 @@ import { planConsumption } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
 import { addToken, holdsTokens, removeTokens } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
+import {
+  buildAttackLink,
+  buildEffectLink,
+  buildEquipLink,
+  buildOverloadLink,
+  buildRitualPlaceLink,
+  cardCommittedToChain,
+  isNegatableLinkKind,
+  noteDeferredTurnEnd,
+  openReactionWindow,
+  pushChainLink,
+  topChainLink,
+} from "./chain.js";
 import { createDraft, emit, nextInstanceId, patchCreature, patchDie, type Draft } from "./draft.js";
 import {
   applyDeferredEffect,
@@ -74,17 +88,42 @@ import {
  */
 export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceResult {
   if (state.status === "finished") return fail(state, "GAME_FINISHED");
-  if (state.activePlayerId !== action.playerId) return fail(state, "NOT_ACTIVE_PLAYER");
+
+  const reactionWindow =
+    state.pendingDecision?.type === "reaction-priority" ? state.pendingDecision : null;
+
+  // During a reaction window the priority seat may act even if they are not the
+  // turn player. Outside a window, only the active player may act.
+  if (reactionWindow !== null) {
+    if (action.playerId !== reactionWindow.priorityPlayerId) {
+      return fail(state, "NOT_PRIORITY_PLAYER");
+    }
+  } else if (state.activePlayerId !== action.playerId) {
+    return fail(state, "NOT_ACTIVE_PLAYER");
+  }
 
   // A pending choice blocks every action except completing that choice.
   if (state.pendingDecision !== null) {
-    const allowed =
-      ((state.pendingDecision.type === "search-deck" ||
-        state.pendingDecision.type === "search-graveyard") &&
-        action.type === "RESOLVE_SEARCH") ||
-      (state.pendingDecision.type === "discard-cards" && action.type === "RESOLVE_DISCARD") ||
-      (state.pendingDecision.type === "choose-creature" &&
-        action.type === "RESOLVE_CHOOSE_CREATURE");
+    const pending = state.pendingDecision;
+    let allowed = false;
+    if (pending.type === "reaction-priority") {
+      allowed =
+        action.type === "PASS_PRIORITY" ||
+        action.type === "PLAY_CARD" ||
+        action.type === "ACTIVATE_RITUAL";
+    } else if (
+      (pending.type === "search-deck" || pending.type === "search-graveyard") &&
+      action.type === "RESOLVE_SEARCH"
+    ) {
+      allowed = true;
+    } else if (pending.type === "discard-cards" && action.type === "RESOLVE_DISCARD") {
+      allowed = true;
+    } else if (
+      pending.type === "choose-creature" &&
+      action.type === "RESOLVE_CHOOSE_CREATURE"
+    ) {
+      allowed = true;
+    }
     if (!allowed) return fail(state, "PENDING_DECISION");
   }
 
@@ -148,6 +187,8 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return resolveDiscard(draft, action.playerId, action.cardInstanceIds);
     case "RESOLVE_CHOOSE_CREATURE":
       return resolveChooseCreature(draft, action.playerId, action.creatureId);
+    case "PASS_PRIORITY":
+      return passPriority(draft, action.playerId);
     case "ADVANCE_PHASE":
       return advancePhase(draft);
     case "END_TURN":
@@ -305,6 +346,9 @@ function resolveSearch(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null) return "INVALID_PHASE";
+  if (pending.type !== "search-deck" && pending.type !== "search-graveyard") {
+    return "INVALID_PHASE";
+  }
   if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
 
   const unique = new Set(cardInstanceIds);
@@ -325,8 +369,7 @@ function resolveSearch(
     shuffleDeck(draft, playerId, rng);
     draft.pendingDecision = null;
     emit(draft, { type: "search-resolved", playerId, cardInstanceIds: [...cardInstanceIds] });
-    drainResolution(draft);
-    return null;
+    return resumeAfterEffectPause(draft);
   }
 
   if (pending.type === "search-graveyard") {
@@ -343,8 +386,7 @@ function resolveSearch(
 
     draft.pendingDecision = null;
     emit(draft, { type: "search-resolved", playerId, cardInstanceIds: [...cardInstanceIds] });
-    drainResolution(draft);
-    return null;
+    return resumeAfterEffectPause(draft);
   }
 
   return "INVALID_PHASE";
@@ -374,23 +416,14 @@ function resolveDiscard(
   }
 
   const turnEnds = pending.turnEnds;
+  if (turnEnds) {
+    noteDeferredTurnEnd(draft, playerId, true);
+  }
   discardSpecificCards(draft, playerId, cardInstanceIds);
   draft.pendingDecision = null;
   emit(draft, { type: "discard-resolved", playerId, cardInstanceIds: [...cardInstanceIds] });
 
-  drainResolution(draft);
-
-  if (turnEnds) {
-    emit(draft, {
-      type: "energy-passed",
-      toPlayerId: draft.energy.holderId,
-      amount: draft.energy.value,
-      cause: "overshoot",
-    });
-    return finishTurn(draft, playerId, draft.energy);
-  }
-
-  return null;
+  return resumeAfterEffectPause(draft);
 }
 
 /**
@@ -421,8 +454,7 @@ function resolveChooseCreature(
   };
   // Re-enter applyEffect with a declared target so choose-* cannot loop.
   applyDeferredEffect(draft, deferred);
-  drainResolution(draft);
-  return null;
+  return resumeAfterEffectPause(draft);
 }
 
 /* ------------------------------------------------------------ absorb --- */
@@ -559,8 +591,17 @@ function attack(
     draft.attackBonusThisTurn = nextBonus;
   }
 
-  pushEffect(draft, playerId, effect, attackerId, targetId);
-  drainResolution(draft);
+  pushChainLink(
+    draft,
+    buildAttackLink({
+      controllerId: playerId,
+      attackerId,
+      attackId: attackDefinition.id,
+      targetId,
+      attackEffect: effect,
+    }),
+  );
+  openReactionWindow(draft, playerId);
   return null;
 }
 
@@ -680,22 +721,32 @@ function playCard(
   declaredFaceCardId: FaceCardId | null,
   energyPaid: number | undefined,
 ): GameError | null {
-  if (draft.phase !== "actions") return "INVALID_PHASE";
+  const inReactionWindow = draft.pendingDecision?.type === "reaction-priority";
+  if (!inReactionWindow && draft.phase !== "actions") return "INVALID_PHASE";
 
   const card = draft.cards[cardInstanceId];
   if (card === undefined) return "UNKNOWN_ENTITY";
   if (card.ownerId !== playerId || card.zone !== "hand") return "CARD_NOT_AVAILABLE";
+  if (cardCommittedToChain(draft, cardInstanceId)) return "CARD_NOT_AVAILABLE";
 
   const definition = getCard(card.cardId);
   if (definition === undefined) return "UNKNOWN_ENTITY";
 
+  // During a reaction window only hand reactions may respond.
+  if (inReactionWindow && !definition.subtypes.includes("reaction")) {
+    return "CARD_NOT_AVAILABLE";
+  }
+
   if (definition.equipment !== undefined) {
+    if (inReactionWindow) return "CARD_NOT_AVAILABLE";
     return equipCard(draft, playerId, cardInstanceId, definition, declaredTargetCreatureId, energyPaid);
   }
   if (definition.overload !== undefined) {
+    if (inReactionWindow) return "CARD_NOT_AVAILABLE";
     return overloadCard(draft, playerId, cardInstanceId, definition, declaredFaceCardId, energyPaid);
   }
   if (definition.ritual !== undefined) {
+    if (inReactionWindow) return "CARD_NOT_AVAILABLE";
     return placeRitualCard(draft, playerId, cardInstanceId, definition, energyPaid);
   }
 
@@ -708,38 +759,41 @@ function playCard(
     if (target.defeated) return "CREATURE_DEFEATED";
   }
 
-  // A bracketed requirement is checked against the symbol pool and left there:
-  // the layouts print `[Requires: …]` as a gate, not as a cost.
   if (region.requires !== undefined && planConsumption(draft, playerId, region.requires) === null) {
     return "INSUFFICIENT_SYMBOLS";
   }
 
-  if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
+  // Negate reactions need a negatable top link.
+  if (region.effects.some((effect) => effect.type === "negate-tactic")) {
+    const top = topChainLink(draft);
+    if (top === undefined || top.negated || !isNegatableLinkKind(top.kind)) {
+      return "INVALID_CHAIN_TARGET";
+    }
+  }
+
+  const cost = resolveEnergyPayment(definition, energyPaid, region.additionalEnergy ?? 0);
+  if (cost === null) return "INVALID_TARGET";
+
+  const spend = payEnergyFlexible(draft, playerId, cost, inReactionWindow);
+  if (spend === null) return "INSUFFICIENT_ENERGY";
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
   moveCard(draft, cardInstanceId, "graveyard");
+  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
-  // Paid before the effect resolves, so a card that grants Energy adds to what
-  // its own cost left behind instead of having the payment land on top of it.
-  const cost = resolveEnergyPayment(definition, energyPaid, region.additionalEnergy ?? 0);
-  if (cost === null) return "INVALID_TARGET";
-  const spend = payEnergy(draft, playerId, cost);
-
-  // Pushed in reverse so the LIFO stack drains in printed order (draw before
-  // discard on Eclipse, and so on).
-  for (const effect of [...region.effects].reverse()) {
-    pushEffect(draft, playerId, effect, null, declaredTargetCreatureId);
-  }
-  drainResolution(draft);
-
-  // Discard (and similar) choices must finish before an Energy overshoot ends
-  // the turn — otherwise the drawn card vanishes with no player agency.
-  if (draft.pendingDecision?.type === "discard-cards") {
-    draft.pendingDecision = { ...draft.pendingDecision, turnEnds: spend.turnEnds };
-    return null;
-  }
-
-  return settleTurnAfterSpend(draft, playerId, spend);
+  pushChainLink(
+    draft,
+    buildEffectLink({
+      kind: "tactic-effect",
+      controllerId: playerId,
+      cardInstanceId,
+      effects: region.effects,
+      sourceCreatureId: null,
+      declaredTargetCreatureId,
+    }),
+  );
+  openReactionWindow(draft, playerId);
+  return null;
 }
 
 function equipCard(
@@ -778,11 +832,20 @@ function equipCard(
   if (cost === null) return "INVALID_TARGET";
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
-  moveCard(draft, cardInstanceId, "equipment");
-  attachEquipment(draft, cardInstanceId, declaredTargetCreatureId);
-
+  // Stay in hand until the chain link resolves (or is negated → GY).
   const spend = payEnergy(draft, playerId, cost);
-  return settleTurnAfterSpend(draft, playerId, spend);
+  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
+
+  pushChainLink(
+    draft,
+    buildEquipLink({
+      controllerId: playerId,
+      cardInstanceId,
+      targetCreatureId: declaredTargetCreatureId,
+    }),
+  );
+  openReactionWindow(draft, playerId);
+  return null;
 }
 
 function overloadCard(
@@ -804,11 +867,19 @@ function overloadCard(
   if (cost === null) return "INVALID_TARGET";
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
-  moveCard(draft, cardInstanceId, "overload");
-  attachOverload(draft, cardInstanceId, declaredFaceCardId);
-
   const spend = payEnergy(draft, playerId, cost);
-  return settleTurnAfterSpend(draft, playerId, spend);
+  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
+
+  pushChainLink(
+    draft,
+    buildOverloadLink({
+      controllerId: playerId,
+      cardInstanceId,
+      faceCardId: declaredFaceCardId,
+    }),
+  );
+  openReactionWindow(draft, playerId);
+  return null;
 }
 
 function placeRitualCard(
@@ -824,13 +895,18 @@ function placeRitualCard(
   if (cost === null) return "INVALID_TARGET";
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
-  moveCard(draft, cardInstanceId, "ritual");
-  placeRitual(draft, cardInstanceId);
-
   const spend = payEnergy(draft, playerId, cost);
-  // A ritual that already meets its condition may flip to ready immediately.
-  refreshRituals(draft, playerId);
-  return settleTurnAfterSpend(draft, playerId, spend);
+  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
+
+  pushChainLink(
+    draft,
+    buildRitualPlaceLink({
+      controllerId: playerId,
+      cardInstanceId,
+    }),
+  );
+  openReactionWindow(draft, playerId);
+  return null;
 }
 
 /**
@@ -843,16 +919,25 @@ function activateRitual(
   cardInstanceId: CardInstanceId,
   declaredTargetCreatureId: CreatureId | null,
 ): GameError | null {
-  if (draft.phase !== "engine" && draft.phase !== "actions") return "INVALID_PHASE";
+  const inReactionWindow = draft.pendingDecision?.type === "reaction-priority";
+  if (!inReactionWindow && draft.phase !== "engine" && draft.phase !== "actions") {
+    return "INVALID_PHASE";
+  }
 
   const card = draft.cards[cardInstanceId];
   if (card === undefined) return "UNKNOWN_ENTITY";
   if (card.ownerId !== playerId || card.zone !== "ritual") return "CARD_NOT_AVAILABLE";
   if (card.ritualOrientation !== "ready") return "CARD_NOT_AVAILABLE";
+  if (cardCommittedToChain(draft, cardInstanceId)) return "CARD_NOT_AVAILABLE";
 
   const definition = getCard(card.cardId);
   const region = definition?.ritual;
   if (region === undefined) return "CARD_HAS_NO_EFFECT";
+
+  // During a window only ritual-reactions may respond.
+  if (inReactionWindow && !definition?.subtypes.includes("reaction")) {
+    return "CARD_NOT_AVAILABLE";
+  }
 
   if (
     region.activeWhen !== undefined &&
@@ -867,19 +952,35 @@ function activateRitual(
     if (target.defeated) return "CREATURE_DEFEATED";
   }
 
+  if (region.effects.some((effect) => effect.type === "negate-tactic")) {
+    const top = topChainLink(draft);
+    if (top === undefined || top.negated || !isNegatableLinkKind(top.kind)) {
+      return "INVALID_CHAIN_TARGET";
+    }
+  }
+
+  const extra = region.additionalEnergy ?? 0;
+  if (extra > 0) {
+    const spend = payEnergyFlexible(draft, playerId, extra, inReactionWindow);
+    if (spend === null) return "INSUFFICIENT_ENERGY";
+    noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
+  }
+
   emit(draft, { type: "ritual-activated", cardInstanceId, playerId });
 
-  for (const effect of [...region.effects].reverse()) {
-    pushEffect(draft, playerId, effect, null, declaredTargetCreatureId);
-  }
-  drainResolution(draft);
-
-  if (definition?.duration === "instant") {
-    moveCard(draft, cardInstanceId, "graveyard");
-  } else {
-    setRitualOrientation(draft, cardInstanceId, "exhausted");
-  }
-
+  pushChainLink(
+    draft,
+    buildEffectLink({
+      kind: "ritual-activate",
+      controllerId: playerId,
+      cardInstanceId,
+      effects: region.effects,
+      sourceCreatureId: null,
+      declaredTargetCreatureId,
+      ritualDuration: definition?.duration ?? null,
+    }),
+  );
+  openReactionWindow(draft, playerId);
   return null;
 }
 
@@ -942,6 +1043,223 @@ function payEnergy(draft: Draft, playerId: PlayerId, amount: number): EnergySpen
     remaining: spend.turnEnds ? 0 : spend.track.value,
   });
   return spend;
+}
+
+/**
+ * Reaction-priority Energy: seats are opposing sides of one track.
+ * Holder pays by the normal spend (toward the opponent). Non-holder pays by
+ * pushing Energy **to the holder** (+cost, capped at trackMax) — never by
+ * eating the holder’s remaining value. See OPEN_DESIGN “Reaction Energy”.
+ */
+function payEnergyFlexible(
+  draft: Draft,
+  playerId: PlayerId,
+  amount: number,
+  asReaction: boolean,
+): EnergySpendOutcome | null {
+  if (!asReaction && !holdsMarker(draft, playerId)) return null;
+
+  if (asReaction && !holdsMarker(draft, playerId)) {
+    const holderId = draft.energy.holderId;
+    const capped = Math.min(draft.energy.value + amount, draft.config.energy.trackMax);
+    const gained = capped - draft.energy.value;
+    draft.energy = { holderId, value: capped };
+    emit(draft, {
+      type: "energy-spent",
+      playerId,
+      amount,
+      remaining: 0,
+    });
+    if (gained > 0) {
+      emit(draft, {
+        type: "energy-gained",
+        playerId: holderId,
+        amount: gained,
+        remaining: capped,
+      });
+    }
+    return { track: draft.energy, turnEnds: false, passedToOpponent: 0 };
+  }
+
+  return payEnergy(draft, playerId, amount);
+}
+
+function passPriority(draft: Draft, playerId: PlayerId): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "reaction-priority") return "INVALID_PHASE";
+  if (pending.priorityPlayerId !== playerId) return "NOT_PRIORITY_PLAYER";
+
+  const consecutivePasses = pending.consecutivePasses + 1;
+  if (consecutivePasses >= 2) {
+    draft.pendingDecision = null;
+    emit(draft, {
+      type: "priority-passed",
+      playerId,
+      nextPriorityPlayerId: null,
+    });
+    return drainChain(draft);
+  }
+
+  const nextPriorityPlayerId = opponentOf(draft, playerId);
+  draft.pendingDecision = {
+    type: "reaction-priority",
+    priorityPlayerId: nextPriorityPlayerId,
+    consecutivePasses,
+  };
+  emit(draft, {
+    type: "priority-passed",
+    playerId,
+    nextPriorityPlayerId,
+  });
+  return null;
+}
+
+function resumeAfterEffectPause(draft: Draft): GameError | null {
+  drainResolution(draft);
+  if (draft.pendingDecision !== null) return null;
+  return drainChain(draft);
+}
+
+/**
+ * After both seats pass, resolve the remaining chain LILO without reopening
+ * windows between links (ASSUMED in `008`).
+ */
+function drainChain(draft: Draft): GameError | null {
+  while (draft.chainStack.length > 0) {
+    if (draft.pendingDecision !== null) return null;
+
+    const link = draft.chainStack.pop();
+    if (link === undefined) break;
+
+    conductLink(draft, link);
+    if (draft.pendingDecision !== null) return null;
+  }
+
+  return settleDeferredTurnEnd(draft);
+}
+
+function conductLink(draft: Draft, link: ChainLink): void {
+  const negated = link.negated;
+  emit(draft, {
+    type: "chain-link-resolved",
+    linkId: link.id,
+    kind: link.kind,
+    negated,
+  });
+
+  if (negated) {
+    if (link.kind === "ritual-activate") {
+      // Activation costs were paid; exhaust / GY even when the body is negated.
+      finishRitualActivation(draft, link);
+    } else if (
+      link.kind === "ritual-place" ||
+      link.kind === "equip-attach" ||
+      link.kind === "overload-attach"
+    ) {
+      if (link.cardInstanceId !== null) {
+        moveCard(draft, link.cardInstanceId, "graveyard");
+      }
+    }
+    return;
+  }
+
+  switch (link.kind) {
+    case "tactic-effect": {
+      for (const effect of [...link.effects].reverse()) {
+        pushEffect(
+          draft,
+          link.controllerId,
+          effect,
+          link.sourceCreatureId,
+          link.declaredTargetCreatureId,
+        );
+      }
+      drainResolution(draft);
+      return;
+    }
+    case "ritual-activate": {
+      for (const effect of [...link.effects].reverse()) {
+        pushEffect(
+          draft,
+          link.controllerId,
+          effect,
+          link.sourceCreatureId,
+          link.declaredTargetCreatureId,
+        );
+      }
+      drainResolution(draft);
+      // Exhaust / GY after the body has opened any search (amount uses pre-GY size).
+      finishRitualActivation(draft, link);
+      return;
+    }
+    case "ritual-place": {
+      if (link.cardInstanceId === null) return;
+      moveCard(draft, link.cardInstanceId, "ritual");
+      placeRitual(draft, link.cardInstanceId);
+      refreshRituals(draft, link.controllerId);
+      return;
+    }
+    case "equip-attach": {
+      if (link.cardInstanceId === null || link.equipTargetCreatureId === null) return;
+      moveCard(draft, link.cardInstanceId, "equipment");
+      attachEquipment(draft, link.cardInstanceId, link.equipTargetCreatureId);
+      return;
+    }
+    case "overload-attach": {
+      if (link.cardInstanceId === null || link.overloadFaceCardId === null) return;
+      moveCard(draft, link.cardInstanceId, "overload");
+      attachOverload(draft, link.cardInstanceId, link.overloadFaceCardId);
+      return;
+    }
+    case "attack": {
+      if (link.attackEffect === null || link.attackerId === null || link.attackTargetId === null) {
+        return;
+      }
+      pushEffect(
+        draft,
+        link.controllerId,
+        link.attackEffect,
+        link.attackerId,
+        link.attackTargetId,
+      );
+      drainResolution(draft);
+      return;
+    }
+  }
+}
+
+function finishRitualActivation(draft: Draft, link: ChainLink): void {
+  if (link.cardInstanceId === null) return;
+  const card = draft.cards[link.cardInstanceId];
+  if (card === undefined || card.zone !== "ritual") return;
+
+  if (link.ritualDuration === "instant") {
+    moveCard(draft, link.cardInstanceId, "graveyard");
+  } else {
+    setRitualOrientation(draft, link.cardInstanceId, "exhausted");
+  }
+}
+
+function settleDeferredTurnEnd(draft: Draft): GameError | null {
+  // Always clear the bookkeeping flag; the real check is the track below.
+  draft.deferredTurnEndPlayerId = null;
+
+  // Energy overshoot may flip the marker when a link’s cost is paid, but a later
+  // reaction can move it back (opposing +/-). Turn end is decided only after the
+  // whole chain (and any nested choices) have finished — if the turn player
+  // holds the marker again, the turn continues.
+  if (draft.energy.holderId === draft.activePlayerId) {
+    return null;
+  }
+
+  const playerId = draft.activePlayerId;
+  emit(draft, {
+    type: "energy-passed",
+    toPlayerId: draft.energy.holderId,
+    amount: draft.energy.value,
+    cause: "overshoot",
+  });
+  return finishTurn(draft, playerId, draft.energy);
 }
 
 /**

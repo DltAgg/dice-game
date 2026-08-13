@@ -34,4 +34,8 @@ export type GameError =
   | "INVALID_DISCARD"
   /** The chosen creature is not legal for the pending choose-creature decision. */
   | "INVALID_CHOICE"
+  /** Pass / respond when it is not this seat's reaction priority. */
+  | "NOT_PRIORITY_PLAYER"
+  /** Negate (or similar) against a link kind that cannot be negated. */
+  | "INVALID_CHAIN_TARGET"
   | "RESOLUTION_LIMIT_EXCEEDED";

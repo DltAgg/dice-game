@@ -290,6 +290,18 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       };
       return false;
     }
+    case "negate-tactic": {
+      const top = draft.chainStack[draft.chainStack.length - 1];
+      if (
+        top !== undefined &&
+        top.kind !== "attack" &&
+        !top.negated
+      ) {
+        top.negated = true;
+        emit(draft, { type: "chain-link-negated", linkId: top.id });
+      }
+      return false;
+    }
   }
 }
 

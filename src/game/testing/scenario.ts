@@ -260,7 +260,30 @@ export function expectOk(result: ReduceResult): GameState {
 
 /** Applies a sequence of actions, failing loudly on the first illegal one. */
 export function play(state: GameState, ...actions: readonly GameAction[]): GameState {
-  return actions.reduce((current, action) => expectOk(advance(current, action)), state);
+  return actions.reduce(
+    (current, action) => expectOk(advanceResolvingChain(current, action)),
+    state,
+  );
+}
+
+/**
+ * After an action that opens a reaction window, both seats Pass until the
+ * chain drains (or another pending decision appears).
+ */
+export function resolveOpenChain(state: GameState): GameState {
+  let current = state;
+  while (current.pendingDecision?.type === "reaction-priority") {
+    const priority = current.pendingDecision.priorityPlayerId;
+    current = expectOk(advance(current, { type: "PASS_PRIORITY", playerId: priority }));
+  }
+  return current;
+}
+
+/** `advance` then auto-pass any reaction window that opened. */
+export function advanceResolvingChain(state: GameState, action: GameAction): ReduceResult {
+  const result = advance(state, action);
+  if (!result.ok) return result;
+  return { ok: true, state: resolveOpenChain(result.state) };
 }
 
 export const eventTypes = (state: GameState): readonly string[] =>

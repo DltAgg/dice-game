@@ -12,7 +12,7 @@ import type {
 } from "./ids.js";
 import type { Attribute } from "./attributes.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
-import type { TurnPhase } from "./state.js";
+import type { ChainLinkKind, TurnPhase } from "./state.js";
 
 /**
  * The event log is the seam reactions and triggered abilities will hang off
@@ -232,7 +232,32 @@ export type GameEvent =
     }
   | { readonly type: "turn-ended"; readonly playerId: PlayerId }
   | { readonly type: "match-finished"; readonly winnerId: PlayerId }
-  | { readonly type: "resolution-aborted"; readonly error: GameError };
+  | { readonly type: "resolution-aborted"; readonly error: GameError }
+  | {
+      readonly type: "chain-link-added";
+      readonly linkId: EffectInstanceId;
+      readonly kind: ChainLinkKind;
+      readonly controllerId: PlayerId;
+    }
+  | {
+      readonly type: "reaction-priority-opened";
+      readonly priorityPlayerId: PlayerId;
+    }
+  | {
+      readonly type: "priority-passed";
+      readonly playerId: PlayerId;
+      readonly nextPriorityPlayerId: PlayerId | null;
+    }
+  | {
+      readonly type: "chain-link-negated";
+      readonly linkId: EffectInstanceId;
+    }
+  | {
+      readonly type: "chain-link-resolved";
+      readonly linkId: EffectInstanceId;
+      readonly kind: ChainLinkKind;
+      readonly negated: boolean;
+    };
 
 export interface LoggedEvent {
   readonly seq: number;

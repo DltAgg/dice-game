@@ -51,7 +51,12 @@ export type EffectDefinition =
    * The controller's next attack this turn deals this much extra damage
    * (Crush). Cleared at end of turn whether spent or not.
    */
-  | { readonly type: "next-attack-bonus"; readonly amount: number };
+  | { readonly type: "next-attack-bonus"; readonly amount: number }
+  /**
+   * Negate the top chain link if it is a tactic-card link (not an attack).
+   * Spec `008` — Runic Nullification, Arcane Silence.
+   */
+  | { readonly type: "negate-tactic" };
 
 /**
  * Targets are resolved against the resolution context rather than chosen at

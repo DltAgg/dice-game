@@ -77,12 +77,11 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["ritual", "reaction"],
     attribute: "arcane",
     forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
-    // Negation needs a reaction window; place/ready still works so the card is
-    // not forge-only. Activation does nothing until that vocabulary exists.
     rulesText: "Pay 3 [Energy], negate the effect of 1 [Tactic] card.",
     ritual: {
       activeWhen: { arcane: 2 },
-      effects: [],
+      additionalEnergy: 3,
+      effects: [{ type: "negate-tactic" }],
     },
   }),
   card({
@@ -400,6 +399,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "arcane",
     forge: { faces: 2, kind: "synthetic", attribute: "arcane", target: "own-die" },
     rulesText: "Negate the effect of 1 Tactic card.",
+    effect: {
+      effects: [{ type: "negate-tactic" }],
+    },
   }),
   card({
     id: RITUAL_OF_CONTAMINATION,

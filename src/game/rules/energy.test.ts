@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
-import { expectOk, newMatch, P1, P2 } from "../testing/scenario.js";
-import { advance } from "../reducer/reduce.js";
+import { expectOk, newMatch, P1, P2, advanceResolvingChain as advance } from "../testing/scenario.js";
 import { energyAvailableTo, passEnergy, spendEnergy } from "./energy.js";
 
 const config = DEFAULT_RULES_CONFIG.energy;

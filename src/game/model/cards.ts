@@ -134,6 +134,11 @@ export interface RitualRegion {
    * leaves preparing.
    */
   readonly activeWhen?: SymbolRequirement;
+  /**
+   * Extra Energy paid on ACTIVATE_RITUAL (Runic Nullification’s “Pay 3
+   * Energy”), on top of the header cost paid when placing the ritual.
+   */
+  readonly additionalEnergy?: number;
   readonly effects: readonly EffectDefinition[];
 }
 

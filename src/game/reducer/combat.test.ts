@@ -14,8 +14,8 @@ import {
   withPhase,
   withShields,
   withTokens,
+  advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { advance } from "./reduce.js";
 
 const SHIELD_STRIKE = asAttackId("attack-shield-strike");
 const LIGHTLANCE = asAttackId("attack-lightlance");

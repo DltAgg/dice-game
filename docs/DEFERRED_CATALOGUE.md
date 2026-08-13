@@ -17,8 +17,8 @@ needs them — never as unreachable stubs.
 
 | Vocabulary | Needed for | Notes |
 |---|---|---|
-| **Reaction chain** (YGO-style LILO) | Runic Nullification, prevent reactions, Arcane Silence | **DECIDED** OPEN_DESIGN (2026-08-12); spec `008` — windows on play/place/activate/equip/overload/attack; forge silent; not implemented yet |
-| **Negate tactic effect** | Runic Nullification, Arcane Silence | Top **tactic-card** link only — not attack links (`008`) |
+| **Reaction chain** (YGO-style LILO) | Prevent reactions (Barrier …) | **IMPLEMENTED** (`008`) — windows on play/place/activate/equip/overload/attack; forge silent |
+| **Negate tactic effect** | — | **IMPLEMENTED** — top tactic-card link only (`negate-tactic`) |
 | **Prevent N damage** (one-shot) | Prismatic Barrier | **DECIDED** buffer-of-2 on attack target; spec `009` — not implemented; shield approx remains until wired |
 | **Prevent + reflect** | Luminar Judgement | Needs `009` + attack window |
 | **Draw on prevent** | Glimmer | Needs `009` |
@@ -61,7 +61,6 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 
 | Card | Gap |
 |---|---|
-| Runic Nullification | Place/ready works; negate on activate missing |
 | Arcane Echo (tactic) | Re-apply die modifiers (forge-only play) |
 | Venomous Fangs | On-damage → toxin |
 | Black Plague | Equip works; Corruption roll → damage missing |
@@ -74,7 +73,6 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Collapse of Reality | Forge-only; symbol convert deferred |
 | Dark Pact | Forge-only; deck→GY deferred |
 | Mind Control | Forge-only; strip overloads deferred |
-| Arcane Silence | Forge-only; negate deferred |
 | Ritual of Contamination | Forge-only; forge-from-effect deferred |
 | Blade of Serene Light | Equip; heal-on-damage deferred |
 | Archmage's Grimoire | Equip + attr gate; absorb→draw/discard deferred |
@@ -101,7 +99,8 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 
 Eclipse, Living Library, Luminar Prism, Arcane Resonance, Persistent Infection,
 Calculated Sacrifice, War Axe, Eternal Darkness, Latent Corruption, Arcane
-Amplifier, Blessing of the Hunt, Martial Blessing.
+Amplifier, Blessing of the Hunt, Martial Blessing, Runic Nullification, Arcane
+Silence.
 
 ---
 

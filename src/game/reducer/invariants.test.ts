@@ -18,8 +18,8 @@ import {
   withDefeatedCreature,
   withPhase,
   withTokens,
+  advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { advance } from "./reduce.js";
 
 /**
  * The invariants SPDD §38 asks for, checked against every state a real match

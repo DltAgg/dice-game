@@ -108,10 +108,13 @@ export function MatchBoard() {
   const pending = state.pendingDecision;
   const phase = state.phase;
   const isOnline = mode !== "local";
-  const canAct = !isOnline || localPlayerId === activeId;
-  /** Bottom dock shows this seat's hand/pool — local seat online, active seat in hotseat. */
+  const reactionPriority =
+    pending?.type === "reaction-priority" ? pending.priorityPlayerId : null;
+  const actingId = reactionPriority ?? activeId;
+  const canAct = !isOnline || localPlayerId === actingId;
+  /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. */
   const dockPlayerId =
-    isOnline && localPlayerId !== null ? localPlayerId : activeId;
+    isOnline && localPlayerId !== null ? localPlayerId : actingId;
 
   const canStartNewMatch = useMemo(() => {
     const p1 = decks.find((deck) => deck.id === p1DeckId);
@@ -252,7 +255,20 @@ export function MatchBoard() {
 
   const beginPlay = (card: CardInstance) => {
     if (!canAct) return;
-    if (card.ownerId !== activeId || finished || pending !== null || phase !== "actions") return;
+    if (finished) return;
+
+    // Respond during a reaction chain with a hand Reaction.
+    if (pending?.type === "reaction-priority") {
+      if (card.ownerId !== actingId) return;
+      const def = getCard(card.cardId);
+      if (def === undefined || !def.subtypes.includes("reaction") || def.effect === undefined) {
+        return;
+      }
+      tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
+      return;
+    }
+
+    if (card.ownerId !== activeId || pending !== null || phase !== "actions") return;
     const def = getCard(card.cardId);
     if (def === undefined || !hasPlayableEffect(def)) return;
 
@@ -279,6 +295,11 @@ export function MatchBoard() {
       }
       tryDispatch({ type: "PLAY_CARD", playerId: activeId, cardInstanceId: card.id });
     }
+  };
+
+  const passPriority = () => {
+    if (!canAct || finished || pending?.type !== "reaction-priority") return;
+    tryDispatch({ type: "PASS_PRIORITY", playerId: actingId });
   };
 
   const beginForge = (card: CardInstance) => {
@@ -457,6 +478,26 @@ export function MatchBoard() {
       )}
 
       <p className="text-sm text-[var(--ink-muted)]">{hint}</p>
+      {pending?.type === "reaction-priority" && (
+        <div className="flex flex-wrap items-center gap-3 rounded border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
+          <span>
+            Chain ({String(state.chainStack.length)} link
+            {state.chainStack.length === 1 ? "" : "s"}) — priority:{" "}
+            <strong>{pending.priorityPlayerId}</strong>
+            {state.chainStack.length > 0
+              ? ` · top: ${state.chainStack[state.chainStack.length - 1]?.kind ?? "?"}`
+              : ""}
+          </span>
+          <button
+            type="button"
+            className="rounded border border-amber-600 bg-amber-900/50 px-2.5 py-1 text-xs font-medium hover:border-amber-400 disabled:opacity-40"
+            disabled={!canAct}
+            onClick={passPriority}
+          >
+            Pass priority
+          </button>
+        </div>
+      )}
 
       {pending?.type === "search-deck" && (
         <SearchPanel
@@ -630,7 +671,7 @@ export function MatchBoard() {
         }
         onCancelAttack={clearIntent}
         onRitualActivate={(id) =>
-          tryDispatch({ type: "ACTIVATE_RITUAL", playerId: activeId, cardInstanceId: id })
+          tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
         }
         onEngineAbility={(creatureId, abilityId) =>
           tryDispatch({
@@ -662,7 +703,7 @@ export function MatchBoard() {
         }
         onCancelAttack={clearIntent}
         onRitualActivate={(id) =>
-          tryDispatch({ type: "ACTIVATE_RITUAL", playerId: activeId, cardInstanceId: id })
+          tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
         }
         onEngineAbility={(creatureId, abilityId) =>
           tryDispatch({
@@ -769,6 +810,9 @@ function hintFor(intent: Intent, state: GameState): string {
     return state.pendingDecision.filter === "ally"
       ? "Choose one of your creatures (overload / effect target)."
       : "Choose an enemy creature (overload / effect target).";
+  }
+  if (state.pendingDecision?.type === "reaction-priority") {
+    return "Reaction chain: Pass priority, or play a Reaction / activate a ready ritual-reaction.";
   }
   if (state.status === "finished") return "Start a new match to play again.";
 
@@ -1905,9 +1949,10 @@ function SearchPanel({
   if (pending === null) return null;
   if (mode === "deck" && pending.type !== "search-deck") return null;
   if (mode === "graveyard" && pending.type !== "search-graveyard") return null;
+  if (pending.type !== "search-deck" && pending.type !== "search-graveyard") return null;
 
   const options =
-    mode === "deck" && pending.type === "search-deck"
+    pending.type === "search-deck"
       ? searchableInDeck(state, pending.controllerId, pending.filter)
       : searchableInGraveyard(state, pending.controllerId);
 

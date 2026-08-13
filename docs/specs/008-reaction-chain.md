@@ -1,6 +1,6 @@
 # 008 — Reaction chain & negate tactic
 
-Status: **SPEC** (not yet implemented)
+Status: **IMPLEMENTED**
 
 Phase A foundation for the deferred-catalogue campaign. Unlocks honest
 negation for Runic Nullification and Arcane Silence. True prevent
@@ -68,8 +68,10 @@ interrupted.
 | `pendingDecision` | `reaction-window`: `priorityPlayerId`, pass tracking. Priority seat may Pass, play legal reaction, or activate legal ritual-reaction. |
 | Events | `chain-link-added`, `reaction-window-opened`, `priority-passed`, `chain-link-negated`, `chain-link-resolved` (names flexible). |
 
-Energy overshoot turn-end settles only after the chain fully resolves (same
-spirit as discard-before-turn-end).
+Energy overshoot may flip the marker when a link’s cost is paid, but **turn
+end is evaluated only after the chain (and nested choices) fully finish**. If
+a later reaction has returned the marker to the turn player, the turn
+continues.
 
 ## Actions
 

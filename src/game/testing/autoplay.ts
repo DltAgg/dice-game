@@ -182,7 +182,7 @@ function fight(state: GameState, playerId: PlayerId): GameState {
         targetId,
       });
       if (result.ok) {
-        current = result.state;
+        current = resolvePending(result.state);
         break;
       }
     }
@@ -302,6 +302,17 @@ function step(state: GameState, action: Parameters<typeof advance>[1]): GameStat
 function resolvePending(state: GameState): GameState {
   const pending = state.pendingDecision;
   if (pending === null) return state;
+
+  if (pending.type === "reaction-priority") {
+    const result = advance(state, {
+      type: "PASS_PRIORITY",
+      playerId: pending.priorityPlayerId,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on PASS_PRIORITY`);
+    }
+    return resolvePending(result.state);
+  }
 
   if (pending.type === "search-deck") {
     const picks = searchableInDeck(state, pending.controllerId, pending.filter).slice(

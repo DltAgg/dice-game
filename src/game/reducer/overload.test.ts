@@ -11,7 +11,7 @@ import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { overloadsOf, overloadsOnFace, graveyardOf } from "../rules/cards.js";
-import { advance } from "./reduce.js";
+import { advanceResolvingChain as advance } from "../testing/scenario.js";
 import {
   eventTypes,
   forgeAction,

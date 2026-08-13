@@ -11,7 +11,7 @@ import {
   withPhase,
   withSymbols,
 } from "../testing/scenario.js";
-import { advance } from "./reduce.js";
+import { advanceResolvingChain as advance } from "../testing/scenario.js";
 
 const REFRACT = asAbilityId("ability-refract");
 const RUNE_ECHO = asAbilityId("ability-rune-echo");

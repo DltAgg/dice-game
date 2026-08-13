@@ -13,6 +13,7 @@ import type {
   PendingEffect,
   PlayerState,
   TurnPhase,
+  ChainLink,
 } from "../model/state.js";
 import type { SymbolInstance } from "../model/symbols.js";
 
@@ -38,7 +39,9 @@ export interface Draft {
   cards: Record<string, CardInstance>;
   energy: EnergyTrack;
   resolutionStack: PendingEffect[];
+  chainStack: ChainLink[];
   pendingDecision: PendingDecision | null;
+  deferredTurnEndPlayerId: PlayerId | null;
   attackBonusThisTurn: Record<string, number>;
   winner: PlayerId | null;
   log: LoggedEvent[];
@@ -55,6 +58,7 @@ export const createDraft = (state: GameState): Draft => ({
   symbols: { ...state.symbols },
   cards: { ...state.cards },
   resolutionStack: [...state.resolutionStack],
+  chainStack: state.chainStack.map((link) => ({ ...link })),
   log: [...state.log],
 });
 

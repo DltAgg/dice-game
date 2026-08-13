@@ -413,6 +413,22 @@ Legal response **kind** depends on the top link:
 Attack chain links open a reaction window so prevent reactions can respond;
 negate effects refuse attack links.
 
+**Reaction Energy (DECIDED · 2026-08-12):** The Energy track is an opposing
++/- between the two seats (holder + value on their side). Paying a cost while
+you **hold** the marker moves it toward the opponent (normal spend / overshoot).
+Paying a cost during a reaction-priority window while you **do not** hold the
+marker moves it the other way: the cost is applied as **Energy added to the
+current holder** (capped at `trackMax`). If a prior overshoot already flipped
+the marker to the reactor, their reaction pay is a normal holder spend (still
+toward their opponent — restoring the turn player).
+
+**Turn end vs chain (DECIDED · 2026-08-12):** An overshoot may flip the marker
+when a link’s cost is paid, but **turn end is evaluated only after the entire
+chain (and nested search/discard/choose) finishes**. If a later reaction has
+moved the marker back to the turn player, the turn continues. Example: A holds
+2, plays a 3-cost tactic (marker flips to B); B pays a 3-cost negate (marker
+returns to A); after Pass×2 the chain resolves and A’s turn does **not** end.
+
 ### Toxin counters
 
 **Status:** `DECIDED` · implemented

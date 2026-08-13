@@ -10,7 +10,7 @@ import {
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { DieId } from "../model/ids.js";
 import { validateFaceDeck } from "../rules/faces.js";
-import { advance } from "./reduce.js";
+import { advanceResolvingChain as advance } from "../testing/scenario.js";
 import {
   forgeAction,
   handCardIdAt,

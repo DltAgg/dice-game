@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ARCANE_ECHO, ECLIPSE, ETERNAL_DARKNESS, LIVING_LIBRARY, PROTOTYPE_DECK } from "../content/cards.js";
 import { handOf, graveyardOf, ritualsOf } from "../rules/cards.js";
-import { advance } from "./reduce.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -14,6 +13,7 @@ import {
   withHand,
   withPhase,
   withSymbols,
+  advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
 /**
@@ -183,10 +183,10 @@ describe("Energy and the turn", () => {
     expect(played.ok).toBe(true);
     if (!played.ok) return;
     expect(played.state.activePlayerId).toBe(P1);
+    expect(played.state.deferredTurnEndPlayerId).toBe(P1);
     expect(played.state.pendingDecision).toMatchObject({
       type: "discard-cards",
       amount: 1,
-      turnEnds: true,
     });
 
     const hand = played.state.players[P1]?.hand ?? [];

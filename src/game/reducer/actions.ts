@@ -113,6 +113,11 @@ export type GameAction =
       readonly playerId: PlayerId;
       readonly creatureId: CreatureId;
     }
+  /**
+   * Pass reaction priority. Legal only during `reaction-priority` for the
+   * priority seat. Two consecutive passes drain the chain (spec `008`).
+   */
+  | { readonly type: "PASS_PRIORITY"; readonly playerId: PlayerId }
   | { readonly type: "ADVANCE_PHASE"; readonly playerId: PlayerId }
   | { readonly type: "END_TURN"; readonly playerId: PlayerId };
 

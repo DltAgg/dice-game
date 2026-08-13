@@ -1,11 +1,11 @@
-import type { RngState } from "../rng/rng.js";
-import type { CardInstance } from "./cards.js";
+import type { CardDuration, CardInstance } from "./cards.js";
 import type { GameRulesConfig } from "./config.js";
 import type { CreatureState } from "./creatures.js";
 import type { DieState } from "./dice.js";
 import type { EffectDefinition } from "./effects.js";
 import type { LoggedEvent } from "./events.js";
 import type {
+  AttackId,
   CardInstanceId,
   CreatureId,
   DieId,
@@ -15,6 +15,40 @@ import type {
   PlayerId,
 } from "./ids.js";
 import type { SymbolInstance } from "./symbols.js";
+import type { RngState } from "../rng/rng.js";
+
+/** Chain link kinds for the reaction stack (`008-reaction-chain`). */
+export type ChainLinkKind =
+  | "tactic-effect"
+  | "ritual-place"
+  | "ritual-activate"
+  | "equip-attach"
+  | "overload-attach"
+  | "attack";
+
+/**
+ * A waiting chain link. Bodies run only after both seats pass priority
+ * (LILO). See `docs/specs/008-reaction-chain.md`.
+ */
+export interface ChainLink {
+  readonly id: EffectInstanceId;
+  readonly kind: ChainLinkKind;
+  readonly controllerId: PlayerId;
+  negated: boolean;
+  readonly cardInstanceId: CardInstanceId | null;
+  /** Effects for tactic-effect / ritual-activate links. */
+  readonly effects: readonly EffectDefinition[];
+  readonly sourceCreatureId: CreatureId | null;
+  readonly declaredTargetCreatureId: CreatureId | null;
+  readonly equipTargetCreatureId: CreatureId | null;
+  readonly overloadFaceCardId: FaceCardId | null;
+  readonly attackerId: CreatureId | null;
+  readonly attackId: AttackId | null;
+  readonly attackTargetId: CreatureId | null;
+  readonly attackEffect: EffectDefinition | null;
+  /** Used when finishing a ritual-activate link (exhaust vs GY). */
+  readonly ritualDuration: CardDuration | null;
+}
 
 /**
  * Bible §16's turn flow. Two of its steps are not phases here:
@@ -102,6 +136,12 @@ export type PendingDecision =
        * this decision.
        */
       readonly deferred: PendingEffect;
+    }
+  | {
+      readonly type: "reaction-priority";
+      readonly priorityPlayerId: PlayerId;
+      /** Consecutive Passes; chain drains when this reaches 2. */
+      readonly consecutivePasses: number;
     };
 
 export interface PlayerState {
@@ -145,12 +185,23 @@ export interface GameState {
   readonly cards: Readonly<Record<string, CardInstance>>;
 
   readonly energy: EnergyTrack;
-  readonly resolutionStack: readonly PendingEffect[];
   /**
-   * Set while an effect needs a player choice (deck search today). Resolution
-   * resumes after the matching resolve action clears it.
+   * Immediate effect drain while a chain link is conducting (search/discard
+   * pauses live here). Separate from `chainStack`.
+   */
+  readonly resolutionStack: readonly PendingEffect[];
+  /** Waiting reaction-chain links (LILO). Spec `008`. */
+  readonly chainStack: readonly ChainLink[];
+  /**
+   * Set while an effect needs a player choice, or while a reaction window is
+   * open. Resolution resumes after the matching resolve / Pass action.
    */
   readonly pendingDecision: PendingDecision | null;
+  /**
+   * Energy overshoot that must wait until the chain (and nested choices)
+   * finishes. Spec `008`.
+   */
+  readonly deferredTurnEndPlayerId: PlayerId | null;
   /**
    * Extra damage on the next attack this turn (Crush and similar). Keyed by
    * player id; cleared at end of turn.

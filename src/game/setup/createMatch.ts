@@ -245,7 +245,9 @@ export function createMatch(setup: MatchSetup): GameState {
     cards,
     energy: { holderId: first.id, value: config.energy.startingEnergy },
     resolutionStack: [],
+    chainStack: [],
     pendingDecision: null,
+    deferredTurnEndPlayerId: null,
     attackBonusThisTurn: {},
     winner: null,
     log: [

@@ -3,7 +3,6 @@ import { ECLIPSE, LIVING_LIBRARY, LUMINAR_PRISM } from "../content/cards.js";
 import { faceIdForSymbol, getFaceCard, naturalFaceId, syntheticFaceId } from "../content/faces.js";
 import { overloadsOnFace } from "../rules/cards.js";
 import { symbolCountsOn } from "../rules/dice.js";
-import { advance } from "./reduce.js";
 import {
   eventTypes,
   forgeAction,
@@ -14,6 +13,7 @@ import {
   withEnergy,
   withHand,
   withPhase,
+  advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
 /**

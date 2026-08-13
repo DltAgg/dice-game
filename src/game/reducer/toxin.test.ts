@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CreatureId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { advance } from "./reduce.js";
+import { advanceResolvingChain as advance } from "../testing/scenario.js";
 import {
   creatureIdAt,
   eventTypes,

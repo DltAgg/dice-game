@@ -13,7 +13,7 @@ import {
   withPhase,
   withSymbols,
 } from "../testing/scenario.js";
-import { advance } from "./reduce.js";
+import { advanceResolvingChain as advance } from "../testing/scenario.js";
 
 const roll = { type: "ROLL_DICE", playerId: P1 } as const;
 const advancePhase = { type: "ADVANCE_PHASE", playerId: P1 } as const;
