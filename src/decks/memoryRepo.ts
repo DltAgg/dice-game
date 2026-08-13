@@ -1,12 +1,10 @@
 import { nanoid } from "nanoid";
 import type { DeckRepository } from "./repository.js";
-import { buildPrototypeSavedDeck, PROTOTYPE_SAVED_DECK_ID } from "./prototype.js";
+import {
+  isBuiltinDeckId,
+  withBuiltinDecks,
+} from "./prototype.js";
 import { DECK_SCHEMA_VERSION, type SavedDeck } from "./types.js";
-
-function withPrototype(decks: readonly SavedDeck[]): SavedDeck[] {
-  const without = decks.filter((deck) => deck.id !== PROTOTYPE_SAVED_DECK_ID);
-  return [buildPrototypeSavedDeck(), ...without];
-}
 
 /**
  * In-memory repo for tests. Saves illegal drafts; play paths must validate.
@@ -14,7 +12,7 @@ function withPrototype(decks: readonly SavedDeck[]): SavedDeck[] {
 export function createMemoryDeckRepository(
   initial: readonly SavedDeck[] = [],
 ): DeckRepository {
-  let decks = withPrototype(initial);
+  let decks = withBuiltinDecks(initial);
 
   return {
     list: () => decks,
@@ -22,8 +20,8 @@ export function createMemoryDeckRepository(
     get: (id) => decks.find((deck) => deck.id === id),
 
     save: (draft, id) => {
-      if (id === PROTOTYPE_SAVED_DECK_ID) {
-        throw new Error("deck repository: cannot overwrite the prototype deck");
+      if (id !== undefined && isBuiltinDeckId(id)) {
+        throw new Error("deck repository: cannot overwrite a builtin deck");
       }
       const existing = id !== undefined ? decks.find((deck) => deck.id === id) : undefined;
       const saved: SavedDeck = {
@@ -35,17 +33,17 @@ export function createMemoryDeckRepository(
         faceDeck: [...draft.faceDeck],
         updatedAt: new Date().toISOString(),
       };
-      decks = withPrototype([
-        ...decks.filter((deck) => deck.id !== saved.id && deck.id !== PROTOTYPE_SAVED_DECK_ID),
+      decks = withBuiltinDecks([
+        ...decks.filter((deck) => deck.id !== saved.id && !isBuiltinDeckId(deck.id)),
         saved,
       ]);
       return saved;
     },
 
     remove: (id) => {
-      if (id === PROTOTYPE_SAVED_DECK_ID) return false;
+      if (isBuiltinDeckId(id)) return false;
       const before = decks.length;
-      decks = withPrototype(decks.filter((deck) => deck.id !== id));
+      decks = withBuiltinDecks(decks.filter((deck) => deck.id !== id));
       return decks.length < before;
     },
   };

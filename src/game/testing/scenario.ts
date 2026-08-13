@@ -1,5 +1,5 @@
 import { getCard, PROTOTYPE_DECK } from "../content/cards.js";
-import { ENGINE_DEMO_SQUAD, PROTOTYPE_SQUAD } from "../content/creatures.js";
+import { PROTOTYPE_SQUAD } from "../content/creatures.js";
 import { ENGINE_TEST_FACE_DECK, PROTOTYPE_FACE_DECK } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
@@ -52,9 +52,9 @@ export function newMatch(overrides: Partial<MatchSetup> = {}): GameState {
     seed: 1,
     config: TEST_SETUP_CONFIG,
     players: [
-      // Engine-demo squad + forge-coverage faces for Shield Strike / Eclipse tests.
-      { id: P1, squad: ENGINE_DEMO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-      { id: P2, squad: ENGINE_DEMO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+      // Builtin aggro squad + forge-coverage faces for Eclipse / Library tests.
+      { id: P1, squad: PROTOTYPE_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+      { id: P2, squad: PROTOTYPE_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
     ],
     ...overrides,
   });

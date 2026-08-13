@@ -844,3 +844,34 @@ const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
 export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
   ([id, copies]) => Array.from({ length: copies }, () => id),
 );
+
+/**
+ * Builtin control tactics deck (spec 002 “Control deck” identity: Arcane /
+ * Corruption / Darkness). Legal under M4: 50–60 cards, ≤4 copies per id.
+ */
+const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  [LIVING_LIBRARY, 4],
+  [ECLIPSE, 4],
+  [ARCANE_AMPLIFIER, 4],
+  [ARCANE_RESONANCE, 3],
+  [PARADOX, 3],
+  [CALCULATED_SACRIFICE, 3],
+  [PERSISTENT_INFECTION, 3],
+  [ARCHMAGES_GRIMOIRE, 3],
+  [TOME_OF_INTERDICTION, 3],
+  [ABYSSAL_SACRIFICE, 3],
+  [MIRRORED_RUNE, 3],
+  [LATENT_CORRUPTION, 2],
+  [BLACK_PLAGUE, 2],
+  [ETERNAL_DARKNESS, 2],
+  [GREAT_CONTAMINATION, 2],
+  [EXTERMINATION, 2],
+  [MIND_CONTROL, 2],
+  [ARCANE_SILENCE, 2],
+  [LUMINAR_PRISM, 2],
+  [COLLAPSE_OF_REALITY, 2],
+];
+
+export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id, copies]) =>
+  Array.from({ length: copies }, () => id),
+);

@@ -230,7 +230,7 @@ describe("behavioural invariants", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId,
-      attackId: asAttackId("attack-shield-strike"),
+      attackId: asAttackId("attack-minotaur-heavy-axe"),
       targetId: creatureIdAt(combat, P2, 0),
     });
 

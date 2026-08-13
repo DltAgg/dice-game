@@ -14,6 +14,7 @@ import {
   WILD_CARAPACE,
   WILD_ECHO,
 } from "../content/cards.js";
+import { CONTROL_SQUAD } from "../content/creatures.js";
 import {
   GARUDA,
   MINOTAUR,
@@ -61,7 +62,7 @@ import { createDraft } from "./draft.js";
 import { drainResolution } from "./resolution.js";
 import { setCreaturePosition } from "./zones.js";
 
-const SHIELD_STRIKE = asAttackId("attack-shield-strike");
+const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -110,7 +111,7 @@ describe("on-deal-damage equipment", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -134,7 +135,7 @@ describe("on-deal-damage equipment", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -157,7 +158,7 @@ describe("on-deal-damage equipment", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -275,9 +276,25 @@ describe("on-absorb equipment", () => {
   });
 
   it("draws and asks to discard when Archmage's Grimoire absorbs Arcane", () => {
-    // Rune Binder (index 2) is Arcane.
-    const base = actionsReady([ARCHMAGES_GRIMOIRE]);
-    const hostId = creatureIdAt(base, P1, 2);
+    // Control squad: Archmage (index 0) is Arcane.
+    const base = withEnergy(
+      withHand(
+        withPhase(
+          newMatch({
+            players: [
+              { id: P1, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+              { id: P2, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+            ],
+          }),
+          "actions",
+        ),
+        P1,
+        [ARCHMAGES_GRIMOIRE],
+      ),
+      P1,
+      10,
+    );
+    const hostId = creatureIdAt(base, P1, 0);
     let state = equip(base, hostId);
 
     const deckCardId = asCardInstanceId("deck-spare-eclipse");

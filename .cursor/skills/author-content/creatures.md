@@ -52,9 +52,8 @@ export const EXAMPLE: CreatureDefinitionId =
 - Squad size for matches comes from setup / loadout (typically 3 creatures), not
   from stuffing every catalogue entry into the prototype squad.
 
-## Two populations in `creatures.ts`
+## Population in `creatures.ts`
 
-1. **Figma catalogue** — Slow-game-test creatures (print-first).
-2. **Prototype squad** — Warden / Lumin Adept / Rune Binder (engine-ability demo).
-
-Do not delete the prototype trio without updating tests that depend on them.
+**Figma catalogue** — Slow-game-test creatures (print-first), including builtin
+Aggro and Control squads. Thin vertical-slice `engineAbilities` on the Aggro
+trio keep absorb ↔ resolve tests honest until print defines them.
