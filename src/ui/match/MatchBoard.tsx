@@ -7,6 +7,7 @@ import {
   eligibleFacesForForge,
   energyAvailableTo,
   formatAttackCost,
+  formatAttackLine,
   formatEffectRegion,
   formatForgeLine,
   formatTypeLine,
@@ -478,26 +479,6 @@ export function MatchBoard() {
       )}
 
       <p className="text-sm text-[var(--ink-muted)]">{hint}</p>
-      {pending?.type === "reaction-priority" && (
-        <div className="flex flex-wrap items-center gap-3 rounded border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
-          <span>
-            Chain ({String(state.chainStack.length)} link
-            {state.chainStack.length === 1 ? "" : "s"}) — priority:{" "}
-            <strong>{pending.priorityPlayerId}</strong>
-            {state.chainStack.length > 0
-              ? ` · top: ${state.chainStack[state.chainStack.length - 1]?.kind ?? "?"}`
-              : ""}
-          </span>
-          <button
-            type="button"
-            className="rounded border border-amber-600 bg-amber-900/50 px-2.5 py-1 text-xs font-medium hover:border-amber-400 disabled:opacity-40"
-            disabled={!canAct}
-            onClick={passPriority}
-          >
-            Pass priority
-          </button>
-        </div>
-      )}
 
       {pending?.type === "search-deck" && (
         <SearchPanel
@@ -736,6 +717,27 @@ export function MatchBoard() {
               setIntent({ kind: "absorb", symbolId });
             }}
           />
+
+          {pending?.type === "reaction-priority" && (
+            <div className="flex flex-wrap items-center gap-3 rounded border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
+              <span>
+                Chain ({String(state.chainStack.length)} link
+                {state.chainStack.length === 1 ? "" : "s"}) — priority:{" "}
+                <strong>{pending.priorityPlayerId}</strong>
+                {state.chainStack.length > 0
+                  ? ` · top: ${state.chainStack[state.chainStack.length - 1]?.kind ?? "?"}`
+                  : ""}
+              </span>
+              <button
+                type="button"
+                className="rounded border border-amber-600 bg-amber-900/50 px-2.5 py-1 text-xs font-medium hover:border-amber-400 disabled:opacity-40"
+                disabled={!canAct}
+                onClick={passPriority}
+              >
+                Pass priority
+              </button>
+            </div>
+          )}
 
           <HandStrip
             state={state}
@@ -1088,15 +1090,78 @@ function CreatureTile({
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
   const isActive = state.activePlayerId === creature.ownerId;
+  const equipmentNames = creature.equipmentIds
+    .map((id) => {
+      const instance = state.cards[id];
+      if (instance === undefined) return null;
+      return getCard(instance.cardId)?.name ?? instance.cardId;
+    })
+    .filter((name): name is string => name !== null);
 
   return (
     <div
       className={
         selectedAttacker || absorbArmed
-          ? "w-52 rounded border border-[var(--accent)] bg-stone-900 p-3"
-          : "w-52 rounded border border-stone-700 bg-stone-950 p-3"
+          ? "group relative w-52 rounded border border-[var(--accent)] bg-stone-900 p-3"
+          : "group relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
       }
     >
+      <div
+        className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-1/2 z-40 hidden w-64 -translate-x-1/2 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+        role="tooltip"
+      >
+        <p className="text-sm font-medium text-stone-100">{def.name}</p>
+        <p className="mt-1 text-xs text-stone-400">
+          HP {life}/{def.life} · Shield {creature.shields}
+          {creature.damagePreventBuffer > 0
+            ? ` · Prevent ${creature.damagePreventBuffer}`
+            : ""}
+          {creature.nextAttackBonus > 0 ? ` · Next ATK +${creature.nextAttackBonus}` : ""} · Toxin{" "}
+          {creature.toxinMarkers}
+        </p>
+        <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
+          {creature.position} · {def.attributes.join(", ")}
+        </p>
+        <p className="mt-1 text-xs capitalize text-stone-400">
+          tokens:{" "}
+          {Object.entries(creature.attributeTokens)
+            .filter(([, n]) => (n ?? 0) > 0)
+            .map(([k, n]) => `${k} ${String(n)}`)
+            .join(", ") || "none"}
+        </p>
+        {equipmentNames.length > 0 && (
+          <p className="mt-1 text-xs text-amber-200/80">Equip: {equipmentNames.join(", ")}</p>
+        )}
+        <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+          {def.passiveRulesText !== "" && (
+            <p>
+              <span className="text-stone-500">Passive:</span> {def.passiveRulesText}
+            </p>
+          )}
+          {def.attacks.map((attack) => (
+            <p key={attack.id}>
+              <span className="text-stone-500">{attack.kind === "basic" ? "Basic" : "Special"}:</span>{" "}
+              {formatAttackLine(attack)}
+              {attack.range ? " (Range)" : ""}
+              {" · "}
+              <span className="text-[var(--accent)]">
+                [{formatAttackCost(attack.requires) || "—"}
+                {attack.discards !== undefined
+                  ? `; discard ${formatAttackCost(attack.discards)}`
+                  : ""}
+                ]
+              </span>
+            </p>
+          ))}
+          {def.engineAbilities.map((ability) => (
+            <p key={ability.id}>
+              <span className="text-stone-500">Engine:</span> {ability.name} [
+              {formatAttackCost(ability.consumes) || "—"}]
+            </p>
+          ))}
+        </div>
+      </div>
+
       <button type="button" className="w-full text-left" onClick={() => onCreatureClick(creature)}>
         <p className="font-medium text-stone-100">{def.name}</p>
         <p className="mt-1 text-xs text-stone-400">
@@ -1245,6 +1310,139 @@ function uniqueInstalledFaces(
 }
 
 /** Shared face cards installed on this player's dice (one tile per unique face). */
+const FACE_TOOLTIP_WIDTH_PX = 224; // w-56
+const FACE_TOOLTIP_GAP_PX = 8;
+
+function FaceCardTile({
+  state,
+  playerId,
+  entry,
+  hasRolled,
+}: {
+  state: GameState;
+  playerId: PlayerId;
+  entry: {
+    readonly faceCardId: FaceCardId;
+    readonly copies: number;
+    readonly showing: boolean;
+    readonly overloads: number;
+  };
+  hasRolled: boolean;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [flipAside, setFlipAside] = useState(false);
+
+  const updateFlip = () => {
+    const node = rootRef.current;
+    if (node === null) return;
+    const rect = node.getBoundingClientRect();
+    const pairWidth = FACE_TOOLTIP_WIDTH_PX * 2 + FACE_TOOLTIP_GAP_PX;
+    const margin = 8;
+    setFlipAside(rect.left + pairWidth > window.innerWidth - margin);
+  };
+
+  const face = getFaceCard(entry.faceCardId);
+  const kindLabel =
+    face === undefined ? "?" : face.kind === "natural" ? "Natural" : "Synthetic";
+  const tooltip = [
+    kindLabel,
+    face?.symbol ?? "",
+    entry.copies > 1 ? `Installed on ${String(entry.copies)} faces` : "Installed on dice",
+    face?.rulesText !== undefined && face.rulesText !== "" ? face.rulesText : null,
+  ]
+    .filter((line): line is string => line !== null && line !== "")
+    .join("\n");
+  const attached = overloadsOnFace(state, playerId, entry.faceCardId);
+
+  return (
+    <div
+      ref={rootRef}
+      onMouseEnter={updateFlip}
+      className={
+        entry.showing
+          ? "group relative w-40 rounded border border-[var(--accent)] bg-[var(--accent)]/15 p-3"
+          : hasRolled
+            ? "group relative w-40 rounded border border-stone-800 bg-stone-950/70 p-3 opacity-55"
+            : "group relative w-40 rounded border border-stone-700 bg-stone-950 p-3"
+      }
+    >
+      <div
+        className={
+          flipAside
+            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-0 z-20 hidden w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-20 hidden w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+        }
+        role="tooltip"
+      >
+        <p className="text-sm font-medium text-stone-100">{face?.name ?? entry.faceCardId}</p>
+        <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+          {tooltip}
+        </pre>
+      </div>
+      <div
+        className={
+          flipAside
+            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-[14.5rem] z-20 hidden w-56 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-[14.5rem] z-20 hidden w-56 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+        }
+        role="tooltip"
+      >
+        <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
+          Overloads
+        </p>
+        {attached.length === 0 ? (
+          <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {attached.map((card) => {
+              const def = getCard(card.cardId);
+              const effects = def !== undefined ? formatEffectRegion(def) : ["(unknown card)"];
+              return (
+                <li
+                  key={card.id}
+                  className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
+                >
+                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                  {def !== undefined && (
+                    <p className="mt-0.5 text-[0.65rem] text-stone-500">{formatTypeLine(def)}</p>
+                  )}
+                  <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                    {effects.join("\n")}
+                  </pre>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+      <p
+        className={
+          entry.showing
+            ? "truncate text-sm font-medium text-[var(--accent)]"
+            : "truncate text-sm font-medium text-stone-100"
+        }
+      >
+        {face?.name ?? "?"}
+      </p>
+      <p className="mt-1 text-xs capitalize text-stone-500">
+        {kindLabel} · {face?.symbol ?? "—"}
+        {entry.copies > 1 ? ` · ×${String(entry.copies)}` : ""}
+      </p>
+      {entry.showing && (
+        <p className="mt-2 text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--accent)]">
+          Showing
+        </p>
+      )}
+      {entry.overloads > 0 && (
+        <p className="mt-1 text-[0.65rem] text-amber-200/80">
+          +{entry.overloads} overload
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Shared face cards installed on this player's dice (one tile per unique face). */
 function FaceCardsInPlay({
   state,
   playerId,
@@ -1268,65 +1466,15 @@ function FaceCardsInPlay({
         {hasRolled ? " · showing after roll" : " · shared across dice"}
       </h2>
       <div className="flex flex-wrap gap-3">
-        {faces.map((entry) => {
-          const face = getFaceCard(entry.faceCardId);
-          const kindLabel =
-            face === undefined ? "?" : face.kind === "natural" ? "Natural" : "Synthetic";
-          const tooltip = [
-            kindLabel,
-            face?.symbol ?? "",
-            entry.copies > 1 ? `Installed on ${String(entry.copies)} faces` : "Installed on dice",
-            face?.rulesText !== undefined && face.rulesText !== "" ? face.rulesText : null,
-          ]
-            .filter((line): line is string => line !== null && line !== "")
-            .join("\n");
-
-          return (
-            <div
-              key={entry.faceCardId}
-              className={
-                entry.showing
-                  ? "group relative w-40 rounded border border-[var(--accent)] bg-[var(--accent)]/15 p-3"
-                  : hasRolled
-                    ? "group relative w-40 rounded border border-stone-800 bg-stone-950/70 p-3 opacity-55"
-                    : "group relative w-40 rounded border border-stone-700 bg-stone-950 p-3"
-              }
-            >
-              <div
-                className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-20 hidden w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-                role="tooltip"
-              >
-                <p className="text-sm font-medium text-stone-100">{face?.name ?? entry.faceCardId}</p>
-                <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-                  {tooltip}
-                </pre>
-              </div>
-              <p
-                className={
-                  entry.showing
-                    ? "truncate text-sm font-medium text-[var(--accent)]"
-                    : "truncate text-sm font-medium text-stone-100"
-                }
-              >
-                {face?.name ?? "?"}
-              </p>
-              <p className="mt-1 text-xs capitalize text-stone-500">
-                {kindLabel} · {face?.symbol ?? "—"}
-                {entry.copies > 1 ? ` · ×${String(entry.copies)}` : ""}
-              </p>
-              {entry.showing && (
-                <p className="mt-2 text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--accent)]">
-                  Showing
-                </p>
-              )}
-              {entry.overloads > 0 && (
-                <p className="mt-1 text-[0.65rem] text-amber-200/80">
-                  +{entry.overloads} overload
-                </p>
-              )}
-            </div>
-          );
-        })}
+        {faces.map((entry) => (
+          <FaceCardTile
+            key={entry.faceCardId}
+            state={state}
+            playerId={playerId}
+            entry={entry}
+            hasRolled={hasRolled}
+          />
+        ))}
         {faces.length === 0 && <p className="text-sm text-stone-600">No faces installed</p>}
       </div>
 
