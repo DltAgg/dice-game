@@ -73,6 +73,19 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     attributes: ["wild"],
     passiveRulesText:
       "Whenever another ally attacks, Varcolac's next attack deals +1 damage.",
+    standingAbilities: [
+      {
+        type: "on-attack",
+        attackerRelation: "ally-other",
+        effects: [
+          {
+            type: "grant-next-attack-bonus",
+            amount: 1,
+            target: { kind: "source-creature" },
+          },
+        ],
+      },
+    ],
     attacks: [
       {
         id: asAttackId("attack-varcolac-charge"),
@@ -161,6 +174,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 10,
     attributes: ["arcane"],
     passiveRulesText: "Whenever the opponent rolls [Corruption], deal 1 damage.",
+    standingAbilities: [
+      {
+        type: "on-roll-symbol",
+        symbol: "corruption",
+        rollingPlayer: "opponent",
+        effects: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
+      },
+    ],
     attacks: [
       {
         id: asAttackId("attack-elder-decay-touch"),

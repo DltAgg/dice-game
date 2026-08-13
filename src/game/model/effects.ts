@@ -53,6 +53,15 @@ export type EffectDefinition =
    */
   | { readonly type: "next-attack-bonus"; readonly amount: number }
   /**
+   * Add to a creature's `nextAttackBonus` (Varcolac). Cleared when that creature
+   * next attacks or at end of turn.
+   */
+  | {
+      readonly type: "grant-next-attack-bonus";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
+  /**
    * Negate the top chain link if it is a tactic-card link (not an attack).
    * Spec `008` — Runic Nullification, Arcane Silence.
    */

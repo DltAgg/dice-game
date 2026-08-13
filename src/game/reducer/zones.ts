@@ -4,6 +4,7 @@ import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
 import type { RNG } from "../rng/rng.js";
 import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
+import { fireOnDiscard } from "./triggers.js";
 
 /**
  * Moving cards between deck, hand, graveyard, equipment, overload and ritual.
@@ -78,12 +79,15 @@ export function discardSpecificCards(
   playerId: PlayerId,
   cardInstanceIds: readonly CardInstanceId[],
 ): void {
+  let discarded = 0;
   for (const cardInstanceId of cardInstanceIds) {
     const card = draft.cards[cardInstanceId];
     if (card === undefined || card.ownerId !== playerId || card.zone !== "hand") continue;
     moveCard(draft, cardInstanceId, "graveyard");
     emit(draft, { type: "card-discarded", playerId, cardInstanceId });
+    discarded += 1;
   }
+  if (discarded > 0) fireOnDiscard(draft, playerId);
 }
 
 /**

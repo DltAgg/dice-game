@@ -31,7 +31,8 @@ needs them — never as unreachable stubs.
 | **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, CSV face On absorb lines, … | **PARTIAL** (`010`) — hook live; Rust / Mirrored Rune / remaining CSV absorb clauses still deferred |
 | **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Hook ready; **partially wired**: Insight roll, Conversion absorb, Vital Spark both, Aegis roll, Primordial Fury absorb, Impact absorb, Venom roll — remaining clauses still deferred |
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
-| **Attack-damage conditional buffs** | Varcolac passive (+1 after ally attack); War Banner (left ally) | |
+| **Attack-damage conditional buffs** | War Banner (left ally aura) | Varcolac passive **wired** (`on-attack` + `ally-other` + `grant-next-attack-bonus`) |
+| **Shared trigger events** | Twin Blades, Insignia, Alpha's Hide, Hunter's Collar, … | **IMPLEMENTED** infrastructure (`on-attack`, `on-take-damage`, `on-discard`, `on-change-position`); movers / push still block some wires |
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
 | **Multi-target damage split** | Blade Rain, Extermination | Player chooses distribution |
 | **Copy / re-apply die modifiers** | Arcane Echo tactic + face | |
@@ -40,7 +41,7 @@ needs them — never as unreachable stubs.
 | **Retain-from-effect** | Void Summoner Dimensional Rift, Forbidden Heritage | `RETAIN_DIE` exists; effect path does not |
 | **Destroy / strip overloads** | Mind Control | |
 | **Send cards deck → GY** | Dark Pact | |
-| **Continuous ritual standing triggers** | Serrated Stinger, Abyssal Sacrifice, … | Place/activate wired; trigger bodies missing |
+| **Continuous ritual standing triggers** | — | Abyssal Sacrifice + Serrated Stinger **wired**; others as needed |
 | **Toxin on all attacks this turn** | Toxic Blessing | |
 | **Reroll face once / self-damage** | Adrenaline | |
 | **Energy-spent scaling amounts** | Future `?` cards (e.g. spent N → draw) | Payment path exists; no effect reads `energyPaid` yet |
@@ -70,23 +71,23 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Mind Control | Forge-only; strip overloads deferred |
 | Ritual of Contamination | Forge-only; forge-from-effect deferred |
 | Tome of Interdiction | Equip; cost reduction deferred |
-| Abyssal Sacrifice | Ritual place; discard→generate Darkness deferred |
+| Abyssal Sacrifice | **Wired** discard → Darkness |
 | Mirrored Rune | Equip; absorb→copy deferred |
 | Toxic Blessing | Overload attach + Toxin gate; all-attacks toxin deferred |
 | Adrenaline | Overload attach + Natural Wild gate; reroll clause deferred |
 | Rust | Overload attach + Natural Martial gate; ignore shield deferred |
 | Predator's Claws | Equip; absorb→move deferred |
-| Serrated Stinger | Ritual place; special→toxin deferred |
+| Serrated Stinger | **Wired** ally special attack → toxin on target |
 | War Banner | Equip; left-ally +1 basic deferred |
-| Alpha's Hide | Equip; special→generate Wild deferred |
-| Hunter's Collar | Equip; position→Martial deferred |
+| Alpha's Hide | Equip; special→generate Wild on another card deferred |
+| Hunter's Collar | Equip; position→Martial deferred (`on-change-position` ready) |
 | Insignia of Command | Equip + Martial gate; attack→reposition deferred |
-| Hunting Armour | Equip; first damage −1 deferred |
-| Twin Blades | Equip; basic→push deferred |
+| Hunting Armour | **Wired** first damage −1 / turn |
+| Twin Blades | Equip; basic→push deferred (`on-attack` ready) |
 
 Fully wired in `010` (removed from gaps): Venomous Fangs, Black Plague, Blade of
 Serene Light, Archmage's Grimoire, Mutant Spores, Wild Echo, Toxic Heart, Wild
-Carapace.
+Carapace, Hunting Armour, Abyssal Sacrifice, Serrated Stinger.
 
 ### Fully wired (for reference)
 
@@ -104,10 +105,10 @@ Damage lines resolve; passives and most special riders do not.
 | Creature | Unfinished |
 |---|---|
 | War Minotaur | Passive ignore 1 Shield; Poisoned Charge toxin + back-row swap |
-| Varcolac | Passive ally-attack buff; Coordinated Hunt conditional push |
+| Varcolac | Coordinated Hunt conditional push (passive **wired**) |
 | Garuda | Dive optional swap; Bombardment frontline toxin (Range flag exists) |
 | Archmage of the Runes | Passive Arcane tactic discount; Arcane Burst draw; Mystic Overload frontline shields |
-| Corrupting Elder | Passive opp Corruption roll damage; Touch strip shield; Contamination forge opp |
+| Corrupting Elder | Touch strip shield; Contamination forge opp (passive **wired**) |
 | Void Summoner | Passive absorb→Arcane; Rupture convert; Dimensional Rift retain |
 
 Fast-game HP/cost variants from Figma are not encoded.

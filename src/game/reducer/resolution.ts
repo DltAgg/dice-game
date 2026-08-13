@@ -11,7 +11,7 @@ import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { opponentOf } from "../rules/creatures.js";
 import { emit, nextInstanceId, patchCreature, type Draft } from "./draft.js";
-import { fireOnDealDamage, fireOnToxinDamage } from "./triggers.js";
+import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
 import {
   destroyEquipment,
   drawCards,
@@ -305,6 +305,16 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       };
       return false;
     }
+    case "grant-next-attack-bonus": {
+      const targetId = resolveTarget(draft, pending, effect.target);
+      if (targetId === null) return false;
+      const creature = draft.creatures[targetId];
+      if (creature === undefined || creature.defeated) return false;
+      patchCreature(draft, targetId, {
+        nextAttackBonus: creature.nextAttackBonus + effect.amount,
+      });
+      return false;
+    }
     case "negate-tactic": {
       const top = draft.chainStack[draft.chainStack.length - 1];
       if (
@@ -487,23 +497,27 @@ export function dealDamage(draft: Draft, creatureId: CreatureId, amount: number)
   const definition = getCreatureDefinition(creature.definitionId);
   if (definition === undefined) return 0;
 
-  let remaining = amount;
+  let remaining = applyOnTakeDamageReduce(draft, creatureId, amount);
 
   // Spec 009: prevention buffer → Shield → HP.
-  const fromBuffer = Math.min(creature.damagePreventBuffer, remaining);
+  const fromBuffer = Math.min(
+    draft.creatures[creatureId]?.damagePreventBuffer ?? 0,
+    remaining,
+  );
   if (fromBuffer > 0) {
+    const buffered = draft.creatures[creatureId]!;
     patchCreature(draft, creatureId, {
-      damagePreventBuffer: creature.damagePreventBuffer - fromBuffer,
+      damagePreventBuffer: buffered.damagePreventBuffer - fromBuffer,
     });
     remaining -= fromBuffer;
     emit(draft, {
       type: "damage-prevented",
       creatureId,
       amount: fromBuffer,
-      shieldsRemaining: creature.shields,
+      shieldsRemaining: buffered.shields,
       source: "buffer",
     });
-    firePreventDraw(draft, creature.ownerId);
+    firePreventDraw(draft, buffered.ownerId);
   }
 
   if (remaining <= 0) return 0;
@@ -533,6 +547,7 @@ export function dealDamage(draft: Draft, creatureId: CreatureId, amount: number)
   const defeated = damage >= definition.life;
   patchCreature(draft, creatureId, { damage, defeated });
   emit(draft, { type: "damage-dealt", creatureId, amount: remaining });
+  fireOnTakeDamageEffects(draft, creatureId);
 
   if (!defeated) return remaining;
 

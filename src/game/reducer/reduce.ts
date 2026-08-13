@@ -67,7 +67,9 @@ import {
   tickToxins,
 } from "./resolution.js";
 import {
+  clearTurnTriggerState,
   fireEquipmentOnRollSymbol,
+  fireOnAttack,
   queueAbsorbTriggers,
 } from "./triggers.js";
 import {
@@ -585,11 +587,16 @@ function attack(
 
   const baseEffect = attackDefinition.effect;
   const turnBonus = draft.attackBonusThisTurn[playerId] ?? 0;
+  const creatureBonus = attacker.nextAttackBonus;
   const effect =
     baseEffect.type === "damage"
       ? {
           ...baseEffect,
-          amount: baseEffect.amount + attackDamageBonus(draft, attackerId) + turnBonus,
+          amount:
+            baseEffect.amount +
+            attackDamageBonus(draft, attackerId) +
+            turnBonus +
+            creatureBonus,
         }
       : baseEffect;
 
@@ -597,6 +604,9 @@ function attack(
     const nextBonus = { ...draft.attackBonusThisTurn };
     delete nextBonus[playerId];
     draft.attackBonusThisTurn = nextBonus;
+  }
+  if (creatureBonus > 0) {
+    patchCreature(draft, attackerId, { nextAttackBonus: 0 });
   }
 
   pushChainLink(
@@ -609,6 +619,8 @@ function attack(
       attackEffect: effect,
     }),
   );
+  fireOnAttack(draft, attackerId, attackDefinition.kind, targetId);
+  drainResolution(draft);
   openReactionWindow(draft, playerId);
   return null;
 }
@@ -1380,6 +1392,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   resetCombatCounters(draft);
   draft.attackBonusThisTurn = {};
   draft.preventDrawArmed = {};
+  clearTurnTriggerState(draft);
 
   draft.energy = track;
   emit(draft, { type: "turn-ended", playerId });

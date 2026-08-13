@@ -85,12 +85,17 @@ export interface EffectRegion {
 }
 
 /**
- * Standing abilities granted while the card is attached to a creature. Kept as
- * a closed union of what the reducer actually honours. Trigger kinds are fired
- * by shared hooks (`010-trigger-hooks`); equipment may still attach with an
- * empty list when a different clause is deferred.
+ * Standing abilities granted while attached / while a passive or continuous
+ * ritual is eligible. Closed union of what the reducer honours (`010`).
+ *
+ * Prefer shared events + relation filters over coupled types
+ * (`on-ally-attack`, `on-opponent-roll-symbol`). See
+ * `.cursor/skills/implement-hooks/SKILL.md`.
  */
-export type EquipmentAbility =
+export type CreatureRelation = "self" | "ally" | "ally-other" | "any";
+export type PlayerRelation = "controller" | "opponent" | "any";
+
+export type StandingTrigger =
   /** Adds to the damage of every attack the bearer makes (War Axe). */
   { readonly type: "attack-damage-bonus"; readonly amount: number }
   /** After the bearer deals HP damage (Venomous Fangs, Blade of Serene Light). */
@@ -103,21 +108,65 @@ export type EquipmentAbility =
       readonly type: "on-toxin-damage";
       readonly effects: readonly EffectDefinition[];
     }
-  /** When the host's controller rolls a die showing this symbol (Black Plague). */
+  /**
+   * When a player rolls a die showing this symbol. Filter whose roll with
+   * `rollingPlayer` (default `controller` — Black Plague).
+   */
   | {
       readonly type: "on-roll-symbol";
       readonly symbol: SymbolType;
+      readonly rollingPlayer?: PlayerRelation;
       readonly effects: readonly EffectDefinition[];
     }
   /**
-   * When the host absorbs a symbol. Optional `symbols` filter; omit to fire on
-   * any absorb (Wild Carapace, Archmage's Grimoire).
+   * When a creature absorbs a symbol. Default absorber is the host (`self`).
+   * Optional `symbols` filter; omit to fire on any absorb.
    */
   | {
       readonly type: "on-absorb";
       readonly symbols?: readonly SymbolType[];
+      readonly absorberRelation?: CreatureRelation;
+      readonly effects: readonly EffectDefinition[];
+    }
+  /**
+   * When a creature declares an attack. Default attacker is the host (`self`).
+   * Optional `attackKinds` / `oncePerTurn`.
+   */
+  | {
+      readonly type: "on-attack";
+      readonly attackKinds?: readonly ("basic" | "special")[];
+      readonly attackerRelation?: CreatureRelation;
+      readonly oncePerTurn?: boolean;
+      readonly effects: readonly EffectDefinition[];
+    }
+  /**
+   * Incoming damage on the host. `reduceBy` applies inside `dealDamage` before
+   * prevent/Shields; optional `effects` queue after HP is dealt.
+   */
+  | {
+      readonly type: "on-take-damage";
+      readonly reduceBy?: number;
+      readonly oncePerTurn?: boolean;
+      readonly effects?: readonly EffectDefinition[];
+    }
+  /** When a player discards cards. Default `discardingPlayer: "controller"`. */
+  | {
+      readonly type: "on-discard";
+      readonly discardingPlayer?: PlayerRelation;
+      readonly effects: readonly EffectDefinition[];
+    }
+  /**
+   * When a creature changes battlefield position. Default `creatureRelation:
+   * "self"` (the host moved).
+   */
+  | {
+      readonly type: "on-change-position";
+      readonly creatureRelation?: CreatureRelation;
       readonly effects: readonly EffectDefinition[];
     };
+
+/** @deprecated Use `StandingTrigger` — alias kept for existing imports. */
+export type EquipmentAbility = StandingTrigger;
 
 /**
  * How the card attaches. Present only on Equipment subtypes; its presence is
@@ -170,6 +219,11 @@ export interface RitualRegion {
    */
   readonly additionalEnergy?: number;
   readonly effects: readonly EffectDefinition[];
+  /**
+   * Standing triggers while this continuous ritual is `ready` on the field
+   * (Abyssal Sacrifice, Serrated Stinger). Instant/reaction rituals ignore.
+   */
+  readonly standingAbilities?: readonly StandingTrigger[];
 }
 
 export interface CardDefinition {

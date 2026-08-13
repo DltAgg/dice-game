@@ -171,8 +171,10 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       attributeTokens: {},
       shields: 0,
       damagePreventBuffer: 0,
+      nextAttackBonus: 0,
       toxinMarkers: 0,
       equipmentIds: [],
+      spentOncePerTurnTriggers: [],
     };
   });
 }

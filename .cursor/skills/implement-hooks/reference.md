@@ -1,0 +1,54 @@
+# Reference — standing triggers
+
+## Hosts
+
+| Host | Where defined | When eligible |
+|---|---|---|
+| Equipment | `EquipmentRegion.abilities` | Attached, bearer alive |
+| Creature passive | `CreatureDefinition.standingAbilities` | Creature alive |
+| Continuous ritual | `RitualRegion.standingAbilities` | Zone `ritual`, orientation `ready` |
+
+Shared type: `StandingTrigger` in `src/game/model/cards.ts` (equipment abilities
+are that union; creatures/rituals reuse it).
+
+## Hook inventory
+
+| Type | Role | Notes |
+|---|---|---|
+| `attack-damage-bonus` | Static modifier | Not an event; read at attack declare |
+| `on-deal-damage` | After bearer deals HP | Shield-only hits do not fire |
+| `on-toxin-damage` | After toxin HP | Listeners on controller’s creatures’ gear |
+| `on-roll-symbol` | Die shows symbol | Filter `rollingPlayer` |
+| `on-absorb` | Symbol absorbed | Filter `absorberRelation` / `symbols` |
+| `on-attack` | Attack declared | Filter `attackerRelation` / `attackKinds` |
+| `on-take-damage` | Incoming damage | `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
+| `on-discard` | Cards discarded | Filter `discardingPlayer` |
+| `on-change-position` | Position changes | Call only from the shared mover |
+
+## Proving cards (target wiring)
+
+| Card | Hook + filter | Effect gap? |
+|---|---|---|
+| Twin Blades | `on-attack` self + basic | Needs push |
+| Alpha's Hide | `on-attack` self + special | “On another card” still soft |
+| Insignia of Command | `on-attack` self + oncePerTurn | Needs reposition |
+| Varcolac | `on-attack` ally-other | Creature-scoped next-attack bonus |
+| Serrated Stinger | `on-attack` ally + special | apply-toxin on attack target |
+| Black Plague | `on-roll-symbol` controller | Already wired |
+| Corrupting Elder | `on-roll-symbol` opponent | choose-enemy damage |
+| Hunting Armour | `on-take-damage` reduceBy 1 oncePerTurn | Modifier path |
+| Abyssal Sacrifice | `on-discard` controller | generate Darkness |
+| Hunter's Collar | `on-change-position` self | Needs movers to call hook |
+| Predator's Claws / Mirrored Rune | `on-absorb` self | Need move / copy effects |
+| Void Summoner | `on-absorb` any + Natural | Natural face filter |
+
+## Files
+
+| Path | Role |
+|---|---|
+| `src/game/model/cards.ts` | `StandingTrigger` |
+| `src/game/model/creatures.ts` | `standingAbilities`, `nextAttackBonus`, spent keys |
+| `src/game/reducer/triggers.ts` | `fireOn*` |
+| `src/game/reducer/triggers.test.ts` | Proving tests |
+| `docs/specs/010-trigger-hooks.md` | Normative spec |
+| `docs/DEFERRED_CATALOGUE.md` | Gaps |

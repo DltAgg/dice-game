@@ -1,4 +1,5 @@
 import type { Attribute } from "./attributes.js";
+import type { StandingTrigger } from "./cards.js";
 import type { EffectDefinition } from "./effects.js";
 import type {
   AbilityId,
@@ -71,6 +72,11 @@ export interface CreatureDefinition {
   readonly attributes: readonly Attribute[];
   /** English passive text as printed under the art. Empty when none. */
   readonly passiveRulesText: string;
+  /**
+   * Data-driven standing passives (`010`). Prefer relation filters on shared
+   * hooks over special-cased reducer branches.
+   */
+  readonly standingAbilities?: readonly StandingTrigger[];
   readonly attacks: readonly AttackDefinition[];
   readonly engineAbilities: readonly CreatureAbilityDefinition[];
 }
@@ -98,10 +104,21 @@ export interface CreatureState {
    */
   readonly damagePreventBuffer: number;
   /**
+   * Extra damage on this creature's next attack only (Varcolac passive). Cleared
+   * when spent or at end of turn.
+   */
+  readonly nextAttackBonus: number;
+  /**
    * Toxin counters. At the start of this creature's owner's turn, the creature
    * takes 1 damage per counter. Counters persist until something removes them.
    */
   readonly toxinMarkers: number;
   /** Equipment cards currently attached to this creature. */
   readonly equipmentIds: readonly CardInstanceId[];
+  /**
+   * Once-per-turn standing trigger keys spent this turn
+   * (`equip:<id>:on-take-damage`, `creature:<id>:on-attack`, …). Cleared on
+   * END_TURN.
+   */
+  readonly spentOncePerTurnTriggers: readonly string[];
 }

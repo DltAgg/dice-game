@@ -1,5 +1,12 @@
 import { getCard } from "../content/cards.js";
+import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
+import type {
+  CreatureRelation,
+  PlayerRelation,
+  StandingTrigger,
+} from "../model/cards.js";
+import type { BattlefieldPosition } from "../model/creatures.js";
 import type { EffectDefinition } from "../model/effects.js";
 import {
   asEffectInstanceId,
@@ -9,15 +16,28 @@ import {
   type PlayerId,
 } from "../model/ids.js";
 import type { SymbolType } from "../model/symbols.js";
-import { nextInstanceId, type Draft } from "./draft.js";
+import { nextInstanceId, patchCreature, type Draft } from "./draft.js";
 
 /**
  * Shared standing-trigger hooks (`010-trigger-hooks`). Catalogue data lists
- * effects; this module only decides *when* to queue them.
+ * effects and relation filters; this module only decides *when* to queue them.
+ *
+ * Principle: one system event → rich context ids → filters on the ability.
+ * See `.cursor/skills/implement-hooks/SKILL.md`.
  *
  * Intentionally does not import `resolution.ts` (that module calls these hooks
  * while draining the stack).
  */
+
+type TriggerHost = {
+  readonly keyPrefix: string;
+  /** Player who owns the ability for effect choices / stack controller. */
+  readonly effectControllerId: PlayerId;
+  /** Owner used for controller/opponent/ally filters (bearer for equipment). */
+  readonly filterOwnerId: PlayerId;
+  readonly hostCreatureId: CreatureId | null;
+  readonly abilities: readonly StandingTrigger[];
+};
 
 function pushEffect(
   draft: Draft,
@@ -38,13 +58,121 @@ function pushEffect(
 function pushAbilityEffects(
   draft: Draft,
   controllerId: PlayerId,
-  sourceCreatureId: CreatureId,
+  sourceCreatureId: CreatureId | null,
   declaredTargetCreatureId: CreatureId | null,
   effects: readonly EffectDefinition[],
 ): void {
   for (const effect of [...effects].reverse()) {
     pushEffect(draft, controllerId, effect, sourceCreatureId, declaredTargetCreatureId);
   }
+}
+
+function matchesCreatureRelation(
+  relation: CreatureRelation,
+  hostCreatureId: CreatureId | null,
+  hostOwnerId: PlayerId,
+  subjectCreatureId: CreatureId,
+  subjectOwnerId: PlayerId,
+): boolean {
+  switch (relation) {
+    case "any":
+      return true;
+    case "self":
+      return hostCreatureId !== null && subjectCreatureId === hostCreatureId;
+    case "ally":
+      return subjectOwnerId === hostOwnerId;
+    case "ally-other":
+      return subjectOwnerId === hostOwnerId && subjectCreatureId !== hostCreatureId;
+  }
+}
+
+function matchesPlayerRelation(
+  relation: PlayerRelation,
+  hostControllerId: PlayerId,
+  subjectPlayerId: PlayerId,
+): boolean {
+  switch (relation) {
+    case "any":
+      return true;
+    case "controller":
+      return subjectPlayerId === hostControllerId;
+    case "opponent":
+      return subjectPlayerId !== hostControllerId;
+  }
+}
+
+function onceKey(prefix: string, triggerType: string): string {
+  return `${prefix}:${triggerType}`;
+}
+
+function isSpent(draft: Draft, creatureId: CreatureId | null, key: string): boolean {
+  if (creatureId === null) return false;
+  return draft.creatures[creatureId]?.spentOncePerTurnTriggers.includes(key) ?? false;
+}
+
+function markSpent(draft: Draft, creatureId: CreatureId | null, key: string): void {
+  if (creatureId === null) return;
+  const creature = draft.creatures[creatureId];
+  if (creature === undefined) return;
+  if (creature.spentOncePerTurnTriggers.includes(key)) return;
+  patchCreature(draft, creatureId, {
+    spentOncePerTurnTriggers: [...creature.spentOncePerTurnTriggers, key],
+  });
+}
+
+/** Collect equipment + creature passives + ready continuous rituals. */
+function collectHosts(draft: Draft): TriggerHost[] {
+  const hosts: TriggerHost[] = [];
+
+  for (const creature of Object.values(draft.creatures)) {
+    if (creature.defeated) continue;
+
+    const definition = getCreatureDefinition(creature.definitionId);
+    const standing = definition?.standingAbilities ?? [];
+    if (standing.length > 0) {
+      hosts.push({
+        keyPrefix: `creature:${creature.id}`,
+        effectControllerId: creature.ownerId,
+        filterOwnerId: creature.ownerId,
+        hostCreatureId: creature.id,
+        abilities: standing,
+      });
+    }
+
+    for (const cardInstanceId of creature.equipmentIds) {
+      const instance = draft.cards[cardInstanceId];
+      if (instance === undefined) continue;
+      const abilities = getCard(instance.cardId)?.equipment?.abilities ?? [];
+      if (abilities.length === 0) continue;
+      hosts.push({
+        keyPrefix: `equip:${cardInstanceId}`,
+        effectControllerId: instance.ownerId,
+        // Bearer's owner — Black Plague on an opposing host keys off that
+        // creature's controller rolling, not the card owner's roll.
+        filterOwnerId: creature.ownerId,
+        hostCreatureId: creature.id,
+        abilities,
+      });
+    }
+  }
+
+  for (const card of Object.values(draft.cards)) {
+    if (card.zone !== "ritual" || card.ritualOrientation !== "ready") continue;
+    const definition = getCard(card.cardId);
+    if (definition?.type !== "ritual") continue;
+    if (!definition.subtypes.includes("continuous")) continue;
+    const abilities = definition.ritual?.standingAbilities ?? [];
+    if (abilities.length === 0) continue;
+    hosts.push({
+      keyPrefix: `ritual:${card.id}`,
+      effectControllerId: card.ownerId,
+      filterOwnerId: card.ownerId,
+      hostCreatureId: null,
+      abilities,
+    });
+  }
+
+  return hosts;
 }
 
 /** After the bearer deals HP damage to `damagedCreatureId`. */
@@ -98,30 +226,31 @@ export function fireOnToxinDamage(draft: Draft, damagedCreatureId: CreatureId): 
   }
 }
 
-/** During roll: equipment keyed to the showing symbol on the rolling player's hosts. */
-export function fireEquipmentOnRollSymbol(
+/** During roll: equipment / passives keyed to the showing symbol. */
+export function fireOnRollSymbol(
   draft: Draft,
   rollingPlayerId: PlayerId,
   symbol: SymbolType,
 ): void {
-  const player = draft.players[rollingPlayerId];
-  if (player === undefined) return;
-
-  for (const creatureId of player.creatureIds) {
-    const creature = draft.creatures[creatureId];
-    if (creature === undefined || creature.defeated) continue;
-    for (const cardInstanceId of creature.equipmentIds) {
-      const instance = draft.cards[cardInstanceId];
-      if (instance === undefined) continue;
-      const abilities = getCard(instance.cardId)?.equipment?.abilities ?? [];
-      for (const ability of abilities) {
-        if (ability.type !== "on-roll-symbol") continue;
-        if (ability.symbol !== symbol) continue;
-        pushAbilityEffects(draft, instance.ownerId, creatureId, creatureId, ability.effects);
-      }
+  for (const host of collectHosts(draft)) {
+    for (const ability of host.abilities) {
+      if (ability.type !== "on-roll-symbol") continue;
+      if (ability.symbol !== symbol) continue;
+      const relation = ability.rollingPlayer ?? "controller";
+      if (!matchesPlayerRelation(relation, host.filterOwnerId, rollingPlayerId)) continue;
+      pushAbilityEffects(
+        draft,
+        host.effectControllerId,
+        host.hostCreatureId,
+        host.hostCreatureId,
+        ability.effects,
+      );
     }
   }
 }
+
+/** @deprecated Prefer `fireOnRollSymbol` — kept name for older call sites. */
+export const fireEquipmentOnRollSymbol = fireOnRollSymbol;
 
 /** Queue absorb triggers (caller must `drainResolution`). */
 export function queueAbsorbTriggers(
@@ -131,7 +260,7 @@ export function queueAbsorbTriggers(
   symbol: SymbolType,
   sourceDieId: DieId | null,
 ): void {
-  fireEquipmentOnAbsorb(draft, creatureId, symbol);
+  fireOnAbsorb(draft, creatureId, absorbingPlayerId, symbol);
 
   if (sourceDieId === null) return;
   const die = draft.dice[sourceDieId];
@@ -145,18 +274,35 @@ export function queueAbsorbTriggers(
   fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId);
 }
 
-function fireEquipmentOnAbsorb(draft: Draft, creatureId: CreatureId, symbol: SymbolType): void {
-  const creature = draft.creatures[creatureId];
-  if (creature === undefined || creature.defeated) return;
-
-  for (const cardInstanceId of creature.equipmentIds) {
-    const instance = draft.cards[cardInstanceId];
-    if (instance === undefined) continue;
-    const abilities = getCard(instance.cardId)?.equipment?.abilities ?? [];
-    for (const ability of abilities) {
+function fireOnAbsorb(
+  draft: Draft,
+  absorberId: CreatureId,
+  absorberOwnerId: PlayerId,
+  symbol: SymbolType,
+): void {
+  for (const host of collectHosts(draft)) {
+    for (const ability of host.abilities) {
       if (ability.type !== "on-absorb") continue;
       if (ability.symbols !== undefined && !ability.symbols.includes(symbol)) continue;
-      pushAbilityEffects(draft, instance.ownerId, creatureId, creatureId, ability.effects);
+      const relation = ability.absorberRelation ?? "self";
+      if (
+        !matchesCreatureRelation(
+          relation,
+          host.hostCreatureId,
+          host.filterOwnerId,
+          absorberId,
+          absorberOwnerId,
+        )
+      ) {
+        continue;
+      }
+      pushAbilityEffects(
+        draft,
+        host.effectControllerId,
+        host.hostCreatureId ?? absorberId,
+        absorberId,
+        ability.effects,
+      );
     }
   }
 }
@@ -190,5 +336,186 @@ function fireOverloadsOnAbsorb(
     for (const effect of [...effects].reverse()) {
       pushEffect(draft, controllerId, effect, absorbingCreatureId, null);
     }
+  }
+}
+
+/** After an attack is declared (costs paid, chain link pushed). */
+export function fireOnAttack(
+  draft: Draft,
+  attackerId: CreatureId,
+  attackKind: "basic" | "special",
+  targetId: CreatureId,
+): void {
+  const attacker = draft.creatures[attackerId];
+  if (attacker === undefined) return;
+
+  for (const host of collectHosts(draft)) {
+    for (const ability of host.abilities) {
+      if (ability.type !== "on-attack") continue;
+      if (ability.attackKinds !== undefined && !ability.attackKinds.includes(attackKind)) {
+        continue;
+      }
+      const relation = ability.attackerRelation ?? "self";
+      if (
+        !matchesCreatureRelation(
+          relation,
+          host.hostCreatureId,
+          host.filterOwnerId,
+          attackerId,
+          attacker.ownerId,
+        )
+      ) {
+        continue;
+      }
+      const key = onceKey(host.keyPrefix, "on-attack");
+      if (ability.oncePerTurn && isSpent(draft, host.hostCreatureId, key)) continue;
+      if (ability.oncePerTurn) markSpent(draft, host.hostCreatureId, key);
+      pushAbilityEffects(
+        draft,
+        host.effectControllerId,
+        host.hostCreatureId,
+        targetId,
+        ability.effects,
+      );
+    }
+  }
+}
+
+/**
+ * Reduce incoming damage for `on-take-damage` abilities with `reduceBy`.
+ * Returns the amount after reductions (never below 0). Marks once-per-turn.
+ */
+export function applyOnTakeDamageReduce(
+  draft: Draft,
+  damagedCreatureId: CreatureId,
+  amount: number,
+): number {
+  let remaining = amount;
+  const creature = draft.creatures[damagedCreatureId];
+  if (creature === undefined || remaining <= 0) return remaining;
+
+  for (const cardInstanceId of creature.equipmentIds) {
+    const instance = draft.cards[cardInstanceId];
+    if (instance === undefined) continue;
+    const abilities = getCard(instance.cardId)?.equipment?.abilities ?? [];
+    for (const ability of abilities) {
+      if (ability.type !== "on-take-damage") continue;
+      if (ability.reduceBy === undefined || ability.reduceBy <= 0) continue;
+      const key = onceKey(`equip:${cardInstanceId}`, "on-take-damage");
+      if (ability.oncePerTurn && isSpent(draft, damagedCreatureId, key)) continue;
+      const cut = Math.min(ability.reduceBy, remaining);
+      if (cut <= 0) continue;
+      remaining -= cut;
+      if (ability.oncePerTurn) markSpent(draft, damagedCreatureId, key);
+    }
+  }
+
+  const standing = getCreatureDefinition(creature.definitionId)?.standingAbilities ?? [];
+  for (const ability of standing) {
+    if (ability.type !== "on-take-damage") continue;
+    if (ability.reduceBy === undefined || ability.reduceBy <= 0) continue;
+    const key = onceKey(`creature:${damagedCreatureId}`, "on-take-damage");
+    if (ability.oncePerTurn && isSpent(draft, damagedCreatureId, key)) continue;
+    const cut = Math.min(ability.reduceBy, remaining);
+    if (cut <= 0) continue;
+    remaining -= cut;
+    if (ability.oncePerTurn) markSpent(draft, damagedCreatureId, key);
+  }
+
+  return remaining;
+}
+
+/** After HP damage is dealt, queue optional on-take-damage effects. */
+export function fireOnTakeDamageEffects(
+  draft: Draft,
+  damagedCreatureId: CreatureId,
+): void {
+  const creature = draft.creatures[damagedCreatureId];
+  if (creature === undefined) return;
+
+  for (const cardInstanceId of creature.equipmentIds) {
+    const instance = draft.cards[cardInstanceId];
+    if (instance === undefined) continue;
+    const abilities = getCard(instance.cardId)?.equipment?.abilities ?? [];
+    for (const ability of abilities) {
+      if (ability.type !== "on-take-damage") continue;
+      if (ability.effects === undefined || ability.effects.length === 0) continue;
+      pushAbilityEffects(
+        draft,
+        instance.ownerId,
+        damagedCreatureId,
+        damagedCreatureId,
+        ability.effects,
+      );
+    }
+  }
+}
+
+/** After cards are discarded from hand. */
+export function fireOnDiscard(draft: Draft, discardingPlayerId: PlayerId): void {
+  for (const host of collectHosts(draft)) {
+    for (const ability of host.abilities) {
+      if (ability.type !== "on-discard") continue;
+      const relation = ability.discardingPlayer ?? "controller";
+      if (!matchesPlayerRelation(relation, host.filterOwnerId, discardingPlayerId)) continue;
+      pushAbilityEffects(
+        draft,
+        host.effectControllerId,
+        host.hostCreatureId,
+        null,
+        ability.effects,
+      );
+    }
+  }
+}
+
+/** After a creature changes battlefield position. */
+export function fireOnChangePosition(
+  draft: Draft,
+  creatureId: CreatureId,
+  _from: BattlefieldPosition,
+  _to: BattlefieldPosition,
+): void {
+  void _from;
+  void _to;
+  const moved = draft.creatures[creatureId];
+  if (moved === undefined) return;
+
+  for (const host of collectHosts(draft)) {
+    for (const ability of host.abilities) {
+      if (ability.type !== "on-change-position") continue;
+      const relation = ability.creatureRelation ?? "self";
+      if (
+        !matchesCreatureRelation(
+          relation,
+          host.hostCreatureId,
+          host.filterOwnerId,
+          creatureId,
+          moved.ownerId,
+        )
+      ) {
+        continue;
+      }
+      pushAbilityEffects(
+        draft,
+        host.effectControllerId,
+        host.hostCreatureId,
+        creatureId,
+        ability.effects,
+      );
+    }
+  }
+}
+
+/** Clear once-per-turn trigger spend and creature next-attack bonuses. */
+export function clearTurnTriggerState(draft: Draft): void {
+  for (const creature of Object.values(draft.creatures)) {
+    if (creature.spentOncePerTurnTriggers.length === 0 && creature.nextAttackBonus === 0) {
+      continue;
+    }
+    patchCreature(draft, creature.id, {
+      spentOncePerTurnTriggers: [],
+      nextAttackBonus: 0,
+    });
   }
 }

@@ -14,3 +14,4 @@ alwaysApply: true
 - Commit / push only when the user asks.
 - Content authoring → `.cursor/skills/author-content/SKILL.md`.
 - Engine/reducer work → `.cursor/skills/develop-engine/SKILL.md`.
+- Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.

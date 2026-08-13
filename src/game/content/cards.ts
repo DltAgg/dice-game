@@ -259,6 +259,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-roll-symbol",
           symbol: "corruption",
+          rollingPlayer: "controller",
           effects: [{ type: "damage", amount: 1, target: { kind: "source-creature" } }],
         },
       ],
@@ -492,6 +493,13 @@ const DEFINITIONS: readonly CardDefinition[] = [
     ritual: {
       activeWhen: { arcane: 1, darkness: 1 },
       effects: [],
+      standingAbilities: [
+        {
+          type: "on-discard",
+          discardingPlayer: "controller",
+          effects: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
+        },
+      ],
     },
   }),
   card({
@@ -647,6 +655,16 @@ const DEFINITIONS: readonly CardDefinition[] = [
     ritual: {
       activeWhen: { wild: 1, toxin: 1 },
       effects: [],
+      standingAbilities: [
+        {
+          type: "on-attack",
+          attackerRelation: "ally",
+          attackKinds: ["special"],
+          effects: [
+            { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
+          ],
+        },
+      ],
     },
   }),
   card({
@@ -737,7 +755,13 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "The first time this creature takes damage each turn, reduce it by 1.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-take-damage",
+          reduceBy: 1,
+          oncePerTurn: true,
+        },
+      ],
     },
   }),
   card({

@@ -1,16 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  ABYSSAL_SACRIFICE,
   ARCHMAGES_GRIMOIRE,
   BLACK_PLAGUE,
   BLADE_OF_SERENE_LIGHT,
+  ECLIPSE,
+  HUNTING_ARMOUR,
   MUTANT_SPORES,
   TOXIC_HEART,
   VENOMOUS_FANGS,
   WILD_CARAPACE,
   WILD_ECHO,
 } from "../content/cards.js";
+import { PROTOTYPE_SQUAD } from "../content/creatures.js";
 import {
   CONVERSION_RUNE,
+  ENGINE_TEST_FACE_DECK,
   faceIdForSymbol,
   INSIGHT_RUNE,
   PRIMORDIAL_FURY,
@@ -495,5 +500,113 @@ describe("on-roll / on-absorb faces", () => {
   it("prompts choose-enemy when Venom is rolled", () => {
     const state = rollShowingSlot(installFace(newMatch(), VENOM), 0);
     expect(state.pendingDecision?.type).toBe("choose-creature");
+  });
+});
+
+const aggroMatch = () =>
+  newMatch({
+    players: [
+      { id: P1, squad: PROTOTYPE_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+      { id: P2, squad: PROTOTYPE_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+    ],
+  });
+
+describe("on-attack shared event", () => {
+  it("buffs Varcolac when another ally attacks (ally-other filter)", () => {
+    const base = aggroMatch();
+    // Deployment: Minotaur 0, Varcolac 1, Garuda 2
+    const minotaurId = creatureIdAt(base, P1, 0);
+    const varcolacId = creatureIdAt(base, P1, 1);
+    const targetId = creatureIdAt(base, P2, 0);
+
+    let state = withPhase(withTokens(base, minotaurId, { martial: 1 }), "combat");
+    state = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: minotaurId,
+        attackId: asAttackId("attack-minotaur-heavy-axe"),
+        targetId,
+      }),
+    );
+
+    expect(state.creatures[varcolacId]?.nextAttackBonus).toBe(1);
+  });
+});
+
+describe("on-take-damage reduce", () => {
+  it("reduces the first hit by 1 once per turn with Hunting Armour", () => {
+    const base = actionsReady([HUNTING_ARMOUR]);
+    const bearerId = creatureIdAt(base, P1, 0);
+    const attackerId = creatureIdAt(base, P2, 0);
+    let state = equip(base, bearerId);
+    state = {
+      ...state,
+      activePlayerId: P2,
+      energy: { holderId: P2, value: 5 },
+      phase: "combat",
+    };
+    state = withTokens(state, attackerId, { martial: 1 });
+
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P2,
+        attackerId,
+        attackId: asAttackId("attack-shield-strike"),
+        targetId: bearerId,
+      }),
+    );
+    // Shield Strike deals 3; Armour reduces first hit by 1 → 2 HP
+    expect(after.creatures[bearerId]?.damage).toBe(2);
+  });
+});
+
+describe("on-discard continuous ritual", () => {
+  it("generates Darkness when Abyssal Sacrifice's controller discards", () => {
+    const base = withEnergy(
+      withHand(withPhase(newMatchWithDecks(), "actions"), P1, [ABYSSAL_SACRIFICE]),
+      P1,
+      10,
+    );
+    const placed = expectOk(
+      advance(base, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+      }),
+    );
+    const ritualId = Object.values(placed.cards).find(
+      (c) => c.cardId === ABYSSAL_SACRIFICE && c.zone === "ritual",
+    )?.id;
+    if (ritualId === undefined) throw new Error("ritual");
+
+    let ready: GameState = {
+      ...placed,
+      cards: {
+        ...placed.cards,
+        [ritualId]: { ...placed.cards[ritualId]!, ritualOrientation: "ready" },
+      },
+    };
+    ready = withEnergy(withHand(withPhase(ready, "actions"), P1, [ECLIPSE]), P1, 10);
+
+    const afterEclipse = expectOk(
+      advance(ready, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+      }),
+    );
+    expect(afterEclipse.pendingDecision?.type).toBe("discard-cards");
+    const hand = afterEclipse.players[P1]?.hand ?? [];
+    const discarded = expectOk(
+      advance(afterEclipse, {
+        type: "RESOLVE_DISCARD",
+        playerId: P1,
+        cardInstanceIds: [hand[0]!],
+      }),
+    );
+    const darkness = usableSymbols(discarded, P1).filter((s) => s.symbol === "darkness");
+    expect(darkness.length).toBeGreaterThanOrEqual(1);
   });
 });

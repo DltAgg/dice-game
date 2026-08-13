@@ -1,102 +1,94 @@
-# 010 — Standing trigger hooks (on-damage, on-roll gear, on-absorb)
+# 010 — Standing trigger hooks (shared events + catalogue filters)
 
-Status: **IMPLEMENTED**
+Status: **IMPLEMENTED** (Phase B + shared-event extensions)
 
-Shared engine hooks so deferred catalogue equipment / overloads / faces can
-fire standing triggers without one-off reducer branches. Unlocks Venomous Fangs,
-Blade of Serene Light, Black Plague, Toxic Heart, Wild Carapace, Archmage's
-Grimoire, Mutant Spores, Wild Echo (and later face On-absorb lines).
+Shared engine hooks so catalogue equipment, creature passives, continuous
+rituals, overloads, and faces fire standing triggers without one-off reducer
+branches.
+
+**Design principle:** one system event → rich context ids → relation filters on
+ability data. Do **not** add coupled types such as `on-ally-attack` or
+`on-opponent-roll-symbol`. See `.cursor/skills/implement-hooks/SKILL.md`.
 
 Design cites: bible §7 (absorb), §14 (roll / onRoll), equipment & overload
-regions in `OPEN_DESIGN`; deferred catalogue §1 / §5 Phase B.
+regions in `OPEN_DESIGN`; deferred catalogue §1 / §5.
 
 ## Intent
 
-When the game performs a natural rules event (HP damage dealt, die shows a
-symbol, symbol absorbed), attached gear and overloaded faces may queue
-data-driven effects. Print clauses stay as catalogue data; the reducer only
-knows the hook kinds.
+When the game performs a natural rules event (attack declared, HP damage,
+die shows a symbol, symbol absorbed, discard, position change), eligible hosts
+may queue data-driven effects. Print clauses stay as catalogue data; the
+reducer only knows the hook kinds and passes instance ids for filtering.
+
+## Hosts
+
+| Host | Eligible when |
+|---|---|
+| Equipment abilities | Attached; bearer alive |
+| Creature `standingAbilities` | Creature alive |
+| Continuous ritual `standingAbilities` | Zone `ritual`, orientation `ready` |
+| Face / overload `onRoll` / `onAbsorb` | Showing face rolled / absorbed |
 
 ## Rules
 
-1. **On-deal-damage (equipment).** After a creature **deals HP damage** (the
-   `damage-dealt` path — buffer/Shield fully consuming the hit does **not**
-   count), fire each `on-deal-damage` ability on equipment attached to the
-   **source** creature. Effects resolve on the resolution stack with
-   `sourceCreatureId` = bearer and `declaredTargetCreatureId` = the creature
-   that took that HP damage (so toxin can target `declared-target`).
-2. **On-toxin-damage (equipment).** When a toxin tick deals HP damage to a
-   creature, fire each `on-toxin-damage` ability on equipment attached to
-   creatures owned by that creature's controller. Effects use the bearer as
-   `sourceCreatureId` (Toxic Heart heals the equipped creature).
-3. **On-roll-symbol (equipment).** During `ROLL_DICE`, for each die that shows
-   a face producing symbol `S`, fire each `on-roll-symbol` ability with
-   `symbol: S` on equipment attached to creatures owned by the rolling player.
-   Once per such die × matching ability (Black Plague: Corruption → 1 damage
-   to the equipped host).
-4. **On-absorb (equipment).** When a creature absorbs a symbol of type `S`,
-   fire each `on-absorb` ability on that creature's equipment whose optional
-   `symbols` filter is empty or includes `S`.
-5. **On-absorb (overload / face).** When a symbol is absorbed from a die
-   showing face card `F`, fire that face's `onAbsorb` effects (controller =
-   absorbing player, `sourceCreatureId` = absorbing creature), then each
-   overload on `F` whose `onAbsorb` is non-empty (same source).
-6. **Order.** Hooks push effects onto the existing resolution stack (reverse
-   push so listed order resolves first-to-last). Absorb / toxin paths
-   `drainResolution` after queueing so choices (discard, choose-creature) pause
-   correctly.
-7. **No new player actions.** Hooks are system-side only.
+1. **On-deal-damage (equipment).** After a creature **deals HP damage**, fire
+   each `on-deal-damage` on that creature's gear. `sourceCreatureId` = bearer;
+   `declaredTargetCreatureId` = damaged creature.
+2. **On-toxin-damage (equipment).** Toxin tick HP → gear on controller's
+   creatures; bearer is source.
+3. **On-roll-symbol.** During `ROLL_DICE`, for each showing symbol `S`, fire
+   matching `on-roll-symbol` abilities whose `rollingPlayer` filter matches
+   (`controller` = **bearer's** owner for equipment, creature owner for
+   passives, ritual owner for rituals; `opponent` / `any` likewise). Default
+   `controller`.
+4. **On-absorb.** When a creature absorbs symbol `S`, fire `on-absorb`
+   abilities whose `absorberRelation` matches (`self` default, `ally`,
+   `ally-other`, `any`) and optional `symbols` filter. Face/overload
+   `onAbsorb` still fire for the showing face (`sourceCreatureId` = absorber).
+5. **On-attack.** When an attack is declared (costs paid, link pushed), fire
+   `on-attack` abilities whose `attackerRelation` / `attackKinds` /
+   `oncePerTurn` match. Context: attacker id + owner, kind, target id.
+   `declared-target` in effects = attack target.
+6. **On-take-damage.** Inside `dealDamage`, before prevent/Shields, apply
+   `reduceBy` from host gear/passives (`oncePerTurn` supported). Optional
+   `effects` queue after HP is dealt.
+7. **On-discard.** After one or more hand cards are discarded, fire
+   `on-discard` with `discardingPlayer` filter (default `controller`).
+8. **On-change-position.** When a creature's position changes (shared mover
+   must call this), fire `on-change-position` with `creatureRelation` filter.
+9. **Order.** Hooks push onto the resolution stack (reverse push). Call sites
+   `drainResolution` so choices pause correctly.
+10. **No new player actions.** Hooks are system-side only.
+
+## Relation filters
+
+| Enum | Meaning |
+|---|---|
+| `self` | Subject instance id === host creature id |
+| `ally` | Same owner (includes self) |
+| `ally-other` | Same owner, different instance id (two Varcolacs buff each other) |
+| `any` | No creature/owner restriction |
+| `controller` / `opponent` / `any` | Player relation vs filter owner (bearer owner for gear) |
 
 ## State Changes
 
-No new top-level `GameState` fields. Catalogue shapes grow:
-
-- `EquipmentAbility` gains `on-deal-damage` | `on-toxin-damage` |
-  `on-roll-symbol` | `on-absorb`.
-- `OverloadRegion.onAbsorb` (optional effects).
-- `FaceCardDefinition.onAbsorb` (effects; empty until a face is wired).
-
-## Actions
-
-None.
-
-## Validation
-
-N/A (automatic).
-
-## Resolution
-
-See Rules. Damage amount for on-deal-damage / on-toxin-damage is HP after
-prevention and Shields (`dealDamage` return value).
-
-## Networking
-
-Host authority unchanged; clients never run hooks locally.
-
-## Persistence
-
-None.
-
-## UI
-
-No dedicated UI. Choose-creature / discard prompts from triggered effects use
-existing pending-decision surfaces.
+- `StandingTrigger` union on equipment / creature / continuous ritual.
+- `CreatureState.nextAttackBonus`, `spentOncePerTurnTriggers`.
+- Effect `grant-next-attack-bonus` (creature-scoped).
+- Face `onAbsorb` / overload `onAbsorb` unchanged.
 
 ## Acceptance Criteria
 
-- [x] Venomous Fangs: attack HP damage → 1 toxin on the damaged creature.
-- [x] Blade of Serene Light: attack HP damage → choose ally heal 1.
-- [x] Black Plague: host's controller rolls Corruption → host takes 1 damage.
-- [x] Toxic Heart: toxin tick HP damage → heal 1 on the Heart bearer.
-- [x] Wild Carapace: absorb Wild → heal 1 on the absorber.
-- [x] Archmage's Grimoire: absorb Arcane/Darkness → draw 1, discard 1.
-- [x] Mutant Spores / Wild Echo: onAbsorb heal / generate Wild.
-- [x] Shield-only or fully prevented hits do not fire on-deal-damage.
-- [x] Face `onAbsorb` infrastructure present; modellable CSV clauses wired
-  (Conversion / Vital Spark / Primordial Fury / Impact absorb; Insight / Aegis /
-  Venom / Vital Spark roll). Remaining print-only faces keep empty arrays.
+- [x] Prior Phase B cards (Fangs, Blade, Plague, Heart, Carapace, Grimoire,
+  Spores, Echo) still pass.
+- [x] Face absorb/roll partial wiring still passes.
+- [x] Varcolac: ally-other attack → `nextAttackBonus` on Varcolac.
+- [x] Hunting Armour: first incoming damage −1 once per turn.
+- [x] Abyssal Sacrifice: discard → generate Darkness while ready.
+- [x] Black Plague uses explicit `rollingPlayer: "controller"` (bearer owner).
+- [x] Corrupting Elder / Serrated Stinger wired in catalogue (opponent roll /
+  ally special → toxin).
 
 ## Tests
 
-- [x] `src/game/reducer/triggers.test.ts` — each wired card above.
-- [x] Existing equipment attach tests still pass (Fangs/Plague no longer “deferred”).
+- [x] `src/game/reducer/triggers.test.ts`
