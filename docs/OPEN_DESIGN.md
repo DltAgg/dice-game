@@ -45,8 +45,12 @@ different turn-end mechanisms. The decision:
 `PLAY_CARD` / `FORGE_CARD`
 
 Figma header `?` is not "uncosted". It means **pay at least 1 Energy, and as
-much more as you want**. Catalogue entries use `energyCost: 1` with
-`variableEnergy: true`. The declared `energyPaid` must be an integer ≥ 1.
+much more as you want**. Engine support: `energyCost` minimum +
+`variableEnergy: true`, with declared `energyPaid` an integer ≥ that minimum.
+
+**TEMP authoring (2026-08-13):** catalogue cards that print `?` currently use
+fixed `energyCost: 2` and omit `variableEnergy` until spend UX / scaling
+effects are ready — see comment in `src/game/content/cards.ts`.
 
 Effects that scale off the amount spent (e.g. "spent 3: draw 1") are not yet in
 `EffectDefinition`; park those clauses in `DEFERRED_CATALOGUE.md` until a

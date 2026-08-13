@@ -10,7 +10,7 @@ import { faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { overloadsOf, overloadsOnFace, graveyardOf } from "../rules/cards.js";
+import { overloadsOf, overloadsOnFace, graveyardOf, resolveEnergyPayment } from "../rules/cards.js";
 import { advanceResolvingChain as advance } from "../testing/scenario.js";
 import {
   eventTypes,
@@ -264,8 +264,8 @@ describe("forging and face-card overloads", () => {
   });
 });
 
-describe("variable Energy costs (?)", () => {
-  it("pays the minimum (1) when energyPaid is omitted", () => {
+describe("former variable Energy costs (? → temporary fixed 2)", () => {
+  it("pays the fixed catalogue cost of 2", () => {
     const state = actionsReady([MARTIAL_BLESSING]);
     const result = advance(state, {
       type: "PLAY_CARD",
@@ -276,37 +276,20 @@ describe("variable Energy costs (?)", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.energy).toEqual({ holderId: P1, value: 9 });
+    expect(result.state.energy).toEqual({ holderId: P1, value: 8 });
     expect(overloadsOf(result.state, P1)).toHaveLength(1);
   });
+});
 
-  it("pays a declared amount above the minimum", () => {
-    const state = actionsReady([MARTIAL_BLESSING]);
-    const result = advance(state, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(state, P1, 0),
-      declaredFaceCardId: faceIdForSymbol("arcane"),
-      energyPaid: 4,
-    });
+describe("resolveEnergyPayment variable path", () => {
+  it("still accepts energyPaid at or above the minimum when variableEnergy is set", () => {
+    const definition = {
+      energyCost: 1,
+      variableEnergy: true,
+    } as import("../model/cards.js").CardDefinition;
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.state.energy).toEqual({ holderId: P1, value: 6 });
-  });
-
-  it("refuses energyPaid below the minimum", () => {
-    const state = actionsReady([MARTIAL_BLESSING]);
-    const result = advance(state, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(state, P1, 0),
-      declaredFaceCardId: faceIdForSymbol("arcane"),
-      energyPaid: 0,
-    });
-
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.error).toBe("INVALID_TARGET");
+    expect(resolveEnergyPayment(definition, undefined)).toBe(1);
+    expect(resolveEnergyPayment(definition, 4)).toBe(4);
+    expect(resolveEnergyPayment(definition, 0)).toBeNull();
   });
 });

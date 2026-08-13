@@ -14,7 +14,10 @@ import { asCardId, type CardId } from "../model/ids.js";
  * the layouts). That is not a stub: bible §19 allows a card whose only region
  * is the forge.
  *
- * `?` header costs are `variableEnergy: true` with `energyCost: 1` (pay 1+).
+ * TEMP (2026-08-13): printed `?` Energy costs are authored as fixed `energyCost: 2`
+ * (no `variableEnergy`) until variable spend UX / scaling effects are wired.
+ * Restore `variableEnergy: true` with minimum 1 when that lands — see
+ * docs/OPEN_DESIGN.md and resolveEnergyPayment.
  */
 
 const card = (definition: CardDefinition): CardDefinition => definition;
@@ -517,12 +520,11 @@ const DEFINITIONS: readonly CardDefinition[] = [
     },
   }),
 
-  // --- Aggro deck (variable `?` costs + remaining equipment / rituals) ---
+  // --- Aggro deck (printed `?` → temporary fixed cost 2; see file header) ---
   card({
     id: BLESSING_OF_THE_HUNT,
     name: "Blessing of the Hunt",
-    energyCost: 1,
-    variableEnergy: true,
+    energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
     attribute: "arcane",
@@ -535,8 +537,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: MARTIAL_BLESSING,
     name: "Martial Blessing",
-    energyCost: 1,
-    variableEnergy: true,
+    energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
     attribute: "arcane",
@@ -549,8 +550,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: TOXIC_BLESSING,
     name: "Toxic Blessing",
-    energyCost: 1,
-    variableEnergy: true,
+    energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
     attribute: "arcane",
@@ -564,8 +564,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: MUTANT_SPORES,
     name: "Mutant Spores",
-    energyCost: 1,
-    variableEnergy: true,
+    energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
     attribute: "arcane",
@@ -580,8 +579,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: WILD_ECHO,
     name: "Wild Echo",
-    energyCost: 1,
-    variableEnergy: true,
+    energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
     attribute: "corruption",
@@ -597,8 +595,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: ADRENALINE,
     name: "Adrenaline",
-    energyCost: 1,
-    variableEnergy: true,
+    energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
     attribute: "corruption",
@@ -615,8 +612,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: RUST,
     name: "Rust",
-    energyCost: 1,
-    variableEnergy: true,
+    energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
     attribute: "corruption",

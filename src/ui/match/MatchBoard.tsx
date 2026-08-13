@@ -14,6 +14,7 @@ import {
   getCard,
   getCreatureDefinition,
   getFaceCard,
+  graveyardOf,
   handOf,
   hasPlayableEffect,
   isFaceCardInPool,
@@ -739,18 +740,23 @@ export function MatchBoard() {
             </div>
           )}
 
-          <HandStrip
-            state={state}
-            playerId={dockPlayerId}
-            phase={phase}
-            canAct={canAct}
-            selected={
-              intent.kind === "play" || intent.kind === "forge" ? intent.cardInstanceId : null
-            }
-            onPlay={beginPlay}
-            onForge={beginForge}
-            onCancel={clearIntent}
-          />
+          <div className="flex items-stretch gap-3 overflow-visible">
+            <div className="min-w-0 flex-1 overflow-visible">
+              <HandStrip
+                state={state}
+                playerId={dockPlayerId}
+                phase={phase}
+                canAct={canAct}
+                selected={
+                  intent.kind === "play" || intent.kind === "forge" ? intent.cardInstanceId : null
+                }
+                onPlay={beginPlay}
+                onForge={beginForge}
+                onCancel={clearIntent}
+              />
+            </div>
+            <GraveyardDock state={state} playerId={dockPlayerId} />
+          </div>
         </div>
       </div>
     </div>
@@ -1661,6 +1667,105 @@ function SymbolPool({
         </button>
       ))}
     </div>
+  );
+}
+
+function GraveyardDock({
+  state,
+  playerId,
+}: {
+  state: GameState;
+  playerId: PlayerId;
+}) {
+  const [open, setOpen] = useState(false);
+  const gy = graveyardOf(state, playerId);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [playerId]);
+
+  return (
+    <section
+      className={
+        open
+          ? "flex w-56 shrink-0 flex-col rounded-lg border border-stone-800/80 bg-black/30 p-3"
+          : "flex w-[4.5rem] shrink-0 flex-col rounded-lg border border-stone-800/80 bg-black/30 p-2"
+      }
+    >
+      <button
+        type="button"
+        className={
+          open
+            ? "mb-2 flex w-full items-center justify-between gap-2 text-left"
+            : "flex h-full min-h-[5.5rem] w-full flex-col items-center justify-center gap-1 text-center"
+        }
+        aria-expanded={open}
+        aria-label={open ? "Hide graveyard" : `View graveyard (${String(gy.length)})`}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {open ? (
+          <>
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
+              GY ({gy.length})
+            </span>
+            <span className="text-[0.65rem] uppercase tracking-wide text-stone-500">Close</span>
+          </>
+        ) : (
+          <>
+            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-amber-200/70">
+              GY
+            </span>
+            <span className="text-lg font-medium tabular-nums text-stone-100">{gy.length}</span>
+            <span className="text-[0.6rem] uppercase tracking-wide text-stone-500">View</span>
+          </>
+        )}
+      </button>
+
+      {open && (
+        <ul className="max-h-40 space-y-2 overflow-y-auto pr-0.5">
+          {gy.map((card) => {
+            const def = getCard(card.cardId);
+            return (
+              <li
+                key={card.id}
+                className="group relative rounded border border-stone-800 bg-stone-950/80 px-2 py-1.5"
+              >
+                <p className="truncate text-xs font-medium text-stone-200">
+                  {def?.name ?? card.cardId}
+                </p>
+                <p className="mt-0.5 text-[0.65rem] text-stone-500">
+                  {def === undefined
+                    ? "—"
+                    : `${def.variableEnergy === true ? "?" : def.energyCost}E · ${def.subtypes.join("/")}`}
+                </p>
+                {def !== undefined && (
+                  <div
+                    className="pointer-events-none absolute bottom-[calc(100%+0.4rem)] left-0 z-40 hidden w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+                    role="tooltip"
+                  >
+                    <p className="text-sm font-medium text-stone-100">{def.name}</p>
+                    <p className="mt-1 text-xs text-stone-400">
+                      {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
+                    </p>
+                    <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                      {[
+                        formatTypeLine(def),
+                        formatForgeLine(def.forge),
+                        "or",
+                        ...formatEffectRegion(def),
+                      ].join("\n")}
+                    </pre>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+          {gy.length === 0 && (
+            <li className="text-xs text-stone-600">Empty graveyard</li>
+          )}
+        </ul>
+      )}
+    </section>
   );
 }
 

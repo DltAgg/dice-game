@@ -61,9 +61,9 @@ describe("English card printing", () => {
     ]);
   });
 
-  it("prints ? for variable Energy costs", () => {
+  it("prints fixed Energy for former ? costs (temporary catalogue decision)", () => {
     const card = getCard(MARTIAL_BLESSING);
     if (card === undefined) throw new Error("missing card");
-    expect(formatEnergyCost(card)).toBe("?");
+    expect(formatEnergyCost(card)).toBe("2");
   });
 });
