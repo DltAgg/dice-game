@@ -269,8 +269,9 @@ printed header cost.
 - Forging may name an opposing die when the card's forge region says so
   (Black Plague).
 
-Still out: roll-triggered equipment (Black Plague's Corruption damage) and the
-rest of the equipment catalogue.
+Still out: the rest of the equipment catalogue (cost reduction, position
+triggers, …). Roll-triggered gear (Black Plague) and on-damage / on-absorb
+hooks landed in `010-trigger-hooks`.
 
 ### Forging draws a card
 

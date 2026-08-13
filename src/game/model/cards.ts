@@ -86,13 +86,38 @@ export interface EffectRegion {
 
 /**
  * Standing abilities granted while the card is attached to a creature. Kept as
- * a closed union of what the reducer actually honours. Equipment may still
- * attach with an empty `abilities` list when its trigger is deferred (e.g.
- * Venomous Fangs, Black Plague).
+ * a closed union of what the reducer actually honours. Trigger kinds are fired
+ * by shared hooks (`010-trigger-hooks`); equipment may still attach with an
+ * empty list when a different clause is deferred.
  */
 export type EquipmentAbility =
   /** Adds to the damage of every attack the bearer makes (War Axe). */
-  { readonly type: "attack-damage-bonus"; readonly amount: number };
+  { readonly type: "attack-damage-bonus"; readonly amount: number }
+  /** After the bearer deals HP damage (Venomous Fangs, Blade of Serene Light). */
+  | {
+      readonly type: "on-deal-damage";
+      readonly effects: readonly EffectDefinition[];
+    }
+  /** After a toxin tick deals HP damage to an ally of the bearer (Toxic Heart). */
+  | {
+      readonly type: "on-toxin-damage";
+      readonly effects: readonly EffectDefinition[];
+    }
+  /** When the host's controller rolls a die showing this symbol (Black Plague). */
+  | {
+      readonly type: "on-roll-symbol";
+      readonly symbol: SymbolType;
+      readonly effects: readonly EffectDefinition[];
+    }
+  /**
+   * When the host absorbs a symbol. Optional `symbols` filter; omit to fire on
+   * any absorb (Wild Carapace, Archmage's Grimoire).
+   */
+  | {
+      readonly type: "on-absorb";
+      readonly symbols?: readonly SymbolType[];
+      readonly effects: readonly EffectDefinition[];
+    };
 
 /**
  * How the card attaches. Present only on Equipment subtypes; its presence is
@@ -120,6 +145,11 @@ export interface OverloadRegion {
   readonly faceKinds?: readonly FaceKind[];
   /** Fired when any die face showing this face card is rolled. */
   readonly onRoll: readonly EffectDefinition[];
+  /**
+   * Fired when a symbol is absorbed from a die showing this face card
+   * (Mutant Spores, Wild Echo). Omit or leave empty when deferred.
+   */
+  readonly onAbsorb?: readonly EffectDefinition[];
 }
 
 /**

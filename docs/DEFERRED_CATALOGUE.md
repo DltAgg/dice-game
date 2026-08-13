@@ -26,10 +26,10 @@ needs them — never as unreachable stubs.
 | **Replay GY card effect** | Paradox | Ignore requirements |
 | **Symbol conversion** | Collapse of Reality, Void Summoner Rupture | Change rolled/available symbols |
 | **Reposition / push / swap** | Varcolac, Garuda, Twin Blades, Predator's Claws, … | Board positions exist; movers do not |
-| **On-damage triggers** | Venomous Fangs → apply toxin; Blade of Serene Light → heal | Hook after damage resolves |
-| **Roll-triggered equipment** | Black Plague (Corruption → 1 dmg) | Hook after roll / retain keep |
-| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, CSV face On absorb lines, … | |
-| **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Needs shared absorb hook before wiring `onRoll`-only halves |
+| **On-damage triggers** | Venomous Fangs → apply toxin; Blade of Serene Light → heal | **IMPLEMENTED** (`010`) — `on-deal-damage` / `on-toxin-damage` |
+| **Roll-triggered equipment** | Black Plague (Corruption → 1 dmg) | **IMPLEMENTED** (`010`) — `on-roll-symbol` |
+| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, CSV face On absorb lines, … | **PARTIAL** (`010`) — hook live; Rust / Mirrored Rune / CSV faces still deferred |
+| **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Hook ready (`FaceCardDefinition.onAbsorb`); print lines not wired |
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
 | **Attack-damage conditional buffs** | Varcolac passive (+1 after ally attack); War Banner (left ally) | |
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
@@ -62,8 +62,6 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Card | Gap |
 |---|---|
 | Arcane Echo (tactic) | Re-apply die modifiers (forge-only play) |
-| Venomous Fangs | On-damage → toxin |
-| Black Plague | Equip works; Corruption roll → damage missing |
 | Great Contamination | Ritual place; mass forge-on-opp deferred |
 | Extermination | Ritual place; consume + split damage deferred |
 | Paradox | Ritual place (no Active when); GY replay deferred |
@@ -71,26 +69,24 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Dark Pact | Forge-only; deck→GY deferred |
 | Mind Control | Forge-only; strip overloads deferred |
 | Ritual of Contamination | Forge-only; forge-from-effect deferred |
-| Blade of Serene Light | Equip; heal-on-damage deferred |
-| Archmage's Grimoire | Equip + attr gate; absorb→draw/discard deferred |
 | Tome of Interdiction | Equip; cost reduction deferred |
 | Abyssal Sacrifice | Ritual place; discard→generate Darkness deferred |
 | Mirrored Rune | Equip; absorb→copy deferred |
 | Toxic Blessing | Overload attach + Toxin gate; all-attacks toxin deferred |
-| Mutant Spores | Overload attach + Toxin gate; on-absorb heal deferred |
-| Wild Echo | Overload attach + Natural Wild gate; on-absorb generate deferred |
 | Adrenaline | Overload attach + Natural Wild gate; reroll clause deferred |
 | Rust | Overload attach + Natural Martial gate; ignore shield deferred |
 | Predator's Claws | Equip; absorb→move deferred |
 | Serrated Stinger | Ritual place; special→toxin deferred |
 | War Banner | Equip; left-ally +1 basic deferred |
 | Alpha's Hide | Equip; special→generate Wild deferred |
-| Toxic Heart | Equip; toxin-dmg→heal deferred |
 | Hunter's Collar | Equip; position→Martial deferred |
 | Insignia of Command | Equip + Martial gate; attack→reposition deferred |
 | Hunting Armour | Equip; first damage −1 deferred |
 | Twin Blades | Equip; basic→push deferred |
-| Wild Carapace | Equip; absorb Wild→heal deferred |
+
+Fully wired in `010` (removed from gaps): Venomous Fangs, Black Plague, Blade of
+Serene Light, Archmage's Grimoire, Mutant Spores, Wild Echo, Toxic Heart, Wild
+Carapace.
 
 ### Fully wired (for reference)
 
@@ -161,9 +157,10 @@ Crush and Rending Claw are playable on roll.
 
 When returning here at the end of the product loop:
 
-1. Implement **reaction chain** first — unlocks negation / prevent honestly.
+1. Implement **reaction chain** first — unlocks negation / prevent honestly. (**done** `008`/`009`)
 2. Add **trigger hooks** (on-damage, on-roll equipment, on-absorb) as shared
-   infrastructure, then wire Venomous Fangs / Black Plague / passives.
+   infrastructure, then wire Venomous Fangs / Black Plague / absorb gear.
+   (**done** `010` for the listed cards; CSV face On-absorb + remaining gear still open)
 3. Grow `EffectDefinition` only when a concrete card needs the member.
 4. Finish deferred tactic shells against the same vocabulary.
 5. Finish face specials and creature riders against the same vocabulary.

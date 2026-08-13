@@ -84,7 +84,7 @@ describe("equipment", () => {
     expect(eventTypes(result)).toContain("equipment-attached");
   });
 
-  it("lets Venomous Fangs attach even though its toxin trigger is deferred", () => {
+  it("lets Venomous Fangs attach with its on-deal-damage toxin trigger", () => {
     const state = actionsReady([VENOMOUS_FANGS]);
     const creatureId = creatureIdAt(state, P1, 0);
 

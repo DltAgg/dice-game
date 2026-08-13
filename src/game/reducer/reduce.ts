@@ -66,6 +66,10 @@ import {
   tickToxins,
 } from "./resolution.js";
 import {
+  fireEquipmentOnRollSymbol,
+  queueAbsorbTriggers,
+} from "./triggers.js";
+import {
   attachEquipment,
   attachOverload,
   clearOverloadsOnFace,
@@ -256,6 +260,7 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
     // face card (shared across dice). Absorb vs pool does not gate them.
     fireFaceOnRoll(draft, playerId, die.id, slotIndex);
     fireOverloadsForShownFace(draft, playerId, slot.faceCardId);
+    fireEquipmentOnRollSymbol(draft, playerId, face.symbol);
   }
 
   drainResolution(draft);
@@ -499,6 +504,8 @@ function absorbSymbol(
     grantShield(draft, creatureId, 1);
   }
 
+  queueAbsorbTriggers(draft, playerId, creatureId, symbol.symbol, symbol.sourceDieId);
+  drainResolution(draft);
   return null;
 }
 

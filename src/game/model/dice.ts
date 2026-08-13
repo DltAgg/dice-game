@@ -36,6 +36,11 @@ export interface FaceCardDefinition {
    * leave this empty until every clause is modelled.
    */
   readonly onRoll: readonly EffectDefinition[];
+  /**
+   * Fired when a symbol produced by a die showing this face is absorbed.
+   * Empty until On-absorb print lines are wired (`010-trigger-hooks`).
+   */
+  readonly onAbsorb: readonly EffectDefinition[];
   /** Capacity for overloads attached to this face card (shared across all slots). */
   readonly maxOverloads: number;
   /**

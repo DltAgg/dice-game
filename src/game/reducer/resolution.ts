@@ -11,6 +11,7 @@ import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { opponentOf } from "../rules/creatures.js";
 import { emit, nextInstanceId, patchCreature, type Draft } from "./draft.js";
+import { fireOnDealDamage, fireOnToxinDamage } from "./triggers.js";
 import {
   destroyEquipment,
   drawCards,
@@ -172,7 +173,12 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
   switch (effect.type) {
     case "damage": {
       const targetId = resolveTarget(draft, pending, effect.target);
-      if (targetId !== null) dealDamage(draft, targetId, effect.amount);
+      if (targetId !== null) {
+        const dealt = dealDamage(draft, targetId, effect.amount);
+        if (dealt > 0 && pending.sourceCreatureId !== null) {
+          fireOnDealDamage(draft, pending.sourceCreatureId, targetId);
+        }
+      }
       return false;
     }
     case "heal": {
@@ -464,16 +470,22 @@ export function tickToxins(draft: Draft, ownerId: PlayerId): void {
     const creature = draft.creatures[creatureId];
     if (creature === undefined || creature.defeated || creature.toxinMarkers <= 0) continue;
     emit(draft, { type: "toxin-tick", creatureId, amount: creature.toxinMarkers });
-    dealDamage(draft, creatureId, creature.toxinMarkers);
+    const dealt = dealDamage(draft, creatureId, creature.toxinMarkers);
+    if (dealt > 0) fireOnToxinDamage(draft, creatureId);
   }
+  drainResolution(draft);
 }
 
-export function dealDamage(draft: Draft, creatureId: CreatureId, amount: number): void {
+/**
+ * Applies damage with prevent → Shield → HP. Returns HP damage actually dealt
+ * (0 if fully prevented or the creature was already gone).
+ */
+export function dealDamage(draft: Draft, creatureId: CreatureId, amount: number): number {
   const creature = draft.creatures[creatureId];
-  if (creature === undefined || creature.defeated) return;
+  if (creature === undefined || creature.defeated) return 0;
 
   const definition = getCreatureDefinition(creature.definitionId);
-  if (definition === undefined) return;
+  if (definition === undefined) return 0;
 
   let remaining = amount;
 
@@ -494,10 +506,10 @@ export function dealDamage(draft: Draft, creatureId: CreatureId, amount: number)
     firePreventDraw(draft, creature.ownerId);
   }
 
-  if (remaining <= 0) return;
+  if (remaining <= 0) return 0;
 
   const refreshed = draft.creatures[creatureId];
-  if (refreshed === undefined || refreshed.defeated) return;
+  if (refreshed === undefined || refreshed.defeated) return 0;
 
   const fromShield = Math.min(refreshed.shields, remaining);
   if (fromShield > 0) {
@@ -512,22 +524,23 @@ export function dealDamage(draft: Draft, creatureId: CreatureId, amount: number)
     });
   }
 
-  if (remaining <= 0) return;
+  if (remaining <= 0) return 0;
 
   const afterShield = draft.creatures[creatureId];
-  if (afterShield === undefined || afterShield.defeated) return;
+  if (afterShield === undefined || afterShield.defeated) return 0;
 
   const damage = afterShield.damage + remaining;
   const defeated = damage >= definition.life;
   patchCreature(draft, creatureId, { damage, defeated });
   emit(draft, { type: "damage-dealt", creatureId, amount: remaining });
 
-  if (!defeated) return;
+  if (!defeated) return remaining;
 
   emit(draft, { type: "creature-defeated", creatureId });
   releaseDiceHeldBy(draft, creatureId);
   releaseEquipmentOn(draft, creatureId);
   checkVictory(draft);
+  return remaining;
 }
 
 function healCreature(draft: Draft, creatureId: CreatureId, amount: number): void {

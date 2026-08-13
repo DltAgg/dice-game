@@ -106,6 +106,7 @@ const namedSynthetic = (
     symbol,
     rulesText,
     onRoll: [],
+    onAbsorb: [],
     maxOverloads,
     forgeRestriction: null,
   });
@@ -118,6 +119,7 @@ const naturalFace = (attribute: Attribute): FaceCardDefinition =>
     symbol: attribute,
     rulesText: "",
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 1,
     forgeRestriction: null,
   });
@@ -130,6 +132,7 @@ const genericSynthetic = (attribute: Attribute): FaceCardDefinition =>
     symbol: attribute,
     rulesText: "",
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 2,
     forgeRestriction: null,
   });
@@ -144,6 +147,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: SHIELD,
     rulesText: "",
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 1,
     forgeRestriction: null,
   }),
@@ -157,6 +161,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       "Copy the other die's face, applying its effects, attributes, and overloads.",
     // Copying a face with overloads is not modelled yet.
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 0,
     forgeRestriction: "echo-cards",
   }),
@@ -168,6 +173,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     // No printing supplied yet on the Face card page.
     rulesText: "",
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 2,
     forgeRestriction: null,
   }),
@@ -180,6 +186,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       "You may distribute the damage of the next attack freely among enemies within [Range].",
     // Attack-damage splitting is not modelled yet.
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 3,
     forgeRestriction: null,
   }),
@@ -190,6 +197,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: "wild",
     rulesText: "A targeted enemy creature loses 3 [Shield].",
     onRoll: [{ type: "remove-shield", amount: 3, target: { kind: "most-shielded-enemy" } }],
+    onAbsorb: [],
     maxOverloads: 3,
     forgeRestriction: null,
   }),
@@ -200,6 +208,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: "martial",
     rulesText: "The next attack this turn deals +1 damage.",
     onRoll: [{ type: "next-attack-bonus", amount: 1 }],
+    onAbsorb: [],
     maxOverloads: 3,
     forgeRestriction: null,
   }),
@@ -211,6 +220,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     // No printing supplied yet on the Face card page.
     rulesText: "",
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 2,
     forgeRestriction: null,
   }),
@@ -224,6 +234,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       "You may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
     // Opponent draw + retain + activated remove are not modelled yet.
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 1,
     forgeRestriction: null,
   }),
@@ -238,6 +249,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       "You may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
     // Pestilence counters and adjacent forge are not modelled yet.
     onRoll: [],
+    onAbsorb: [],
     maxOverloads: 2,
     forgeRestriction: null,
   }),

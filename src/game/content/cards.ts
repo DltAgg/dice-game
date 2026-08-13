@@ -220,10 +220,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
     rulesText: "Whenever this creature deals damage, apply 1 Toxin marker.",
-    // On-damage → toxin is deferred; attach still works (same pattern as Black Plague).
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-deal-damage",
+          effects: [{ type: "apply-toxin", amount: 1, target: { kind: "declared-target" } }],
+        },
+      ],
     },
   }),
   card({
@@ -250,10 +254,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "opponent-die" },
     rulesText: "May be equipped to an opposing creature. Whenever it rolls Corruption, it takes 1 damage.",
-    // Standing trigger needs a roll-hook; the forge region is what this slice unlocks.
     equipment: {
       mayTargetOpponent: true,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-roll-symbol",
+          symbol: "corruption",
+          effects: [{ type: "damage", amount: 1, target: { kind: "source-creature" } }],
+        },
+      ],
     },
   }),
 
@@ -427,7 +436,12 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "Whenever this creature deals damage, heal 1 on an allied creature.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-deal-damage",
+          effects: [{ type: "heal", amount: 1, target: { kind: "choose-ally" } }],
+        },
+      ],
     },
   }),
   card({
@@ -443,7 +457,16 @@ const DEFINITIONS: readonly CardDefinition[] = [
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["arcane", "darkness"],
-      abilities: [],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["arcane", "darkness"],
+          effects: [
+            { type: "draw-cards", amount: 1 },
+            { type: "discard-cards", amount: 1 },
+          ],
+        },
+      ],
     },
   }),
   card({
@@ -547,6 +570,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     overload: {
       faceSymbols: ["toxin"],
       onRoll: [],
+      onAbsorb: [{ type: "heal", amount: 1, target: { kind: "most-damaged-ally" } }],
     },
   }),
   card({
@@ -563,6 +587,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
       onRoll: [],
+      onAbsorb: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
     },
   }),
   card({
@@ -667,7 +692,12 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "Whenever a Toxin marker deals damage, heal 1.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-toxin-damage",
+          effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
+        },
+      ],
     },
   }),
   card({
@@ -739,7 +769,13 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "Whenever it absorbs Wild, heal 1.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["wild"],
+          effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
+        },
+      ],
     },
   }),
 ];
