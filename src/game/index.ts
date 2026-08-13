@@ -20,7 +20,7 @@ export * from "./rules/symbols.js";
 export * from "./rules/targeting.js";
 export * from "./rules/tokens.js";
 
-export { ALL_CARDS, CARDS, PROTOTYPE_DECK, getCard } from "./content/cards.js";
+export { ALL_CARDS, CARDS, CONTROL_DECK, PROTOTYPE_DECK, getCard } from "./content/cards.js";
 export {
   attributeLabel,
   formatEffectRegion,
@@ -31,6 +31,7 @@ export {
 } from "./content/cardText.js";
 export {
   ALL_CREATURES,
+  CONTROL_SQUAD,
   CREATURES,
   ENGINE_DEMO_SQUAD,
   PROTOTYPE_SQUAD,
@@ -48,6 +49,7 @@ export {
   ARCANE_ECHO_FACE,
   BASIC_FACE_CARDS,
   BLADE_RAIN,
+  CONTROL_FACE_DECK,
   CRUSH,
   FACE_CARDS,
   FORBIDDEN_HERITAGE,

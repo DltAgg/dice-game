@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import type { DeckRepository } from "./repository.js";
-import { buildPrototypeSavedDeck, PROTOTYPE_SAVED_DECK_ID } from "./prototype.js";
+import { isBuiltinDeckId, withBuiltinDecks } from "./prototype.js";
 import { DECK_SCHEMA_VERSION, type SavedDeck } from "./types.js";
 
 const STORAGE_KEY = "dice-skirmish.decks.v1";
@@ -35,7 +35,7 @@ function readStorage(): SavedDeck[] {
     if (blob.schemaVersion !== DECK_SCHEMA_VERSION || !Array.isArray(blob.decks)) {
       return [];
     }
-    return blob.decks.filter(isSavedDeck).filter((deck) => deck.id !== PROTOTYPE_SAVED_DECK_ID);
+    return blob.decks.filter(isSavedDeck).filter((deck) => !isBuiltinDeckId(deck.id));
   } catch {
     return [];
   }
@@ -43,13 +43,9 @@ function readStorage(): SavedDeck[] {
 
 function writeStorage(decks: readonly SavedDeck[]): void {
   if (typeof localStorage === "undefined") return;
-  const userDecks = decks.filter((deck) => deck.id !== PROTOTYPE_SAVED_DECK_ID);
+  const userDecks = decks.filter((deck) => !isBuiltinDeckId(deck.id));
   const blob: StorageBlob = { schemaVersion: DECK_SCHEMA_VERSION, decks: userDecks };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(blob));
-}
-
-function listed(decks: readonly SavedDeck[]): SavedDeck[] {
-  return [buildPrototypeSavedDeck(), ...decks.filter((d) => d.id !== PROTOTYPE_SAVED_DECK_ID)];
 }
 
 /**
@@ -58,13 +54,13 @@ function listed(decks: readonly SavedDeck[]): SavedDeck[] {
  */
 export function createLocalStorageDeckRepository(): DeckRepository {
   return {
-    list: () => listed(readStorage()),
+    list: () => withBuiltinDecks(readStorage()),
 
-    get: (id) => listed(readStorage()).find((deck) => deck.id === id),
+    get: (id) => withBuiltinDecks(readStorage()).find((deck) => deck.id === id),
 
     save: (draft, id) => {
-      if (id === PROTOTYPE_SAVED_DECK_ID) {
-        throw new Error("deck repository: cannot overwrite the prototype deck");
+      if (id !== undefined && isBuiltinDeckId(id)) {
+        throw new Error("deck repository: cannot overwrite a builtin deck");
       }
       const current = readStorage();
       const existing = id !== undefined ? current.find((deck) => deck.id === id) : undefined;
@@ -82,7 +78,7 @@ export function createLocalStorageDeckRepository(): DeckRepository {
     },
 
     remove: (id) => {
-      if (id === PROTOTYPE_SAVED_DECK_ID) return false;
+      if (isBuiltinDeckId(id)) return false;
       const current = readStorage();
       const next = current.filter((deck) => deck.id !== id);
       if (next.length === current.length) return false;

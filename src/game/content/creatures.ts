@@ -335,7 +335,17 @@ export const ENGINE_DEMO_SQUAD: readonly CreatureDefinitionId[] = [
 ];
 
 /**
- * Builtin prototype loadout squad: Martial / Wild aggro (bible §27).
+ * Builtin Aggro loadout squad: Martial / Wild pressure (bible §27).
  * Deployment order: Minotaur front, Varcolac mid, Garuda back.
  */
 export const PROTOTYPE_SQUAD: readonly CreatureDefinitionId[] = [MINOTAUR, VARCOLAC, GARUDA];
+
+/**
+ * Builtin Control loadout squad: Arcane engine (bible §27).
+ * Deployment order: Archmage, Corrupting Elder, Void Summoner.
+ */
+export const CONTROL_SQUAD: readonly CreatureDefinitionId[] = [
+  ARCHMAGE,
+  CORRUPTING_ELDER,
+  VOID_SUMMONER,
+];

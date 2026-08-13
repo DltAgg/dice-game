@@ -548,3 +548,23 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   STAIN,
   FORBIDDEN_HERITAGE,
 ];
+
+/**
+ * Builtin control face deck — twelve unique cards, ≤3 per attribute.
+ * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
+ * Darkness / Corruption / Arcane synthetics for rituals and library forges.
+ */
+export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
+  naturalFaceId("darkness"),
+  syntheticFaceId("darkness"),
+  SHADOW_ECHO,
+  naturalFaceId("corruption"),
+  FORBIDDEN_HERITAGE,
+  PESTILENT_PLAGUE,
+  syntheticFaceId("arcane"),
+  ARCANE_ECHO_FACE,
+  INSIGHT_RUNE,
+  naturalFaceId("mechanical"),
+  GEAR,
+  CATALYST,
+];

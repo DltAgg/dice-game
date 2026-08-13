@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY } from "../content/cards.js";
 import {
   ARCANE_ECHO_FACE,
+  CONTROL_FACE_DECK,
   ENGINE_TEST_FACE_DECK,
   naturalFaceId,
   PROTOTYPE_FACE_DECK,
@@ -33,6 +34,12 @@ describe("face deck", () => {
     expect(validateFaceDeck(PROTOTYPE_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
     expect(PROTOTYPE_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
     expect(new Set(PROTOTYPE_FACE_DECK).size).toBe(PROTOTYPE_FACE_DECK.length);
+  });
+
+  it("keeps the builtin control face deck legal under attribute caps", () => {
+    expect(validateFaceDeck(CONTROL_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
+    expect(CONTROL_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(new Set(CONTROL_FACE_DECK).size).toBe(CONTROL_FACE_DECK.length);
   });
 
   it("refuses a face deck over the twelve-card cap", () => {

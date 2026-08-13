@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck, type SavedDeck } from "@/decks";
+import {
+  buildBuiltinDecks,
+  validateSavedDeck,
+  type SavedDeck,
+} from "@/decks";
 import { useDeckStore } from "@/store/deckStore";
 import { useMatchStore } from "@/store/matchStore";
 
@@ -26,7 +30,11 @@ export function Lobby() {
   const deckOptions =
     decks.length > 0
       ? decks
-      : [{ id: PROTOTYPE_SAVED_DECK_ID, name: "Aggro", builtin: true as const }];
+      : buildBuiltinDecks().map((deck) => ({
+          id: deck.id,
+          name: deck.name,
+          builtin: true as const,
+        }));
 
   const legalityById = useMemo(() => {
     const map = new Map<string, ReturnType<typeof validateSavedDeck>>();
