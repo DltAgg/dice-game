@@ -51,7 +51,9 @@ encoded yet.
 | Six Figma creatures as content + English `CreatureCard` UI | Passives, riders, Fast-game variants — see DEFERRED_CATALOGUE |
 | Basic/Special costs and primary damage effects | |
 
-The vertical-slice prototype squad (Warden / Lumin Adept / Rune Binder) remains
-for engine tests; it is not on the Figma page.
+The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder) has
+been removed; hotseat and scenario matches use the Figma Aggro or Control
+trios. Absorb ↔ resolve coverage lives on thin engine abilities on the Aggro
+squad until print defines them.
 
 Run `npm run dev` to see the catalogue.

@@ -28,8 +28,8 @@ needs them — never as unreachable stubs.
 | **Reposition / push / swap** | Varcolac, Garuda, Twin Blades, Predator's Claws, … | Board positions exist; movers do not |
 | **On-damage triggers** | Venomous Fangs → apply toxin; Blade of Serene Light → heal | **IMPLEMENTED** (`010`) — `on-deal-damage` / `on-toxin-damage` |
 | **Roll-triggered equipment** | Black Plague (Corruption → 1 dmg) | **IMPLEMENTED** (`010`) — `on-roll-symbol` |
-| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, CSV face On absorb lines, … | **PARTIAL** (`010`) — hook live; Rust / Mirrored Rune / CSV faces still deferred |
-| **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Hook ready (`FaceCardDefinition.onAbsorb`); print lines not wired |
+| **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, CSV face On absorb lines, … | **PARTIAL** (`010`) — hook live; Rust / Mirrored Rune / remaining CSV absorb clauses still deferred |
+| **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Hook ready; **partially wired**: Insight roll, Conversion absorb, Vital Spark both, Aegis roll, Primordial Fury absorb, Impact absorb, Venom roll — remaining clauses still deferred |
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
 | **Attack-damage conditional buffs** | Varcolac passive (+1 after ally attack); War Banner (left ally) | |
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
@@ -114,7 +114,7 @@ Fast-game HP/cost variants from Figma are not encoded.
 
 ---
 
-## 4. Face catalogue — print-only specials
+## 4. Face catalogue — print-only or partial specials
 
 | Face | Gap |
 |---|---|
@@ -123,20 +123,19 @@ Fast-game HP/cost variants from Figma are not encoded.
 | Forbidden Heritage | Opp draw, Retain, pay Energy to strip Corruption |
 | Pestilent Plague | Pestilence counters + adjacent forge + strip Corruption |
 | Great Spark / Rekindle | No printed rules yet |
-| **On-absorb face triggers** (shared) | All CSV synthetics below — absorb path does not exist |
-| Insight Rune | Roll: draw; absorb: dig top 2 |
-| Conversion Rune | Roll: convert Arcane→Natural; absorb: +Energy |
+| Insight Rune | **Wired** roll: draw; absorb dig still open |
+| Conversion Rune | Roll: convert Arcane→Natural open; **wired** absorb: +Energy |
 | Resonance Rune | Roll: conditional Energy; absorb: treat Arcane as any |
-| Vital Spark | Roll: heal 1; absorb: prevent 1 |
-| Aegis | Roll: generate Shield; absorb: redirect damage |
+| Vital Spark | **Wired** roll heal + absorb prevent |
+| Aegis | **Wired** roll: generate Shield; absorb: redirect damage open |
 | Revelation | Roll: peek/bottom; absorb: heal if <½ Life |
 | Instinct | Roll: reposition; absorb: extra basic attack |
-| Primordial Fury | Roll: Energy if attacked; absorb: basic +1 |
+| Primordial Fury | Roll: Energy if attacked open; **wired** absorb: next attack +1 |
 | Pack | Roll: adjacent → Wild; absorb: reposition |
 | Command | Roll: ally move; absorb: enemy move |
-| Impact | Roll: basic pushes; absorb: next attack +2 |
+| Impact | Roll: basic pushes open; **wired** absorb: next attack +2 |
 | Formation | Roll: frontline Energy; absorb: +Defense |
-| Venom | Roll: apply toxin; absorb: next hit +1 |
+| Venom | **Wired** roll: apply toxin (choose enemy); absorb: next hit +1 open |
 | Spores | Roll: extra toxin if already toxined; absorb: heal toxined ally |
 | Adaptive Toxin | Roll: cap toxin receive; absorb: remove markers → damage |
 | Stain | Roll: Corruption marker on synthetic; absorb: lock Corrupted face |
@@ -149,7 +148,7 @@ Fast-game HP/cost variants from Figma are not encoded.
 | Drain | Roll: opp loses Energy; absorb: transfer Energy |
 | Sacrifice | Roll: discard→2 Energy; absorb: discard→2 damage |
 
-Crush and Rending Claw are playable on roll.
+Crush and Rending Claw are playable on roll (print uses `On roll:`).
 
 ---
 
@@ -160,7 +159,8 @@ When returning here at the end of the product loop:
 1. Implement **reaction chain** first — unlocks negation / prevent honestly. (**done** `008`/`009`)
 2. Add **trigger hooks** (on-damage, on-roll equipment, on-absorb) as shared
    infrastructure, then wire Venomous Fangs / Black Plague / absorb gear.
-   (**done** `010` for the listed cards; CSV face On-absorb + remaining gear still open)
+   (**done** `010` for the listed cards; several CSV face clauses now wired —
+   see §4; remaining face On-absorb + gear still open)
 3. Grow `EffectDefinition` only when a concrete card needs the member.
 4. Finish deferred tactic shells against the same vocabulary.
 5. Finish face specials and creature riders against the same vocabulary.

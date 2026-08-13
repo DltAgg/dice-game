@@ -20,7 +20,7 @@ import {
   withTokens,
 } from "../testing/scenario.js";
 
-const SHIELD_STRIKE = asAttackId("attack-shield-strike");
+const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
@@ -225,7 +225,7 @@ describe("reaction chain (008)", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: attacker,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: target,
       }),
     );

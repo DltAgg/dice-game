@@ -9,9 +9,25 @@ import {
   WILD_CARAPACE,
   WILD_ECHO,
 } from "../content/cards.js";
-import { faceIdForSymbol } from "../content/faces.js";
+import { CONTROL_SQUAD } from "../content/creatures.js";
+import {
+  CONVERSION_RUNE,
+  ENGINE_TEST_FACE_DECK,
+  faceIdForSymbol,
+  INSIGHT_RUNE,
+  PRIMORDIAL_FURY,
+  VENOM,
+  VITAL_SPARK,
+} from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
-import { asAttackId, asCardInstanceId, asSymbolInstanceId, type CreatureId, type DieId } from "../model/ids.js";
+import {
+  asAttackId,
+  asCardInstanceId,
+  asSymbolInstanceId,
+  type CreatureId,
+  type DieId,
+  type FaceCardId,
+} from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { usableSymbols } from "../rules/symbols.js";
 import {
@@ -29,9 +45,10 @@ import {
   withShields,
   withTokens,
   advanceResolvingChain as advance,
+  newMatchWithDecks,
 } from "../testing/scenario.js";
 
-const SHIELD_STRIKE = asAttackId("attack-shield-strike");
+const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -80,7 +97,7 @@ describe("on-deal-damage equipment", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -104,7 +121,7 @@ describe("on-deal-damage equipment", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -127,7 +144,7 @@ describe("on-deal-damage equipment", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -245,9 +262,25 @@ describe("on-absorb equipment", () => {
   });
 
   it("draws and asks to discard when Archmage's Grimoire absorbs Arcane", () => {
-    // Rune Binder (index 2) is Arcane.
-    const base = actionsReady([ARCHMAGES_GRIMOIRE]);
-    const hostId = creatureIdAt(base, P1, 2);
+    // Control squad: Archmage (index 0) is Arcane.
+    const base = withEnergy(
+      withHand(
+        withPhase(
+          newMatch({
+            players: [
+              { id: P1, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+              { id: P2, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+            ],
+          }),
+          "actions",
+        ),
+        P1,
+        [ARCHMAGES_GRIMOIRE],
+      ),
+      P1,
+      10,
+    );
+    const hostId = creatureIdAt(base, P1, 0);
     let state = equip(base, hostId);
 
     const deckCardId = asCardInstanceId("deck-spare-eclipse");
@@ -389,5 +422,96 @@ describe("on-absorb overloads", () => {
       (s) => s.symbol === "wild" && s.sourceDieId === null,
     );
     expect(generated.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("on-roll / on-absorb faces", () => {
+  function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameState {
+    const dieId = dieIdOf(state);
+    const die = state.dice[dieId];
+    if (die === undefined) throw new Error("die");
+    const slots = die.slots.map((s, index) =>
+      index === slot ? { ...s, faceCardId, faceCardOwnerId: P1 } : s,
+    );
+    return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
+  }
+
+  function rollShowingSlot(state: GameState, slot: number): GameState {
+    let rolled: GameState = withPhase(state, "roll");
+    rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+    return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+  }
+
+  it("draws on Insight Rune roll", () => {
+    let state = installFace(newMatchWithDecks(), INSIGHT_RUNE);
+    const handBefore = state.players[P1]?.hand.length ?? 0;
+    state = rollShowingSlot(state, 0);
+    expect(state.players[P1]?.hand.length).toBe(handBefore + 1);
+  });
+
+  it("gains Energy when Conversion Rune is absorbed", () => {
+    let state = installFace(newMatch(), CONVERSION_RUNE);
+    const energyBefore =
+      state.energy.holderId === P1 ? state.energy.value : 0;
+    state = rollShowingSlot(state, 0);
+    const arcane = Object.values(state.symbols).find(
+      (s) => s.symbol === "arcane" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
+    );
+    if (arcane === undefined) throw new Error("expected arcane");
+    const after = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: creatureIdAt(state, P1, 0),
+        symbolId: arcane.id,
+      }),
+    );
+    expect(after.energy.holderId).toBe(P1);
+    expect(after.energy.value).toBe(energyBefore + 1);
+  });
+
+  it("heals on Vital Spark roll and prevents on absorb", () => {
+    const allyId = creatureIdAt(newMatch(), P1, 0);
+    let state = withDamage(installFace(newMatch(), VITAL_SPARK), allyId, 2);
+    state = rollShowingSlot(state, 0);
+    expect(state.creatures[allyId]?.damage).toBe(1);
+
+    const luminar = Object.values(state.symbols).find(
+      (s) => s.symbol === "luminar" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
+    );
+    if (luminar === undefined) throw new Error("expected luminar");
+    const afterAbsorb = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: allyId,
+        symbolId: luminar.id,
+      }),
+    );
+    expect(afterAbsorb.creatures[allyId]?.damagePreventBuffer).toBe(1);
+  });
+
+  it("grants next-attack bonus when Primordial Fury is absorbed", () => {
+    let state = installFace(newMatch(), PRIMORDIAL_FURY);
+    state = rollShowingSlot(state, 0);
+    const wild = Object.values(state.symbols).find(
+      (s) => s.symbol === "wild" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
+    );
+    if (wild === undefined) throw new Error("expected wild");
+    const after = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: creatureIdAt(state, P1, 0),
+        symbolId: wild.id,
+      }),
+    );
+    expect(after.attackBonusThisTurn[P1]).toBe(1);
+  });
+
+  it("prompts choose-enemy when Venom is rolled", () => {
+    const state = rollShowingSlot(installFace(newMatch(), VENOM), 0);
+    expect(state.pendingDecision?.type).toBe("choose-creature");
   });
 });

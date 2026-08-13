@@ -1,5 +1,6 @@
 import { ATTRIBUTES, type Attribute } from "../model/attributes.js";
 import type { FaceCardDefinition, FaceKind } from "../model/dice.js";
+import type { EffectDefinition } from "../model/effects.js";
 import { asFaceCardId, type FaceCardId } from "../model/ids.js";
 import { SHIELD, type SymbolType } from "../model/symbols.js";
 
@@ -8,8 +9,9 @@ import { SHIELD, type SymbolType } from "../model/symbols.js";
  * staged from `synthetic_faces.csv`. Translated to English.
  *
  * Basics are natural identity faces. Named specials carry printed inherent
- * effects; `onRoll` is set only when every clause is modelled (including any
- * On absorb line — absorb triggers are not engine vocabulary yet).
+ * effects. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
+ * `onAbsorb` only for clauses the engine can resolve — leave the other array
+ * empty and keep the deferred clause in `rulesText` (see DEFERRED_CATALOGUE).
  */
 
 const face = (definition: FaceCardDefinition): FaceCardDefinition => definition;
@@ -91,13 +93,17 @@ export const SHADOW_ECHO: FaceCardId = asFaceCardId("face-synthetic-shadow-echo"
 export const DRAIN: FaceCardId = asFaceCardId("face-synthetic-drain");
 export const SACRIFICE: FaceCardId = asFaceCardId("face-synthetic-sacrifice");
 
-/** Print-only named synthetic: accurate English text, empty `onRoll` until absorb + clauses land. */
+/** Named synthetic with accurate English; wire hooks only for modellable clauses. */
 const namedSynthetic = (
   id: FaceCardId,
   name: string,
   symbol: Attribute,
   rulesText: string,
-  maxOverloads = 2,
+  options?: {
+    readonly onRoll?: readonly EffectDefinition[];
+    readonly onAbsorb?: readonly EffectDefinition[];
+    readonly maxOverloads?: number;
+  },
 ): FaceCardDefinition =>
   face({
     id,
@@ -105,9 +111,9 @@ const namedSynthetic = (
     kind: "synthetic",
     symbol,
     rulesText,
-    onRoll: [],
-    onAbsorb: [],
-    maxOverloads,
+    onRoll: options?.onRoll ?? [],
+    onAbsorb: options?.onAbsorb ?? [],
+    maxOverloads: options?.maxOverloads ?? 2,
     forgeRestriction: null,
   });
 
@@ -158,7 +164,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: "arcane",
     rulesText:
       '[Requirement: may only be forged by "Echo" cards]\n' +
-      "Copy the other die's face, applying its effects, attributes, and overloads.",
+      "On roll: copy the other die's face, applying its effects, attributes, and overloads.",
     // Copying a face with overloads is not modelled yet.
     onRoll: [],
     onAbsorb: [],
@@ -183,7 +189,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "wild",
     rulesText:
-      "You may distribute the damage of the next attack freely among enemies within [Range].",
+      "On roll: you may distribute the damage of the next attack freely among enemies within [Range].",
     // Attack-damage splitting is not modelled yet.
     onRoll: [],
     onAbsorb: [],
@@ -195,7 +201,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     name: "Rending Claw",
     kind: "synthetic",
     symbol: "wild",
-    rulesText: "A targeted enemy creature loses 3 [Shield].",
+    rulesText: "On roll: a targeted enemy creature loses 3 [Shield].",
     onRoll: [{ type: "remove-shield", amount: 3, target: { kind: "most-shielded-enemy" } }],
     onAbsorb: [],
     maxOverloads: 3,
@@ -206,7 +212,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     name: "Crush",
     kind: "synthetic",
     symbol: "martial",
-    rulesText: "The next attack this turn deals +1 damage.",
+    rulesText: "On roll: the next attack this turn deals +1 damage.",
     onRoll: [{ type: "next-attack-bonus", amount: 1 }],
     onAbsorb: [],
     maxOverloads: 3,
@@ -230,8 +236,8 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
-      "Your opponent draws 1 card. [Retain] this face.\n" +
-      "You may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
+      "On roll: your opponent draws 1 card. [Retain] this face.\n" +
+      "Activated: you may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
     // Opponent draw + retain + activated remove are not modelled yet.
     onRoll: [],
     onAbsorb: [],
@@ -244,9 +250,9 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
-      "When you roll this face, put 1 pestilence counter on this card.\n" +
-      "If this card has 5 pestilence counters, remove them and [Forge] 1 [Pestilent Plague] face next to a [Pestilent Plague] face.\n" +
-      "You may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
+      "On roll: put 1 pestilence counter on this card.\n" +
+      "When this card has 5 pestilence counters, remove them and [Forge] 1 [Pestilent Plague] face next to a [Pestilent Plague] face.\n" +
+      "Activated: you may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
     // Pestilence counters and adjacent forge are not modelled yet.
     onRoll: [],
     onAbsorb: [],
@@ -254,13 +260,14 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     forgeRestriction: null,
   }),
 
-  // --- synthetic_faces.csv (Roll + Absorb; absorb path not modelled — print only) ---
+  // --- synthetic_faces.csv (On roll / On absorb; wire only modellable clauses) ---
   namedSynthetic(
     INSIGHT_RUNE,
     "Insight Rune",
     "arcane",
     "On roll: draw 1 card.\n" +
       "On absorb: look at the top 2 cards of your deck; put one into your hand and the other on the bottom.",
+    { onRoll: [{ type: "draw-cards", amount: 1 }] },
   ),
   namedSynthetic(
     CONVERSION_RUNE,
@@ -268,6 +275,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "arcane",
     "On roll: you may convert this Arcane symbol into any Natural symbol.\n" +
       "On absorb: gain 1 Energy.",
+    { onAbsorb: [{ type: "gain-energy", amount: 1 }] },
   ),
   namedSynthetic(
     RESONANCE_RUNE,
@@ -282,6 +290,12 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "luminar",
     "On roll: heal 1 on an allied creature.\n" +
       "On absorb: prevent 1 damage that would be dealt to this creature this turn.",
+    {
+      onRoll: [{ type: "heal", amount: 1, target: { kind: "most-damaged-ally" } }],
+      onAbsorb: [
+        { type: "grant-damage-prevent", amount: 1, target: { kind: "source-creature" } },
+      ],
+    },
   ),
   namedSynthetic(
     AEGIS,
@@ -289,6 +303,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "luminar",
     "On roll: generate 1 Shield.\n" +
       "On absorb: redirect up to 2 damage that would be dealt to another allied creature to this creature.",
+    { onRoll: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }] },
   ),
   namedSynthetic(
     REVELATION,
@@ -310,6 +325,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "wild",
     "On roll: if an allied creature has attacked this turn, gain 1 Energy.\n" +
       "On absorb: this creature's next Basic Attack deals +1 damage.",
+    { onAbsorb: [{ type: "next-attack-bonus", amount: 1 }] },
   ),
   namedSynthetic(
     PACK,
@@ -331,6 +347,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "martial",
     "On roll: the next Basic Attack this turn pushes the target 1 space.\n" +
       "On absorb: this creature's next attack deals +2 damage.",
+    { onAbsorb: [{ type: "next-attack-bonus", amount: 2 }] },
   ),
   namedSynthetic(
     FORMATION,
@@ -345,6 +362,9 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "toxin",
     "On roll: apply 1 Toxin marker to an enemy creature.\n" +
       "On absorb: the target creature takes +1 damage the next time it takes damage.",
+    {
+      onRoll: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+    },
   ),
   namedSynthetic(
     SPORES,
@@ -487,12 +507,12 @@ export const STARTING_DIE_SYMBOLS: readonly SymbolType[] = [
 ];
 
 /**
- * Prototype face deck — twelve cards, at most three per attribute (bible §12).
- * Starting naturals stay off this list so the ownership ledger stays consistent.
- * Includes a generic synthetic Arcane for Living Library; Arcane Echo is
- * Echo-card-only.
+ * Scenario / forge-test face pool. Unique ids (ledger: pooled xor installed).
+ * Includes Darkness / synthetic Arcane / Arcane Echo so Eclipse and Library
+ * forge paths stay covered. The builtin hotseat loadout uses
+ * `PROTOTYPE_FACE_DECK` instead.
  */
-export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
+export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
   naturalFaceId("darkness"),
   naturalFaceId("corruption"),
   naturalFaceId("toxin"),
@@ -505,4 +525,46 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   FORBIDDEN_HERITAGE,
   PESTILENT_PLAGUE,
   syntheticFaceId("darkness"),
+];
+
+/**
+ * Builtin aggro face deck — twelve unique cards, at most three per attribute
+ * (bible §12). Omits natural Martial / Wild / Arcane / Luminar because those
+ * already sit on the starting die (same face id cannot be pooled and installed).
+ * Densifies Toxin + combat synthetics; Corruption synthetics cover overload forges.
+ * Natural Martial/Wild/Arcane forges copy the starting faces (bible §13).
+ */
+export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
+  naturalFaceId("toxin"),
+  VENOM,
+  SPORES,
+  CRUSH,
+  IMPACT,
+  COMMAND,
+  RENDING_CLAW,
+  BLADE_RAIN,
+  PRIMORDIAL_FURY,
+  syntheticFaceId("corruption"),
+  STAIN,
+  FORBIDDEN_HERITAGE,
+];
+
+/**
+ * Builtin control face deck — twelve unique cards, ≤3 per attribute.
+ * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
+ * Darkness / Corruption / Arcane synthetics for rituals and library forges.
+ */
+export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
+  naturalFaceId("darkness"),
+  syntheticFaceId("darkness"),
+  SHADOW_ECHO,
+  naturalFaceId("corruption"),
+  FORBIDDEN_HERITAGE,
+  PESTILENT_PLAGUE,
+  syntheticFaceId("arcane"),
+  ARCANE_ECHO_FACE,
+  INSIGHT_RUNE,
+  naturalFaceId("mechanical"),
+  GEAR,
+  CATALYST,
 ];

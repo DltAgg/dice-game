@@ -171,7 +171,7 @@ export function DeckBuilder() {
   };
 
   const onDelete = () => {
-    if (selectedId === null || selectedId === PROTOTYPE_SAVED_DECK_ID) return;
+    if (selectedId === null || selected?.builtin === true) return;
     remove(selectedId);
     load(PROTOTYPE_SAVED_DECK_ID);
     setMessage("Deck deleted.");

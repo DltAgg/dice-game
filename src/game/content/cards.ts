@@ -68,7 +68,7 @@ export const TWIN_BLADES: CardId = asCardId("card-twin-blades");
 export const WILD_CARAPACE: CardId = asCardId("card-wild-carapace");
 
 const DEFINITIONS: readonly CardDefinition[] = [
-  // --- Existing wired / partial prototypes (also in PROTOTYPE_DECK) ---
+  // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
   card({
     id: RUNIC_NULLIFICATION,
     name: "Runic Nullification",
@@ -108,7 +108,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "Heal 1.",
+    rulesText: "On roll: heal 1.",
     overload: {
       // Most-damaged ally: fires on roll with no extra prompt. Choose-ally is
       // available for effects that need a free pick among damaged creatures.
@@ -123,7 +123,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Generate 1 Arcane on one of your creatures.",
+    rulesText: "On roll: generate 1 Arcane.",
     overload: {
       onRoll: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
     },
@@ -136,7 +136,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "Gain 1 Energy.",
+    rulesText: "Can only overload a Corruption face.\nOn roll: gain 1 Energy.",
     overload: {
       faceSymbols: ["corruption"],
       onRoll: [{ type: "gain-energy", amount: 1 }],
@@ -251,7 +251,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "opponent-die" },
-    rulesText: "May be equipped to an opposing creature. Whenever it rolls Corruption, it takes 1 damage.",
+    rulesText:
+      "May be equipped to an opposing creature.\nWhenever that creature rolls Corruption, it takes 1 damage.",
     equipment: {
       mayTargetOpponent: true,
       abilities: [
@@ -318,7 +319,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
-    rulesText: "Can only overload an Arcane face.\nGenerate 1 additional Arcane.",
+    rulesText: "Can only overload an Arcane face.\nOn roll: generate 1 additional Arcane.",
     overload: {
       faceSymbols: ["arcane"],
       onRoll: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
@@ -332,7 +333,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Can only overload an Arcane face.\nGenerate 1 additional Arcane.",
+    rulesText: "Can only overload an Arcane face.\nOn roll: generate 1 additional Arcane.",
     overload: {
       faceSymbols: ["arcane"],
       onRoll: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
@@ -448,7 +449,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
-      "Can only equip an Arcane or Darkness creature.\nWhenever it absorbs Arcane or Darkness, draw 1 card and discard 1.",
+      "Can only equip an Arcane or Darkness creature.\n" +
+      "Whenever this creature absorbs Arcane or Darkness, draw 1 card and discard 1.",
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["arcane", "darkness"],
@@ -517,7 +519,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Whenever this face is rolled, generate Martial.",
+    rulesText: "On roll: generate Martial.",
     overload: {
       onRoll: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
     },
@@ -531,7 +533,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "The next attack this turn deals +1 damage.",
+    rulesText: "On roll: the next attack this turn deals +1 damage.",
     overload: {
       onRoll: [{ type: "next-attack-bonus", amount: 1 }],
     },
@@ -545,7 +547,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Can only overload a Toxin face.\nAll attacks this turn apply 1 Toxin marker.",
+    rulesText: "Can only overload a Toxin face.\nOn roll: all attacks this turn apply 1 Toxin marker.",
     overload: {
       faceSymbols: ["toxin"],
       onRoll: [],
@@ -560,7 +562,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Can only overload a Toxin face.\nWhen absorbed, heal 1.",
+    rulesText: "Can only overload a Toxin face.\nOn absorb: heal 1.",
     overload: {
       faceSymbols: ["toxin"],
       onRoll: [],
@@ -576,7 +578,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["overload"],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "Can only overload a Natural Wild face.\nWhen absorbed, generate Wild.",
+    rulesText: "Can only overload a Natural Wild face.\nOn absorb: generate Wild.",
     overload: {
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
@@ -594,7 +596,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText:
-      "Can only overload a Natural Wild face.\nOnce per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures.",
+      "Can only overload a Natural Wild face.\n" +
+      "On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures.",
     overload: {
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
@@ -611,7 +614,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText:
-      "Can only overload a Natural Martial face.\nWhen absorbed, your attacks this turn ignore 2 Shield.",
+      "Can only overload a Natural Martial face.\nOn absorb: your attacks this turn ignore 2 Shield.",
     overload: {
       faceSymbols: ["martial"],
       faceKinds: ["natural"],
@@ -626,7 +629,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever this creature absorbs Wild it may move 1 position.",
+    rulesText: "Whenever this creature absorbs Wild, it may move 1 position.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [],
@@ -668,7 +671,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On performing a Special Attack, generate Wild on another card.",
+    rulesText: "Whenever this creature performs a Special Attack, generate Wild on another card.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [],
@@ -682,7 +685,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever a Toxin marker deals damage, heal 1.",
+    rulesText: "Whenever a Toxin marker deals damage, heal 1 on this creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -759,7 +762,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever it absorbs Wild, heal 1.",
+    rulesText: "Whenever this creature absorbs Wild, heal 1.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -783,29 +786,62 @@ export const getCard = (id: CardId): CardDefinition | undefined => CARDS[id];
 export const ALL_CARDS: readonly CardDefinition[] = DEFINITIONS;
 
 /**
- * Example tactics deck for scenarios / loadout tests. Legal under M4 limits
- * (50–60 cards, ≤4 copies of each id): four copies of the original prototype
- * thirteen. New catalogue entries are not auto-added here.
+ * Builtin aggro tactics deck (spec 002 “Aggro deck” identity: Martial / Wild /
+ * Toxin pressure). Legal under M4: 50–60 cards, ≤4 copies per id.
  */
-const PROTOTYPE_CARD_IDS: readonly CardId[] = [
-  RUNIC_NULLIFICATION,
-  ECLIPSE,
-  LUMINAR_PRISM,
-  ARCANE_RESONANCE,
-  PERSISTENT_INFECTION,
-  BARRIER_OF_LIGHT,
-  LIVING_LIBRARY,
-  ARCANE_ECHO,
-  CALCULATED_SACRIFICE,
-  WAR_AXE,
-  VENOMOUS_FANGS,
-  ETERNAL_DARKNESS,
-  BLACK_PLAGUE,
+const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  [WAR_AXE, 4],
+  [VENOMOUS_FANGS, 4],
+  [TWIN_BLADES, 4],
+  [WAR_BANNER, 3],
+  [HUNTING_ARMOUR, 3],
+  [PREDATORS_CLAWS, 3],
+  [HUNTERS_COLLAR, 2],
+  [SERRATED_STINGER, 2],
+  [MARTIAL_BLESSING, 4],
+  [BLESSING_OF_THE_HUNT, 4],
+  [RUST, 3],
+  [TOXIC_BLESSING, 3],
+  [WILD_ECHO, 2],
+  [ADRENALINE, 2],
+  [CALCULATED_SACRIFICE, 2],
+  [LUMINAR_JUDGEMENT, 2],
+  [GLIMMER, 2],
+  [ALPHAS_HIDE, 2],
+  [MUTANT_SPORES, 2],
 ];
 
-export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_CARD_IDS.flatMap((id) => [
-  id,
-  id,
-  id,
-  id,
-]);
+export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
+  ([id, copies]) => Array.from({ length: copies }, () => id),
+);
+
+/**
+ * Builtin control tactics deck (spec 002 “Control deck” identity: Arcane /
+ * Corruption / Darkness). Legal under M4: 50–60 cards, ≤4 copies per id.
+ */
+const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  [LIVING_LIBRARY, 4],
+  [ECLIPSE, 4],
+  [ARCANE_AMPLIFIER, 4],
+  [ARCANE_RESONANCE, 3],
+  [PARADOX, 3],
+  [CALCULATED_SACRIFICE, 3],
+  [PERSISTENT_INFECTION, 3],
+  [ARCHMAGES_GRIMOIRE, 3],
+  [TOME_OF_INTERDICTION, 3],
+  [ABYSSAL_SACRIFICE, 3],
+  [MIRRORED_RUNE, 3],
+  [LATENT_CORRUPTION, 2],
+  [BLACK_PLAGUE, 2],
+  [ETERNAL_DARKNESS, 2],
+  [GREAT_CONTAMINATION, 2],
+  [EXTERMINATION, 2],
+  [MIND_CONTROL, 2],
+  [ARCANE_SILENCE, 2],
+  [LUMINAR_PRISM, 2],
+  [COLLAPSE_OF_REALITY, 2],
+];
+
+export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id, copies]) =>
+  Array.from({ length: copies }, () => id),
+);

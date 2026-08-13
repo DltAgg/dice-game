@@ -139,8 +139,10 @@ export function queueAbsorbTriggers(
   if (die === undefined || slotIndex === null || slotIndex === undefined) return;
   const faceCardId = die.slots[slotIndex]?.faceCardId;
   if (faceCardId === undefined) return;
-  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId);
-  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId);
+  // Absorbing creature is the face/overload source so `source-creature` targets
+  // (e.g. Vital Spark prevent) resolve against the absorber.
+  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId);
+  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId);
 }
 
 function fireEquipmentOnAbsorb(draft: Draft, creatureId: CreatureId, symbol: SymbolType): void {
@@ -163,11 +165,12 @@ function fireFaceOnAbsorb(
   draft: Draft,
   controllerId: PlayerId,
   faceCardId: FaceCardId,
+  absorbingCreatureId: CreatureId,
 ): void {
   const face = getFaceCard(faceCardId);
   if (face === undefined || face.onAbsorb.length === 0) return;
   for (const effect of [...face.onAbsorb].reverse()) {
-    pushEffect(draft, controllerId, effect, null, null);
+    pushEffect(draft, controllerId, effect, absorbingCreatureId, null);
   }
 }
 
@@ -175,6 +178,7 @@ function fireOverloadsOnAbsorb(
   draft: Draft,
   controllerId: PlayerId,
   faceCardId: FaceCardId,
+  absorbingCreatureId: CreatureId,
 ): void {
   const player = draft.players[controllerId];
   if (player === undefined) return;
@@ -184,7 +188,7 @@ function fireOverloadsOnAbsorb(
     if (card?.attachedToFaceCardId !== faceCardId) continue;
     const effects = getCard(card.cardId)?.overload?.onAbsorb ?? [];
     for (const effect of [...effects].reverse()) {
-      pushEffect(draft, controllerId, effect, null, null);
+      pushEffect(draft, controllerId, effect, absorbingCreatureId, null);
     }
   }
 }

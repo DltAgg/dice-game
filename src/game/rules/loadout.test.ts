@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { ALL_CARDS, ECLIPSE, PROTOTYPE_DECK } from "../content/cards.js";
-import { PROTOTYPE_SQUAD } from "../content/creatures.js";
-import { PROTOTYPE_FACE_DECK } from "../content/faces.js";
+import { ALL_CARDS, CONTROL_DECK, ECLIPSE, PROTOTYPE_DECK } from "../content/cards.js";
+import { CONTROL_SQUAD, PROTOTYPE_SQUAD } from "../content/creatures.js";
+import { CONTROL_FACE_DECK, PROTOTYPE_FACE_DECK } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { asCardId } from "../model/ids.js";
 import { validateLoadout, validateTacticsDeck } from "./loadout.js";
 
 describe("validateTacticsDeck", () => {
-  it("accepts the prototype deck", () => {
+  it("accepts the prototype aggro deck", () => {
     expect(validateTacticsDeck(PROTOTYPE_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
     expect(PROTOTYPE_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(PROTOTYPE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+  });
+
+  it("accepts the control deck", () => {
+    expect(validateTacticsDeck(CONTROL_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
+    expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
   });
 
   it("refuses a deck below the minimum", () => {
@@ -49,13 +55,26 @@ describe("validateTacticsDeck", () => {
 });
 
 describe("validateLoadout", () => {
-  it("accepts the prototype loadout", () => {
+  it("accepts the prototype aggro loadout", () => {
     expect(
       validateLoadout(
         {
           squad: PROTOTYPE_SQUAD,
           deck: PROTOTYPE_DECK,
           faceDeck: PROTOTYPE_FACE_DECK,
+        },
+        DEFAULT_RULES_CONFIG,
+      ),
+    ).toEqual({ ok: true });
+  });
+
+  it("accepts the control loadout", () => {
+    expect(
+      validateLoadout(
+        {
+          squad: CONTROL_SQUAD,
+          deck: CONTROL_DECK,
+          faceDeck: CONTROL_FACE_DECK,
         },
         DEFAULT_RULES_CONFIG,
       ),

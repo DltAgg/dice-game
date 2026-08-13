@@ -17,9 +17,9 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const SHIELD_STRIKE = asAttackId("attack-shield-strike");
-const LIGHTLANCE = asAttackId("attack-lightlance");
-const RUNEBLAST = asAttackId("attack-runeblast");
+const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
+const DIVE = asAttackId("attack-garuda-dive");
+const COORDINATED_HUNT = asAttackId("attack-varcolac-coordinated-hunt");
 
 /**
  * Attacks are funded from the attacker's own absorbed tokens, so a combat
@@ -37,13 +37,14 @@ describe("attacking", () => {
     const targetId = creatureIdAt(state, P2, 0);
 
     const after = expectOk(
-      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: SHIELD_STRIKE, targetId }),
+      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: HEAVY_AXE, targetId }),
     );
 
     const target = after.creatures[targetId];
     if (target === undefined) throw new Error("expected the target");
     expect(target.damage).toBe(3);
-    expect(currentLife(target)).toBe(7);
+    // War Minotaur starts at 13 life.
+    expect(currentLife(target)).toBe(10);
   });
 
   it("refuses an attack the creature has not absorbed the fuel for", () => {
@@ -53,7 +54,7 @@ describe("attacking", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId: creatureIdAt(state, P1, 0),
-      attackId: SHIELD_STRIKE,
+      attackId: HEAVY_AXE,
       targetId: creatureIdAt(state, P2, 0),
     });
 
@@ -63,15 +64,13 @@ describe("attacking", () => {
   });
 
   it("cannot be funded from the shared symbol pool", () => {
-    // The pool is full of exactly what the attack asks for, and it is still
-    // not payment: only what the creature absorbed counts.
     const state = withPhase(newMatch(), "combat");
 
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
       attackerId: creatureIdAt(state, P1, 0),
-      attackId: SHIELD_STRIKE,
+      attackId: HEAVY_AXE,
       targetId: creatureIdAt(state, P2, 0),
     });
 
@@ -79,7 +78,7 @@ describe("attacking", () => {
     if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
   });
 
-  it("burns the Martial Shield Strike discards", () => {
+  it("leaves absorbed tokens when the attack has no discards", () => {
     const state = combatState(0, { martial: 1 });
     const attackerId = creatureIdAt(state, P1, 0);
 
@@ -88,50 +87,28 @@ describe("attacking", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: creatureIdAt(state, P2, 0),
       }),
     );
 
-    expect(after.creatures[attackerId]?.attributeTokens).toEqual({});
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ martial: 1 });
+    expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
   });
 
-  it("burns only what the attack discards", () => {
-    const state = combatState(2, { arcane: 1, wild: 1 });
-    const attackerId = creatureIdAt(state, P1, 2);
+  it("still requires every attribute listed on a multi-cost attack", () => {
+    const state = combatState(1, { wild: 1 });
 
-    const after = expectOk(
-      advance(state, {
-        type: "ATTACK",
-        playerId: P1,
-        attackerId,
-        attackId: RUNEBLAST,
-        targetId: creatureIdAt(state, P2, 0),
-      }),
-    );
+    const result = advance(state, {
+      type: "ATTACK",
+      playerId: P1,
+      attackerId: creatureIdAt(state, P1, 1),
+      attackId: COORDINATED_HUNT,
+      targetId: creatureIdAt(state, P2, 0),
+    });
 
-    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ wild: 1 });
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
-  });
-
-  it("cannot repeat a discarding attack until the fuel is replaced", () => {
-    const state = combatState(2, { arcane: 1, wild: 1 });
-    const attackerId = creatureIdAt(state, P1, 2);
-    const targetId = creatureIdAt(state, P2, 0);
-    const attack = { type: "ATTACK", playerId: P1, attackerId, attackId: RUNEBLAST, targetId } as const;
-
-    const spent = expectOk(advance(state, attack));
-    const nextTurn = {
-      ...expectOk(advance(spent, { type: "END_TURN", playerId: P1 })),
-      activePlayerId: P1,
-      phase: "combat" as const,
-    };
-
-    const again = advance(nextTurn, attack);
-
-    expect(again.ok).toBe(false);
-    if (!again.ok) expect(again.error).toBe("ATTACK_NOT_FUELLED");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
   });
 
   it("allows only one attack per creature per combat phase", () => {
@@ -140,13 +117,13 @@ describe("attacking", () => {
     const targetId = creatureIdAt(state, P2, 0);
 
     const once = expectOk(
-      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: SHIELD_STRIKE, targetId }),
+      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: HEAVY_AXE, targetId }),
     );
     const twice = advance(once, {
       type: "ATTACK",
       playerId: P1,
       attackerId,
-      attackId: SHIELD_STRIKE,
+      attackId: HEAVY_AXE,
       targetId,
     });
 
@@ -163,7 +140,7 @@ describe("attacking", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: creatureIdAt(state, P2, 0),
       }),
     );
@@ -180,7 +157,7 @@ describe("attacking", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId: creatureIdAt(state, P1, 0),
-      attackId: SHIELD_STRIKE,
+      attackId: HEAVY_AXE,
       targetId: creatureIdAt(state, P2, 0),
     });
 
@@ -195,7 +172,7 @@ describe("attacking", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId: creatureIdAt(state, P1, 0),
-      attackId: SHIELD_STRIKE,
+      attackId: HEAVY_AXE,
       targetId: creatureIdAt(state, P1, 1),
     });
 
@@ -211,7 +188,7 @@ describe("attacking", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId,
-      attackId: SHIELD_STRIKE,
+      attackId: HEAVY_AXE,
       targetId: creatureIdAt(state, P2, 0),
     });
 
@@ -231,7 +208,7 @@ describe("shields", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: creatureIdAt(state, P1, 0),
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -251,7 +228,7 @@ describe("shields", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: creatureIdAt(state, P1, 0),
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -281,7 +258,7 @@ describe("frontline protection", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId: creatureIdAt(state, P1, 0),
-      attackId: SHIELD_STRIKE,
+      attackId: HEAVY_AXE,
       targetId: creatureIdAt(state, P2, 2),
     });
 
@@ -290,15 +267,15 @@ describe("frontline protection", () => {
   });
 
   it("lets a Range attack ignore the frontline", () => {
-    const state = combatState(1, { luminar: 1 });
+    const state = combatState(2, { wild: 1 });
     const backRowId = creatureIdAt(state, P2, 2);
 
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
         playerId: P1,
-        attackerId: creatureIdAt(state, P1, 1),
-        attackId: LIGHTLANCE,
+        attackerId: creatureIdAt(state, P1, 2),
+        attackId: DIVE,
         targetId: backRowId,
       }),
     );
@@ -319,7 +296,7 @@ describe("frontline protection", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: creatureIdAt(cleared, P1, 0),
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId: backRowId,
       }),
     );
@@ -332,14 +309,15 @@ describe("creature defeat and victory", () => {
   it("defeats a creature whose damage reaches its life", () => {
     const state = combatState(0, { martial: 1 });
     const targetId = creatureIdAt(state, P2, 0);
-    const nearlyDead = withDamage(state, targetId, 7);
+    // War Minotaur has 13 life; 10 prior + Heavy Axe 3 = lethal.
+    const nearlyDead = withDamage(state, targetId, 10);
 
     const after = expectOk(
       advance(nearlyDead, {
         type: "ATTACK",
         playerId: P1,
         attackerId: creatureIdAt(state, P1, 0),
-        attackId: SHIELD_STRIKE,
+        attackId: HEAVY_AXE,
         targetId,
       }),
     );
@@ -350,24 +328,25 @@ describe("creature defeat and victory", () => {
   });
 
   it("ends the match when the last opposing creature falls", () => {
-    const base = combatState(2, { arcane: 1, wild: 1 });
+    const base = combatState(1, { wild: 1, martial: 1 });
     const [front, mid, back] = [0, 1, 2].map((index) => creatureIdAt(base, P2, index));
     if (front === undefined || mid === undefined || back === undefined) {
       throw new Error("expected three enemy creatures");
     }
 
+    // Garuda (back) has 7 life; Coordinated Hunt deals 4.
     const almostWon = withDamage(
       withDefeatedCreature(withDefeatedCreature(base, front), mid),
       back,
-      1,
+      3,
     );
 
     const after = expectOk(
       advance(almostWon, {
         type: "ATTACK",
         playerId: P1,
-        attackerId: creatureIdAt(base, P1, 2),
-        attackId: RUNEBLAST,
+        attackerId: creatureIdAt(base, P1, 1),
+        attackId: COORDINATED_HUNT,
         targetId: back,
       }),
     );

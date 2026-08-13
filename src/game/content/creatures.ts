@@ -7,15 +7,14 @@ import {
 } from "../model/ids.js";
 
 /**
- * Creatures. Two sets live here:
+ * Creatures from the Figma *Creature card* page (English printing) — the six
+ * Slow-game-test cards. Passives and fuller special riders print in full; only
+ * the damage line (and a few simple single-effect riders) are modelled.
+ * Multi-clause attacks stay partial until attack `effects[]` exists — do not
+ * approximate missing riders.
  *
- * 1. The Figma *Creature card* page catalogue (English printing) — the six
- *    Slow-game-test cards. Passives and the fuller special clauses print in
- *    full; only the damage (and a few simple riders) are modelled as effects.
- *
- * 2. The vertical-slice prototype squad (Warden / Lumin Adept / Rune Binder),
- *    kept so the absorb ↔ resolve loop stays visible in tests. Those three are
- *    not on the Figma page.
+ * Engine abilities on the aggro trio are vertical-slice absorb ↔ resolve hooks
+ * (bible §31 placeholders), not Figma print.
  */
 
 export const MINOTAUR: CreatureDefinitionId = asCreatureDefinitionId("creature-minotaur");
@@ -28,10 +27,6 @@ export const CORRUPTING_ELDER: CreatureDefinitionId = asCreatureDefinitionId(
 export const VOID_SUMMONER: CreatureDefinitionId = asCreatureDefinitionId(
   "creature-void-summoner",
 );
-
-export const WARDEN: CreatureDefinitionId = asCreatureDefinitionId("creature-warden");
-export const LUMIN_ADEPT: CreatureDefinitionId = asCreatureDefinitionId("creature-lumin-adept");
-export const RUNE_BINDER: CreatureDefinitionId = asCreatureDefinitionId("creature-rune-binder");
 
 const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
@@ -61,7 +56,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],
-    engineAbilities: [],
+    engineAbilities: [
+      {
+        id: asAbilityId("ability-minotaur-bulwark"),
+        name: "Bulwark",
+        consumes: { martial: 1 },
+        effect: { type: "grant-shield", amount: 1, target: { kind: "source-creature" } },
+      },
+    ],
   },
   {
     id: VARCOLAC,
@@ -91,7 +93,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],
-    engineAbilities: [],
+    engineAbilities: [
+      {
+        id: asAbilityId("ability-varcolac-hunt-call"),
+        name: "Hunt Call",
+        consumes: { wild: 1 },
+        effect: { type: "generate-symbol", symbol: "martial", amount: 1 },
+      },
+    ],
   },
   {
     id: GARUDA,
@@ -121,7 +130,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
       },
     ],
-    engineAbilities: [],
+    engineAbilities: [
+      {
+        id: asAbilityId("ability-garuda-mend"),
+        name: "Mend",
+        consumes: { wild: 1 },
+        effect: { type: "heal", amount: 2, target: { kind: "source-creature" } },
+      },
+    ],
   },
   {
     id: ARCHMAGE,
@@ -212,107 +228,8 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   },
 ];
 
-/**
- * Prototype squad for the vertical slice. Bible §31 states outright that its
- * example numbers are placeholders. Kept so tests still exercise engine
- * abilities and the absorb/resolve conversion chain.
- */
-const PROTOTYPE_DEFINITIONS: readonly CreatureDefinition[] = [
-  {
-    id: WARDEN,
-    name: "Warden of the Gate",
-    life: 10,
-    attributes: ["martial"],
-    passiveRulesText: "",
-    attacks: [
-      {
-        id: asAttackId("attack-shield-strike"),
-        name: "Shield Strike",
-        kind: "basic",
-        requires: { martial: 1 },
-        discards: { martial: 1 },
-        range: false,
-        rulesText: "Deal 3 damage. Discard 1 Martial.",
-        effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
-      },
-    ],
-    engineAbilities: [
-      {
-        id: asAbilityId("ability-bulwark"),
-        name: "Bulwark",
-        consumes: { martial: 1 },
-        effect: { type: "grant-shield", amount: 1, target: { kind: "source-creature" } },
-      },
-    ],
-  },
-  {
-    id: LUMIN_ADEPT,
-    name: "Lumin Adept",
-    life: 8,
-    attributes: ["luminar"],
-    passiveRulesText: "",
-    attacks: [
-      {
-        id: asAttackId("attack-lightlance"),
-        name: "Lightlance",
-        kind: "basic",
-        requires: { luminar: 1 },
-        range: true,
-        rulesText: "Deal 2 damage.",
-        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
-      },
-    ],
-    engineAbilities: [
-      {
-        id: asAbilityId("ability-refract"),
-        name: "Refract",
-        consumes: { luminar: 1 },
-        effect: { type: "generate-symbol", symbol: "arcane", amount: 1 },
-      },
-    ],
-  },
-  {
-    id: RUNE_BINDER,
-    name: "Rune Binder",
-    life: 6,
-    attributes: ["arcane"],
-    passiveRulesText: "",
-    attacks: [
-      {
-        id: asAttackId("attack-runeblast"),
-        name: "Runeblast",
-        kind: "basic",
-        requires: { arcane: 1, wild: 1 },
-        discards: { arcane: 1 },
-        range: false,
-        rulesText: "Deal 5 damage.",
-        effect: { type: "damage", amount: 5, target: { kind: "declared-target" } },
-      },
-    ],
-    engineAbilities: [
-      {
-        id: asAbilityId("ability-rune-echo"),
-        name: "Rune Echo",
-        consumes: { arcane: 1 },
-        effect: { type: "generate-symbol", symbol: "martial", amount: 1 },
-      },
-      {
-        id: asAbilityId("ability-mend"),
-        name: "Mend",
-        consumes: { arcane: 1 },
-        effect: { type: "heal", amount: 2, target: { kind: "source-creature" } },
-      },
-    ],
-  },
-];
-
-const DEFINITIONS: readonly CreatureDefinition[] = [
-  ...FIGMA_DEFINITIONS,
-  ...PROTOTYPE_DEFINITIONS,
-];
-
 export const CREATURES: Readonly<Record<string, CreatureDefinition>> = Object.fromEntries(
-  DEFINITIONS.map((definition) => [definition.id, definition]),
+  FIGMA_DEFINITIONS.map((definition) => [definition.id, definition]),
 );
 
 export const getCreatureDefinition = (id: CreatureDefinitionId): CreatureDefinition | undefined =>
@@ -321,5 +238,19 @@ export const getCreatureDefinition = (id: CreatureDefinitionId): CreatureDefinit
 /** The six Figma Slow-game-test creatures, in board order. */
 export const ALL_CREATURES: readonly CreatureDefinition[] = FIGMA_DEFINITIONS;
 
-/** The squad every player fields in the vertical slice, in deployment order. */
-export const PROTOTYPE_SQUAD: readonly CreatureDefinitionId[] = [WARDEN, LUMIN_ADEPT, RUNE_BINDER];
+/**
+ * Builtin Aggro loadout squad: Martial / Wild pressure (bible §27).
+ * Deployment order: Minotaur front, Varcolac mid, Garuda back.
+ * Also the default scenario squad for combat / engine tests.
+ */
+export const PROTOTYPE_SQUAD: readonly CreatureDefinitionId[] = [MINOTAUR, VARCOLAC, GARUDA];
+
+/**
+ * Builtin Control loadout squad: Arcane engine (bible §27).
+ * Deployment order: Archmage, Corrupting Elder, Void Summoner.
+ */
+export const CONTROL_SQUAD: readonly CreatureDefinitionId[] = [
+  ARCHMAGE,
+  CORRUPTING_ELDER,
+  VOID_SUMMONER,
+];

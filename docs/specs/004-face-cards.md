@@ -1,8 +1,8 @@
 # 004 — Face cards and the face deck
 
 Status: **DEFERRED DEPTH** — catalogue + face-deck ledger; Crush / Rending Claw
-playable. Remaining specials (Figma + `synthetic_faces.csv`) in
-[`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+playable on roll; several CSV faces partially wired (see table). Remaining
+specials in [`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
 Derived from the `Face card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, node `2:13`).
@@ -46,19 +46,19 @@ Shield (`+1 Shield`).
 | Crush | 3 | On roll: next attack +1 damage | |
 | Forbidden Heritage | 1 | Print only | Opponent draw, Retain, activated remove — OPEN |
 | Pestilent Plague | 2 | Print only | Pestilence counters + adjacent forge — OPEN |
-| Insight Rune | 2 | Print only | Roll draw + absorb dig — OPEN |
-| Conversion Rune | 2 | Print only | Convert symbol + absorb Energy — OPEN |
+| Insight Rune | 2 | On roll: draw | Absorb dig — OPEN |
+| Conversion Rune | 2 | On absorb: +Energy | Roll convert — OPEN |
 | Resonance Rune | 2 | Print only | Conditional Energy + treat-as — OPEN |
-| Vital Spark | 2 | Print only | Heal + prevent — OPEN |
-| Aegis | 2 | Print only | Shield + redirect damage — OPEN |
+| Vital Spark | 2 | On roll: heal; On absorb: prevent 1 | |
+| Aegis | 2 | On roll: generate Shield | Absorb redirect — OPEN |
 | Revelation | 2 | Print only | Deck peek + conditional heal — OPEN |
 | Instinct | 2 | Print only | Reposition + bonus basic — OPEN |
-| Primordial Fury | 2 | Print only | Conditional Energy + basic +1 — OPEN |
+| Primordial Fury | 2 | On absorb: next attack +1 | Roll conditional Energy — OPEN |
 | Pack | 2 | Print only | Adjacent Wild + reposition — OPEN |
 | Command | 2 | Print only | Ally / enemy move — OPEN |
-| Impact | 2 | Print only | Push + attack +2 — OPEN |
+| Impact | 2 | On absorb: next attack +2 | Roll push — OPEN |
 | Formation | 2 | Print only | Frontline Energy / Defense — OPEN |
-| Venom | 2 | Print only | Apply toxin + next-hit bonus — OPEN |
+| Venom | 2 | On roll: apply toxin (choose enemy) | Absorb next-hit — OPEN |
 | Spores | 2 | Print only | Conditional toxin + heal toxined ally — OPEN |
 | Adaptive Toxin | 2 | Print only | Cap toxin / remove→damage — OPEN |
 | Stain | 2 | Print only | Corruption markers on faces — OPEN |
@@ -73,8 +73,8 @@ Shield (`+1 Shield`).
 
 Great Spark and Rekindle appear as art on the page but have no printed rules text yet.
 The CSV batch (`synthetic_faces.csv`) uses **On roll** / **On absorb** clauses;
-absorb triggers are not modelled, so those faces stay print-only until that
-vocabulary exists (see `DEFERRED_CATALOGUE.md`). Portuguese *Sobrecarga* is
+`FaceCardDefinition.onAbsorb` is wired for modellable clauses only — remaining
+print stays accurate with empty hook arrays (see `DEFERRED_CATALOGUE.md`). Portuguese *Sobrecarga* is
 catalogued as **Overcharge** to avoid colliding with the Overload tactic subtype.
 
 ## State Changes
