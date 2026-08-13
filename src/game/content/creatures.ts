@@ -10,12 +10,15 @@ import {
  * Creatures. Two sets live here:
  *
  * 1. The Figma *Creature card* page catalogue (English printing) — the six
- *    Slow-game-test cards. Passives and the fuller special clauses print in
- *    full; only the damage (and a few simple riders) are modelled as effects.
+ *    Slow-game-test cards. Passives and fuller special riders print in full;
+ *    only the damage line (and a few simple single-effect riders) are modelled.
+ *    Multi-clause attacks stay partial until attack `effects[]` exists — do not
+ *    approximate missing riders.
  *
- * 2. The vertical-slice prototype squad (Warden / Lumin Adept / Rune Binder),
+ * 2. The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder),
  *    kept so the absorb ↔ resolve loop stays visible in tests. Those three are
- *    not on the Figma page.
+ *    not on the Figma page; the builtin hotseat loadout uses the Figma aggro
+ *    trio instead (`PROTOTYPE_SQUAD`).
  */
 
 export const MINOTAUR: CreatureDefinitionId = asCreatureDefinitionId("creature-minotaur");
@@ -213,11 +216,11 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
 ];
 
 /**
- * Prototype squad for the vertical slice. Bible §31 states outright that its
- * example numbers are placeholders. Kept so tests still exercise engine
- * abilities and the absorb/resolve conversion chain.
+ * Engine-demo creatures (not on the Figma Slow-game page). Bible §31 numbers
+ * are placeholders. Kept so tests can still exercise engine abilities and the
+ * absorb → resolve conversion chain via `ENGINE_DEMO_SQUAD`.
  */
-const PROTOTYPE_DEFINITIONS: readonly CreatureDefinition[] = [
+const ENGINE_DEMO_DEFINITIONS: readonly CreatureDefinition[] = [
   {
     id: WARDEN,
     name: "Warden of the Gate",
@@ -308,7 +311,7 @@ const PROTOTYPE_DEFINITIONS: readonly CreatureDefinition[] = [
 
 const DEFINITIONS: readonly CreatureDefinition[] = [
   ...FIGMA_DEFINITIONS,
-  ...PROTOTYPE_DEFINITIONS,
+  ...ENGINE_DEMO_DEFINITIONS,
 ];
 
 export const CREATURES: Readonly<Record<string, CreatureDefinition>> = Object.fromEntries(
@@ -321,5 +324,18 @@ export const getCreatureDefinition = (id: CreatureDefinitionId): CreatureDefinit
 /** The six Figma Slow-game-test creatures, in board order. */
 export const ALL_CREATURES: readonly CreatureDefinition[] = FIGMA_DEFINITIONS;
 
-/** The squad every player fields in the vertical slice, in deployment order. */
-export const PROTOTYPE_SQUAD: readonly CreatureDefinitionId[] = [WARDEN, LUMIN_ADEPT, RUNE_BINDER];
+/**
+ * Warden / Lumin Adept / Rune Binder — scenario default for engine-ability and
+ * Shield Strike combat tests. Not the builtin hotseat loadout.
+ */
+export const ENGINE_DEMO_SQUAD: readonly CreatureDefinitionId[] = [
+  WARDEN,
+  LUMIN_ADEPT,
+  RUNE_BINDER,
+];
+
+/**
+ * Builtin prototype loadout squad: Martial / Wild aggro (bible §27).
+ * Deployment order: Minotaur front, Varcolac mid, Garuda back.
+ */
+export const PROTOTYPE_SQUAD: readonly CreatureDefinitionId[] = [MINOTAUR, VARCOLAC, GARUDA];

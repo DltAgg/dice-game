@@ -32,6 +32,7 @@ export {
 export {
   ALL_CREATURES,
   CREATURES,
+  ENGINE_DEMO_SQUAD,
   PROTOTYPE_SQUAD,
   getCreatureDefinition,
 } from "./content/creatures.js";
@@ -53,6 +54,7 @@ export {
   GREAT_SPARK,
   PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
+  ENGINE_TEST_FACE_DECK,
   REKINDLE,
   RENDING_CLAW,
   SPECIAL_FACE_CARDS,

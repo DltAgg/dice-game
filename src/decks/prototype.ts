@@ -11,7 +11,7 @@ export function buildPrototypeSavedDeck(): SavedDeck {
   return {
     schemaVersion: DECK_SCHEMA_VERSION,
     id: PROTOTYPE_SAVED_DECK_ID,
-    name: "Prototype",
+    name: "Aggro",
     squad: PROTOTYPE_SQUAD,
     deck: PROTOTYPE_DECK,
     faceDeck: PROTOTYPE_FACE_DECK,

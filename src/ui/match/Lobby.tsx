@@ -26,7 +26,7 @@ export function Lobby() {
   const deckOptions =
     decks.length > 0
       ? decks
-      : [{ id: PROTOTYPE_SAVED_DECK_ID, name: "Prototype", builtin: true as const }];
+      : [{ id: PROTOTYPE_SAVED_DECK_ID, name: "Aggro", builtin: true as const }];
 
   const legalityById = useMemo(() => {
     const map = new Map<string, ReturnType<typeof validateSavedDeck>>();

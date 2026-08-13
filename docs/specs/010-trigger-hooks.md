@@ -39,7 +39,8 @@ knows the hook kinds.
    `symbols` filter is empty or includes `S`.
 5. **On-absorb (overload / face).** When a symbol is absorbed from a die
    showing face card `F`, fire that face's `onAbsorb` effects (controller =
-   absorbing player), then each overload on `F` whose `onAbsorb` is non-empty.
+   absorbing player, `sourceCreatureId` = absorbing creature), then each
+   overload on `F` whose `onAbsorb` is non-empty (same source).
 6. **Order.** Hooks push effects onto the existing resolution stack (reverse
    push so listed order resolves first-to-last). Absorb / toxin paths
    `drainResolution` after queueing so choices (discard, choose-creature) pause
@@ -91,7 +92,9 @@ existing pending-decision surfaces.
 - [x] Archmage's Grimoire: absorb Arcane/Darkness → draw 1, discard 1.
 - [x] Mutant Spores / Wild Echo: onAbsorb heal / generate Wild.
 - [x] Shield-only or fully prevented hits do not fire on-deal-damage.
-- [x] Face `onAbsorb` infrastructure present (may stay empty on print-only faces).
+- [x] Face `onAbsorb` infrastructure present; modellable CSV clauses wired
+  (Conversion / Vital Spark / Primordial Fury / Impact absorb; Insight / Aegis /
+  Venom / Vital Spark roll). Remaining print-only faces keep empty arrays.
 
 ## Tests
 
