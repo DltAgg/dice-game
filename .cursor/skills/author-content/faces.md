@@ -8,10 +8,16 @@ Types: `src/game/model/dice.ts` (`FaceCardDefinition`)
 
 | Kind | Role | Typical `maxOverloads` |
 |---|---|---|
-| Natural attribute | Identity faces (`face-natural-*`) | 1 |
+| Natural attribute | Dual-kind only: Martial / Wild / Arcane / Luminar (`face-natural-*`) | 1 |
 | Natural Shield | Untyped (`face-natural-shield`) | 1 |
-| Generic synthetic | Forge targets (`face-synthetic-<attr>`) | 2 |
+| Effectful generic synthetic | Forge targets for Arcane / Toxin / Mechanical / Corruption / Darkness (`face-synthetic-<attr>`) | 2 |
+| Blank generic synthetic | Forge targets for Martial / Wild / Luminar (`face-synthetic-<attr>`, no inherent effect yet) | 2 |
 | Named special | Printed inherent effect (`face-synthetic-<name>`) | usually 2 |
+
+**Policy:** Toxin / Mechanical / Corruption / Darkness are synthetic-only
+(`SYNTHETIC_ONLY_ATTRIBUTES`). Never author `kind: "natural"` faces or forge
+regions for them. Martial / Wild / Arcane / Luminar are dual-kind
+(`DUAL_KIND_ATTRIBUTES`).
 
 Helpers: `naturalFaceId`, `syntheticFaceId`, `faceIdFor`, `faceIdForSymbol`.
 

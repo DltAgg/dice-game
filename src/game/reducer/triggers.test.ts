@@ -27,6 +27,7 @@ import {
   faceIdForSymbol,
   INSIGHT_RUNE,
   PRIMORDIAL_FURY,
+  SPORES,
   VENOM,
   VITAL_SPARK,
 } from "../content/faces.js";
@@ -352,7 +353,7 @@ describe("on-absorb equipment", () => {
 
 describe("on-absorb overloads", () => {
   it("heals when Mutant Spores' overloaded Toxin face is absorbed", () => {
-    const toxinFace = faceIdForSymbol("toxin");
+    const toxinFace = SPORES;
     const base = actionsReady([MUTANT_SPORES]);
     const allyId = creatureIdAt(base, P1, 0);
 
@@ -580,11 +581,11 @@ describe("on-take-damage reduce", () => {
         type: "ATTACK",
         playerId: P2,
         attackerId,
-        attackId: asAttackId("attack-shield-strike"),
+        attackId: asAttackId("attack-minotaur-heavy-axe"),
         targetId: bearerId,
       }),
     );
-    // Shield Strike deals 3; Armour reduces first hit by 1 → 2 HP
+    // Heavy Axe deals 3; Armour reduces first hit by 1 → 2 HP
     expect(after.creatures[bearerId]?.damage).toBe(2);
   });
 });
@@ -681,7 +682,7 @@ describe("Void Summoner on-absorb Natural", () => {
 
 describe("Toxic Blessing arm-attack-toxin", () => {
   it("applies toxin on attacks after the overloaded face is rolled", () => {
-    const toxinFace = faceIdForSymbol("toxin");
+    const toxinFace = SPORES;
     const base = actionsReady([TOXIC_BLESSING]);
     const dieId = dieIdOf(base);
     const die = base.dice[dieId];
@@ -715,7 +716,7 @@ describe("Toxic Blessing arm-attack-toxin", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: asAttackId("attack-shield-strike"),
+        attackId: asAttackId("attack-minotaur-heavy-axe"),
         targetId,
       }),
     );

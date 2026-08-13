@@ -53,7 +53,7 @@ describe("forging a face", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const slot = result.state.dice[dieId]?.slots[4];
-    expect(slot?.faceCardId).toBe(naturalFaceId("darkness"));
+    expect(slot?.faceCardId).toBe(syntheticFaceId("darkness"));
     expect(slot?.faceCardOwnerId).toBe(P1);
     expect(eventTypes(result.state)).toContain("face-forged");
   });

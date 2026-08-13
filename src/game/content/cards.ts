@@ -94,7 +94,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     type: "tactic",
     subtypes: ["instant"],
     attribute: "darkness",
-    forge: { faces: 1, kind: "natural", attribute: "darkness", target: "own-die" },
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText: "Draw 2 cards and discard 1.",
     effect: {
       effects: [
@@ -193,7 +193,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     type: "tactic",
     subtypes: ["instant"],
     attribute: "corruption",
-    forge: { faces: 1, kind: "natural", attribute: "corruption", target: "own-die" },
+    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText: "Destroy 1 Equipment on an opposing creature.",
     effect: {
       effects: [{ type: "destroy-equipment", target: { kind: "declared-target" } }],

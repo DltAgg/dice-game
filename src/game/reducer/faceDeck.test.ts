@@ -4,7 +4,6 @@ import {
   ARCANE_ECHO_FACE,
   CONTROL_FACE_DECK,
   ENGINE_TEST_FACE_DECK,
-  naturalFaceId,
   PROTOTYPE_FACE_DECK,
   SPECIAL_FACE_CARDS,
   syntheticFaceId,
@@ -43,7 +42,7 @@ describe("face deck", () => {
   });
 
   it("refuses a face deck over the twelve-card cap", () => {
-    const oversized = [...PROTOTYPE_FACE_DECK, naturalFaceId("mechanical")];
+    const oversized = [...PROTOTYPE_FACE_DECK, syntheticFaceId("mechanical")];
     const result = validateFaceDeck(oversized, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/max 12/);
@@ -51,10 +50,10 @@ describe("face deck", () => {
 
   it("refuses more than three face cards of one attribute", () => {
     const tooMany = [
-      naturalFaceId("corruption"),
-      naturalFaceId("corruption"),
-      naturalFaceId("corruption"),
-      naturalFaceId("corruption"),
+      syntheticFaceId("corruption"),
+      syntheticFaceId("corruption"),
+      syntheticFaceId("corruption"),
+      syntheticFaceId("corruption"),
     ];
     const result = validateFaceDeck(tooMany, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
@@ -66,7 +65,7 @@ describe("face deck", () => {
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("test: no die");
 
-    expect(state.players[P1]?.facePool).toContain(naturalFaceId("darkness"));
+    expect(state.players[P1]?.facePool).toContain(syntheticFaceId("darkness"));
 
     const forged = advance(
       state,
@@ -75,8 +74,8 @@ describe("face deck", () => {
 
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    expect(forged.state.players[P1]?.facePool).not.toContain(naturalFaceId("darkness"));
-    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(naturalFaceId("darkness"));
+    expect(forged.state.players[P1]?.facePool).not.toContain(syntheticFaceId("darkness"));
+    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("darkness"));
   });
 
   it("installs a generic synthetic when the card is not Echo-tagged", () => {

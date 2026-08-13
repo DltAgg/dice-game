@@ -1,4 +1,5 @@
 import { getFaceCard } from "../content/faces.js";
+import { attributeAllowsNaturalFaces, isAttribute } from "../model/attributes.js";
 import type { FaceKind } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { FaceCardId, PlayerId } from "../model/ids.js";
@@ -73,6 +74,8 @@ export const knownFaceCardOwnerships = (
  * Face deck legality (bible §12): at most `faceDeckMaxCards` total, at most
  * `faceDeckMaxPerAttribute` sharing one attribute. Shield is not an attribute
  * and does not count toward the per-attribute cap. Unknown ids are refused.
+ * Natural faces of synthetic-only attributes (Toxin / Mechanical / Corruption /
+ * Darkness) are refused.
  */
 export function validateFaceDeck(
   faceDeck: readonly FaceCardId[],
@@ -91,6 +94,16 @@ export function validateFaceDeck(
     if (definition === undefined) {
       return { ok: false, reason: `unknown face card "${id}"` };
     }
+    if (
+      definition.kind === "natural" &&
+      isAttributeSymbol(definition.symbol) &&
+      !attributeAllowsNaturalFaces(definition.symbol)
+    ) {
+      return {
+        ok: false,
+        reason: `natural faces are not allowed for synthetic-only attribute "${definition.symbol}"`,
+      };
+    }
     if (!isAttributeSymbol(definition.symbol)) continue;
     byAttribute.set(definition.symbol, (byAttribute.get(definition.symbol) ?? 0) + 1);
   }
@@ -107,6 +120,13 @@ export function validateFaceDeck(
   return { ok: true };
 }
 
+/** Whether a forge region's kind is legal for the named attribute. */
+export function isLegalForgeKindForAttribute(kind: FaceKind, attribute: SymbolType): boolean {
+  if (!isAttribute(attribute)) return false;
+  if (kind === "synthetic") return true;
+  return attributeAllowsNaturalFaces(attribute);
+}
+
 /** Pool entries matching a forge region's kind and attribute. */
 export function matchingFacesInPool(
   state: GameState | Draft,
@@ -114,6 +134,7 @@ export function matchingFacesInPool(
   kind: FaceKind,
   attribute: SymbolType,
 ): readonly FaceCardId[] {
+  if (!isLegalForgeKindForAttribute(kind, attribute)) return [];
   const player = state.players[playerId];
   if (player === undefined) return [];
   return player.facePool.filter((id) => {
@@ -133,6 +154,8 @@ export function eligibleFacesForForge(
   attribute: SymbolType,
   forgingCard?: { readonly forgeTags?: readonly string[] },
 ): readonly FaceCardId[] {
+  if (!isLegalForgeKindForAttribute(kind, attribute)) return [];
+
   const score = (faceCardId: FaceCardId): number => {
     const face = getFaceCard(faceCardId);
     if (face === undefined) return -1;

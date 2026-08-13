@@ -37,6 +37,7 @@ import { passEnergy, spendEnergy, type EnergySpendOutcome } from "../rules/energ
 import {
   countInstalledCopies,
   eligibleFacesForForge,
+  isLegalForgeKindForAttribute,
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
 } from "../rules/faces.js";
@@ -673,6 +674,10 @@ function forgeCard(
 
   if (forgeExceedsAttributeLimit(die, slotIndexes, forge.attribute, forge.faces, draft.config)) {
     return "ATTRIBUTE_LIMIT_REACHED";
+  }
+
+  if (!isLegalForgeKindForAttribute(forge.kind, forge.attribute)) {
+    return "INVALID_TARGET";
   }
 
   if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";

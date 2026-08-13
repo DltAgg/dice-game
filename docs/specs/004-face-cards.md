@@ -31,12 +31,31 @@ dice, the card returns to its owner.
 
 ### Basics (Natural)
 
-Identity faces. Footer `+1 Attribute`. Overload capacity 1. No inherent effect.
+Identity faces on the starting die. Footer `+1 Attribute`. Overload capacity 1.
+No inherent effect.
 
-Arcane, Luminar, Wild, Martial, Toxin, Corruption, Mechanical, Darkness, plus
-Shield (`+1 Shield`).
+**Dual-kind attributes** (natural + synthetic allowed): Martial, Wild, Arcane,
+Luminar, plus Shield (`+1 Shield`).
+
+**Synthetic-only attributes** (no natural faces / natural forges): Toxin,
+Mechanical, Corruption, Darkness. Enforced by `DUAL_KIND_ATTRIBUTES` /
+`SYNTHETIC_ONLY_ATTRIBUTES` in `src/game/model/attributes.ts`, face-deck
+validation, forge eligibility, and catalogue consistency tests.
 
 ### Specials (Synthetic)
+
+Effectful forge-target generics (same `face-synthetic-<attr>` ids as the old
+blank “Forged …” cards for Arcane / Toxin / Mechanical / Corruption / Darkness):
+
+| Name | On roll (wired) |
+|---|---|
+| Synthetic Arcane | Draw 1 |
+| Synthetic Toxin | Arm attack-toxin 1 |
+| Synthetic Mechanical | Generate 1 Shield |
+| Synthetic Corruption | Next attack +1 damage |
+| Synthetic Darkness | Gain 1 Energy |
+
+Named specials:
 
 | Name | Overloads | Playable today | Notes |
 |---|---|---|---|

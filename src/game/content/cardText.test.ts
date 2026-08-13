@@ -25,7 +25,7 @@ describe("English card printing", () => {
     const card = getCard(ECLIPSE);
     if (card === undefined) throw new Error("missing card");
     expect(formatForgeLine(card.forge)).toBe(
-      "[Forge] 1 face [Natural] [Darkness] on your die",
+      "[Forge] 1 face [Synthetic] [Darkness] on your die",
     );
   });
 

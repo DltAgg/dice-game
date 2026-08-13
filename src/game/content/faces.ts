@@ -1,4 +1,9 @@
-import { ATTRIBUTES, type Attribute } from "../model/attributes.js";
+import {
+  DUAL_KIND_ATTRIBUTES,
+  isDualKindAttribute,
+  type Attribute,
+  type DualKindAttribute,
+} from "../model/attributes.js";
 import type { FaceCardDefinition, FaceKind } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
 import { asFaceCardId, type FaceCardId } from "../model/ids.js";
@@ -8,52 +13,60 @@ import { SHIELD, type SymbolType } from "../model/symbols.js";
  * Face cards from the Figma `Face card` page (`2:13`), plus named synthetics
  * staged from `synthetic_faces.csv`. Translated to English.
  *
- * Basics are natural identity faces. Named specials carry printed inherent
- * effects. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
+ * Basics are natural identity faces on the starting die only (Martial, Wild,
+ * Arcane, Luminar, Shield). Toxin / Mechanical / Corruption / Darkness are
+ * synthetic-only attributes — forge those as effectful generics or named
+ * specials. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
  * `onAbsorb` only for clauses the engine can resolve — leave the other array
  * empty and keep the deferred clause in `rulesText` (see DEFERRED_CATALOGUE).
  */
 
 const face = (definition: FaceCardDefinition): FaceCardDefinition => definition;
 
-export const naturalFaceId = (attribute: Attribute): FaceCardId =>
+export const naturalFaceId = (attribute: DualKindAttribute): FaceCardId =>
   asFaceCardId(`face-natural-${attribute}`);
 
 export const syntheticFaceId = (attribute: Attribute): FaceCardId =>
   asFaceCardId(`face-synthetic-${attribute}`);
 
-export const faceIdFor = (kind: FaceKind, attribute: Attribute): FaceCardId =>
-  kind === "synthetic" ? syntheticFaceId(attribute) : naturalFaceId(attribute);
+export const faceIdFor = (kind: FaceKind, attribute: Attribute): FaceCardId => {
+  if (kind === "natural") {
+    if (!isDualKindAttribute(attribute)) {
+      throw new Error(
+        `attribute "${attribute}" is synthetic-only; natural faces are not allowed`,
+      );
+    }
+    return naturalFaceId(attribute);
+  }
+  return syntheticFaceId(attribute);
+};
 
 /** Shield is the one untyped natural face (bible §10 / starting dice). */
 export const SHIELD_FACE_ID: FaceCardId = asFaceCardId("face-natural-shield");
 
-export const faceIdForSymbol = (symbol: SymbolType): FaceCardId =>
-  symbol === SHIELD ? SHIELD_FACE_ID : naturalFaceId(symbol);
+export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
+  if (symbol === SHIELD) return SHIELD_FACE_ID;
+  if (isDualKindAttribute(symbol)) return naturalFaceId(symbol);
+  return syntheticFaceId(symbol);
+};
 
 /* ----------------------------------------------------------- Figma names --- */
 
-const NATURAL_FACE_NAMES: Readonly<Record<Attribute, string>> = {
+const NATURAL_FACE_NAMES: Readonly<Record<DualKindAttribute, string>> = {
   martial: "Martial",
   wild: "Wild",
-  toxin: "Toxin",
   arcane: "Arcane",
   luminar: "Luminar",
-  mechanical: "Mechanical",
-  corruption: "Corruption",
-  darkness: "Darkness",
 };
 
-/** Generic synthetics kept as forge targets when no named special is chosen. */
-const SYNTHETIC_FACE_NAMES: Readonly<Record<Attribute, string>> = {
+/** Blank forge-target synthetics (no inherent effect yet). */
+const BLANK_GENERIC_SYNTHETICS = ["martial", "wild", "luminar"] as const satisfies readonly Attribute[];
+
+/** Blank generics kept as forge targets when no named special is chosen. */
+const BLANK_SYNTHETIC_FACE_NAMES: Readonly<Record<(typeof BLANK_GENERIC_SYNTHETICS)[number], string>> = {
   martial: "Forged Martial",
   wild: "Forged Wild",
-  toxin: "Forged Toxin",
-  arcane: "Forged Arcane",
   luminar: "Forged Luminar",
-  mechanical: "Forged Mechanical",
-  corruption: "Forged Corruption",
-  darkness: "Forged Darkness",
 };
 
 /* ----------------------------------------------------- named specials --- */
@@ -117,7 +130,7 @@ const namedSynthetic = (
     forgeRestriction: null,
   });
 
-const naturalFace = (attribute: Attribute): FaceCardDefinition =>
+const naturalFace = (attribute: DualKindAttribute): FaceCardDefinition =>
   face({
     id: naturalFaceId(attribute),
     name: NATURAL_FACE_NAMES[attribute],
@@ -130,10 +143,12 @@ const naturalFace = (attribute: Attribute): FaceCardDefinition =>
     forgeRestriction: null,
   });
 
-const genericSynthetic = (attribute: Attribute): FaceCardDefinition =>
+const blankGenericSynthetic = (
+  attribute: (typeof BLANK_GENERIC_SYNTHETICS)[number],
+): FaceCardDefinition =>
   face({
     id: syntheticFaceId(attribute),
-    name: SYNTHETIC_FACE_NAMES[attribute],
+    name: BLANK_SYNTHETIC_FACE_NAMES[attribute],
     kind: "synthetic",
     symbol: attribute,
     rulesText: "",
@@ -143,9 +158,63 @@ const genericSynthetic = (attribute: Attribute): FaceCardDefinition =>
     forgeRestriction: null,
   });
 
+/**
+ * Effectful forge-target synthetics. Replaces removed natural Toxin /
+ * Mechanical / Corruption / Darkness and the former blank Forged Arcane /
+ * Forged Darkness entries — same `face-synthetic-*` ids so forge + decks keep
+ * resolving; print is no longer identity-only.
+ */
+const effectfulGenericSynthetic = (
+  attribute: Attribute,
+  name: string,
+  rulesText: string,
+  onRoll: readonly EffectDefinition[],
+): FaceCardDefinition =>
+  face({
+    id: syntheticFaceId(attribute),
+    name,
+    kind: "synthetic",
+    symbol: attribute,
+    rulesText,
+    onRoll,
+    onAbsorb: [],
+    maxOverloads: 2,
+    forgeRestriction: null,
+  });
+
 const DEFINITIONS: readonly FaceCardDefinition[] = [
-  ...ATTRIBUTES.map(naturalFace),
-  ...ATTRIBUTES.map(genericSynthetic),
+  ...DUAL_KIND_ATTRIBUTES.map(naturalFace),
+  ...BLANK_GENERIC_SYNTHETICS.map(blankGenericSynthetic),
+  effectfulGenericSynthetic(
+    "arcane",
+    "Synthetic Arcane",
+    "On roll: draw 1 card.",
+    [{ type: "draw-cards", amount: 1 }],
+  ),
+  effectfulGenericSynthetic(
+    "toxin",
+    "Synthetic Toxin",
+    "On roll: all attacks this turn apply 1 Toxin marker.",
+    [{ type: "arm-attack-toxin", amount: 1 }],
+  ),
+  effectfulGenericSynthetic(
+    "mechanical",
+    "Synthetic Mechanical",
+    "On roll: generate 1 Shield.",
+    [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }],
+  ),
+  effectfulGenericSynthetic(
+    "corruption",
+    "Synthetic Corruption",
+    "On roll: the next attack this turn deals +1 damage.",
+    [{ type: "next-attack-bonus", amount: 1 }],
+  ),
+  effectfulGenericSynthetic(
+    "darkness",
+    "Synthetic Darkness",
+    "On roll: gain 1 Energy.",
+    [{ type: "gain-energy", amount: 1 }],
+  ),
   face({
     id: SHIELD_FACE_ID,
     name: "Shield",
@@ -451,9 +520,9 @@ export const FACE_CARDS: Readonly<Record<string, FaceCardDefinition>> = Object.f
 
 export const getFaceCard = (id: FaceCardId): FaceCardDefinition | undefined => FACE_CARDS[id];
 
-/** Catalogue order: basics (attributes + Shield), then named specials with printings. */
+/** Catalogue order: starting naturals (+ Shield), then named specials with printings. */
 export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
-  ...ATTRIBUTES.map((attribute) => FACE_CARDS[naturalFaceId(attribute)]!),
+  ...DUAL_KIND_ATTRIBUTES.map((attribute) => FACE_CARDS[naturalFaceId(attribute)]!),
   FACE_CARDS[SHIELD_FACE_ID]!,
   FACE_CARDS[ARCANE_ECHO_FACE]!,
   FACE_CARDS[BLADE_RAIN]!,
@@ -487,11 +556,11 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[SACRIFICE]!,
 ];
 
-/** Basics only — the eight attributes plus Shield. */
-export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(0, 9);
+/** Starting naturals only — Martial, Wild, Arcane, Luminar, plus Shield. */
+export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(0, 5);
 
 /** Named synthetic specials that have printed rules text. */
-export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(9);
+export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(5);
 
 /**
  * Opening die for both players (OPEN_DESIGN). Four attributes plus two Shields.
@@ -508,15 +577,14 @@ export const STARTING_DIE_SYMBOLS: readonly SymbolType[] = [
 
 /**
  * Scenario / forge-test face pool. Unique ids (ledger: pooled xor installed).
- * Includes Darkness / synthetic Arcane / Arcane Echo so Eclipse and Library
- * forge paths stay covered. The builtin hotseat loadout uses
- * `PROTOTYPE_FACE_DECK` instead.
+ * Effectful synthetics cover Eclipse / Library forge paths. The builtin hotseat
+ * loadout uses `PROTOTYPE_FACE_DECK` instead.
  */
 export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
-  naturalFaceId("darkness"),
-  naturalFaceId("corruption"),
-  naturalFaceId("toxin"),
-  naturalFaceId("mechanical"),
+  syntheticFaceId("darkness"),
+  syntheticFaceId("corruption"),
+  syntheticFaceId("toxin"),
+  syntheticFaceId("mechanical"),
   syntheticFaceId("arcane"),
   ARCANE_ECHO_FACE,
   RENDING_CLAW,
@@ -524,7 +592,7 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
   CRUSH,
   FORBIDDEN_HERITAGE,
   PESTILENT_PLAGUE,
-  syntheticFaceId("darkness"),
+  SACRIFICE,
 ];
 
 /**
@@ -535,7 +603,7 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
  * Natural Martial/Wild/Arcane forges copy the starting faces (bible §13).
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
-  naturalFaceId("toxin"),
+  syntheticFaceId("toxin"),
   VENOM,
   SPORES,
   CRUSH,
@@ -552,19 +620,19 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
 /**
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
  * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
- * Darkness / Corruption / Arcane synthetics for rituals and library forges.
+ * Darkness / Corruption / Arcane / Mechanical synthetics for rituals and forges.
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
-  naturalFaceId("darkness"),
   syntheticFaceId("darkness"),
   SHADOW_ECHO,
-  naturalFaceId("corruption"),
+  DRAIN,
+  syntheticFaceId("corruption"),
   FORBIDDEN_HERITAGE,
   PESTILENT_PLAGUE,
   syntheticFaceId("arcane"),
   ARCANE_ECHO_FACE,
   INSIGHT_RUNE,
-  naturalFaceId("mechanical"),
+  syntheticFaceId("mechanical"),
   GEAR,
   CATALYST,
 ];

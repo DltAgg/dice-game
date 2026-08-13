@@ -160,8 +160,8 @@ is used.
 | 3 | Luminar Prism | Tactic / Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
 | 2 | Arcane Amplifier | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
 | 4 | Arcane Resonance | Tactic / Overload / Arcane | 1 Natural Arcane, your die | On roll: generate 1 Arcane. |
-| 3 | Calculated Sacrifice | Tactic / Instant / Corruption | 1 Natural Corruption, your die | Destroy 1 Equipment on an opposing creature. |
-| 3 | Eclipse | Tactic / Instant / Darkness | 1 Natural Darkness, your die | Draw 2 cards and discard 1. |
+| 3 | Calculated Sacrifice | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | Destroy 1 Equipment on an opposing creature. |
+| 3 | Eclipse | Tactic / Instant / Darkness | 1 Synthetic Darkness, your die | Draw 2 cards and discard 1. |
 | 4 | Collapse of Reality | Tactic / Instant / Arcane | 1 Natural Arcane, your die | Convert up to two symbols into any other 2 Natural symbols. |
 | 4 | Dark Pact | Tactic / Instant / Darkness | 1 Synthetic Darkness, your die | Send 2 Tactic cards of different attributes from your deck to the graveyard. |
 | 6 | Mind Control | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |

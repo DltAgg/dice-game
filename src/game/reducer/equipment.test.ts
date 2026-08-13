@@ -5,7 +5,7 @@ import {
   VENOMOUS_FANGS,
   WAR_AXE,
 } from "../content/cards.js";
-import { FORBIDDEN_HERITAGE } from "../content/faces.js";
+import { syntheticFaceId } from "../content/faces.js";
 import { asAttackId } from "../model/ids.js";
 import { equipmentOf, graveyardOf } from "../rules/cards.js";
 import {
@@ -44,7 +44,7 @@ describe("opponent-die forging", () => {
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
     );
 
-    expect(result.dice[dieId]?.slots[4]?.faceCardId).toBe(FORBIDDEN_HERITAGE);
+    expect(result.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("corruption"));
     expect(result.dice[dieId]?.slots[4]?.faceCardOwnerId).toBe(P1);
   });
 
