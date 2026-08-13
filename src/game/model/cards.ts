@@ -96,8 +96,15 @@ export type CreatureRelation = "self" | "ally" | "ally-other" | "any";
 export type PlayerRelation = "controller" | "opponent" | "any";
 
 export type StandingTrigger =
-  /** Adds to the damage of every attack the bearer makes (War Axe). */
-  { readonly type: "attack-damage-bonus"; readonly amount: number }
+  /**
+   * Adds to attack damage the bearer deals. Optional `attackKinds` (War Axe:
+   * Basic only).
+   */
+  {
+      readonly type: "attack-damage-bonus";
+      readonly amount: number;
+      readonly attackKinds?: readonly ("basic" | "special")[];
+    }
   /** After the bearer deals HP damage (Venomous Fangs, Blade of Serene Light). */
   | {
       readonly type: "on-deal-damage";
@@ -120,11 +127,12 @@ export type StandingTrigger =
     }
   /**
    * When a creature absorbs a symbol. Default absorber is the host (`self`).
-   * Optional `symbols` filter; omit to fire on any absorb.
+   * Optional `symbols` / `faceKinds` filters; omit to fire on any absorb.
    */
   | {
       readonly type: "on-absorb";
       readonly symbols?: readonly SymbolType[];
+      readonly faceKinds?: readonly FaceKind[];
       readonly absorberRelation?: CreatureRelation;
       readonly effects: readonly EffectDefinition[];
     }

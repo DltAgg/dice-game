@@ -62,6 +62,11 @@ export type EffectDefinition =
       readonly target: TargetSelector;
     }
   /**
+   * Controller's attacks this turn apply this many Toxin markers to the attack
+   * target (Toxic Blessing). Cleared at end of turn.
+   */
+  | { readonly type: "arm-attack-toxin"; readonly amount: number }
+  /**
    * Negate the top chain link if it is a tactic-card link (not an attack).
    * Spec `008` — Runic Nullification, Arcane Silence.
    */

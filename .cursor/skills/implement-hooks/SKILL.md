@@ -57,12 +57,12 @@ type PlayerRelation = "controller" | "opponent" | "any";
 
 | Print cue | Filter |
 |---|---|
-| Whenever **this** creature attacks | `on-attack` + `attackerRelation: "self"` (default for gear) |
-| Whenever **another ally** attacks | `on-attack` + `attackerRelation: "ally-other"` |
-| Whenever **you** roll Corruption | `on-roll-symbol` + `rollingPlayer: "controller"` |
-| Whenever the **opponent** rolls Corruption | `on-roll-symbol` + `rollingPlayer: "opponent"` |
-| Whenever **this** creature absorbs | `on-absorb` + `absorberRelation: "self"` |
-| Whenever **a** creature absorbs Natural | `on-absorb` + `absorberRelation: "any"` (+ Natural filter) |
+| `On attack:` (this creature) | `on-attack` + `attackerRelation: "self"` (default for gear) |
+| `On attack, another ally:` | `on-attack` + `attackerRelation: "ally-other"` |
+| `On roll Corruption:` (host controller) | `on-roll-symbol` + `rollingPlayer: "controller"` |
+| `On opponent roll Corruption:` | `on-roll-symbol` + `rollingPlayer: "opponent"` |
+| `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "self"` |
+| `On absorb Natural:` (any creature) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter) |
 
 ## Workflow
 

@@ -40,7 +40,7 @@ On absorb: draw 1 card.
 
 ## Equipment: Venomous Fangs
 
-**Print:** Whenever this creature deals damage, apply 1 Toxin marker.
+**Print:** On deal damage: apply 1 Toxin marker.
 
 **Data:**
 ```ts

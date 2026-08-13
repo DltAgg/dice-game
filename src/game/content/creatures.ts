@@ -71,8 +71,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Varcolac",
     life: 9,
     attributes: ["wild"],
-    passiveRulesText:
-      "Whenever another ally attacks, Varcolac's next attack deals +1 damage.",
+    passiveRulesText: "On attack, another ally: this creature's next attack deals +1 damage.",
     standingAbilities: [
       {
         type: "on-attack",
@@ -123,7 +122,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1 },
         range: true,
         rulesText:
-          "Deal 2 damage. On dealing damage, you may swap Garuda with a frontline creature.",
+          "Deal 2 damage. On deal damage: you may swap Garuda with a frontline creature.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -173,7 +172,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Corrupting Elder",
     life: 10,
     attributes: ["arcane"],
-    passiveRulesText: "Whenever the opponent rolls [Corruption], deal 1 damage.",
+    passiveRulesText: "On opponent roll Corruption: deal 1 damage.",
     standingAbilities: [
       {
         type: "on-roll-symbol",
@@ -210,8 +209,15 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Void Summoner",
     life: 9,
     attributes: ["arcane"],
-    passiveRulesText:
-      "Whenever a creature [Absorbs] a [Natural] face, generate [Arcane] on one of your creatures.",
+    passiveRulesText: "On absorb Natural: generate 1 Arcane.",
+    standingAbilities: [
+      {
+        type: "on-absorb",
+        absorberRelation: "any",
+        faceKinds: ["natural"],
+        effects: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
+      },
+    ],
     attacks: [
       {
         id: asAttackId("attack-void-rupture"),

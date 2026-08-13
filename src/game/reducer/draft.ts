@@ -43,6 +43,7 @@ export interface Draft {
   pendingDecision: PendingDecision | null;
   deferredTurnEndPlayerId: PlayerId | null;
   attackBonusThisTurn: Record<string, number>;
+  attackToxinThisTurn: Record<string, number>;
   preventDrawArmed: Record<string, number>;
   winner: PlayerId | null;
   log: LoggedEvent[];

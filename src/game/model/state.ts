@@ -208,6 +208,11 @@ export interface GameState {
    */
   readonly attackBonusThisTurn: Readonly<Record<string, number>>;
   /**
+   * Toxic Blessing and similar: this player's attacks apply this many Toxin
+   * markers to the attack target. Cleared at end of turn.
+   */
+  readonly attackToxinThisTurn: Readonly<Record<string, number>>;
+  /**
    * Glimmer and similar: next time this player prevents damage, draw this many
    * cards, then clear. Spec `009`.
    */

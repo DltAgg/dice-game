@@ -5,14 +5,21 @@ import {
   BLACK_PLAGUE,
   BLADE_OF_SERENE_LIGHT,
   ECLIPSE,
+  HUNTERS_COLLAR,
   HUNTING_ARMOUR,
   MUTANT_SPORES,
+  TOXIC_BLESSING,
   TOXIC_HEART,
   VENOMOUS_FANGS,
   WILD_CARAPACE,
   WILD_ECHO,
 } from "../content/cards.js";
-import { PROTOTYPE_SQUAD } from "../content/creatures.js";
+import {
+  GARUDA,
+  MINOTAUR,
+  PROTOTYPE_SQUAD,
+  VOID_SUMMONER,
+} from "../content/creatures.js";
 import {
   CONVERSION_RUNE,
   ENGINE_TEST_FACE_DECK,
@@ -50,6 +57,9 @@ import {
   advanceResolvingChain as advance,
   newMatchWithDecks,
 } from "../testing/scenario.js";
+import { createDraft } from "./draft.js";
+import { drainResolution } from "./resolution.js";
+import { setCreaturePosition } from "./zones.js";
 
 const SHIELD_STRIKE = asAttackId("attack-shield-strike");
 
@@ -608,5 +618,106 @@ describe("on-discard continuous ritual", () => {
     );
     const darkness = usableSymbols(discarded, P1).filter((s) => s.symbol === "darkness");
     expect(darkness.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("Void Summoner on-absorb Natural", () => {
+  it("generates Arcane when any creature absorbs a Natural face", () => {
+    const state0 = newMatch({
+      players: [
+        {
+          id: P1,
+          squad: [VOID_SUMMONER, MINOTAUR, GARUDA],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+        {
+          id: P2,
+          squad: [MINOTAUR, GARUDA, VOID_SUMMONER],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+      ],
+    });
+    // Starting die slot 0 is typically Martial (natural).
+    let state = withPhase(state0, "roll");
+    state = withDie(state, dieIdOf(state), { retained: true, rolledSlotIndex: 0 });
+    state = withDie(state, dieIdOf(state, P1, 1), { retained: true, rolledSlotIndex: 1 });
+    state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P1 }));
+    const martial = Object.values(state.symbols).find(
+      (s) => s.symbol === "martial" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
+    );
+    if (martial === undefined) throw new Error("martial");
+    const absorber = creatureIdAt(state, P1, 1);
+    const after = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: absorber,
+        symbolId: martial.id,
+      }),
+    );
+    const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
+    expect(arcane.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("Toxic Blessing arm-attack-toxin", () => {
+  it("applies toxin on attacks after the overloaded face is rolled", () => {
+    const toxinFace = faceIdForSymbol("toxin");
+    const base = actionsReady([TOXIC_BLESSING]);
+    const dieId = dieIdOf(base);
+    const die = base.dice[dieId];
+    if (die === undefined) throw new Error("die");
+    const slots = die.slots.map((slot, index) =>
+      index === 0 ? { ...slot, faceCardId: toxinFace, faceCardOwnerId: P1 } : slot,
+    );
+    const prepared: GameState = {
+      ...base,
+      dice: { ...base.dice, [dieId]: { ...die, slots } },
+    };
+    const attached = expectOk(
+      advance(prepared, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(prepared, P1, 0),
+        declaredFaceCardId: toxinFace,
+      }),
+    );
+    let rolled: GameState = withPhase(attached, "roll");
+    rolled = withDie(rolled, dieId, { retained: true, rolledSlotIndex: 0 });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 1 });
+    const afterRoll = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+    expect(afterRoll.attackToxinThisTurn[P1]).toBe(1);
+
+    const attackerId = creatureIdAt(afterRoll, P1, 0);
+    const targetId = creatureIdAt(afterRoll, P2, 0);
+    let combat = withPhase(withTokens(afterRoll, attackerId, { martial: 1 }), "combat");
+    combat = expectOk(
+      advance(combat, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: asAttackId("attack-shield-strike"),
+        targetId,
+      }),
+    );
+    expect(combat.creatures[targetId]?.toxinMarkers).toBe(1);
+  });
+});
+
+describe("Hunter's Collar on-change-position", () => {
+  it("generates Martial when the bearer changes position", () => {
+    const base = actionsReady([HUNTERS_COLLAR]);
+    const bearerId = creatureIdAt(base, P1, 0);
+    const equipped = equip(base, bearerId);
+    expect(equipped.creatures[bearerId]?.position).toBe("frontline");
+
+    const draft = createDraft(equipped);
+    setCreaturePosition(draft, bearerId, "back");
+    drainResolution(draft);
+    expect(draft.creatures[bearerId]?.position).toBe("back");
+    const martial = usableSymbols(draft, P1).filter((s) => s.symbol === "martial");
+    expect(martial.length).toBeGreaterThanOrEqual(1);
   });
 });

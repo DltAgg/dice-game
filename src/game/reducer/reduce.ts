@@ -594,7 +594,7 @@ function attack(
           ...baseEffect,
           amount:
             baseEffect.amount +
-            attackDamageBonus(draft, attackerId) +
+            attackDamageBonus(draft, attackerId, attackDefinition.kind) +
             turnBonus +
             creatureBonus,
         }
@@ -1391,6 +1391,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   expireTurnSymbols(draft);
   resetCombatCounters(draft);
   draft.attackBonusThisTurn = {};
+  draft.attackToxinThisTurn = {};
   draft.preventDrawArmed = {};
   clearTurnTriggerState(draft);
 

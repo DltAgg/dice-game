@@ -204,10 +204,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Whenever this creature performs a Basic Attack, deal +1 damage.",
+    rulesText: "On basic attack: deal +1 damage.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [{ type: "attack-damage-bonus", amount: 1 }],
+      abilities: [{ type: "attack-damage-bonus", amount: 1, attackKinds: ["basic"] }],
     },
   }),
   card({
@@ -218,7 +218,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever this creature deals damage, apply 1 Toxin marker.",
+    rulesText: "On deal damage: apply 1 Toxin marker.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -252,7 +252,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "opponent-die" },
     rulesText:
-      "May be equipped to an opposing creature.\nWhenever that creature rolls Corruption, it takes 1 damage.",
+      "May be equipped to an opposing creature.\nOn roll Corruption: this creature takes 1 damage.",
     equipment: {
       mayTargetOpponent: true,
       abilities: [
@@ -349,7 +349,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     rulesText:
-      "When an ally would take damage, prevent it; if you do, deal that much to the attacking creature.",
+      "On ally would take damage: prevent it; if you do, deal that much to the attacking creature.",
     effect: {
       effects: [{ type: "prevent-attack-reflect" }],
     },
@@ -362,7 +362,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["reaction"],
     attribute: "luminar",
     forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
-    rulesText: "When you prevent damage, draw 2 cards.",
+    rulesText: "On prevent damage: draw 2 cards.",
     effect: {
       effects: [{ type: "arm-prevent-draw", amount: 2 }],
     },
@@ -430,7 +430,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "Whenever this creature deals damage, heal 1 on an allied creature.",
+    rulesText: "On deal damage: heal 1 on an allied creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -451,7 +451,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
       "Can only equip an Arcane or Darkness creature.\n" +
-      "Whenever this creature absorbs Arcane or Darkness, draw 1 card and discard 1.",
+      "On absorb Arcane or Darkness: draw 1 card and discard 1.",
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["arcane", "darkness"],
@@ -489,7 +489,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Whenever you discard a card, generate 1 Darkness. (You may choose how to use it.)",
+    rulesText: "On discard: generate 1 Darkness. (You may choose how to use it.)",
     ritual: {
       activeWhen: { arcane: 1, darkness: 1 },
       effects: [],
@@ -510,7 +510,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Whenever this creature absorbs Arcane, copy another symbol onto it.",
+    rulesText: "On absorb Arcane: copy another symbol onto it.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [],
@@ -558,7 +558,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "Can only overload a Toxin face.\nOn roll: all attacks this turn apply 1 Toxin marker.",
     overload: {
       faceSymbols: ["toxin"],
-      onRoll: [],
+      onRoll: [{ type: "arm-attack-toxin", amount: 1 }],
     },
   }),
   card({
@@ -637,7 +637,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever this creature absorbs Wild, it may move 1 position.",
+    rulesText: "On absorb Wild: this creature may move 1 position.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [],
@@ -651,7 +651,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "toxin",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Special Attacks apply 1 Toxin marker.",
+    rulesText: "On special attack: apply 1 Toxin marker.",
     ritual: {
       activeWhen: { wild: 1, toxin: 1 },
       effects: [],
@@ -675,7 +675,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "The allied creature to the left deals +1 damage on Basic Attacks.",
+    rulesText: "On basic attack, allied creature to the left: deal +1 damage.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [],
@@ -689,7 +689,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever this creature performs a Special Attack, generate Wild on another card.",
+    rulesText: "On special attack: generate Wild on another card.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [],
@@ -703,7 +703,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever a Toxin marker deals damage, heal 1 on this creature.",
+    rulesText: "On toxin damage: heal 1 on this creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -722,10 +722,16 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever this creature changes position, generate Martial on 1 card.",
+    rulesText: "On change position: generate Martial.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-change-position",
+          creatureRelation: "self",
+          effects: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
+        },
+      ],
     },
   }),
   card({
@@ -737,7 +743,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
     rulesText:
-      "Can only equip a Martial creature.\nOnce per turn, when this creature attacks, another ally may reposition.",
+      "Can only equip a Martial creature.\nOn attack, once per turn: another ally may reposition.",
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["martial"],
@@ -752,7 +758,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "The first time this creature takes damage each turn, reduce it by 1.",
+    rulesText: "On take damage, once per turn: reduce it by 1.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -772,7 +778,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Whenever this creature performs a Basic Attack, push the target one position.",
+    rulesText: "On basic attack: push the target one position.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [],
@@ -786,7 +792,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["equipment"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Whenever this creature absorbs Wild, heal 1.",
+    rulesText: "On absorb Wild: heal 1.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [

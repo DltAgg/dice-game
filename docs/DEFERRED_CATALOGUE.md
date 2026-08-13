@@ -32,7 +32,7 @@ needs them — never as unreachable stubs.
 | **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Hook ready; **partially wired**: Insight roll, Conversion absorb, Vital Spark both, Aegis roll, Primordial Fury absorb, Impact absorb, Venom roll — remaining clauses still deferred |
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
 | **Attack-damage conditional buffs** | War Banner (left ally aura) | Varcolac passive **wired** (`on-attack` + `ally-other` + `grant-next-attack-bonus`) |
-| **Shared trigger events** | Twin Blades, Insignia, Alpha's Hide, Hunter's Collar, … | **IMPLEMENTED** infrastructure (`on-attack`, `on-take-damage`, `on-discard`, `on-change-position`); movers / push still block some wires |
+| **Shared trigger events** | Twin Blades, Insignia, Alpha's Hide, … | **IMPLEMENTED** infrastructure; movers / push / “another card” still block some wires |
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
 | **Multi-target damage split** | Blade Rain, Extermination | Player chooses distribution |
 | **Copy / re-apply die modifiers** | Arcane Echo tactic + face | |
@@ -42,7 +42,7 @@ needs them — never as unreachable stubs.
 | **Destroy / strip overloads** | Mind Control | |
 | **Send cards deck → GY** | Dark Pact | |
 | **Continuous ritual standing triggers** | — | Abyssal Sacrifice + Serrated Stinger **wired**; others as needed |
-| **Toxin on all attacks this turn** | Toxic Blessing | |
+| **Toxin on all attacks this turn** | — | **IMPLEMENTED** — `arm-attack-toxin` (Toxic Blessing) |
 | **Reroll face once / self-damage** | Adrenaline | |
 | **Energy-spent scaling amounts** | Future `?` cards (e.g. spent N → draw) | Payment path exists; no effect reads `energyPaid` yet |
 | **Pestilence counters + adjacent forge** | Pestilent Plague face | |
@@ -73,21 +73,22 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Tome of Interdiction | Equip; cost reduction deferred |
 | Abyssal Sacrifice | **Wired** discard → Darkness |
 | Mirrored Rune | Equip; absorb→copy deferred |
-| Toxic Blessing | Overload attach + Toxin gate; all-attacks toxin deferred |
+| Toxic Blessing | — | **Wired** `arm-attack-toxin` on roll |
 | Adrenaline | Overload attach + Natural Wild gate; reroll clause deferred |
 | Rust | Overload attach + Natural Martial gate; ignore shield deferred |
 | Predator's Claws | Equip; absorb→move deferred |
 | Serrated Stinger | **Wired** ally special attack → toxin on target |
 | War Banner | Equip; left-ally +1 basic deferred |
 | Alpha's Hide | Equip; special→generate Wild on another card deferred |
-| Hunter's Collar | Equip; position→Martial deferred (`on-change-position` ready) |
+| Hunter's Collar | — | **Wired** position change → Martial (`setCreaturePosition`) |
 | Insignia of Command | Equip + Martial gate; attack→reposition deferred |
 | Hunting Armour | **Wired** first damage −1 / turn |
 | Twin Blades | Equip; basic→push deferred (`on-attack` ready) |
 
 Fully wired in `010` (removed from gaps): Venomous Fangs, Black Plague, Blade of
 Serene Light, Archmage's Grimoire, Mutant Spores, Wild Echo, Toxic Heart, Wild
-Carapace, Hunting Armour, Abyssal Sacrifice, Serrated Stinger.
+Carapace, Hunting Armour, Abyssal Sacrifice, Serrated Stinger, Toxic Blessing,
+Hunter's Collar.
 
 ### Fully wired (for reference)
 
@@ -109,7 +110,7 @@ Damage lines resolve; passives and most special riders do not.
 | Garuda | Dive optional swap; Bombardment frontline toxin (Range flag exists) |
 | Archmage of the Runes | Passive Arcane tactic discount; Arcane Burst draw; Mystic Overload frontline shields |
 | Corrupting Elder | Touch strip shield; Contamination forge opp (passive **wired**) |
-| Void Summoner | Passive absorb→Arcane; Rupture convert; Dimensional Rift retain |
+| Void Summoner | Rupture convert; Dimensional Rift retain | Passive **wired** (Natural absorb → Arcane) |
 
 Fast-game HP/cost variants from Figma are not encoded.
 

@@ -251,7 +251,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: "corruption",
     rulesText:
       "On roll: put 1 pestilence counter on this card.\n" +
-      "When this card has 5 pestilence counters, remove them and [Forge] 1 [Pestilent Plague] face next to a [Pestilent Plague] face.\n" +
+      "At 5 pestilence counters: remove them and [Forge] 1 [Pestilent Plague] face next to a [Pestilent Plague] face.\n" +
       "Activated: you may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
     // Pestilence counters and adjacent forge are not modelled yet.
     onRoll: [],

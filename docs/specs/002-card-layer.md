@@ -132,20 +132,20 @@ is used.
 | ? | Adrenaline | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Natural Wild faces only.* On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures. |
 | ? | Rust | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Natural Martial faces only.* On absorb: your attacks this turn ignore 2 Shield. |
 | 2 | Ritual of Contamination | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | *Requires: Arcane + Corruption.* Forge 1 Synthetic Corruption face on the opponent's die. |
-| 4 | Luminar Judgement | Tactic / Reaction / Luminar | 1 Natural Luminar, your die | When an ally would take damage, prevent it; if you do, deal that much to the attacking creature. |
-| 2 | Glimmer | Tactic / Reaction / Luminar | 1 Synthetic Luminar, your die | When you prevent damage, draw 2 cards. |
-| 2 | Predator's Claws | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever this creature absorbs Wild, it may move 1 position. |
-| 3 | Venomous Fangs | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever this creature deals damage, apply 1 Toxin marker. |
-| 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Natural Wild, your die | *Active when: 1x Wild + 1x Toxin.* Special Attacks apply 1 Toxin marker. |
-| 4 | War Banner | Tactic / Equipment / Wild | 1 Natural Wild, your die | The allied creature to the left deals +1 damage on Basic Attacks. |
-| 4 | Alpha's Hide | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever this creature performs a Special Attack, generate Wild on another card. |
-| 5 | Toxic Heart | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever a Toxin marker deals damage, heal 1 on this creature. |
-| 3 | Hunter's Collar | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever this creature changes position, generate Martial on 1 card. |
-| 5 | Insignia of Command | Tactic / Equipment / Wild | 1 Natural Wild, your die | *Martial creatures only.* Once per turn, when this creature attacks, another ally may reposition. |
-| 2 | War Axe | Tactic / Equipment / Martial | 1 Natural Martial, your die | Whenever this creature performs a Basic Attack, deal +1 damage. |
-| 2 | Hunting Armour | Tactic / Equipment / Wild | 1 Natural Wild, your die | The first time this creature takes damage each turn, reduce it by 1. |
-| 3 | Twin Blades | Tactic / Equipment / Martial | 1 Natural Martial, your die | Whenever this creature performs a Basic Attack, push the target one position. |
-| 3 | Wild Carapace | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever this creature absorbs Wild, heal 1. |
+| 4 | Luminar Judgement | Tactic / Reaction / Luminar | 1 Natural Luminar, your die | On ally would take damage: prevent it; if you do, deal that much to the attacking creature. |
+| 2 | Glimmer | Tactic / Reaction / Luminar | 1 Synthetic Luminar, your die | On prevent damage: draw 2 cards. |
+| 2 | Predator's Claws | Tactic / Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: this creature may move 1 position. |
+| 3 | Venomous Fangs | Tactic / Equipment / Wild | 1 Natural Wild, your die | On deal damage: apply 1 Toxin marker. |
+| 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Natural Wild, your die | *Active when: 1x Wild + 1x Toxin.* On special attack: apply 1 Toxin marker. |
+| 4 | War Banner | Tactic / Equipment / Wild | 1 Natural Wild, your die | On basic attack, allied creature to the left: deal +1 damage. |
+| 4 | Alpha's Hide | Tactic / Equipment / Wild | 1 Natural Wild, your die | On special attack: generate Wild on another card. |
+| 5 | Toxic Heart | Tactic / Equipment / Wild | 1 Natural Wild, your die | On toxin damage: heal 1 on this creature. |
+| 3 | Hunter's Collar | Tactic / Equipment / Wild | 1 Natural Wild, your die | On change position: generate Martial. |
+| 5 | Insignia of Command | Tactic / Equipment / Wild | 1 Natural Wild, your die | *Martial creatures only.* On attack, once per turn: another ally may reposition. |
+| 2 | War Axe | Tactic / Equipment / Martial | 1 Natural Martial, your die | On basic attack: deal +1 damage. |
+| 2 | Hunting Armour | Tactic / Equipment / Wild | 1 Natural Wild, your die | On take damage, once per turn: reduce it by 1. |
+| 3 | Twin Blades | Tactic / Equipment / Martial | 1 Natural Martial, your die | On basic attack: push the target one position. |
+| 3 | Wild Carapace | Tactic / Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: heal 1. |
 
 ### Control deck
 
@@ -167,12 +167,12 @@ is used.
 | 6 | Mind Control | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |
 | 5 | Arcane Silence | Tactic / Reaction / Arcane | 2 Synthetic Arcane, your die | Negate the effect of 1 Tactic card. |
 | 4 | Persistent Infection | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: gain 1 Energy. |
-| 2 | Blade of Serene Light | Tactic / Equipment / Luminar | 1 Natural Luminar, your die | Whenever this creature deals damage, heal 1 on an allied creature. |
-| 4 | Black Plague | Tactic / Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* Whenever that creature rolls Corruption, it takes 1 damage. |
-| 2 | Archmage's Grimoire | Tactic / Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* Whenever this creature absorbs Arcane or Darkness, draw 1 card and discard 1. |
+| 2 | Blade of Serene Light | Tactic / Equipment / Luminar | 1 Natural Luminar, your die | On deal damage: heal 1 on an allied creature. |
+| 4 | Black Plague | Tactic / Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: this creature takes 1 damage. |
+| 2 | Archmage's Grimoire | Tactic / Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Arcane or Darkness: draw 1 card and discard 1. |
 | 3 | Tome of Interdiction | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane Tactic used each turn costs 1 less Energy. |
-| 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: 1x Arcane + 1x Darkness.* Whenever you discard a card, generate 1 Darkness. |
-| 3 | Mirrored Rune | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | Whenever this creature absorbs Arcane, copy another symbol onto it. |
+| 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: 1x Arcane + 1x Darkness.* On discard: generate 1 Darkness. |
+| 3 | Mirrored Rune | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | On absorb Arcane: copy another symbol onto it. |
 
 ## Naming inconsistencies in the file
 

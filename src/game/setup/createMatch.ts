@@ -252,6 +252,7 @@ export function createMatch(setup: MatchSetup): GameState {
     pendingDecision: null,
     deferredTurnEndPlayerId: null,
     attackBonusThisTurn: {},
+    attackToxinThisTurn: {},
     preventDrawArmed: {},
     winner: null,
     log: [

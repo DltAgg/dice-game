@@ -88,6 +88,10 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 - [x] Black Plague uses explicit `rollingPlayer: "controller"` (bearer owner).
 - [x] Corrupting Elder / Serrated Stinger wired in catalogue (opponent roll /
   ally special → toxin).
+- [x] Toxic Blessing: roll → `arm-attack-toxin`; attacks apply toxin.
+- [x] Hunter's Collar: position change → Martial.
+- [x] Void Summoner: any Natural absorb → generate Arcane.
+- [x] War Axe: Basic-only `attack-damage-bonus` via `attackKinds`.
 
 ## Tests
 

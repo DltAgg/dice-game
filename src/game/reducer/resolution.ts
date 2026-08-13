@@ -315,6 +315,14 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       });
       return false;
     }
+    case "arm-attack-toxin": {
+      const current = draft.attackToxinThisTurn[pending.controllerId] ?? 0;
+      draft.attackToxinThisTurn = {
+        ...draft.attackToxinThisTurn,
+        [pending.controllerId]: current + effect.amount,
+      };
+      return false;
+    }
     case "negate-tactic": {
       const top = draft.chainStack[draft.chainStack.length - 1];
       if (

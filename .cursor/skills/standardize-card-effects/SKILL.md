@@ -19,35 +19,49 @@ entries. Never invent silent approximations.
 Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape),
 [develop-engine](../develop-engine/SKILL.md) (new `EffectDefinition` / hooks).
 
-## Gold-standard print shape (faces)
+## Gold-standard print shape
 
-Named synthetics use two lines (exactly this grammar when both regions exist):
+### Faces / overloads
 
 ```text
 On roll: <clause>.
 On absorb: <clause>.
 ```
 
-Canonical examples in `src/game/content/faces.ts`:
+### Standing triggers (equipment, creature passives, continuous rituals)
 
-| Face | Pattern |
+Use the same **On …:** prefix as the hook name (readable English after the colon).
+Do **not** use “Whenever…”, “When you…”, or “When this creature…”.
+
+| Hook | Print prefix |
 |---|---|
-| **Revelation** | Peek/bottom on roll; conditional heal on absorb |
-| **Instinct** | Reposition on roll; conditional basic attack on absorb |
-| **Primordial Fury** | Conditional Energy on roll; next basic +1 on absorb |
+| `on-deal-damage` | `On deal damage:` |
+| `on-toxin-damage` | `On toxin damage:` |
+| `on-roll-symbol` | `On roll <Symbol>:` / `On opponent roll <Symbol>:` |
+| `on-absorb` | `On absorb:` / `On absorb <Symbol>:` / `On absorb Natural:` |
+| `on-attack` | `On attack:` / `On basic attack:` / `On special attack:` / `On attack, another ally:` |
+| `on-take-damage` | `On take damage:` (add `, once per turn` before the colon when needed) |
+| `on-discard` | `On discard:` |
+| `on-change-position` | `On change position:` |
+| `attack-damage-bonus` | `On basic attack:` / `On attack:` (+N damage) |
 
-Prefer this over prose that mixes timings (“when rolled or absorbed…”).
+Gate lines stay above the timing line (`Can only equip…`, `Can only overload…`).
+Qualifiers use a comma before the colon (`On take damage, once per turn:`), never parentheses.
 
 ## Hook map (where effects live)
 
 | Print cue | Catalogue field | Fires when |
 |---|---|---|
-| On roll / whenever this face is rolled | Face `onRoll[]` or Overload `onRoll[]` | Die shows that face after `ROLL_DICE` |
-| On absorb | Face `onAbsorb[]` or Overload `onAbsorb[]` | Symbol from that face is absorbed |
-| Whenever this creature deals damage | Equipment `abilities: [{ type: "on-deal-damage", effects }]` | Bearer deals **HP** damage (not fully prevented / Shield-only) |
-| Whenever toxin deals damage | `on-toxin-damage` | Toxin tick deals HP |
-| When you roll [Symbol] (equipment) | `on-roll-symbol` + `symbol` | Owner rolls a die showing that symbol |
-| When this creature absorbs [Symbol] | `on-absorb` (+ optional `symbols` filter) | Bearer absorbs matching symbol |
+| `On roll:` | Face `onRoll[]` or Overload `onRoll[]` | Die shows that face after `ROLL_DICE` |
+| `On absorb:` | Face `onAbsorb[]` or Overload `onAbsorb[]` | Symbol from that face is absorbed |
+| `On deal damage:` | `on-deal-damage` | Bearer deals **HP** damage |
+| `On toxin damage:` | `on-toxin-damage` | Toxin tick deals HP |
+| `On roll <Symbol>:` | `on-roll-symbol` + `symbol` | Matching roll (filter `rollingPlayer`) |
+| `On absorb <Symbol>:` | `on-absorb` (+ filters) | Matching absorb |
+| `On attack:` / `On basic attack:` / … | `on-attack` | Attack declared |
+| `On take damage:` | `on-take-damage` | Incoming damage |
+| `On discard:` | `on-discard` | Hand discard |
+| `On change position:` | `on-change-position` | `setCreaturePosition` |
 
 Shared hook implementation: `src/game/reducer/triggers.ts` · spec
 `docs/specs/010-trigger-hooks.md`.
@@ -77,9 +91,10 @@ standard timing lines if meaning is preserved.
 Rewrite `rulesText` (and face print) into discrete lines:
 
 - Face / overload: `On roll:` / `On absorb:`
-- Equipment: keep readable English, but implement via the matching ability type
-- Instant / ritual: one-shot `effect` / `ritual.effects` (not standing hooks)
-- Reaction: hand or ritual-reaction; chain window rules from `008` / `009`
+- Equipment / passives / continuous rituals: `On deal damage:` / `On absorb:` /
+  `On attack:` / … (same prefixes as hooks — never “Whenever…”)
+- Instant / ritual activate: one-shot `effect` / `ritual.effects` (not standing hooks)
+- Reaction: may use `On …:` for the window cue (e.g. `On prevent damage:`)
 
 If a clause needs a timing the engine lacks → keep print accurate, leave the
 structured array empty, row in `docs/DEFERRED_CATALOGUE.md`.
@@ -192,6 +207,8 @@ equipment: {
 - Putting trigger logic in UI / networking
 - Wiring `onRoll` while absorb clause is silently dropped from `rulesText`
 - Growing `EffectDefinition` without a concrete card + tests
+- Print that still says “Whenever…” / “When you…” for standing triggers —
+  rewrite to `On …:` to match the hook
 
 ## More detail
 

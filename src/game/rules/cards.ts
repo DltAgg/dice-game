@@ -150,7 +150,11 @@ export function searchableInGraveyard(
 }
 
 /** Sum of attack-damage-bonus abilities on gear attached to a creature. */
-export function attackDamageBonus(state: GameState, creatureId: CreatureId): number {
+export function attackDamageBonus(
+  state: GameState,
+  creatureId: CreatureId,
+  attackKind?: "basic" | "special",
+): number {
   const creature = state.creatures[creatureId];
   if (creature === undefined) return 0;
 
@@ -160,7 +164,15 @@ export function attackDamageBonus(state: GameState, creatureId: CreatureId): num
     if (instance === undefined) continue;
     const definition = getCard(instance.cardId);
     for (const ability of definition?.equipment?.abilities ?? []) {
-      if (ability.type === "attack-damage-bonus") bonus += ability.amount;
+      if (ability.type !== "attack-damage-bonus") continue;
+      if (
+        ability.attackKinds !== undefined &&
+        attackKind !== undefined &&
+        !ability.attackKinds.includes(attackKind)
+      ) {
+        continue;
+      }
+      bonus += ability.amount;
     }
   }
   return bonus;

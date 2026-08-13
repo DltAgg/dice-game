@@ -7,6 +7,7 @@ import type {
   StandingTrigger,
 } from "../model/cards.js";
 import type { BattlefieldPosition } from "../model/creatures.js";
+import type { FaceKind } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
 import {
   asEffectInstanceId,
@@ -260,13 +261,22 @@ export function queueAbsorbTriggers(
   symbol: SymbolType,
   sourceDieId: DieId | null,
 ): void {
-  fireOnAbsorb(draft, creatureId, absorbingPlayerId, symbol);
+  let faceKind: FaceKind | null = null;
+  let faceCardId: FaceCardId | undefined;
 
-  if (sourceDieId === null) return;
-  const die = draft.dice[sourceDieId];
-  const slotIndex = die?.rolledSlotIndex;
-  if (die === undefined || slotIndex === null || slotIndex === undefined) return;
-  const faceCardId = die.slots[slotIndex]?.faceCardId;
+  if (sourceDieId !== null) {
+    const die = draft.dice[sourceDieId];
+    const slotIndex = die?.rolledSlotIndex;
+    if (die !== undefined && slotIndex !== null && slotIndex !== undefined) {
+      faceCardId = die.slots[slotIndex]?.faceCardId;
+      if (faceCardId !== undefined) {
+        faceKind = getFaceCard(faceCardId)?.kind ?? null;
+      }
+    }
+  }
+
+  fireOnAbsorb(draft, creatureId, absorbingPlayerId, symbol, faceKind);
+
   if (faceCardId === undefined) return;
   // Absorbing creature is the face/overload source so `source-creature` targets
   // (e.g. Vital Spark prevent) resolve against the absorber.
@@ -279,11 +289,18 @@ function fireOnAbsorb(
   absorberId: CreatureId,
   absorberOwnerId: PlayerId,
   symbol: SymbolType,
+  faceKind: FaceKind | null,
 ): void {
   for (const host of collectHosts(draft)) {
     for (const ability of host.abilities) {
       if (ability.type !== "on-absorb") continue;
       if (ability.symbols !== undefined && !ability.symbols.includes(symbol)) continue;
+      if (
+        ability.faceKinds !== undefined &&
+        (faceKind === null || !ability.faceKinds.includes(faceKind))
+      ) {
+        continue;
+      }
       const relation = ability.absorberRelation ?? "self";
       if (
         !matchesCreatureRelation(
@@ -378,6 +395,18 @@ export function fireOnAttack(
         ability.effects,
       );
     }
+  }
+
+  // Turn-armed toxin (Toxic Blessing): all of this player's attacks apply toxin.
+  const toxinAmount = draft.attackToxinThisTurn[attacker.ownerId] ?? 0;
+  if (toxinAmount > 0) {
+    pushEffect(
+      draft,
+      attacker.ownerId,
+      { type: "apply-toxin", amount: toxinAmount, target: { kind: "declared-target" } },
+      attackerId,
+      targetId,
+    );
   }
 }
 
