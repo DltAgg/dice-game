@@ -35,7 +35,10 @@ face({
 ## Rules of thumb
 
 - `onRoll` fires when the face is showing after `ROLL_DICE` (and related keep paths).
-- Leave `onRoll: []` when print clauses are not fully modelled; keep `rulesText`.
+- `onAbsorb` fires when a symbol from this face is absorbed (`010-trigger-hooks`).
+- New dual-region faces: standardize print as `On roll:` / `On absorb:` — see
+  [standardize-card-effects](../standardize-card-effects/SKILL.md).
+- Leave arrays empty when print clauses are not fully modelled; keep `rulesText`.
 - Overloads attach to the **face card**, not the physical die slot.
 - Face deck legality: ≤12 faces, ≤3 per attribute (`validateFaceDeck` / loadout rules).
 - Tactics install faces via forge from the owner’s face pool — changing faces may

@@ -20,4 +20,5 @@ Rules:
 - `equipment` / `overload` subtypes must match their regions (and vice versa).
 - Rituals use main `type: "ritual"` (not a subtype) and must have a `ritual` region.
 - Update `docs/specs/002|003|004-*.md` and `docs/DEFERRED_CATALOGUE.md` when print coverage changes.
+- Dual-timing faces use `On roll:` / `On absorb:` print; see `.cursor/skills/standardize-card-effects/`.
 - Follow `.cursor/skills/author-content/SKILL.md` for full workflows and templates.

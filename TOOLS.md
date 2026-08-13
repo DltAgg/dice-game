@@ -78,6 +78,15 @@ Details: `docs/specs/007-peerjs.md`.
 |---|---|
 | `src/ui/config.ts` | Toggle deck-builder card art (`showDeckBuilderCardArt`) |
 
+## Agent skills (project)
+
+| Skill | Use when |
+|---|---|
+| `.cursor/skills/author-content/` | Adding catalogue cards from print / CSV |
+| `.cursor/skills/standardize-card-effects/` | Normalizing On roll / On absorb text and wiring triggers |
+| `.cursor/skills/develop-engine/` | New effect AST, reducer, hooks |
+| `.cursor/skills/match-ui/` | Lobby / MatchBoard / stores |
+
 - No CSV/OCR ingest scripts unless the user explicitly asks to build tooling.
 - No second rules engine in UI or networking.
 - No committing secrets, `node_modules`, `dist`, or `*.traineddata`.

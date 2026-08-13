@@ -45,6 +45,8 @@ Otherwise keep accurate English `rulesText` / `passiveRulesText` and park gaps i
 - Creatures: [creatures.md](creatures.md)
 - Faces / dice: [faces.md](faces.md)
 - CSV column order for tactics: [csv-tactics.md](csv-tactics.md)
+- Standardize On roll / On absorb / standing triggers:
+  [../standardize-card-effects/SKILL.md](../standardize-card-effects/SKILL.md)
 
 ## Id conventions
 

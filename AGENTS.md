@@ -32,6 +32,7 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 | Task | Start here |
 |---|---|
 | Tactic / creature / face cards from print or CSV | Skill: [author-content](.cursor/skills/author-content/SKILL.md) |
+| Standardize On roll / On absorb text & standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) |
 | New effect vocabulary, reducer, phases | Skill: [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
 | Match UI / lobby / decks | `src/ui`, `src/store`, `src/decks` — do not put rules there |
 | PeerJS / protocol | `src/networking` + `docs/specs/007-peerjs.md` |
