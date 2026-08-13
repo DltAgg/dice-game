@@ -1,6 +1,5 @@
 import type {
   CardDefinition,
-  CardDuration,
   CardSubtype,
   ForgeRegion,
 } from "../model/cards.js";
@@ -23,17 +22,17 @@ const ATTRIBUTE_LABEL: Readonly<Record<Attribute, string>> = {
   darkness: "Darkness",
 };
 
+const TYPE_LABEL: Readonly<Record<CardDefinition["type"], string>> = {
+  tactic: "Tactic",
+  ritual: "Ritual",
+};
+
 const SUBTYPE_LABEL: Readonly<Record<CardSubtype, string>> = {
   instant: "Instant",
-  ritual: "Ritual",
+  continuous: "Continuous",
   reaction: "Reaction",
   equipment: "Equipment",
   overload: "Overload",
-};
-
-const DURATION_LABEL: Readonly<Record<CardDuration, string>> = {
-  instant: "Instant",
-  continuous: "Continuous",
 };
 
 export const attributeLabel = (attribute: Attribute): string => ATTRIBUTE_LABEL[attribute];
@@ -43,12 +42,11 @@ export function formatEnergyCost(card: CardDefinition): string {
   return card.variableEnergy === true ? "?" : String(card.energyCost);
 }
 
-/** `[Tactic / Ritual / Reaction / Arcane]` */
+/** `[Tactic / Instant / Arcane]` or `[Ritual / Instant / Arcane]` */
 export function formatTypeLine(card: CardDefinition): string {
   const parts = [
-    "Tactic",
+    TYPE_LABEL[card.type],
     ...card.subtypes.map((subtype) => SUBTYPE_LABEL[subtype]),
-    ...(card.duration !== undefined ? [DURATION_LABEL[card.duration]] : []),
     ATTRIBUTE_LABEL[card.attribute],
   ];
   return `[${parts.join(" / ")}]`;
@@ -73,7 +71,7 @@ export function formatRequirementLine(card: CardDefinition): string | null {
 
   const body = formatRequirementBody(requires);
   if (body.length === 0) return null;
-  if (card.subtypes.includes("ritual")) return `[Active when: ${body}]`;
+  if (card.type === "ritual" || card.ritual !== undefined) return `[Active when: ${body}]`;
   return `[Requires: ${body}]`;
 }
 

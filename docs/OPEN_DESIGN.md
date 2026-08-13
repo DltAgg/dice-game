@@ -330,8 +330,9 @@ A Ritual is played onto the engine area, not resolved from hand like an Instant:
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
 At the start of your turn, exhausted rituals return to ready if still active,
-and preparing ones flip to ready once their condition is met. Instant-duration
-rituals leave for the graveyard after one activation.
+and preparing ones flip to ready once their condition is met. Instant and
+reaction rituals leave for the graveyard after one activation; only
+`continuous` rituals stay and exhaust.
 
 ### Reactions use a Yu-Gi-Oh style chain
 

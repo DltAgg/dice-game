@@ -296,6 +296,7 @@ describe("reaction chain (008)", () => {
 
     const resolved = resolveOpenChain(activated);
     expect(eventTypes(resolved)).toContain("chain-link-negated");
+    expect(resolved.cards[ritualId]?.zone).toBe("graveyard");
   });
 
   it("blocks Pass while a discard is pending", () => {

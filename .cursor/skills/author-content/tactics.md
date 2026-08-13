@@ -15,9 +15,8 @@ card({
   id: EXAMPLE,
   name: "Example",
   energyCost: 2,
-  type: "tactic",
-  subtypes: ["instant"], // + ritual/reaction/equipment/overload as printed
-  // duration?: "instant" | "continuous"  // rituals
+  type: "tactic", // or "ritual" for rituals (main type, not a subtype)
+  subtypes: ["instant"], // continuous / reaction / equipment / overload as printed
   attribute: "arcane",
   forge: {
     faces: 1,
@@ -38,7 +37,7 @@ card({
 | Instant one-shot | `effect: { requires?, additionalEnergy?, effects }` |
 | Equipment | `equipment: { mayTargetOpponent, creatureAttributes?, abilities }` |
 | Overload | `overload: { faceSymbols?, faceKinds?, onRoll }` |
-| Ritual | `ritual: { activeWhen, effects }` |
+| Ritual | `type: "ritual"` + subtype `instant` / `reaction` (one-shot → GY) or `continuous` (stays) + `ritual: { … }` |
 | Forge only (“None”) | `rulesText: ""`, no playable region |
 
 Attachment subtypes **must** match regions (`cards.consistency.test.ts`). Empty

@@ -27,10 +27,10 @@ If headers or order differ, **stop and confirm** before mass-authoring.
 
 | Text cues | Region |
 |---|---|
-| Instant / one-shot verbs (draw, deal, search…) | `effect` |
+| Instant / one-shot verbs (draw, deal, search…) | `effect` (type `tactic`) |
 | “Equip” / “whenever this creature…” standing | `equipment` |
 | “When this face is rolled” / face-only gate | `overload` |
-| “Active when:” / stays on field | `ritual` |
+| “Active when:” / stays on field | `type: "ritual"` + `ritual` region |
 | “None” / empty effect / forge-only | forge only |
 
 Do not build a permanent CSV importer unless the user asks for tooling.

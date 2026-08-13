@@ -57,7 +57,8 @@ interrupted.
     window — those choices are part of conducting.
 13. **Negated tactic link.** Costs stay paid; body skipped. Ritual place:
     card never sits preparing (ends in GY). Equip/overload: attach does not
-    land. Ritual activate: existing exhaust / instant-duration GY rules still
+    land. Ritual activate: continuous rituals exhaust; Instant / Reaction
+    rituals leave for the graveyard after resolving.
     apply after the activation attempt (costs paid).
 
 ## State Changes

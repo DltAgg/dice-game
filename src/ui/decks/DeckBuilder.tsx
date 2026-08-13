@@ -62,10 +62,10 @@ function matchesTacticQuery(card: CardDefinition, raw: string): boolean {
   if (q.length === 0) return true;
   const haystack = [
     card.name,
+    card.type,
     card.attribute,
     ...card.subtypes,
     card.rulesText,
-    card.duration ?? "",
   ]
     .join(" ")
     .toLowerCase();

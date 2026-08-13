@@ -24,7 +24,7 @@ Every card in the file is one template, `Tactics card layout`:
 │                                          │
 │                (art)                     │
 │                                          │
-│  [Tactic / Type / Attribute]             │   text box
+│  [Tactic|Ritual / Type / Attribute]      │   text box
 │  [Forge] 1 face [Natural or Synthetic]   │
 │  [Attribute] on your die                 │
 │  or                                      │
@@ -38,7 +38,9 @@ Six fields, in the order the layout presents them:
 |---|---|---|
 | Name | header, left | |
 | Energy cost | header, right | Integer, or `?` = variable pay-at-least-1 (see OPEN_DESIGN) |
-| Type line | text box, first line | `[Tactic / <subtype…> / <attribute>]` |
+| Type line | text box, first line | `[Tactic \| Ritual / <subtype…> / <attribute>]` — subtypes include Instant, Continuous, Reaction, Equipment, Overload |
+
+
 | Forge region | text box | how many faces, of which kind and attribute, on which die |
 | Requirements | text box, bracketed | optional, and specific to the subtype |
 | Effect | text box | the alternative to forging |
@@ -60,16 +62,15 @@ are two independent fields.
 ### Subtypes
 
 | Subtype | What the effect region does |
+| Kind / subtype | Meaning |
 |---|---|
-| Instant | Resolves once, immediately. |
-| Ritual | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. |
-| Reaction | Resolves in response to something, e.g. "when an ally would take damage". |
+| **Tactic** (main type) | Hand card played for effect, equipment, or overload. |
+| **Ritual** (main type) | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. |
+| Instant | Resolves once immediately (tactics), or a ritual that leaves for the GY after one activation. Timing: not a reaction window responder by subtype alone. |
+| Continuous | Ritual stays in play after activation (exhausts until the owner's next turn). |
+| Reaction | May respond in a reaction window (from hand as a tactic, or from the field as a ritual-reaction). Ritual / Reaction leaves for the GY after activation — same fate as Ritual / Instant; the difference is *when* it can be used. |
 | Equipment | Attaches to a creature and grants a standing ability. |
 | Overload | Attaches to an existing die face and modifies it. |
-
-`Continuous` appears as a second modifier on Rituals (*Serrated Stinger*,
-*Abyssal Sacrifice*), distinguishing a ritual that keeps applying from one that
-resolves and is done.
 
 ### Requirement forms
 
@@ -121,7 +122,7 @@ is used.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Runic Nullification | Tactic / Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: 2x Arcane.* Pay 3 Energy, negate the effect of 1 Tactic card. |
+| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: 2x Arcane.* Pay 3 Energy, negate the effect of 1 Tactic card. |
 | 5 | Arcane Echo | Tactic / Instant / Arcane | 1 Synthetic Arcane, your die | Apply the modifiers of one of the dice again. |
 | ? | Blessing of the Hunt | Tactic / Overload / Arcane | 1 Natural Arcane, your die | Whenever this face is rolled, generate Martial. |
 | ? | Martial Blessing | Tactic / Overload / Arcane | 1 Natural Arcane, your die | The next attack this turn deals +1 damage. |
@@ -135,7 +136,7 @@ is used.
 | 2 | Glimmer | Tactic / Reaction / Luminar | 1 Synthetic Luminar, your die | When you prevent damage, draw 2 cards. |
 | 2 | Predator's Claws | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever this creature absorbs Wild it may move 1 position. |
 | 3 | Venomous Fangs | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever this creature deals damage, apply 1 Toxin marker. |
-| 4 | Serrated Stinger | Tactic / Ritual / Continuous / Toxin | 1 Natural Wild, your die | *Active when: 1x Wild + 1x Toxin.* Special Attacks apply 1 Toxin marker. |
+| 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Natural Wild, your die | *Active when: 1x Wild + 1x Toxin.* Special Attacks apply 1 Toxin marker. |
 | 4 | War Banner | Tactic / Equipment / Wild | 1 Natural Wild, your die | The allied creature to the left deals +1 damage on Basic Attacks. |
 | 4 | Alpha's Hide | Tactic / Equipment / Wild | 1 Natural Wild, your die | On performing a Special Attack, generate Wild on another card. |
 | 5 | Toxic Heart | Tactic / Equipment / Wild | 1 Natural Wild, your die | Whenever a Toxin marker deals damage, heal 1. |
@@ -150,11 +151,11 @@ is used.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 5 | Great Contamination | Tactic / Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: 1x Arcane and 2x Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
-| 6 | Extermination | Tactic / Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: 3x Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
-| 2 | Living Library | Tactic / Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: 2x Arcane.* Add 2 Tactic cards from your deck to your hand. |
-| 3 | Paradox | Tactic / Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Tactic card in your graveyard and use its effect immediately, ignoring its requirements. |
-| 5 | Eternal Darkness | Tactic / Ritual / Instant / Arcane | 1 Synthetic Darkness, your die | *Active when: 2x Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
+| 5 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: 1x Arcane and 2x Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
+| 6 | Extermination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: 3x Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
+| 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: 2x Arcane.* Add 2 Tactic cards from your deck to your hand. |
+| 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Tactic card in your graveyard and use its effect immediately, ignoring its requirements. |
+| 5 | Eternal Darkness | Ritual / Instant / Arcane | 1 Synthetic Darkness, your die | *Active when: 2x Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
 | 4 | Latent Corruption | Tactic / Overload / Corruption | 1 Synthetic Arcane, your die | *Arcane faces only.* Generate 1 additional Arcane. |
 | 3 | Luminar Prism | Tactic / Overload / Luminar | 1 Natural Luminar, your die | Heal 1. |
 | 2 | Arcane Amplifier | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* Generate 1 additional Arcane. |
@@ -170,7 +171,7 @@ is used.
 | 4 | Black Plague | Tactic / Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* Whenever it rolls Corruption, it takes 1 damage. |
 | 2 | Archmage's Grimoire | Tactic / Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* Whenever it absorbs Arcane or Darkness, draw 1 card and discard 1. |
 | 3 | Tome of Interdiction | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane Tactic used each turn costs 1 less Energy. |
-| 3 | Abyssal Sacrifice | Tactic / Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: 1x Arcane + 1x Darkness.* Whenever you discard a card, generate 1 Darkness. |
+| 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: 1x Arcane + 1x Darkness.* Whenever you discard a card, generate 1 Darkness. |
 | 3 | Mirrored Rune | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | Whenever this creature absorbs Arcane, copy another symbol onto it. |
 
 ## Naming inconsistencies in the file

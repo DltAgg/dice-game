@@ -23,18 +23,18 @@ import type { SymbolRequirement, SymbolType } from "./symbols.js";
  */
 
 /**
- * Every card in the file is a Tactic. The field exists because the type line
- * prints it, and because bible §12 distinguishes card kinds — a creature card
- * is not a tactic.
+ * Card kinds that sit in the hand deck. Creatures and faces are separate
+ * catalogues. Rituals share the tactics frame historically, but print as their
+ * own main type on the type line (`[Ritual / …]` rather than `[Tactic / Ritual / …]`).
  */
-export type CardType = "tactic";
+export type CardType = "tactic" | "ritual";
 
-/** The subtype drives what the effect region is allowed to do. */
+/** Modifiers on the type line after the main kind. */
 export type CardSubtype =
-  /** Resolves once, immediately. */
+  /** Resolves once, immediately (tactics) or leaves after activation (rituals). */
   | "instant"
-  /** Waits on the field until its attribute condition is met. */
-  | "ritual"
+  /** Stays in play after activation (rituals); exhausts until the owner's next turn. */
+  | "continuous"
   /** Resolves in response to something else happening. */
   | "reaction"
   /** Attaches to a creature and grants a standing ability. */
@@ -43,8 +43,8 @@ export type CardSubtype =
   | "overload";
 
 /**
- * Printed as a second modifier on Rituals, separating one that keeps applying
- * from one that resolves and is finished.
+ * How a Ritual behaves after activation. Derived from subtypes (`instant` /
+ * `continuous`); kept as its own alias because the resolution chain stores it.
  */
 export type CardDuration = "instant" | "continuous";
 
@@ -188,7 +188,6 @@ export interface CardDefinition {
   readonly variableEnergy?: boolean;
   readonly type: CardType;
   readonly subtypes: readonly CardSubtype[];
-  readonly duration?: CardDuration;
   /**
    * The card's own attribute, which is *not* necessarily the attribute it
    * forges — Eternal Darkness is Arcane and forges Darkness.

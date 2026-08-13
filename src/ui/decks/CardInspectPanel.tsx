@@ -79,13 +79,6 @@ function TacticDossier({ card }: { card: CardDefinition }) {
         <Dt>Subtypes</Dt>
         <Dd className="capitalize">{card.subtypes.join(", ") || "—"}</Dd>
 
-        {card.duration !== undefined && (
-          <>
-            <Dt>Duration</Dt>
-            <Dd className="capitalize">{card.duration}</Dd>
-          </>
-        )}
-
         <Dt>Attribute</Dt>
         <Dd>{attributeLabel(card.attribute)}</Dd>
 

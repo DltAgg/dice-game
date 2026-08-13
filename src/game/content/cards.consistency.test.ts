@@ -3,13 +3,11 @@ import type { CardDefinition, CardSubtype } from "../model/cards.js";
 import { ALL_CARDS } from "./cards.js";
 
 /**
- * Attachment subtypes are how the UI and PLAY_CARD decide install vs forge-only.
- * A subtype without its region (or a region without its subtype) made Venomous
- * Fangs and Eternal Darkness unplayable while still printing as Equipment /
- * Ritual. Keep the two in lockstep for every catalogue card.
+ * Equipment / Overload stay subtype ↔ region. Ritual is a main `CardType`, so
+ * its region locks to `type === "ritual"` instead of a subtype token.
  */
 
-const ATTACHMENT_SUBTYPES = ["equipment", "overload", "ritual"] as const satisfies readonly CardSubtype[];
+const ATTACHMENT_SUBTYPES = ["equipment", "overload"] as const satisfies readonly CardSubtype[];
 
 type AttachmentSubtype = (typeof ATTACHMENT_SUBTYPES)[number];
 
@@ -19,8 +17,6 @@ function regionFor(card: CardDefinition, subtype: AttachmentSubtype): unknown {
       return card.equipment;
     case "overload":
       return card.overload;
-    case "ritual":
-      return card.ritual;
   }
 }
 
@@ -47,11 +43,21 @@ describe("card subtype ↔ region consistency", () => {
     }
   });
 
+  it.each(ALL_CARDS)("$name: ritual type ↔ ritual region", (card) => {
+    if (card.type === "ritual") {
+      expect(card.ritual, `${card.name} is type ritual but has no ritual region`).toBeDefined();
+    }
+    if (card.ritual !== undefined) {
+      expect(card.type, `${card.name} has a ritual region but type is not ritual`).toBe(
+        "ritual",
+      );
+    }
+  });
+
   it("lists every attachment subtype so new ones cannot be forgotten", () => {
-    // If CardSubtype gains another attach-style value, extend ATTACHMENT_SUBTYPES.
     const known: readonly CardSubtype[] = [
       "instant",
-      "ritual",
+      "continuous",
       "reaction",
       "equipment",
       "overload",

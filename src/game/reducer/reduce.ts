@@ -29,6 +29,7 @@ import {
   attackDamageBonus,
   forgeExceedsAttributeLimit,
   resolveEnergyPayment,
+  ritualDurationOf,
 } from "../rules/cards.js";
 import { opponentOf } from "../rules/creatures.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../rules/dice.js";
@@ -947,8 +948,9 @@ function placeRitualCard(
 }
 
 /**
- * Activates a ready Ritual. Instant-duration rituals leave for the graveyard;
- * continuous ones exhaust (diagonal) until the owner's next turn.
+ * Activates a ready Ritual. Non-continuous rituals (Instant / Reaction) leave
+ * for the graveyard after resolving; continuous ones exhaust until the owner's
+ * next turn.
  */
 function activateRitual(
   draft: Draft,
@@ -1014,7 +1016,7 @@ function activateRitual(
       effects: region.effects,
       sourceCreatureId: null,
       declaredTargetCreatureId,
-      ritualDuration: definition?.duration ?? null,
+      ritualDuration: definition !== undefined ? ritualDurationOf(definition) : null,
     }),
   );
   openReactionWindow(draft, playerId);
@@ -1270,10 +1272,11 @@ function finishRitualActivation(draft: Draft, link: ChainLink): void {
   const card = draft.cards[link.cardInstanceId];
   if (card === undefined || card.zone !== "ritual") return;
 
-  if (link.ritualDuration === "instant") {
-    moveCard(draft, link.cardInstanceId, "graveyard");
-  } else {
+  if (link.ritualDuration === "continuous") {
     setRitualOrientation(draft, link.cardInstanceId, "exhausted");
+  } else {
+    // Instant, reaction, or unspecified → one-shot: leave the field.
+    moveCard(draft, link.cardInstanceId, "graveyard");
   }
 }
 

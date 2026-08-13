@@ -1,6 +1,6 @@
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
-import type { CardDefinition, CardInstance } from "../model/cards.js";
+import type { CardDefinition, CardDuration, CardInstance } from "../model/cards.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { DieState } from "../model/dice.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
@@ -39,6 +39,17 @@ export const overloadsOnFace = (
 
 export const ritualsOf = (state: GameState, playerId: PlayerId): readonly CardInstance[] =>
   zoneOf(state, playerId, "ritual");
+
+/**
+ * Post-activation fate for a Ritual, read from subtypes.
+ * - `continuous` → stay on the field, exhausted until the owner's next turn
+ * - anything else (`instant`, `reaction`, …) → leave for the graveyard
+ */
+export function ritualDurationOf(card: CardDefinition): CardDuration | null {
+  if (card.type !== "ritual") return null;
+  if (card.subtypes.includes("continuous")) return "continuous";
+  return "instant";
+}
 
 function zoneOf(
   state: GameState,

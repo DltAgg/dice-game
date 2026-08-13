@@ -18,7 +18,7 @@ describe("English card printing", () => {
   it("prints the type line with subtypes and attribute", () => {
     const card = getCard(LIVING_LIBRARY);
     if (card === undefined) throw new Error("missing card");
-    expect(formatTypeLine(card)).toBe("[Tactic / Ritual / Instant / Arcane]");
+    expect(formatTypeLine(card)).toBe("[Ritual / Instant / Arcane]");
   });
 
   it("prints the forge region with kind, attribute and target", () => {
