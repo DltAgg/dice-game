@@ -106,6 +106,8 @@ export type GameEvent =
       readonly creatureId: CreatureId;
       readonly amount: number;
       readonly shieldsRemaining: number;
+      /** What absorbed the damage. Spec `009` distinguishes buffer vs shield. */
+      readonly source: "buffer" | "shield" | "effect";
     }
   | {
       readonly type: "card-drawn";

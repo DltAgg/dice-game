@@ -170,6 +170,7 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       attacksUsedThisCombat: 0,
       attributeTokens: {},
       shields: 0,
+      damagePreventBuffer: 0,
       toxinMarkers: 0,
       equipmentIds: [],
     };
@@ -249,6 +250,7 @@ export function createMatch(setup: MatchSetup): GameState {
     pendingDecision: null,
     deferredTurnEndPlayerId: null,
     attackBonusThisTurn: {},
+    preventDrawArmed: {},
     winner: null,
     log: [
       { seq: 0, turn: 1, event: { type: "match-started", firstPlayerId: first.id } },

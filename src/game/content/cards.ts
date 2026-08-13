@@ -151,14 +151,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     rulesText: "Prevent 2 damage.",
-    /**
-     * The layouts read "Prevent 2 damage", which needs a reaction window. Two
-     * shields prevent exactly two damage and persist until spent, which is the
-     * nearest the engine gets without one — and is stronger, since it does not
-     * expire. Revisit when reaction timing is decided (§37).
-     */
     effect: {
-      effects: [{ type: "grant-shield", amount: 2, target: { kind: "declared-target" } }],
+      effects: [
+        { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
+      ],
     },
   }),
   card({
@@ -348,6 +344,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     rulesText:
       "When an ally would take damage, prevent it; if you do, deal that much to the attacking creature.",
+    effect: {
+      effects: [{ type: "prevent-attack-reflect" }],
+    },
   }),
   card({
     id: GLIMMER,
@@ -358,6 +357,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "luminar",
     forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
     rulesText: "When you prevent damage, draw 2 cards.",
+    effect: {
+      effects: [{ type: "arm-prevent-draw", amount: 2 }],
+    },
   }),
   card({
     id: COLLAPSE_OF_REALITY,

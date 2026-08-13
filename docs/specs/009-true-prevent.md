@@ -1,6 +1,6 @@
 # 009 — True prevent (damage buffers & attack prevents)
 
-Status: **SPEC** (not yet implemented; depends on `008-reaction-chain`)
+Status: **IMPLEMENTED**
 
 Replaces the Prismatic Barrier `grant-shield ×2` approximation with honest
 prevention. Unlocks Luminar Judgement / Glimmer once prevent events exist.

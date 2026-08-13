@@ -763,11 +763,41 @@ function playCard(
     return "INSUFFICIENT_SYMBOLS";
   }
 
-  // Negate reactions need a negatable top link.
+  // Negate / prevent reactions need a legal top link.
   if (region.effects.some((effect) => effect.type === "negate-tactic")) {
     const top = topChainLink(draft);
     if (top === undefined || top.negated || !isNegatableLinkKind(top.kind)) {
       return "INVALID_CHAIN_TARGET";
+    }
+  }
+  if (
+    region.effects.some(
+      (effect) =>
+        effect.type === "grant-damage-prevent" || effect.type === "prevent-attack-reflect",
+    )
+  ) {
+    const top = topChainLink(draft);
+    if (top === undefined || top.kind !== "attack") return "INVALID_CHAIN_TARGET";
+    if (top.attackTargetId === null) return "INVALID_CHAIN_TARGET";
+    const attackTarget = draft.creatures[top.attackTargetId];
+    if (attackTarget === undefined || attackTarget.ownerId !== playerId) {
+      return "INVALID_TARGET";
+    }
+  }
+  if (region.effects.some((effect) => effect.type === "arm-prevent-draw")) {
+    // Glimmer may sit above other reactions; only require an attack on the chain.
+    let attackTargetId: CreatureId | null = null;
+    for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
+      const link = draft.chainStack[i];
+      if (link?.kind === "attack" && link.attackTargetId !== null) {
+        attackTargetId = link.attackTargetId;
+        break;
+      }
+    }
+    if (attackTargetId === null) return "INVALID_CHAIN_TARGET";
+    const attackTarget = draft.creatures[attackTargetId];
+    if (attackTarget === undefined || attackTarget.ownerId !== playerId) {
+      return "INVALID_TARGET";
     }
   }
 
@@ -1339,6 +1369,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   expireTurnSymbols(draft);
   resetCombatCounters(draft);
   draft.attackBonusThisTurn = {};
+  draft.preventDrawArmed = {};
 
   draft.energy = track;
   emit(draft, { type: "turn-ended", playerId });

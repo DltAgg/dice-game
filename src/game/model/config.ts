@@ -67,6 +67,12 @@ export interface GameRulesConfig {
    * it aborts deterministically rather than hanging the host.
    */
   readonly maxResolutionSteps: number;
+  /**
+   * DECIDED (009). When unused damage-prevent buffers expire. `"none"` means
+   * they persist until consumed; other policies can be added later without a
+   * reducer rewrite.
+   */
+  readonly preventExpiry: "none";
   readonly energy: EnergyRulesConfig;
 }
 
@@ -85,6 +91,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   attacksPerCreaturePerCombat: 1,
   frontlineSlots: 2,
   maxResolutionSteps: 64,
+  preventExpiry: "none",
   energy: {
     trackMax: 10,
     startingEnergy: 3,

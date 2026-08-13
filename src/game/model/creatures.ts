@@ -93,6 +93,11 @@ export interface CreatureState {
   /** Each shield prevents 1 damage once, then is gone. Persists across turns. */
   readonly shields: number;
   /**
+   * Prevent-next-N damage buffer (spec `009`). Applied before Shields.
+   * Unused remainder persists until consumed (`preventExpiry: "none"`).
+   */
+  readonly damagePreventBuffer: number;
+  /**
    * Toxin counters. At the start of this creature's owner's turn, the creature
    * takes 1 damage per counter. Counters persist until something removes them.
    */

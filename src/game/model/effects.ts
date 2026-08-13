@@ -56,7 +56,24 @@ export type EffectDefinition =
    * Negate the top chain link if it is a tactic-card link (not an attack).
    * Spec `008` — Runic Nullification, Arcane Silence.
    */
-  | { readonly type: "negate-tactic" };
+  | { readonly type: "negate-tactic" }
+  /**
+   * Add to a creature’s prevent-next-N damage buffer (before Shields). Spec `009`.
+   */
+  | {
+      readonly type: "grant-damage-prevent";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
+  /**
+   * Cancel damage on the waiting attack chain link and deal that amount to the
+   * attacker (Luminar Judgement). Spec `009`.
+   */
+  | { readonly type: "prevent-attack-reflect" }
+  /**
+   * Arm “when you next prevent damage, draw N” (Glimmer). Spec `009`.
+   */
+  | { readonly type: "arm-prevent-draw"; readonly amount: number };
 
 /**
  * Targets are resolved against the resolution context rather than chosen at
@@ -82,4 +99,9 @@ export type TargetSelector =
   /** Pause for the controller to name one of their living creatures. */
   | { readonly kind: "choose-ally" }
   /** Pause for the controller to name one opposing living creature. */
-  | { readonly kind: "choose-enemy" };
+  | { readonly kind: "choose-enemy" }
+  /**
+   * The creature targeted by the waiting attack chain link (Prismatic Barrier).
+   * Spec `009`.
+   */
+  | { readonly kind: "chain-attack-target" };

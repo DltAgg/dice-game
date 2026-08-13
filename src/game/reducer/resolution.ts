@@ -122,6 +122,15 @@ function resolveTarget(
     case "choose-enemy":
       // Opened as a pending decision before applyEffect reaches resolveTarget.
       return null;
+    case "chain-attack-target": {
+      for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
+        const link = draft.chainStack[i];
+        if (link?.kind === "attack" && link.attackTargetId !== null) {
+          return link.attackTargetId;
+        }
+      }
+      return null;
+    }
   }
 }
 
@@ -302,7 +311,78 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       }
       return false;
     }
+    case "grant-damage-prevent": {
+      const targetId = resolveTarget(draft, pending, effect.target);
+      if (targetId === null) return false;
+      const creature = draft.creatures[targetId];
+      if (creature === undefined || creature.defeated) return false;
+      patchCreature(draft, targetId, {
+        damagePreventBuffer: creature.damagePreventBuffer + effect.amount,
+      });
+      return false;
+    }
+    case "prevent-attack-reflect": {
+      applyPreventAttackReflect(draft, pending.controllerId);
+      return false;
+    }
+    case "arm-prevent-draw": {
+      draft.preventDrawArmed = {
+        ...draft.preventDrawArmed,
+        [pending.controllerId]: effect.amount,
+      };
+      return false;
+    }
   }
+}
+
+function applyPreventAttackReflect(draft: Draft, controllerId: PlayerId): void {
+  let attackIndex = -1;
+  for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
+    if (draft.chainStack[i]?.kind === "attack") {
+      attackIndex = i;
+      break;
+    }
+  }
+  if (attackIndex < 0) return;
+  const attack = draft.chainStack[attackIndex];
+  if (attack === undefined || attack.attackEffect === null) return;
+  if (attack.attackTargetId === null || attack.attackerId === null) return;
+
+  const target = draft.creatures[attack.attackTargetId];
+  if (target === undefined || target.ownerId !== controllerId) return;
+
+  const amount =
+    attack.attackEffect.type === "damage" ? attack.attackEffect.amount : 0;
+  if (amount <= 0) return;
+
+  draft.chainStack[attackIndex] = {
+    ...attack,
+    attackEffect:
+      attack.attackEffect.type === "damage"
+        ? { ...attack.attackEffect, amount: 0 }
+        : attack.attackEffect,
+  };
+
+  emit(draft, {
+    type: "damage-prevented",
+    creatureId: attack.attackTargetId,
+    amount,
+    shieldsRemaining: target.shields,
+    source: "effect",
+  });
+  firePreventDraw(draft, controllerId);
+
+  dealDamage(draft, attack.attackerId, amount);
+}
+
+/** Glimmer: if this player has an armed prevent-draw, draw and clear it. */
+function firePreventDraw(draft: Draft, playerId: PlayerId): void {
+  const amount = draft.preventDrawArmed[playerId];
+  if (amount === undefined || amount <= 0) return;
+  const next = { ...draft.preventDrawArmed };
+  delete next[playerId];
+  draft.preventDrawArmed = next;
+  drawCards(draft, playerId, amount);
 }
 
 /**
@@ -395,24 +475,52 @@ export function dealDamage(draft: Draft, creatureId: CreatureId, amount: number)
   const definition = getCreatureDefinition(creature.definitionId);
   if (definition === undefined) return;
 
-  const prevented = Math.min(creature.shields, amount);
-  if (prevented > 0) {
-    patchCreature(draft, creatureId, { shields: creature.shields - prevented });
+  let remaining = amount;
+
+  // Spec 009: prevention buffer → Shield → HP.
+  const fromBuffer = Math.min(creature.damagePreventBuffer, remaining);
+  if (fromBuffer > 0) {
+    patchCreature(draft, creatureId, {
+      damagePreventBuffer: creature.damagePreventBuffer - fromBuffer,
+    });
+    remaining -= fromBuffer;
     emit(draft, {
       type: "damage-prevented",
       creatureId,
-      amount: prevented,
-      shieldsRemaining: creature.shields - prevented,
+      amount: fromBuffer,
+      shieldsRemaining: creature.shields,
+      source: "buffer",
+    });
+    firePreventDraw(draft, creature.ownerId);
+  }
+
+  if (remaining <= 0) return;
+
+  const refreshed = draft.creatures[creatureId];
+  if (refreshed === undefined || refreshed.defeated) return;
+
+  const fromShield = Math.min(refreshed.shields, remaining);
+  if (fromShield > 0) {
+    patchCreature(draft, creatureId, { shields: refreshed.shields - fromShield });
+    remaining -= fromShield;
+    emit(draft, {
+      type: "damage-prevented",
+      creatureId,
+      amount: fromShield,
+      shieldsRemaining: refreshed.shields - fromShield,
+      source: "shield",
     });
   }
 
-  const incoming = amount - prevented;
-  if (incoming <= 0) return;
+  if (remaining <= 0) return;
 
-  const damage = creature.damage + incoming;
+  const afterShield = draft.creatures[creatureId];
+  if (afterShield === undefined || afterShield.defeated) return;
+
+  const damage = afterShield.damage + remaining;
   const defeated = damage >= definition.life;
   patchCreature(draft, creatureId, { damage, defeated });
-  emit(draft, { type: "damage-dealt", creatureId, amount: incoming });
+  emit(draft, { type: "damage-dealt", creatureId, amount: remaining });
 
   if (!defeated) return;
 

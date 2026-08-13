@@ -1100,7 +1100,11 @@ function CreatureTile({
       <button type="button" className="w-full text-left" onClick={() => onCreatureClick(creature)}>
         <p className="font-medium text-stone-100">{def.name}</p>
         <p className="mt-1 text-xs text-stone-400">
-          HP {life}/{def.life} · Shield {creature.shields} · Toxin {creature.toxinMarkers}
+          HP {life}/{def.life} · Shield {creature.shields}
+          {creature.damagePreventBuffer > 0
+            ? ` · Prevent ${creature.damagePreventBuffer}`
+            : ""}{" "}
+          · Toxin {creature.toxinMarkers}
         </p>
         <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
           {creature.position} · {def.attributes.join(", ")}

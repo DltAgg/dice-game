@@ -207,6 +207,11 @@ export interface GameState {
    * player id; cleared at end of turn.
    */
   readonly attackBonusThisTurn: Readonly<Record<string, number>>;
+  /**
+   * Glimmer and similar: next time this player prevents damage, draw this many
+   * cards, then clear. Spec `009`.
+   */
+  readonly preventDrawArmed: Readonly<Record<string, number>>;
   readonly winner: PlayerId | null;
   readonly log: readonly LoggedEvent[];
 

@@ -19,9 +19,9 @@ needs them — never as unreachable stubs.
 |---|---|---|
 | **Reaction chain** (YGO-style LILO) | Prevent reactions (Barrier …) | **IMPLEMENTED** (`008`) — windows on play/place/activate/equip/overload/attack; forge silent |
 | **Negate tactic effect** | — | **IMPLEMENTED** — top tactic-card link only (`negate-tactic`) |
-| **Prevent N damage** (one-shot) | Prismatic Barrier | **DECIDED** buffer-of-2 on attack target; spec `009` — not implemented; shield approx remains until wired |
-| **Prevent + reflect** | Luminar Judgement | Needs `009` + attack window |
-| **Draw on prevent** | Glimmer | Needs `009` |
+| **Prevent N damage** (one-shot) | — | **IMPLEMENTED** (`009`) — `grant-damage-prevent` buffer; Barrier wired |
+| **Prevent + reflect** | — | **IMPLEMENTED** — `prevent-attack-reflect` (Luminar Judgement) |
+| **Draw on prevent** | — | **IMPLEMENTED** — `arm-prevent-draw` (Glimmer) |
 | **Graveyard recursion** | Paradox | Eternal Darkness wired (`search-graveyard`) |
 | **Replay GY card effect** | Paradox | Ignore requirements |
 | **Symbol conversion** | Collapse of Reality, Void Summoner Rupture | Change rolled/available symbols |
@@ -64,12 +64,9 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Arcane Echo (tactic) | Re-apply die modifiers (forge-only play) |
 | Venomous Fangs | On-damage → toxin |
 | Black Plague | Equip works; Corruption roll → damage missing |
-| Prismatic Barrier | Approximated as shields; `009` DECIDED → prevent-next-2 buffer on attack target |
 | Great Contamination | Ritual place; mass forge-on-opp deferred |
 | Extermination | Ritual place; consume + split damage deferred |
 | Paradox | Ritual place (no Active when); GY replay deferred |
-| Luminar Judgement | Forge-only; prevent+reflect deferred |
-| Glimmer | Forge-only; draw-on-prevent deferred |
 | Collapse of Reality | Forge-only; symbol convert deferred |
 | Dark Pact | Forge-only; deck→GY deferred |
 | Mind Control | Forge-only; strip overloads deferred |
@@ -100,7 +97,7 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 Eclipse, Living Library, Luminar Prism, Arcane Resonance, Persistent Infection,
 Calculated Sacrifice, War Axe, Eternal Darkness, Latent Corruption, Arcane
 Amplifier, Blessing of the Hunt, Martial Blessing, Runic Nullification, Arcane
-Silence.
+Silence, Prismatic Barrier, Luminar Judgement, Glimmer.
 
 ---
 
