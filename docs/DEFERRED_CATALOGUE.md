@@ -17,11 +17,11 @@ needs them — never as unreachable stubs.
 
 | Vocabulary | Needed for | Notes |
 |---|---|---|
-| **Reaction chain** (YGO-style LILO) | Runic Nullification, Prismatic Barrier as true prevent, Arcane Silence | Decided in OPEN_DESIGN; `resolutionStack` is the seed |
-| **Negate tactic effect** | Runic Nullification, Arcane Silence | Requires reaction window |
-| **Prevent N damage** (one-shot) | Prismatic Barrier (currently approximated as +2 Shield) | |
-| **Prevent + reflect** | Luminar Judgement | |
-| **Draw on prevent** | Glimmer | |
+| **Reaction chain** (YGO-style LILO) | Runic Nullification, prevent reactions, Arcane Silence | **DECIDED** OPEN_DESIGN (2026-08-12); spec `008` — windows on play/place/activate/equip/overload/attack; forge silent; not implemented yet |
+| **Negate tactic effect** | Runic Nullification, Arcane Silence | Top **tactic-card** link only — not attack links (`008`) |
+| **Prevent N damage** (one-shot) | Prismatic Barrier | **DECIDED** buffer-of-2 on attack target; spec `009` — not implemented; shield approx remains until wired |
+| **Prevent + reflect** | Luminar Judgement | Needs `009` + attack window |
+| **Draw on prevent** | Glimmer | Needs `009` |
 | **Graveyard recursion** | Paradox | Eternal Darkness wired (`search-graveyard`) |
 | **Replay GY card effect** | Paradox | Ignore requirements |
 | **Symbol conversion** | Collapse of Reality, Void Summoner Rupture | Change rolled/available symbols |
@@ -65,7 +65,7 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Arcane Echo (tactic) | Re-apply die modifiers (forge-only play) |
 | Venomous Fangs | On-damage → toxin |
 | Black Plague | Equip works; Corruption roll → damage missing |
-| Prismatic Barrier | Approximated as shields, not true prevent |
+| Prismatic Barrier | Approximated as shields; `009` DECIDED → prevent-next-2 buffer on attack target |
 | Great Contamination | Ritual place; mass forge-on-opp deferred |
 | Extermination | Ritual place; consume + split damage deferred |
 | Paradox | Ritual place (no Active when); GY replay deferred |

@@ -334,14 +334,84 @@ rituals leave for the graveyard after one activation.
 
 ### Reactions use a Yu-Gi-Oh style chain
 
-**Status:** `DECIDED` · **deferred** (see `docs/DEFERRED_CATALOGUE.md`)
+**Status:** `DECIDED` · 2026-08-12 · spec `docs/specs/008-reaction-chain.md`
+· implementation tracked in `docs/DEFERRED_CATALOGUE.md` until wired
+· corrected same day: equip / overload / attack / ritual place open windows
 
-Reaction timing is a chain: effects and reactions stack and resolve last-in,
-first-out. The existing `resolutionStack` is the seed of that structure, but
-opening a reaction window, responding to a link, and negating a chain link are
-not wired yet. Runic Nullification can be placed as a Ritual and flips ready on
-2× Arcane, but activating it does nothing until negation exists. Parked with
-the rest of unfinished catalogue vocabulary for revisit after M3.
+Reaction timing is a Yu-Gi-Oh–style chain: links stack and resolve last-in,
+first-out. The existing `resolutionStack` is the seed. Concrete rules:
+
+**Priority**
+
+- The turn player has priority to start a chain (play a card that opens one).
+- After a link is added (costs paid, effect not yet conducted), priority passes
+  to the opposing seat.
+- Seats alternate. If the opposing seat passes, the seat that still has
+  something to add may activate another reaction / ritual-reaction as the next
+  link (multiple cards in one chain when the opponent keeps passing).
+- The chain resolves only after **both** seats have explicitly
+  `PASS_PRIORITY` in succession (no implicit timeout).
+
+**What opens a window**
+
+After costs are paid and **before** the effect / attach / attack body runs, a
+reaction window opens for:
+
+- Playing a tactic for its effect (instant / reaction from hand);
+- Placing a ritual onto the engine field;
+- Activating a ready ritual (including ritual-reactions);
+- Attaching equipment;
+- Overloading a face;
+- Declaring an attack.
+
+**Only forge is silent:** `FORGE_CARD` does **not** open a reaction window.
+
+**Who may respond**
+
+- Hand cards with the `reaction` subtype, and
+- Ready ritual-reactions on the engine field (e.g. Runic Nullification).
+
+Legal response **kind** depends on the top link:
+
+- **Negate** — only if the top link is a tactic-card link (effect play, ritual
+  place/activate, equip attach, overload attach). Not legal against an attack
+  link.
+- **Prevent** — the response path against attack / damage (see “Damage
+  prevention” below; vocabulary in `009`).
+
+**Negation**
+
+- Negate targets the **top** chain link only, and only when that link is a
+  negatable tactic-card link (not an attack).
+- Runic Nullification: header cost paid on place; activation pays an **extra
+  3 Energy**, then negates the top tactic link.
+
+**Once an effect is conducting**
+
+- After both seats pass and a link begins resolving, that link’s body runs to
+  completion and cannot be interrupted mid-flight.
+- No reaction window while `pendingDecision` is search / discard /
+  choose-creature (those are part of conducting the effect).
+
+### Damage prevention
+
+**Status:** `DECIDED` · 2026-08-12 · full card wiring in
+`docs/specs/009-true-prevent.md`
+
+- **Vocabulary (both):** (1) “prevent next N damage” **buffers**, and
+  (2) prevent **N attacks** (whole attack instances). Concrete cards pick one.
+- **Apply order when damage lands:** prevention → Shield → HP (Life).
+- **Expiry of unused prevent:** **none for now** (buffers / attack-prevents
+  persist until consumed). Expiry must live in `GameRulesConfig` (or equivalent
+  data) so a later design can add end-of-turn / end-of-chain cleanup without a
+  reducer rewrite.
+- **Prismatic Barrier** (“Prevent 2 damage”) — **DECIDED** 2026-08-12:
+  create a **prevent-next-2-damage buffer** on the **ally targeted by the
+  attack** being responded to (prevent reaction; not a free retarget). Migrates
+  off the `grant-shield ×2` approximation in `009`.
+
+Attack chain links open a reaction window so prevent reactions can respond;
+negate effects refuse attack links.
 
 ### Toxin counters
 
@@ -478,6 +548,8 @@ Not yet load-bearing; recorded so they are not forgotten.
 | Whether forging a card costs its Energy cost, or only playing it does | §19, §20 | Forging |
 | The keyword for the forging action | — | Card layer |
 | Overload cards allowed per face | §37 | Forging |
-| Reaction timing windows and keyword vocabulary | §37 | Reactions |
 | Secondary victory conditions and ties | §4, §37 | Content |
 | Stun application and removal timing | §22 | Reopening stun |
+
+Reaction timing windows (bible §37) are **DECIDED** above
+(“Reactions use a Yu-Gi-Oh style chain”, 2026-08-12).
