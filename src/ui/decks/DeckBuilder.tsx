@@ -21,8 +21,7 @@ import {
   type SavedDeckId,
 } from "@/decks";
 import { useDeckStore } from "@/store/deckStore";
-import { TacticCard } from "@/ui/cards/TacticCard";
-import { FaceCard } from "@/ui/cards/FaceCard";
+import { CardInspectPanel } from "@/ui/decks/CardInspectPanel";
 
 const creatureOptions = Object.values(CREATURES);
 
@@ -294,29 +293,13 @@ export function DeckBuilder() {
         </section>
 
         <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-stone-800/80 bg-gradient-to-b from-[#1c1814] to-stone-950/90">
-          <div className="flex h-1/2 min-h-0 flex-col overflow-y-auto overscroll-contain border-b border-stone-800/60 px-3 py-3">
-            <div className="m-auto flex flex-col items-center gap-2 py-1">
-              {previewTactic !== undefined && (
-                <>
-                  <TacticCard card={previewTactic} width={220} />
-                  <p className="max-w-sm text-center text-xs text-stone-500">
-                    {previewTactic.subtypes.join(" · ")} · {previewTactic.attribute}
-                    {previewTactic.rulesText
-                      ? ` — ${previewTactic.rulesText.slice(0, 120)}${previewTactic.rulesText.length > 120 ? "…" : ""}`
-                      : " — forge only"}
-                  </p>
-                </>
-              )}
-              {previewFace !== undefined && (
-                <>
-                  <FaceCard face={previewFace} width={180} />
-                  <p className="max-w-sm text-center text-xs text-stone-500">
-                    {previewFace.kind} · {previewFace.symbol}
-                    {previewFace.rulesText ? ` — ${previewFace.rulesText}` : ""}
-                  </p>
-                </>
-              )}
-            </div>
+          <div className="h-1/2 min-h-0 overflow-hidden border-b border-stone-800/60 px-3 py-3">
+            {previewTactic !== undefined && (
+              <CardInspectPanel subject={{ kind: "tactic", card: previewTactic }} />
+            )}
+            {previewFace !== undefined && (
+              <CardInspectPanel subject={{ kind: "face", face: previewFace }} />
+            )}
           </div>
 
           <div className="flex h-1/2 min-h-0 flex-col px-3 pb-3 pt-2">

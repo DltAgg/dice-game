@@ -72,7 +72,11 @@ npx vitest run src/game/reducer/playcard.test.ts
 
 Details: `docs/specs/007-peerjs.md`.
 
-## What not to invent
+## Front-end knobs
+
+| File | Purpose |
+|---|---|
+| `src/ui/config.ts` | Toggle deck-builder card art (`showDeckBuilderCardArt`) |
 
 - No CSV/OCR ingest scripts unless the user explicitly asks to build tooling.
 - No second rules engine in UI or networking.
