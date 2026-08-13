@@ -1080,6 +1080,14 @@ function RitualTile({
   const ready = card.ritualOrientation === "ready";
   const preparing = card.ritualOrientation === "preparing";
   const exhausted = card.ritualOrientation === "exhausted";
+  const progress = card.ritualProgress ?? {};
+  const progressLine =
+    def.ritual?.activeWhen !== undefined
+      ? Object.entries(def.ritual.activeWhen)
+          .filter(([, n]) => (n ?? 0) > 0)
+          .map(([attr, needed]) => `${attr} ${String(progress[attr as keyof typeof progress] ?? 0)}/${String(needed)}`)
+          .join(" · ")
+      : null;
 
   return (
     <div
@@ -1104,6 +1112,9 @@ function RitualTile({
           {orientation}
           {durationLabel !== null ? ` · ${durationLabel}` : ""}
         </p>
+        {progressLine !== null && progressLine !== "" && (
+          <p className="mt-1 text-xs text-amber-200/80">Progress: {progressLine}</p>
+        )}
         <div className="mt-2 space-y-1 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
           <p>{formatTypeLine(def)}</p>
           <p className="text-stone-500">{formatForgeLine(def.forge)}</p>
@@ -1139,6 +1150,9 @@ function RitualTile({
       {activeWhen !== null && (
         <p className="mt-1 truncate text-[0.65rem] text-stone-400">{activeWhen}</p>
       )}
+      {progressLine !== null && progressLine !== "" && (
+        <p className="mt-0.5 truncate text-[0.6rem] text-amber-200/70">{progressLine}</p>
+      )}
       {durationLabel !== null && (
         <p className="mt-0.5 text-[0.6rem] text-stone-600">{durationLabel}</p>
       )}
@@ -1172,6 +1186,9 @@ function creatureHasArmedAttack(state: GameState, creature: CreatureState): bool
   return def.attacks.some((attack) => attackIsArmed(state, creature, attack));
 }
 
+const CREATURE_TOOLTIP_WIDTH_PX = 256; // w-64
+const CREATURE_TOOLTIP_GAP_PX = 8;
+
 function CreatureTile({
   state,
   creature,
@@ -1191,21 +1208,35 @@ function CreatureTile({
   onCancelAttack: () => void;
   onEngineAbility: (creatureId: CreatureId, abilityId: AbilityId) => void;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [flipAside, setFlipAside] = useState(false);
+
+  const updateFlip = () => {
+    const node = rootRef.current;
+    if (node === null) return;
+    const rect = node.getBoundingClientRect();
+    const pairWidth = CREATURE_TOOLTIP_WIDTH_PX * 2 + CREATURE_TOOLTIP_GAP_PX;
+    const margin = 8;
+    setFlipAside(rect.left + pairWidth > window.innerWidth - margin);
+  };
+
   const def = getCreatureDefinition(creature.definitionId);
   if (def === undefined) return null;
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
   const isActive = state.activePlayerId === creature.ownerId;
-  const equipmentNames = creature.equipmentIds
-    .map((id) => {
-      const instance = state.cards[id];
-      if (instance === undefined) return null;
-      return getCard(instance.cardId)?.name ?? instance.cardId;
-    })
-    .filter((name): name is string => name !== null);
+  const equipment = creature.equipmentIds.flatMap((id) => {
+    const instance = state.cards[id];
+    if (instance === undefined) return [];
+    const cardDef = getCard(instance.cardId);
+    if (cardDef === undefined) return [];
+    return [{ instanceId: id, def: cardDef }];
+  });
 
   return (
     <div
+      ref={rootRef}
+      onMouseEnter={updateFlip}
       className={
         selectedAttacker || absorbArmed
           ? "group relative w-52 rounded border border-[var(--accent)] bg-stone-900 p-3"
@@ -1213,7 +1244,11 @@ function CreatureTile({
       }
     >
       <div
-        className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-1/2 z-40 hidden w-64 -translate-x-1/2 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+        className={
+          flipAside
+            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-0 z-40 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-40 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+        }
         role="tooltip"
       >
         <p className="text-sm font-medium text-stone-100">{def.name}</p>
@@ -1235,9 +1270,6 @@ function CreatureTile({
             .map(([k, n]) => `${k} ${String(n)}`)
             .join(", ") || "none"}
         </p>
-        {equipmentNames.length > 0 && (
-          <p className="mt-1 text-xs text-amber-200/80">Equip: {equipmentNames.join(", ")}</p>
-        )}
         <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
           {def.passiveRulesText !== "" && (
             <p>
@@ -1268,6 +1300,45 @@ function CreatureTile({
         </div>
       </div>
 
+      <div
+        className={
+          flipAside
+            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-[16.5rem] z-40 hidden w-64 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-[16.5rem] z-40 hidden w-64 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+        }
+        role="tooltip"
+      >
+        <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
+          Equipment
+        </p>
+        {equipment.length === 0 ? (
+          <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {equipment.map(({ instanceId, def: equipDef }) => (
+              <li
+                key={instanceId}
+                className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
+              >
+                <p className="text-sm font-medium text-stone-100">{equipDef.name}</p>
+                <p className="mt-0.5 text-[0.65rem] text-stone-500">
+                  {formatEnergyCost(equipDef)}E · {formatTypeLine(equipDef)}
+                </p>
+                <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                  {formatEffectRegion(equipDef).join("\n")}
+                </pre>
+                {(equipDef.equipment?.abilities.length ?? 0) > 0 && (
+                  <p className="mt-1 text-[0.65rem] text-stone-500">
+                    Standing: {String(equipDef.equipment?.abilities.length)} abilit
+                    {(equipDef.equipment?.abilities.length ?? 0) === 1 ? "y" : "ies"}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <button type="button" className="w-full text-left" onClick={() => onCreatureClick(creature)}>
         <p className="font-medium text-stone-100">{def.name}</p>
         <p className="mt-1 text-xs text-stone-400">
@@ -1287,6 +1358,11 @@ function CreatureTile({
             .map(([k, n]) => `${k} ${String(n)}`)
             .join(", ") || "none"}
         </p>
+        {equipment.length > 0 && (
+          <p className="mt-1 text-[0.65rem] text-amber-200/80">
+            +{equipment.length} equipment
+          </p>
+        )}
         <PendingAbsorbLine state={state} creatureId={creature.id} />
       </button>
 
