@@ -44,10 +44,11 @@ export function Lobby() {
     return map;
   }, [decks]);
 
-  const p1Legal = legalityById.get(p1DeckId)?.ok !== false;
-  const p2Legal = legalityById.get(p2DeckId)?.ok !== false;
   const p1Reason = legalityById.get(p1DeckId);
   const p2Reason = legalityById.get(p2DeckId);
+  // Unknown ids (deleted deck still stored in matchStore) are not playable.
+  const p1Legal = p1Reason?.ok === true;
+  const p2Legal = p2Reason?.ok === true;
 
   const run = async (work: () => Promise<void>) => {
     setBusy(true);
@@ -97,11 +98,19 @@ export function Lobby() {
             }}
           />
         </div>
-        {!p1Legal && p1Reason !== undefined && !p1Reason.ok && (
-          <p className="text-xs text-red-300">P1: {p1Reason.reason}</p>
+        {!p1Legal && (
+          <p className="text-xs text-red-300">
+            {p1Reason !== undefined && !p1Reason.ok
+              ? `P1: ${p1Reason.reason}`
+              : "P1: pick a saved legal loadout."}
+          </p>
         )}
-        {!p2Legal && p2Reason !== undefined && !p2Reason.ok && (
-          <p className="text-xs text-red-300">P2: {p2Reason.reason}</p>
+        {!p2Legal && (
+          <p className="text-xs text-red-300">
+            {p2Reason !== undefined && !p2Reason.ok
+              ? `P2: ${p2Reason.reason}`
+              : "P2: pick a saved legal loadout."}
+          </p>
         )}
         <button
           type="button"
@@ -127,8 +136,12 @@ export function Lobby() {
             setMatchDecks(id, p2DeckId);
           }}
         />
-        {!p1Legal && p1Reason !== undefined && !p1Reason.ok && (
-          <p className="text-xs text-red-300">{p1Reason.reason}</p>
+        {!p1Legal && (
+          <p className="text-xs text-red-300">
+            {p1Reason !== undefined && !p1Reason.ok
+              ? p1Reason.reason
+              : "Pick a saved legal loadout."}
+          </p>
         )}
         <button
           type="button"
@@ -154,8 +167,12 @@ export function Lobby() {
             setMatchDecks(p1DeckId, id);
           }}
         />
-        {!p2Legal && p2Reason !== undefined && !p2Reason.ok && (
-          <p className="text-xs text-red-300">{p2Reason.reason}</p>
+        {!p2Legal && (
+          <p className="text-xs text-red-300">
+            {p2Reason !== undefined && !p2Reason.ok
+              ? p2Reason.reason
+              : "Pick a saved legal loadout."}
+          </p>
         )}
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-stone-400">Room code</span>
@@ -209,7 +226,7 @@ function DeckSelect({
         onChange={(event) => onChange(event.target.value)}
       >
         {options.map((deck) => {
-          const legal = legalityById.get(deck.id)?.ok !== false;
+          const legal = legalityById.get(deck.id)?.ok === true;
           return (
             <option key={deck.id} value={deck.id}>
               {deck.name}

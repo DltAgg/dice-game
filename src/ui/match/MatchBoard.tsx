@@ -94,6 +94,7 @@ export function MatchBoard() {
   const localPlayerId = useMatchStore((s) => s.localPlayerId);
   const roomCode = useMatchStore((s) => s.roomCode);
   const connectionStatus = useMatchStore((s) => s.connectionStatus);
+  const onlineReady = useMatchStore((s) => s.onlineReady);
   const leaveOnline = useMatchStore((s) => s.leaveOnline);
   const requestResync = useMatchStore((s) => s.requestResync);
   const setView = useMatchStore((s) => s.setView);
@@ -159,6 +160,7 @@ export function MatchBoard() {
   const autoRolledKey = useRef<string | null>(null);
   useEffect(() => {
     if (finished || pending !== null || phase !== "roll" || !canAct) return;
+    if (isOnline && !onlineReady) return;
     if (isOnline && localPlayerId !== null && activeId !== localPlayerId) return;
     const key = `${state.matchId}:${String(state.turn)}`;
     if (autoRolledKey.current === key) return;
@@ -170,6 +172,7 @@ export function MatchBoard() {
     phase,
     canAct,
     isOnline,
+    onlineReady,
     localPlayerId,
     state.matchId,
     state.turn,
@@ -370,6 +373,59 @@ export function MatchBoard() {
       : finished
         ? "Match finished"
         : null;
+
+  const localDeckId = mode === "host" ? p1DeckId : mode === "client" ? p2DeckId : null;
+  const localDeckName =
+    localDeckId !== null
+      ? (decks.find((deck) => deck.id === localDeckId)?.name ?? localDeckId)
+      : null;
+
+  if (isOnline && !onlineReady) {
+    return (
+      <div className="relative mx-auto flex max-w-lg flex-col gap-4 px-4 pb-16 pt-28 sm:px-6">
+        <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-3 px-4 py-2.5 sm:px-6">
+            <div>
+              <h1 className="font-[family-name:var(--font-display)] text-2xl leading-none text-[var(--ink)] sm:text-3xl">
+                {mode === "host" ? "Hosting…" : "Joining…"}
+              </h1>
+              <p className="mt-1 text-xs text-[var(--ink-muted)] sm:text-sm">
+                Room <span className="font-mono text-[var(--accent)]">{roomCode}</span>
+                {" · "}
+                {connectionStatus}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <button type="button" className={btnClass} onClick={() => setView("lobby")}>
+                Lobby
+              </button>
+              <button type="button" className={btnClass} onClick={() => leaveOnline()}>
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded border border-stone-700 bg-stone-950/60 p-6">
+          <p className="text-sm text-stone-300">
+            {mode === "host"
+              ? "Share the room code with your opponent. The match board opens when they join — your selected loadout is locked in as P1."
+              : "Connecting to the host. The match board opens when the room accepts your loadout."}
+          </p>
+          {localDeckName !== null && (
+            <p className="mt-4 text-sm text-stone-100">
+              Your deck: <span className="text-[var(--accent)]">{localDeckName}</span>
+            </p>
+          )}
+          {mode === "host" && roomCode !== null && (
+            <p className="mt-2 font-mono text-2xl tracking-[0.2em] text-[var(--accent)]">
+              {roomCode}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pb-80 pt-28 sm:px-6 sm:pb-96">

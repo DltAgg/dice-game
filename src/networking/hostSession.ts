@@ -130,24 +130,30 @@ export class HostSession {
     this.guestPeerId = peerId;
 
     if (!this.started || this.state === null) {
-      this.state = createMatch({
-        matchId: `online-${this.roomCode}`,
-        seed: this.seed,
-        players: [
-          {
-            id: P1,
-            squad: this.hostLoadout.squad,
-            deck: this.hostLoadout.deck,
-            faceDeck: this.hostLoadout.faceDeck,
-          },
-          {
-            id: P2,
-            squad: guestLoadout.squad,
-            deck: guestLoadout.deck,
-            faceDeck: guestLoadout.faceDeck,
-          },
-        ],
-      });
+      try {
+        this.state = createMatch({
+          matchId: `online-${this.roomCode}`,
+          seed: this.seed,
+          players: [
+            {
+              id: P1,
+              squad: this.hostLoadout.squad,
+              deck: this.hostLoadout.deck,
+              faceDeck: this.hostLoadout.faceDeck,
+            },
+            {
+              id: P2,
+              squad: guestLoadout.squad,
+              deck: guestLoadout.deck,
+              faceDeck: guestLoadout.faceDeck,
+            },
+          ],
+        });
+      } catch {
+        this.guestPeerId = null;
+        this.onStatus?.("guest loadout rejected");
+        return;
+      }
       this.started = true;
       this.actionLog.length = 0;
       this.onState(this.state);

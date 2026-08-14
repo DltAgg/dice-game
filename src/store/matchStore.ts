@@ -31,12 +31,30 @@ const deckRepo = createLocalStorageDeckRepository();
 export type MatchView = "lobby" | "match" | "catalogue" | "decks";
 export type MatchMode = "local" | "host" | "client";
 
-function loadoutOrPrototype(id: SavedDeckId | undefined): SavedDeck {
-  const deck = deckRepo.get(id ?? PROTOTYPE_SAVED_DECK_ID) ?? deckRepo.get(PROTOTYPE_SAVED_DECK_ID);
+function requireDeck(id: SavedDeckId): SavedDeck {
+  const deck = deckRepo.get(id);
   if (deck === undefined) {
-    throw new Error("matchStore: prototype deck missing");
+    throw new Error(`matchStore: deck “${id}” not found`);
   }
   return deck;
+}
+
+/** Resolve a playable loadout; never silently substitutes another deck. */
+function resolvePlayableLoadout(
+  id: SavedDeckId,
+): { ok: true; deck: SavedDeck } | { ok: false; reason: string } {
+  const deck = deckRepo.get(id);
+  if (deck === undefined) {
+    return {
+      ok: false,
+      reason: `Deck “${id}” was not found. Pick a loadout in Play before hosting or joining.`,
+    };
+  }
+  const check = validateSavedDeck(deck);
+  if (!check.ok) {
+    return { ok: false, reason: `“${deck.name}” is not legal to play: ${check.reason}` };
+  }
+  return { ok: true, deck };
 }
 
 function toWireLoadout(deck: SavedDeck): WireLoadout {
@@ -46,22 +64,19 @@ function toWireLoadout(deck: SavedDeck): WireLoadout {
 /** Null when every id is a legal playable loadout. */
 function playBlockReasonFor(...ids: readonly SavedDeckId[]): string | null {
   for (const id of ids) {
-    const deck = loadoutOrPrototype(id);
-    const check = validateSavedDeck(deck);
-    if (!check.ok) {
-      return `“${deck.name}” is not legal to play: ${check.reason}`;
-    }
+    const resolved = resolvePlayableLoadout(id);
+    if (!resolved.ok) return resolved.reason;
   }
   return null;
 }
 
 function newMatchState(
   seed: number,
-  p1DeckId?: SavedDeckId,
-  p2DeckId?: SavedDeckId,
+  p1DeckId: SavedDeckId = PROTOTYPE_SAVED_DECK_ID,
+  p2DeckId: SavedDeckId = PROTOTYPE_SAVED_DECK_ID,
 ): GameState {
-  const p1 = loadoutOrPrototype(p1DeckId);
-  const p2 = loadoutOrPrototype(p2DeckId);
+  const p1 = requireDeck(p1DeckId);
+  const p2 = requireDeck(p2DeckId);
   return createMatch({
     matchId: `local-${String(seed)}`,
     seed,
@@ -183,12 +198,19 @@ export const useMatchStore = create<MatchStore>((set, get) => {
     hostRoom: async (deckId) => {
       tearDownSessions();
       const chosen = deckId ?? get().p1DeckId;
-      const blocked = playBlockReasonFor(chosen);
-      if (blocked !== null) {
-        set({ playBlockReason: blocked, connectionStatus: "local", onlineReady: false });
+      const resolved = resolvePlayableLoadout(chosen);
+      if (!resolved.ok) {
+        set({
+          playBlockReason: resolved.reason,
+          connectionStatus: "local",
+          onlineReady: false,
+          mode: "local",
+          localPlayerId: null,
+          roomCode: null,
+        });
         return;
       }
-      const loadout = toWireLoadout(loadoutOrPrototype(chosen));
+      const loadout = toWireLoadout(resolved.deck);
       const roomCode = generateRoomCode();
       set({
         mode: "host",
@@ -224,8 +246,13 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       } catch (error) {
         tearDownSessions();
         set({
-          connectionStatus: error instanceof Error ? error.message : "host failed",
+          mode: "local",
+          localPlayerId: null,
+          roomCode: null,
+          view: "lobby",
+          connectionStatus: "local",
           onlineReady: false,
+          playBlockReason: error instanceof Error ? error.message : "host failed",
         });
       }
     },
@@ -234,12 +261,19 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       tearDownSessions();
       const code = roomCode.trim().toUpperCase();
       const chosen = deckId ?? get().p2DeckId;
-      const blocked = playBlockReasonFor(chosen);
-      if (blocked !== null) {
-        set({ playBlockReason: blocked, connectionStatus: "local", onlineReady: false });
+      const resolved = resolvePlayableLoadout(chosen);
+      if (!resolved.ok) {
+        set({
+          playBlockReason: resolved.reason,
+          connectionStatus: "local",
+          onlineReady: false,
+          mode: "local",
+          localPlayerId: null,
+          roomCode: null,
+        });
         return;
       }
-      const loadout = toWireLoadout(loadoutOrPrototype(chosen));
+      const loadout = toWireLoadout(resolved.deck);
       set({
         mode: "client",
         localPlayerId: P2,
@@ -281,8 +315,13 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       } catch (error) {
         tearDownSessions();
         set({
-          connectionStatus: error instanceof Error ? error.message : "join failed",
+          mode: "local",
+          localPlayerId: null,
+          roomCode: null,
+          view: "lobby",
+          connectionStatus: "local",
           onlineReady: false,
+          playBlockReason: error instanceof Error ? error.message : "join failed",
         });
       }
     },

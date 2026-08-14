@@ -13,6 +13,9 @@ export class PeerTransport implements NetTransport {
   private messageHandler: MessageHandler | null = null;
   private connectHandler: PeerHandler | null = null;
   private disconnectHandler: PeerHandler | null = null;
+  /** Hellos can arrive before HostSession registers onMessage — buffer until then. */
+  private readonly pendingMessages: Array<{ readonly peerId: string; readonly data: unknown }> =
+    [];
   private readonly ready: Promise<void>;
 
   private constructor(peer: Peer, localId: string, ready: Promise<void>) {
@@ -55,6 +58,11 @@ export class PeerTransport implements NetTransport {
 
   onMessage(handler: MessageHandler): void {
     this.messageHandler = handler;
+    if (this.pendingMessages.length === 0) return;
+    const queued = this.pendingMessages.splice(0, this.pendingMessages.length);
+    for (const item of queued) {
+      handler(item.peerId, item.data);
+    }
   }
 
   onConnect(handler: PeerHandler): void {
@@ -86,7 +94,11 @@ export class PeerTransport implements NetTransport {
       this.connectHandler?.(peerId);
     }
     conn.on("data", (data) => {
-      this.messageHandler?.(peerId, data);
+      if (this.messageHandler !== null) {
+        this.messageHandler(peerId, data);
+        return;
+      }
+      this.pendingMessages.push({ peerId, data });
     });
     conn.on("close", () => {
       this.connections.delete(peerId);
