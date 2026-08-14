@@ -31,7 +31,7 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 | Task | Start here |
 |---|---|
-| Tactic / creature / face cards from print or CSV | Skill: [author-content](.cursor/skills/author-content/SKILL.md) |
+| New or updated tactic / ritual / face / creature cards | Skill: [author-content](.cursor/skills/author-content/SKILL.md) |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) |
 | Implement / extend shared trigger hooks (`010`) | Skill: [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, phases | Skill: [develop-engine](.cursor/skills/develop-engine/SKILL.md) |

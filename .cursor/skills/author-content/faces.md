@@ -40,6 +40,8 @@ face({
 
 ## Rules of thumb
 
+- Design: [design.md](design.md). Faces are the engine; named specials should
+  change how a die plays, not duplicate a creature attack.
 - `onRoll` fires when the face is showing after `ROLL_DICE` (and related keep paths).
 - `onAbsorb` fires when a symbol from this face is absorbed (`010-trigger-hooks`).
 - New dual-region faces: standardize print as `On roll:` / `On absorb:` — see
@@ -47,8 +49,10 @@ face({
 - Leave arrays empty when print clauses are not fully modelled; keep `rulesText`.
 - Overloads attach to the **face card**, not the physical die slot.
 - Face deck legality: ≤12 faces, ≤3 per attribute (`validateFaceDeck` / loadout rules).
-- Tactics install faces via forge from the owner’s face pool — changing faces may
-  require prototype face-deck / test updates.
+- Forging always takes from the **forger’s** pool (or copies a face they already
+  own), even when `target: "opponent-die"`. `faceCardOwnerId` stays the forger;
+  when the last copy leaves the dice, the card returns to them (bible §12).
+- Changing faces may require prototype face-deck / `ENGINE_TEST_FACE_DECK` updates.
 
 ## In-repo specials to copy patterns from
 

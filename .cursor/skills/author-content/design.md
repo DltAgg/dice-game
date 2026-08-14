@@ -1,0 +1,114 @@
+# Design standards (ritual / tactic / face)
+
+Canon: `competitive_dice_game_agent_bible.md` §§19–20, 26–30.
+Grammar: `docs/specs/002-card-layer.md`, `004-face-cards.md`.
+
+## Game goal
+
+Dice Skirmish is a **competitive skirmish engine-builder**. Cards must serve
+both:
+
+1. **Engine construction** — the forge region changes a die (bible §13).
+2. **Moment-to-moment play** — the other region (instant, ritual, equipment,
+   overload, or face inherent).
+
+A card that only deals damage and never touches the engine is usually a miss.
+A card that only forges with empty `rulesText` (`""`) is legal (forge-only /
+“None”) but should be rare and intentional.
+
+The **or** between forge and effect is load-bearing: one use, one region.
+
+## What “good” looks like
+
+- The player is making a **tradeoff** (forge now vs play now; absorb vs leave
+  the symbol in the pool; contaminate their die vs build yours).
+- The attribute’s **primary identity** is still recognizable (bible §28–29).
+- Costs match role: cheap support / combat tricks; expensive control and
+  Corruption contamination; Arcane control generally medium/high.
+- Opponent-die forges (Corruption, Black Plague, Great Contamination): the
+  **controller** names the face from **their** pool and installs it. Ownership
+  stays with the forger; the physical face sits on the target die (§12).
+
+## Attribute identities (directional)
+
+| Attribute | Primary identity | Typical home |
+|---|---|---|
+| Martial | Direct combat / efficient attacks | Aggro |
+| Wild | Creature pressure / flexible aggression | Aggro, Combo, Support |
+| Toxin | Attrition / delayed damage | Aggro, Combo |
+| Luminar | Synergy / support / combo value | Combo, Support |
+| Mechanical | Engine construction / manipulation | Combo, Support |
+| Arcane | Control / manipulation / support | Control, Support |
+| Corruption | Contaminate the opponent’s dice | Control |
+| Darkness | Delayed value / disruption | Control |
+
+Do **not** give every attribute large damage, healing, draw, removal, and
+disruption. Sustain attributes must not become the best burst; control must not
+become efficient aggro.
+
+Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
+Control = Arcane/Corruption/Darkness; Support = Arcane/Luminar/Wild/Mechanical
+(low-cost cards may splash).
+
+Builtin decks: `PROTOTYPE_DECK` (aggro) and `CONTROL_DECK` in `cards.ts`. Do not
+dump a new card into both without an identity reason. Legal constructed: 50–60
+tactics, ≤4 copies per id; face deck ≤12, ≤3 per attribute.
+
+## Card kinds — when to use which
+
+| Kind | Use for | Play path |
+|---|---|---|
+| Tactic / Instant | Burst, conversion, combat trick | `PLAY_CARD` → `effect` → GY |
+| Tactic / Reaction | Window response from hand | Same, only in reaction window |
+| Tactic / Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
+| Tactic / Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
+| Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → absorb Active-when → `ACTIVATE_RITUAL` → GY |
+| Ritual / Continuous | Lasting field engine | Activate then exhaust; `standingAbilities` while ready |
+| Face (natural) | Starting identity faces | Dual-kind attrs + Shield only |
+| Face (synthetic) | Forge targets and named specials | Pool → install; `onRoll` / `onAbsorb` |
+
+Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
+cumulative (`Arcane + Corruption + Corruption`), absorbed onto the ritual during
+absorption — not auto-from the pool.
+
+The card’s **attribute** and the **forge attribute** are independent (Eternal
+Darkness is Arcane, forges Darkness).
+
+## Face-kind policy
+
+- Dual-kind (Martial, Wild, Arcane, Luminar): natural **and** synthetic forges.
+- Synthetic-only (Toxin, Mechanical, Corruption, Darkness): **never**
+  `kind: "natural"` faces or forge regions.
+
+## Cost and Energy
+
+Header `energyCost` is paid on **either** forge or play (OPEN_DESIGN assumption).
+Rituals pay the header on **place**; `ritual.additionalEnergy` is extra on
+activate (Runic Nullification). Instants may use `effect.requires` (symbol gate)
+and `effect.additionalEnergy`.
+
+Printed `?` is `variableEnergy: true` with minimum `energyCost` — currently many
+catalogue `?` cards are temporarily authored as fixed 2 (see `cards.ts` header
+comment / OPEN_DESIGN). Do not invent scaling-off-spend effects until that
+vocabulary exists.
+
+## Print English
+
+- Instant / ritual activate: imperative clauses, no “Whenever…”.
+- Faces / overloads: `On roll:` / `On absorb:` lines.
+- Equipment / continuous rituals: `On deal damage:` / `On absorb:` / … matching
+  hook names (see standardize-card-effects).
+- Ritual gate: stored in `ritual.activeWhen`; UI prints `[Active when: …]`.
+  Do not also put that line in `rulesText`.
+- Instant gate: `effect.requires`; UI prints `[Requires: …]`.
+
+## Anti-patterns
+
+- Silent fake effects for unfinished print.
+- Unreachable `EffectDefinition` members “for later”.
+- Putting opponent-forge choice on the **opponent** (they receive the physical
+  face; the activator picks from their pool).
+- Natural Corruption / Darkness / Toxin / Mechanical faces.
+- Every attribute doing everything.
+- Rules logic in React / Zustand / PeerJS.
+- Growing AST without a concrete card + resolver + tests in the same change.

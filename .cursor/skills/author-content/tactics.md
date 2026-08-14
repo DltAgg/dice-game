@@ -1,12 +1,13 @@
-# Tactic cards
+# Tactic and ritual cards
 
 File: `src/game/content/cards.ts`  
-Grammar: `docs/specs/002-card-layer.md`
+Grammar: `docs/specs/002-card-layer.md`  
+Design: [design.md](design.md)
 
 ## Shape
 
-Every tactic has a forge region. Play uses **at most one** of: `effect`,
-`equipment`, `overload`, `ritual` (see `playCard` routing in `reduce.ts`).
+Every hand card has a forge region. Play uses **at most one** of: `effect`,
+`equipment`, `overload`, `ritual` (`playCard` in `reduce.ts`).
 
 ```ts
 export const EXAMPLE: CardId = asCardId("card-example");
@@ -15,13 +16,13 @@ card({
   id: EXAMPLE,
   name: "Example",
   energyCost: 2,
-  type: "tactic", // or "ritual" for rituals (main type, not a subtype)
-  subtypes: ["instant"], // continuous / reaction / equipment / overload as printed
+  type: "tactic", // "ritual" for rituals — main type, not a subtype
+  subtypes: ["instant"], // continuous / reaction / equipment / overload
   attribute: "arcane",
   forge: {
     faces: 1,
-    kind: "synthetic", // or "natural"
-    attribute: "arcane", // may differ from card attribute
+    kind: "synthetic", // "natural" only for dual-kind attributes
+    attribute: "arcane", // may differ from card.attribute
     target: "own-die", // or "opponent-die"
   },
   // forgeTags?: ["echo"]
@@ -36,32 +37,91 @@ card({
 |---|---|
 | Instant one-shot | `effect: { requires?, additionalEnergy?, effects }` |
 | Equipment | `equipment: { mayTargetOpponent, creatureAttributes?, abilities }` |
-| Overload | `overload: { faceSymbols?, faceKinds?, onRoll }` |
-| Ritual | `type: "ritual"` + subtype `instant` / `reaction` (one-shot → GY) or `continuous` (stays) + `ritual: { … }` |
+| Overload | `overload: { faceSymbols?, faceKinds?, onRoll, onAbsorb? }` |
+| Ritual | `type: "ritual"` + `instant` / `reaction` / `continuous` + `ritual: { … }` |
 | Forge only (“None”) | `rulesText: ""`, no playable region |
 
-Attachment subtypes **must** match regions (`cards.consistency.test.ts`). Empty
-`abilities: []` / `effects: []` is OK when place/attach works but triggers wait.
+Attachment subtypes **must** match regions (`cards.consistency.test.ts`). Rituals
+must have a `ritual` region if `type === "ritual"`. Empty `abilities` /
+`effects` is OK only when place/attach should work and the clause is deferred.
+
+## Ritual template
+
+```ts
+card({
+  id: EXAMPLE_RITUAL,
+  name: "Example Ritual",
+  energyCost: 5,
+  type: "ritual",
+  subtypes: ["instant"], // or "reaction" | "continuous"
+  attribute: "corruption",
+  forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
+  rulesText: "Forge 3 Synthetic Corruption faces on one of the opponent's dice.",
+  ritual: {
+    activeWhen: { arcane: 1, corruption: 2 }, // omit if print has no Active when
+    // additionalEnergy?: 3,
+    effects: [
+      {
+        type: "forge-faces",
+        faces: 3,
+        kind: "synthetic",
+        attribute: "corruption",
+        target: "opponent-die",
+      },
+    ],
+    // standingAbilities?: [ … ] // continuous only, while ready
+  },
+}),
+```
+
+- Place from hand (`PLAY_CARD`) → `preparing`. Ready when Active-when is met
+  via `ABSORB_SYMBOL_TO_RITUAL` (or immediately if no `activeWhen`).
+- Instant / reaction: activate → effects → GY.
+- Continuous: activate → exhaust until owner’s next turn; standing triggers
+  while `ready`.
+- Ready rituals may activate in any phase **except roll** (and in reaction
+  windows if subtype includes `reaction`).
+
+`forge-faces`: the **controller** picks a matching face from **their** pool (or
+an owned installed copy) and the die/slots. Same install rules as `FORGE_CARD`
+(attribute cap, copy rule, draw 1 per face). No extra Energy; ritual already paid.
 
 ## Existing effects (prefer these)
 
+Read `src/game/model/effects.ts` as authority. Today:
+
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,
 `search-deck`, `search-graveyard`, `gain-energy`, `destroy-equipment`,
-`apply-toxin`, `remove-shield`, `next-attack-bonus`
+`apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
+`arm-attack-toxin`, `negate-tactic`, `grant-damage-prevent`,
+`prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
-`most-shielded-enemy`, `choose-ally`, `choose-enemy`
+`most-shielded-enemy`, `choose-ally`, `choose-enemy`, `chain-attack-target`
 
-## Examples in-repo
+Standing triggers live on equipment / continuous rituals — see
+[implement-hooks](../implement-hooks/SKILL.md).
 
-- Eclipse — `effect` draw + discard
-- Living Library — ritual + `search-deck`
-- Luminar Prism — overload heal on roll
-- Persistent Infection — overload + `faceSymbols: ["corruption"]`
-- War Axe — equipment `attack-damage-bonus`
-- Runic Nullification — ritual with empty effects (negate deferred)
+## In-repo patterns to copy
+
+| Card | Why |
+|---|---|
+| Eclipse | Instant `effect` draw + discard |
+| Ritual of Contamination | Instant with `requires` + `forge-faces` onto opponent |
+| Living Library | Ritual + `search-deck`; Active-when Arcane + Arcane |
+| Great Contamination | Ritual + `forge-faces` (3 Corruption on opponent die) |
+| Eternal Darkness | Ritual + `search-graveyard` |
+| Runic Nullification | Ritual-reaction, `additionalEnergy`, `negate-tactic` |
+| Luminar Prism | Overload `onRoll` heal |
+| Persistent Infection | Overload + `faceSymbols: ["corruption"]` |
+| War Axe | Equipment `attack-damage-bonus` |
+| Black Plague | Equipment `mayTargetOpponent` + `on-roll-symbol`; forge `opponent-die` |
+| Abyssal Sacrifice | Continuous ritual `standingAbilities` on discard |
 
 ## After editing
 
-- `PROTOTYPE_DECK` is typically 4× every definition (deck size 50–60).
-- Keep loadout tests green (`deckMaxCopiesPerCard: 4`).
+- Export the `CardId` const and add the `card({…})` to `DEFINITIONS`.
+- Builtin decks: `PROTOTYPE_DECK_COUNTS` (aggro) / `CONTROL_DECK_COUNTS`.
+  50–60 cards, ≤4 copies. Do not auto-add 4× to both decks.
+- Consistency: `src/game/content/cards.consistency.test.ts`.
+- Wired effects need reducer tests (see `playcard.test.ts`, `forgeFaces.test.ts`).

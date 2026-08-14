@@ -38,6 +38,8 @@ export const EXAMPLE: CreatureDefinitionId =
 
 - Attacks spend **absorbed attribute tokens on the creature**, not the shared pool.
 - Always keep full English in `rulesText` / `passiveRulesText`.
+- Attribute identity: [design.md](design.md). Creatures convert the engine into
+  board pressure; they should not steal Corruption’s “contaminate their dice” job.
 - Omit `effect` on an attack when only a subset is modellable — document the gap
   in `docs/DEFERRED_CATALOGUE.md` (passives, reposition, pierce, etc.).
 - Squad size for matches comes from setup / loadout (typically 3 creatures), not
