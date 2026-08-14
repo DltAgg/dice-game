@@ -32,6 +32,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 17,
     attributes: ["martial"],
     passiveRulesText: "Ignore 1 [Shield] on the target.",
+    standingAbilities: [{ type: "ignore-shield", amount: 1 }],
     attacks: [
       {
         id: asAttackId("attack-minotaur-heavy-axe"),
@@ -52,6 +53,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         rulesText:
           "Deal 4 damage and 1 [Toxin] marker. If War Minotaur is in the back row, swap it with a frontline creature.",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
+          {
+            type: "conditional",
+            when: { type: "source-position", position: "back" },
+            then: [{ type: "swap-positions", with: { kind: "choose-allied-frontline" } }],
+          },
+        ],
       },
     ],
   },
@@ -115,6 +124,13 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         rulesText:
           "Deal 2 damage. On deal damage: you may swap Garuda with a frontline creature.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [
+          {
+            type: "swap-positions",
+            with: { kind: "choose-allied-frontline" },
+            optional: true,
+          },
+        ],
       },
       {
         id: asAttackId("attack-garuda-bombardment"),
@@ -126,6 +142,9 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         rulesText:
           "Deal 3 damage. Every enemy on the frontline receives 1 [Toxin] marker.",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "apply-toxin", amount: 1, target: { kind: "enemy-frontline" } },
+        ],
       },
     ],
   },
@@ -137,6 +156,12 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     passiveRulesText:
       "The first [Arcane] card used each turn costs 1 Energy less.",
     standingAbilities: [
+      {
+        type: "energy-cost-discount",
+        amount: 1,
+        oncePerTurn: true,
+        attributes: ["arcane"],
+      },
       {
         type: "on-attack",
         attackKinds: ["basic"],

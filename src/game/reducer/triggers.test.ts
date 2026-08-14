@@ -472,6 +472,11 @@ describe("on-roll / on-absorb faces", () => {
     const energyBefore =
       state.energy.holderId === P1 ? state.energy.value : 0;
     state = rollShowingSlot(state, 0);
+    if (state.pendingDecision?.type === "convert-symbols") {
+      state = expectOk(
+        advance(state, { type: "RESOLVE_CONVERT_SYMBOLS", playerId: P1, replacements: [] }),
+      );
+    }
     const arcane = Object.values(state.symbols).find(
       (s) => s.symbol === "arcane" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
     );

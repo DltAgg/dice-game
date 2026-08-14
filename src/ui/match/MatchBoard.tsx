@@ -32,6 +32,7 @@ import {
   isLegalHandReaction,
   isLegalRitualReaction,
   legalTargetsFor,
+  legalCreaturesForFilter,
   livingCreaturesOf,
   opponentOf,
   ritualDurationOf,
@@ -47,6 +48,7 @@ import {
   type AttackId,
   type CardInstance,
   type CardInstanceId,
+  type CreatureChoiceFilter,
   type CreatureId,
   type CreatureState,
   type DieId,
@@ -646,6 +648,8 @@ export function MatchBoard() {
           state={state}
           filter={pending.filter}
           controllerId={pending.controllerId}
+          sourceCreatureId={pending.deferred.sourceCreatureId}
+          optional={pending.optional === true}
           onPick={(creatureId) =>
             tryDispatch({
               type: "RESOLVE_CHOOSE_CREATURE",
@@ -2805,29 +2809,29 @@ function ChooseCreatureModal({
   state,
   filter,
   controllerId,
+  sourceCreatureId,
+  optional,
   onPick,
 }: {
   state: GameState;
-  filter: "ally" | "enemy";
+  filter: CreatureChoiceFilter;
   controllerId: PlayerId;
-  onPick: (creatureId: CreatureId) => void;
+  sourceCreatureId: CreatureId | null;
+  optional: boolean;
+  onPick: (creatureId: CreatureId | null) => void;
 }) {
-  const ownerId =
-    filter === "ally"
-      ? controllerId
-      : controllerId === MATCH_P1
-        ? MATCH_P2
-        : MATCH_P1;
-  const creatures = livingCreaturesOf(state, ownerId);
+  const creatures = legalCreaturesForFilter(state, controllerId, filter, sourceCreatureId)
+    .map((id) => state.creatures[id])
+    .filter((creature): creature is CreatureState => creature !== undefined);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Choose {filter === "ally" ? "your creature" : "an enemy"}
+          Choose a creature
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          An on-roll overload needs a target (this fired when the face was rolled). Pick a creature below or on the board.
+          Pick a legal creature below or on the board.
         </p>
         <ul className="mt-4 space-y-2">
           {creatures.map((creature) => {
@@ -2854,6 +2858,15 @@ function ChooseCreatureModal({
             <li className="text-sm text-red-300">No legal creatures to choose.</li>
           )}
         </ul>
+        {optional && (
+          <button
+            type="button"
+            className="mt-4 w-full rounded border border-stone-700 px-3 py-2 text-sm text-stone-300 hover:border-[var(--accent)]"
+            onClick={() => onPick(null)}
+          >
+            Decline
+          </button>
+        )}
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ import type {
   TurnPhase,
   ChainLink,
 } from "../model/state.js";
-import type { SymbolInstance } from "../model/symbols.js";
+import type { SymbolInstance, SymbolType } from "../model/symbols.js";
 
 /**
  * A shallow-mutable working copy of GameState used inside a single reduction.
@@ -45,6 +45,10 @@ export interface Draft {
   attackBonusThisTurn: Record<string, number>;
   attackToxinThisTurn: Record<string, number>;
   preventDrawArmed: Record<string, number>;
+  ignoreShieldThisTurn: Record<string, number>;
+  forgeDiscountThisTurn: Record<string, number>;
+  requirementWildcardsThisTurn: Record<string, readonly { readonly fromSymbol?: SymbolType }[]>;
+  bladeRainArmed: Record<string, boolean>;
   winner: PlayerId | null;
   log: LoggedEvent[];
   rng: RngState;

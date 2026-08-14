@@ -1,8 +1,9 @@
 # 002 — The card layer
 
-Status: **DEFERRED DEPTH** — engine playable subset + English Figma card UI;
-remaining catalogue effects parked in [`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md)
-for revisit after M3.
+Status: **IMPLEMENTED DEPTH** — grammar + playable catalogue; remaining print
+(push, stun, empty faces, face-marker systems) in
+[`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md). Movers, discounts,
+GY replay, pierce, consume/split: [`012-deferred-vocabulary.md`](./012-deferred-vocabulary.md).
 
 Derived from the `Card layouts` Figma file, node `2:14`. The layouts are the
 authority on the card grammar; this document records that grammar in English and
@@ -259,19 +260,20 @@ already express.
 | Card model: name, cost (fixed or `?` / variable), type, subtypes, attribute, forge region, requirements, effect, equipment, English `rulesText` | — |
 | Deck, hand, graveyard, equipment, overload, ritual; opening 5; draw 1 per turn | — (no mulligan) |
 | Forging a Natural or Synthetic face onto your own die **or an opponent's**; **draw 1 per face forged** | — |
-| Playing an Instant for its effect, paying Energy | See DEFERRED_CATALOGUE (reaction chain, …) |
-| Equipping a card onto a creature; attack-damage bonuses; destroy-equipment | See DEFERRED_CATALOGUE |
-| Overload attachment to a die face; on-roll effects; cleared on forge | See DEFERRED_CATALOGUE |
-| Ritual place → preparing / ready / exhausted; ACTIVATE_RITUAL | See DEFERRED_CATALOGUE |
-| Toxin counters; 1 damage per counter at owner's turn start | See DEFERRED_CATALOGUE |
-| `[Requires: …]` gates on an effect; `[Active when: …]` on rituals | See DEFERRED_CATALOGUE |
+| Playing an Instant for its effect, paying Energy | Reaction chain `008`; discounts `012` |
+| Equipping a card onto a creature; attack-damage bonuses; destroy-equipment; cost discounts | Twin Blades **push** still deferred |
+| Overload attachment to a die face; on-roll effects; cleared on forge | Adrenaline reroll `012`; Overcharge skip-next still deferred |
+| Ritual place → preparing / ready / exhausted; ACTIVATE_RITUAL | Paradox replay `012` |
+| Toxin counters; 1 damage per counter at owner's turn start | Adaptive Toxin strip→damage still deferred |
+| `[Requires: …]` gates on an effect; `[Active when: …]` on rituals | Resonance wildcard `012` |
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
-| Damage, heal, shield, symbol generation, draw, discard, Energy gain, destroy equipment, apply-toxin | See DEFERRED_CATALOGUE |
+| Damage, heal, shield, symbol generation, draw, discard, Energy gain, destroy equipment, apply-toxin, convert, retain-from-effect, GY replay, movers | Push / stun / face-marker systems — see DEFERRED_CATALOGUE |
 
 Equipment, Overload and Ritual are wired as board regions (main types for
 equipment/overload; ritual is main type with subtypes). Remaining catalogue
-depth (reactions, triggers, unfinished vocabulary) is deferred — see
-[`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+gaps are push, stun, empty print, and face-marker systems — see
+[`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md) and
+[`012-deferred-vocabulary.md`](./012-deferred-vocabulary.md).
 
 ## UI
 

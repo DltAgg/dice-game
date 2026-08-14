@@ -48,6 +48,15 @@ export interface FaceCardDefinition {
    * this face (Arcane Echo).
    */
   readonly forgeRestriction: "echo-cards" | null;
+  /**
+   * Player-activated face ability (Forbidden Heritage / Pestilent Plague).
+   * Paid with `ACTIVATE_FACE` during the actions phase.
+   */
+  readonly activated?: {
+    readonly kind: "remove-corruption-face";
+    readonly energyBase: number;
+    readonly energyPerCorruptionOnDie: number;
+  };
 }
 
 /**
@@ -63,6 +72,8 @@ export interface DieSlot {
   readonly index: number;
   readonly faceCardId: FaceCardId;
   readonly faceCardOwnerId: PlayerId;
+  /** Pestilent Plague counters on this physical slot. */
+  readonly pestilenceCounters?: number;
 }
 
 export interface DieState {

@@ -177,6 +177,8 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       toxinMarkers: 0,
       equipmentIds: [],
       spentOncePerTurnTriggers: [],
+      redirectDamageThisTurn: 0,
+      nextIncomingDamageBonus: 0,
     };
   });
 }
@@ -231,6 +233,7 @@ export function createMatch(setup: MatchSetup): GameState {
       equipment: [],
       overload: [],
       ritual: [],
+      spentOncePerTurnKeys: [],
     };
   }
 
@@ -256,6 +259,10 @@ export function createMatch(setup: MatchSetup): GameState {
     attackBonusThisTurn: {},
     attackToxinThisTurn: {},
     preventDrawArmed: {},
+    ignoreShieldThisTurn: {},
+    forgeDiscountThisTurn: {},
+    requirementWildcardsThisTurn: {},
+    bladeRainArmed: {},
     winner: null,
     log: [
       { seq: 0, turn: 1, event: { type: "match-started", firstPlayerId: first.id } },

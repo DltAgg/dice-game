@@ -283,15 +283,17 @@ printed header cost.
   destroyed or the host dies.
 - Friendly equipment (War Axe) may only target your own creatures.
 - Opponent equipment (Black Plague) may only target theirs.
-- `attack-damage-bonus` abilities add to damage on attack (War Axe).
+- `attack-damage-bonus` abilities add to damage on attack (War Axe; War Banner
+  uses `bearerRelation: "left-ally"`).
+- `energy-cost-discount` / `ignore-shield` standing abilities (Archmage, Tome,
+  War Minotaur) — spec `012`.
 - `destroy-equipment` removes one piece of gear from a creature (Calculated
   Sacrifice).
 - Forging may name an opposing die when the card's forge region says so
   (Black Plague).
 
-Still out: the rest of the equipment catalogue (cost reduction, position
-triggers, …). Roll-triggered gear (Black Plague) and on-damage / on-absorb
-hooks landed in `010-trigger-hooks`.
+Roll-triggered gear (Black Plague) and on-damage / on-absorb / on-change-position
+hooks landed in `010-trigger-hooks`. Remaining print: Twin Blades **push**.
 
 ### Forging draws a card
 
@@ -463,7 +465,8 @@ returns to A); after Pass×2 the chain resolves and A’s turn does **not** end.
 
 Toxin counters are tokens on a creature. At the start of that creature's
 owner's turn, the creature takes 1 damage per Toxin counter it holds. Counters
-persist until something removes them; nothing removes them yet.
+persist until something removes them. Adaptive Toxin’s “remove any number →
+damage” absorb is still deferred (no toxin-strip proving card this pass).
 
 ---
 
@@ -542,17 +545,58 @@ effect will apply stun, and no removal timing will be invented.
 
 ---
 
+## Prototype assumptions — deferred vocabulary (2026-08-14)
+
+**Status:** `ASSUMED` · implemented in `src/game` · spec `docs/specs/012-deferred-vocabulary.md`
+
+Bible-silent rules chosen so printed catalogue clauses could ship. Settling one
+is a data / spec edit, not a silent reducer rewrite.
+
+| Topic | Assumption coded |
+|---|---|
+| **Reposition 1 space** | Toggle the creature between `frontline` and `back` via `setCreaturePosition` only. If moving to frontline would exceed `config.frontlineSlots` (2), the controller must **swap** with a living frontline ally (pending choose). Optional (`may`) moves can be declined. Swaps always call `setCreaturePosition` twice. **Push is not reposition.** |
+| **Energy discounts** | Apply to `PLAY_CARD` / ritual place / equip / overload, **not** `FORGE_CARD`. “Used” = played for its play region. Min cost 0. |
+| **Archmage** | First Arcane **card** (any main type) the controller plays that turn costs 1 Energy less. |
+| **Tome of Interdiction** | First Instant Arcane that turn costs 1 less. Stacks with Archmage (Instant Arcane can be −2). Spent keys on the host creature / gear; cleared `END_TURN`. |
+| **Paradox GY replay** | Choose 1 Instant or Ritual in the controller’s GY; resolve that card’s play effects (`effect.effects` or `ritual.effects`) immediately; ignore `[Requires: …]` / Active-when; do not pay that card’s Energy; the card **stays in the GY**. Creature-target effects open the usual choose pending. Cards without a playable effect body cannot be chosen. |
+| **Ignore N Shield / pierce** | When the attacker deals attack damage: prevent buffers first (`009`), then skip up to N Shield (those shields are **not** spent), then remaining shields, then HP. War Minotaur: `ignore-shield` 1 standing. Rust: arm `ignoreShieldThisTurn` 2, clear `END_TURN`. |
+| **Attack follow-ups** | `AttackDefinition.followUpEffects` queues extra `EffectDefinition`s after the damage link. Existing cards omit the field. |
+| **Garuda Dive optional swap** | After Dive HP, controller may choose a living frontline creature (self or ally, including Garuda if already frontline = no-op) and swap; they may decline. |
+| **Poisoned Charge swap** | If Minotaur is in `back` after declaring, swap with a chosen living frontline ally (required if one exists; skip if none). |
+| **War Banner left ally** | Owner’s `creatureIds` order is left-to-right. “Allied creature to the left” = previous **living** creature in that list. Static `attack-damage-bonus` with `bearerRelation: "left-ally"` on that ally’s **basic** attacks. No living left neighbor → no bonus. |
+| **Alpha's Hide** | On special attack by the bearer: generate 1 Wild into the **controller’s pool** (not attached to the bearer). |
+| **Formation “+1 Defense this turn”** | `grant-damage-prevent` 1 on a chosen allied frontline creature other than the absorber. Bible has no DEF stat. On roll “if this creature is on the frontline”: at roll time faces have no host creature, so the condition is **controller has a living frontline creature**. |
+| **Opponent draws** | `draw-cards` with `player: "opponent" \| "controller"` (default controller). Forbidden Heritage On roll: opponent draws 1. |
+| **Lose / transfer Energy** | Shared track (holder + value). Lose opponent Energy: decrease opponent-held value without the controller “gaining a spend”. Transfer: same decrease plus the controller becomes/holds the marker toward them. If the opponent does not hold or holds 0 → no-op (no negative Energy). |
+| **Retain-from-effect** | Marks a chosen owned die retained (same rules as `RETAIN_DIE`, including a known rolled slot). |
+| **Requirement wildcard** | One-shot: a matching pool symbol may pay any `[Requires]` / ritual Active-when attribute this turn (Resonance absorb). Consumed when used. |
+| **Pack adjacent** | Another living ally shares a **`creatureIds` neighbor (±1)** among living creatures. At roll, `has-adjacent-ally` is true if any two consecutive entries in the controller’s `creatureIds` are both living. |
+| **Instinct On absorb** | No extra attack. The absorbing creature may still declare a basic in the actions phase if it has not attacked. Absorb during absorption does **not** let it attack in that phase. |
+| **Aegis redirect** | Until EOT, up to 2 damage that would be dealt to **another** allied creature is dealt to the absorber instead (before prevent/shield on the original). Turn-scoped `redirectDamageThisTurn` on the absorber. |
+| **Revelation heal** | Heal 2 on an allied creature with damage **strictly greater than** half life (`damage > life/2`). |
+| **Mirrored Rune** | On absorb Arcane: generate 1 extra symbol matching **another** symbol currently in the controller’s available/rolled pool (`copy-pool-symbol`). |
+| **Arcane Echo tactic** | Re-run showing face `onRoll` + that face’s overload `onRoll` for a chosen owned die. Does **not** generate the inherent symbol a second time. |
+| **Arcane Echo face** | On roll: re-fire the **other** owned die’s showing-face `onRoll` + overload `onRoll` (same as the tactic). Not a full attribute/overlay copy of the other face. |
+| **Extermination consume** | Consumed Synthetic Corruption slots are replaced with natural Shield (placeholder so the die stays 6 faces). Not a forge — no forge-draw. Damage `2 * consumed` split across up to 2 creatures. |
+| **Adrenaline self-damage** | After optional reroll, if the new face is still this overloaded face: 1 damage to each of up to 2 **distinct** living allied creatures (fewer if fewer living). |
+| **Pestilent Plague at 5** | Counters **reset** then try to forge another Pestilent Plague onto an adjacent slot of the same die (pool / already-installed copy, existing install rules). If illegal (no slot / no pool / attribute cap), skip the forge; counters stay at 0. |
+| **ACTIVATE_FACE** | Legal in actions on the showing slot. Cost `energyBase + energyPerCorruptionOnDie * (synthetic Corruption faces on that die)`. Removed face returns to its owner’s pool like unforge; slot becomes Shield. Draw-on-forge does not apply. |
+
+Push stays unmodelled (DECIDED no). Stun stays `DEFERRED`.
+
+---
+
 ## Open questions
 
 ### Special face inherent-effect text
 
-**Status:** `DECIDED` for the six printed specials (2026-08-10) · partial engine support
+**Status:** `DECIDED` for the six printed specials (2026-08-10) · engine support in `011`
 
 English printings are in `docs/specs/004-face-cards.md` and `src/game/content/faces.ts`.
-Crush and Rending Claw resolve on roll. Arcane Echo (copy), Blade Rain (split
-damage), Forbidden Heritage, and Pestilent Plague remain print-only until their
-clauses have modelled effects. Great Spark / Rekindle still lack printings.
-Tracked in `docs/DEFERRED_CATALOGUE.md` for end-of-loop revisit.
+Crush, Rending Claw, Arcane Echo (re-fire other die onRoll), Blade Rain, Forbidden
+Heritage, and Pestilent Plague are wired. Great Spark / Rekindle still lack
+printings. Face-marker systems (Stain, Decay, Catalyst, Overcharge, Adaptive Toxin,
+Infection roll) remain in `docs/DEFERRED_CATALOGUE.md`.
 
 ### Whether a creature's fuel is capped
 

@@ -211,6 +211,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
     forgeTags: ["echo"],
     rulesText: "Apply the modifiers of one of the dice again.",
+    effect: {
+      effects: [{ type: "reapply-die-modifiers" }],
+    },
   }),
   card({
     id: CALCULATED_SACRIFICE,
@@ -331,7 +334,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       "Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures.",
     ritual: {
       activeWhen: { corruption: 3 },
-      effects: [],
+      effects: [{ type: "extermination" }],
     },
   }),
   card({
@@ -344,9 +347,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
       "Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements.",
-    // No Active when on print; place/ready still works. GY replay is deferred.
+    // No Active when on print; place/ready still works.
     ritual: {
-      effects: [],
+      effects: [{ type: "replay-graveyard-tactic" }],
     },
   }),
   card({
@@ -413,6 +416,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText: "Convert up to two symbols into any other 2 Natural symbols.",
+    effect: {
+      effects: [{ type: "convert-symbols", amount: 2 }],
+    },
   }),
   card({
     id: DARK_PACT,
@@ -423,6 +429,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText: "Send 2 Ritual cards of different attributes from your deck to the graveyard.",
+    effect: {
+      effects: [{ type: "dark-pact" }],
+    },
   }),
   card({
     id: MIND_CONTROL,
@@ -434,6 +443,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText:
       "Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces.",
+    effect: {
+      effects: [{ type: "mind-control" }],
+    },
   }),
   card({
     id: ARCANE_SILENCE,
@@ -526,7 +538,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "The first Instant Arcane used each turn costs 1 less Energy.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "energy-cost-discount",
+          amount: 1,
+          oncePerTurn: true,
+          cardTypes: ["instant"],
+          attributes: ["arcane"],
+        },
+      ],
     },
   }),
   card({
@@ -561,7 +581,13 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "On absorb Arcane: copy another symbol onto it.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["arcane"],
+          effects: [{ type: "copy-pool-symbol" }],
+        },
+      ],
     },
   }),
 
@@ -651,7 +677,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     overload: {
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
-      onRoll: [],
+      onRoll: [{ type: "optional-reroll-die" }],
     },
   }),
   card({
@@ -668,6 +694,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       faceSymbols: ["martial"],
       faceKinds: ["natural"],
       onRoll: [],
+      onAbsorb: [{ type: "arm-ignore-shield", amount: 2 }],
     },
   }),
   card({
@@ -681,7 +708,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "On absorb Wild: this creature may move 1 position.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["wild"],
+          effects: [
+            { type: "reposition-creature", target: { kind: "source-creature" }, optional: true },
+          ],
+        },
+      ],
     },
   }),
   card({
@@ -719,7 +754,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "On basic attack, allied creature to the left: deal +1 damage.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "attack-damage-bonus",
+          amount: 1,
+          attackKinds: ["basic"],
+          bearerRelation: "left-ally",
+        },
+      ],
     },
   }),
   card({
@@ -733,7 +775,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "On special attack: generate Wild on another card.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-attack",
+          attackKinds: ["special"],
+          attackerRelation: "self",
+          effects: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
+        },
+      ],
     },
   }),
   card({
@@ -788,7 +837,20 @@ const DEFINITIONS: readonly CardDefinition[] = [
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["martial"],
-      abilities: [],
+      abilities: [
+        {
+          type: "on-attack",
+          attackerRelation: "self",
+          oncePerTurn: true,
+          effects: [
+            {
+              type: "reposition-creature",
+              target: { kind: "choose-ally-other" },
+              optional: true,
+            },
+          ],
+        },
+      ],
     },
   }),
   card({

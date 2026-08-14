@@ -113,6 +113,29 @@ export type StandingTrigger =
       readonly type: "attack-damage-bonus";
       readonly amount: number;
       readonly attackKinds?: readonly ("basic" | "special")[];
+      /**
+       * Who receives the bonus. Default `self` (gear on the attacker).
+       * `left-ally`: the previous living creature in the owner's `creatureIds`
+       * (War Banner).
+       */
+      readonly bearerRelation?: "self" | "left-ally";
+    }
+  /**
+   * Reduce PLAY_CARD / ritual place / equip / overload Energy (not FORGE).
+   * Min cost 0. `oncePerTurn` spends a host key on the first matching play.
+   */
+  | {
+      readonly type: "energy-cost-discount";
+      readonly amount: number;
+      readonly oncePerTurn?: boolean;
+      readonly cardTypes?: readonly CardType[];
+      readonly subtypes?: readonly CardSubtype[];
+      readonly attributes?: readonly Attribute[];
+    }
+  /** Attacker ignores this many Shield on the attack target (War Minotaur). */
+  | {
+      readonly type: "ignore-shield";
+      readonly amount: number;
     }
   /** After the bearer deals HP damage (Venomous Fangs, Blade of Serene Light). */
   | {

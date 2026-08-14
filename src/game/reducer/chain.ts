@@ -108,6 +108,7 @@ export function buildEffectLink(args: {
     attackId: null,
     attackTargetId: null,
     attackEffect: null,
+    attackFollowUpEffects: [],
     ritualDuration: args.ritualDuration ?? null,
   };
 }
@@ -129,6 +130,7 @@ export function buildRitualPlaceLink(args: {
     attackId: null,
     attackTargetId: null,
     attackEffect: null,
+    attackFollowUpEffects: [],
     ritualDuration: null,
   };
 }
@@ -151,6 +153,7 @@ export function buildEquipLink(args: {
     attackId: null,
     attackTargetId: null,
     attackEffect: null,
+    attackFollowUpEffects: [],
     ritualDuration: null,
   };
 }
@@ -173,6 +176,7 @@ export function buildOverloadLink(args: {
     attackId: null,
     attackTargetId: null,
     attackEffect: null,
+    attackFollowUpEffects: [],
     ritualDuration: null,
   };
 }
@@ -183,6 +187,7 @@ export function buildAttackLink(args: {
   readonly attackId: AttackId;
   readonly targetId: CreatureId;
   readonly attackEffect: EffectDefinition;
+  readonly attackFollowUpEffects?: readonly EffectDefinition[];
 }): Omit<ChainLink, "id" | "negated"> {
   return {
     kind: "attack",
@@ -197,6 +202,7 @@ export function buildAttackLink(args: {
     attackId: args.attackId,
     attackTargetId: args.targetId,
     attackEffect: args.attackEffect,
+    attackFollowUpEffects: args.attackFollowUpEffects ?? [],
     ritualDuration: null,
   };
 }

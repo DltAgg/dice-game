@@ -1,8 +1,8 @@
 # 004 — Face cards and the face deck
 
-Status: **DEFERRED DEPTH** — catalogue + face-deck ledger; Crush / Rending Claw
-playable on roll; several CSV faces partially wired (see table). Remaining
-specials in [`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; On roll / On absorb
+wired where modellable (`011`). Remaining: push (Impact roll), empty print
+(Great Spark / Rekindle), face-marker systems — [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
 Derived from the `Face card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, node `2:13`).
@@ -59,58 +59,58 @@ Named specials:
 
 | Name | Overloads | Playable today | Notes |
 |---|---|---|---|
-| Arcane Echo | 0 | Forge restriction only | Copy other die — OPEN |
-| Blade Rain | 3 | Print only | Split next attack — OPEN |
+| Arcane Echo | 0 | On roll: re-fire other die onRoll (+ overloads) | Not a full face overlay |
+| Blade Rain | 3 | On roll: arm next-attack split | `split-damage` pending |
 | Rending Claw | 3 | On roll: remove 3 Shields from most-shielded enemy | |
 | Crush | 3 | On roll: next attack +1 damage | |
-| Forbidden Heritage | 1 | Print only | Opponent draw, Retain, activated remove — OPEN |
-| Pestilent Plague | 2 | Print only | Pestilence counters + adjacent forge — OPEN |
-| Insight Rune | 2 | On roll: draw | Absorb dig — OPEN |
-| Conversion Rune | 2 | On absorb: +Energy | Roll convert — OPEN |
-| Resonance Rune | 2 | Print only | Conditional Energy + treat-as — OPEN |
+| Forbidden Heritage | 1 | On roll: opp draw + retain; `ACTIVATE_FACE` strip Corruption | |
+| Pestilent Plague | 2 | On roll: counters → adjacent forge at 5; `ACTIVATE_FACE` | |
+| Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
+| Conversion Rune | 2 | On roll: convert; On absorb: +Energy | |
+| Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |
 | Vital Spark | 2 | On roll: heal; On absorb: prevent 1 | |
-| Aegis | 2 | On roll: generate Shield | Absorb redirect — OPEN |
-| Revelation | 2 | Print only | Deck peek + conditional heal — OPEN |
-| Instinct | 2 | Print only | Reposition + bonus basic — OPEN |
-| Primordial Fury | 2 | On absorb: next attack +1 | Roll conditional Energy — OPEN |
-| Pack | 2 | Print only | Adjacent Wild + reposition — OPEN |
-| Command | 2 | Print only | Ally / enemy move — OPEN |
-| Impact | 2 | On absorb: next attack +2 | Roll push — OPEN |
-| Formation | 2 | Print only | Frontline Energy / Defense — OPEN |
-| Venom | 2 | On roll: apply toxin (choose enemy) | Absorb next-hit — OPEN |
-| Spores | 2 | Print only | Conditional toxin + heal toxined ally — OPEN |
-| Adaptive Toxin | 2 | Print only | Cap toxin / remove→damage — OPEN |
-| Stain | 2 | Print only | Corruption markers on faces — OPEN |
-| Infection | 2 | Print only | Spread Corruption / steal Energy — OPEN |
-| Decay | 2 | Print only | Suppress inherent / strip Corrupted — OPEN |
-| Gear | 2 | Print only | Synthetic Energy / forge discount — OPEN |
-| Catalyst | 2 | Print only | Treat-as / copy face effect — OPEN |
-| Overcharge | 2 | Print only | Optional Energy + skip next / double resolve — OPEN |
-| Flywheel | 2 | On roll: +Energy; On absorb: generate Shield | Authored Mechanical special |
-| Piston | 2 | On roll: generate Mechanical; On absorb: +Energy | Authored Mechanical special |
-| Shadow Echo | 2 | Print only | Discard-draw / GY recursion — OPEN |
-| Drain | 2 | Print only | Opp loses Energy / transfer — OPEN |
-| Sacrifice | 2 | Print only | Discard for Energy / discard for damage — OPEN |
-| Warhorn | 2 | On roll: generate Martial; On absorb: next attack +1 | Authored Martial aggro |
-| Cleaving Strike | 2 | On roll: remove 2 Shield (most-shielded enemy); On absorb: next attack +1 | Authored Martial aggro |
-| Bloodscent | 2 | On roll: next attack +1; On absorb: generate Wild | Authored Wild aggro |
-| Gore | 2 | On roll: 1 damage (choose enemy); On absorb: next attack +1 | Authored Wild aggro |
-| Needle | 2 | On roll: next attack +1; On absorb: apply 1 Toxin (choose enemy) | Authored Toxin aggro |
-| Seep | 2 | On roll: generate Toxin; On absorb: arm attack-toxin 1 | Authored Toxin aggro |
+| Aegis | 2 | On roll: generate Shield; On absorb: redirect | |
+| Revelation | 2 | On roll: peek/bottom; On absorb: heal if damage >½ life | |
+| Instinct | 2 | On roll: optional ally reposition | Absorb extra basic ASSUMED no-op |
+| Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | |
+| Pack | 2 | On roll: adjacent → Wild; On absorb: optional reposition | |
+| Command | 2 | On roll: ally move; On absorb: enemy move | |
+| Impact | 2 | On absorb: next attack +2 | On roll **push** deferred |
+| Formation | 2 | On roll: Energy if controller has FL; On absorb: prevent on other FL | |
+| Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 | |
+| Spores | 2 | On roll: extra toxin if already toxined; On absorb: heal toxined ally | |
+| Adaptive Toxin | 2 | Print only | Cap / strip→damage — face-marker deferred |
+| Stain | 2 | Print only | Face-marker deferred |
+| Infection | 2 | On absorb: opp loses Energy | On roll spread — deferred |
+| Decay | 2 | Print only | Face-marker deferred |
+| Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
+| Catalyst | 2 | Print only | Treat-as / copy face — deferred |
+| Overcharge | 2 | Print only | Optional Energy + skip / double — deferred |
+| Flywheel | 2 | On roll: +Energy; On absorb: generate Shield | |
+| Piston | 2 | On roll: generate Mechanical; On absorb: +Energy | |
+| Shadow Echo | 2 | On roll: optional discard→draw; On absorb: GY ≤2 | |
+| Drain | 2 | On roll: opp loses Energy; On absorb: transfer | |
+| Sacrifice | 2 | On roll: discard→2 Energy; On absorb: discard→2 damage | |
+| Warhorn | 2 | On roll: generate Martial; On absorb: next attack +1 | |
+| Cleaving Strike | 2 | On roll: remove 2 Shield; On absorb: next attack +1 | |
+| Bloodscent | 2 | On roll: next attack +1; On absorb: generate Wild | |
+| Gore | 2 | On roll: 1 damage; On absorb: next attack +1 | |
+| Needle | 2 | On roll: next attack +1; On absorb: apply toxin | |
+| Seep | 2 | On roll: generate Toxin; On absorb: arm attack-toxin 1 | |
 
 Great Spark and Rekindle appear as art on the page but have no printed rules text yet.
-The CSV batch (`synthetic_faces.csv`) uses **On roll** / **On absorb** clauses;
-`FaceCardDefinition.onAbsorb` is wired for modellable clauses only — remaining
-print stays accurate with empty hook arrays (see `DEFERRED_CATALOGUE.md`). Portuguese *Sobrecarga* is
-catalogued as **Overcharge** to avoid colliding with the Overload tactic subtype.
+Empty hook arrays stay where clauses are deferred (`DEFERRED_CATALOGUE.md`).
+Portuguese *Sobrecarga* is catalogued as **Overcharge**.
 
 ## State Changes
 
-`players[*].facePool`, `attackBonusThisTurn` (Crush).
+`players[*].facePool`, `attackBonusThisTurn` (Crush), `DieSlot.pestilenceCounters`,
+`FaceCardDefinition.activated`, turn maps in `011`.
 
 ## Actions
 
-No new actions. `FORGE_CARD` respects face forge restrictions.
+`FORGE_CARD` respects face forge restrictions. `ACTIVATE_FACE` for Heritage /
+Plague (spec `012`).
 
 ## Acceptance Criteria
 
@@ -118,9 +118,11 @@ No new actions. `FORGE_CARD` respects face forge restrictions.
 - [x] Correct overload capacities
 - [x] Echo forge restriction
 - [x] Crush and Rending Claw on-roll effects
-- [ ] Remaining special clauses (Echo copy, Blade Rain split, Heritage, Plague, CSV Roll/Absorb faces)
+- [x] Modellable CSV / named special On roll / On absorb wired (`011`)
+- [ ] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll)
 
 ## Tests
 
 - [x] `src/game/reducer/faceDeck.test.ts`
-- [x] Existing forge / invariant suites
+- [x] Existing forge / invariant / triggers suites
+- [x] Spec `011` focused suites

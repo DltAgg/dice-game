@@ -46,6 +46,8 @@ function pushEffect(
   effect: EffectDefinition,
   sourceCreatureId: CreatureId | null,
   declaredTargetCreatureId: CreatureId | null,
+  sourceDieId: DieId | null = null,
+  sourceSlotIndex: number | null = null,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -54,6 +56,9 @@ function pushEffect(
     sourceCreatureId,
     declaredTargetCreatureId,
     declaredTargetCardInstanceId: null,
+    sourceDieId,
+    sourceSlotIndex,
+    ignoreShield: 0,
   });
 }
 
@@ -540,12 +545,23 @@ export function fireOnChangePosition(
 /** Clear once-per-turn trigger spend and creature next-attack bonuses. */
 export function clearTurnTriggerState(draft: Draft): void {
   for (const creature of Object.values(draft.creatures)) {
-    if (creature.spentOncePerTurnTriggers.length === 0 && creature.nextAttackBonus === 0) {
+    if (
+      creature.spentOncePerTurnTriggers.length === 0 &&
+      creature.nextAttackBonus === 0 &&
+      creature.redirectDamageThisTurn === 0 &&
+      creature.nextIncomingDamageBonus === 0
+    ) {
       continue;
     }
     patchCreature(draft, creature.id, {
       spentOncePerTurnTriggers: [],
       nextAttackBonus: 0,
+      redirectDamageThisTurn: 0,
+      nextIncomingDamageBonus: 0,
     });
+  }
+  for (const player of Object.values(draft.players)) {
+    if (player.spentOncePerTurnKeys.length === 0) continue;
+    draft.players[player.id] = { ...player, spentOncePerTurnKeys: [] };
   }
 }

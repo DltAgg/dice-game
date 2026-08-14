@@ -79,3 +79,18 @@ export const canPay = (
   playerId: PlayerId,
   requirement: SymbolRequirement,
 ): boolean => planConsumption(state, playerId, requirement) !== null;
+
+/** How many requirement pips are unpaid after matching the pool exactly. */
+export function requirementShortfall(
+  state: GameState,
+  playerId: PlayerId,
+  requirement: SymbolRequirement,
+): number {
+  const pool = usableSymbols(state, playerId);
+  let short = 0;
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const have = pool.filter((candidate) => candidate.symbol === attribute).length;
+    if (have < count) short += count - have;
+  }
+  return short;
+}

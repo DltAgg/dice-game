@@ -1,9 +1,10 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { getFaceCard } from "../content/faces.js";
+import { getFaceCard, SHIELD_FACE_ID } from "../content/faces.js";
 import type { CardDefinition } from "../model/cards.js";
 import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
 import type { GameError } from "../model/errors.js";
+import { NATURAL_CONVERT_SYMBOLS } from "../model/effects.js";
 import {
   asSymbolInstanceId,
   type AttackId,
@@ -23,6 +24,8 @@ import {
   type TurnPhase,
 } from "../model/state.js";
 import { isAttributeSymbol, requirementEntries, type AttributeTokens } from "../model/symbols.js";
+import type { Attribute, DualKindAttribute } from "../model/attributes.js";
+import type { SymbolType } from "../model/symbols.js";
 import { createRng, type RNG } from "../rng/rng.js";
 import {
   attackDamageBonus,
@@ -31,7 +34,12 @@ import {
   resolveEnergyPayment,
   ritualDurationOf,
 } from "../rules/cards.js";
-import { opponentOf } from "../rules/creatures.js";
+import {
+  discountedPlayCost,
+  attackIgnoreShieldAmount,
+  type DiscountMatch,
+} from "../rules/discounts.js";
+import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../rules/dice.js";
 import {
   energyAfterOvershootPass,
@@ -46,8 +54,9 @@ import {
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
 } from "../rules/faces.js";
-import { planConsumption } from "../rules/symbols.js";
+import { planConsumption, requirementShortfall } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
+import { creatureMatchesFilter, legalDiceForFilter } from "../rules/targets.js";
 import { addToken, holdsTokens, removeTokens } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
 import {
@@ -64,13 +73,16 @@ import {
   pushChainLink,
   topChainLink,
 } from "./chain.js";
-import { createDraft, emit, nextInstanceId, patchCreature, patchDie, type Draft } from "./draft.js";
+import { createDraft, emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import {
   applyDeferredEffect,
   checkVictory,
+  createSymbol,
+  dealDamage,
   drainResolution,
   grantShield,
   pushEffect,
+  replayableGraveyardTactics,
   tickToxins,
 } from "./resolution.js";
 import {
@@ -83,6 +95,7 @@ import {
   attachEquipment,
   attachOverload,
   clearOverloadsOnFace,
+  destroyOverload,
   discardSpecificCards,
   drawCards,
   moveCard,
@@ -143,6 +156,29 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
     ) {
       allowed = true;
     } else if (pending.type === "forge-faces" && action.type === "RESOLVE_FORGE_FACES") {
+      allowed = true;
+    } else if (pending.type === "choose-die" && action.type === "RESOLVE_CHOOSE_DIE") {
+      allowed = true;
+    } else if (pending.type === "convert-symbols" && action.type === "RESOLVE_CONVERT_SYMBOLS") {
+      allowed = true;
+    } else if (pending.type === "copy-pool-symbol" && action.type === "RESOLVE_COPY_POOL_SYMBOL") {
+      allowed = true;
+    } else if (
+      pending.type === "replay-graveyard-tactic" &&
+      action.type === "RESOLVE_REPLAY_GRAVEYARD"
+    ) {
+      allowed = true;
+    } else if (pending.type === "look-top-deck" && action.type === "RESOLVE_LOOK_TOP_DECK") {
+      allowed = true;
+    } else if (pending.type === "peek-deck" && action.type === "RESOLVE_PEEK_DECK") {
+      allowed = true;
+    } else if (pending.type === "dark-pact" && action.type === "RESOLVE_DARK_PACT") {
+      allowed = true;
+    } else if (pending.type === "mind-control" && action.type === "RESOLVE_MIND_CONTROL") {
+      allowed = true;
+    } else if (pending.type === "split-damage" && action.type === "RESOLVE_SPLIT_DAMAGE") {
+      allowed = true;
+    } else if (pending.type === "optional-reroll" && action.type === "RESOLVE_OPTIONAL_REROLL") {
       allowed = true;
     }
     if (!allowed) return fail(state, "PENDING_DECISION");
@@ -218,6 +254,28 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.slotIndexes,
         action.faceCardId,
       );
+    case "RESOLVE_CHOOSE_DIE":
+      return resolveChooseDie(draft, action.playerId, action.dieId);
+    case "RESOLVE_CONVERT_SYMBOLS":
+      return resolveConvertSymbols(draft, action.playerId, action.replacements);
+    case "RESOLVE_COPY_POOL_SYMBOL":
+      return resolveCopyPoolSymbol(draft, action.playerId, action.symbol);
+    case "RESOLVE_REPLAY_GRAVEYARD":
+      return resolveReplayGraveyard(draft, action.playerId, action.cardInstanceId);
+    case "RESOLVE_LOOK_TOP_DECK":
+      return resolveLookTopDeck(draft, action.playerId, action.keepId);
+    case "RESOLVE_PEEK_DECK":
+      return resolvePeekDeck(draft, action.playerId, action.putOnBottom);
+    case "RESOLVE_DARK_PACT":
+      return resolveDarkPact(draft, action.playerId, action.cardInstanceIds, rng);
+    case "RESOLVE_MIND_CONTROL":
+      return resolveMindControl(draft, action.playerId, action.mode, action.faceCardIds);
+    case "RESOLVE_SPLIT_DAMAGE":
+      return resolveSplitDamage(draft, action.playerId, action.assignments);
+    case "RESOLVE_OPTIONAL_REROLL":
+      return resolveOptionalReroll(draft, action.playerId, action.accept, rng);
+    case "ACTIVATE_FACE":
+      return activateFace(draft, action.playerId, action.dieId, action.slotIndex);
     case "PASS_PRIORITY":
       return passPriority(draft, action.playerId);
     case "ADVANCE_PHASE":
@@ -236,6 +294,13 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
  */
 function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null {
   if (draft.phase !== "roll") return "INVALID_PHASE";
+
+  const rolled: Array<{
+    readonly dieId: DieId;
+    readonly slotIndex: number;
+    readonly faceCardId: FaceCardId;
+    readonly symbol: SymbolType;
+  }> = [];
 
   for (const die of diceOf(draft, playerId)) {
     if (isDieStunned(die)) {
@@ -282,12 +347,20 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
       ownerId: playerId,
       source: "roll",
     });
+    rolled.push({
+      dieId: die.id,
+      slotIndex,
+      faceCardId: slot.faceCardId,
+      symbol: face.symbol,
+    });
+  }
 
-    // Overloads fire on the roll itself — once per die that shows the overloaded
-    // face card (shared across dice). Absorb vs pool does not gate them.
-    fireFaceOnRoll(draft, playerId, die.id, slotIndex);
-    fireOverloadsForShownFace(draft, playerId, slot.faceCardId);
-    fireEquipmentOnRollSymbol(draft, playerId, face.symbol);
+  // Fire onRoll after every inherent pip exists so "another symbol in the pool"
+  // conditions (Gear, Resonance) see the full roll.
+  for (const entry of rolled) {
+    fireFaceOnRoll(draft, playerId, entry.dieId, entry.slotIndex);
+    fireOverloadsForShownFace(draft, playerId, entry.faceCardId, entry.dieId, entry.slotIndex);
+    fireEquipmentOnRollSymbol(draft, playerId, entry.symbol);
   }
 
   drainResolution(draft);
@@ -307,7 +380,7 @@ function fireFaceOnRoll(
   if (face === undefined || face.onRoll.length === 0) return;
 
   for (const effect of [...face.onRoll].reverse()) {
-    pushEffect(draft, controllerId, effect, null, null);
+    pushEffect(draft, controllerId, effect, null, null, null, dieId, slotIndex);
   }
 }
 
@@ -320,6 +393,8 @@ function fireOverloadsForShownFace(
   draft: Draft,
   controllerId: PlayerId,
   faceCardId: FaceCardId,
+  dieId: DieId,
+  slotIndex: number,
 ): void {
   const player = draft.players[controllerId];
   if (player === undefined) return;
@@ -330,7 +405,7 @@ function fireOverloadsForShownFace(
     const region = getCard(card.cardId)?.overload;
     if (region === undefined) continue;
     for (const effect of [...region.onRoll].reverse()) {
-      pushEffect(draft, controllerId, effect, null, null);
+      pushEffect(draft, controllerId, effect, null, null, null, dieId, slotIndex);
     }
   }
 }
@@ -410,6 +485,13 @@ function resolveSearch(
     const graveyard = new Set(draft.players[playerId]?.graveyard ?? []);
     for (const id of cardInstanceIds) {
       if (!graveyard.has(id)) return "INVALID_SEARCH";
+      if (pending.maxEnergyCost !== undefined) {
+        const card = draft.cards[id];
+        const definition = card === undefined ? undefined : getCard(card.cardId);
+        if (definition === undefined || definition.energyCost > pending.maxEnergyCost) {
+          return "INVALID_SEARCH";
+        }
+      }
     }
 
     for (const id of cardInstanceIds) {
@@ -440,7 +522,11 @@ function resolveDiscard(
 
   const unique = new Set(cardInstanceIds);
   if (unique.size !== cardInstanceIds.length) return "INVALID_DISCARD";
-  if (cardInstanceIds.length !== pending.amount) return "INVALID_DISCARD";
+  if (pending.optional === true) {
+    if (cardInstanceIds.length > pending.amount) return "INVALID_DISCARD";
+  } else if (cardInstanceIds.length !== pending.amount) {
+    return "INVALID_DISCARD";
+  }
 
   const hand = new Set(draft.players[playerId]?.hand ?? []);
   for (const id of cardInstanceIds) {
@@ -452,6 +538,20 @@ function resolveDiscard(
     noteDeferredTurnEnd(draft, playerId, true);
   }
   discardSpecificCards(draft, playerId, cardInstanceIds);
+  if (pending.thenEffects !== undefined && cardInstanceIds.length > 0) {
+    for (const effect of [...pending.thenEffects].reverse()) {
+      pushEffect(
+        draft,
+        playerId,
+        effect,
+        pending.sourceCreatureId ?? null,
+        pending.declaredTargetCreatureId ?? null,
+        null,
+        pending.sourceDieId ?? null,
+        pending.sourceSlotIndex ?? null,
+      );
+    }
+  }
   draft.pendingDecision = null;
   emit(draft, { type: "discard-resolved", playerId, cardInstanceIds: [...cardInstanceIds] });
 
@@ -466,16 +566,32 @@ function resolveDiscard(
 function resolveChooseCreature(
   draft: Draft,
   playerId: PlayerId,
-  creatureId: CreatureId,
+  creatureId: CreatureId | null,
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-creature") return "INVALID_PHASE";
   if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
 
+  if (creatureId === null) {
+    if (pending.optional !== true) return "INVALID_CHOICE";
+    draft.pendingDecision = null;
+    emit(draft, { type: "choose-creature-resolved", playerId, creatureId: null });
+    return resumeAfterEffectPause(draft);
+  }
+
   const creature = draft.creatures[creatureId];
   if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
-  if (pending.filter === "ally" && creature.ownerId !== playerId) return "INVALID_CHOICE";
-  if (pending.filter === "enemy" && creature.ownerId === playerId) return "INVALID_CHOICE";
+  if (
+    !creatureMatchesFilter(
+      draft,
+      playerId,
+      pending.filter,
+      pending.deferred.sourceCreatureId,
+      creatureId,
+    )
+  ) {
+    return "INVALID_CHOICE";
+  }
 
   draft.pendingDecision = null;
   emit(draft, { type: "choose-creature-resolved", playerId, creatureId });
@@ -569,6 +685,387 @@ function resolveForgeFaces(
     faceCardId,
   });
   return resumeAfterEffectPause(draft);
+}
+
+function resolveChooseDie(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId | null,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "choose-die") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  if (dieId === null) {
+    if (pending.optional !== true) return "INVALID_CHOICE";
+    draft.pendingDecision = null;
+    return resumeAfterEffectPause(draft);
+  }
+
+  if (!legalDiceForFilter(draft, playerId, pending.filter).includes(dieId)) {
+    return "INVALID_CHOICE";
+  }
+
+  draft.pendingDecision = null;
+  applyDeferredEffect(draft, { ...pending.deferred, sourceDieId: dieId });
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveConvertSymbols(
+  draft: Draft,
+  playerId: PlayerId,
+  replacements: readonly {
+    readonly symbolId: SymbolInstanceId;
+    readonly into: DualKindAttribute;
+  }[],
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "convert-symbols") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (replacements.length > pending.amount) return "INVALID_CHOICE";
+
+  const unique = new Set(replacements.map((entry) => entry.symbolId));
+  if (unique.size !== replacements.length) return "INVALID_CHOICE";
+  const eligible = new Set(pending.eligibleSymbolIds);
+
+  for (const entry of replacements) {
+    if (!eligible.has(entry.symbolId)) return "INVALID_CHOICE";
+    if (!NATURAL_CONVERT_SYMBOLS.includes(entry.into)) return "INVALID_CHOICE";
+    const symbol = draft.symbols[entry.symbolId];
+    if (symbol === undefined) return "UNKNOWN_ENTITY";
+    if (symbol.ownerId !== playerId) return "INVALID_TARGET";
+    if (symbol.status !== "rolled" && symbol.status !== "available") return "SYMBOL_UNAVAILABLE";
+    draft.symbols[entry.symbolId] = { ...symbol, symbol: entry.into };
+  }
+
+  draft.pendingDecision = null;
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveCopyPoolSymbol(
+  draft: Draft,
+  playerId: PlayerId,
+  symbol: SymbolType,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "copy-pool-symbol") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const inPool = Object.values(draft.symbols).some(
+    (candidate) =>
+      candidate.ownerId === playerId &&
+      candidate.symbol === symbol &&
+      (candidate.status === "rolled" || candidate.status === "available"),
+  );
+  if (!inPool) return "INVALID_CHOICE";
+
+  createSymbol(draft, playerId, symbol, "available", "effect");
+  draft.pendingDecision = null;
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveReplayGraveyard(
+  draft: Draft,
+  playerId: PlayerId,
+  cardInstanceId: CardInstanceId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "replay-graveyard-tactic") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (!replayableGraveyardTactics(draft, playerId).includes(cardInstanceId)) {
+    return "INVALID_CHOICE";
+  }
+
+  const card = draft.cards[cardInstanceId];
+  const definition = card === undefined ? undefined : getCard(card.cardId);
+  const effects =
+    definition?.type === "ritual"
+      ? definition.ritual?.effects
+      : definition?.effect?.effects;
+  draft.pendingDecision = null;
+  if (effects !== undefined) {
+    for (const effect of [...effects].reverse()) {
+      pushEffect(draft, playerId, effect, null, null);
+    }
+  }
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveLookTopDeck(
+  draft: Draft,
+  playerId: PlayerId,
+  keepId: CardInstanceId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "look-top-deck") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (!pending.cardInstanceIds.includes(keepId)) return "INVALID_CHOICE";
+
+  const rest = pending.cardInstanceIds.filter((id) => id !== keepId);
+  draft.pendingDecision = null;
+  moveCard(draft, keepId, "hand");
+  const player = draft.players[playerId];
+  if (player !== undefined && rest.length > 0) {
+    const remaining = player.deck.filter((id) => !rest.includes(id));
+    patchPlayer(draft, playerId, { deck: [...remaining, ...rest] });
+  }
+  return resumeAfterEffectPause(draft);
+}
+
+function resolvePeekDeck(
+  draft: Draft,
+  playerId: PlayerId,
+  putOnBottom: boolean,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "peek-deck") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const player = draft.players[playerId];
+  draft.pendingDecision = null;
+  if (putOnBottom && player !== undefined && player.deck[0] === pending.cardInstanceId) {
+    patchPlayer(draft, playerId, {
+      deck: [...player.deck.slice(1), pending.cardInstanceId],
+    });
+  }
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveDarkPact(
+  draft: Draft,
+  playerId: PlayerId,
+  cardInstanceIds: readonly [CardInstanceId, CardInstanceId],
+  rng: RNG,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "dark-pact") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (cardInstanceIds[0] === cardInstanceIds[1]) return "INVALID_CHOICE";
+
+  const deck = new Set(draft.players[playerId]?.deck ?? []);
+  const attributes: string[] = [];
+  for (const id of cardInstanceIds) {
+    if (!deck.has(id)) return "INVALID_CHOICE";
+    const card = draft.cards[id];
+    const definition = card === undefined ? undefined : getCard(card.cardId);
+    if (definition === undefined || definition.type !== "ritual") return "INVALID_CHOICE";
+    attributes.push(definition.attribute);
+  }
+  if (attributes[0] === attributes[1]) return "INVALID_CHOICE";
+
+  for (const id of cardInstanceIds) {
+    moveCard(draft, id, "graveyard");
+  }
+  shuffleDeck(draft, playerId, rng);
+  draft.pendingDecision = null;
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveMindControl(
+  draft: Draft,
+  playerId: PlayerId,
+  mode: "strip-one-face" | "strip-one-each",
+  faceCardIds: readonly FaceCardId[],
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "mind-control") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const unique = [...new Set(faceCardIds)];
+  const legal = opposingOverloadedFaceIds(draft, playerId);
+  for (const faceCardId of unique) {
+    if (!legal.includes(faceCardId)) return "INVALID_CHOICE";
+  }
+
+  if (mode === "strip-one-face") {
+    if (unique.length !== 1) return "INVALID_CHOICE";
+    const faceCardId = unique[0];
+    if (faceCardId === undefined) return "INVALID_CHOICE";
+    for (const overloadId of overloadsAttachedToFace(draft, faceCardId)) {
+      destroyOverload(draft, overloadId);
+    }
+  } else {
+    if (unique.length < 1 || unique.length > 2) return "INVALID_CHOICE";
+    for (const faceCardId of unique) {
+      const overload = earliestOverloadOnFace(draft, faceCardId);
+      if (overload === undefined) return "INVALID_CHOICE";
+      destroyOverload(draft, overload);
+    }
+  }
+
+  draft.pendingDecision = null;
+  return resumeAfterEffectPause(draft);
+}
+
+function opposingOverloadedFaceIds(draft: Draft, controllerId: PlayerId): readonly FaceCardId[] {
+  const opponentId = opponentOf(draft, controllerId);
+  const ids = new Set<FaceCardId>();
+  for (const die of diceOf(draft, opponentId)) {
+    for (const slot of die.slots) {
+      if (overloadsAttachedToFace(draft, slot.faceCardId).length > 0) ids.add(slot.faceCardId);
+    }
+  }
+  return [...ids];
+}
+
+function overloadsAttachedToFace(draft: Draft, faceCardId: FaceCardId): readonly CardInstanceId[] {
+  return Object.values(draft.cards)
+    .filter((card) => card.zone === "overload" && card.attachedToFaceCardId === faceCardId)
+    .map((card) => card.id);
+}
+
+function earliestOverloadOnFace(draft: Draft, faceCardId: FaceCardId): CardInstanceId | undefined {
+  return [...overloadsAttachedToFace(draft, faceCardId)].sort((a, b) => (a < b ? -1 : 1))[0];
+}
+
+function resolveSplitDamage(
+  draft: Draft,
+  playerId: PlayerId,
+  assignments: readonly { readonly creatureId: CreatureId; readonly amount: number }[],
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "split-damage") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const unique = new Set(assignments.map((entry) => entry.creatureId));
+  if (unique.size !== assignments.length) return "INVALID_CHOICE";
+  const positive = assignments.filter((entry) => entry.amount > 0);
+  if (positive.length > pending.maxTargets) return "INVALID_CHOICE";
+  const total = assignments.reduce((sum, entry) => sum + entry.amount, 0);
+  if (total !== pending.amount) return "INVALID_CHOICE";
+  if (assignments.some((entry) => entry.amount < 0)) return "INVALID_CHOICE";
+
+  for (const entry of assignments) {
+    if (!isLegalSplitTarget(draft, pending.attackerId, pending.range, playerId, entry.creatureId)) {
+      return "INVALID_CHOICE";
+    }
+  }
+
+  const ignoreShield = pending.ignoreShield ?? 0;
+  for (const entry of assignments) {
+    if (entry.amount <= 0) continue;
+    dealDamage(draft, entry.creatureId, entry.amount, { ignoreShield });
+  }
+
+  if (pending.thenEffects !== undefined) {
+    for (const effect of [...pending.thenEffects].reverse()) {
+      pushEffect(draft, playerId, effect, pending.sourceCreatureId, null);
+    }
+  }
+
+  draft.pendingDecision = null;
+  return resumeAfterEffectPause(draft);
+}
+
+function isLegalSplitTarget(
+  draft: Draft,
+  attackerId: CreatureId | null,
+  range: boolean,
+  controllerId: PlayerId,
+  creatureId: CreatureId,
+): boolean {
+  const creature = draft.creatures[creatureId];
+  if (creature === undefined || creature.defeated) return false;
+  if (attackerId === null) return true;
+  if (creature.ownerId === controllerId) return false;
+  if (creature.position === "back" && !range) {
+    const front = livingCreaturesOf(draft, creature.ownerId).filter(
+      (candidate) => candidate.position === "frontline",
+    );
+    if (front.length > 0) return false;
+  }
+  return true;
+}
+
+function resolveOptionalReroll(
+  draft: Draft,
+  playerId: PlayerId,
+  accept: boolean,
+  rng: RNG,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "optional-reroll") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const dieId = pending.dieId;
+  const originalFace = pending.faceCardId;
+  draft.pendingDecision = null;
+
+  if (!accept) return resumeAfterEffectPause(draft);
+
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
+  const slotIndex = rng.integer(0, FACE_SLOTS_PER_DIE - 1);
+  patchDie(draft, dieId, { rolledSlotIndex: slotIndex });
+  const slot = draft.dice[dieId]?.slots[slotIndex];
+  const face = slot === undefined ? undefined : getFaceCard(slot.faceCardId);
+  if (face !== undefined) {
+    emit(draft, { type: "die-rolled", dieId, slotIndex, symbol: face.symbol });
+    for (const symbol of Object.values(draft.symbols)) {
+      if (symbol.sourceDieId !== dieId) continue;
+      if (symbol.status !== "rolled" && symbol.status !== "available") continue;
+      draft.symbols[symbol.id] = { ...symbol, symbol: face.symbol };
+      break;
+    }
+  }
+
+  if (slot?.faceCardId === originalFace) {
+    const allies = livingCreaturesOf(draft, playerId);
+    for (const ally of allies.slice(0, 2)) {
+      dealDamage(draft, ally.id, 1);
+    }
+  }
+
+  return resumeAfterEffectPause(draft);
+}
+
+function activateFace(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId,
+  slotIndex: number,
+): GameError | null {
+  if (draft.phase !== "actions") return "INVALID_PHASE";
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
+  if (die.ownerId !== playerId) return "INVALID_TARGET";
+  if (die.rolledSlotIndex !== slotIndex) return "INVALID_FACE";
+  const slot = die.slots[slotIndex];
+  if (slot === undefined) return "INVALID_FACE";
+  const face = getFaceCard(slot.faceCardId);
+  if (face?.activated === undefined) return "CARD_HAS_NO_EFFECT";
+
+  let corruptionFaces = 0;
+  for (const candidate of die.slots) {
+    const definition = getFaceCard(candidate.faceCardId);
+    if (definition?.kind === "synthetic" && definition.symbol === "corruption") {
+      corruptionFaces += 1;
+    }
+  }
+
+  const cost =
+    face.activated.energyBase + face.activated.energyPerCorruptionOnDie * corruptionFaces;
+  if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
+  const spend = payEnergy(draft, playerId, cost);
+
+  const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
+  const slots = die.slots.map((candidate) =>
+    candidate.index === slotIndex
+      ? {
+          ...candidate,
+          faceCardId: SHIELD_FACE_ID,
+          faceCardOwnerId: playerId,
+          pestilenceCounters: 0,
+        }
+      : candidate,
+  );
+  patchDie(draft, dieId, { slots });
+  returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
+  if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
+    clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+  }
+
+  return settleTurnAfterSpend(draft, playerId, spend);
 }
 
 /**
@@ -690,24 +1187,34 @@ function absorbSymbolToRitual(
   if (region?.activeWhen === undefined) return "CARD_NOT_AVAILABLE";
 
   const attribute = symbol.symbol;
+  let creditAs = attribute;
   const needed = region.activeWhen[attribute] ?? 0;
-  if (needed < 1) return "INVALID_TARGET";
+  if (needed < 1) {
+    const missing = firstMissingActiveWhen(region.activeWhen, card.ritualProgress ?? {});
+    const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
+    const wildcardIndex = wildcards.findIndex(
+      (wildcard) => wildcard.fromSymbol === undefined || wildcard.fromSymbol === symbol.symbol,
+    );
+    if (missing === undefined || wildcardIndex < 0) return "INVALID_TARGET";
+    creditAs = missing;
+    consumeRequirementWildcardAt(draft, playerId, wildcardIndex);
+  }
 
   const progress = card.ritualProgress ?? {};
   const credited = card.ritualProgressCreditedThisTurn ?? [];
-  if (credited.includes(attribute)) return "SYMBOL_UNAVAILABLE";
-  if ((progress[attribute] ?? 0) >= needed) return "INVALID_TARGET";
+  if (credited.includes(creditAs)) return "SYMBOL_UNAVAILABLE";
+  if ((progress[creditAs] ?? 0) >= (region.activeWhen[creditAs] ?? 0)) return "INVALID_TARGET";
 
   consumeSymbols(draft, [symbolId], "ritual-progress");
 
   const nextProgress: AttributeTokens = {
     ...progress,
-    [attribute]: (progress[attribute] ?? 0) + 1,
+    [creditAs]: (progress[creditAs] ?? 0) + 1,
   };
   draft.cards[cardInstanceId] = {
     ...card,
     ritualProgress: nextProgress,
-    ritualProgressCreditedThisTurn: [...credited, attribute],
+    ritualProgressCreditedThisTurn: [...credited, creditAs],
   };
 
   refreshRitualOrientations(draft, playerId);
@@ -791,6 +1298,7 @@ function attack(
       attackId: attackDefinition.id,
       targetId,
       attackEffect: effect,
+      attackFollowUpEffects: attackDefinition.followUpEffects ?? [],
     }),
   );
   fireOnAttack(draft, attackerId, attackDefinition.kind, targetId);
@@ -879,7 +1387,14 @@ function forgeCard(
   moveCard(draft, cardInstanceId, "graveyard");
   const cost = resolveEnergyPayment(definition, energyPaid);
   if (cost === null) return "INVALID_TARGET";
-  return settleTurnAfterSpend(draft, playerId, payEnergy(draft, playerId, cost));
+  const discount = draft.forgeDiscountThisTurn[playerId] ?? 0;
+  const paid = Math.max(0, cost - discount);
+  if (discount > 0) {
+    const next = { ...draft.forgeDiscountThisTurn };
+    delete next[playerId];
+    draft.forgeDiscountThisTurn = next;
+  }
+  return settleTurnAfterSpend(draft, playerId, payEnergy(draft, playerId, paid));
 }
 
 /**
@@ -934,7 +1449,10 @@ function playCard(
   }
 
   if (region.requires !== undefined && planConsumption(draft, playerId, region.requires) === null) {
-    return "INSUFFICIENT_SYMBOLS";
+    const shortfall = requirementShortfall(draft, playerId, region.requires);
+    const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
+    if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
+    consumeRequirementWildcards(draft, playerId, shortfall);
   }
 
   // Negate / prevent reactions need a legal top link.
@@ -985,8 +1503,10 @@ function playCard(
   const cost = resolveEnergyPayment(definition, energyPaid, region.additionalEnergy ?? 0);
   if (cost === null) return "INVALID_TARGET";
 
-  const spend = payEnergyFlexible(draft, playerId, cost, inReactionWindow);
+  const discounted = discountedPlayCost(draft, playerId, definition, cost);
+  const spend = payEnergyFlexible(draft, playerId, discounted.cost, inReactionWindow);
   if (spend === null) return "INSUFFICIENT_ENERGY";
+  markDiscountMatchesSpent(draft, discounted.matches);
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
   moveCard(draft, cardInstanceId, "graveyard");
@@ -1041,10 +1561,12 @@ function equipCard(
 
   const cost = resolveEnergyPayment(definition, energyPaid);
   if (cost === null) return "INVALID_TARGET";
+  const discounted = discountedPlayCost(draft, playerId, definition, cost);
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
   // Stay in hand until the chain link resolves (or is negated → GY).
-  const spend = payEnergy(draft, playerId, cost);
+  const spend = payEnergy(draft, playerId, discounted.cost);
+  markDiscountMatchesSpent(draft, discounted.matches);
   noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
   pushChainLink(
@@ -1076,9 +1598,11 @@ function overloadCard(
 
   const cost = resolveEnergyPayment(definition, energyPaid);
   if (cost === null) return "INVALID_TARGET";
+  const discounted = discountedPlayCost(draft, playerId, definition, cost);
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
-  const spend = payEnergy(draft, playerId, cost);
+  const spend = payEnergy(draft, playerId, discounted.cost);
+  markDiscountMatchesSpent(draft, discounted.matches);
   noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
   pushChainLink(
@@ -1104,9 +1628,11 @@ function placeRitualCard(
 
   const cost = resolveEnergyPayment(definition, energyPaid);
   if (cost === null) return "INVALID_TARGET";
+  const discounted = discountedPlayCost(draft, playerId, definition, cost);
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
-  const spend = payEnergy(draft, playerId, cost);
+  const spend = payEnergy(draft, playerId, discounted.cost);
+  markDiscountMatchesSpent(draft, discounted.matches);
   noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
   pushChainLink(
@@ -1461,12 +1987,46 @@ function conductLink(draft: Draft, link: ChainLink): void {
       if (link.attackEffect === null || link.attackerId === null || link.attackTargetId === null) {
         return;
       }
+      const ignoreShield = attackIgnoreShieldAmount(draft, link.attackerId, link.controllerId);
+      const followUps = link.attackFollowUpEffects;
+      if (draft.bladeRainArmed[link.controllerId] === true) {
+        const nextArmed = { ...draft.bladeRainArmed };
+        delete nextArmed[link.controllerId];
+        draft.bladeRainArmed = nextArmed;
+        const amount = link.attackEffect.type === "damage" ? link.attackEffect.amount : 0;
+        const attacker = draft.creatures[link.attackerId];
+        const attackDef =
+          attacker === undefined
+            ? undefined
+            : getCreatureDefinition(attacker.definitionId)?.attacks.find(
+                (candidate) => candidate.id === link.attackId,
+              );
+        draft.pendingDecision = {
+          type: "split-damage",
+          controllerId: link.controllerId,
+          amount,
+          maxTargets: 6,
+          attackerId: link.attackerId,
+          range: attackDef?.range ?? false,
+          sourceCreatureId: link.attackerId,
+          ignoreShield,
+          thenEffects: followUps,
+        };
+        return;
+      }
+      for (const follow of [...followUps].reverse()) {
+        pushEffect(draft, link.controllerId, follow, link.attackerId, link.attackTargetId);
+      }
       pushEffect(
         draft,
         link.controllerId,
         link.attackEffect,
         link.attackerId,
         link.attackTargetId,
+        null,
+        null,
+        null,
+        ignoreShield,
       );
       drainResolution(draft);
       return;
@@ -1584,6 +2144,10 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   draft.attackBonusThisTurn = {};
   draft.attackToxinThisTurn = {};
   draft.preventDrawArmed = {};
+  draft.ignoreShieldThisTurn = {};
+  draft.forgeDiscountThisTurn = {};
+  draft.requirementWildcardsThisTurn = {};
+  draft.bladeRainArmed = {};
   clearTurnTriggerState(draft);
 
   draft.energy = track;
@@ -1677,4 +2241,43 @@ function consumeSymbols(
     draft.symbols[id] = { ...symbol, status: "consumed" };
   }
   emit(draft, { type: "symbols-consumed", symbolIds: [...symbolIds], reason });
+}
+
+function markDiscountMatchesSpent(draft: Draft, matches: readonly DiscountMatch[]): void {
+  for (const match of matches) {
+    const creature = draft.creatures[match.creatureId];
+    if (creature === undefined) continue;
+    if (creature.spentOncePerTurnTriggers.includes(match.key)) continue;
+    patchCreature(draft, match.creatureId, {
+      spentOncePerTurnTriggers: [...creature.spentOncePerTurnTriggers, match.key],
+    });
+  }
+}
+
+function consumeRequirementWildcards(draft: Draft, playerId: PlayerId, count: number): void {
+  if (count <= 0) return;
+  const current = draft.requirementWildcardsThisTurn[playerId] ?? [];
+  const remaining = current.slice(count);
+  const next = { ...draft.requirementWildcardsThisTurn, [playerId]: remaining };
+  if (remaining.length === 0) delete next[playerId];
+  draft.requirementWildcardsThisTurn = next;
+}
+
+function consumeRequirementWildcardAt(draft: Draft, playerId: PlayerId, index: number): void {
+  const current = [...(draft.requirementWildcardsThisTurn[playerId] ?? [])];
+  if (index < 0 || index >= current.length) return;
+  current.splice(index, 1);
+  const next = { ...draft.requirementWildcardsThisTurn, [playerId]: current };
+  if (current.length === 0) delete next[playerId];
+  draft.requirementWildcardsThisTurn = next;
+}
+
+function firstMissingActiveWhen(
+  requirement: import("../model/symbols.js").SymbolRequirement,
+  progress: AttributeTokens,
+): Attribute | undefined {
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    if ((progress[attribute] ?? 0) < count) return attribute;
+  }
+  return undefined;
 }

@@ -19,6 +19,7 @@ export * from "./rules/loadout.js";
 export * from "./rules/reactions.js";
 export * from "./rules/symbols.js";
 export * from "./rules/targeting.js";
+export * from "./rules/targets.js";
 export * from "./rules/tokens.js";
 
 export { ALL_CARDS, CARDS, CONTROL_DECK, PROTOTYPE_DECK, getCard } from "./content/cards.js";

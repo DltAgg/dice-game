@@ -13,6 +13,7 @@ import type {
 import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
 import type { FaceKind } from "./dice.js";
+import type { CreatureChoiceFilter } from "./effects.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
 import type { ChainLinkKind, TurnPhase } from "./state.js";
 
@@ -201,12 +202,12 @@ export type GameEvent =
   | {
       readonly type: "choose-creature-started";
       readonly playerId: PlayerId;
-      readonly filter: "ally" | "enemy";
+      readonly filter: CreatureChoiceFilter;
     }
   | {
       readonly type: "choose-creature-resolved";
       readonly playerId: PlayerId;
-      readonly creatureId: CreatureId;
+      readonly creatureId: CreatureId | null;
     }
   | {
       readonly type: "choose-ritual-started";
@@ -255,6 +256,12 @@ export type GameEvent =
     }
   | {
       readonly type: "energy-gained";
+      readonly playerId: PlayerId;
+      readonly amount: number;
+      readonly remaining: number;
+    }
+  | {
+      readonly type: "energy-lost";
       readonly playerId: PlayerId;
       readonly amount: number;
       readonly remaining: number;
