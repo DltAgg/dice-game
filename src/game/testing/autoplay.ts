@@ -325,9 +325,14 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "choose-creature") {
-    const ownerId =
-      pending.filter === "ally" ? pending.controllerId : opponentOf(state, pending.controllerId);
-    const [creatureId] = livingCreaturesOf(state, ownerId).map((creature) => creature.id);
+    const living = livingCreaturesOf(
+      state,
+      pending.filter === "enemy" ? opponentOf(state, pending.controllerId) : pending.controllerId,
+    );
+    const creatureId =
+      pending.filter === "allied-frontline"
+        ? living.find((creature) => creature.position === "frontline")?.id
+        : living[0]?.id;
     if (creatureId === undefined) {
       throw new Error("autoplay: no creature for choose-creature");
     }

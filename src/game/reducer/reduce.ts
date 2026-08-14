@@ -476,6 +476,11 @@ function resolveChooseCreature(
   if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
   if (pending.filter === "ally" && creature.ownerId !== playerId) return "INVALID_CHOICE";
   if (pending.filter === "enemy" && creature.ownerId === playerId) return "INVALID_CHOICE";
+  if (pending.filter === "allied-frontline") {
+    if (creature.ownerId !== playerId || creature.position !== "frontline") {
+      return "INVALID_CHOICE";
+    }
+  }
 
   draft.pendingDecision = null;
   emit(draft, { type: "choose-creature-resolved", playerId, creatureId });
@@ -791,6 +796,7 @@ function attack(
       attackId: attackDefinition.id,
       targetId,
       attackEffect: effect,
+      attackFollowUpEffects: attackDefinition.followUpEffects ?? [],
     }),
   );
   fireOnAttack(draft, attackerId, attackDefinition.kind, targetId);
@@ -1460,6 +1466,10 @@ function conductLink(draft: Draft, link: ChainLink): void {
     case "attack": {
       if (link.attackEffect === null || link.attackerId === null || link.attackTargetId === null) {
         return;
+      }
+      const followUps = link.attackFollowUpEffects;
+      for (const follow of [...followUps].reverse()) {
+        pushEffect(draft, link.controllerId, follow, link.attackerId, link.attackTargetId);
       }
       pushEffect(
         draft,

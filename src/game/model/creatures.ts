@@ -49,6 +49,11 @@ export interface AttackDefinition {
    * but cannot be declared yet.
    */
   readonly effect?: EffectDefinition;
+  /**
+   * Effects queued after the attack body when the attack chain link conducts
+   * (Garuda Dive swap, Minotaur back-row swap). Damage resolves first.
+   */
+  readonly followUpEffects?: readonly EffectDefinition[];
 }
 
 export interface CreatureDefinition {

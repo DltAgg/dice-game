@@ -47,6 +47,8 @@ export interface ChainLink {
   readonly attackId: AttackId | null;
   readonly attackTargetId: CreatureId | null;
   readonly attackEffect: EffectDefinition | null;
+  /** Attack `followUpEffects` — queued after the body when the link conducts. */
+  readonly attackFollowUpEffects: readonly EffectDefinition[];
   /** Used when finishing a ritual-activate link (exhaust vs GY). */
   readonly ritualDuration: CardDuration | null;
 }
@@ -133,11 +135,11 @@ export type PendingDecision =
   | {
       readonly type: "choose-creature";
       readonly controllerId: PlayerId;
-      readonly filter: "ally" | "enemy";
+      readonly filter: "ally" | "enemy" | "allied-frontline";
       /**
-       * Effect waiting for a target. `effect.target` is rewritten to
-       * `declared-target` so applying it after the choice does not re-open
-       * this decision.
+       * Effect waiting for a target. `effect.target` / `swap-positions.with` is
+       * rewritten to `declared-target` so applying it after the choice does not
+       * re-open this decision.
        */
       readonly deferred: PendingEffect;
     }

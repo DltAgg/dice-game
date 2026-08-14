@@ -42,7 +42,6 @@ Do **not** use “Whenever…”, “When you…”, or “When this creature…
 | `on-attack` | `On attack:` / `On basic attack:` / `On special attack:` / `On attack, another ally:` |
 | `on-take-damage` | `On take damage:` (add `, once per turn` before the colon when needed) |
 | `on-discard` | `On discard:` |
-| `on-change-position` | `On change position:` |
 | `attack-damage-bonus` | `On basic attack:` / `On attack:` (+N damage) |
 
 Gate lines stay above the timing line (`Can only equip…`, `Can only overload…`).
@@ -61,10 +60,13 @@ Qualifiers use a comma before the colon (`On take damage, once per turn:`), neve
 | `On attack:` / `On basic attack:` / … | `on-attack` | Attack declared |
 | `On take damage:` | `on-take-damage` | Incoming damage |
 | `On discard:` | `on-discard` | Hand discard |
-| `On change position:` | `on-change-position` | `setCreaturePosition` |
+| `On change position:` | `on-change-position` | Ally moved via `setCreaturePosition` |
 
 Shared hook implementation: `src/game/reducer/triggers.ts` · spec
 `docs/specs/010-trigger-hooks.md`.
+
+**Banned forever:** enemy push / forced move of opponent creatures. Do not
+author `type: "push"` or swap/reposition targeting enemies.
 
 ## Workflow (new or existing card)
 
@@ -113,6 +115,8 @@ Prefer members already in `src/game/model/effects.ts` and selectors already in
 | Next attack +N | `next-attack-bonus` |
 | Apply toxin | `apply-toxin` |
 | Strip shields | `remove-shield` |
+| Swap with frontline ally | `swap-positions` + `choose-allied-frontline` |
+| Reposition ally 1 space | `reposition-creature` |
 | Auto-pick damaged ally | `{ kind: "most-damaged-ally" }` |
 | Player picks enemy | `{ kind: "choose-enemy" }` |
 

@@ -32,6 +32,15 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 17,
     attributes: ["martial"],
     passiveRulesText: "Ignore 1 [Shield] on the target.",
+    standingAbilities: [
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [
+          { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
+        ],
+      },
+    ],
     attacks: [
       {
         id: asAttackId("attack-minotaur-heavy-axe"),
@@ -50,8 +59,15 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         discards: { martial: 1 },
         range: false,
         rulesText:
-          "Deal 4 damage and 1 [Toxin] marker. If War Minotaur is in the back row, swap it with a frontline creature.",
+          "Deal 4 damage and 1 [Toxin] marker. If War Minotaur is in the back row, swap it with a frontline ally.",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
+        followUpEffects: [
+          {
+            type: "conditional",
+            when: { type: "source-position", position: "back" },
+            then: [{ type: "swap-positions", with: { kind: "choose-allied-frontline" } }],
+          },
+        ],
       },
     ],
   },
@@ -73,6 +89,11 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
           },
         ],
       },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [{ type: "next-attack-bonus", amount: 1 }],
+      },
     ],
     attacks: [
       {
@@ -92,8 +113,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1, martial: 1 },
         discards: { wild: 1 },
         range: false,
-        rulesText:
-          "Deal 4 damage. If another ally attacked this turn, [push] the target to the back row.",
+        rulesText: "Deal 4 damage. The next attack this turn deals +1 damage.",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],
@@ -113,8 +133,11 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         discards: { wild: 1 },
         range: true,
         rulesText:
-          "Deal 2 damage. On deal damage: you may swap Garuda with a frontline creature.",
+          "Deal 2 damage. On deal damage: you may swap Garuda with a frontline ally.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "swap-positions", with: { kind: "choose-allied-frontline" } },
+        ],
       },
       {
         id: asAttackId("attack-garuda-bombardment"),

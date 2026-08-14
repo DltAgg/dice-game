@@ -39,9 +39,9 @@ to 1 damage plus wired resource riders; those attacks now discard fuel on use.
 
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
-| War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
-| Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg / push |
-| Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
+| War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin; if back row, swap with frontline ally |
+| Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg + next attack +1 |
+| Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg + may swap with frontline ally | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
 | Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 1 dmg + draw | Mystic Overload (Arcane+Luminar; discard Arcane 1) 1 dmg + Energy + generate Arcane |
 | Corrupting Elder | Arcane | 14 | Touch of Decay (Arcane; discard Arcane 1) 1 dmg + strip shield | Contamination (Arcane+Corruption; discard Corruption 1) 1 dmg + generate Corruption |
 | Void Summoner | Arcane | 13 | Rupture (Arcane; discard Arcane 1) 1 dmg + generate Arcane | Dimensional Rift (Arcane+Darkness; discard Darkness 1) 1 dmg + Energy + draw |
@@ -53,7 +53,7 @@ encoded yet.
 
 | In | Out (deferred) |
 |---|---|
-| Six Figma creatures as content + English `CreatureCard` UI | Aggro passives / reposition / toxin-on-special — see DEFERRED_CATALOGUE |
+| Six Figma creatures as content + English `CreatureCard` UI | Aggro passives / Bombardment frontline toxin — see DEFERRED_CATALOGUE |
 | Basic/Special costs, damage, and control resource riders (`on-attack`) | Archmage tactic-discount passive |
 
 The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder) has

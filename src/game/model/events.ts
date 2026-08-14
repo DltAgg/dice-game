@@ -201,7 +201,7 @@ export type GameEvent =
   | {
       readonly type: "choose-creature-started";
       readonly playerId: PlayerId;
-      readonly filter: "ally" | "enemy";
+      readonly filter: "ally" | "enemy" | "allied-frontline";
     }
   | {
       readonly type: "choose-creature-resolved";

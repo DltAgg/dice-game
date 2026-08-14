@@ -71,11 +71,11 @@ Named specials:
 | Vital Spark | 2 | On roll: heal; On absorb: prevent 1 | |
 | Aegis | 2 | On roll: generate Shield | Absorb redirect — OPEN |
 | Revelation | 2 | Print only | Deck peek + conditional heal — OPEN |
-| Instinct | 2 | Print only | Reposition + bonus basic — OPEN |
+| Instinct | 2 | On roll: ally may reposition; On absorb: Basic if not attacked (deferred) | |
 | Primordial Fury | 2 | On absorb: next attack +1 | Roll conditional Energy — OPEN |
-| Pack | 2 | Print only | Adjacent Wild + reposition — OPEN |
-| Command | 2 | Print only | Ally / enemy move — OPEN |
-| Impact | 2 | On absorb: next attack +2 | Roll push — OPEN |
+| Pack | 2 | On absorb: ally may reposition; On roll: adjacent Wild deferred | |
+| Command | 2 | On roll: reposition ally; On absorb: remove 1 Shield | Enemy move banned |
+| Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | Roll push banned |
 | Formation | 2 | Print only | Frontline Energy / Defense — OPEN |
 | Venom | 2 | On roll: apply toxin (choose enemy) | Absorb next-hit — OPEN |
 | Spores | 2 | Print only | Conditional toxin + heal toxined ally — OPEN |

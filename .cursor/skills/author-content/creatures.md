@@ -41,7 +41,7 @@ export const EXAMPLE: CreatureDefinitionId =
 - Attribute identity: [design.md](design.md). Creatures convert the engine into
   board pressure; they should not steal Corruption’s “contaminate their dice” job.
 - Omit `effect` on an attack when only a subset is modellable — document the gap
-  in `docs/DEFERRED_CATALOGUE.md` (passives, reposition, pierce, etc.).
+  in `docs/DEFERRED_CATALOGUE.md` (passives, pierce, multi-target riders, etc.).
 - Squad size for matches comes from setup / loadout (typically 3 creatures), not
   from stuffing every catalogue entry into the prototype squad.
 

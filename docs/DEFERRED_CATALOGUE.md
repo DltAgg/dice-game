@@ -28,14 +28,16 @@ needs them — never as unreachable stubs.
 | **Graveyard recursion** | Paradox | Eternal Darkness wired (`search-graveyard`) |
 | **Replay GY card effect** | Paradox | Instant or Ritual in GY; ignore requirements |
 | **Symbol conversion** | Collapse of Reality, Void Summoner Rupture | Change rolled/available symbols |
-| **Reposition / push / swap** | Varcolac, Garuda, Twin Blades, Predator's Claws, … | Board positions exist; movers do not |
 | **On-damage triggers** | Venomous Fangs → apply toxin; Blade of Serene Light → heal | **IMPLEMENTED** (`010`) — `on-deal-damage` / `on-toxin-damage` |
 | **Roll-triggered equipment** | Black Plague (Corruption → 1 dmg) | **IMPLEMENTED** (`010`) — `on-roll-symbol` |
 | **On-absorb triggers** | Mutant Spores, Wild Echo, Rust, Mirrored Rune, Wild Carapace, Archmage's Grimoire, CSV face On absorb lines, … | **PARTIAL** (`010`) — hook live; Rust / Mirrored Rune / remaining CSV absorb clauses still deferred |
-| **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Hook ready; **partially wired**: Insight roll, Conversion absorb, Vital Spark both, Aegis roll, Primordial Fury absorb, Impact absorb, Venom roll — remaining clauses still deferred |
+| **On-absorb face effects** | Insight Rune, Conversion Rune, … (full CSV set) | Hook ready; **partially wired**: Insight roll, Conversion absorb, Vital Spark both, Aegis roll, Primordial Fury absorb, Instinct roll reposition / Pack absorb reposition / Command roll reposition + absorb remove-shield / Impact both, Venom roll — remaining clauses still deferred |
+| **Ally swap / reposition** | Garuda Dive, War Minotaur Poisoned Charge, Hunter's Collar, Predator's Claws, Insignia of Command, Instinct (roll), Pack (absorb), Command (roll) | **IMPLEMENTED** + catalogue wired. Enemy **push** banned forever (Twin Blades / Varcolac Hunt / Impact roll / Command absorb enemy move — do not restore) |
+| **Adjacent-ally gate** | Pack (On roll) | Generate Wild if another adjacent ally — not modelled |
+| **Extra Basic Attack** | Instinct (On absorb) | May Basic Attack if not attacked this turn — not modelled |
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
 | **Attack-damage conditional buffs** | War Banner (left ally aura) | Varcolac passive **wired** (`on-attack` + `ally-other` + `grant-next-attack-bonus`) |
-| **Shared trigger events** | Twin Blades, Insignia, Alpha's Hide, … | **IMPLEMENTED** infrastructure; movers / push / “another card” still block some wires |
+| **Shared trigger events** | Alpha's Hide, War Banner, … | **IMPLEMENTED** infrastructure; remaining gaps are effect vocabulary (not board moves) |
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | First Arcane card (any type) / first Instant Arcane |
 | **Multi-target damage split** | Blade Rain, Extermination | Player chooses distribution |
 | **Copy / re-apply die modifiers** | Arcane Echo tactic + face | |
@@ -77,19 +79,15 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Toxic Blessing | — | **Wired** `arm-attack-toxin` on roll |
 | Adrenaline | Overload attach + Natural Wild gate; reroll clause deferred |
 | Rust | Overload attach + Natural Martial gate; ignore shield deferred |
-| Predator's Claws | Equip; absorb→move deferred |
 | Serrated Stinger | **Wired** ally special attack → toxin on target |
 | War Banner | Equip; left-ally +1 basic deferred |
 | Alpha's Hide | Equip; special→generate Wild on another card deferred |
-| Hunter's Collar | — | **Wired** position change → Martial (`setCreaturePosition`) |
-| Insignia of Command | Equip + Martial gate; attack→reposition deferred |
 | Hunting Armour | **Wired** first damage −1 / turn |
-| Twin Blades | Equip; basic→push deferred (`on-attack` ready) |
 
 Fully wired in `010` (removed from gaps): Venomous Fangs, Black Plague, Blade of
 Serene Light, Archmage's Grimoire, Mutant Spores, Wild Echo, Toxic Heart, Wild
 Carapace, Hunting Armour, Abyssal Sacrifice, Serrated Stinger, Toxic Blessing,
-Hunter's Collar.
+Hunter's Collar, Predator's Claws, Twin Blades, Insignia of Command.
 
 ### Fully wired (for reference)
 
@@ -116,9 +114,9 @@ Damage lines resolve; passives and most special riders do not.
 
 | Creature | Unfinished |
 |---|---|
-| War Minotaur | Passive ignore 1 Shield; Poisoned Charge toxin + back-row swap |
-| Varcolac | Coordinated Hunt conditional push (passive **wired**) |
-| Garuda | Dive optional swap; Bombardment frontline toxin (Range flag exists) |
+| War Minotaur | Passive ignore 1 Shield; Poisoned Charge toxin + back-row ally swap **wired** |
+| Varcolac | Coordinated Hunt next-attack bonus **wired** (passive **wired**); enemy push **banned** (not restoring) |
+| Garuda | Dive ally swap **wired**; Bombardment frontline toxin (Range flag exists) |
 | Archmage of the Runes | Passive first Arcane card discount. Burst draw + Overload Energy/Arcane **wired** (`on-attack`) |
 | Corrupting Elder | Contamination forge-opp retuned to generate Corruption (**wired**). Touch strip **wired**. Passive **wired** |
 | Void Summoner | Convert/retain retuned to generate Arcane / Energy+draw (**wired**). Passive **wired** (Natural absorb → Arcane) |
@@ -142,11 +140,11 @@ Fast-game HP/cost variants from Figma are not encoded.
 | Vital Spark | **Wired** roll heal + absorb prevent |
 | Aegis | **Wired** roll: generate Shield; absorb: redirect damage open |
 | Revelation | Roll: peek/bottom; absorb: heal if <½ Life |
-| Instinct | Roll: reposition; absorb: extra basic attack |
+| Instinct | **Wired** roll: reposition ally; absorb Basic-if-not-attacked **deferred** |
 | Primordial Fury | Roll: Energy if attacked open; **wired** absorb: next attack +1 |
-| Pack | Roll: adjacent → Wild; absorb: reposition |
-| Command | Roll: ally move; absorb: enemy move |
-| Impact | Roll: basic pushes open; **wired** absorb: next attack +2 |
+| Pack | Roll: adjacent Wild **deferred**; **wired** absorb: reposition ally |
+| Command | **Wired** roll: reposition ally; absorb remove 1 Shield (enemy move **banned**) |
+| Impact | **Wired** roll next attack +1 + absorb next attack +2 (roll push **banned**) |
 | Formation | Roll: frontline Energy; absorb: +Defense |
 | Venom | **Wired** roll: apply toxin (choose enemy); absorb: next hit +1 open |
 | Spores | Roll: extra toxin if already toxined; absorb: heal toxined ally |

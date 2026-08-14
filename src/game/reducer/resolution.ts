@@ -1,5 +1,6 @@
 import { getCreatureDefinition } from "../content/creatures.js";
-import type { EffectDefinition, TargetSelector } from "../model/effects.js";
+import type { BattlefieldPosition } from "../model/creatures.js";
+import type { EffectCondition, EffectDefinition, TargetSelector } from "../model/effects.js";
 import {
   asEffectInstanceId,
   asSymbolInstanceId,
@@ -10,7 +11,7 @@ import {
 } from "../model/ids.js";
 import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
-import { opponentOf } from "../rules/creatures.js";
+import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { hasLegalForgeFacesChoice } from "../rules/faces.js";
 import { discardTokensInAttributeOrder, totalTokens } from "../rules/tokens.js";
 import { isRitualNegatableLinkKind } from "./chain.js";
@@ -23,7 +24,11 @@ import {
   drawCards,
   releaseEquipmentOn,
   searchableDeckCards,
+  setCreaturePosition,
+  swapCreaturePositions,
 } from "./zones.js";
+
+type CreatureChoiceFilter = "ally" | "enemy" | "allied-frontline";
 
 /**
  * Effect resolution (SPDD §17). Effects are drained from an explicit stack
@@ -37,6 +42,10 @@ export function drainResolution(draft: Draft): void {
   let steps = 0;
 
   while (draft.resolutionStack.length > 0) {
+    if (draft.status === "finished") {
+      draft.resolutionStack = [];
+      return;
+    }
     if (steps >= draft.config.maxResolutionSteps) {
       draft.resolutionStack = [];
       emit(draft, { type: "resolution-aborted", error: "RESOLUTION_LIMIT_EXCEEDED" });
@@ -128,6 +137,7 @@ function resolveTarget(
     case "most-shielded-enemy":
       return mostShieldedEnemy(draft, pending.controllerId);
     case "choose-ally":
+    case "choose-allied-frontline":
     case "choose-enemy":
     case "choose-opponent-ritual":
     case "declared-ritual":
@@ -167,13 +177,26 @@ function opposingRitualIds(draft: Draft, controllerId: PlayerId): readonly CardI
   return enemy.ritual.filter((id) => draft.cards[id]?.zone === "ritual");
 }
 
-function choiceFilterFor(selector: TargetSelector): "ally" | "enemy" | null {
+function choiceFilterFor(selector: TargetSelector): CreatureChoiceFilter | null {
   if (selector.kind === "choose-ally") return "ally";
+  if (selector.kind === "choose-allied-frontline") return "allied-frontline";
   if (selector.kind === "choose-enemy") return "enemy";
   return null;
 }
 
+function selectorOf(effect: EffectDefinition): TargetSelector | null {
+  if (effect.type === "swap-positions") return effect.with;
+  if ("target" in effect && typeof effect.target === "object") return effect.target;
+  return null;
+}
+
 function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
+  if (effect.type === "swap-positions") {
+    return { ...effect, with: { kind: "declared-target" } };
+  }
+  if (effect.type === "reposition-creature") {
+    return { ...effect, target: { kind: "declared-target" } };
+  }
   if (!("target" in effect) || typeof effect.target !== "object") return effect;
   return { ...effect, target: { kind: "declared-target" } } as EffectDefinition;
 }
@@ -181,6 +204,93 @@ function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
 function withDeclaredRitual(effect: EffectDefinition): EffectDefinition {
   if (!("target" in effect) || typeof effect.target !== "object") return effect;
   return { ...effect, target: { kind: "declared-ritual" } } as EffectDefinition;
+}
+
+function legalCreaturesForFilter(
+  draft: Draft,
+  controllerId: PlayerId,
+  filter: CreatureChoiceFilter,
+): readonly CreatureId[] {
+  if (filter === "enemy") {
+    return livingCreaturesOf(draft, opponentOf(draft, controllerId)).map((c) => c.id);
+  }
+  const allies = livingCreaturesOf(draft, controllerId);
+  if (filter === "allied-frontline") {
+    return allies.filter((c) => c.position === "frontline").map((c) => c.id);
+  }
+  return allies.map((c) => c.id);
+}
+
+function openCreatureChoice(
+  draft: Draft,
+  pending: PendingEffect,
+  filter: CreatureChoiceFilter,
+  deferredEffect: EffectDefinition,
+): boolean {
+  if (legalCreaturesForFilter(draft, pending.controllerId, filter).length === 0) {
+    return false;
+  }
+  draft.pendingDecision = {
+    type: "choose-creature",
+    controllerId: pending.controllerId,
+    filter,
+    deferred: { ...pending, effect: deferredEffect },
+  };
+  emit(draft, {
+    type: "choose-creature-started",
+    playerId: pending.controllerId,
+    filter,
+  });
+  return true;
+}
+
+function evaluateCondition(draft: Draft, pending: PendingEffect, when: EffectCondition): boolean {
+  switch (when.type) {
+    case "source-position": {
+      const creature =
+        pending.sourceCreatureId === null ? undefined : draft.creatures[pending.sourceCreatureId];
+      return creature?.position === when.position;
+    }
+  }
+}
+
+function applyReposition(draft: Draft, pending: PendingEffect, creatureId: CreatureId): boolean {
+  const creature = draft.creatures[creatureId];
+  if (creature === undefined || creature.defeated) return false;
+  // Ally-only: never reposition an opposing creature.
+  if (creature.ownerId !== pending.controllerId) return false;
+
+  const to: BattlefieldPosition = creature.position === "frontline" ? "back" : "frontline";
+  if (to === "back") {
+    setCreaturePosition(draft, creatureId, "back");
+    return false;
+  }
+
+  const front = livingCreaturesOf(draft, creature.ownerId).filter(
+    (candidate) => candidate.position === "frontline",
+  );
+  if (front.length < draft.config.frontlineSlots) {
+    setCreaturePosition(draft, creatureId, "frontline");
+    return false;
+  }
+  if (front.length === 0) return false;
+
+  draft.pendingDecision = {
+    type: "choose-creature",
+    controllerId: pending.controllerId,
+    filter: "allied-frontline",
+    deferred: {
+      ...pending,
+      sourceCreatureId: creatureId,
+      effect: { type: "swap-positions", with: { kind: "declared-target" } },
+    },
+  };
+  emit(draft, {
+    type: "choose-creature-started",
+    playerId: pending.controllerId,
+    filter: "allied-frontline",
+  });
+  return true;
 }
 
 /** Returns true when resolution must wait on a player choice. */
@@ -207,20 +317,17 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       });
       return true;
     }
+  }
 
-    const filter = choiceFilterFor(effect.target);
+  const selector = selectorOf(effect);
+  if (selector !== null) {
+    const filter = choiceFilterFor(selector);
     if (filter !== null) {
-      draft.pendingDecision = {
-        type: "choose-creature",
-        controllerId: pending.controllerId,
-        filter,
-        deferred: { ...pending, effect: withDeclaredTarget(effect) },
-      };
-      emit(draft, {
-        type: "choose-creature-started",
-        playerId: pending.controllerId,
-        filter,
-      });
+      const opened = openCreatureChoice(draft, pending, filter, withDeclaredTarget(effect));
+      if (!opened) {
+        emit(draft, { type: "effect-resolved", effectId: pending.id, effectType: effect.type });
+        return false;
+      }
       return true;
     }
   }
@@ -476,6 +583,39 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         target: effect.target,
       });
       return true;
+    }
+    case "swap-positions": {
+      const otherId = resolveTarget(draft, pending, effect.with);
+      if (otherId === null || pending.sourceCreatureId === null) return false;
+      const source = draft.creatures[pending.sourceCreatureId];
+      const other = draft.creatures[otherId];
+      if (source === undefined || other === undefined) return false;
+      if (source.defeated || other.defeated) return false;
+      // Ally-only: never move an opposing creature via swap.
+      if (source.ownerId !== other.ownerId) return false;
+      if (source.ownerId !== pending.controllerId) return false;
+      swapCreaturePositions(draft, pending.sourceCreatureId, otherId);
+      return false;
+    }
+    case "reposition-creature": {
+      const targetId = resolveTarget(draft, pending, effect.target);
+      if (targetId === null) return false;
+      return applyReposition(draft, pending, targetId);
+    }
+    case "conditional": {
+      if (evaluateCondition(draft, pending, effect.when)) {
+        for (const child of [...effect.then].reverse()) {
+          pushEffect(
+            draft,
+            pending.controllerId,
+            child,
+            pending.sourceCreatureId,
+            pending.declaredTargetCreatureId,
+            pending.declaredTargetCardInstanceId,
+          );
+        }
+      }
+      return false;
     }
   }
 }

@@ -25,6 +25,7 @@ function link(kind: ChainLink["kind"], negated = false): ChainLink {
     attackId: null,
     attackTargetId: null,
     attackEffect: null,
+    attackFollowUpEffects: [],
     ritualDuration: null,
     negated,
   };

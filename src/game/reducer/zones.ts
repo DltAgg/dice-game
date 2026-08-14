@@ -381,3 +381,23 @@ export function setCreaturePosition(
   patchCreature(draft, creatureId, { position: to });
   fireOnChangePosition(draft, creatureId, from, to);
 }
+
+/**
+ * Swap two living creatures via `setCreaturePosition`. Same creature or same
+ * position is a no-op.
+ */
+export function swapCreaturePositions(
+  draft: Draft,
+  firstId: CreatureId,
+  secondId: CreatureId,
+): void {
+  if (firstId === secondId) return;
+  const first = draft.creatures[firstId];
+  const second = draft.creatures[secondId];
+  if (first === undefined || second === undefined) return;
+  if (first.defeated || second.defeated) return;
+  const firstTo = second.position;
+  const secondTo = first.position;
+  setCreaturePosition(draft, firstId, firstTo);
+  setCreaturePosition(draft, secondId, secondTo);
+}

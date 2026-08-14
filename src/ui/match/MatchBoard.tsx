@@ -228,6 +228,9 @@ export function MatchBoard() {
       if (isOnline && localPlayerId !== null && pending.controllerId !== localPlayerId) return;
       if (pending.controllerId !== activeId) return;
       if (pending.filter === "ally" && creature.ownerId !== activeId) return;
+      if (pending.filter === "allied-frontline") {
+        if (creature.ownerId !== activeId || creature.position !== "frontline") return;
+      }
       if (pending.filter === "enemy" && creature.ownerId === activeId) return;
       tryDispatch({
         type: "RESOLVE_CHOOSE_CREATURE",
@@ -1109,9 +1112,13 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   }
   if (state.pendingDecision?.type === "choose-creature") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a creature.";
-    return state.pendingDecision.filter === "ally"
-      ? "Choose one of your creatures (overload / effect target)."
-      : "Choose an enemy creature (overload / effect target).";
+    if (state.pendingDecision.filter === "ally") {
+      return "Choose one of your creatures (overload / effect target).";
+    }
+    if (state.pendingDecision.filter === "allied-frontline") {
+      return "Choose one of your frontline creatures to swap with.";
+    }
+    return "Choose an enemy creature (overload / effect target).";
   }
   if (state.pendingDecision?.type === "choose-ritual") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a ritual.";
@@ -2808,26 +2815,34 @@ function ChooseCreatureModal({
   onPick,
 }: {
   state: GameState;
-  filter: "ally" | "enemy";
+  filter: "ally" | "enemy" | "allied-frontline";
   controllerId: PlayerId;
   onPick: (creatureId: CreatureId) => void;
 }) {
   const ownerId =
-    filter === "ally"
-      ? controllerId
-      : controllerId === MATCH_P1
+    filter === "enemy"
+      ? controllerId === MATCH_P1
         ? MATCH_P2
-        : MATCH_P1;
-  const creatures = livingCreaturesOf(state, ownerId);
+        : MATCH_P1
+      : controllerId;
+  const creatures = livingCreaturesOf(state, ownerId).filter((creature) =>
+    filter === "allied-frontline" ? creature.position === "frontline" : true,
+  );
+  const title =
+    filter === "ally"
+      ? "your creature"
+      : filter === "allied-frontline"
+        ? "a frontline ally"
+        : "an enemy";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Choose {filter === "ally" ? "your creature" : "an enemy"}
+          Choose {title}
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          An on-roll overload needs a target (this fired when the face was rolled). Pick a creature below or on the board.
+          An effect needs a target. Pick a creature below or on the board.
         </p>
         <ul className="mt-4 space-y-2">
           {creatures.map((creature) => {

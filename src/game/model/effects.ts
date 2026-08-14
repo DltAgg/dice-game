@@ -1,5 +1,6 @@
 import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
+import type { BattlefieldPosition } from "./creatures.js";
 import type { FaceKind } from "./dice.js";
 import type { SymbolType } from "./symbols.js";
 
@@ -125,7 +126,37 @@ export type EffectDefinition =
       readonly kind: FaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
+    }
+  /**
+   * Swap the source creature with `with` via `setCreaturePosition` (twice).
+   * Ally-only: opposing targets whiff. Same-position swaps are no-ops.
+   * Enemy push is banned — never author `with: choose-enemy`.
+   */
+  | {
+      readonly type: "swap-positions";
+      readonly with: TargetSelector;
+    }
+  /**
+   * Toggle an ally between frontline and back. If moving to frontline would
+   * exceed `frontlineSlots`, the controller chooses a living frontline ally to
+   * swap with. Ally-only.
+   */
+  | {
+      readonly type: "reposition-creature";
+      readonly target: TargetSelector;
+    }
+  /** Run `then` only when `when` holds (War Minotaur back-row swap). */
+  | {
+      readonly type: "conditional";
+      readonly when: EffectCondition;
+      readonly then: readonly EffectDefinition[];
     };
+
+/** Conditions for `conditional` effects. Grow only when a proving card needs it. */
+export type EffectCondition = {
+  readonly type: "source-position";
+  readonly position: BattlefieldPosition;
+};
 
 /**
  * Targets are resolved against the resolution context rather than chosen at
@@ -150,6 +181,8 @@ export type TargetSelector =
   | { readonly kind: "most-shielded-enemy" }
   /** Pause for the controller to name one of their living creatures. */
   | { readonly kind: "choose-ally" }
+  /** Pause for the controller to name one living allied frontline creature. */
+  | { readonly kind: "choose-allied-frontline" }
   /** Pause for the controller to name one opposing living creature. */
   | { readonly kind: "choose-enemy" }
   /**

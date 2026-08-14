@@ -142,11 +142,11 @@ is used.
 | 4 | War Banner | Equipment / Wild | 1 Natural Wild, your die | On basic attack, allied creature to the left: deal +1 damage. |
 | 4 | Alpha's Hide | Equipment / Wild | 1 Natural Wild, your die | On special attack: generate Wild on another card. |
 | 5 | Toxic Heart | Equipment / Toxin | 1 Synthetic Toxin, your die | On toxin damage: heal 1 on this creature. |
-| 3 | Hunter's Collar | Equipment / Wild | 1 Natural Wild, your die | On change position: generate Martial. |
+| 3 | Hunter's Collar | Equipment / Wild | 1 Natural Wild, your die | On change position: generate 1 Martial. |
 | 5 | Insignia of Command | Equipment / Wild | 1 Natural Wild, your die | *Martial creatures only.* On attack, once per turn: another ally may reposition. |
 | 2 | War Axe | Equipment / Martial | 1 Natural Martial, your die | On basic attack: deal +1 damage. |
 | 2 | Hunting Armour | Equipment / Wild | 1 Natural Wild, your die | On take damage, once per turn: reduce it by 1. |
-| 3 | Twin Blades | Equipment / Martial | 1 Natural Martial, your die | On basic attack: push the target one position. |
+| 3 | Twin Blades | Equipment / Martial | 1 Natural Martial, your die | On basic attack: remove 1 Shield from the target. |
 | 3 | Wild Carapace | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: heal 1. |
 
 ### Control deck

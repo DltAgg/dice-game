@@ -577,6 +577,26 @@ Token **cap** remains OPEN.
 
 ---
 
+### Optional ally swap / reposition without a decline action
+
+**Status:** `ASSUMED` · 2026-08-14 · `swap-positions` / `reposition-creature`
+
+Print often says “you may swap/reposition”. The engine has no cancel /
+decline action for creature choices today.
+
+**ASSUMED:** when at least one legal ally (or self) move exists, open
+`choose-creature` and the controller must name a legal target; when none
+exist, the effect whiffs. Do not invent `creatureId: null` decline unless
+design reopens optional choices.
+
+Garuda Dive swap is queued as attack `followUpEffects` (after the damage
+effect resolves on the chain). Print may still say “On deal damage”; if
+Shields reduce damage to 0 the follow-up still runs under this assumption.
+
+**Banned forever:** any effect that moves an **enemy** creature (push).
+
+---
+
 ### First-player advantage
 
 **Status:** `OPEN` — an observation, not yet a question anyone has to answer

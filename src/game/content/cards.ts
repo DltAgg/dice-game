@@ -681,7 +681,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "On absorb Wild: this creature may move 1 position.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["wild"],
+          effects: [
+            { type: "reposition-creature", target: { kind: "source-creature" } },
+          ],
+        },
+      ],
     },
   }),
   card({
@@ -763,7 +771,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On change position: generate Martial.",
+    rulesText: "On change position: generate 1 Martial.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -788,7 +796,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["martial"],
-      abilities: [],
+      abilities: [
+        {
+          type: "on-attack",
+          oncePerTurn: true,
+          effects: [
+            { type: "reposition-creature", target: { kind: "choose-ally" } },
+          ],
+        },
+      ],
     },
   }),
   card({
@@ -819,10 +835,18 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On basic attack: push the target one position.",
+    rulesText: "On basic attack: remove 1 Shield from the target.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-attack",
+          attackKinds: ["basic"],
+          effects: [
+            { type: "remove-shield", amount: 1, target: { kind: "declared-target" } },
+          ],
+        },
+      ],
     },
   }),
   card({
