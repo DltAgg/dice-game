@@ -71,6 +71,10 @@ export const TWIN_BLADES: CardId = asCardId("card-twin-blades");
 export const WILD_CARAPACE: CardId = asCardId("card-wild-carapace");
 export const RATCHET: CardId = asCardId("card-ratchet");
 export const ASSEMBLY_LINE: CardId = asCardId("card-assembly-line");
+export const GOVERNOR: CardId = asCardId("card-governor");
+export const SPARE_COG: CardId = asCardId("card-spare-cog");
+export const DIE_PRESS: CardId = asCardId("card-die-press");
+export const FOUNDRY: CardId = asCardId("card-foundry");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -856,6 +860,77 @@ const DEFINITIONS: readonly CardDefinition[] = [
           kind: "synthetic",
           attribute: "mechanical",
           target: "own-die",
+        },
+      ],
+    },
+  }),
+  card({
+    id: GOVERNOR,
+    name: "Governor",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["overload"],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Can only overload a Mechanical face.\nOn roll: generate Mechanical.",
+    overload: {
+      faceSymbols: ["mechanical"],
+      onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+    },
+  }),
+  card({
+    id: SPARE_COG,
+    name: "Spare Cog",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Generate 1 Mechanical.",
+    effect: {
+      effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+    },
+  }),
+  card({
+    id: DIE_PRESS,
+    name: "Die Press",
+    energyCost: 3,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Forge 2 Synthetic Mechanical faces on your die.",
+    effect: {
+      requires: { mechanical: 2 },
+      effects: [
+        {
+          type: "forge-faces",
+          faces: 2,
+          kind: "synthetic",
+          attribute: "mechanical",
+          target: "own-die",
+        },
+      ],
+    },
+  }),
+  card({
+    id: FOUNDRY,
+    name: "Foundry",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["continuous"],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "On absorb Mechanical: gain 1 Energy.",
+    ritual: {
+      activeWhen: { mechanical: 2 },
+      effects: [],
+      standingAbilities: [
+        {
+          type: "on-absorb",
+          symbols: ["mechanical"],
+          absorberRelation: "ally",
+          effects: [{ type: "gain-energy", amount: 1 }],
         },
       ],
     },

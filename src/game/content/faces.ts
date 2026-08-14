@@ -103,6 +103,7 @@ export const GEAR: FaceCardId = asFaceCardId("face-synthetic-gear");
 export const CATALYST: FaceCardId = asFaceCardId("face-synthetic-catalyst");
 export const OVERCHARGE: FaceCardId = asFaceCardId("face-synthetic-overcharge");
 export const FLYWHEEL: FaceCardId = asFaceCardId("face-synthetic-flywheel");
+export const PISTON: FaceCardId = asFaceCardId("face-synthetic-piston");
 export const SHADOW_ECHO: FaceCardId = asFaceCardId("face-synthetic-shadow-echo");
 export const DRAIN: FaceCardId = asFaceCardId("face-synthetic-drain");
 export const SACRIFICE: FaceCardId = asFaceCardId("face-synthetic-sacrifice");
@@ -503,6 +504,16 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     },
   ),
   namedSynthetic(
+    PISTON,
+    "Piston",
+    "mechanical",
+    "On roll: generate Mechanical.\nOn absorb: gain 1 Energy.",
+    {
+      onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      onAbsorb: [{ type: "gain-energy", amount: 1 }],
+    },
+  ),
+  namedSynthetic(
     SHADOW_ECHO,
     "Shadow Echo",
     "darkness",
@@ -563,6 +574,7 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[CATALYST]!,
   FACE_CARDS[OVERCHARGE]!,
   FACE_CARDS[FLYWHEEL]!,
+  FACE_CARDS[PISTON]!,
   FACE_CARDS[SHADOW_ECHO]!,
   FACE_CARDS[DRAIN]!,
   FACE_CARDS[SACRIFICE]!,

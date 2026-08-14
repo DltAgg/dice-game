@@ -196,13 +196,18 @@ Corruption in that dump and are now Wild / Wild / Martial.
 
 ### Mechanical assembly (authored)
 
-First Mechanical engine-construction package. Not in the Figma Aggro / Control
-lists; catalogue-only until a combo loadout is requested.
+First Mechanical engine-construction package (absorb-vs-pool: Ratchet / Foundry
+want absorb; Governor / Spare Cog / Die Press want the pool). Not in the Figma
+Aggro / Control lists; catalogue-only until a combo loadout is requested.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Ratchet | Tactic / Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: generate Mechanical. |
 | 3 | Assembly Line | Ritual / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
+| 2 | Governor | Tactic / Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: generate Mechanical. |
+| 2 | Spare Cog | Tactic / Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. |
+| 3 | Die Press | Tactic / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
+| 3 | Foundry | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On absorb Mechanical: gain 1 Energy. |
 
 ## What this slice implements
 
