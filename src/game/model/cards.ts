@@ -257,8 +257,9 @@ export interface CardDefinition {
   readonly type: CardType;
   readonly subtypes: readonly CardSubtype[];
   /**
-   * The card's own attribute, which is *not* necessarily the attribute it
-   * forges — Eternal Darkness is Arcane and forges Darkness.
+   * The card's own attribute. Current catalogue cards forge this same
+   * attribute (`forge.attribute`). The two fields stay separate so a future
+   * splash forge is still representable.
    */
   readonly attribute: Attribute;
   readonly forge: ForgeRegion;

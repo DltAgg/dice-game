@@ -219,8 +219,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 3,
     type: "tactic",
     subtypes: ["equipment"],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
     rulesText: "On deal damage: apply 1 Toxin marker.",
     equipment: {
       mayTargetOpponent: false,
@@ -238,7 +238,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 5,
     type: "ritual",
     subtypes: ["instant"],
-    attribute: "arcane",
+    attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText: "Choose up to 3 cards in your graveyard and return them to your hand.",
     ritual: {
@@ -330,7 +330,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     type: "tactic",
     subtypes: ["overload"],
     attribute: "corruption",
-    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText: "Can only overload an Arcane face.\nOn roll: generate 1 additional Arcane.",
     overload: {
       faceSymbols: ["arcane"],
@@ -546,8 +546,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
     rulesText: "On roll: generate Martial.",
     overload: {
       onRoll: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
@@ -559,8 +559,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
     rulesText: "On roll: the next attack this turn deals +1 damage.",
     overload: {
       onRoll: [{ type: "next-attack-bonus", amount: 1 }],
@@ -572,8 +572,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
     rulesText: "Can only overload a Toxin face.\nOn roll: all attacks this turn apply 1 Toxin marker.",
     overload: {
       faceSymbols: ["toxin"],
@@ -586,8 +586,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
     rulesText: "Can only overload a Toxin face.\nOn absorb: heal 1.",
     overload: {
       faceSymbols: ["toxin"],
@@ -601,8 +601,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
-    attribute: "corruption",
-    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
     rulesText: "Can only overload a Natural Wild face.\nOn absorb: generate Wild.",
     overload: {
       faceSymbols: ["wild"],
@@ -617,8 +617,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
-    attribute: "corruption",
-    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
     rulesText:
       "Can only overload a Natural Wild face.\n" +
       "On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures.",
@@ -634,8 +634,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "tactic",
     subtypes: ["overload"],
-    attribute: "corruption",
-    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
     rulesText:
       "Can only overload a Natural Martial face.\nOn absorb: your attacks this turn ignore 2 Shield.",
     overload: {
@@ -665,7 +665,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     type: "ritual",
     subtypes: ["continuous"],
     attribute: "toxin",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
     rulesText: "On special attack: apply 1 Toxin marker.",
     ritual: {
       activeWhen: { wild: 1, toxin: 1 },
@@ -716,8 +716,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 5,
     type: "tactic",
     subtypes: ["equipment"],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
     rulesText: "On toxin damage: heal 1 on this creature.",
     equipment: {
       mayTargetOpponent: false,

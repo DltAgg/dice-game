@@ -71,8 +71,12 @@ Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
 cumulative (`Arcane + Corruption + Corruption`), absorbed onto the ritual during
 absorption — not auto-from the pool.
 
-The card’s **attribute** and the **forge attribute** are independent (Eternal
-Darkness is Arcane, forges Darkness).
+Current catalogue cards **forge their own attribute**. Dual-kind → typically
+`kind: "natural"`; synthetic-only (Toxin, Mechanical, Corruption, Darkness) →
+always `kind: "synthetic"`. Overload/equip gates and generated symbols may
+still splash (Latent Corruption overloads Arcane; Hunter's Collar generates
+Martial). The two fields remain independent in the model if a future card
+needs a true forge splash.
 
 ## Face-kind policy
 
