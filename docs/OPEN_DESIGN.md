@@ -330,14 +330,20 @@ A Ritual is played onto the engine area, not resolved from hand like an Instant:
 
 | Orientation | Visual | Meaning |
 |---|---|---|
-| `preparing` | tapped | Waiting for its `[Active when: …]` condition |
+| `preparing` | tapped | Waiting for Active-when symbols absorbed onto it |
 | `ready` | untapped | Condition met; may be activated |
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
-At the start of your turn, exhausted rituals return to ready if still active,
-and preparing ones flip to ready once their condition is met. Instant and
-reaction rituals leave for the graveyard after one activation; only
-`continuous` rituals stay and exhaust.
+Rituals are placed empty. During absorption the owner may assign rolled
+attribute symbols to a ritual (same window as creature absorb); each attribute
+may receive at most one pip per turn toward printed `Attr + Attr` gates. Symbols
+spent this way are consumed and never reach the engine pool. Rituals with no
+`[Active when: …]` become ready as soon as they hit the field.
+
+At the start of your turn, exhausted rituals return to preparing (progress
+cleared) and must be fueled again; preparing ones flip to ready once their
+banked progress meets the gate. Instant and reaction rituals leave for the
+graveyard after one activation; only `continuous` rituals stay and exhaust.
 
 ### Reactions use a Yu-Gi-Oh style chain
 

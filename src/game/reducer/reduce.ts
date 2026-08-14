@@ -24,7 +24,6 @@ import {
   type TurnPhase,
 } from "../model/state.js";
 import { isAttributeSymbol, requirementEntries, type AttributeTokens } from "../model/symbols.js";
-import type { Attribute } from "../model/attributes.js";
 import { createRng, type RNG } from "../rng/rng.js";
 import {
   attackDamageBonus,
@@ -42,7 +41,7 @@ import {
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
 } from "../rules/faces.js";
-import { availableSymbolCounts, planConsumption } from "../rules/symbols.js";
+import { planConsumption } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
 import { addToken, holdsTokens, removeTokens } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
@@ -158,6 +157,8 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return rollDice(draft, action.playerId, rng);
     case "ABSORB_SYMBOL":
       return absorbSymbol(draft, action.playerId, action.creatureId, action.symbolId);
+    case "ABSORB_SYMBOL_TO_RITUAL":
+      return absorbSymbolToRitual(draft, action.playerId, action.cardInstanceId, action.symbolId);
     case "RESOLVE_ENGINE_ABILITY":
       return resolveEngineAbility(draft, action.playerId, action.creatureId, action.abilityId);
     case "ATTACK":
@@ -511,6 +512,63 @@ function absorbSymbol(
 
   queueAbsorbTriggers(draft, playerId, creatureId, symbol.symbol, symbol.sourceDieId);
   drainResolution(draft);
+  return null;
+}
+
+/**
+ * Spend a rolled attribute symbol on a field ritual's Active-when gate.
+ * Same absorption window as creature absorb; the symbol is consumed (not
+ * banked on a creature) and never reaches the engine pool.
+ */
+function absorbSymbolToRitual(
+  draft: Draft,
+  playerId: PlayerId,
+  cardInstanceId: CardInstanceId,
+  symbolId: SymbolInstanceId,
+): GameError | null {
+  if (draft.phase !== "absorption") return "INVALID_PHASE";
+
+  const symbol = draft.symbols[symbolId];
+  if (symbol === undefined) return "UNKNOWN_ENTITY";
+  if (symbol.ownerId !== playerId) return "INVALID_TARGET";
+  if (symbol.status !== "rolled") return "SYMBOL_UNAVAILABLE";
+  if (!isAttributeSymbol(symbol.symbol)) return "INVALID_TARGET";
+
+  const card = draft.cards[cardInstanceId];
+  if (card === undefined) return "UNKNOWN_ENTITY";
+  if (card.ownerId !== playerId || card.zone !== "ritual") return "CARD_NOT_AVAILABLE";
+  if (card.ritualOrientation === "exhausted") return "CARD_NOT_AVAILABLE";
+
+  const region = getCard(card.cardId)?.ritual;
+  if (region?.activeWhen === undefined) return "CARD_NOT_AVAILABLE";
+
+  const attribute = symbol.symbol;
+  const needed = region.activeWhen[attribute] ?? 0;
+  if (needed < 1) return "INVALID_TARGET";
+
+  const progress = card.ritualProgress ?? {};
+  const credited = card.ritualProgressCreditedThisTurn ?? [];
+  if (credited.includes(attribute)) return "SYMBOL_UNAVAILABLE";
+  if ((progress[attribute] ?? 0) >= needed) return "INVALID_TARGET";
+
+  draft.symbols[symbolId] = { ...symbol, status: "consumed", absorbedByCreatureId: null };
+  emit(draft, {
+    type: "symbols-consumed",
+    symbolIds: [symbolId],
+    reason: "ritual-progress",
+  });
+
+  const nextProgress: AttributeTokens = {
+    ...progress,
+    [attribute]: (progress[attribute] ?? 0) + 1,
+  };
+  draft.cards[cardInstanceId] = {
+    ...card,
+    ritualProgress: nextProgress,
+    ritualProgressCreditedThisTurn: [...credited, attribute],
+  };
+
+  refreshRitualOrientations(draft, playerId);
   return null;
 }
 
@@ -1042,47 +1100,24 @@ function activateRitual(
 }
 
 /**
- * Credit available symbols toward ritual Active-when progress. Printed gates
- * use `Attr + Attr` (cumulative): at most one pip per attribute per turn.
- * Preparing → ready when progress meets the gate; ready rituals stay ready
- * even after the pool empties.
+ * Flip preparing → ready when banked Active-when progress meets the gate.
+ * Progress itself is only gained via ABSORB_SYMBOL_TO_RITUAL (or cards with
+ * no Active when, which are ready as soon as they hit the field).
  */
-function refreshRituals(draft: Draft, playerId: PlayerId): void {
+function refreshRitualOrientations(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
-
-  const available = availableSymbolCounts(draft, playerId);
 
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
     const region = card === undefined ? undefined : getCard(card.cardId)?.ritual;
     if (card === undefined || region === undefined) continue;
-    if (card.ritualOrientation === "exhausted") continue;
+    if (card.ritualOrientation !== "preparing") continue;
 
-    let progress: AttributeTokens = { ...(card.ritualProgress ?? {}) };
-    let credited: Attribute[] = [...(card.ritualProgressCreditedThisTurn ?? [])];
-
-    if (region.activeWhen !== undefined) {
-      for (const [attribute, needed] of requirementEntries(region.activeWhen)) {
-        if (credited.includes(attribute)) continue;
-        if ((progress[attribute] ?? 0) >= needed) continue;
-        if ((available[attribute] ?? 0) < 1) continue;
-        progress = { ...progress, [attribute]: (progress[attribute] ?? 0) + 1 };
-        credited = [...credited, attribute];
-      }
-    }
-
-    draft.cards[cardInstanceId] = {
-      ...card,
-      ritualProgress: progress,
-      ritualProgressCreditedThisTurn: credited,
-    };
-
+    const progress = card.ritualProgress ?? {};
     const active =
       region.activeWhen === undefined || ritualProgressMeets(progress, region.activeWhen);
-    const orientation = draft.cards[cardInstanceId]?.ritualOrientation;
-
-    if (orientation === "preparing" && active) {
+    if (active) {
       setRitualOrientation(draft, cardInstanceId, "ready");
     }
   }
@@ -1302,7 +1337,7 @@ function conductLink(draft: Draft, link: ChainLink): void {
       if (link.cardInstanceId === null) return;
       moveCard(draft, link.cardInstanceId, "ritual");
       placeRitual(draft, link.cardInstanceId);
-      refreshRituals(draft, link.controllerId);
+      refreshRitualOrientations(draft, link.controllerId);
       return;
     }
     case "equip-attach": {
@@ -1407,13 +1442,13 @@ function enterPhase(draft: Draft, phase: TurnPhase): GameError | null {
   // Closing the absorption window releases every symbol the creatures did not
   // take to the engine. Absorbed symbols are deliberately left behind.
   if (phase === "engine") {
+    // Rolled leftovers become the engine pool. Ritual Active-when is not
+    // auto-credited from this pool — players assign symbols during absorption.
     for (const symbol of Object.values(draft.symbols)) {
       if (symbol.status === "rolled") {
         draft.symbols[symbol.id] = { ...symbol, status: "available" };
       }
     }
-    // Rituals check Active when against the pool that just became available.
-    refreshRituals(draft, draft.activePlayerId);
   }
 
   emit(draft, { type: "phase-entered", phase });
@@ -1459,8 +1494,8 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
 
   // Toxin counters tick at the start of the creature's owner's turn.
   tickToxins(draft, track.holderId);
-  // Exhausted once-per-turn rituals come off diagonal; Active when is checked
-  // later, when the engine phase opens the symbol pool.
+  // Exhausted once-per-turn rituals come off diagonal; Active when is met by
+  // absorbing symbols onto them during absorption, not from the engine pool.
   resetExhaustedRituals(draft, track.holderId);
 
   // Drawn on entering your own turn, so the opening hand is not topped up
@@ -1533,7 +1568,7 @@ function resetCombatCounters(draft: Draft): void {
 function consumeSymbols(
   draft: Draft,
   symbolIds: readonly SymbolInstanceId[],
-  reason: "engine-ability",
+  reason: "engine-ability" | "ritual-progress",
 ): void {
   for (const id of symbolIds) {
     const symbol = draft.symbols[id];

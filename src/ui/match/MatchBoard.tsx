@@ -714,6 +714,15 @@ export function MatchBoard() {
         onRitualActivate={(id) =>
           tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
         }
+        onRitualAbsorb={(id) => {
+          if (intent.kind !== "absorb") return;
+          tryDispatch({
+            type: "ABSORB_SYMBOL_TO_RITUAL",
+            playerId: activeId,
+            cardInstanceId: id,
+            symbolId: intent.symbolId,
+          });
+        }}
         onEngineAbility={(creatureId, abilityId) =>
           tryDispatch({
             type: "RESOLVE_ENGINE_ABILITY",
@@ -746,6 +755,15 @@ export function MatchBoard() {
         onRitualActivate={(id) =>
           tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
         }
+        onRitualAbsorb={(id) => {
+          if (intent.kind !== "absorb") return;
+          tryDispatch({
+            type: "ABSORB_SYMBOL_TO_RITUAL",
+            playerId: activeId,
+            cardInstanceId: id,
+            symbolId: intent.symbolId,
+          });
+        }}
         onEngineAbility={(creatureId, abilityId) =>
           tryDispatch({
             type: "RESOLVE_ENGINE_ABILITY",
@@ -885,7 +903,7 @@ function hintFor(intent: Intent, state: GameState): string {
 
   switch (intent.kind) {
     case "absorb":
-      return "Click one of your creatures to absorb that symbol.";
+      return "Click one of your creatures or rituals to absorb that symbol.";
     case "attack":
       return intent.attackId === undefined
         ? "Choose an attack on the selected creature."
@@ -911,7 +929,7 @@ function hintFor(intent: Intent, state: GameState): string {
     case "roll":
       return "Dice roll automatically. Overloads on showing faces fire immediately (not in engine), once per die that shows them.";
     case "absorption":
-      return "Overloads already resolved on the roll. Select a rolled symbol to absorb, or leave it for the engine pool. Use the phase bar to skip ahead or end turn.";
+      return "Overloads already resolved on the roll. Select a rolled symbol to absorb onto a creature or ritual, or leave it for the engine pool. Use the phase bar to skip ahead or end turn.";
     case "engine":
       return "Spend available pool symbols on engine abilities (not absorbed tokens). Disabled abilities lack the matching pool symbol. Skip phases or end turn from the bar.";
     case "combat":
@@ -1010,6 +1028,7 @@ function Battlefield({
   onAttackChoose,
   onCancelAttack,
   onRitualActivate,
+  onRitualAbsorb,
   onEngineAbility,
 }: {
   state: GameState;
@@ -1022,6 +1041,7 @@ function Battlefield({
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
+  onRitualAbsorb: (cardInstanceId: CardInstanceId) => void;
   onEngineAbility: (creatureId: CreatureId, abilityId: AbilityId) => void;
 }) {
   const living = livingCreaturesOf(state, playerId);
@@ -1101,8 +1121,10 @@ function Battlefield({
               <RitualTile
                 key={card.id}
                 card={card}
-                canActivate={isActive && card.ritualOrientation === "ready"}
+                absorbArmed={absorbArmed && isActive}
+                canActivate={isActive && card.ritualOrientation === "ready" && !absorbArmed}
                 onActivate={() => onRitualActivate(card.id)}
+                onAbsorb={() => onRitualAbsorb(card.id)}
               />
             ))}
           </div>
@@ -1114,12 +1136,16 @@ function Battlefield({
 
 function RitualTile({
   card,
+  absorbArmed,
   canActivate,
   onActivate,
+  onAbsorb,
 }: {
   card: CardInstance;
+  absorbArmed: boolean;
   canActivate: boolean;
   onActivate: () => void;
+  onAbsorb: () => void;
 }) {
   const def = getCard(card.cardId);
   if (def === undefined) return null;
@@ -1136,6 +1162,7 @@ function RitualTile({
   const ready = card.ritualOrientation === "ready";
   const preparing = card.ritualOrientation === "preparing";
   const exhausted = card.ritualOrientation === "exhausted";
+  const canReceive = absorbArmed && !exhausted && def.ritual?.activeWhen !== undefined;
   const progress = card.ritualProgress ?? {};
   const progressLine =
     def.ritual?.activeWhen !== undefined
@@ -1148,11 +1175,13 @@ function RitualTile({
   return (
     <div
       className={
-        ready
-          ? "group relative w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
-          : preparing
-            ? "group relative w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
-            : "group relative w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
+        canReceive
+          ? "group relative w-44 rounded border border-[var(--accent)] bg-stone-900 p-2.5"
+          : ready
+            ? "group relative w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
+            : preparing
+              ? "group relative w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
+              : "group relative w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
       }
     >
       <div
@@ -1186,32 +1215,42 @@ function RitualTile({
         </div>
       </div>
 
-      <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
-      <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
-        {formatEnergyCost(def)}E · {def.subtypes.join("/") || "ritual"}
-      </p>
-      <p
-        className={
-          ready
-            ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--accent)]"
-            : preparing
-              ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-amber-200/80"
-              : exhausted
-                ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-stone-500"
-                : "mt-1 text-[0.65rem] uppercase tracking-wider text-stone-500"
-        }
+      <button
+        type="button"
+        className="w-full text-left"
+        disabled={!canReceive}
+        onClick={onAbsorb}
       >
-        {orientation}
-      </p>
-      {activeWhen !== null && (
-        <p className="mt-1 truncate text-[0.65rem] text-stone-400">{activeWhen}</p>
-      )}
-      {progressLine !== null && progressLine !== "" && (
-        <p className="mt-0.5 truncate text-[0.6rem] text-amber-200/70">{progressLine}</p>
-      )}
-      {durationLabel !== null && (
-        <p className="mt-0.5 text-[0.6rem] text-stone-600">{durationLabel}</p>
-      )}
+        <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
+        <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
+          {formatEnergyCost(def)}E · {def.subtypes.join("/") || "ritual"}
+        </p>
+        <p
+          className={
+            ready
+              ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--accent)]"
+              : preparing
+                ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-amber-200/80"
+                : exhausted
+                  ? "mt-1 text-[0.65rem] font-semibold uppercase tracking-wider text-stone-500"
+                  : "mt-1 text-[0.65rem] uppercase tracking-wider text-stone-500"
+          }
+        >
+          {orientation}
+        </p>
+        {activeWhen !== null && (
+          <p className="mt-1 truncate text-[0.65rem] text-stone-400">{activeWhen}</p>
+        )}
+        {progressLine !== null && progressLine !== "" && (
+          <p className="mt-0.5 truncate text-[0.6rem] text-amber-200/70">{progressLine}</p>
+        )}
+        {durationLabel !== null && (
+          <p className="mt-0.5 text-[0.6rem] text-stone-600">{durationLabel}</p>
+        )}
+        {canReceive && (
+          <p className="mt-1 text-[0.65rem] text-[var(--accent)]">Assign symbol</p>
+        )}
+      </button>
       <button
         type="button"
         className={`mt-2 w-full ${canActivate ? btnPrimary : `${btnClass} opacity-40`}`}

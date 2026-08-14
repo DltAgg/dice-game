@@ -310,9 +310,10 @@ export interface CardInstance {
   /** Set only while `zone === "ritual"`. */
   readonly ritualOrientation: RitualOrientation | null;
   /**
-   * Cumulative Active-when progress while `zone === "ritual"`. Attributes are
-   * banked across turns (printed `Arcane + Arcane`); at most one pip per
-   * attribute is credited each turn. Null outside the ritual zone.
+   * Cumulative Active-when progress while `zone === "ritual"`. Banked when the
+   * owner absorbs matching rolled symbols onto the ritual during absorption
+   * (same window as creature absorb). At most one pip per attribute per turn.
+   * Null outside the ritual zone.
    */
   readonly ritualProgress: AttributeTokens | null;
   /**

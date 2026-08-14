@@ -24,6 +24,16 @@ export type GameAction =
       readonly creatureId: CreatureId;
       readonly symbolId: SymbolInstanceId;
     }
+  /**
+   * Assign a rolled attribute symbol to a field ritual toward its
+   * `[Active when: …]` gate (same absorption window as creature absorb).
+   */
+  | {
+      readonly type: "ABSORB_SYMBOL_TO_RITUAL";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+      readonly symbolId: SymbolInstanceId;
+    }
   | {
       readonly type: "RESOLVE_ENGINE_ABILITY";
       readonly playerId: PlayerId;

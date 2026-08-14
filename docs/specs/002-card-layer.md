@@ -76,7 +76,7 @@ are two independent fields.
 
 | Form | Meaning | Appears on |
 |---|---|---|
-| `[Active when: Arcane + Arcane]` | Cumulative gate (one pip per attribute per turn) | Ritual |
+| `[Active when: Arcane + Arcane]` | Cumulative gate — absorb matching symbols onto the ritual (one pip per attribute per turn) | Ritual |
 | `[Requires: Arcane + Corruption]` | Gate on the effect | Instant |
 | `[Can only overload a Toxin face]` | Restricts the overload target | Overload |
 | `[This card may be equipped to a Martial creature]` | Restricts the equip target | Equipment |
