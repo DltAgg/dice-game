@@ -284,10 +284,12 @@ export function queueAbsorbTriggers(
   fireOnAbsorb(draft, creatureId, absorbingPlayerId, symbol, faceKind);
 
   if (faceCardId === undefined) return;
+  const die = sourceDieId === null ? undefined : draft.dice[sourceDieId];
+  const slotIndex = die?.rolledSlotIndex ?? null;
   // Absorbing creature is the face/overload source so `source-creature` targets
   // (e.g. Vital Spark prevent) resolve against the absorber.
-  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId);
-  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId);
+  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId, sourceDieId, slotIndex);
+  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId, sourceDieId, slotIndex);
 }
 
 function fireOnAbsorb(
@@ -335,11 +337,21 @@ function fireFaceOnAbsorb(
   controllerId: PlayerId,
   faceCardId: FaceCardId,
   absorbingCreatureId: CreatureId,
+  sourceDieId: DieId | null,
+  sourceSlotIndex: number | null,
 ): void {
   const face = getFaceCard(faceCardId);
   if (face === undefined || face.onAbsorb.length === 0) return;
   for (const effect of [...face.onAbsorb].reverse()) {
-    pushEffect(draft, controllerId, effect, absorbingCreatureId, null);
+    pushEffect(
+      draft,
+      controllerId,
+      effect,
+      absorbingCreatureId,
+      null,
+      sourceDieId,
+      sourceSlotIndex,
+    );
   }
 }
 
@@ -348,6 +360,8 @@ function fireOverloadsOnAbsorb(
   controllerId: PlayerId,
   faceCardId: FaceCardId,
   absorbingCreatureId: CreatureId,
+  sourceDieId: DieId | null,
+  sourceSlotIndex: number | null,
 ): void {
   const player = draft.players[controllerId];
   if (player === undefined) return;
@@ -357,7 +371,15 @@ function fireOverloadsOnAbsorb(
     if (card?.attachedToFaceCardId !== faceCardId) continue;
     const effects = getCard(card.cardId)?.overload?.onAbsorb ?? [];
     for (const effect of [...effects].reverse()) {
-      pushEffect(draft, controllerId, effect, absorbingCreatureId, null);
+      pushEffect(
+        draft,
+        controllerId,
+        effect,
+        absorbingCreatureId,
+        null,
+        sourceDieId,
+        sourceSlotIndex,
+      );
     }
   }
 }

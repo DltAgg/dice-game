@@ -10,6 +10,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
+  attributeLabel,
+  basicAttackOf,
   countInstalledCopies,
   currentLife,
   diceOf,
@@ -31,9 +33,12 @@ import {
   isFaceCardInPool,
   isLegalHandReaction,
   isLegalRitualReaction,
+  legalDiceForFilter,
+  legalDieSlotsForFilter,
   legalTargetsFor,
   legalCreaturesForFilter,
   livingCreaturesOf,
+  NATURAL_CONVERT_SYMBOLS,
   opponentOf,
   ritualDurationOf,
   ritualsOf,
@@ -51,7 +56,10 @@ import {
   type CreatureChoiceFilter,
   type CreatureId,
   type CreatureState,
+  type DieChoiceFilter,
   type DieId,
+  type DieSlotChoiceFilter,
+  type DualKindAttribute,
   type FaceCardId,
   type FaceKind,
   type GameState,
@@ -228,13 +236,36 @@ export function MatchBoard() {
 
     if (pending?.type === "choose-creature") {
       if (isOnline && localPlayerId !== null && pending.controllerId !== localPlayerId) return;
-      if (pending.controllerId !== activeId) return;
-      if (pending.filter === "ally" && creature.ownerId !== activeId) return;
-      if (pending.filter === "enemy" && creature.ownerId === activeId) return;
+      const legal = legalCreaturesForFilter(
+        state,
+        pending.controllerId,
+        pending.filter,
+        pending.deferred.sourceCreatureId,
+      );
+      if (!legal.includes(creature.id)) return;
       tryDispatch({
         type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: activeId,
+        playerId: pending.controllerId,
         creatureId: creature.id,
+      });
+      return;
+    }
+
+    if (pending?.type === "optional-bonus-attack") {
+      if (isOnline && localPlayerId !== null && pending.controllerId !== localPlayerId) return;
+      const attacker = state.creatures[pending.creatureId];
+      if (attacker === undefined) return;
+      const def = getCreatureDefinition(attacker.definitionId);
+      const basic = def !== undefined ? basicAttackOf(def) : undefined;
+      if (basic === undefined) return;
+      if (!holdsTokens(attacker, basic.requires)) return;
+      if (!legalTargetsFor(state, pending.creatureId, basic).includes(creature.id)) return;
+      tryDispatch({
+        type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
+        playerId: pending.controllerId,
+        accept: true,
+        attackId: basic.id,
+        targetId: creature.id,
       });
       return;
     }
@@ -728,6 +759,287 @@ export function MatchBoard() {
         </WaitingBanner>
       )}
 
+      {pending?.type === "choose-die" && isPendingChooser && (
+        <ChooseDieModal
+          state={state}
+          filter={pending.filter}
+          controllerId={pending.controllerId}
+          optional={pending.optional === true}
+          onPick={(dieId) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_DIE",
+              playerId: pending.controllerId,
+              dieId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-die" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing a die.</WaitingBanner>
+      )}
+
+      {pending?.type === "convert-symbols" && isPendingChooser && (
+        <ConvertSymbolsModal
+          state={state}
+          amount={pending.amount}
+          eligibleSymbolIds={pending.eligibleSymbolIds}
+          onConfirm={(replacements) =>
+            tryDispatch({
+              type: "RESOLVE_CONVERT_SYMBOLS",
+              playerId: pending.controllerId,
+              replacements,
+            })
+          }
+        />
+      )}
+      {pending?.type === "convert-symbols" && !isPendingChooser && (
+        <WaitingBanner>Opponent is converting symbols.</WaitingBanner>
+      )}
+
+      {pending?.type === "copy-pool-symbol" && isPendingChooser && (
+        <CopyPoolSymbolModal
+          state={state}
+          controllerId={pending.controllerId}
+          onPick={(symbol) =>
+            tryDispatch({
+              type: "RESOLVE_COPY_POOL_SYMBOL",
+              playerId: pending.controllerId,
+              symbol,
+            })
+          }
+        />
+      )}
+      {pending?.type === "copy-pool-symbol" && !isPendingChooser && (
+        <WaitingBanner>Opponent is copying a pool symbol.</WaitingBanner>
+      )}
+
+      {pending?.type === "replay-graveyard-tactic" && isPendingChooser && (
+        <ReplayGraveyardModal
+          state={state}
+          controllerId={pending.controllerId}
+          onPick={(cardInstanceId) =>
+            tryDispatch({
+              type: "RESOLVE_REPLAY_GRAVEYARD",
+              playerId: pending.controllerId,
+              cardInstanceId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "replay-graveyard-tactic" && !isPendingChooser && (
+        <WaitingBanner>Opponent is replaying a graveyard tactic.</WaitingBanner>
+      )}
+
+      {pending?.type === "look-top-deck" && isPendingChooser && (
+        <LookTopDeckModal
+          state={state}
+          cardInstanceIds={pending.cardInstanceIds}
+          onKeep={(keepId) =>
+            tryDispatch({
+              type: "RESOLVE_LOOK_TOP_DECK",
+              playerId: pending.controllerId,
+              keepId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "look-top-deck" && !isPendingChooser && (
+        <WaitingBanner>Opponent is looking at the top of their deck.</WaitingBanner>
+      )}
+
+      {pending?.type === "peek-deck" && isPendingChooser && (
+        <PeekDeckModal
+          state={state}
+          cardInstanceId={pending.cardInstanceId}
+          onResolve={(putOnBottom) =>
+            tryDispatch({
+              type: "RESOLVE_PEEK_DECK",
+              playerId: pending.controllerId,
+              putOnBottom,
+            })
+          }
+        />
+      )}
+      {pending?.type === "peek-deck" && !isPendingChooser && (
+        <WaitingBanner>Opponent is peeking at their deck.</WaitingBanner>
+      )}
+
+      {pending?.type === "dark-pact" && isPendingChooser && (
+        <DarkPactModal
+          state={state}
+          controllerId={pending.controllerId}
+          onConfirm={(cardInstanceIds) =>
+            tryDispatch({
+              type: "RESOLVE_DARK_PACT",
+              playerId: pending.controllerId,
+              cardInstanceIds,
+            })
+          }
+        />
+      )}
+      {pending?.type === "dark-pact" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing rituals for Dark Pact.</WaitingBanner>
+      )}
+
+      {pending?.type === "mind-control" && isPendingChooser && (
+        <MindControlModal
+          state={state}
+          controllerId={pending.controllerId}
+          onConfirm={(mode, faceCardIds) =>
+            tryDispatch({
+              type: "RESOLVE_MIND_CONTROL",
+              playerId: pending.controllerId,
+              mode,
+              faceCardIds,
+            })
+          }
+        />
+      )}
+      {pending?.type === "mind-control" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing faces for Mind Control.</WaitingBanner>
+      )}
+
+      {pending?.type === "split-damage" && isPendingChooser && (
+        <SplitDamageModal
+          state={state}
+          pending={pending}
+          onConfirm={(assignments) =>
+            tryDispatch({
+              type: "RESOLVE_SPLIT_DAMAGE",
+              playerId: pending.controllerId,
+              assignments,
+            })
+          }
+        />
+      )}
+      {pending?.type === "split-damage" && !isPendingChooser && (
+        <WaitingBanner>Opponent is assigning split damage.</WaitingBanner>
+      )}
+
+      {pending?.type === "optional-reroll" && isPendingChooser && (
+        <OptionalRerollModal
+          state={state}
+          dieId={pending.dieId}
+          faceCardId={pending.faceCardId}
+          onResolve={(accept) =>
+            tryDispatch({
+              type: "RESOLVE_OPTIONAL_REROLL",
+              playerId: pending.controllerId,
+              accept,
+            })
+          }
+        />
+      )}
+      {pending?.type === "optional-reroll" && !isPendingChooser && (
+        <WaitingBanner>Opponent is deciding whether to reroll.</WaitingBanner>
+      )}
+
+      {pending?.type === "choose-die-slot" && isPendingChooser && (
+        <ChooseDieSlotModal
+          state={state}
+          filter={pending.filter}
+          controllerId={pending.controllerId}
+          optional={pending.optional === true}
+          {...(pending.contextDieId !== undefined
+            ? { contextDieId: pending.contextDieId }
+            : {})}
+          {...(pending.excludedSlotIndex !== undefined
+            ? { excludedSlotIndex: pending.excludedSlotIndex }
+            : {})}
+          onPick={(dieId, slotIndex) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_DIE_SLOT",
+              playerId: pending.controllerId,
+              dieId,
+              slotIndex,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-die-slot" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing a die face.</WaitingBanner>
+      )}
+
+      {pending?.type === "choose-pool-symbol" && isPendingChooser && (
+        <ChoosePoolSymbolModal
+          state={state}
+          eligibleSymbolIds={pending.eligibleSymbolIds}
+          onPick={(symbolId) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_POOL_SYMBOL",
+              playerId: pending.controllerId,
+              symbolId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-pool-symbol" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing a pool symbol.</WaitingBanner>
+      )}
+
+      {pending?.type === "remove-toxin-amount" && isPendingChooser && (
+        <RemoveToxinAmountModal
+          state={state}
+          creatureId={pending.creatureId}
+          maxAmount={pending.maxAmount}
+          onConfirm={(amount) =>
+            tryDispatch({
+              type: "RESOLVE_REMOVE_TOXIN_AMOUNT",
+              playerId: pending.controllerId,
+              amount,
+            })
+          }
+        />
+      )}
+      {pending?.type === "remove-toxin-amount" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing how many Toxin markers to remove.</WaitingBanner>
+      )}
+
+      {pending?.type === "optional-overcharge" && isPendingChooser && (
+        <OptionalOverchargeModal
+          state={state}
+          amount={pending.amount}
+          dieId={pending.dieId}
+          slotIndex={pending.slotIndex}
+          onResolve={(accept) =>
+            tryDispatch({
+              type: "RESOLVE_OPTIONAL_OVERCHARGE",
+              playerId: pending.controllerId,
+              accept,
+            })
+          }
+        />
+      )}
+      {pending?.type === "optional-overcharge" && !isPendingChooser && (
+        <WaitingBanner>Opponent is deciding on Overcharge.</WaitingBanner>
+      )}
+
+      {pending?.type === "optional-bonus-attack" && isPendingChooser && (
+        <OptionalBonusAttackModal
+          state={state}
+          creatureId={pending.creatureId}
+          onDecline={() =>
+            tryDispatch({
+              type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
+              playerId: pending.controllerId,
+              accept: false,
+            })
+          }
+          onAttack={(attackId, targetId) =>
+            tryDispatch({
+              type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
+              playerId: pending.controllerId,
+              accept: true,
+              attackId,
+              targetId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "optional-bonus-attack" && !isPendingChooser && (
+        <WaitingBanner>Opponent may declare a bonus basic attack.</WaitingBanner>
+      )}
+
       {forgeNeedsDieOrSlots && intent.kind === "forge" && forgeTarget !== null && (
         <DieSlotPickModal
           state={state}
@@ -804,6 +1116,16 @@ export function MatchBoard() {
         state={state}
         playerId={MATCH_P2}
         label="P2 face cards"
+        actingPlayerId={actingId}
+        canAct={canAct}
+        onActivateFace={(dieId, slotIndex) =>
+          tryDispatch({
+            type: "ACTIVATE_FACE",
+            playerId: actingId,
+            dieId,
+            slotIndex,
+          })
+        }
       />
 
       <Battlefield
@@ -873,6 +1195,16 @@ export function MatchBoard() {
         state={state}
         playerId={MATCH_P1}
         label="P1 face cards"
+        actingPlayerId={actingId}
+        canAct={canAct}
+        onActivateFace={(dieId, slotIndex) =>
+          tryDispatch({
+            type: "ACTIVATE_FACE",
+            playerId: actingId,
+            dieId,
+            slotIndex,
+          })
+        }
       />
 
       <div className="fixed inset-x-0 bottom-0 z-30 overflow-visible border-t border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] backdrop-blur">
@@ -1095,6 +1427,190 @@ function forgeFacesNeededFor(state: GameState, cardInstanceId: CardInstanceId): 
   return getCard(instance.cardId)?.forge.faces ?? 1;
 }
 
+function chooseCreatureFilterHint(filter: CreatureChoiceFilter): string {
+  switch (filter) {
+    case "ally":
+      return "Choose one of your creatures (overload / effect target).";
+    case "enemy":
+      return "Choose an enemy creature (overload / effect target).";
+    case "self":
+      return "Confirm the source creature, or pick it on the board.";
+    case "ally-other":
+      return "Choose a different allied creature.";
+    case "allied-frontline":
+      return "Choose an allied frontline creature.";
+    case "allied-frontline-other":
+      return "Choose a different allied frontline creature (reposition / swap).";
+    case "ally-with-toxin":
+      return "Choose an allied creature with toxin.";
+    case "enemy-with-toxin":
+      return "Choose an enemy creature with toxin.";
+    case "ally-damage-over-half":
+      return "Choose an allied creature with more than half damage.";
+  }
+}
+
+function chooseDieFilterHint(filter: DieChoiceFilter): string {
+  switch (filter) {
+    case "owned-retainable":
+      return "Choose one of your rolled dice to retain.";
+    case "owned-rolled":
+      return "Choose one of your rolled dice.";
+    case "any-synthetic-corruption":
+      return "Choose a die that has a synthetic Corruption face.";
+  }
+}
+
+function chooseDieSlotFilterHint(filter: DieSlotChoiceFilter): string {
+  switch (filter) {
+    case "opposing-synthetic":
+      return "Choose an opposing synthetic die face.";
+    case "opposing-natural":
+      return "Choose an opposing natural die face.";
+    case "opposing-corrupted":
+      return "Choose an opposing Corrupted face (Corruption markers).";
+    case "opposing-corrupted-with-other-slot":
+      return "Choose an opposing Corrupted face on a die that has another slot.";
+    case "same-die-other-slot":
+      return "Choose another face on the same die.";
+    case "appeared-synthetic-this-roll":
+      return "Choose a synthetic face that appeared this roll.";
+  }
+}
+
+function slotStatusLine(slot: {
+  readonly pestilenceCounters?: number;
+  readonly corruptionMarkers?: number;
+  readonly suppressInherentNextRoll?: boolean;
+  readonly resourceLockedThisTurn?: boolean;
+}): string | null {
+  const parts: string[] = [];
+  if ((slot.corruptionMarkers ?? 0) > 0) {
+    parts.push(`Corruption ×${String(slot.corruptionMarkers)}`);
+  }
+  if ((slot.pestilenceCounters ?? 0) > 0) {
+    parts.push(`Pestilence ${String(slot.pestilenceCounters)}/5`);
+  }
+  if (slot.suppressInherentNextRoll === true) parts.push("Suppress next roll");
+  if (slot.resourceLockedThisTurn === true) parts.push("Resource locked");
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+function activateFaceEnergyCost(state: GameState, dieId: DieId, energyBase: number, energyPerCorruptionOnDie: number): number {
+  const die = state.dice[dieId];
+  if (die === undefined) return energyBase;
+  let corruptionFaces = 0;
+  for (const slot of die.slots) {
+    const face = getFaceCard(slot.faceCardId);
+    if (face?.kind === "synthetic" && face.symbol === "corruption") {
+      corruptionFaces += 1;
+    }
+  }
+  return energyBase + energyPerCorruptionOnDie * corruptionFaces;
+}
+
+function showingSlotsForFace(
+  state: GameState,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+): readonly { readonly dieId: DieId; readonly slotIndex: number; readonly pestilenceCounters: number }[] {
+  const result: { dieId: DieId; slotIndex: number; pestilenceCounters: number }[] = [];
+  for (const die of diceOf(state, playerId)) {
+    if (die.rolledSlotIndex === null) continue;
+    const slot = die.slots[die.rolledSlotIndex];
+    if (slot === undefined || slot.faceCardId !== faceCardId) continue;
+    result.push({
+      dieId: die.id,
+      slotIndex: slot.index,
+      pestilenceCounters: slot.pestilenceCounters ?? 0,
+    });
+  }
+  return result;
+}
+
+function maxPestilenceForFace(state: GameState, playerId: PlayerId, faceCardId: FaceCardId): number {
+  let max = 0;
+  for (const die of diceOf(state, playerId)) {
+    for (const slot of die.slots) {
+      if (slot.faceCardId !== faceCardId) continue;
+      max = Math.max(max, slot.pestilenceCounters ?? 0);
+    }
+  }
+  return max;
+}
+
+function faceMarkerSummary(
+  state: GameState,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+): string | null {
+  let corruption = 0;
+  let suppress = false;
+  let locked = false;
+  for (const die of diceOf(state, playerId)) {
+    for (const slot of die.slots) {
+      if (slot.faceCardId !== faceCardId) continue;
+      corruption = Math.max(corruption, slot.corruptionMarkers ?? 0);
+      if (slot.suppressInherentNextRoll === true) suppress = true;
+      if (slot.resourceLockedThisTurn === true) locked = true;
+    }
+  }
+  const parts: string[] = [];
+  if (corruption > 0) parts.push(`Corruption ×${String(corruption)}`);
+  if (suppress) parts.push("Suppress");
+  if (locked) parts.push("Locked");
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+function replayableGyCards(state: GameState, playerId: PlayerId): readonly CardInstance[] {
+  return graveyardOf(state, playerId).filter((card) => {
+    const definition = getCard(card.cardId);
+    if (definition === undefined) return false;
+    if (definition.type === "instant") return (definition.effect?.effects.length ?? 0) > 0;
+    if (definition.type === "ritual") return (definition.ritual?.effects.length ?? 0) > 0;
+    return false;
+  });
+}
+
+function opposingOverloadedFaces(
+  state: GameState,
+  controllerId: PlayerId,
+): readonly { readonly faceCardId: FaceCardId; readonly overloads: number }[] {
+  const opponentId = opponentOf(state, controllerId);
+  const seen = new Set<FaceCardId>();
+  const result: { faceCardId: FaceCardId; overloads: number }[] = [];
+  for (const die of diceOf(state, opponentId)) {
+    for (const slot of die.slots) {
+      if (seen.has(slot.faceCardId)) continue;
+      const overloads = overloadsOnFace(state, opponentId, slot.faceCardId).length;
+      if (overloads <= 0) continue;
+      seen.add(slot.faceCardId);
+      result.push({ faceCardId: slot.faceCardId, overloads });
+    }
+  }
+  return result;
+}
+
+function legalSplitDamageTargets(
+  state: GameState,
+  pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "split-damage" }>,
+): readonly CreatureId[] {
+  return Object.values(state.creatures)
+    .filter((creature) => {
+      if (creature.defeated) return false;
+      if (pending.attackerId === null) return true;
+      if (creature.ownerId === pending.controllerId) return false;
+      if (creature.position === "back" && !pending.range) {
+        const front = livingCreaturesOf(state, creature.ownerId).filter(
+          (candidate) => candidate.position === "frontline",
+        );
+        if (front.length > 0) return false;
+      }
+      return true;
+    })
+    .map((creature) => creature.id);
+}
+
 function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): string {
   if (state.pendingDecision?.type === "search-deck") {
     return isPendingChooser
@@ -1113,9 +1629,10 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   }
   if (state.pendingDecision?.type === "choose-creature") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a creature.";
-    return state.pendingDecision.filter === "ally"
-      ? "Choose one of your creatures (overload / effect target)."
-      : "Choose an enemy creature (overload / effect target).";
+    const filterHint = chooseCreatureFilterHint(state.pendingDecision.filter);
+    return state.pendingDecision.optional === true
+      ? `${filterHint} Or Decline.`
+      : filterHint;
   }
   if (state.pendingDecision?.type === "choose-ritual") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a ritual.";
@@ -1129,6 +1646,81 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
     const kind = pending.kind === "natural" ? "Natural" : "Synthetic";
     const where = pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
     return `Choose a ${kind} ${pending.attribute} face from your face pool, then install it on ${where} (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}).`;
+  }
+  if (state.pendingDecision?.type === "choose-die") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose a die.";
+    const base = chooseDieFilterHint(state.pendingDecision.filter);
+    return state.pendingDecision.optional === true ? `${base} Or Decline.` : base;
+  }
+  if (state.pendingDecision?.type === "convert-symbols") {
+    return isPendingChooser
+      ? `Convert up to ${String(state.pendingDecision.amount)} eligible symbol(s) into Natural attributes (or confirm with fewer / none).`
+      : "Waiting for the opponent to convert symbols.";
+  }
+  if (state.pendingDecision?.type === "copy-pool-symbol") {
+    return isPendingChooser
+      ? "Choose another available pool symbol type to copy."
+      : "Waiting for the opponent to copy a pool symbol.";
+  }
+  if (state.pendingDecision?.type === "replay-graveyard-tactic") {
+    return isPendingChooser
+      ? "Choose an Instant or Ritual from your graveyard to replay (no Energy / Requires)."
+      : "Waiting for the opponent to replay a graveyard tactic.";
+  }
+  if (state.pendingDecision?.type === "look-top-deck") {
+    return isPendingChooser
+      ? "Look at the top cards: pick one to keep in hand (the other goes to the bottom)."
+      : "Waiting for the opponent to look at their deck.";
+  }
+  if (state.pendingDecision?.type === "peek-deck") {
+    return isPendingChooser
+      ? "Peek at the top card: Keep it on top, or put it on the bottom."
+      : "Waiting for the opponent to peek at their deck.";
+  }
+  if (state.pendingDecision?.type === "dark-pact") {
+    return isPendingChooser
+      ? "Choose exactly two Rituals from your deck with different attributes."
+      : "Waiting for the opponent to resolve Dark Pact.";
+  }
+  if (state.pendingDecision?.type === "mind-control") {
+    return isPendingChooser
+      ? "Mind Control: strip all overloads from one opposing face, or one overload from each of up to two faces."
+      : "Waiting for the opponent to resolve Mind Control.";
+  }
+  if (state.pendingDecision?.type === "split-damage") {
+    return isPendingChooser
+      ? `Assign ${String(state.pendingDecision.amount)} damage across up to ${String(state.pendingDecision.maxTargets)} creature(s).`
+      : "Waiting for the opponent to assign split damage.";
+  }
+  if (state.pendingDecision?.type === "optional-reroll") {
+    return isPendingChooser
+      ? "Accept or decline the optional die reroll."
+      : "Waiting for the opponent to decide on a reroll.";
+  }
+  if (state.pendingDecision?.type === "choose-die-slot") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose a die face.";
+    const base = chooseDieSlotFilterHint(state.pendingDecision.filter);
+    return state.pendingDecision.optional === true ? `${base} Or Decline.` : base;
+  }
+  if (state.pendingDecision?.type === "choose-pool-symbol") {
+    return isPendingChooser
+      ? "Choose a synthetic symbol from your pool (Catalyst wildcard)."
+      : "Waiting for the opponent to choose a pool symbol.";
+  }
+  if (state.pendingDecision?.type === "remove-toxin-amount") {
+    return isPendingChooser
+      ? `Choose how many Toxin markers to remove (0–${String(state.pendingDecision.maxAmount)}); that much damage is dealt.`
+      : "Waiting for the opponent to remove Toxin markers.";
+  }
+  if (state.pendingDecision?.type === "optional-overcharge") {
+    return isPendingChooser
+      ? `Accept Overcharge (+${String(state.pendingDecision.amount)} Energy, suppress inherent next roll) or Decline.`
+      : "Waiting for the opponent to decide on Overcharge.";
+  }
+  if (state.pendingDecision?.type === "optional-bonus-attack") {
+    return isPendingChooser
+      ? "Instinct: Decline, or declare this creature's basic attack (pick a legal target)."
+      : "Waiting for the opponent to decide on a bonus basic attack.";
   }
   if (state.pendingDecision?.type === "reaction-priority") {
     return "Reaction chain: Pass priority, or play a Reaction / activate a ready ritual-reaction.";
@@ -2057,6 +2649,8 @@ function FaceCardTile({
   playerId,
   entry,
   hasRolled,
+  canActivateShowing,
+  onActivateFace,
 }: {
   state: GameState;
   playerId: PlayerId;
@@ -2067,6 +2661,8 @@ function FaceCardTile({
     readonly overloads: number;
   };
   hasRolled: boolean;
+  canActivateShowing: boolean;
+  onActivateFace: (dieId: DieId, slotIndex: number) => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -2078,13 +2674,19 @@ function FaceCardTile({
   );
 
   const face = getFaceCard(entry.faceCardId);
+  const activated = face?.activated;
   const kindLabel =
     face === undefined ? "?" : face.kind === "natural" ? "Natural" : "Synthetic";
+  const pestilence = maxPestilenceForFace(state, playerId, entry.faceCardId);
+  const showingSlots = showingSlotsForFace(state, playerId, entry.faceCardId);
+  const markerBits = faceMarkerSummary(state, playerId, entry.faceCardId);
   const tooltip = [
     kindLabel,
     face?.symbol ?? "",
     entry.copies > 1 ? `Installed on ${String(entry.copies)} faces` : "Installed on dice",
     face?.rulesText !== undefined && face.rulesText !== "" ? face.rulesText : null,
+    pestilence > 0 ? `Pestilence counters: ${String(pestilence)}` : null,
+    markerBits,
   ]
     .filter((line): line is string => line !== null && line !== "")
     .join("\n");
@@ -2170,11 +2772,39 @@ function FaceCardTile({
           Showing
         </p>
       )}
+      {pestilence > 0 && (
+        <p className="mt-1 text-[0.65rem] text-rose-300/90">
+          Pestilence {String(pestilence)}/5
+        </p>
+      )}
+      {markerBits !== null && (
+        <p className="mt-1 text-[0.65rem] text-violet-300/90">{markerBits}</p>
+      )}
       {entry.overloads > 0 && (
         <p className="mt-1 text-[0.65rem] text-amber-200/80">
           +{entry.overloads} overload
         </p>
       )}
+      {canActivateShowing &&
+        activated !== undefined &&
+        showingSlots.map((slot) => {
+          const cost = activateFaceEnergyCost(
+            state,
+            slot.dieId,
+            activated.energyBase,
+            activated.energyPerCorruptionOnDie,
+          );
+          return (
+            <button
+              key={`${slot.dieId}:${String(slot.slotIndex)}`}
+              type="button"
+              className={`${btnPrimary} mt-2 w-full text-xs`}
+              onClick={() => onActivateFace(slot.dieId, slot.slotIndex)}
+            >
+              Activate ({String(cost)}E)
+            </button>
+          );
+        })}
     </div>
   );
 }
@@ -2184,14 +2814,26 @@ function FaceCardsInPlay({
   state,
   playerId,
   label,
+  actingPlayerId,
+  canAct,
+  onActivateFace,
 }: {
   state: GameState;
   playerId: PlayerId;
   label: string;
+  actingPlayerId: PlayerId;
+  canAct: boolean;
+  onActivateFace: (dieId: DieId, slotIndex: number) => void;
 }) {
   const dice = diceOf(state, playerId);
   const faces = uniqueInstalledFaces(state, playerId);
   const hasRolled = dice.some((die) => die.rolledSlotIndex !== null);
+  const canActivateShowing =
+    canAct &&
+    state.status === "in-progress" &&
+    state.pendingDecision === null &&
+    state.phase === "actions" &&
+    playerId === actingPlayerId;
 
   return (
     <section className="rounded-lg border border-stone-800 bg-black/25 p-4">
@@ -2207,6 +2849,8 @@ function FaceCardsInPlay({
             playerId={playerId}
             entry={entry}
             hasRolled={hasRolled}
+            canActivateShowing={canActivateShowing}
+            onActivateFace={onActivateFace}
           />
         ))}
         {faces.length === 0 && <p className="text-sm text-stone-600">No faces installed</p>}
@@ -2304,6 +2948,9 @@ function DieSlotPickModal({
                     <p className="mt-1 text-[0.65rem] capitalize text-stone-500">
                       Slot {slot.index + 1} · {face?.kind ?? "?"} · {face?.symbol ?? "—"}
                     </p>
+                    {slotStatusLine(slot) !== null && (
+                      <p className="mt-1 text-[0.65rem] text-rose-300/90">{slotStatusLine(slot)}</p>
+                    )}
                   </button>
                 );
               })}
@@ -2342,10 +2989,20 @@ function SymbolPool({
   selected: SymbolInstanceId | null;
   onSelect: (id: SymbolInstanceId) => void;
 }) {
-  const symbols =
-    phase === "absorption" ? rolledSymbols(state, playerId) : usableSymbols(state, playerId);
+  const rolled = rolledSymbols(state, playerId);
+  const availableUsable = usableSymbols(state, playerId);
+  const availableUnusable = Object.values(state.symbols).filter(
+    (symbol) =>
+      symbol.ownerId === playerId &&
+      symbol.status === "available" &&
+      symbol.usable === false,
+  );
   const canPick = phase === "absorption";
   const label = phase === "absorption" ? "Rolled (absorb)" : "Available pool (card requires)";
+  const symbols =
+    phase === "absorption"
+      ? rolled
+      : [...availableUsable, ...availableUnusable];
 
   if (symbols.length === 0) {
     return (
@@ -2358,23 +3015,33 @@ function SymbolPool({
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
       <span className="mr-2 text-xs uppercase tracking-[0.18em] text-stone-500">{label}</span>
-      {symbols.map((symbol) => (
-        <button
-          key={symbol.id}
-          type="button"
-          disabled={!canPick}
-          className={
-            selected === symbol.id
-              ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-2 py-1 text-sm capitalize text-[var(--accent)]"
-              : canPick
-                ? "rounded border border-stone-700 bg-stone-900 px-2 py-1 text-sm capitalize text-stone-200 hover:border-stone-500"
-                : "rounded border border-stone-800 bg-stone-950 px-2 py-1 text-sm capitalize text-stone-500"
-          }
-          onClick={() => onSelect(symbol.id)}
-        >
-          {symbol.symbol}
-        </button>
-      ))}
+      {symbols.map((symbol) => {
+        const unusable = symbol.usable === false;
+        const pickable = canPick && !unusable;
+        return (
+          <button
+            key={symbol.id}
+            type="button"
+            disabled={!pickable}
+            title={unusable ? "Unusable (cannot absorb or pay costs)" : undefined}
+            className={
+              selected === symbol.id
+                ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-2 py-1 text-sm capitalize text-[var(--accent)]"
+                : unusable
+                  ? "rounded border border-stone-800 bg-stone-950 px-2 py-1 text-sm capitalize text-stone-600 line-through opacity-60"
+                  : pickable
+                    ? "rounded border border-stone-700 bg-stone-900 px-2 py-1 text-sm capitalize text-stone-200 hover:border-stone-500"
+                    : "rounded border border-stone-800 bg-stone-950 px-2 py-1 text-sm capitalize text-stone-500"
+            }
+            onClick={() => {
+              if (pickable) onSelect(symbol.id);
+            }}
+          >
+            {symbol.symbol}
+            {unusable ? " · unusable" : ""}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -2832,6 +3499,7 @@ function ChooseCreatureModal({
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Pick a legal creature below or on the board.
+          {optional ? " You may Decline." : ""}
         </p>
         <ul className="mt-4 space-y-2">
           {creatures.map((creature) => {
@@ -2867,6 +3535,1017 @@ function ChooseCreatureModal({
             Decline
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ChooseDieModal({
+  state,
+  filter,
+  controllerId,
+  optional,
+  onPick,
+}: {
+  state: GameState;
+  filter: DieChoiceFilter;
+  controllerId: PlayerId;
+  optional: boolean;
+  onPick: (dieId: DieId | null) => void;
+}) {
+  const dieIds = legalDiceForFilter(state, controllerId, filter);
+  const ownDice = diceOf(state, controllerId);
+  const oppDice = diceOf(state, opponentOf(state, controllerId));
+  const labelFor = (dieId: DieId): string => {
+    const ownIndex = ownDice.findIndex((die) => die.id === dieId);
+    if (ownIndex >= 0) return `Your die ${String(ownIndex + 1)}`;
+    const oppIndex = oppDice.findIndex((die) => die.id === dieId);
+    if (oppIndex >= 0) return `Opponent die ${String(oppIndex + 1)}`;
+    return dieId;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Choose a die
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">{chooseDieFilterHint(filter)}</p>
+        <ul className="mt-4 space-y-2">
+          {dieIds.map((dieId) => {
+            const die = state.dice[dieId];
+            const showingSlot =
+              die !== undefined && die.rolledSlotIndex !== null
+                ? die.slots[die.rolledSlotIndex]
+                : undefined;
+            const showing =
+              showingSlot !== undefined ? getFaceCard(showingSlot.faceCardId) : undefined;
+            return (
+              <li key={dieId}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                  onClick={() => onPick(dieId)}
+                >
+                  <p className="text-sm font-medium text-stone-100">{labelFor(dieId)}</p>
+                  <p className="text-xs capitalize text-stone-500">
+                    {showing !== undefined
+                      ? `Showing ${showing.name}`
+                      : die?.retained === true
+                        ? "Retained"
+                        : "Not rolled"}
+                    {die?.stunMarkers !== undefined && die.stunMarkers > 0
+                      ? ` · stun ${String(die.stunMarkers)}`
+                      : ""}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {dieIds.length === 0 && (
+            <li className="text-sm text-red-300">No legal dice to choose.</li>
+          )}
+        </ul>
+        {optional && (
+          <button
+            type="button"
+            className="mt-4 w-full rounded border border-stone-700 px-3 py-2 text-sm text-stone-300 hover:border-[var(--accent)]"
+            onClick={() => onPick(null)}
+          >
+            Decline
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ConvertSymbolsModal({
+  state,
+  amount,
+  eligibleSymbolIds,
+  onConfirm,
+}: {
+  state: GameState;
+  amount: number;
+  eligibleSymbolIds: readonly SymbolInstanceId[];
+  onConfirm: (
+    replacements: readonly {
+      readonly symbolId: SymbolInstanceId;
+      readonly into: DualKindAttribute;
+    }[],
+  ) => void;
+}) {
+  const [selected, setSelected] = useState<readonly SymbolInstanceId[]>([]);
+  const [intoById, setIntoById] = useState<Readonly<Partial<Record<SymbolInstanceId, DualKindAttribute>>>>(
+    {},
+  );
+
+  const toggle = (id: SymbolInstanceId) => {
+    setSelected((prev) => {
+      if (prev.includes(id)) {
+        setIntoById((map) => {
+          const next = { ...map };
+          delete next[id];
+          return next;
+        });
+        return prev.filter((entry) => entry !== id);
+      }
+      if (prev.length >= amount) return prev;
+      setIntoById((map) => ({ ...map, [id]: map[id] ?? "martial" }));
+      return [...prev, id];
+    });
+  };
+
+  const replacements = selected.flatMap((symbolId) => {
+    const into = intoById[symbolId];
+    return into === undefined ? [] : [{ symbolId, into }];
+  });
+  const ready = replacements.length === selected.length;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Convert symbols
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Pick up to {String(amount)} eligible symbol(s) and a Natural attribute for each. You may
+          confirm with fewer or none.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {eligibleSymbolIds.map((symbolId) => {
+            const symbol = state.symbols[symbolId];
+            const checked = selected.includes(symbolId);
+            return (
+              <li key={symbolId} className="rounded border border-stone-700 bg-stone-900 p-3">
+                <button
+                  type="button"
+                  className={
+                    checked
+                      ? "w-full text-left text-sm font-medium text-[var(--accent)]"
+                      : "w-full text-left text-sm font-medium text-stone-100"
+                  }
+                  disabled={!checked && selected.length >= amount}
+                  onClick={() => toggle(symbolId)}
+                >
+                  {symbol?.symbol ?? symbolId}
+                  <span className="ml-2 text-xs font-normal capitalize text-stone-500">
+                    {symbol?.status ?? "?"}
+                  </span>
+                </button>
+                {checked && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {NATURAL_CONVERT_SYMBOLS.map((attr) => (
+                      <button
+                        key={attr}
+                        type="button"
+                        className={
+                          intoById[symbolId] === attr
+                            ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-2 py-1 text-xs capitalize text-[var(--accent)]"
+                            : "rounded border border-stone-700 px-2 py-1 text-xs capitalize text-stone-300 hover:border-stone-500"
+                        }
+                        onClick={() => setIntoById((map) => ({ ...map, [symbolId]: attr }))}
+                      >
+                        {attributeLabel(attr)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+          {eligibleSymbolIds.length === 0 && (
+            <li className="text-sm text-red-300">No eligible symbols.</li>
+          )}
+        </ul>
+        <button
+          type="button"
+          className={`${btnPrimary} mt-4`}
+          disabled={!ready}
+          onClick={() => onConfirm(replacements)}
+        >
+          Confirm ({String(replacements.length)}/{String(amount)})
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CopyPoolSymbolModal({
+  state,
+  controllerId,
+  onPick,
+}: {
+  state: GameState;
+  controllerId: PlayerId;
+  onPick: (symbol: SymbolType) => void;
+}) {
+  const types = new Set<SymbolType>();
+  for (const symbol of Object.values(state.symbols)) {
+    if (symbol.ownerId !== controllerId) continue;
+    if (symbol.status !== "rolled" && symbol.status !== "available") continue;
+    types.add(symbol.symbol);
+  }
+  const options = [...types];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Copy a pool symbol
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Choose a symbol type already in your rolled / available pool to copy.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {options.map((symbol) => (
+            <li key={symbol}>
+              <button
+                type="button"
+                className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left capitalize hover:border-[var(--accent)]"
+                onClick={() => onPick(symbol)}
+              >
+                {symbol}
+              </button>
+            </li>
+          ))}
+          {options.length === 0 && (
+            <li className="text-sm text-red-300">No pool symbols available to copy.</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function ReplayGraveyardModal({
+  state,
+  controllerId,
+  onPick,
+}: {
+  state: GameState;
+  controllerId: PlayerId;
+  onPick: (cardInstanceId: CardInstanceId) => void;
+}) {
+  const cards = replayableGyCards(state, controllerId);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Replay from graveyard
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Choose an Instant or Ritual with playable effects. It stays in the graveyard; no Energy /
+          Requires.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {cards.map((card) => {
+            const def = getCard(card.cardId);
+            return (
+              <li key={card.id}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                  onClick={() => onPick(card.id)}
+                >
+                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                  <p className="text-xs text-stone-500">
+                    {def !== undefined ? formatTypeLine(def) : ""}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {cards.length === 0 && (
+            <li className="text-sm text-red-300">No replayable Instant or Ritual in your graveyard.</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function LookTopDeckModal({
+  state,
+  cardInstanceIds,
+  onKeep,
+}: {
+  state: GameState;
+  cardInstanceIds: readonly CardInstanceId[];
+  onKeep: (keepId: CardInstanceId) => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Look at top of deck
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Pick one card to keep in hand. The other goes to the bottom of your deck.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {cardInstanceIds.map((id) => {
+            const card = state.cards[id];
+            const def = card !== undefined ? getCard(card.cardId) : undefined;
+            return (
+              <li key={id}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                  onClick={() => onKeep(id)}
+                >
+                  <p className="text-sm font-medium text-stone-100">{def?.name ?? id}</p>
+                  <p className="text-xs text-stone-500">
+                    {def !== undefined ? formatTypeLine(def) : "Keep this card"}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function PeekDeckModal({
+  state,
+  cardInstanceId,
+  onResolve,
+}: {
+  state: GameState;
+  cardInstanceId: CardInstanceId;
+  onResolve: (putOnBottom: boolean) => void;
+}) {
+  const card = state.cards[cardInstanceId];
+  const def = card !== undefined ? getCard(card.cardId) : undefined;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Peek at deck
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Top card: <strong className="text-stone-100">{def?.name ?? cardInstanceId}</strong>
+          {def !== undefined ? ` · ${formatTypeLine(def)}` : ""}
+        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          <button type="button" className={btnPrimary} onClick={() => onResolve(false)}>
+            Keep on top
+          </button>
+          <button type="button" className={btnClass} onClick={() => onResolve(true)}>
+            Put on bottom
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DarkPactModal({
+  state,
+  controllerId,
+  onConfirm,
+}: {
+  state: GameState;
+  controllerId: PlayerId;
+  onConfirm: (cardInstanceIds: readonly [CardInstanceId, CardInstanceId]) => void;
+}) {
+  const [pick, setPick] = useState<readonly CardInstanceId[]>([]);
+  const deckIds = state.players[controllerId]?.deck ?? [];
+  const rituals = deckIds
+    .map((id) => state.cards[id])
+    .filter((card): card is CardInstance => {
+      if (card === undefined) return false;
+      const def = getCard(card.cardId);
+      return def?.type === "ritual";
+    });
+
+  const toggle = (id: CardInstanceId) => {
+    setPick((prev) => {
+      if (prev.includes(id)) return prev.filter((entry) => entry !== id);
+      if (prev.length >= 2) return prev;
+      return [...prev, id];
+    });
+  };
+
+  const attrs = pick.map((id) => {
+    const card = state.cards[id];
+    return card !== undefined ? getCard(card.cardId)?.attribute : undefined;
+  });
+  const different =
+    pick.length === 2 && attrs[0] !== undefined && attrs[1] !== undefined && attrs[0] !== attrs[1];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Dark Pact
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Choose exactly two Rituals from your deck with different attributes. They go to the
+          graveyard.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {rituals.map((card) => {
+            const def = getCard(card.cardId);
+            const checked = pick.includes(card.id);
+            return (
+              <li key={card.id}>
+                <button
+                  type="button"
+                  className={
+                    checked
+                      ? "w-full rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-2 text-left"
+                      : "w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-stone-500"
+                  }
+                  disabled={!checked && pick.length >= 2}
+                  onClick={() => toggle(card.id)}
+                >
+                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                  <p className="text-xs capitalize text-stone-500">
+                    {def !== undefined ? attributeLabel(def.attribute) : ""}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {rituals.length === 0 && (
+            <li className="text-sm text-red-300">No Rituals in your deck.</li>
+          )}
+        </ul>
+        {pick.length === 2 && !different && (
+          <p className="mt-2 text-sm text-red-300">Those Rituals share an attribute — pick different ones.</p>
+        )}
+        <button
+          type="button"
+          className={`${btnPrimary} mt-4`}
+          disabled={!different || pick[0] === undefined || pick[1] === undefined}
+          onClick={() => {
+            if (pick[0] === undefined || pick[1] === undefined) return;
+            onConfirm([pick[0], pick[1]]);
+          }}
+        >
+          Confirm Dark Pact
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MindControlModal({
+  state,
+  controllerId,
+  onConfirm,
+}: {
+  state: GameState;
+  controllerId: PlayerId;
+  onConfirm: (
+    mode: "strip-one-face" | "strip-one-each",
+    faceCardIds: readonly FaceCardId[],
+  ) => void;
+}) {
+  const [mode, setMode] = useState<"strip-one-face" | "strip-one-each">("strip-one-face");
+  const [pick, setPick] = useState<readonly FaceCardId[]>([]);
+  const faces = opposingOverloadedFaces(state, controllerId);
+  const maxPick = mode === "strip-one-face" ? 1 : 2;
+
+  const toggle = (faceCardId: FaceCardId) => {
+    setPick((prev) => {
+      if (prev.includes(faceCardId)) return prev.filter((id) => id !== faceCardId);
+      if (prev.length >= maxPick) return prev;
+      return [...prev, faceCardId];
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Mind Control
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Strip overloads from opposing faces that currently have them.
+        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          <button
+            type="button"
+            className={
+              mode === "strip-one-face"
+                ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-2 text-left text-sm text-[var(--accent)]"
+                : "rounded border border-stone-700 px-3 py-2 text-left text-sm text-stone-200 hover:border-stone-500"
+            }
+            onClick={() => {
+              setMode("strip-one-face");
+              setPick((prev) => prev.slice(0, 1));
+            }}
+          >
+            Strip all overloads from 1 face
+          </button>
+          <button
+            type="button"
+            className={
+              mode === "strip-one-each"
+                ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-2 text-left text-sm text-[var(--accent)]"
+                : "rounded border border-stone-700 px-3 py-2 text-left text-sm text-stone-200 hover:border-stone-500"
+            }
+            onClick={() => setMode("strip-one-each")}
+          >
+            Strip 1 overload from each of up to 2 faces
+          </button>
+        </div>
+        <ul className="mt-4 space-y-2">
+          {faces.map(({ faceCardId, overloads }) => {
+            const face = getFaceCard(faceCardId);
+            const checked = pick.includes(faceCardId);
+            return (
+              <li key={faceCardId}>
+                <button
+                  type="button"
+                  className={
+                    checked
+                      ? "w-full rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-2 text-left"
+                      : "w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-stone-500"
+                  }
+                  disabled={!checked && pick.length >= maxPick}
+                  onClick={() => toggle(faceCardId)}
+                >
+                  <p className="text-sm font-medium text-stone-100">{face?.name ?? faceCardId}</p>
+                  <p className="text-xs text-stone-500">
+                    {String(overloads)} overload{overloads === 1 ? "" : "s"}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {faces.length === 0 && (
+            <li className="text-sm text-red-300">No opposing faces with overloads.</li>
+          )}
+        </ul>
+        <button
+          type="button"
+          className={`${btnPrimary} mt-4`}
+          disabled={
+            mode === "strip-one-face" ? pick.length !== 1 : pick.length < 1 || pick.length > 2
+          }
+          onClick={() => onConfirm(mode, pick)}
+        >
+          Confirm Mind Control
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SplitDamageModal({
+  state,
+  pending,
+  onConfirm,
+}: {
+  state: GameState;
+  pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "split-damage" }>;
+  onConfirm: (
+    assignments: readonly { readonly creatureId: CreatureId; readonly amount: number }[],
+  ) => void;
+}) {
+  const targets = legalSplitDamageTargets(state, pending);
+  const [amounts, setAmounts] = useState<Readonly<Partial<Record<CreatureId, number>>>>({});
+
+  const assigned = targets.reduce((sum, id) => sum + (amounts[id] ?? 0), 0);
+  const positiveCount = targets.filter((id) => (amounts[id] ?? 0) > 0).length;
+  const ready =
+    assigned === pending.amount &&
+    positiveCount > 0 &&
+    positiveCount <= pending.maxTargets &&
+    targets.every((id) => (amounts[id] ?? 0) >= 0);
+
+  const setAmount = (creatureId: CreatureId, next: number) => {
+    const clamped = Math.max(0, Math.min(pending.amount, Math.floor(next)));
+    setAmounts((prev) => ({ ...prev, [creatureId]: clamped }));
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Split damage
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Assign {String(pending.amount)} damage across up to {String(pending.maxTargets)}{" "}
+          creature(s). Assigned: {String(assigned)}/{String(pending.amount)}.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {targets.map((creatureId) => {
+            const creature = state.creatures[creatureId];
+            if (creature === undefined) return null;
+            const def = getCreatureDefinition(creature.definitionId);
+            const value = amounts[creatureId] ?? 0;
+            return (
+              <li
+                key={creatureId}
+                className="flex items-center justify-between gap-3 rounded border border-stone-700 bg-stone-900 px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium text-stone-100">
+                    {def?.name ?? creature.definitionId}
+                  </p>
+                  <p className="text-xs text-stone-500">
+                    HP {currentLife(creature)}/{def?.life ?? "?"} · {creature.position}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    className={btnClass}
+                    onClick={() => setAmount(creatureId, value - 1)}
+                  >
+                    −
+                  </button>
+                  <span className="w-8 text-center text-sm text-stone-100">{String(value)}</span>
+                  <button
+                    type="button"
+                    className={btnClass}
+                    onClick={() => setAmount(creatureId, value + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+          {targets.length === 0 && (
+            <li className="text-sm text-red-300">No legal targets for this damage.</li>
+          )}
+        </ul>
+        <button
+          type="button"
+          className={`${btnPrimary} mt-4`}
+          disabled={!ready}
+          onClick={() =>
+            onConfirm(
+              targets
+                .map((creatureId) => ({
+                  creatureId,
+                  amount: amounts[creatureId] ?? 0,
+                }))
+                .filter((entry) => entry.amount > 0),
+            )
+          }
+        >
+          Confirm assignments
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function OptionalRerollModal({
+  state,
+  dieId,
+  faceCardId,
+  onResolve,
+}: {
+  state: GameState;
+  dieId: DieId;
+  faceCardId: FaceCardId;
+  onResolve: (accept: boolean) => void;
+}) {
+  const face = getFaceCard(faceCardId);
+  const die = state.dice[dieId];
+  const ownerDice = die !== undefined ? diceOf(state, die.ownerId) : [];
+  const dieIndex = ownerDice.findIndex((entry) => entry.id === dieId);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Optional reroll
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Reroll {dieIndex >= 0 ? `die ${String(dieIndex + 1)}` : "this die"} (currently{" "}
+          {face?.name ?? faceCardId})?
+        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          <button type="button" className={btnPrimary} onClick={() => onResolve(true)}>
+            Accept reroll
+          </button>
+          <button type="button" className={btnClass} onClick={() => onResolve(false)}>
+            Decline
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChooseDieSlotModal({
+  state,
+  filter,
+  controllerId,
+  optional,
+  contextDieId,
+  excludedSlotIndex,
+  onPick,
+}: {
+  state: GameState;
+  filter: DieSlotChoiceFilter;
+  controllerId: PlayerId;
+  optional: boolean;
+  contextDieId?: DieId;
+  excludedSlotIndex?: number;
+  onPick: (dieId: DieId | null, slotIndex: number | null) => void;
+}) {
+  const slots = legalDieSlotsForFilter(state, controllerId, filter, {
+    ...(contextDieId !== undefined ? { contextDieId } : {}),
+    ...(excludedSlotIndex !== undefined ? { excludedSlotIndex } : {}),
+  });
+
+  const labelForDie = (dieId: DieId): string => {
+    for (const player of Object.values(state.players)) {
+      const index = player.dieIds.indexOf(dieId);
+      if (index < 0) continue;
+      const whose = player.id === controllerId ? "Your" : "Opponent";
+      return `${whose} die ${String(index + 1)}`;
+    }
+    return dieId;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Choose a die face
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">{chooseDieSlotFilterHint(filter)}</p>
+        <ul className="mt-4 space-y-2">
+          {slots.map(({ dieId, slotIndex }) => {
+            const die = state.dice[dieId];
+            const slot = die?.slots[slotIndex];
+            const face = slot !== undefined ? getFaceCard(slot.faceCardId) : undefined;
+            const status = slot !== undefined ? slotStatusLine(slot) : null;
+            return (
+              <li key={`${dieId}:${String(slotIndex)}`}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                  onClick={() => onPick(dieId, slotIndex)}
+                >
+                  <p className="text-sm font-medium text-stone-100">
+                    {face?.name ?? "?"}
+                  </p>
+                  <p className="text-xs capitalize text-stone-500">
+                    {labelForDie(dieId)} · slot {String(slotIndex + 1)}
+                    {face !== undefined ? ` · ${face.kind} · ${face.symbol}` : ""}
+                  </p>
+                  {status !== null && (
+                    <p className="mt-1 text-[0.65rem] text-rose-300/90">{status}</p>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+          {slots.length === 0 && (
+            <li className="text-sm text-red-300">No legal die faces to choose.</li>
+          )}
+        </ul>
+        {optional && (
+          <button
+            type="button"
+            className="mt-4 w-full rounded border border-stone-700 px-3 py-2 text-sm text-stone-300 hover:border-[var(--accent)]"
+            onClick={() => onPick(null, null)}
+          >
+            Decline
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ChoosePoolSymbolModal({
+  state,
+  eligibleSymbolIds,
+  onPick,
+}: {
+  state: GameState;
+  eligibleSymbolIds: readonly SymbolInstanceId[];
+  onPick: (symbolId: SymbolInstanceId) => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Choose a pool symbol
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Pick a synthetic symbol from your pool to arm as a requirement wildcard.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {eligibleSymbolIds.map((symbolId) => {
+            const symbol = state.symbols[symbolId];
+            return (
+              <li key={symbolId}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left capitalize hover:border-[var(--accent)]"
+                  onClick={() => onPick(symbolId)}
+                >
+                  <p className="text-sm font-medium text-stone-100">
+                    {symbol?.symbol ?? symbolId}
+                  </p>
+                  <p className="text-xs text-stone-500">
+                    {symbol?.status ?? "?"}
+                    {symbol?.usable === false ? " · unusable" : ""}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {eligibleSymbolIds.length === 0 && (
+            <li className="text-sm text-red-300">No eligible pool symbols.</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function RemoveToxinAmountModal({
+  state,
+  creatureId,
+  maxAmount,
+  onConfirm,
+}: {
+  state: GameState;
+  creatureId: CreatureId;
+  maxAmount: number;
+  onConfirm: (amount: number) => void;
+}) {
+  const [amount, setAmount] = useState(maxAmount);
+  const creature = state.creatures[creatureId];
+  const def =
+    creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Remove Toxin
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Remove Toxin markers from {def?.name ?? "this creature"} and deal that much damage
+          (0–{String(maxAmount)}). Current toxin:{" "}
+          {String(creature?.toxinMarkers ?? 0)}.
+        </p>
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            className={btnClass}
+            onClick={() => setAmount((value) => Math.max(0, value - 1))}
+          >
+            −
+          </button>
+          <span className="w-10 text-center text-lg text-stone-100">{String(amount)}</span>
+          <button
+            type="button"
+            className={btnClass}
+            onClick={() => setAmount((value) => Math.min(maxAmount, value + 1))}
+          >
+            +
+          </button>
+        </div>
+        <button
+          type="button"
+          className={`${btnPrimary} mt-4`}
+          onClick={() => onConfirm(amount)}
+        >
+          Confirm ({String(amount)} toxin → {String(amount)} damage)
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function OptionalOverchargeModal({
+  state,
+  amount,
+  dieId,
+  slotIndex,
+  onResolve,
+}: {
+  state: GameState;
+  amount: number;
+  dieId: DieId;
+  slotIndex: number;
+  onResolve: (accept: boolean) => void;
+}) {
+  const die = state.dice[dieId];
+  const slot = die?.slots[slotIndex];
+  const face = slot !== undefined ? getFaceCard(slot.faceCardId) : undefined;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Overcharge
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Gain +{String(amount)} Energy from {face?.name ?? "this face"}? Accepting suppresses
+          that face&apos;s inherent effect on the next roll.
+        </p>
+        <div className="mt-4 flex flex-col gap-2">
+          <button type="button" className={btnPrimary} onClick={() => onResolve(true)}>
+            Accept (+{String(amount)}E)
+          </button>
+          <button type="button" className={btnClass} onClick={() => onResolve(false)}>
+            Decline
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OptionalBonusAttackModal({
+  state,
+  creatureId,
+  onDecline,
+  onAttack,
+}: {
+  state: GameState;
+  creatureId: CreatureId;
+  onDecline: () => void;
+  onAttack: (attackId: AttackId, targetId: CreatureId) => void;
+}) {
+  const creature = state.creatures[creatureId];
+  const def = creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
+  const basic = def !== undefined ? basicAttackOf(def) : undefined;
+  const fuelled =
+    creature !== undefined && basic !== undefined && holdsTokens(creature, basic.requires);
+  const targets =
+    basic !== undefined && fuelled
+      ? legalTargetsFor(state, creatureId, basic)
+          .map((id) => state.creatures[id])
+          .filter((entry): entry is CreatureState => entry !== undefined)
+      : [];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Bonus basic attack
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          {def?.name ?? "Creature"} may declare its basic attack during absorption
+          {basic !== undefined ? ` (${basic.name})` : ""}. Pick a target below or on the board,
+          or Decline.
+        </p>
+        {basic !== undefined && (
+          <p className="mt-2 text-xs text-stone-500">
+            {formatAttackLine(basic)} · requires {formatAttackCost(basic.requires)}
+            {!fuelled ? " · not fuelled" : ""}
+          </p>
+        )}
+        <ul className="mt-4 space-y-2">
+          {targets.map((target) => {
+            const targetDef = getCreatureDefinition(target.definitionId);
+            return (
+              <li key={target.id}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                  disabled={basic === undefined}
+                  onClick={() => {
+                    if (basic === undefined) return;
+                    onAttack(basic.id, target.id);
+                  }}
+                >
+                  <p className="text-sm font-medium text-stone-100">
+                    {targetDef?.name ?? target.definitionId}
+                  </p>
+                  <p className="text-xs text-stone-500">
+                    HP {currentLife(target)}/{targetDef?.life ?? "?"} · {target.position}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {basic !== undefined && fuelled && targets.length === 0 && (
+            <li className="text-sm text-red-300">No legal targets for the basic attack.</li>
+          )}
+          {basic !== undefined && !fuelled && (
+            <li className="text-sm text-red-300">Basic attack is not fuelled.</li>
+          )}
+          {basic === undefined && (
+            <li className="text-sm text-red-300">No basic attack on this creature.</li>
+          )}
+        </ul>
+        <button type="button" className={`${btnClass} mt-4 w-full`} onClick={onDecline}>
+          Decline
+        </button>
       </div>
     </div>
   );

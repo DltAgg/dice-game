@@ -5,8 +5,8 @@ Status: **IMPLEMENTED** (2026-08-14)
 Grow `EffectDefinition` / standing abilities / pending decisions so printed
 clauses in `002` / `003` / `004` resolve as data. Assumptions live in
 [`OPEN_DESIGN.md`](../OPEN_DESIGN.md) (ASSUMED, 2026-08-14). Still parked:
-[`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md) (push, stun, empty print,
-face-marker systems).
+[`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md) (push, stun, empty print).
+Face markers / Instinct absorb: [`013-face-markers.md`](./013-face-markers.md).
 
 Design cites: bible §6 (frontline), §7 (absorb / retain), §16 (phases),
 §18 (Energy track), §19–20 (play vs forge). Push **DECIDED no**. Stun stays

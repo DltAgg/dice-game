@@ -56,7 +56,7 @@ import {
 } from "../rules/faces.js";
 import { planConsumption, requirementShortfall } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
-import { creatureMatchesFilter, legalDiceForFilter } from "../rules/targets.js";
+import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
 import { addToken, holdsTokens, removeTokens } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
 import {
@@ -76,7 +76,13 @@ import {
 import { createDraft, emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import {
   applyDeferredEffect,
+  applyDieSlotChoice,
+  applyOptionalOverchargeAccept,
+  applyPoolSymbolWildcard,
+  applyRemoveToxinForDamage,
   checkVictory,
+  clearResourceLocks,
+  clearToxinReceiveCapsForOwner,
   createSymbol,
   dealDamage,
   drainResolution,
@@ -180,6 +186,28 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
       allowed = true;
     } else if (pending.type === "optional-reroll" && action.type === "RESOLVE_OPTIONAL_REROLL") {
       allowed = true;
+    } else if (pending.type === "choose-die-slot" && action.type === "RESOLVE_CHOOSE_DIE_SLOT") {
+      allowed = true;
+    } else if (
+      pending.type === "choose-pool-symbol" &&
+      action.type === "RESOLVE_CHOOSE_POOL_SYMBOL"
+    ) {
+      allowed = true;
+    } else if (
+      pending.type === "remove-toxin-amount" &&
+      action.type === "RESOLVE_REMOVE_TOXIN_AMOUNT"
+    ) {
+      allowed = true;
+    } else if (
+      pending.type === "optional-overcharge" &&
+      action.type === "RESOLVE_OPTIONAL_OVERCHARGE"
+    ) {
+      allowed = true;
+    } else if (
+      pending.type === "optional-bonus-attack" &&
+      action.type === "RESOLVE_OPTIONAL_BONUS_ATTACK"
+    ) {
+      allowed = true;
     }
     if (!allowed) return fail(state, "PENDING_DECISION");
   }
@@ -274,6 +302,22 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return resolveSplitDamage(draft, action.playerId, action.assignments);
     case "RESOLVE_OPTIONAL_REROLL":
       return resolveOptionalReroll(draft, action.playerId, action.accept, rng);
+    case "RESOLVE_CHOOSE_DIE_SLOT":
+      return resolveChooseDieSlot(draft, action.playerId, action.dieId, action.slotIndex);
+    case "RESOLVE_CHOOSE_POOL_SYMBOL":
+      return resolveChoosePoolSymbol(draft, action.playerId, action.symbolId);
+    case "RESOLVE_REMOVE_TOXIN_AMOUNT":
+      return resolveRemoveToxinAmount(draft, action.playerId, action.amount);
+    case "RESOLVE_OPTIONAL_OVERCHARGE":
+      return resolveOptionalOvercharge(draft, action.playerId, action.accept);
+    case "RESOLVE_OPTIONAL_BONUS_ATTACK":
+      return resolveOptionalBonusAttack(
+        draft,
+        action.playerId,
+        action.accept,
+        action.attackId,
+        action.targetId,
+      );
     case "ACTIVATE_FACE":
       return activateFace(draft, action.playerId, action.dieId, action.slotIndex);
     case "PASS_PRIORITY":
@@ -300,7 +344,10 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
     readonly slotIndex: number;
     readonly faceCardId: FaceCardId;
     readonly symbol: SymbolType;
+    readonly suppressInherent: boolean;
   }> = [];
+
+  draft.facesAppearedThisRoll = [];
 
   for (const die of diceOf(draft, playerId)) {
     if (isDieStunned(die)) {
@@ -322,16 +369,31 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
       patchDie(draft, die.id, { rolledSlotIndex: slotIndex });
     }
 
-    const slot = die.slots[slotIndex];
+    const liveDie = draft.dice[die.id] ?? die;
+    const slot = liveDie.slots[slotIndex];
     if (slot === undefined) continue;
     const face = getFaceCard(slot.faceCardId);
     if (face === undefined) continue;
+
+    // Consume suppressInherentNextRoll on every slot of this die this roll.
+    let suppressInherent = false;
+    let slotsChanged = false;
+    const clearedSlots = liveDie.slots.map((candidate) => {
+      if (candidate.suppressInherentNextRoll !== true) return candidate;
+      slotsChanged = true;
+      if (candidate.index === slotIndex) suppressInherent = true;
+      return { ...candidate, suppressInherentNextRoll: false };
+    });
+    if (slotsChanged) {
+      patchDie(draft, die.id, { slots: clearedSlots });
+    }
 
     if (!keptByRetain) {
       emit(draft, { type: "die-rolled", dieId: die.id, slotIndex, symbol: face.symbol });
     }
 
     const symbolId = asSymbolInstanceId(nextInstanceId(draft, "symbol"));
+    const locked = (draft.dice[die.id]?.slots[slotIndex] ?? slot).resourceLockedThisTurn === true;
     draft.symbols[symbolId] = {
       id: symbolId,
       ownerId: playerId,
@@ -339,6 +401,7 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
       status: "rolled",
       sourceDieId: die.id,
       absorbedByCreatureId: null,
+      ...(locked ? { usable: false } : {}),
     };
     emit(draft, {
       type: "symbol-generated",
@@ -352,13 +415,25 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
       slotIndex,
       faceCardId: slot.faceCardId,
       symbol: face.symbol,
+      suppressInherent,
     });
+    draft.facesAppearedThisRoll = [
+      ...draft.facesAppearedThisRoll,
+      {
+        dieId: die.id,
+        slotIndex,
+        faceCardId: slot.faceCardId,
+        kind: face.kind,
+      },
+    ];
   }
 
   // Fire onRoll after every inherent pip exists so "another symbol in the pool"
   // conditions (Gear, Resonance) see the full roll.
   for (const entry of rolled) {
-    fireFaceOnRoll(draft, playerId, entry.dieId, entry.slotIndex);
+    if (!entry.suppressInherent) {
+      fireFaceOnRoll(draft, playerId, entry.dieId, entry.slotIndex);
+    }
     fireOverloadsForShownFace(draft, playerId, entry.faceCardId, entry.dieId, entry.slotIndex);
     fireEquipmentOnRollSymbol(draft, playerId, entry.symbol);
   }
@@ -1019,6 +1094,127 @@ function resolveOptionalReroll(
   return resumeAfterEffectPause(draft);
 }
 
+function resolveChooseDieSlot(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId | null,
+  slotIndex: number | null,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "choose-die-slot") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  if (dieId === null || slotIndex === null) {
+    if (pending.optional !== true) return "INVALID_CHOICE";
+    draft.pendingDecision = null;
+    return resumeAfterEffectPause(draft);
+  }
+
+  const legal = legalDieSlotsForFilter(draft, playerId, pending.filter, {
+    ...(pending.contextDieId !== undefined ? { contextDieId: pending.contextDieId } : {}),
+    ...(pending.excludedSlotIndex !== undefined
+      ? { excludedSlotIndex: pending.excludedSlotIndex }
+      : {}),
+  });
+  if (!legal.some((entry) => entry.dieId === dieId && entry.slotIndex === slotIndex)) {
+    return "INVALID_CHOICE";
+  }
+
+  const deferred = pending.deferred;
+  draft.pendingDecision = null;
+  const openedAnother = applyDieSlotChoice(draft, deferred, dieId, slotIndex);
+  if (openedAnother) return null;
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveChoosePoolSymbol(
+  draft: Draft,
+  playerId: PlayerId,
+  symbolId: SymbolInstanceId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "choose-pool-symbol") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (!pending.eligibleSymbolIds.includes(symbolId)) return "INVALID_CHOICE";
+
+  draft.pendingDecision = null;
+  applyPoolSymbolWildcard(draft, playerId, symbolId);
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveRemoveToxinAmount(
+  draft: Draft,
+  playerId: PlayerId,
+  amount: number,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "remove-toxin-amount") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (!Number.isInteger(amount) || amount < 0 || amount > pending.maxAmount) {
+    return "INVALID_CHOICE";
+  }
+
+  draft.pendingDecision = null;
+  applyRemoveToxinForDamage(draft, playerId, pending.creatureId, amount);
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveOptionalOvercharge(
+  draft: Draft,
+  playerId: PlayerId,
+  accept: boolean,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "optional-overcharge") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  draft.pendingDecision = null;
+  if (accept) {
+    applyOptionalOverchargeAccept(
+      draft,
+      playerId,
+      pending.amount,
+      pending.dieId,
+      pending.slotIndex,
+    );
+  }
+  return resumeAfterEffectPause(draft);
+}
+
+function resolveOptionalBonusAttack(
+  draft: Draft,
+  playerId: PlayerId,
+  accept: boolean,
+  attackId: AttackId | undefined,
+  targetId: CreatureId | undefined,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "optional-bonus-attack") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  draft.pendingDecision = null;
+  if (!accept) return resumeAfterEffectPause(draft);
+  if (attackId === undefined || targetId === undefined) return "INVALID_CHOICE";
+
+  const creature = draft.creatures[pending.creatureId];
+  if (creature === undefined || creature.defeated) return "CREATURE_DEFEATED";
+  if (creature.attacksUsedThisCombat > 0) return "ATTACK_ALREADY_USED";
+
+  const definition = getCreatureDefinition(creature.definitionId);
+  const attackDefinition = definition?.attacks.find((candidate) => candidate.id === attackId);
+  if (attackDefinition === undefined) return "CARD_NOT_AVAILABLE";
+  if (attackDefinition.kind !== "basic") return "INVALID_CHOICE";
+  if (attackDefinition.effect === undefined) return "CARD_HAS_NO_EFFECT";
+
+  // Absorption-phase exception for Instinct (OPEN_DESIGN ASSUMED).
+  const priorPhase = draft.phase;
+  draft.phase = "actions";
+  const error = attack(draft, playerId, pending.creatureId, attackId, targetId);
+  draft.phase = priorPhase;
+  if (error !== null) return error;
+  return resumeAfterEffectPause(draft);
+}
+
 function activateFace(
   draft: Draft,
   playerId: PlayerId,
@@ -1132,6 +1328,7 @@ function absorbSymbol(
   if (symbol === undefined) return "UNKNOWN_ENTITY";
   if (symbol.ownerId !== playerId) return "INVALID_TARGET";
   if (symbol.status !== "rolled") return "SYMBOL_UNAVAILABLE";
+  if (symbol.usable === false) return "SYMBOL_UNAVAILABLE";
 
   const creature = draft.creatures[creatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
@@ -1176,6 +1373,7 @@ function absorbSymbolToRitual(
   if (symbol === undefined) return "UNKNOWN_ENTITY";
   if (symbol.ownerId !== playerId) return "INVALID_TARGET";
   if (symbol.status !== "rolled") return "SYMBOL_UNAVAILABLE";
+  if (symbol.usable === false) return "SYMBOL_UNAVAILABLE";
   if (!isAttributeSymbol(symbol.symbol)) return "INVALID_TARGET";
 
   const card = draft.cards[cardInstanceId];
@@ -2148,6 +2346,9 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   draft.forgeDiscountThisTurn = {};
   draft.requirementWildcardsThisTurn = {};
   draft.bladeRainArmed = {};
+  draft.facesAppearedThisRoll = [];
+  draft.resolveNextFaceEffectTwice = {};
+  clearResourceLocks(draft);
   clearTurnTriggerState(draft);
 
   draft.energy = track;
@@ -2157,6 +2358,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   draft.activePlayerId = track.holderId;
   emit(draft, { type: "turn-started", turn: draft.turn, playerId: track.holderId });
 
+  clearToxinReceiveCapsForOwner(draft, track.holderId);
   // Toxin counters tick at the start of the creature's owner's turn.
   tickToxins(draft, track.holderId);
   // Exhausted once-per-turn rituals come off diagonal; Active when is met by

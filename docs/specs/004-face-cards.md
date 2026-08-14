@@ -1,8 +1,8 @@
 # 004 — Face cards and the face deck
 
 Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; On roll / On absorb
-wired where modellable (`011`). Remaining: push (Impact roll), empty print
-(Great Spark / Rekindle), face-marker systems — [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+wired where modellable (`011`–`013`). Remaining: push (Impact roll), empty print
+(Great Spark / Rekindle) — [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
 Derived from the `Face card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, node `2:13`).
@@ -71,7 +71,7 @@ Named specials:
 | Vital Spark | 2 | On roll: heal; On absorb: prevent 1 | |
 | Aegis | 2 | On roll: generate Shield; On absorb: redirect | |
 | Revelation | 2 | On roll: peek/bottom; On absorb: heal if damage >½ life | |
-| Instinct | 2 | On roll: optional ally reposition | Absorb extra basic ASSUMED no-op |
+| Instinct | 2 | On roll: optional ally reposition; On absorb: optional absorption-phase basic | Spec `013` |
 | Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: optional reposition | |
 | Command | 2 | On roll: ally move; On absorb: enemy move | |
@@ -79,13 +79,13 @@ Named specials:
 | Formation | 2 | On roll: Energy if controller has FL; On absorb: prevent on other FL | |
 | Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 | |
 | Spores | 2 | On roll: extra toxin if already toxined; On absorb: heal toxined ally | |
-| Adaptive Toxin | 2 | Print only | Cap / strip→damage — face-marker deferred |
-| Stain | 2 | Print only | Face-marker deferred |
-| Infection | 2 | On absorb: opp loses Energy | On roll spread — deferred |
-| Decay | 2 | Print only | Face-marker deferred |
+| Adaptive Toxin | 2 | Cap toxin receive; strip markers → damage | Spec `013` |
+| Stain | 2 | Corruption marker; lock Corrupted as resource | Spec `013` |
+| Infection | 2 | On roll: spread marker; On absorb: opp loses Energy | Spec `013` |
+| Decay | 2 | Suppress Natural inherent; strip → unusable Corruption | Spec `013` |
 | Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
-| Catalyst | 2 | Print only | Treat-as / copy face — deferred |
-| Overcharge | 2 | Print only | Optional Energy + skip / double — deferred |
+| Catalyst | 2 | Synthetic pool wildcard; copy appeared synthetic onRoll | Spec `013` |
+| Overcharge | 2 | Optional Energy + suppress; next face effect twice | Spec `013` |
 | Flywheel | 2 | On roll: +Energy; On absorb: generate Shield | |
 | Piston | 2 | On roll: generate Mechanical; On absorb: +Energy | |
 | Shadow Echo | 2 | On roll: optional discard→draw; On absorb: GY ≤2 | |
@@ -99,18 +99,18 @@ Named specials:
 | Seep | 2 | On roll: generate Toxin; On absorb: arm attack-toxin 1 | |
 
 Great Spark and Rekindle appear as art on the page but have no printed rules text yet.
-Empty hook arrays stay where clauses are deferred (`DEFERRED_CATALOGUE.md`).
 Portuguese *Sobrecarga* is catalogued as **Overcharge**.
 
 ## State Changes
 
 `players[*].facePool`, `attackBonusThisTurn` (Crush), `DieSlot.pestilenceCounters`,
-`FaceCardDefinition.activated`, turn maps in `011`.
+`DieSlot.corruptionMarkers` / `suppressInherentNextRoll` / `resourceLockedThisTurn`,
+`FaceCardDefinition.activated`, turn maps in `011`–`013`.
 
 ## Actions
 
 `FORGE_CARD` respects face forge restrictions. `ACTIVATE_FACE` for Heritage /
-Plague (spec `012`).
+Plague (spec `012`). Face-marker pending resolves in spec `013`.
 
 ## Acceptance Criteria
 
@@ -118,11 +118,12 @@ Plague (spec `012`).
 - [x] Correct overload capacities
 - [x] Echo forge restriction
 - [x] Crush and Rending Claw on-roll effects
-- [x] Modellable CSV / named special On roll / On absorb wired (`011`)
-- [ ] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll)
+- [x] Modellable CSV / named special On roll / On absorb wired (`011`–`013`)
+- [x] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll, Instinct absorb)
 
 ## Tests
 
 - [x] `src/game/reducer/faceDeck.test.ts`
+- [x] `src/game/reducer/faceMarkers.test.ts`
 - [x] Existing forge / invariant / triggers suites
-- [x] Spec `011` focused suites
+- [x] Spec `011` / `012` / `013` focused suites

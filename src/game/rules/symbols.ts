@@ -17,7 +17,10 @@ import {
  */
 export const usableSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInstance[] =>
   Object.values(state.symbols).filter(
-    (symbol) => symbol.ownerId === playerId && symbol.status === "available",
+    (symbol) =>
+      symbol.ownerId === playerId &&
+      symbol.status === "available" &&
+      symbol.usable !== false,
   );
 
 /**

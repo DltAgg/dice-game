@@ -1,12 +1,15 @@
 import { getCreatureDefinition } from "../content/creatures.js";
-import type { CreatureChoiceFilter, DieChoiceFilter } from "../model/effects.js";
-import type { CreatureId, DieId, PlayerId } from "../model/ids.js";
+import type { CreatureChoiceFilter, DieChoiceFilter, DieSlotChoiceFilter } from "../model/effects.js";
+import type { CreatureId, DieId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { getFaceCard } from "../content/faces.js";
 import { livingCreaturesOf, opponentOf } from "./creatures.js";
 import { isDieStunned } from "./dice.js";
 
-type QueryState = Pick<GameState, "creatures" | "players" | "dice" | "config">;
+type QueryState = Pick<
+  GameState,
+  "creatures" | "players" | "dice" | "config" | "facesAppearedThisRoll"
+>;
 
 export function legalCreaturesForFilter(
   state: QueryState,
@@ -90,6 +93,98 @@ export function legalDiceForFilter(
     case "any-synthetic-corruption":
       return [...own, ...opp].filter(hasSyntheticCorruption);
   }
+}
+
+export type DieSlotRef = { readonly dieId: DieId; readonly slotIndex: number };
+
+function faceAt(
+  state: QueryState,
+  dieId: DieId,
+  slotIndex: number,
+): ReturnType<typeof getFaceCard> {
+  const faceCardId = state.dice[dieId]?.slots[slotIndex]?.faceCardId;
+  if (faceCardId === undefined) return undefined;
+  return getFaceCard(faceCardId);
+}
+
+export function legalDieSlotsForFilter(
+  state: QueryState,
+  controllerId: PlayerId,
+  filter: DieSlotChoiceFilter,
+  context?: { readonly contextDieId?: DieId; readonly excludedSlotIndex?: number },
+): readonly DieSlotRef[] {
+  const oppId = opponentOf(state as GameState, controllerId);
+  const oppDice = state.players[oppId]?.dieIds ?? [];
+  const results: DieSlotRef[] = [];
+
+  const pushMatching = (
+    dieIds: readonly DieId[],
+    predicate: (dieId: DieId, slotIndex: number) => boolean,
+  ): void => {
+    for (const dieId of dieIds) {
+      const die = state.dice[dieId];
+      if (die === undefined) continue;
+      for (const slot of die.slots) {
+        if (predicate(dieId, slot.index)) {
+          results.push({ dieId, slotIndex: slot.index });
+        }
+      }
+    }
+  };
+
+  switch (filter) {
+    case "opposing-synthetic":
+      pushMatching(oppDice, (dieId, slotIndex) => faceAt(state, dieId, slotIndex)?.kind === "synthetic");
+      break;
+    case "opposing-natural":
+      pushMatching(oppDice, (dieId, slotIndex) => faceAt(state, dieId, slotIndex)?.kind === "natural");
+      break;
+    case "opposing-corrupted":
+      pushMatching(oppDice, (dieId, slotIndex) => {
+        const markers = state.dice[dieId]?.slots[slotIndex]?.corruptionMarkers ?? 0;
+        return markers >= 1;
+      });
+      break;
+    case "opposing-corrupted-with-other-slot":
+      pushMatching(oppDice, (dieId, slotIndex) => {
+        const die = state.dice[dieId];
+        if (die === undefined) return false;
+        const markers = die.slots[slotIndex]?.corruptionMarkers ?? 0;
+        return markers >= 1 && die.slots.length > 1;
+      });
+      break;
+    case "same-die-other-slot": {
+      const dieId = context?.contextDieId;
+      const excluded = context?.excludedSlotIndex;
+      if (dieId === undefined || excluded === undefined) break;
+      const die = state.dice[dieId];
+      if (die === undefined) break;
+      for (const slot of die.slots) {
+        if (slot.index !== excluded) {
+          results.push({ dieId, slotIndex: slot.index });
+        }
+      }
+      break;
+    }
+    case "appeared-synthetic-this-roll":
+      for (const entry of state.facesAppearedThisRoll ?? []) {
+        if (entry.kind === "synthetic") {
+          results.push({ dieId: entry.dieId, slotIndex: entry.slotIndex });
+        }
+      }
+      break;
+  }
+
+  return results;
+}
+
+/** @internal helper for tests / callers that need the face id at a slot. */
+export function faceCardIdAt(
+  state: QueryState,
+  dieId: DieId,
+  slotIndex: number,
+): FaceCardId | undefined {
+  return state.dice[dieId]?.slots[slotIndex]?.faceCardId;
 }
 
 export function choiceFilterForSelector(

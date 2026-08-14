@@ -47,6 +47,12 @@ export interface SymbolInstance {
   /** Null when an effect created the symbol rather than a die roll. */
   readonly sourceDieId: DieId | null;
   readonly absorbedByCreatureId: CreatureId | null;
+  /**
+   * When `false`, cannot pay `[Requires]` / ritual Active-when or be absorbed
+   * as a usable attribute (Decay unusable Corruption; resource-locked faces).
+   * Omitted / `true` = usable. Spec `013`.
+   */
+  readonly usable?: boolean;
 }
 
 /**

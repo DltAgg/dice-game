@@ -121,4 +121,9 @@ export interface CreatureState {
    * or at end of turn.
    */
   readonly nextIncomingDamageBonus: number;
+  /**
+   * Adaptive Toxin: remaining markers this creature may still receive until its
+   * owner's next turn starts. `null` / omitted = uncapped. Spec `013`.
+   */
+  readonly toxinReceiveCapRemaining?: number | null;
 }

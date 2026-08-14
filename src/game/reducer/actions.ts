@@ -192,6 +192,52 @@ export type GameAction =
       readonly accept: boolean;
     }
   /**
+   * Completes a pending die-slot choice (Corruption markers, suppress, lock,
+   * Catalyst copy). `dieId`/`slotIndex` null declines an optional choice.
+   * Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_DIE_SLOT";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId | null;
+      readonly slotIndex: number | null;
+    }
+  /**
+   * Completes a pending pool-symbol choice (Catalyst roll wildcard). Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_POOL_SYMBOL";
+      readonly playerId: PlayerId;
+      readonly symbolId: SymbolInstanceId;
+    }
+  /**
+   * Completes Adaptive Toxin absorb: remove `amount` markers (0..max) and deal
+   * that much damage. Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_REMOVE_TOXIN_AMOUNT";
+      readonly playerId: PlayerId;
+      readonly amount: number;
+    }
+  /**
+   * Completes Overcharge optional Energy + suppress. Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_OPTIONAL_OVERCHARGE";
+      readonly playerId: PlayerId;
+      readonly accept: boolean;
+    }
+  /**
+   * Completes Instinct optional bonus basic during absorption. Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_OPTIONAL_BONUS_ATTACK";
+      readonly playerId: PlayerId;
+      readonly accept: boolean;
+      readonly attackId?: AttackId;
+      readonly targetId?: CreatureId;
+    }
+  /**
    * Activate a showing face's `activated` ability (Forbidden Heritage /
    * Pestilent Plague). Legal in the actions phase.
    */

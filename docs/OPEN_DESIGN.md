@@ -465,8 +465,8 @@ returns to A); after Pass×2 the chain resolves and A’s turn does **not** end.
 
 Toxin counters are tokens on a creature. At the start of that creature's
 owner's turn, the creature takes 1 damage per Toxin counter it holds. Counters
-persist until something removes them. Adaptive Toxin’s “remove any number →
-damage” absorb is still deferred (no toxin-strip proving card this pass).
+persist until something removes them. Adaptive Toxin’s “remove any number → damage” absorb and toxin receive cap are
+wired in spec `013`.
 
 ---
 
@@ -571,7 +571,7 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Retain-from-effect** | Marks a chosen owned die retained (same rules as `RETAIN_DIE`, including a known rolled slot). |
 | **Requirement wildcard** | One-shot: a matching pool symbol may pay any `[Requires]` / ritual Active-when attribute this turn (Resonance absorb). Consumed when used. |
 | **Pack adjacent** | Another living ally shares a **`creatureIds` neighbor (±1)** among living creatures. At roll, `has-adjacent-ally` is true if any two consecutive entries in the controller’s `creatureIds` are both living. |
-| **Instinct On absorb** | No extra attack. The absorbing creature may still declare a basic in the actions phase if it has not attacked. Absorb during absorption does **not** let it attack in that phase. |
+| **Instinct On absorb** | Optional immediate basic during absorption: pending `optional-bonus-attack` for the absorbing creature if `attacksUsedThisCombat === 0`. Player may decline or declare that creature’s basic (fuel/range as normal). Spec `013`. |
 | **Aegis redirect** | Until EOT, up to 2 damage that would be dealt to **another** allied creature is dealt to the absorber instead (before prevent/shield on the original). Turn-scoped `redirectDamageThisTurn` on the absorber. |
 | **Revelation heal** | Heal 2 on an allied creature with damage **strictly greater than** half life (`damage > life/2`). |
 | **Mirrored Rune** | On absorb Arcane: generate 1 extra symbol matching **another** symbol currently in the controller’s available/rolled pool (`copy-pool-symbol`). |
@@ -586,6 +586,23 @@ Push stays unmodelled (DECIDED no). Stun stays `DEFERRED`.
 
 ---
 
+## Prototype assumptions — face markers (2026-08-14)
+
+**Status:** `ASSUMED` · implemented in `src/game` · spec `docs/specs/013-face-markers.md`
+
+| Topic | Assumption coded |
+|---|---|
+| **Corruption markers** | Per **physical die slot** (`DieSlot.corruptionMarkers`), not per face-card definition. Copies of the same face on different slots do not share markers. “Corrupted face” = slot with ≥1 marker. |
+| **Suppress inherent** | Skip face `onRoll` only (overloads still fire). Flags on all slots of a rolled die clear on that `ROLL_DICE`; showing slot’s suppress skips its inherent. |
+| **Resource lock** | Slot flag this turn; if showing, matching rolled/available symbols get `usable: false`. Cannot pay Requires / Active-when / absorb. |
+| **Decay unusable symbol** | Strip face → Shield (like `ACTIVATE_FACE`); create Corruption in **Decay controller’s** pool with `usable: false` (not the face owner’s). |
+| **Toxin receive cap** | At most `amount` markers **gained** while the cap remains (remaining counter), until that creature’s owner’s next turn starts. |
+| **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this controller’s last `ROLL_DICE` (`facesAppearedThisRoll`). Not overloads. |
+| **Overcharge double** | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. |
+| **Instinct absorb** | Optional absorption-phase basic via `optional-bonus-attack` (see row above). |
+
+---
+
 ## Open questions
 
 ### Special face inherent-effect text
@@ -596,7 +613,7 @@ English printings are in `docs/specs/004-face-cards.md` and `src/game/content/fa
 Crush, Rending Claw, Arcane Echo (re-fire other die onRoll), Blade Rain, Forbidden
 Heritage, and Pestilent Plague are wired. Great Spark / Rekindle still lack
 printings. Face-marker systems (Stain, Decay, Catalyst, Overcharge, Adaptive Toxin,
-Infection roll) remain in `docs/DEFERRED_CATALOGUE.md`.
+Infection roll, Instinct absorb) are wired in `013-face-markers.md`.
 
 ### Whether a creature's fuel is capped
 

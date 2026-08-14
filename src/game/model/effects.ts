@@ -253,7 +253,72 @@ export type EffectDefinition =
   /** Pending optional reroll of the source die (Adrenaline). */
   | { readonly type: "optional-reroll-die" }
   /** Add 1 pestilence counter on the source slot; at 5, reset and try adjacent forge. */
-  | { readonly type: "add-pestilence-counter" };
+  | { readonly type: "add-pestilence-counter" }
+  /**
+   * Until the target's owner's next turn, further `apply-toxin` applications
+   * may grant at most `amount` markers total (Adaptive Toxin). Spec `013`.
+   */
+  | {
+      readonly type: "arm-toxin-receive-cap";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
+  /**
+   * Pending: choose how many Toxin markers to remove from the target (0..current);
+   * deal that much damage. Spec `013`.
+   */
+  | { readonly type: "remove-toxin-deal-damage"; readonly target: TargetSelector }
+  /**
+   * Pending: put `amount` Corruption marker(s) on an opposing synthetic face
+   * slot. Spec `013`.
+   */
+  | { readonly type: "add-corruption-marker"; readonly amount: number }
+  /**
+   * Pending: lock an opposing Corrupted face so its symbols cannot pay costs
+   * this turn. Spec `013`.
+   */
+  | { readonly type: "lock-corrupted-face-resource" }
+  /**
+   * If the opponent has a Corrupted face, pending: put 1 Corruption marker on
+   * another face of the same die (Infection). Spec `013`.
+   */
+  | { readonly type: "spread-corruption-marker" }
+  /**
+   * Pending: choose an opposing Natural face; suppress its inherent `onRoll`
+   * until the next roll. Spec `013`.
+   */
+  | { readonly type: "suppress-opposing-natural-inherent" }
+  /**
+   * Pending: strip an opposing Corrupted face to Shield (face returns to its
+   * owner's pool) and put an unusable Corruption symbol in the controller's
+   * pool. Spec `013`.
+   */
+  | { readonly type: "strip-corrupted-face-unusable-symbol" }
+  /**
+   * Pending: choose a Synthetic symbol in the controller's pool; arm a
+   * requirement wildcard from that symbol. Spec `013`.
+   */
+  | { readonly type: "arm-wildcard-from-synthetic-pool" }
+  /**
+   * Pending: re-queue `onRoll` of a Synthetic face that appeared this roll for
+   * the controller. Spec `013`.
+   */
+  | { readonly type: "copy-appeared-synthetic-onroll" }
+  /**
+   * Pending optional: gain `amount` Energy and mark the source slot
+   * Overcharged (suppress inherent next roll). Spec `013`.
+   */
+  | { readonly type: "optional-overcharge-energy"; readonly amount: number }
+  /**
+   * The next face-sourced effect (`sourceDieId` set) the controller resolves
+   * this turn is applied twice. Spec `013`.
+   */
+  | { readonly type: "arm-resolve-next-face-effect-twice" }
+  /**
+   * Pending optional: the absorbing creature may declare a basic attack now
+   * (absorption-phase exception) if it has not attacked this turn. Spec `013`.
+   */
+  | { readonly type: "optional-bonus-basic-attack" };
 
 export type EffectCondition =
   | { readonly type: "source-position"; readonly position: "frontline" | "back" }
@@ -333,6 +398,15 @@ export type CreatureChoiceFilter =
 
 /** Filters for a `choose-die` pending (spec `012`). */
 export type DieChoiceFilter = "owned-retainable" | "owned-rolled" | "any-synthetic-corruption";
+
+/** Filters for a `choose-die-slot` pending (spec `013`). */
+export type DieSlotChoiceFilter =
+  | "opposing-synthetic"
+  | "opposing-natural"
+  | "opposing-corrupted"
+  | "opposing-corrupted-with-other-slot"
+  | "same-die-other-slot"
+  | "appeared-synthetic-this-roll";
 
 export const NATURAL_CONVERT_SYMBOLS: readonly DualKindAttribute[] = [
   "martial",

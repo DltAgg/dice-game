@@ -263,6 +263,8 @@ export function createMatch(setup: MatchSetup): GameState {
     forgeDiscountThisTurn: {},
     requirementWildcardsThisTurn: {},
     bladeRainArmed: {},
+    facesAppearedThisRoll: [],
+    resolveNextFaceEffectTwice: {},
     winner: null,
     log: [
       { seq: 0, turn: 1, event: { type: "match-started", firstPlayerId: first.id } },

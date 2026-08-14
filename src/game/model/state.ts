@@ -6,6 +6,7 @@ import type { Attribute } from "./attributes.js";
 import type {
   CreatureChoiceFilter,
   DieChoiceFilter,
+  DieSlotChoiceFilter,
   EffectDefinition,
 } from "./effects.js";
 import type { LoggedEvent } from "./events.js";
@@ -242,6 +243,42 @@ export type PendingDecision =
       readonly controllerId: PlayerId;
       readonly dieId: DieId;
       readonly faceCardId: FaceCardId;
+    }
+  | {
+      readonly type: "choose-die-slot";
+      readonly controllerId: PlayerId;
+      readonly filter: DieSlotChoiceFilter;
+      readonly optional?: boolean;
+      /** For `same-die-other-slot`: die already chosen. */
+      readonly contextDieId?: DieId;
+      /** For `same-die-other-slot`: slot that must not be chosen again. */
+      readonly excludedSlotIndex?: number;
+      readonly deferred: PendingEffect;
+    }
+  | {
+      readonly type: "choose-pool-symbol";
+      readonly controllerId: PlayerId;
+      /** Eligible symbol instance ids (synthetic-in-pool). */
+      readonly eligibleSymbolIds: readonly SymbolInstanceId[];
+      readonly deferred: PendingEffect;
+    }
+  | {
+      readonly type: "remove-toxin-amount";
+      readonly controllerId: PlayerId;
+      readonly creatureId: CreatureId;
+      readonly maxAmount: number;
+    }
+  | {
+      readonly type: "optional-overcharge";
+      readonly controllerId: PlayerId;
+      readonly amount: number;
+      readonly dieId: DieId;
+      readonly slotIndex: number;
+    }
+  | {
+      readonly type: "optional-bonus-attack";
+      readonly controllerId: PlayerId;
+      readonly creatureId: CreatureId;
     };
 
 export interface PlayerState {
@@ -334,6 +371,21 @@ export interface GameState {
   >;
   /** Blade Rain: next attack this turn splits its damage. */
   readonly bladeRainArmed: Readonly<Record<string, boolean>>;
+  /**
+   * Faces that showed during the active player's last `ROLL_DICE` this turn
+   * (Catalyst absorb). Cleared on `END_TURN` / next roll. Spec `013`.
+   */
+  readonly facesAppearedThisRoll: readonly {
+    readonly dieId: DieId;
+    readonly slotIndex: number;
+    readonly faceCardId: FaceCardId;
+    readonly kind: FaceKind;
+  }[];
+  /**
+   * Overcharge absorb: next face-sourced effect (`sourceDieId` set) resolves
+   * twice. Spec `013`.
+   */
+  readonly resolveNextFaceEffectTwice: Readonly<Record<string, boolean>>;
   readonly winner: PlayerId | null;
   readonly log: readonly LoggedEvent[];
 

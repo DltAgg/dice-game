@@ -28,7 +28,7 @@ import {
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
 } from "../rules/faces.js";
-import { legalCreaturesForFilter, legalDiceForFilter, choiceFilterForSelector } from "../rules/targets.js";
+import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, choiceFilterForSelector } from "../rules/targets.js";
 import { discardTokensInAttributeOrder, totalTokens } from "../rules/tokens.js";
 import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
@@ -367,6 +367,27 @@ function applyToTargets(
 
 /** Returns true when resolution must wait on a player choice. */
 function applyEffect(draft: Draft, pending: PendingEffect): boolean {
+  // Overcharge absorb: duplicate the next face-sourced effect once.
+  if (
+    pending.sourceDieId !== null &&
+    draft.resolveNextFaceEffectTwice[pending.controllerId] === true
+  ) {
+    const next = { ...draft.resolveNextFaceEffectTwice };
+    delete next[pending.controllerId];
+    draft.resolveNextFaceEffectTwice = next;
+    pushEffect(
+      draft,
+      pending.controllerId,
+      pending.effect,
+      pending.sourceCreatureId,
+      pending.declaredTargetCreatureId,
+      pending.declaredTargetCardInstanceId,
+      pending.sourceDieId,
+      pending.sourceSlotIndex,
+      pending.ignoreShield,
+    );
+  }
+
   const { effect } = pending;
 
   if ("target" in effect && typeof effect.target === "object") {
@@ -909,7 +930,211 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       applyPestilenceCounter(draft, pending);
       return false;
     }
+    case "arm-toxin-receive-cap": {
+      applyToTargets(draft, pending, effect.target, (targetId) => {
+        patchCreature(draft, targetId, { toxinReceiveCapRemaining: effect.amount });
+      });
+      return false;
+    }
+    case "remove-toxin-deal-damage": {
+      const targetId = resolveTarget(draft, pending, effect.target);
+      if (targetId === null) return false;
+      const creature = draft.creatures[targetId];
+      if (creature === undefined || creature.defeated) return false;
+      const maxAmount = creature.toxinMarkers;
+      if (maxAmount <= 0) return false;
+      draft.pendingDecision = {
+        type: "remove-toxin-amount",
+        controllerId: pending.controllerId,
+        creatureId: targetId,
+        maxAmount,
+      };
+      return true;
+    }
+    case "add-corruption-marker": {
+      return openDieSlotChoice(draft, pending, "opposing-synthetic", false);
+    }
+    case "lock-corrupted-face-resource": {
+      return openDieSlotChoice(draft, pending, "opposing-corrupted", false);
+    }
+    case "spread-corruption-marker": {
+      return openDieSlotChoice(draft, pending, "opposing-corrupted-with-other-slot", false);
+    }
+    case "suppress-opposing-natural-inherent": {
+      return openDieSlotChoice(draft, pending, "opposing-natural", false);
+    }
+    case "strip-corrupted-face-unusable-symbol": {
+      return openDieSlotChoice(draft, pending, "opposing-corrupted", false);
+    }
+    case "arm-wildcard-from-synthetic-pool": {
+      const eligible = poolSymbols(draft, pending.controllerId)
+        .filter((symbol) => {
+          if (symbol.usable === false) return false;
+          const kind = faceKindOfSymbol(draft, symbol.sourceDieId);
+          if (kind === "synthetic") return true;
+          return isSyntheticOnlyAttribute(symbol.symbol);
+        })
+        .map((symbol) => symbol.id);
+      if (eligible.length === 0) return false;
+      draft.pendingDecision = {
+        type: "choose-pool-symbol",
+        controllerId: pending.controllerId,
+        eligibleSymbolIds: eligible,
+        deferred: pending,
+      };
+      return true;
+    }
+    case "copy-appeared-synthetic-onroll": {
+      return openDieSlotChoice(draft, pending, "appeared-synthetic-this-roll", false);
+    }
+    case "optional-overcharge-energy": {
+      if (pending.sourceDieId === null || pending.sourceSlotIndex === null) return false;
+      draft.pendingDecision = {
+        type: "optional-overcharge",
+        controllerId: pending.controllerId,
+        amount: effect.amount,
+        dieId: pending.sourceDieId,
+        slotIndex: pending.sourceSlotIndex,
+      };
+      return true;
+    }
+    case "arm-resolve-next-face-effect-twice": {
+      draft.resolveNextFaceEffectTwice = {
+        ...draft.resolveNextFaceEffectTwice,
+        [pending.controllerId]: true,
+      };
+      return false;
+    }
+    case "optional-bonus-basic-attack": {
+      const creatureId = pending.sourceCreatureId;
+      if (creatureId === null) return false;
+      const creature = draft.creatures[creatureId];
+      if (creature === undefined || creature.defeated) return false;
+      if (creature.attacksUsedThisCombat > 0) return false;
+      draft.pendingDecision = {
+        type: "optional-bonus-attack",
+        controllerId: pending.controllerId,
+        creatureId,
+      };
+      return true;
+    }
   }
+}
+
+function openDieSlotChoice(
+  draft: Draft,
+  pending: PendingEffect,
+  filter: import("../model/effects.js").DieSlotChoiceFilter,
+  optional: boolean,
+  context?: { readonly contextDieId?: DieId; readonly excludedSlotIndex?: number },
+): boolean {
+  const legal = legalDieSlotsForFilter(draft, pending.controllerId, filter, context);
+  if (legal.length === 0) return false;
+  draft.pendingDecision = {
+    type: "choose-die-slot",
+    controllerId: pending.controllerId,
+    filter,
+    optional,
+    ...(context?.contextDieId !== undefined ? { contextDieId: context.contextDieId } : {}),
+    ...(context?.excludedSlotIndex !== undefined
+      ? { excludedSlotIndex: context.excludedSlotIndex }
+      : {}),
+    deferred: pending,
+  };
+  return true;
+}
+
+/**
+ * Applies a completed `choose-die-slot` against the deferred effect.
+ * Returns true when another pending was opened (Infection spread step 2).
+ */
+export function applyDieSlotChoice(
+  draft: Draft,
+  pending: PendingEffect,
+  dieId: DieId,
+  slotIndex: number,
+): boolean {
+  const effect = pending.effect;
+  switch (effect.type) {
+    case "add-corruption-marker":
+      addCorruptionMarker(draft, dieId, slotIndex, effect.amount);
+      return false;
+    case "lock-corrupted-face-resource":
+      lockFaceResource(draft, dieId, slotIndex);
+      return false;
+    case "spread-corruption-marker":
+      return openDieSlotChoice(
+        draft,
+        { ...pending, effect: { type: "add-corruption-marker", amount: 1 } },
+        "same-die-other-slot",
+        false,
+        { contextDieId: dieId, excludedSlotIndex: slotIndex },
+      );
+    case "suppress-opposing-natural-inherent":
+      setSuppressInherentNextRoll(draft, dieId, slotIndex);
+      return false;
+    case "strip-corrupted-face-unusable-symbol": {
+      const die = draft.dice[dieId];
+      const ownerId = die?.ownerId ?? pending.controllerId;
+      stripFaceToShield(draft, dieId, slotIndex, ownerId);
+      createSymbol(draft, pending.controllerId, "corruption", "available", "effect", {
+        usable: false,
+      });
+      return false;
+    }
+    case "copy-appeared-synthetic-onroll": {
+      const faceCardId = draft.dice[dieId]?.slots[slotIndex]?.faceCardId;
+      if (faceCardId === undefined) return false;
+      const face = getFaceCard(faceCardId);
+      if (face === undefined) return false;
+      for (const child of [...face.onRoll].reverse()) {
+        pushEffect(draft, pending.controllerId, child, null, null, null, dieId, slotIndex);
+      }
+      return false;
+    }
+    default:
+      return false;
+  }
+}
+
+export function applyPoolSymbolWildcard(
+  draft: Draft,
+  controllerId: PlayerId,
+  symbolId: SymbolInstanceId,
+): void {
+  const symbol = draft.symbols[symbolId];
+  if (symbol === undefined) return;
+  const current = draft.requirementWildcardsThisTurn[controllerId] ?? [];
+  draft.requirementWildcardsThisTurn = {
+    ...draft.requirementWildcardsThisTurn,
+    [controllerId]: [...current, { fromSymbol: symbol.symbol }],
+  };
+}
+
+export function applyRemoveToxinForDamage(
+  draft: Draft,
+  controllerId: PlayerId,
+  creatureId: CreatureId,
+  amount: number,
+): void {
+  const creature = draft.creatures[creatureId];
+  if (creature === undefined || creature.defeated || amount <= 0) return;
+  const removed = Math.min(amount, creature.toxinMarkers);
+  if (removed <= 0) return;
+  patchCreature(draft, creatureId, { toxinMarkers: creature.toxinMarkers - removed });
+  dealDamage(draft, creatureId, removed);
+  void controllerId;
+}
+
+export function applyOptionalOverchargeAccept(
+  draft: Draft,
+  controllerId: PlayerId,
+  amount: number,
+  dieId: DieId,
+  slotIndex: number,
+): void {
+  gainEnergy(draft, controllerId, amount);
+  setSuppressInherentNextRoll(draft, dieId, slotIndex);
 }
 
 function applyReposition(
@@ -1216,6 +1441,7 @@ export function createSymbol(
   symbol: SymbolType,
   status: SymbolStatus,
   source: "roll" | "effect",
+  options?: { readonly usable?: boolean },
 ): SymbolInstanceId {
   const id = asSymbolInstanceId(nextInstanceId(draft, "symbol"));
   draft.symbols[id] = {
@@ -1225,6 +1451,7 @@ export function createSymbol(
     status,
     sourceDieId: null,
     absorbedByCreatureId: null,
+    ...(options?.usable === false ? { usable: false } : {}),
   };
   emit(draft, { type: "symbol-generated", symbolId: id, symbol, ownerId, source });
   return id;
@@ -1259,9 +1486,123 @@ export function applyToxin(draft: Draft, creatureId: CreatureId, amount: number)
   const creature = draft.creatures[creatureId];
   if (creature === undefined || creature.defeated || amount <= 0) return;
 
-  const total = creature.toxinMarkers + amount;
-  patchCreature(draft, creatureId, { toxinMarkers: total });
-  emit(draft, { type: "toxin-applied", creatureId, amount, total });
+  let granted = amount;
+  const cap = creature.toxinReceiveCapRemaining;
+  if (cap !== undefined && cap !== null) {
+    if (cap <= 0) return;
+    granted = Math.min(amount, cap);
+  }
+  if (granted <= 0) return;
+
+  const total = creature.toxinMarkers + granted;
+  const nextCap =
+    cap === undefined || cap === null ? cap : Math.max(0, cap - granted);
+  patchCreature(draft, creatureId, {
+    toxinMarkers: total,
+    ...(cap !== undefined && cap !== null ? { toxinReceiveCapRemaining: nextCap } : {}),
+  });
+  emit(draft, { type: "toxin-applied", creatureId, amount: granted, total });
+}
+
+export function addCorruptionMarker(
+  draft: Draft,
+  dieId: DieId,
+  slotIndex: number,
+  amount: number,
+): void {
+  const die = draft.dice[dieId];
+  if (die === undefined || amount <= 0) return;
+  const slots = die.slots.map((slot) => {
+    if (slot.index !== slotIndex) return slot;
+    return {
+      ...slot,
+      corruptionMarkers: (slot.corruptionMarkers ?? 0) + amount,
+    };
+  });
+  patchDie(draft, dieId, { slots });
+}
+
+export function lockFaceResource(draft: Draft, dieId: DieId, slotIndex: number): void {
+  const die = draft.dice[dieId];
+  if (die === undefined) return;
+  const slots = die.slots.map((slot) =>
+    slot.index === slotIndex ? { ...slot, resourceLockedThisTurn: true } : slot,
+  );
+  patchDie(draft, dieId, { slots });
+  if (die.rolledSlotIndex === slotIndex) {
+    for (const symbol of Object.values(draft.symbols)) {
+      if (symbol.sourceDieId !== dieId) continue;
+      if (symbol.status !== "rolled" && symbol.status !== "available") continue;
+      draft.symbols[symbol.id] = { ...symbol, usable: false };
+    }
+  }
+}
+
+export function setSuppressInherentNextRoll(
+  draft: Draft,
+  dieId: DieId,
+  slotIndex: number,
+): void {
+  const die = draft.dice[dieId];
+  if (die === undefined) return;
+  const slots = die.slots.map((slot) =>
+    slot.index === slotIndex ? { ...slot, suppressInherentNextRoll: true } : slot,
+  );
+  patchDie(draft, dieId, { slots });
+}
+
+/** Strip a face to natural Shield; return displaced face to its owner's pool. */
+export function stripFaceToShield(
+  draft: Draft,
+  dieId: DieId,
+  slotIndex: number,
+  shieldOwnerId: PlayerId,
+): void {
+  const die = draft.dice[dieId];
+  if (die === undefined) return;
+  const slot = die.slots[slotIndex];
+  if (slot === undefined) return;
+  const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
+  const slots = die.slots.map((candidate) =>
+    candidate.index === slotIndex
+      ? {
+          ...candidate,
+          faceCardId: SHIELD_FACE_ID,
+          faceCardOwnerId: shieldOwnerId,
+          pestilenceCounters: 0,
+          corruptionMarkers: 0,
+          suppressInherentNextRoll: false,
+          resourceLockedThisTurn: false,
+        }
+      : candidate,
+  );
+  patchDie(draft, dieId, { slots });
+  returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
+  if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
+    clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+  }
+}
+
+export function clearResourceLocks(draft: Draft): void {
+  for (const die of Object.values(draft.dice)) {
+    let changed = false;
+    const slots = die.slots.map((slot) => {
+      if (slot.resourceLockedThisTurn !== true) return slot;
+      changed = true;
+      return { ...slot, resourceLockedThisTurn: false };
+    });
+    if (changed) patchDie(draft, die.id, { slots });
+  }
+}
+
+export function clearToxinReceiveCapsForOwner(draft: Draft, ownerId: PlayerId): void {
+  for (const creature of Object.values(draft.creatures)) {
+    if (creature.ownerId !== ownerId) continue;
+    if (creature.toxinReceiveCapRemaining === undefined || creature.toxinReceiveCapRemaining === null) {
+      continue;
+    }
+    patchCreature(draft, creature.id, { toxinReceiveCapRemaining: null });
+  }
 }
 
 /** At the start of a creature's owner's turn: 1 damage per Toxin counter. */

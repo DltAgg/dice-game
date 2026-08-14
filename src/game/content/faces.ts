@@ -425,6 +425,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       onRoll: [
         { type: "reposition-creature", target: { kind: "choose-ally" }, optional: true },
       ],
+      onAbsorb: [{ type: "optional-bonus-basic-attack" }],
     },
   ),
   namedSynthetic(
@@ -541,6 +542,21 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "toxin",
     "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\n" +
       "On absorb: remove any number of markers from an enemy creature; for each marker removed, deal 1 damage.",
+    {
+      onRoll: [
+        {
+          type: "arm-toxin-receive-cap",
+          amount: 1,
+          target: { kind: "choose-enemy-with-toxin" },
+        },
+      ],
+      onAbsorb: [
+        {
+          type: "remove-toxin-deal-damage",
+          target: { kind: "choose-enemy" },
+        },
+      ],
+    },
   ),
   namedSynthetic(
     STAIN,
@@ -548,6 +564,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "corruption",
     "On roll: put 1 Corruption marker on an opposing synthetic face.\n" +
       "On absorb: choose an opposing Corrupted face; it cannot be used as a resource this turn.",
+    {
+      onRoll: [{ type: "add-corruption-marker", amount: 1 }],
+      onAbsorb: [{ type: "lock-corrupted-face-resource" }],
+    },
   ),
   namedSynthetic(
     INFECTION,
@@ -555,7 +575,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "corruption",
     "On roll: if the opponent has a Corrupted face, put 1 Corruption marker on another face of the same die.\n" +
       "On absorb: the opponent loses 1 unspent Energy.",
-    { onAbsorb: [{ type: "lose-energy", amount: 1, player: "opponent" }] },
+    {
+      onRoll: [{ type: "spread-corruption-marker" }],
+      onAbsorb: [{ type: "lose-energy", amount: 1, player: "opponent" }],
+    },
   ),
   namedSynthetic(
     DECAY,
@@ -563,6 +586,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "corruption",
     "On roll: choose an opposing Natural face; until the next roll, it has no inherent effect.\n" +
       "On absorb: remove a Corrupted face from the opponent's die and put it into its controller's Pool as an unusable Corruption symbol.",
+    {
+      onRoll: [{ type: "suppress-opposing-natural-inherent" }],
+      onAbsorb: [{ type: "strip-corrupted-face-unusable-symbol" }],
+    },
   ),
   namedSynthetic(
     GEAR,
@@ -587,6 +614,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "mechanical",
     "On roll: choose a Synthetic face in the Pool; it may be used as any attribute.\n" +
       "On absorb: copy the effect of a Synthetic face that appeared this roll.",
+    {
+      onRoll: [{ type: "arm-wildcard-from-synthetic-pool" }],
+      onAbsorb: [{ type: "copy-appeared-synthetic-onroll" }],
+    },
   ),
   namedSynthetic(
     OVERCHARGE,
@@ -594,6 +625,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "mechanical",
     "On roll: you may gain 1 additional Energy; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\n" +
       "On absorb: the next face effect you resolve this turn is resolved twice.",
+    {
+      onRoll: [{ type: "optional-overcharge-energy", amount: 1 }],
+      onAbsorb: [{ type: "arm-resolve-next-face-effect-twice" }],
+    },
   ),
   namedSynthetic(
     FLYWHEEL,
