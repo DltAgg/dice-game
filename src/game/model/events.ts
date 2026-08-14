@@ -11,6 +11,7 @@ import type {
   SymbolInstanceId,
 } from "./ids.js";
 import type { Attribute } from "./attributes.js";
+import type { FaceKind } from "./dice.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
 import type { ChainLinkKind, TurnPhase } from "./state.js";
 
@@ -209,9 +210,25 @@ export type GameEvent =
   | {
       readonly type: "face-forged";
       readonly playerId: PlayerId;
-      readonly cardInstanceId: CardInstanceId;
+      /** Null when the install came from a `forge-faces` effect, not FORGE_CARD. */
+      readonly cardInstanceId: CardInstanceId | null;
       readonly dieId: DieId;
       readonly slotIndex: number;
+      readonly faceCardId: FaceCardId;
+    }
+  | {
+      readonly type: "forge-faces-started";
+      readonly playerId: PlayerId;
+      readonly faces: number;
+      readonly kind: FaceKind;
+      readonly attribute: Attribute;
+      readonly target: "own-die" | "opponent-die";
+    }
+  | {
+      readonly type: "forge-faces-resolved";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId;
+      readonly slotIndexes: readonly number[];
       readonly faceCardId: FaceCardId;
     }
   | {

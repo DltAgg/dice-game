@@ -1,7 +1,7 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
-import { resolveFaceForForge } from "../rules/faces.js";
+import { resolveFaceForForge, preferredSlotsForForgeFaces } from "../rules/faces.js";
 import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -334,6 +334,43 @@ function resolvePending(state: GameState): GameState {
       throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_CREATURE`);
     }
     return resolvePending(result.state);
+  }
+
+  if (pending.type === "forge-faces") {
+    const ownerId =
+      pending.target === "own-die"
+        ? pending.controllerId
+        : opponentOf(state, pending.controllerId);
+    const faceCardId = resolveFaceForForge(
+      state,
+      pending.controllerId,
+      pending.kind,
+      pending.attribute,
+    );
+    if (faceCardId === null) {
+      throw new Error("autoplay: no face for forge-faces");
+    }
+    for (const die of diceOf(state, ownerId)) {
+      const slotIndexes = preferredSlotsForForgeFaces(
+        die,
+        pending.attribute,
+        pending.faces,
+        state.config,
+      );
+      if (slotIndexes === null) continue;
+      const result = advance(state, {
+        type: "RESOLVE_FORGE_FACES",
+        playerId: pending.controllerId,
+        dieId: die.id,
+        slotIndexes,
+        faceCardId,
+      });
+      if (!result.ok) {
+        throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_FORGE_FACES`);
+      }
+      return resolvePending(result.state);
+    }
+    throw new Error("autoplay: no die for forge-faces");
   }
 
   return state;

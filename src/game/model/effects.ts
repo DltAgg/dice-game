@@ -1,3 +1,5 @@
+import type { Attribute } from "./attributes.js";
+import type { FaceKind } from "./dice.js";
 import type { SymbolType } from "./symbols.js";
 
 /**
@@ -87,7 +89,19 @@ export type EffectDefinition =
   /**
    * Arm “when you next prevent damage, draw N” (Glimmer). Spec `009`.
    */
-  | { readonly type: "arm-prevent-draw"; readonly amount: number };
+  | { readonly type: "arm-prevent-draw"; readonly amount: number }
+  /**
+   * Controller forges `faces` copies of one matching face card onto a single
+   * die (Great Contamination, Ritual of Contamination). Same install rules as
+   * the PLAY forge region, without spending a tactic from hand.
+   */
+  | {
+      readonly type: "forge-faces";
+      readonly faces: number;
+      readonly kind: FaceKind;
+      readonly attribute: Attribute;
+      readonly target: "own-die" | "opponent-die";
+    };
 
 /**
  * Targets are resolved against the resolution context rather than chosen at

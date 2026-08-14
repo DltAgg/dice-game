@@ -34,7 +34,10 @@ export const livingCreaturesOf = (state: GameState, playerId: PlayerId): readonl
 export const findCreature = (state: GameState, id: CreatureId): CreatureState | undefined =>
   state.creatures[id];
 
-export const opponentOf = (state: GameState, playerId: PlayerId): PlayerId => {
+export const opponentOf = (
+  state: { readonly playerOrder: readonly [PlayerId, PlayerId] },
+  playerId: PlayerId,
+): PlayerId => {
   const [first, second] = state.playerOrder;
   return playerId === first ? second : first;
 };

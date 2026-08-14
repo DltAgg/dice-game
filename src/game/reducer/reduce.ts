@@ -130,6 +130,8 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
       action.type === "RESOLVE_CHOOSE_CREATURE"
     ) {
       allowed = true;
+    } else if (pending.type === "forge-faces" && action.type === "RESOLVE_FORGE_FACES") {
+      allowed = true;
     }
     if (!allowed) return fail(state, "PENDING_DECISION");
   }
@@ -194,6 +196,14 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return resolveDiscard(draft, action.playerId, action.cardInstanceIds);
     case "RESOLVE_CHOOSE_CREATURE":
       return resolveChooseCreature(draft, action.playerId, action.creatureId);
+    case "RESOLVE_FORGE_FACES":
+      return resolveForgeFaces(
+        draft,
+        action.playerId,
+        action.dieId,
+        action.slotIndexes,
+        action.faceCardId,
+      );
     case "PASS_PRIORITY":
       return passPriority(draft, action.playerId);
     case "ADVANCE_PHASE":
@@ -465,6 +475,104 @@ function resolveChooseCreature(
   return resumeAfterEffectPause(draft);
 }
 
+/**
+ * Completes a pending forge-from-effect. The controller names one legal die,
+ * the pending number of slots, and one eligible face card.
+ */
+function resolveForgeFaces(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId,
+  slotIndexes: readonly number[],
+  faceCardId: FaceCardId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "forge-faces") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const unique = new Set(slotIndexes);
+  if (unique.size !== slotIndexes.length || slotIndexes.length !== pending.faces) {
+    return "WRONG_FACE_COUNT";
+  }
+
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
+
+  const ownerId = pending.target === "own-die" ? playerId : opponentOf(draft, playerId);
+  if (die.ownerId !== ownerId) return "INVALID_TARGET";
+  if (slotIndexes.some((index) => die.slots[index] === undefined)) return "INVALID_FACE";
+
+  if (
+    forgeExceedsAttributeLimit(die, slotIndexes, pending.attribute, pending.faces, draft.config)
+  ) {
+    return "ATTRIBUTE_LIMIT_REACHED";
+  }
+
+  if (!isLegalForgeKindForAttribute(pending.kind, pending.attribute)) {
+    return "INVALID_TARGET";
+  }
+
+  const eligible = eligibleFacesForForge(draft, playerId, pending.kind, pending.attribute);
+  if (!eligible.includes(faceCardId)) return "FACE_NOT_AVAILABLE";
+
+  const installed = installFacesOnDie(draft, playerId, dieId, slotIndexes, faceCardId, null);
+  if (installed !== null) return installed;
+
+  draft.pendingDecision = null;
+  emit(draft, {
+    type: "forge-faces-resolved",
+    playerId,
+    dieId,
+    slotIndexes: [...slotIndexes],
+    faceCardId,
+  });
+  return resumeAfterEffectPause(draft);
+}
+
+/**
+ * Bible §13 install: first copy takes the face from the pool; further copies
+ * of an already-installed face do not. Displaced faces return if orphaned.
+ * Draws one card per face installed.
+ */
+function installFacesOnDie(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId,
+  slotIndexes: readonly number[],
+  faceCardId: FaceCardId,
+  cardInstanceId: CardInstanceId | null,
+): GameError | null {
+  const alreadyInstalled = countInstalledCopies(draft, faceCardId, playerId) > 0;
+  if (!alreadyInstalled && !takeFaceFromPool(draft, playerId, faceCardId)) {
+    return "FACE_NOT_AVAILABLE";
+  }
+
+  const currentDie = draft.dice[dieId];
+  if (currentDie === undefined) return "UNKNOWN_ENTITY";
+
+  const displaced: Array<{ faceCardId: FaceCardId; ownerId: PlayerId }> = [];
+  const slots = currentDie.slots.map((slot) => {
+    if (!slotIndexes.includes(slot.index)) return slot;
+    displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
+    return { ...slot, faceCardId, faceCardOwnerId: playerId };
+  });
+  patchDie(draft, dieId, { slots });
+
+  for (const old of displaced) {
+    returnFaceToPoolIfOrphaned(draft, old.faceCardId, old.ownerId);
+    if (countInstalledCopies(draft, old.faceCardId, old.ownerId) === 0) {
+      clearOverloadsOnFace(draft, old.faceCardId, old.ownerId);
+    }
+  }
+
+  for (const slotIndex of slotIndexes) {
+    emit(draft, { type: "face-forged", playerId, cardInstanceId, dieId, slotIndex, faceCardId });
+  }
+
+  drawCards(draft, playerId, slotIndexes.length);
+  return null;
+}
+
 /* ------------------------------------------------------------ absorb --- */
 
 /**
@@ -714,39 +822,15 @@ function forgeCard(
   );
   if (!eligible.includes(faceCardId)) return "FACE_NOT_AVAILABLE";
 
-  // Bible §13: first install takes the card from the face pool; further copies
-  // of an already-installed face do not.
-  const alreadyInstalled = countInstalledCopies(draft, faceCardId, playerId) > 0;
-  if (!alreadyInstalled && !takeFaceFromPool(draft, playerId, faceCardId)) {
-    return "FACE_NOT_AVAILABLE";
-  }
-
-  // Face cards keep their overloads while any die face still references them.
-  // When the last copy is orphaned back to the pool, overloads leave with it.
-  const currentDie = draft.dice[dieId];
-  if (currentDie === undefined) return "UNKNOWN_ENTITY";
-
-  const displaced: Array<{ faceCardId: typeof faceCardId; ownerId: PlayerId }> = [];
-  const slots = currentDie.slots.map((slot) => {
-    if (!slotIndexes.includes(slot.index)) return slot;
-    displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
-    return { ...slot, faceCardId, faceCardOwnerId: playerId };
-  });
-  patchDie(draft, dieId, { slots });
-
-  for (const old of displaced) {
-    returnFaceToPoolIfOrphaned(draft, old.faceCardId, old.ownerId);
-    if (countInstalledCopies(draft, old.faceCardId, old.ownerId) === 0) {
-      clearOverloadsOnFace(draft, old.faceCardId, old.ownerId);
-    }
-  }
-
-  for (const slotIndex of slotIndexes) {
-    emit(draft, { type: "face-forged", playerId, cardInstanceId, dieId, slotIndex, faceCardId });
-  }
-
-  // Forge rule: one card drawn per face installed, own die or opponent's.
-  drawCards(draft, playerId, slotIndexes.length);
+  const installed = installFacesOnDie(
+    draft,
+    playerId,
+    dieId,
+    slotIndexes,
+    faceCardId,
+    cardInstanceId,
+  );
+  if (installed !== null) return installed;
 
   // The card is consumed by being installed, so it goes to the graveyard rather
   // than staying available to be played for its effect as well.

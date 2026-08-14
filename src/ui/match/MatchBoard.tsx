@@ -22,6 +22,7 @@ import {
   isFaceCardInPool,
   legalTargetsFor,
   livingCreaturesOf,
+  opponentOf,
   ritualDurationOf,
   ritualsOf,
   rolledSymbols,
@@ -39,9 +40,11 @@ import {
   type CreatureState,
   type DieId,
   type FaceCardId,
+  type FaceKind,
   type GameState,
   type PlayerId,
   type SymbolInstanceId,
+  type SymbolType,
   type TurnPhase,
   TURN_PHASE_ORDER,
 } from "@/game";
@@ -104,6 +107,9 @@ export function MatchBoard() {
 
   const [intent, setIntent] = useState<Intent>({ kind: "idle" });
   const [searchPick, setSearchPick] = useState<readonly CardInstanceId[]>([]);
+  const [forgeFacesDieId, setForgeFacesDieId] = useState<DieId | undefined>();
+  const [forgeFacesSlots, setForgeFacesSlots] = useState<readonly number[]>([]);
+  const [forgeFacesFaceId, setForgeFacesFaceId] = useState<FaceCardId | undefined>();
 
   const activeId = state.activePlayerId;
   const finished = state.status === "finished";
@@ -114,6 +120,10 @@ export function MatchBoard() {
     pending?.type === "reaction-priority" ? pending.priorityPlayerId : null;
   const actingId = reactionPriority ?? activeId;
   const canAct = !isOnline || localPlayerId === actingId;
+  const pendingControllerId =
+    pending !== null && "controllerId" in pending ? pending.controllerId : null;
+  const isPendingChooser =
+    !isOnline || pendingControllerId === null || localPlayerId === pendingControllerId;
   /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. */
   const dockPlayerId =
     isOnline && localPlayerId !== null ? localPlayerId : actingId;
@@ -132,6 +142,9 @@ export function MatchBoard() {
 
   useEffect(() => {
     setSearchPick([]);
+    setForgeFacesDieId(undefined);
+    setForgeFacesSlots([]);
+    setForgeFacesFaceId(undefined);
   }, [pending?.type]);
 
   useEffect(() => {
@@ -140,7 +153,10 @@ export function MatchBoard() {
     return () => window.clearTimeout(id);
   }, [lastError, clearError]);
 
-  const hint = useMemo(() => hintFor(intent, state), [intent, state]);
+  const hint = useMemo(
+    () => hintFor(intent, state, isPendingChooser),
+    [intent, state, isPendingChooser],
+  );
   const clearIntent = () => setIntent({ kind: "idle" });
 
   const tryDispatch = (action: Parameters<typeof dispatch>[0]): boolean => {
@@ -290,7 +306,7 @@ export function MatchBoard() {
       const needsTarget = def.effect.effects.some(
         (effect) =>
           "target" in effect &&
-          effect.target !== undefined &&
+          typeof effect.target === "object" &&
           effect.target.kind === "declared-target",
       );
       if (needsTarget) {
@@ -536,7 +552,7 @@ export function MatchBoard() {
 
       <p className="text-sm text-[var(--ink-muted)]">{hint}</p>
 
-      {pending?.type === "search-deck" && (
+      {pending?.type === "search-deck" && isPendingChooser && (
         <SearchPanel
           state={state}
           amount={pending.amount}
@@ -558,8 +574,11 @@ export function MatchBoard() {
           }}
         />
       )}
+      {pending?.type === "search-deck" && !isPendingChooser && (
+        <WaitingBanner>Opponent is searching their deck.</WaitingBanner>
+      )}
 
-      {pending?.type === "search-graveyard" && (
+      {pending?.type === "search-graveyard" && isPendingChooser && (
         <SearchPanel
           state={state}
           amount={pending.amount}
@@ -581,8 +600,11 @@ export function MatchBoard() {
           }}
         />
       )}
+      {pending?.type === "search-graveyard" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing cards from their graveyard.</WaitingBanner>
+      )}
 
-      {pending?.type === "discard-cards" && (
+      {pending?.type === "discard-cards" && isPendingChooser && (
         <DiscardModal
           state={state}
           amount={pending.amount}
@@ -603,8 +625,11 @@ export function MatchBoard() {
           }}
         />
       )}
+      {pending?.type === "discard-cards" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing cards to discard.</WaitingBanner>
+      )}
 
-      {pending?.type === "choose-creature" && (
+      {pending?.type === "choose-creature" && isPendingChooser && (
         <ChooseCreatureModal
           state={state}
           filter={pending.filter}
@@ -617,6 +642,56 @@ export function MatchBoard() {
             })
           }
         />
+      )}
+      {pending?.type === "choose-creature" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing a creature.</WaitingBanner>
+      )}
+
+      {pending?.type === "forge-faces" && isPendingChooser && (
+        <ForgeFacesPrompt
+          state={state}
+          pending={pending}
+          selectedFaceCardId={forgeFacesFaceId}
+          selectedDieId={forgeFacesDieId}
+          selectedSlots={forgeFacesSlots}
+          onPickFace={setForgeFacesFaceId}
+          onClearFace={() => {
+            setForgeFacesFaceId(undefined);
+            setForgeFacesDieId(undefined);
+            setForgeFacesSlots([]);
+          }}
+          onSelectDie={(dieId) => {
+            setForgeFacesDieId(dieId);
+            setForgeFacesSlots([]);
+          }}
+          onClearDie={() => {
+            setForgeFacesDieId(undefined);
+            setForgeFacesSlots([]);
+          }}
+          onToggleSlot={(slotIndex) => {
+            if (forgeFacesFaceId === undefined || forgeFacesDieId === undefined) return;
+            const next = forgeFacesSlots.includes(slotIndex)
+              ? forgeFacesSlots.filter((index) => index !== slotIndex)
+              : forgeFacesSlots.length < pending.faces
+                ? [...forgeFacesSlots, slotIndex]
+                : forgeFacesSlots;
+            setForgeFacesSlots(next);
+            if (next.length === pending.faces) {
+              tryDispatch({
+                type: "RESOLVE_FORGE_FACES",
+                playerId: pending.controllerId,
+                dieId: forgeFacesDieId,
+                slotIndexes: next,
+                faceCardId: forgeFacesFaceId,
+              });
+            }
+          }}
+        />
+      )}
+      {pending?.type === "forge-faces" && !isPendingChooser && (
+        <WaitingBanner>
+          Opponent is choosing a face from their pool to install on your die.
+        </WaitingBanner>
       )}
 
       {forgeNeedsDieOrSlots && intent.kind === "forge" && forgeTarget !== null && (
@@ -675,11 +750,14 @@ export function MatchBoard() {
         />
       )}
 
-      {forgeFacePrompt !== null && (
+      {forgeFacePrompt !== null && forgeDef !== undefined && (
         <FacePickModal
           state={state}
           playerId={activeId}
-          cardInstanceId={forgeFacePrompt.cardInstanceId}
+          kind={forgeDef.forge.kind}
+          attribute={forgeDef.forge.attribute}
+          forgingCard={forgeDef}
+          subtitle={`${forgeDef.name} forges ${formatForgeLine(forgeDef.forge)}. Pick a face from your face pool (or an already-installed copy) to represent it.`}
           onPick={confirmForgeFace}
           onCancel={clearIntent}
         />
@@ -861,20 +939,36 @@ function forgeFacesNeededFor(state: GameState, cardInstanceId: CardInstanceId): 
   return getCard(instance.cardId)?.forge.faces ?? 1;
 }
 
-function hintFor(intent: Intent, state: GameState): string {
+function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): string {
   if (state.pendingDecision?.type === "search-deck") {
-    return "Choose cards from the deck search, then confirm.";
+    return isPendingChooser
+      ? "Choose cards from the deck search, then confirm."
+      : "Waiting for the opponent to search their deck.";
   }
   if (state.pendingDecision?.type === "search-graveyard") {
-    return `Choose up to ${String(state.pendingDecision.amount)} card(s) from your graveyard to return to hand.`;
+    return isPendingChooser
+      ? `Choose up to ${String(state.pendingDecision.amount)} card(s) from your graveyard to return to hand.`
+      : "Waiting for the opponent to choose from their graveyard.";
   }
   if (state.pendingDecision?.type === "discard-cards") {
-    return `Choose ${String(state.pendingDecision.amount)} card(s) from your hand to discard (Eclipse drew first).`;
+    return isPendingChooser
+      ? `Choose ${String(state.pendingDecision.amount)} card(s) from your hand to discard.`
+      : "Waiting for the opponent to discard.";
   }
   if (state.pendingDecision?.type === "choose-creature") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose a creature.";
     return state.pendingDecision.filter === "ally"
       ? "Choose one of your creatures (overload / effect target)."
       : "Choose an enemy creature (overload / effect target).";
+  }
+  if (state.pendingDecision?.type === "forge-faces") {
+    if (!isPendingChooser) {
+      return "Waiting for the opponent to choose a face from their pool to install on your die.";
+    }
+    const pending = state.pendingDecision;
+    const kind = pending.kind === "natural" ? "Natural" : "Synthetic";
+    const where = pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
+    return `Choose a ${kind} ${pending.attribute} face from your face pool, then install it on ${where} (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}).`;
   }
   if (state.pendingDecision?.type === "reaction-priority") {
     return "Reaction chain: Pass priority, or play a Reaction / activate a ready ritual-reaction.";
@@ -1741,6 +1835,8 @@ function DieSlotPickModal({
   onClearDie,
   onToggleSlot,
   onCancel,
+  onBack,
+  backLabel,
 }: {
   state: GameState;
   title: string;
@@ -1752,7 +1848,9 @@ function DieSlotPickModal({
   onSelectDie: (dieId: DieId) => void;
   onClearDie: () => void;
   onToggleSlot: (slotIndex: number) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
+  onBack?: () => void;
+  backLabel?: string;
 }) {
   const dice = diceOf(state, dieOwnerId);
   const selectedDie = selectedDieId !== undefined ? state.dice[selectedDieId] : undefined;
@@ -1824,9 +1922,16 @@ function DieSlotPickModal({
           </div>
         )}
 
-        <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
-          Cancel
-        </button>
+        {onBack !== undefined && (
+          <button type="button" className={`${btnClass} mt-4`} onClick={onBack}>
+            {backLabel ?? "Back"}
+          </button>
+        )}
+        {onCancel !== undefined && (
+          <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
+            Cancel
+          </button>
+        )}
       </div>
     </div>
   );
@@ -2186,6 +2291,14 @@ function ChooseCreatureModal({
   );
 }
 
+function WaitingBanner({ children }: { children: string }) {
+  return (
+    <p className="rounded border border-stone-700 bg-stone-950/70 px-4 py-3 text-sm text-stone-300">
+      {children}
+    </p>
+  );
+}
+
 function DiscardModal({
   state,
   amount,
@@ -2210,7 +2323,7 @@ function DiscardModal({
           Discard from hand
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          You drew first; now choose {amount} card{amount === 1 ? "" : "s"} to discard.
+          Choose {amount} card{amount === 1 ? "" : "s"} from your hand to discard.
         </p>
         <ul className="mt-4 space-y-2">
           {hand.map((card) => {
@@ -2330,27 +2443,23 @@ function OverloadFacePickModal({
 function FacePickModal({
   state,
   playerId,
-  cardInstanceId,
+  kind,
+  attribute,
+  forgingCard,
+  subtitle,
   onPick,
   onCancel,
 }: {
   state: GameState;
   playerId: PlayerId;
-  cardInstanceId: CardInstanceId;
+  kind: FaceKind;
+  attribute: SymbolType;
+  forgingCard?: { readonly forgeTags?: readonly string[] };
+  subtitle: string;
   onPick: (faceCardId: FaceCardId) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }) {
-  const instance = state.cards[cardInstanceId];
-  const def = instance !== undefined ? getCard(instance.cardId) : undefined;
-  if (def === undefined) return null;
-
-  const eligible = eligibleFacesForForge(
-    state,
-    playerId,
-    def.forge.kind,
-    def.forge.attribute,
-    def,
-  );
+  const eligible = eligibleFacesForForge(state, playerId, kind, attribute, forgingCard);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -2358,10 +2467,7 @@ function FacePickModal({
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
           Choose face card
         </h2>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          {def.name} forges {formatForgeLine(def.forge)}. Pick a face from your face pool (or an
-          already-installed copy) to represent it.
-        </p>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">{subtitle}</p>
         <ul className="mt-4 space-y-2">
           {eligible.map((faceCardId) => {
             const face = getFaceCard(faceCardId);
@@ -2391,11 +2497,76 @@ function FacePickModal({
             <li className="text-sm text-red-300">No eligible face cards in your pool.</li>
           )}
         </ul>
-        <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
-          Cancel
-        </button>
+        {onCancel !== undefined && (
+          <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
+            Cancel
+          </button>
+        )}
       </div>
     </div>
+  );
+}
+
+function ForgeFacesPrompt({
+  state,
+  pending,
+  selectedFaceCardId,
+  selectedDieId,
+  selectedSlots,
+  onPickFace,
+  onClearFace,
+  onSelectDie,
+  onClearDie,
+  onToggleSlot,
+}: {
+  state: GameState;
+  pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "forge-faces" }>;
+  selectedFaceCardId: FaceCardId | undefined;
+  selectedDieId: DieId | undefined;
+  selectedSlots: readonly number[];
+  onPickFace: (faceCardId: FaceCardId) => void;
+  onClearFace: () => void;
+  onSelectDie: (dieId: DieId) => void;
+  onClearDie: () => void;
+  onToggleSlot: (slotIndex: number) => void;
+}) {
+  const dieOwnerId =
+    pending.target === "own-die"
+      ? pending.controllerId
+      : opponentOf(state, pending.controllerId);
+  const kindLabel = pending.kind === "natural" ? "Natural" : "Synthetic";
+  const where =
+    pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
+  const chosenFace = selectedFaceCardId !== undefined ? getFaceCard(selectedFaceCardId) : undefined;
+
+  if (selectedFaceCardId === undefined) {
+    return (
+      <FacePickModal
+        state={state}
+        playerId={pending.controllerId}
+        kind={pending.kind}
+        attribute={pending.attribute}
+        subtitle={`Choose a ${kindLabel} ${pending.attribute} face from your face pool. You will install it on ${where}; the card stays yours.`}
+        onPick={onPickFace}
+      />
+    );
+  }
+
+  return (
+    <DieSlotPickModal
+      state={state}
+      title={pending.target === "own-die" ? "Install on your die" : "Install on their die"}
+      subtitle={`Install ${chosenFace?.name ?? selectedFaceCardId} from your pool (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}) onto ${where}. Choose which of their faces to replace.`}
+      dieOwnerId={dieOwnerId}
+      facesNeeded={pending.faces}
+      selectedDieId={selectedDieId}
+      selectedSlots={selectedSlots}
+      onSelectDie={onSelectDie}
+      onClearDie={onClearDie}
+      onToggleSlot={onToggleSlot}
+      onBack={onClearFace}
+      backLabel="Change face"
+    />
   );
 }
 

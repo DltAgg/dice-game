@@ -282,7 +282,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
       "Forge 3 Synthetic Corruption faces on one of the opponent's dice.",
     ritual: {
       activeWhen: { arcane: 1, corruption: 2 },
-      effects: [],
+      effects: [
+        {
+          type: "forge-faces",
+          faces: 3,
+          kind: "synthetic",
+          attribute: "corruption",
+          target: "opponent-die",
+        },
+      ],
     },
   }),
   card({
@@ -422,8 +430,19 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["instant"],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText:
-      "Requires: Arcane + Corruption.\nForge 1 Synthetic Corruption face on the opponent's die.",
+    rulesText: "Forge 1 Synthetic Corruption face on the opponent's die.",
+    effect: {
+      requires: { arcane: 1, corruption: 1 },
+      effects: [
+        {
+          type: "forge-faces",
+          faces: 1,
+          kind: "synthetic",
+          attribute: "corruption",
+          target: "opponent-die",
+        },
+      ],
+    },
   }),
   card({
     id: BLADE_OF_SERENE_LIGHT,

@@ -117,6 +117,17 @@ export type GameAction =
       readonly creatureId: CreatureId;
     }
   /**
+   * Completes a pending forge-from-effect: install `faces` copies of one face
+   * card onto the named die slots.
+   */
+  | {
+      readonly type: "RESOLVE_FORGE_FACES";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId;
+      readonly slotIndexes: readonly number[];
+      readonly faceCardId: FaceCardId;
+    }
+  /**
    * Pass reaction priority. Legal only during `reaction-priority` for the
    * priority seat. Two consecutive passes drain the chain (spec `008`).
    */

@@ -36,7 +36,7 @@ needs them — never as unreachable stubs.
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
 | **Multi-target damage split** | Blade Rain, Extermination | Player chooses distribution |
 | **Copy / re-apply die modifiers** | Arcane Echo tactic + face | |
-| **Forge-from-effect** (not PLAY forge region) | Ritual of Contamination, Great Contamination, Corrupting Elder Contamination | Attack/effect-driven forge |
+| **Forge-from-effect** (not PLAY forge region) | Corrupting Elder Contamination | **PARTIAL** — `forge-faces` wired (Great Contamination, Ritual of Contamination); attack-driven forge still deferred |
 | **Consume faces → damage** | Extermination | |
 | **Retain-from-effect** | Void Summoner Dimensional Rift, Forbidden Heritage | `RETAIN_DIE` exists; effect path does not |
 | **Destroy / strip overloads** | Mind Control | |
@@ -63,13 +63,11 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 | Card | Gap |
 |---|---|
 | Arcane Echo (tactic) | Re-apply die modifiers (forge-only play) |
-| Great Contamination | Ritual place; mass forge-on-opp deferred |
 | Extermination | Ritual place; consume + split damage deferred |
 | Paradox | Ritual place (no Active when); GY replay deferred |
 | Collapse of Reality | Forge-only; symbol convert deferred |
 | Dark Pact | Forge-only; deck→GY deferred |
 | Mind Control | Forge-only; strip overloads deferred |
-| Ritual of Contamination | Forge-only; forge-from-effect deferred |
 | Tome of Interdiction | Equip; cost reduction deferred |
 | Abyssal Sacrifice | **Wired** discard → Darkness |
 | Mirrored Rune | Equip; absorb→copy deferred |
@@ -95,7 +93,8 @@ Hunter's Collar.
 Eclipse, Living Library, Luminar Prism, Arcane Resonance, Persistent Infection,
 Calculated Sacrifice, War Axe, Eternal Darkness, Latent Corruption, Arcane
 Amplifier, Blessing of the Hunt, Martial Blessing, Runic Nullification, Arcane
-Silence, Prismatic Barrier, Luminar Judgement, Glimmer.
+Silence, Prismatic Barrier, Luminar Judgement, Glimmer, Great Contamination,
+Ritual of Contamination.
 
 ---
 

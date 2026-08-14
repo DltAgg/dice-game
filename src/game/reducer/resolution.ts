@@ -10,6 +10,7 @@ import {
 import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { opponentOf } from "../rules/creatures.js";
+import { hasLegalForgeFacesChoice } from "../rules/faces.js";
 import { emit, nextInstanceId, patchCreature, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
 import {
@@ -142,7 +143,7 @@ function choiceFilterFor(selector: TargetSelector): "ally" | "enemy" | null {
 }
 
 function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
-  if (!("target" in effect)) return effect;
+  if (!("target" in effect) || typeof effect.target !== "object") return effect;
   return { ...effect, target: { kind: "declared-target" } } as EffectDefinition;
 }
 
@@ -150,7 +151,7 @@ function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
 function applyEffect(draft: Draft, pending: PendingEffect): boolean {
   const { effect } = pending;
 
-  if ("target" in effect) {
+  if ("target" in effect && typeof effect.target === "object") {
     const filter = choiceFilterFor(effect.target);
     if (filter !== null) {
       draft.pendingDecision = {
@@ -355,6 +356,37 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         [pending.controllerId]: effect.amount,
       };
       return false;
+    }
+    case "forge-faces": {
+      if (
+        !hasLegalForgeFacesChoice(
+          draft,
+          pending.controllerId,
+          effect.faces,
+          effect.kind,
+          effect.attribute,
+          effect.target,
+        )
+      ) {
+        return false;
+      }
+      draft.pendingDecision = {
+        type: "forge-faces",
+        controllerId: pending.controllerId,
+        faces: effect.faces,
+        kind: effect.kind,
+        attribute: effect.attribute,
+        target: effect.target,
+      };
+      emit(draft, {
+        type: "forge-faces-started",
+        playerId: pending.controllerId,
+        faces: effect.faces,
+        kind: effect.kind,
+        attribute: effect.attribute,
+        target: effect.target,
+      });
+      return true;
     }
   }
 }

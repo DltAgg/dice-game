@@ -1,11 +1,13 @@
 import { getFaceCard } from "../content/faces.js";
 import { attributeAllowsNaturalFaces, isAttribute } from "../model/attributes.js";
-import type { FaceKind } from "../model/dice.js";
+import type { DieState, FaceKind } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, type SymbolType } from "../model/symbols.js";
 import type { Draft } from "../reducer/draft.js";
+import { forgeExceedsAttributeLimit } from "./cards.js";
+import { opponentOf } from "./creatures.js";
 
 /**
  * The face-card ownership ledger of bible §12. A face card is either sitting in
@@ -257,4 +259,52 @@ export function returnFaceToPoolIfOrphaned(
   if (player === undefined) return;
   if (player.facePool.includes(faceCardId)) return;
   draft.players[ownerId] = { ...player, facePool: [...player.facePool, faceCardId] };
+}
+
+/**
+ * Slot indexes that keep a forge-from-effect inside the §9.1 cap, preferring
+ * to overwrite existing faces of the incoming attribute.
+ */
+export function preferredSlotsForForgeFaces(
+  die: DieState,
+  attribute: SymbolType,
+  faces: number,
+  config: GameRulesConfig,
+): readonly number[] | null {
+  if (faces <= 0 || die.slots.length < faces) return null;
+
+  const matching: number[] = [];
+  const others: number[] = [];
+  for (const slot of die.slots) {
+    const face = getFaceCard(slot.faceCardId);
+    if (face?.symbol === attribute) matching.push(slot.index);
+    else others.push(slot.index);
+  }
+
+  const pick = [...matching.slice(0, faces)];
+  if (pick.length < faces) pick.push(...others.slice(0, faces - pick.length));
+  if (pick.length !== faces) return null;
+  if (forgeExceedsAttributeLimit(die, pick, attribute, faces, config)) return null;
+  return pick;
+}
+
+/** Whether the controller can name a legal die, slots, and face for this effect. */
+export function hasLegalForgeFacesChoice(
+  state: GameState | Draft,
+  controllerId: PlayerId,
+  faces: number,
+  kind: FaceKind,
+  attribute: SymbolType,
+  target: "own-die" | "opponent-die",
+): boolean {
+  if (eligibleFacesForForge(state, controllerId, kind, attribute).length === 0) return false;
+  const ownerId = target === "own-die" ? controllerId : opponentOf(state, controllerId);
+  const player = state.players[ownerId];
+  if (player === undefined) return false;
+  for (const dieId of player.dieIds) {
+    const die = state.dice[dieId];
+    if (die === undefined) continue;
+    if (preferredSlotsForForgeFaces(die, attribute, faces, state.config) !== null) return true;
+  }
+  return false;
 }
