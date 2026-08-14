@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ASSEMBLY_LINE,
   ECLIPSE,
   ETERNAL_DARKNESS,
   LIVING_LIBRARY,
@@ -65,5 +66,12 @@ describe("English card printing", () => {
     const card = getCard(MARTIAL_BLESSING);
     if (card === undefined) throw new Error("missing card");
     expect(formatEnergyCost(card)).toBe("2");
+  });
+
+  it("prints Active when for Assembly Line as Mechanical + Mechanical", () => {
+    const card = getCard(ASSEMBLY_LINE);
+    if (card === undefined) throw new Error("missing card");
+    expect(formatTypeLine(card)).toBe("[Ritual / Instant / Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Active when: Mechanical + Mechanical]");
   });
 });

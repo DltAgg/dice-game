@@ -69,6 +69,8 @@ export const INSIGNIA_OF_COMMAND: CardId = asCardId("card-insignia-of-command");
 export const HUNTING_ARMOUR: CardId = asCardId("card-hunting-armour");
 export const TWIN_BLADES: CardId = asCardId("card-twin-blades");
 export const WILD_CARAPACE: CardId = asCardId("card-wild-carapace");
+export const RATCHET: CardId = asCardId("card-ratchet");
+export const ASSEMBLY_LINE: CardId = asCardId("card-assembly-line");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -815,6 +817,45 @@ const DEFINITIONS: readonly CardDefinition[] = [
           type: "on-absorb",
           symbols: ["wild"],
           effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
+        },
+      ],
+    },
+  }),
+
+  // --- Mechanical assembly ---
+  card({
+    id: RATCHET,
+    name: "Ratchet",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["overload"],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Can only overload a Mechanical face.\nOn absorb: generate Mechanical.",
+    overload: {
+      faceSymbols: ["mechanical"],
+      onRoll: [],
+      onAbsorb: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+    },
+  }),
+  card({
+    id: ASSEMBLY_LINE,
+    name: "Assembly Line",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["instant"],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Forge 2 Synthetic Mechanical faces on your die.",
+    ritual: {
+      activeWhen: { mechanical: 2 },
+      effects: [
+        {
+          type: "forge-faces",
+          faces: 2,
+          kind: "synthetic",
+          attribute: "mechanical",
+          target: "own-die",
         },
       ],
     },

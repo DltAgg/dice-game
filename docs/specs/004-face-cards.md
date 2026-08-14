@@ -86,6 +86,7 @@ Named specials:
 | Gear | 2 | Print only | Synthetic Energy / forge discount — OPEN |
 | Catalyst | 2 | Print only | Treat-as / copy face effect — OPEN |
 | Overcharge | 2 | Print only | Optional Energy + skip next / double resolve — OPEN |
+| Flywheel | 2 | On roll: +Energy; On absorb: generate Shield | Authored Mechanical special |
 | Shadow Echo | 2 | Print only | Discard-draw / GY recursion — OPEN |
 | Drain | 2 | Print only | Opp loses Energy / transfer — OPEN |
 | Sacrifice | 2 | Print only | Discard for Energy / discard for damage — OPEN |
