@@ -9,8 +9,9 @@ import type { EnergyTrack } from "../model/state.js";
  *   - one marker on a track running trackMax .. 0 .. trackMax;
  *   - `value` is the Energy available to `holderId`;
  *   - a spend that pushes the marker past zero ends the turn once the current
- *     action has finished, and the overshoot becomes the incoming player's
- *     Energy;
+ *     action has finished; the overshoot is mirrored immediately, and
+ *     `energyOnOvershootBonus` is added when that overshoot actually passes
+ *     the turn;
  *   - landing exactly on zero does not end the turn, because the marker has
  *     not crossed into the opponent's side.
  */
@@ -18,7 +19,7 @@ import type { EnergyTrack } from "../model/state.js";
 export interface EnergySpendOutcome {
   readonly track: EnergyTrack;
   readonly turnEnds: boolean;
-  /** Energy handed to the opponent; zero unless the marker crossed. */
+  /** Raw overshoot mirrored onto the opponent; the pass bonus is applied at turn-end. */
   readonly passedToOpponent: number;
 }
 
@@ -47,13 +48,25 @@ export function spendEnergy(
 }
 
 /**
- * Ending a turn without crossing the track. The chosen turn-end model leaves
- * this case uncovered, so the amount is a configured prototype assumption
- * rather than a derived rule — see docs/OPEN_DESIGN.md.
+ * Ending a turn without crossing the track. Incoming Energy is the configured
+ * clean-pass amount (`energyOnVoluntaryPass`), not the first-turn opening
+ * amount — see docs/OPEN_DESIGN.md.
  */
 export const passEnergy = (opponentId: PlayerId, config: EnergyRulesConfig): EnergyTrack => ({
   holderId: opponentId,
   value: Math.min(config.energyOnVoluntaryPass, config.trackMax),
+});
+
+/**
+ * When an overshoot actually ends the turn, the incoming player receives the
+ * mirrored overshoot plus `energyOnOvershootBonus`, still capped at trackMax.
+ */
+export const energyAfterOvershootPass = (
+  track: EnergyTrack,
+  config: EnergyRulesConfig,
+): EnergyTrack => ({
+  holderId: track.holderId,
+  value: Math.min(track.value + config.energyOnOvershootBonus, config.trackMax),
 });
 
 export const energyAvailableTo = (track: EnergyTrack, playerId: PlayerId): number =>

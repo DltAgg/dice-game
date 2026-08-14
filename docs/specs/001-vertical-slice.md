@@ -39,6 +39,7 @@ Reducing an opponent's squad to zero wins.
 | The frontline protects the back row; Range ignores that | §6 |
 | Turn flow: roll, absorb, actions (attack / play / forge), end | §16 |
 | One shared Energy marker; crossing zero ends the turn | §18, decision of 2026-08-07 |
+| First turn 3 Energy; clean pass 5; overshoot pass = overshoot + 2 | decision of 2026-08-14 |
 
 Because fuel appears only at end of turn, a creature can never attack on the
 turn it absorbed. Turn 1 is necessarily spent arming.

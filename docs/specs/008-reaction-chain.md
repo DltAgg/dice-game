@@ -72,7 +72,9 @@ interrupted.
 Energy overshoot may flip the marker when a link’s cost is paid, but **turn
 end is evaluated only after the chain (and nested choices) fully finish**. If
 a later reaction has returned the marker to the turn player, the turn
-continues.
+continues. The overshoot-pass bonus (`energyOnOvershootBonus`) is added only
+when that evaluation actually ends the turn, not when the marker first
+crosses.
 
 ## Actions
 

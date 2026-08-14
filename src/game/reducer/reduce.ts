@@ -32,7 +32,12 @@ import {
 } from "../rules/cards.js";
 import { opponentOf } from "../rules/creatures.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../rules/dice.js";
-import { passEnergy, spendEnergy, type EnergySpendOutcome } from "../rules/energy.js";
+import {
+  energyAfterOvershootPass,
+  passEnergy,
+  spendEnergy,
+  type EnergySpendOutcome,
+} from "../rules/energy.js";
 import {
   countInstalledCopies,
   eligibleFacesForForge,
@@ -1443,14 +1448,7 @@ function settleDeferredTurnEnd(draft: Draft): GameError | null {
     return null;
   }
 
-  const playerId = draft.activePlayerId;
-  emit(draft, {
-    type: "energy-passed",
-    toPlayerId: draft.energy.holderId,
-    amount: draft.energy.value,
-    cause: "overshoot",
-  });
-  return finishTurn(draft, playerId, draft.energy);
+  return passTurnOnOvershoot(draft, draft.activePlayerId);
 }
 
 /**
@@ -1465,14 +1463,18 @@ function settleTurnAfterSpend(
   spend: EnergySpendOutcome,
 ): GameError | null {
   if (!spend.turnEnds) return null;
+  return passTurnOnOvershoot(draft, playerId);
+}
 
+function passTurnOnOvershoot(draft: Draft, playerId: PlayerId): GameError | null {
+  const track = energyAfterOvershootPass(draft.energy, draft.config.energy);
   emit(draft, {
     type: "energy-passed",
-    toPlayerId: draft.energy.holderId,
-    amount: draft.energy.value,
+    toPlayerId: track.holderId,
+    amount: track.value,
     cause: "overshoot",
   });
-  return finishTurn(draft, playerId, draft.energy);
+  return finishTurn(draft, playerId, track);
 }
 
 /* ------------------------------------------------------------- phase --- */

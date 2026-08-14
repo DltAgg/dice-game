@@ -78,7 +78,8 @@ export type MatchStatus = "in-progress" | "finished";
 /**
  * Bible §5 and §18: one shared marker, not a per-player pool. `value` is the
  * Energy available to `holderId`; the turn ends when a spend pushes it below
- * zero, and the overshoot becomes the other player's starting Energy.
+ * zero, and the overshoot (plus `energyOnOvershootBonus` when the turn
+ * actually passes) becomes the other player's starting Energy.
  */
 export interface EnergyTrack {
   readonly holderId: PlayerId;

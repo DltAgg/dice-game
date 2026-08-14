@@ -134,7 +134,7 @@ describe("Energy and the turn", () => {
     if (!result.ok) return;
     // Empty deck → no draw → no discard pending → turn ends immediately.
     expect(result.state.activePlayerId).toBe(P2);
-    expect(result.state.energy).toEqual({ holderId: P2, value: 1 });
+    expect(result.state.energy).toEqual({ holderId: P2, value: 3 });
     expect(result.state.phase).toBe("roll");
     expect(eventTypes(result.state)).toContain("turn-ended");
   });
@@ -198,6 +198,7 @@ describe("Energy and the turn", () => {
     expect(resolved.ok).toBe(true);
     if (!resolved.ok) return;
     expect(resolved.state.activePlayerId).toBe(P2);
+    expect(resolved.state.energy).toEqual({ holderId: P2, value: 4 });
     expect(eventTypes(resolved.state)).toContain("card-discarded");
     expect(eventTypes(resolved.state)).toContain("turn-ended");
   });
