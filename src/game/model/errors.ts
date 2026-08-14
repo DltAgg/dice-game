@@ -32,7 +32,7 @@ export type GameError =
   | "INVALID_SEARCH"
   /** The discard picks do not match the pending discard (count or zone). */
   | "INVALID_DISCARD"
-  /** The chosen creature is not legal for the pending choose-creature decision. */
+  /** The chosen creature / ritual is not legal for the pending choose decision. */
   | "INVALID_CHOICE"
   /** Pass / respond when it is not this seat's reaction priority. */
   | "NOT_PRIORITY_PLAYER"

@@ -14,6 +14,10 @@ import { emit, nextInstanceId, type Draft } from "./draft.js";
 
 export const isNegatableLinkKind = (kind: ChainLinkKind): boolean => kind !== "attack";
 
+/** Seal the Rite / `negate-ritual` — ritual place or activate only. Spec `008`. */
+export const isRitualNegatableLinkKind = (kind: ChainLinkKind): boolean =>
+  kind === "ritual-place" || kind === "ritual-activate";
+
 export function topChainLink(draft: Draft): ChainLink | undefined {
   return draft.chainStack[draft.chainStack.length - 1];
 }

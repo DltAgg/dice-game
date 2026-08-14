@@ -29,6 +29,8 @@ import {
   handOf,
   hasPlayableEffect,
   isFaceCardInPool,
+  isLegalHandReaction,
+  isLegalRitualReaction,
   legalTargetsFor,
   livingCreaturesOf,
   opponentOf,
@@ -293,9 +295,7 @@ export function MatchBoard() {
     if (pending?.type === "reaction-priority") {
       if (card.ownerId !== actingId) return;
       const def = getCard(card.cardId);
-      if (def === undefined || !def.subtypes.includes("reaction") || def.effect === undefined) {
-        return;
-      }
+      if (def === undefined || !isLegalHandReaction(state, def)) return;
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
       return;
     }
@@ -659,6 +659,24 @@ export function MatchBoard() {
         <WaitingBanner>Opponent is choosing a creature.</WaitingBanner>
       )}
 
+      {pending?.type === "choose-ritual" && isPendingChooser && (
+        <ChooseRitualModal
+          state={state}
+          filter={pending.filter}
+          controllerId={pending.controllerId}
+          onPick={(cardInstanceId) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_RITUAL",
+              playerId: pending.controllerId,
+              cardInstanceId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-ritual" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing a ritual.</WaitingBanner>
+      )}
+
       {pending?.type === "forge-faces" && isPendingChooser && (
         <ForgeFacesPrompt
           state={state}
@@ -796,6 +814,8 @@ export function MatchBoard() {
           setIntent({ kind: "attack", attackerId, attackId })
         }
         onCancelAttack={clearIntent}
+        actingPlayerId={actingId}
+        canAct={canAct}
         onRitualActivate={(id) =>
           tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
         }
@@ -829,6 +849,8 @@ export function MatchBoard() {
           setIntent({ kind: "attack", attackerId, attackId })
         }
         onCancelAttack={clearIntent}
+        actingPlayerId={actingId}
+        canAct={canAct}
         onRitualActivate={(id) =>
           tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
         }
@@ -923,6 +945,7 @@ export function MatchBoard() {
                 playerId={dockPlayerId}
                 phase={phase}
                 canAct={canAct}
+                reactionWindow={pending?.type === "reaction-priority"}
                 selected={
                   intent.kind === "play" || intent.kind === "forge" ? intent.cardInstanceId : null
                 }
@@ -1090,6 +1113,10 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       ? "Choose one of your creatures (overload / effect target)."
       : "Choose an enemy creature (overload / effect target).";
   }
+  if (state.pendingDecision?.type === "choose-ritual") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose a ritual.";
+    return "Choose an opposing ritual on the field to destroy.";
+  }
   if (state.pendingDecision?.type === "forge-faces") {
     if (!isPendingChooser) {
       return "Waiting for the opponent to choose a face from their pool to install on your die.";
@@ -1226,6 +1253,8 @@ function Battlefield({
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
+  actingPlayerId,
+  canAct,
   onRitualActivate,
   onRitualAbsorb,
 }: {
@@ -1238,6 +1267,8 @@ function Battlefield({
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
+  actingPlayerId: PlayerId;
+  canAct: boolean;
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
   onRitualAbsorb: (cardInstanceId: CardInstanceId) => void;
 }) {
@@ -1245,6 +1276,7 @@ function Battlefield({
   const front = living.filter((c) => c.position === "frontline");
   const back = living.filter((c) => c.position === "back");
   const isActive = state.activePlayerId === playerId;
+  const inReactionWindow = state.pendingDecision?.type === "reaction-priority";
   const rituals = ritualsOf(state, playerId);
 
   const backRow = (
@@ -1294,21 +1326,28 @@ function Battlefield({
           Rituals
         </h3>
         <div className="flex flex-wrap gap-2">
-          {rituals.map((card) => (
-            <RitualTile
-              key={card.id}
-              card={card}
-              absorbArmed={absorbArmed && isActive}
-              canActivate={
-                isActive &&
-                state.phase !== "roll" &&
-                card.ritualOrientation === "ready" &&
-                !absorbArmed
+          {rituals.map((card) => {
+            const def = getCard(card.cardId);
+            const ready = card.ritualOrientation === "ready";
+            const canActivate = (() => {
+              if (!canAct || !ready || absorbArmed || def === undefined) return false;
+              if (inReactionWindow) {
+                if (playerId !== actingPlayerId) return false;
+                return isLegalRitualReaction(state, def);
               }
-              onActivate={() => onRitualActivate(card.id)}
-              onAbsorb={() => onRitualAbsorb(card.id)}
-            />
-          ))}
+              return isActive && playerId === actingPlayerId && state.phase !== "roll";
+            })();
+            return (
+              <RitualTile
+                key={card.id}
+                card={card}
+                absorbArmed={absorbArmed && isActive}
+                canActivate={canActivate}
+                onActivate={() => onRitualActivate(card.id)}
+                onAbsorb={() => onRitualAbsorb(card.id)}
+              />
+            );
+          })}
         </div>
       </div>
     ) : null;
@@ -2566,6 +2605,7 @@ function HandStrip({
   playerId,
   phase,
   canAct,
+  reactionWindow,
   selected,
   onPlay,
   onForge,
@@ -2575,6 +2615,7 @@ function HandStrip({
   playerId: PlayerId;
   phase: GameState["phase"];
   canAct: boolean;
+  reactionWindow: boolean;
   selected: CardInstanceId | null;
   onPlay: (card: CardInstance) => void;
   onForge: (card: CardInstance) => void;
@@ -2582,7 +2623,8 @@ function HandStrip({
 }) {
   const hand = handOf(state, playerId);
   const actionsPhase = phase === "actions";
-  const actionsLive = actionsPhase && canAct;
+  const actionsLive = actionsPhase && canAct && !reactionWindow;
+  const reactionsLive = reactionWindow && canAct;
   const [hoveredId, setHoveredId] = useState<CardInstanceId | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ left: number; bottom: number } | null>(null);
   const cardRefs = useRef<Map<CardInstanceId, HTMLDivElement>>(new Map());
@@ -2645,9 +2687,11 @@ function HandStrip({
 
   const statusHint = !canAct
     ? " · opponent's turn"
-    : !actionsPhase
-      ? " · wait for actions"
-      : " · play or forge";
+    : reactionWindow
+      ? " · respond or pass"
+      : !actionsPhase
+        ? " · wait for actions"
+        : " · play or forge";
 
   return (
     <section className="rounded-lg border border-stone-800/80 bg-black/30 p-3">
@@ -2671,6 +2715,7 @@ function HandStrip({
           if (def === undefined) return null;
           const isSelected = selected === card.id;
           const canPlay = actionsLive && hasPlayableEffect(def);
+          const canRespond = reactionsLive && isLegalHandReaction(state, def);
 
           return (
             <div
@@ -2707,7 +2752,17 @@ function HandStrip({
                     </button>
                   </>
                 )}
-                {!actionsLive && (
+                {reactionsLive && (
+                  <button
+                    type="button"
+                    className={canRespond ? btnPrimary : `${btnClass} opacity-40`}
+                    disabled={!canRespond}
+                    onClick={() => onPlay(card)}
+                  >
+                    Respond
+                  </button>
+                )}
+                {!actionsLive && !reactionsLive && (
                   <p className="text-[0.65rem] text-stone-600">
                     {!canAct ? "Waiting" : "Not this phase"}
                   </p>
@@ -2797,6 +2852,59 @@ function ChooseCreatureModal({
           })}
           {creatures.length === 0 && (
             <li className="text-sm text-red-300">No legal creatures to choose.</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function ChooseRitualModal({
+  state,
+  filter,
+  controllerId,
+  onPick,
+}: {
+  state: GameState;
+  filter: "opponent";
+  controllerId: PlayerId;
+  onPick: (cardInstanceId: CardInstanceId) => void;
+}) {
+  const ownerId = filter === "opponent" ? opponentOf(state, controllerId) : controllerId;
+  const rituals = ritualsOf(state, ownerId);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Choose an opposing ritual
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Pick one ritual on the opponent&apos;s field (preparing, ready, or exhausted) to send to
+          their graveyard.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {rituals.map((card) => {
+            const def = getCard(card.cardId);
+            const orientation = card.ritualOrientation ?? "—";
+            return (
+              <li key={card.id}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                  onClick={() => onPick(card.id)}
+                >
+                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                  <p className="text-xs capitalize text-stone-500">
+                    {orientation}
+                    {def !== undefined ? ` · ${def.subtypes.join("/") || "ritual"}` : ""}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {rituals.length === 0 && (
+            <li className="text-sm text-red-300">No opposing rituals on the field.</li>
           )}
         </ul>
       </div>

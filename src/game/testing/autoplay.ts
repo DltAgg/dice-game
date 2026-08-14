@@ -6,7 +6,7 @@ import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols.js";
-import { handOf, searchableInDeck, searchableInGraveyard } from "../rules/cards.js";
+import { handOf, searchableInDeck, searchableInGraveyard, ritualsOf } from "../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { diceOf } from "../rules/dice.js";
 import { legalTargetsFor } from "../rules/targeting.js";
@@ -82,7 +82,7 @@ function absorb(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): G
       creatureId: creature.id,
       symbolId: symbol.id,
     });
-    if (result.ok) current = result.state;
+    if (result.ok) current = resolvePending(result.state);
   }
 
   return current;
@@ -338,6 +338,23 @@ function resolvePending(state: GameState): GameState {
     });
     if (!result.ok) {
       throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_CREATURE`);
+    }
+    return resolvePending(result.state);
+  }
+
+  if (pending.type === "choose-ritual") {
+    const ownerId = opponentOf(state, pending.controllerId);
+    const [cardInstanceId] = ritualsOf(state, ownerId).map((card) => card.id);
+    if (cardInstanceId === undefined) {
+      throw new Error("autoplay: no ritual for choose-ritual");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_CHOOSE_RITUAL",
+      playerId: pending.controllerId,
+      cardInstanceId,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_RITUAL`);
     }
     return resolvePending(result.state);
   }

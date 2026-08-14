@@ -556,17 +556,24 @@ Tracked in `docs/DEFERRED_CATALOGUE.md` for end-of-loop revisit.
 
 ### Whether a creature's fuel is capped
 
-**Status:** `OPEN` — not blocking
+**Status:** `OPEN` — not blocking (cap still undecided)
 
-**Why it matters.** Tokens persist and are only spent by attacks that name a
-discard, so a creature that survives long enough accumulates without limit. In
-simulated matches this stays modest, but nothing stops it.
+**Why it matters.** Tokens persist and are spent by attacks that name a
+discard, and by strip effects (`discard-attribute-tokens`, spec `011`). A
+creature that survives long enough can still accumulate without a hard cap.
 
-**The question.** Is there a cap per creature, or per attribute? Does anything
-strip tokens? Bible §20's equipment example — "discard 1 Fire from the target" —
-implies effects can, but none exist yet.
+**The question.** Is there a cap per creature, or per attribute?
 
-**Decision.** TBD.
+**DECIDED (playtest, 2026-08-14).** Effects may strip tokens. Siphon Sigil
+proves `discard-attribute-tokens`: strip in `ATTRIBUTES` array order without a
+player attribute pick; fewer tokens than `amount` discards all remaining
+(whiff-legal at zero). Bible §20 / §25.
+
+**ASSUMED (label for the strip path).** Attribute order is fixed engine order
+(`martial` → … → `darkness`); controller does not choose which attributes.
+Token **cap** remains OPEN.
+
+**Decision (cap).** TBD.
 
 ---
 

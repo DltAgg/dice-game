@@ -7,10 +7,11 @@ import {
 
 /**
  * Creatures from the Figma *Creature card* page (English printing) — the six
- * Slow-game-test cards. Passives and fuller special riders print in full; only
- * the damage line (and a few simple single-effect riders) are modelled.
- * Multi-clause attacks stay partial until attack `effects[]` exists — do not
- * approximate missing riders.
+ * Slow-game-test cards. HP is a uniform +4 band over the original Figma Slow
+ * print (playtest: skirmishes ended before control could interact). Passives
+ * and multi-clause riders print in full; attack `effect` is the damage line.
+ * Control attack resource riders are wired via `on-attack` + `attackKinds`
+ * (no attack `effects[]` yet). Do not approximate missing riders.
  */
 
 export const MINOTAUR: CreatureDefinitionId = asCreatureDefinitionId("creature-minotaur");
@@ -28,7 +29,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
     id: MINOTAUR,
     name: "War Minotaur",
-    life: 13,
+    life: 17,
     attributes: ["martial"],
     passiveRulesText: "Ignore 1 [Shield] on the target.",
     attacks: [
@@ -57,7 +58,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
     id: VARCOLAC,
     name: "Varcolac",
-    life: 9,
+    life: 13,
     attributes: ["wild"],
     passiveRulesText: "On attack, another ally: this creature's next attack deals +1 damage.",
     standingAbilities: [
@@ -100,7 +101,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
     id: GARUDA,
     name: "Garuda",
-    life: 7,
+    life: 11,
     attributes: ["wild"],
     passiveRulesText: "[Range] (May attack any position).",
     attacks: [
@@ -131,35 +132,52 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
     id: ARCHMAGE,
     name: "Archmage of the Runes",
-    life: 8,
+    life: 12,
     attributes: ["arcane"],
     passiveRulesText:
       "The first [Tactic] [Arcane] used each turn costs 1 Energy less.",
+    standingAbilities: [
+      {
+        type: "on-attack",
+        attackKinds: ["basic"],
+        effects: [{ type: "draw-cards", amount: 1 }],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [
+          { type: "gain-energy", amount: 1 },
+          { type: "generate-symbol", symbol: "arcane", amount: 1 },
+        ],
+      },
+    ],
     attacks: [
       {
         id: asAttackId("attack-archmage-arcane-burst"),
         name: "Arcane Burst",
         kind: "basic",
         requires: { arcane: 1 },
+        discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Draw 1 card.",
-        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        rulesText: "Deal 1 damage. Draw 1 card.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
       {
         id: asAttackId("attack-archmage-mystic-overload"),
         name: "Mystic Overload",
         kind: "special",
         requires: { arcane: 1, luminar: 1 },
+        discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 3 damage and grant 2 [Shields] to frontline creatures.",
-        effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
+        rulesText: "Deal 1 damage. Gain 1 Energy. Generate 1 Arcane.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
     ],
   },
   {
     id: CORRUPTING_ELDER,
     name: "Corrupting Elder",
-    life: 10,
+    life: 14,
     attributes: ["arcane"],
     passiveRulesText: "On opponent roll Corruption: deal 1 damage.",
     standingAbilities: [
@@ -169,6 +187,18 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         rollingPlayer: "opponent",
         effects: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
       },
+      {
+        type: "on-attack",
+        attackKinds: ["basic"],
+        effects: [
+          { type: "remove-shield", amount: 1, target: { kind: "declared-target" } },
+        ],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [{ type: "generate-symbol", symbol: "corruption", amount: 1 }],
+      },
     ],
     attacks: [
       {
@@ -176,26 +206,27 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Touch of Decay",
         kind: "basic",
         requires: { arcane: 1 },
+        discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 2 damage. The target loses 1 [Shield].",
-        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        rulesText: "Deal 1 damage. The target loses 1 [Shield].",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
       {
         id: asAttackId("attack-elder-contamination"),
         name: "Contamination",
         kind: "special",
         requires: { arcane: 1, corruption: 1 },
+        discards: { corruption: 1 },
         range: false,
-        rulesText:
-          "Deal 4 damage. [Forge] 1 [Corruption] face onto the opponent's die.",
-        effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
+        rulesText: "Deal 1 damage. Generate 1 Corruption.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
     ],
   },
   {
     id: VOID_SUMMONER,
     name: "Void Summoner",
-    life: 9,
+    life: 13,
     attributes: ["arcane"],
     passiveRulesText: "On absorb Natural: generate 1 Arcane.",
     standingAbilities: [
@@ -205,6 +236,19 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         faceKinds: ["natural"],
         effects: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
       },
+      {
+        type: "on-attack",
+        attackKinds: ["basic"],
+        effects: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [
+          { type: "gain-energy", amount: 1 },
+          { type: "draw-cards", amount: 1 },
+        ],
+      },
     ],
     attacks: [
       {
@@ -212,18 +256,20 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Rupture",
         kind: "basic",
         requires: { arcane: 1 },
+        discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 2 damage. [Convert] a symbol.",
-        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        rulesText: "Deal 1 damage. Generate 1 Arcane.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
       {
         id: asAttackId("attack-void-dimensional-rift"),
         name: "Dimensional Rift",
         kind: "special",
         requires: { arcane: 1, darkness: 1 },
+        discards: { darkness: 1 },
         range: false,
-        rulesText: "Deal 3 damage. [Retain] a die.",
-        effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
+        rulesText: "Deal 1 damage. Gain 1 Energy. Draw 1 card.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
     ],
   },

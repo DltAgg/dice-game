@@ -3,6 +3,7 @@ import type { EffectDefinition, TargetSelector } from "../model/effects.js";
 import {
   asEffectInstanceId,
   asSymbolInstanceId,
+  type CardInstanceId,
   type CreatureId,
   type PlayerId,
   type SymbolInstanceId,
@@ -11,10 +12,13 @@ import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { opponentOf } from "../rules/creatures.js";
 import { hasLegalForgeFacesChoice } from "../rules/faces.js";
+import { discardTokensInAttributeOrder, totalTokens } from "../rules/tokens.js";
+import { isRitualNegatableLinkKind } from "./chain.js";
 import { emit, nextInstanceId, patchCreature, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
 import {
   destroyEquipment,
+  destroyRitual,
   drawCards,
   releaseEquipmentOn,
   searchableDeckCards,
@@ -52,6 +56,7 @@ export function pushEffect(
   effect: EffectDefinition,
   sourceCreatureId: CreatureId | null,
   declaredTargetCreatureId: CreatureId | null,
+  declaredTargetCardInstanceId: CardInstanceId | null = null,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -59,6 +64,7 @@ export function pushEffect(
     effect,
     sourceCreatureId,
     declaredTargetCreatureId,
+    declaredTargetCardInstanceId,
   });
 }
 
@@ -122,7 +128,10 @@ function resolveTarget(
       return mostShieldedEnemy(draft, pending.controllerId);
     case "choose-ally":
     case "choose-enemy":
-      // Opened as a pending decision before applyEffect reaches resolveTarget.
+    case "choose-opponent-ritual":
+    case "declared-ritual":
+      // Creature selectors opened as pending decisions; ritual selectors use
+      // resolveRitualTarget. Choose-* never reach resolveTarget with an open prompt.
       return null;
     case "chain-attack-target": {
       for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
@@ -136,6 +145,27 @@ function resolveTarget(
   }
 }
 
+function resolveRitualTarget(
+  pending: PendingEffect,
+  selector: TargetSelector,
+): CardInstanceId | null {
+  switch (selector.kind) {
+    case "declared-ritual":
+      return pending.declaredTargetCardInstanceId;
+    case "choose-opponent-ritual":
+      return null;
+    default:
+      return null;
+  }
+}
+
+function opposingRitualIds(draft: Draft, controllerId: PlayerId): readonly CardInstanceId[] {
+  const enemyId = opponentOf(draft, controllerId);
+  const enemy = draft.players[enemyId];
+  if (enemy === undefined) return [];
+  return enemy.ritual.filter((id) => draft.cards[id]?.zone === "ritual");
+}
+
 function choiceFilterFor(selector: TargetSelector): "ally" | "enemy" | null {
   if (selector.kind === "choose-ally") return "ally";
   if (selector.kind === "choose-enemy") return "enemy";
@@ -147,11 +177,36 @@ function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
   return { ...effect, target: { kind: "declared-target" } } as EffectDefinition;
 }
 
+function withDeclaredRitual(effect: EffectDefinition): EffectDefinition {
+  if (!("target" in effect) || typeof effect.target !== "object") return effect;
+  return { ...effect, target: { kind: "declared-ritual" } } as EffectDefinition;
+}
+
 /** Returns true when resolution must wait on a player choice. */
 function applyEffect(draft: Draft, pending: PendingEffect): boolean {
   const { effect } = pending;
 
   if ("target" in effect && typeof effect.target === "object") {
+    if (effect.target.kind === "choose-opponent-ritual") {
+      const eligible = opposingRitualIds(draft, pending.controllerId);
+      if (eligible.length === 0) {
+        emit(draft, { type: "effect-resolved", effectId: pending.id, effectType: effect.type });
+        return false;
+      }
+      draft.pendingDecision = {
+        type: "choose-ritual",
+        controllerId: pending.controllerId,
+        filter: "opponent",
+        deferred: { ...pending, effect: withDeclaredRitual(effect) },
+      };
+      emit(draft, {
+        type: "choose-ritual-started",
+        playerId: pending.controllerId,
+        filter: "opponent",
+      });
+      return true;
+    }
+
     const filter = choiceFilterFor(effect.target);
     if (filter !== null) {
       draft.pendingDecision = {
@@ -325,6 +380,8 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       return false;
     }
     case "negate-tactic": {
+      // Non-attack tactic-card-ish links (ritual place/activate, equip, overload,
+      // tactic-effect). Ritual-only answers use `negate-ritual`.
       const top = draft.chainStack[draft.chainStack.length - 1];
       if (
         top !== undefined &&
@@ -334,6 +391,43 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         top.negated = true;
         emit(draft, { type: "chain-link-negated", linkId: top.id });
       }
+      return false;
+    }
+    case "negate-ritual": {
+      const top = draft.chainStack[draft.chainStack.length - 1];
+      if (
+        top !== undefined &&
+        isRitualNegatableLinkKind(top.kind) &&
+        !top.negated
+      ) {
+        top.negated = true;
+        emit(draft, { type: "chain-link-negated", linkId: top.id });
+      }
+      return false;
+    }
+    case "discard-attribute-tokens": {
+      const targetId = resolveTarget(draft, pending, effect.target);
+      if (targetId === null) return false;
+      const creature = draft.creatures[targetId];
+      if (creature === undefined || creature.defeated || effect.amount <= 0) return false;
+      if (totalTokens(creature.attributeTokens) <= 0) return false;
+      const { next, discarded } = discardTokensInAttributeOrder(
+        creature.attributeTokens,
+        effect.amount,
+      );
+      if (totalTokens(discarded) <= 0) return false;
+      patchCreature(draft, targetId, { attributeTokens: next });
+      emit(draft, {
+        type: "attribute-tokens-discarded",
+        creatureId: targetId,
+        discarded,
+      });
+      return false;
+    }
+    case "destroy-ritual": {
+      const ritualId = resolveRitualTarget(pending, effect.target);
+      if (ritualId === null) return false;
+      destroyRitual(draft, ritualId);
       return false;
     }
     case "grant-damage-prevent": {

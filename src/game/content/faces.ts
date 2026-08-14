@@ -701,40 +701,42 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
  * Builtin aggro face deck — twelve unique cards, at most three per attribute
  * (bible §12). Omits natural Martial / Wild / Arcane / Luminar because those
  * already sit on the starting die (same face id cannot be pooled and installed).
- * Densifies Toxin + combat synthetics; Corruption synthetics cover overload forges.
- * Natural Martial/Wild/Arcane forges copy the starting faces (bible §13).
+ * Densifies wired Martial / Wild / Toxin combat synthetics (Temper / Untamed /
+ * Virulent Rite forge targets); Corruption synthetics remain for attack-bonus
+ * pressure forges. Natural Martial/Wild forges copy the starting faces (§13).
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
-  syntheticFaceId("toxin"),
-  VENOM,
-  SPORES,
-  CRUSH,
+  WARHORN,
+  CLEAVING_STRIKE,
   IMPACT,
-  COMMAND,
-  RENDING_CLAW,
-  BLADE_RAIN,
+  BLOODSCENT,
+  GORE,
   PRIMORDIAL_FURY,
+  NEEDLE,
+  SEEP,
+  VENOM,
   syntheticFaceId("corruption"),
   STAIN,
-  FORBIDDEN_HERITAGE,
+  DECAY,
 ];
 
 /**
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
  * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
- * Darkness / Corruption / Arcane / Mechanical synthetics for rituals and forges.
+ * Darkness / Corruption / Arcane for rituals and forges; Luminar synthetics
+ * gate Archmage’s special (arcane + luminar) without Mechanical combo splash.
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
   syntheticFaceId("darkness"),
   SHADOW_ECHO,
   DRAIN,
   syntheticFaceId("corruption"),
+  STAIN,
   FORBIDDEN_HERITAGE,
-  PESTILENT_PLAGUE,
   syntheticFaceId("arcane"),
-  ARCANE_ECHO_FACE,
   INSIGHT_RUNE,
-  syntheticFaceId("mechanical"),
-  GEAR,
-  CATALYST,
+  CONVERSION_RUNE,
+  syntheticFaceId("luminar"),
+  VITAL_SPARK,
+  AEGIS,
 ];

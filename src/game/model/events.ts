@@ -208,6 +208,21 @@ export type GameEvent =
       readonly creatureId: CreatureId;
     }
   | {
+      readonly type: "choose-ritual-started";
+      readonly playerId: PlayerId;
+      readonly filter: "opponent";
+    }
+  | {
+      readonly type: "choose-ritual-resolved";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  | {
+      readonly type: "ritual-destroyed";
+      readonly cardInstanceId: CardInstanceId;
+      readonly playerId: PlayerId;
+    }
+  | {
       readonly type: "face-forged";
       readonly playerId: PlayerId;
       /** Null when the install came from a `forge-faces` effect, not FORGE_CARD. */
