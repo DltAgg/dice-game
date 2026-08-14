@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ASSEMBLY_LINE,
+  DIE_PRESS,
   ECLIPSE,
   ETERNAL_DARKNESS,
   LIVING_LIBRARY,
@@ -73,5 +74,12 @@ describe("English card printing", () => {
     if (card === undefined) throw new Error("missing card");
     expect(formatTypeLine(card)).toBe("[Ritual / Instant / Mechanical]");
     expect(formatRequirementLine(card)).toBe("[Active when: Mechanical + Mechanical]");
+  });
+
+  it("prints Requires for Die Press as Mechanical + Mechanical", () => {
+    const card = getCard(DIE_PRESS);
+    if (card === undefined) throw new Error("missing card");
+    expect(formatTypeLine(card)).toBe("[Tactic / Instant / Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
   });
 });

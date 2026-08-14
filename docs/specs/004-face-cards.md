@@ -87,6 +87,7 @@ Named specials:
 | Catalyst | 2 | Print only | Treat-as / copy face effect — OPEN |
 | Overcharge | 2 | Print only | Optional Energy + skip next / double resolve — OPEN |
 | Flywheel | 2 | On roll: +Energy; On absorb: generate Shield | Authored Mechanical special |
+| Piston | 2 | On roll: generate Mechanical; On absorb: +Energy | Authored Mechanical special |
 | Shadow Echo | 2 | Print only | Discard-draw / GY recursion — OPEN |
 | Drain | 2 | Print only | Opp loses Energy / transfer — OPEN |
 | Sacrifice | 2 | Print only | Discard for Energy / discard for damage — OPEN |
