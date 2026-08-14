@@ -1,7 +1,8 @@
 # 003 — Creature cards
 
-Status: **DEFERRED DEPTH** — Figma catalogue + English UI; unfinished passives /
-attack riders parked in [`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+Status: **IMPLEMENTED DEPTH** — Figma catalogue + English UI; passives and
+attack riders wired in `011` except Coordinated Hunt **push**. Fast-game
+HP/cost variants are not encoded.
 
 Derived from the `Creature card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, page `0:1`). The Slow game test section is the
@@ -26,9 +27,9 @@ authority for the six playable creature designs.
 | Name | English translation of the Portuguese layout title |
 | HP | Max life |
 | Attribute | Primary attribute icon (header) |
-| Passive | Standing text; most are not yet engine triggers |
-| Basic Attack | Cost icons + name + effect |
-| Special Attack | Cost icons + name + effect |
+| Passive | Standing text + `standingAbilities` (`010` / `011`) |
+| Basic Attack | Cost icons + name + `effect` + optional `followUpEffects` |
+| Special Attack | Same |
 
 ## Catalogue (Slow game test)
 
@@ -53,8 +54,15 @@ encoded yet.
 
 | In | Out (deferred) |
 |---|---|
-| Six Figma creatures as content + English `CreatureCard` UI | Aggro passives / reposition / toxin-on-special — see DEFERRED_CATALOGUE |
-| Basic/Special costs, damage, and control resource riders (`on-attack`) | Archmage tactic-discount passive |
+| Six Figma creatures as content + English `CreatureCard` UI | Fast-game HP/cost variants; Coordinated Hunt **push** |
+| Basic/Special costs, damage, `followUpEffects` / `on-attack` riders | Stun |
+| Passives: Minotaur pierce, Archmage Arcane discount, Varcolac / Elder / Void / Garuda Range | — |
+
+War Minotaur ignore-1-Shield, Poisoned Charge toxin + back-row swap, Garuda Dive
+optional swap, Bombardment frontline toxin, Archmage Burst draw / Overload
+Energy+Arcane (`on-attack`), Elder Touch strip / Contamination generate Corruption,
+Void Rupture generate Arcane / Rift Energy+draw — all wired (`010` / `012`).
+Control print is the retuned 1-damage + resource-rider band.
 
 The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder) has
 been removed; hotseat and scenario matches use the Figma Aggro or Control

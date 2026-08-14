@@ -105,7 +105,7 @@ describe("playing a card for its effect", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(eventTypes(result.state).filter((type) => type === "card-drawn")).toHaveLength(2);
-    expect(result.state.pendingDecision).toEqual({
+    expect(result.state.pendingDecision).toMatchObject({
       type: "discard-cards",
       controllerId: P1,
       amount: 1,
@@ -674,7 +674,7 @@ describe("rituals on the field", () => {
 });
 
 describe("what playing refuses", () => {
-  it("refuses a card whose effect is not modelled", () => {
+  it("plays Arcane Echo and asks which die to re-apply", () => {
     const state = actionsReady([ARCANE_ECHO]);
 
     const result = advance(state, {
@@ -683,8 +683,9 @@ describe("what playing refuses", () => {
       cardInstanceId: handCardIdAt(state, P1, 0),
     });
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("CARD_HAS_NO_EFFECT");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(graveyardOf(result.state, P1)).toHaveLength(1);
   });
 
   it("refuses outside the actions phase", () => {

@@ -93,7 +93,10 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 - [x] Void Summoner: any Natural absorb → generate Arcane.
 - [x] War Axe: Basic-only `attack-damage-bonus` via `attackKinds`.
 - [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy.
+- [x] `energy-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
+- [x] Movers fire `on-change-position` (Hunter’s Collar) via `setCreaturePosition`.
 
 ## Tests
 
 - [x] `src/game/reducer/triggers.test.ts`
+- [x] `src/game/reducer/movers.test.ts` (Collar + reposition)

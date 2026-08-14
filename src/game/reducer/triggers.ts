@@ -46,6 +46,8 @@ function pushEffect(
   effect: EffectDefinition,
   sourceCreatureId: CreatureId | null,
   declaredTargetCreatureId: CreatureId | null,
+  sourceDieId: DieId | null = null,
+  sourceSlotIndex: number | null = null,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -54,6 +56,9 @@ function pushEffect(
     sourceCreatureId,
     declaredTargetCreatureId,
     declaredTargetCardInstanceId: null,
+    sourceDieId,
+    sourceSlotIndex,
+    ignoreShield: 0,
   });
 }
 
@@ -279,10 +284,12 @@ export function queueAbsorbTriggers(
   fireOnAbsorb(draft, creatureId, absorbingPlayerId, symbol, faceKind);
 
   if (faceCardId === undefined) return;
+  const die = sourceDieId === null ? undefined : draft.dice[sourceDieId];
+  const slotIndex = die?.rolledSlotIndex ?? null;
   // Absorbing creature is the face/overload source so `source-creature` targets
   // (e.g. Vital Spark prevent) resolve against the absorber.
-  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId);
-  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId);
+  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId, sourceDieId, slotIndex);
+  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId, sourceDieId, slotIndex);
 }
 
 function fireOnAbsorb(
@@ -330,11 +337,21 @@ function fireFaceOnAbsorb(
   controllerId: PlayerId,
   faceCardId: FaceCardId,
   absorbingCreatureId: CreatureId,
+  sourceDieId: DieId | null,
+  sourceSlotIndex: number | null,
 ): void {
   const face = getFaceCard(faceCardId);
   if (face === undefined || face.onAbsorb.length === 0) return;
   for (const effect of [...face.onAbsorb].reverse()) {
-    pushEffect(draft, controllerId, effect, absorbingCreatureId, null);
+    pushEffect(
+      draft,
+      controllerId,
+      effect,
+      absorbingCreatureId,
+      null,
+      sourceDieId,
+      sourceSlotIndex,
+    );
   }
 }
 
@@ -343,6 +360,8 @@ function fireOverloadsOnAbsorb(
   controllerId: PlayerId,
   faceCardId: FaceCardId,
   absorbingCreatureId: CreatureId,
+  sourceDieId: DieId | null,
+  sourceSlotIndex: number | null,
 ): void {
   const player = draft.players[controllerId];
   if (player === undefined) return;
@@ -352,7 +371,15 @@ function fireOverloadsOnAbsorb(
     if (card?.attachedToFaceCardId !== faceCardId) continue;
     const effects = getCard(card.cardId)?.overload?.onAbsorb ?? [];
     for (const effect of [...effects].reverse()) {
-      pushEffect(draft, controllerId, effect, absorbingCreatureId, null);
+      pushEffect(
+        draft,
+        controllerId,
+        effect,
+        absorbingCreatureId,
+        null,
+        sourceDieId,
+        sourceSlotIndex,
+      );
     }
   }
 }
@@ -540,12 +567,23 @@ export function fireOnChangePosition(
 /** Clear once-per-turn trigger spend and creature next-attack bonuses. */
 export function clearTurnTriggerState(draft: Draft): void {
   for (const creature of Object.values(draft.creatures)) {
-    if (creature.spentOncePerTurnTriggers.length === 0 && creature.nextAttackBonus === 0) {
+    if (
+      creature.spentOncePerTurnTriggers.length === 0 &&
+      creature.nextAttackBonus === 0 &&
+      creature.redirectDamageThisTurn === 0 &&
+      creature.nextIncomingDamageBonus === 0
+    ) {
       continue;
     }
     patchCreature(draft, creature.id, {
       spentOncePerTurnTriggers: [],
       nextAttackBonus: 0,
+      redirectDamageThisTurn: 0,
+      nextIncomingDamageBonus: 0,
     });
+  }
+  for (const player of Object.values(draft.players)) {
+    if (player.spentOncePerTurnKeys.length === 0) continue;
+    draft.players[player.id] = { ...player, spentOncePerTurnKeys: [] };
   }
 }

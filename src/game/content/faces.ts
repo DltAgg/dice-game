@@ -242,8 +242,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     rulesText:
       '[Requirement: may only be forged by "Echo" cards]\n' +
       "On roll: copy the other die's face, applying its effects, attributes, and overloads.",
-    // Copying a face with overloads is not modelled yet.
-    onRoll: [],
+    onRoll: [{ type: "copy-other-die-face" }],
     onAbsorb: [],
     maxOverloads: 0,
     forgeRestriction: "echo-cards",
@@ -267,8 +266,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: "wild",
     rulesText:
       "On roll: you may distribute the damage of the next attack freely among enemies within [Range].",
-    // Attack-damage splitting is not modelled yet.
-    onRoll: [],
+    onRoll: [{ type: "arm-blade-rain" }],
     onAbsorb: [],
     maxOverloads: 3,
     forgeRestriction: null,
@@ -315,11 +313,18 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     rulesText:
       "On roll: your opponent draws 1 card. [Retain] this face.\n" +
       "Activated: you may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
-    // Opponent draw + retain + activated remove are not modelled yet.
-    onRoll: [],
+    onRoll: [
+      { type: "draw-cards", amount: 1, player: "opponent" },
+      { type: "retain-die" },
+    ],
     onAbsorb: [],
     maxOverloads: 1,
     forgeRestriction: null,
+    activated: {
+      kind: "remove-corruption-face",
+      energyBase: 2,
+      energyPerCorruptionOnDie: 1,
+    },
   }),
   face({
     id: PESTILENT_PLAGUE,
@@ -330,11 +335,15 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       "On roll: put 1 pestilence counter on this card.\n" +
       "At 5 pestilence counters: remove them and [Forge] 1 [Pestilent Plague] face next to a [Pestilent Plague] face.\n" +
       "Activated: you may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
-    // Pestilence counters and adjacent forge are not modelled yet.
-    onRoll: [],
+    onRoll: [{ type: "add-pestilence-counter" }],
     onAbsorb: [],
     maxOverloads: 2,
     forgeRestriction: null,
+    activated: {
+      kind: "remove-corruption-face",
+      energyBase: 2,
+      energyPerCorruptionOnDie: 1,
+    },
   }),
 
   // --- synthetic_faces.csv (On roll / On absorb; wire only modellable clauses) ---
@@ -344,7 +353,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "arcane",
     "On roll: draw 1 card.\n" +
       "On absorb: look at the top 2 cards of your deck; put one into your hand and the other on the bottom.",
-    { onRoll: [{ type: "draw-cards", amount: 1 }] },
+    { onRoll: [{ type: "draw-cards", amount: 1 }], onAbsorb: [{ type: "look-top-deck", amount: 2 }] },
   ),
   namedSynthetic(
     CONVERSION_RUNE,
@@ -352,7 +361,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "arcane",
     "On roll: you may convert this Arcane symbol into any Natural symbol.\n" +
       "On absorb: gain 1 Energy.",
-    { onAbsorb: [{ type: "gain-energy", amount: 1 }] },
+    {
+      onRoll: [{ type: "convert-symbols", amount: 1, sourceOnly: true }],
+      onAbsorb: [{ type: "gain-energy", amount: 1 }],
+    },
   ),
   namedSynthetic(
     RESONANCE_RUNE,
@@ -360,6 +372,16 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "arcane",
     "On roll: if there is another Arcane symbol in the Pool, gain 1 additional Energy.\n" +
       "On absorb: the next Arcane symbol used this turn may be treated as any attribute.",
+    {
+      onRoll: [
+        {
+          type: "conditional",
+          when: { type: "has-other-symbol", symbol: "arcane" },
+          then: [{ type: "gain-energy", amount: 1 }],
+        },
+      ],
+      onAbsorb: [{ type: "arm-requirement-wildcard", fromSymbol: "arcane" }],
+    },
   ),
   namedSynthetic(
     VITAL_SPARK,
@@ -380,7 +402,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "luminar",
     "On roll: generate 1 Shield.\n" +
       "On absorb: redirect up to 2 damage that would be dealt to another allied creature to this creature.",
-    { onRoll: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }] },
+    { onRoll: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }], onAbsorb: [{ type: "arm-redirect-damage", amount: 2, target: { kind: "source-creature" } }] },
   ),
   namedSynthetic(
     REVELATION,
@@ -388,6 +410,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "luminar",
     "On roll: reveal the top card of your deck; you may put it on the bottom.\n" +
       "On absorb: heal 2 on a creature that has less than half its Life remaining.",
+    {
+      onRoll: [{ type: "peek-deck-optional-bottom" }],
+      onAbsorb: [{ type: "heal", amount: 2, target: { kind: "choose-ally-damage-over-half" } }],
+    },
   ),
   namedSynthetic(
     INSTINCT,
@@ -395,6 +421,12 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "wild",
     "On roll: an allied creature may reposition 1 space.\n" +
       "On absorb: it may perform a Basic Attack if it has not attacked this turn.",
+    {
+      onRoll: [
+        { type: "reposition-creature", target: { kind: "choose-ally" }, optional: true },
+      ],
+      onAbsorb: [{ type: "optional-bonus-basic-attack" }],
+    },
   ),
   namedSynthetic(
     PRIMORDIAL_FURY,
@@ -402,7 +434,16 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "wild",
     "On roll: if an allied creature has attacked this turn, gain 1 Energy.\n" +
       "On absorb: this creature's next Basic Attack deals +1 damage.",
-    { onAbsorb: [{ type: "next-attack-bonus", amount: 1 }] },
+    {
+      onRoll: [
+        {
+          type: "conditional",
+          when: { type: "any-ally-attacked-this-turn" },
+          then: [{ type: "gain-energy", amount: 1 }],
+        },
+      ],
+      onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
+    },
   ),
   namedSynthetic(
     PACK,
@@ -410,6 +451,18 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "wild",
     "On roll: if you control another adjacent creature, generate 1 additional Wild symbol in the Pool.\n" +
       "On absorb: another allied creature may reposition 1 space.",
+    {
+      onRoll: [
+        {
+          type: "conditional",
+          when: { type: "has-adjacent-ally" },
+          then: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
+        },
+      ],
+      onAbsorb: [
+        { type: "reposition-creature", target: { kind: "choose-ally-other" }, optional: true },
+      ],
+    },
   ),
   namedSynthetic(
     COMMAND,
@@ -417,6 +470,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "martial",
     "On roll: reposition an allied creature 1 space.\n" +
       "On absorb: move an enemy creature 1 space.",
+    {
+      onRoll: [{ type: "reposition-creature", target: { kind: "choose-ally" } }],
+      onAbsorb: [{ type: "reposition-creature", target: { kind: "choose-enemy" } }],
+    },
   ),
   namedSynthetic(
     IMPACT,
@@ -432,6 +489,22 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "martial",
     "On roll: if this creature is on the frontline, gain 1 Energy.\n" +
       "On absorb: another allied frontline creature gains +1 Defense this turn.",
+    {
+      onRoll: [
+        {
+          type: "conditional",
+          when: { type: "controller-has-frontline" },
+          then: [{ type: "gain-energy", amount: 1 }],
+        },
+      ],
+      onAbsorb: [
+        {
+          type: "grant-damage-prevent",
+          amount: 1,
+          target: { kind: "choose-allied-frontline-other" },
+        },
+      ],
+    },
   ),
   namedSynthetic(
     VENOM,
@@ -441,6 +514,9 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       "On absorb: the target creature takes +1 damage the next time it takes damage.",
     {
       onRoll: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+      onAbsorb: [
+        { type: "arm-next-incoming-bonus", amount: 1, target: { kind: "source-creature" } },
+      ],
     },
   ),
   namedSynthetic(
@@ -449,6 +525,16 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "toxin",
     "On roll: if an enemy creature already has Toxin, apply 1 additional marker.\n" +
       "On absorb: heal 1 on an allied creature that has Toxin.",
+    {
+      onRoll: [
+        {
+          type: "conditional",
+          when: { type: "any-enemy-has-toxin" },
+          then: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy-with-toxin" } }],
+        },
+      ],
+      onAbsorb: [{ type: "heal", amount: 1, target: { kind: "choose-ally-with-toxin" } }],
+    },
   ),
   namedSynthetic(
     ADAPTIVE_TOXIN,
@@ -456,6 +542,21 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "toxin",
     "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\n" +
       "On absorb: remove any number of markers from an enemy creature; for each marker removed, deal 1 damage.",
+    {
+      onRoll: [
+        {
+          type: "arm-toxin-receive-cap",
+          amount: 1,
+          target: { kind: "choose-enemy-with-toxin" },
+        },
+      ],
+      onAbsorb: [
+        {
+          type: "remove-toxin-deal-damage",
+          target: { kind: "choose-enemy" },
+        },
+      ],
+    },
   ),
   namedSynthetic(
     STAIN,
@@ -463,6 +564,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "corruption",
     "On roll: put 1 Corruption marker on an opposing synthetic face.\n" +
       "On absorb: choose an opposing Corrupted face; it cannot be used as a resource this turn.",
+    {
+      onRoll: [{ type: "add-corruption-marker", amount: 1 }],
+      onAbsorb: [{ type: "lock-corrupted-face-resource" }],
+    },
   ),
   namedSynthetic(
     INFECTION,
@@ -470,6 +575,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "corruption",
     "On roll: if the opponent has a Corrupted face, put 1 Corruption marker on another face of the same die.\n" +
       "On absorb: the opponent loses 1 unspent Energy.",
+    {
+      onRoll: [{ type: "spread-corruption-marker" }],
+      onAbsorb: [{ type: "lose-energy", amount: 1, player: "opponent" }],
+    },
   ),
   namedSynthetic(
     DECAY,
@@ -477,6 +586,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "corruption",
     "On roll: choose an opposing Natural face; until the next roll, it has no inherent effect.\n" +
       "On absorb: remove a Corrupted face from the opponent's die and put it into its controller's Pool as an unusable Corruption symbol.",
+    {
+      onRoll: [{ type: "suppress-opposing-natural-inherent" }],
+      onAbsorb: [{ type: "strip-corrupted-face-unusable-symbol" }],
+    },
   ),
   namedSynthetic(
     GEAR,
@@ -484,6 +597,16 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "mechanical",
     "On roll: if you have another Synthetic symbol in the Pool, gain 1 Energy.\n" +
       "On absorb: the next face you install this turn costs 1 Energy less.",
+    {
+      onRoll: [
+        {
+          type: "conditional",
+          when: { type: "has-other-symbol", faceKind: "synthetic" },
+          then: [{ type: "gain-energy", amount: 1 }],
+        },
+      ],
+      onAbsorb: [{ type: "arm-forge-discount", amount: 1 }],
+    },
   ),
   namedSynthetic(
     CATALYST,
@@ -491,6 +614,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "mechanical",
     "On roll: choose a Synthetic face in the Pool; it may be used as any attribute.\n" +
       "On absorb: copy the effect of a Synthetic face that appeared this roll.",
+    {
+      onRoll: [{ type: "arm-wildcard-from-synthetic-pool" }],
+      onAbsorb: [{ type: "copy-appeared-synthetic-onroll" }],
+    },
   ),
   namedSynthetic(
     OVERCHARGE,
@@ -498,6 +625,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "mechanical",
     "On roll: you may gain 1 additional Energy; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\n" +
       "On absorb: the next face effect you resolve this turn is resolved twice.",
+    {
+      onRoll: [{ type: "optional-overcharge-energy", amount: 1 }],
+      onAbsorb: [{ type: "arm-resolve-next-face-effect-twice" }],
+    },
   ),
   namedSynthetic(
     FLYWHEEL,
@@ -525,6 +656,12 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "darkness",
     "On roll: you may discard a card; if you do, draw a card.\n" +
       "On absorb: return a card that costs 2 or less from your discard pile to your hand.",
+    {
+      onRoll: [
+        { type: "discard-cards", amount: 1, optional: true, then: [{ type: "draw-cards", amount: 1 }] },
+      ],
+      onAbsorb: [{ type: "search-graveyard", amount: 1, maxEnergyCost: 2 }],
+    },
   ),
   namedSynthetic(
     DRAIN,
@@ -532,6 +669,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "darkness",
     "On roll: your opponent loses 1 Energy; you do not gain that Energy.\n" +
       "On absorb: transfer 1 Energy from the opponent's reserve to yours.",
+    {
+      onRoll: [{ type: "lose-energy", amount: 1, player: "opponent" }],
+      onAbsorb: [{ type: "transfer-energy", amount: 1 }],
+    },
   ),
   namedSynthetic(
     SACRIFICE,
@@ -539,6 +680,18 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "darkness",
     "On roll: discard a card; if you do, gain 2 Energy.\n" +
       "On absorb: discard a card to deal 2 damage to a creature.",
+    {
+      onRoll: [
+        { type: "discard-cards", amount: 1, then: [{ type: "gain-energy", amount: 2 }] },
+      ],
+      onAbsorb: [
+        {
+          type: "discard-cards",
+          amount: 1,
+          then: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
+        },
+      ],
+    },
   ),
   namedSynthetic(
     WARHORN,

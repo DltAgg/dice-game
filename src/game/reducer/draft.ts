@@ -2,9 +2,16 @@ import type { RngState } from "../rng/rng.js";
 import type { CardInstance } from "../model/cards.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
-import type { DieState } from "../model/dice.js";
+import type { DieState, FaceKind } from "../model/dice.js";
 import type { GameEvent, LoggedEvent } from "../model/events.js";
-import type { CreatureId, DieId, MatchId, PlayerId, SymbolInstanceId } from "../model/ids.js";
+import type {
+  CreatureId,
+  DieId,
+  FaceCardId,
+  MatchId,
+  PlayerId,
+  SymbolInstanceId,
+} from "../model/ids.js";
 import type {
   EnergyTrack,
   GameState,
@@ -15,7 +22,7 @@ import type {
   TurnPhase,
   ChainLink,
 } from "../model/state.js";
-import type { SymbolInstance } from "../model/symbols.js";
+import type { SymbolInstance, SymbolType } from "../model/symbols.js";
 
 /**
  * A shallow-mutable working copy of GameState used inside a single reduction.
@@ -45,6 +52,17 @@ export interface Draft {
   attackBonusThisTurn: Record<string, number>;
   attackToxinThisTurn: Record<string, number>;
   preventDrawArmed: Record<string, number>;
+  ignoreShieldThisTurn: Record<string, number>;
+  forgeDiscountThisTurn: Record<string, number>;
+  requirementWildcardsThisTurn: Record<string, readonly { readonly fromSymbol?: SymbolType }[]>;
+  bladeRainArmed: Record<string, boolean>;
+  facesAppearedThisRoll: Array<{
+    dieId: DieId;
+    slotIndex: number;
+    faceCardId: FaceCardId;
+    kind: FaceKind;
+  }>;
+  resolveNextFaceEffectTwice: Record<string, boolean>;
   winner: PlayerId | null;
   log: LoggedEvent[];
   rng: RngState;
@@ -61,6 +79,8 @@ export const createDraft = (state: GameState): Draft => ({
   cards: { ...state.cards },
   resolutionStack: [...state.resolutionStack],
   chainStack: state.chainStack.map((link) => ({ ...link })),
+  facesAppearedThisRoll: state.facesAppearedThisRoll.map((entry) => ({ ...entry })),
+  resolveNextFaceEffectTwice: { ...state.resolveNextFaceEffectTwice },
   log: [...state.log],
 });
 

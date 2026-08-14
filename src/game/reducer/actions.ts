@@ -7,6 +7,7 @@ import type {
   PlayerId,
   SymbolInstanceId,
 } from "../model/ids.js";
+import type { SymbolType } from "../model/symbols.js";
 
 /**
  * Actions describe intent, never outcome (SPDD §34). There is no DEAL_DAMAGE
@@ -114,7 +115,8 @@ export type GameAction =
   | {
       readonly type: "RESOLVE_CHOOSE_CREATURE";
       readonly playerId: PlayerId;
-      readonly creatureId: CreatureId;
+      /** `null` declines an optional choice. */
+      readonly creatureId: CreatureId | null;
     }
   /**
    * Completes a pending ritual choice (Dispel Circle / destroy-ritual).
@@ -134,6 +136,116 @@ export type GameAction =
       readonly dieId: DieId;
       readonly slotIndexes: readonly number[];
       readonly faceCardId: FaceCardId;
+    }
+  | {
+      readonly type: "RESOLVE_CHOOSE_DIE";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId | null;
+    }
+  | {
+      readonly type: "RESOLVE_CONVERT_SYMBOLS";
+      readonly playerId: PlayerId;
+      readonly replacements: readonly {
+        readonly symbolId: SymbolInstanceId;
+        readonly into: "martial" | "wild" | "arcane" | "luminar";
+      }[];
+    }
+  | {
+      readonly type: "RESOLVE_COPY_POOL_SYMBOL";
+      readonly playerId: PlayerId;
+      readonly symbol: SymbolType;
+    }
+  | {
+      readonly type: "RESOLVE_REPLAY_GRAVEYARD";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  | {
+      readonly type: "RESOLVE_LOOK_TOP_DECK";
+      readonly playerId: PlayerId;
+      readonly keepId: CardInstanceId;
+    }
+  | {
+      readonly type: "RESOLVE_PEEK_DECK";
+      readonly playerId: PlayerId;
+      readonly putOnBottom: boolean;
+    }
+  | {
+      readonly type: "RESOLVE_DARK_PACT";
+      readonly playerId: PlayerId;
+      readonly cardInstanceIds: readonly [CardInstanceId, CardInstanceId];
+    }
+  | {
+      readonly type: "RESOLVE_MIND_CONTROL";
+      readonly playerId: PlayerId;
+      readonly mode: "strip-one-face" | "strip-one-each";
+      readonly faceCardIds: readonly FaceCardId[];
+    }
+  | {
+      readonly type: "RESOLVE_SPLIT_DAMAGE";
+      readonly playerId: PlayerId;
+      readonly assignments: readonly { readonly creatureId: CreatureId; readonly amount: number }[];
+    }
+  | {
+      readonly type: "RESOLVE_OPTIONAL_REROLL";
+      readonly playerId: PlayerId;
+      readonly accept: boolean;
+    }
+  /**
+   * Completes a pending die-slot choice (Corruption markers, suppress, lock,
+   * Catalyst copy). `dieId`/`slotIndex` null declines an optional choice.
+   * Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_DIE_SLOT";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId | null;
+      readonly slotIndex: number | null;
+    }
+  /**
+   * Completes a pending pool-symbol choice (Catalyst roll wildcard). Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_POOL_SYMBOL";
+      readonly playerId: PlayerId;
+      readonly symbolId: SymbolInstanceId;
+    }
+  /**
+   * Completes Adaptive Toxin absorb: remove `amount` markers (0..max) and deal
+   * that much damage. Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_REMOVE_TOXIN_AMOUNT";
+      readonly playerId: PlayerId;
+      readonly amount: number;
+    }
+  /**
+   * Completes Overcharge optional Energy + suppress. Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_OPTIONAL_OVERCHARGE";
+      readonly playerId: PlayerId;
+      readonly accept: boolean;
+    }
+  /**
+   * Completes Instinct optional bonus basic during absorption. Spec `013`.
+   */
+  | {
+      readonly type: "RESOLVE_OPTIONAL_BONUS_ATTACK";
+      readonly playerId: PlayerId;
+      readonly accept: boolean;
+      readonly attackId?: AttackId;
+      readonly targetId?: CreatureId;
+    }
+  /**
+   * Activate a showing face's `activated` ability (Forbidden Heritage /
+   * Pestilent Plague). Legal in the actions phase.
+   */
+  | {
+      readonly type: "ACTIVATE_FACE";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId;
+      readonly slotIndex: number;
     }
   /**
    * Pass reaction priority. Legal only during `reaction-priority` for the
