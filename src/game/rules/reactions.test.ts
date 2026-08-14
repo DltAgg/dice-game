@@ -59,7 +59,7 @@ describe("reaction chain-target gates (UI queries)", () => {
     ).toBe(false);
   });
 
-  it("allows negate-tactic against non-attack tops", () => {
+  it("allows negate-card any against non-attack tops", () => {
     const silence = getCard(ARCANE_SILENCE);
     expect(silence).toBeDefined();
     expect(isLegalHandReaction(stateWithTop(link("tactic-effect")), silence!)).toBe(true);

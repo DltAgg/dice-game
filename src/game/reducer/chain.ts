@@ -1,4 +1,4 @@
-import type { CardDuration } from "../model/cards.js";
+import type { CardDuration, CardType } from "../model/cards.js";
 import type { EffectDefinition } from "../model/effects.js";
 import type {
   AttackId,
@@ -9,10 +9,32 @@ import type {
 } from "../model/ids.js";
 import { asEffectInstanceId } from "../model/ids.js";
 import type { ChainLink, ChainLinkKind } from "../model/state.js";
+import { getCard } from "../content/cards.js";
 import { opponentOf } from "../rules/creatures.js";
 import { emit, nextInstanceId, type Draft } from "./draft.js";
 
+/** Card-sourced chain kinds may be negated; attacks use prevent (`009`). */
 export const isNegatableLinkKind = (kind: ChainLinkKind): boolean => kind !== "attack";
+
+/**
+ * Whether `negate-card` may target this link: not attack, not already negated,
+ * and the source card's main type is allowed (`"any"` = any card link).
+ * Forge never opens a chain link, so it is out of scope here.
+ */
+export function linkMatchesNegateCard(
+  draft: Draft,
+  link: ChainLink,
+  cardTypes: readonly CardType[] | "any",
+): boolean {
+  if (link.negated || !isNegatableLinkKind(link.kind)) return false;
+  if (cardTypes === "any") return true;
+  if (link.cardInstanceId === null) return false;
+  const instance = draft.cards[link.cardInstanceId];
+  if (instance === undefined) return false;
+  const definition = getCard(instance.cardId);
+  if (definition === undefined) return false;
+  return cardTypes.includes(definition.type);
+}
 
 /** Seal the Rite / `negate-ritual` — ritual place or activate only. Spec `008`. */
 export const isRitualNegatableLinkKind = (kind: ChainLinkKind): boolean =>

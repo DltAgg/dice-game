@@ -23,7 +23,10 @@ const ATTRIBUTE_LABEL: Readonly<Record<Attribute, string>> = {
 };
 
 const TYPE_LABEL: Readonly<Record<CardDefinition["type"], string>> = {
-  tactic: "Tactic",
+  instant: "Instant",
+  reaction: "Reaction",
+  equipment: "Equipment",
+  overload: "Overload",
   ritual: "Ritual",
 };
 
@@ -31,8 +34,6 @@ const SUBTYPE_LABEL: Readonly<Record<CardSubtype, string>> = {
   instant: "Instant",
   continuous: "Continuous",
   reaction: "Reaction",
-  equipment: "Equipment",
-  overload: "Overload",
 };
 
 export const attributeLabel = (attribute: Attribute): string => ATTRIBUTE_LABEL[attribute];
@@ -42,7 +43,7 @@ export function formatEnergyCost(card: CardDefinition): string {
   return card.variableEnergy === true ? "?" : String(card.energyCost);
 }
 
-/** `[Tactic / Instant / Arcane]` or `[Ritual / Instant / Arcane]` */
+/** `[Instant / Arcane]`, `[Equipment / Martial]`, or `[Ritual / Instant / Arcane]` */
 export function formatTypeLine(card: CardDefinition): string {
   const parts = [
     TYPE_LABEL[card.type],

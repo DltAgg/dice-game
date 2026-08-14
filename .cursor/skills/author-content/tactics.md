@@ -16,8 +16,8 @@ card({
   id: EXAMPLE,
   name: "Example",
   energyCost: 2,
-  type: "tactic", // "ritual" for rituals — main type, not a subtype
-  subtypes: ["instant"], // continuous / reaction / equipment / overload
+  type: "instant", // "reaction" | "equipment" | "overload" | "ritual"
+  subtypes: [], // ritual only: "instant" | "continuous" | "reaction"
   attribute: "arcane",
   forge: {
     faces: 1,
@@ -35,15 +35,17 @@ card({
 
 | Print | Structured field |
 |---|---|
-| Instant one-shot | `effect: { requires?, additionalEnergy?, effects }` |
-| Equipment | `equipment: { mayTargetOpponent, creatureAttributes?, abilities }` |
-| Overload | `overload: { faceSymbols?, faceKinds?, onRoll, onAbsorb? }` |
-| Ritual | `type: "ritual"` + `instant` / `reaction` / `continuous` + `ritual: { … }` |
+| Instant one-shot | `type: "instant"` + `effect: { requires?, additionalEnergy?, effects }` |
+| Reaction from hand | `type: "reaction"` + `effect: …` |
+| Equipment | `type: "equipment"` + `equipment: { mayTargetOpponent, creatureAttributes?, abilities }` |
+| Overload | `type: "overload"` + `overload: { faceSymbols?, faceKinds?, onRoll, onAbsorb? }` |
+| Ritual | `type: "ritual"` + subtypes `instant` / `reaction` / `continuous` + `ritual: { … }` |
 | Forge only (“None”) | `rulesText: ""`, no playable region |
 
-Attachment subtypes **must** match regions (`cards.consistency.test.ts`). Rituals
-must have a `ritual` region if `type === "ritual"`. Empty `abilities` /
-`effects` is OK only when place/attach should work and the clause is deferred.
+Attachment **types** (`equipment` / `overload`) **must** match regions
+(`cards.consistency.test.ts`). Rituals must have a `ritual` region if
+`type === "ritual"`. Empty `abilities` / `effects` is OK only when place/attach
+should work and the clause is deferred.
 
 ## Ritual template
 
@@ -93,7 +95,7 @@ Read `src/game/model/effects.ts` as authority. Today:
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,
 `search-deck`, `search-graveyard`, `gain-energy`, `destroy-equipment`,
 `apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
-`arm-attack-toxin`, `negate-tactic`, `negate-ritual`, `discard-attribute-tokens`,
+`arm-attack-toxin`, `negate-card`, `negate-ritual`, `discard-attribute-tokens`,
 `destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`
 
@@ -113,7 +115,7 @@ Standing triggers live on equipment / continuous rituals — see
 | Living Library | Ritual + `search-deck`; Active-when Arcane + Arcane |
 | Great Contamination | Ritual + `forge-faces` (3 Corruption on opponent die) |
 | Eternal Darkness | Ritual + `search-graveyard` |
-| Runic Nullification | Ritual-reaction, `additionalEnergy`, `negate-tactic` |
+| Runic Nullification | Ritual-reaction, `additionalEnergy`, `negate-card` (`instant`) |
 | Luminar Prism | Overload `onRoll` heal |
 | Persistent Infection | Overload + `faceSymbols: ["corruption"]` |
 | War Axe | Equipment `attack-damage-bonus` |
@@ -122,7 +124,7 @@ Standing triggers live on equipment / continuous rituals — see
 | Siphon Sigil | Instant `discard-attribute-tokens` + choose-enemy |
 | Dispel Circle | Instant `destroy-ritual` + choose-opponent-ritual |
 | Seal the Rite | Reaction `negate-ritual` |
-| Fade | Reaction `negate-tactic` (cheaper Darkness Silence) |
+| Fade | Reaction `negate-card` (`"any"`) (cheaper Darkness Silence) |
 
 ## After editing
 

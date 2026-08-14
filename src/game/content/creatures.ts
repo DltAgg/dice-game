@@ -135,7 +135,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 12,
     attributes: ["arcane"],
     passiveRulesText:
-      "The first [Tactic] [Arcane] used each turn costs 1 Energy less.",
+      "The first [Arcane] card used each turn costs 1 Energy less.",
     standingAbilities: [
       {
         type: "on-attack",

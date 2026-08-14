@@ -289,8 +289,8 @@ describe("Seal the Rite (negate-ritual)", () => {
   });
 });
 
-describe("Fade (negate-tactic)", () => {
-  it("negates the top tactic link from hand", () => {
+describe("Fade (negate-card any)", () => {
+  it("negates the top card link from hand", () => {
     const state = withHand(
       withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
       P2,

@@ -79,7 +79,7 @@ describe("English card printing", () => {
   it("prints Requires for Die Press as Mechanical + Mechanical", () => {
     const card = getCard(DIE_PRESS);
     if (card === undefined) throw new Error("missing card");
-    expect(formatTypeLine(card)).toBe("[Tactic / Instant / Mechanical]");
+    expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
     expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
   });
 });

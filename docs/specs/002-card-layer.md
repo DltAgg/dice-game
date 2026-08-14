@@ -20,11 +20,11 @@ Every card in the file is one template, `Tactics card layout`:
 
 ```text
 ┌──────────────────────────────────────────┐
-│  Tactic Name                      ⟨cost⟩ │   header
+│  Card Name                        ⟨cost⟩ │   header
 │                                          │
 │                (art)                     │
 │                                          │
-│  [Tactic|Ritual / Type / Attribute]      │   text box
+│  [Type / … / Attribute]                  │   text box
 │  [Forge] 1 face [Natural or Synthetic]   │
 │  [Attribute] on your die                 │
 │  or                                      │
@@ -38,11 +38,11 @@ Six fields, in the order the layout presents them:
 |---|---|---|
 | Name | header, left | |
 | Energy cost | header, right | Integer, or `?` = variable pay-at-least-1 (see OPEN_DESIGN) |
-| Type line | text box, first line | `[Tactic \| Ritual / <subtype…> / <attribute>]` — subtypes include Instant, Continuous, Reaction, Equipment, Overload |
+| Type line | text box, first line | `[Instant\|Reaction\|Equipment\|Overload / <attribute>]` or `[Ritual / <subtype…> / <attribute>]` — Ritual subtypes are Instant, Continuous, Reaction |
 
 
 | Forge region | text box | how many faces, of which kind and attribute, on which die |
-| Requirements | text box, bracketed | optional, and specific to the subtype |
+| Requirements | text box, bracketed | optional, and specific to the type / ritual subtype |
 | Effect | text box | the alternative to forging |
 
 ### The two regions are exclusive
@@ -61,18 +61,18 @@ forge Synthetic. Overload/equip gates and generated symbols may still splash
 (*Latent Corruption* is Corruption and forges Corruption, but can only
 overload an Arcane face).
 
-### Subtypes
+### Types and ritual subtypes
 
-| Subtype | What the effect region does |
-| Kind / subtype | Meaning |
+| Kind | Meaning |
 |---|---|
-| **Tactic** (main type) | Hand card played for effect, equipment, or overload. |
-| **Ritual** (main type) | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. |
-| Instant | Resolves once immediately (tactics), or a ritual that leaves for the GY after one activation. Timing: not a reaction window responder by subtype alone. |
-| Continuous | Ritual stays in play after activation (exhausts until the owner's next turn). |
-| Reaction | May respond in a reaction window (from hand as a tactic, or from the field as a ritual-reaction). Ritual / Reaction leaves for the GY after activation — same fate as Ritual / Instant; the difference is *when* it can be used. |
-| Equipment | Attaches to a creature and grants a standing ability. |
-| Overload | Attaches to an existing die face and modifies it. |
+| **Instant** (main type) | Resolves once immediately from hand. Timing: not a reaction window responder by type alone. |
+| **Reaction** (main type) | May respond in a reaction window from hand. |
+| **Equipment** (main type) | Attaches to a creature and grants a standing ability. |
+| **Overload** (main type) | Attaches to an existing die face and modifies it. |
+| **Ritual** (main type) | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. Subtypes below. |
+| Ritual / Instant | Leaves for the GY after one activation. |
+| Ritual / Continuous | Stays in play after activation (exhausts until the owner's next turn). |
+| Ritual / Reaction | May respond in a reaction window from the field; leaves for the GY after activation — same fate as Ritual / Instant; the difference is *when* it can be used. |
 
 ### Requirement forms
 
@@ -124,30 +124,30 @@ is used.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 3 Energy, negate the effect of 1 Tactic card. |
-| 5 | Arcane Echo | Tactic / Instant / Arcane | 1 Synthetic Arcane, your die | Apply the modifiers of one of the dice again. |
-| ? | Blessing of the Hunt | Tactic / Overload / Martial | 1 Natural Martial, your die | On roll: generate Martial. |
-| ? | Martial Blessing | Tactic / Overload / Martial | 1 Natural Martial, your die | On roll: the next attack this turn deals +1 damage. |
-| ? | Toxic Blessing | Tactic / Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On roll: all attacks this turn apply 1 Toxin marker. |
-| ? | Mutant Spores | Tactic / Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On absorb: heal 1. |
-| ? | Wild Echo | Tactic / Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On absorb: generate Wild. |
-| ? | Adrenaline | Tactic / Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures. |
-| ? | Rust | Tactic / Overload / Martial | 1 Natural Martial, your die | *Natural Martial faces only.* On absorb: your attacks this turn ignore 2 Shield. |
-| 2 | Ritual of Contamination | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | *Requires: Arcane + Corruption.* Forge 1 Synthetic Corruption face on the opponent's die. |
-| 4 | Luminar Judgement | Tactic / Reaction / Luminar | 1 Natural Luminar, your die | On ally would take damage: prevent it; if you do, deal that much to the attacking creature. |
-| 2 | Glimmer | Tactic / Reaction / Luminar | 1 Synthetic Luminar, your die | On prevent damage: draw 2 cards. |
-| 2 | Predator's Claws | Tactic / Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: this creature may move 1 position. |
-| 3 | Venomous Fangs | Tactic / Equipment / Toxin | 1 Synthetic Toxin, your die | On deal damage: apply 1 Toxin marker. |
+| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 3 Energy, negate the effect of 1 Instant card. |
+| 5 | Arcane Echo | Instant / Arcane | 1 Synthetic Arcane, your die | Apply the modifiers of one of the dice again. |
+| ? | Blessing of the Hunt | Overload / Martial | 1 Natural Martial, your die | On roll: generate Martial. |
+| ? | Martial Blessing | Overload / Martial | 1 Natural Martial, your die | On roll: the next attack this turn deals +1 damage. |
+| ? | Toxic Blessing | Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On roll: all attacks this turn apply 1 Toxin marker. |
+| ? | Mutant Spores | Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On absorb: heal 1. |
+| ? | Wild Echo | Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On absorb: generate Wild. |
+| ? | Adrenaline | Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures. |
+| ? | Rust | Overload / Martial | 1 Natural Martial, your die | *Natural Martial faces only.* On absorb: your attacks this turn ignore 2 Shield. |
+| 2 | Ritual of Contamination | Instant / Corruption | 1 Synthetic Corruption, your die | *Requires: Arcane + Corruption.* Forge 1 Synthetic Corruption face on the opponent's die. |
+| 4 | Luminar Judgement | Reaction / Luminar | 1 Natural Luminar, your die | On ally would take damage: prevent it; if you do, deal that much to the attacking creature. |
+| 2 | Glimmer | Reaction / Luminar | 1 Synthetic Luminar, your die | On prevent damage: draw 2 cards. |
+| 2 | Predator's Claws | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: this creature may move 1 position. |
+| 3 | Venomous Fangs | Equipment / Toxin | 1 Synthetic Toxin, your die | On deal damage: apply 1 Toxin marker. |
 | 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Synthetic Toxin, your die | *Active when: Wild + Toxin.* On special attack: apply 1 Toxin marker. |
-| 4 | War Banner | Tactic / Equipment / Wild | 1 Natural Wild, your die | On basic attack, allied creature to the left: deal +1 damage. |
-| 4 | Alpha's Hide | Tactic / Equipment / Wild | 1 Natural Wild, your die | On special attack: generate Wild on another card. |
-| 5 | Toxic Heart | Tactic / Equipment / Toxin | 1 Synthetic Toxin, your die | On toxin damage: heal 1 on this creature. |
-| 3 | Hunter's Collar | Tactic / Equipment / Wild | 1 Natural Wild, your die | On change position: generate Martial. |
-| 5 | Insignia of Command | Tactic / Equipment / Wild | 1 Natural Wild, your die | *Martial creatures only.* On attack, once per turn: another ally may reposition. |
-| 2 | War Axe | Tactic / Equipment / Martial | 1 Natural Martial, your die | On basic attack: deal +1 damage. |
-| 2 | Hunting Armour | Tactic / Equipment / Wild | 1 Natural Wild, your die | On take damage, once per turn: reduce it by 1. |
-| 3 | Twin Blades | Tactic / Equipment / Martial | 1 Natural Martial, your die | On basic attack: push the target one position. |
-| 3 | Wild Carapace | Tactic / Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: heal 1. |
+| 4 | War Banner | Equipment / Wild | 1 Natural Wild, your die | On basic attack, allied creature to the left: deal +1 damage. |
+| 4 | Alpha's Hide | Equipment / Wild | 1 Natural Wild, your die | On special attack: generate Wild on another card. |
+| 5 | Toxic Heart | Equipment / Toxin | 1 Synthetic Toxin, your die | On toxin damage: heal 1 on this creature. |
+| 3 | Hunter's Collar | Equipment / Wild | 1 Natural Wild, your die | On change position: generate Martial. |
+| 5 | Insignia of Command | Equipment / Wild | 1 Natural Wild, your die | *Martial creatures only.* On attack, once per turn: another ally may reposition. |
+| 2 | War Axe | Equipment / Martial | 1 Natural Martial, your die | On basic attack: deal +1 damage. |
+| 2 | Hunting Armour | Equipment / Wild | 1 Natural Wild, your die | On take damage, once per turn: reduce it by 1. |
+| 3 | Twin Blades | Equipment / Martial | 1 Natural Martial, your die | On basic attack: push the target one position. |
+| 3 | Wild Carapace | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: heal 1. |
 
 ### Control deck
 
@@ -155,26 +155,26 @@ is used.
 |---|---|---|---|---|
 | 5 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Arcane + Corruption + Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
 | 6 | Extermination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption + Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
-| 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Add 2 Tactic cards from your deck to your hand. |
-| 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Tactic card in your graveyard and use its effect immediately, ignoring its requirements. |
+| 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Add 2 Instant or Ritual cards from your deck to your hand. |
+| 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements. |
 | 5 | Eternal Darkness | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | *Active when: Darkness + Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
-| 4 | Latent Corruption | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
-| 3 | Luminar Prism | Tactic / Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
-| 2 | Arcane Amplifier | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
-| 4 | Arcane Resonance | Tactic / Overload / Arcane | 1 Natural Arcane, your die | On roll: generate 1 Arcane. |
-| 3 | Calculated Sacrifice | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | Destroy 1 Equipment on an opposing creature. |
-| 3 | Eclipse | Tactic / Instant / Darkness | 1 Synthetic Darkness, your die | Draw 2 cards and discard 1. |
-| 4 | Collapse of Reality | Tactic / Instant / Arcane | 1 Natural Arcane, your die | Convert up to two symbols into any other 2 Natural symbols. |
-| 4 | Dark Pact | Tactic / Instant / Darkness | 1 Synthetic Darkness, your die | Send 2 Tactic cards of different attributes from your deck to the graveyard. |
-| 6 | Mind Control | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |
-| 5 | Arcane Silence | Tactic / Reaction / Arcane | 2 Synthetic Arcane, your die | Negate the effect of 1 Tactic card. |
-| 4 | Persistent Infection | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: gain 1 Energy. |
-| 2 | Blade of Serene Light | Tactic / Equipment / Luminar | 1 Natural Luminar, your die | On deal damage: heal 1 on an allied creature. |
-| 4 | Black Plague | Tactic / Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: this creature takes 1 damage. |
-| 2 | Archmage's Grimoire | Tactic / Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Arcane or Darkness: draw 1 card and discard 1. |
-| 3 | Tome of Interdiction | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane Tactic used each turn costs 1 less Energy. |
+| 4 | Latent Corruption | Overload / Corruption | 1 Synthetic Corruption, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
+| 3 | Luminar Prism | Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
+| 2 | Arcane Amplifier | Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
+| 4 | Arcane Resonance | Overload / Arcane | 1 Natural Arcane, your die | On roll: generate 1 Arcane. |
+| 3 | Calculated Sacrifice | Instant / Corruption | 1 Synthetic Corruption, your die | Destroy 1 Equipment on an opposing creature. |
+| 3 | Eclipse | Instant / Darkness | 1 Synthetic Darkness, your die | Draw 2 cards and discard 1. |
+| 4 | Collapse of Reality | Instant / Arcane | 1 Natural Arcane, your die | Convert up to two symbols into any other 2 Natural symbols. |
+| 4 | Dark Pact | Instant / Darkness | 1 Synthetic Darkness, your die | Send 2 Ritual cards of different attributes from your deck to the graveyard. |
+| 6 | Mind Control | Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |
+| 5 | Arcane Silence | Reaction / Arcane | 2 Synthetic Arcane, your die | Negate the effect of 1 card. |
+| 4 | Persistent Infection | Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: gain 1 Energy. |
+| 2 | Blade of Serene Light | Equipment / Luminar | 1 Natural Luminar, your die | On deal damage: heal 1 on an allied creature. |
+| 4 | Black Plague | Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: this creature takes 1 damage. |
+| 2 | Archmage's Grimoire | Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Arcane or Darkness: draw 1 card and discard 1. |
+| 3 | Tome of Interdiction | Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane used each turn costs 1 less Energy. |
 | 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: Arcane + Darkness.* On discard: generate 1 Darkness. |
-| 3 | Mirrored Rune | Tactic / Equipment / Arcane | 1 Natural Arcane, your die | On absorb Arcane: copy another symbol onto it. |
+| 3 | Mirrored Rune | Equipment / Arcane | 1 Natural Arcane, your die | On absorb Arcane: copy another symbol onto it. |
 
 ## Naming inconsistencies in the file
 
@@ -202,11 +202,11 @@ Aggro / Control lists; catalogue-only until a combo loadout is requested.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Ratchet | Tactic / Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: generate Mechanical. |
+| 2 | Ratchet | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: generate Mechanical. |
 | 3 | Assembly Line | Ritual / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
-| 2 | Governor | Tactic / Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: generate Mechanical. |
-| 2 | Spare Cog | Tactic / Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. |
-| 3 | Die Press | Tactic / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
+| 2 | Governor | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: generate Mechanical. |
+| 2 | Spare Cog | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. |
+| 3 | Die Press | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
 | 3 | Foundry | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On absorb Mechanical: gain 1 Energy. |
 
 ### Martial / Wild / Toxin aggro package (authored)
@@ -219,18 +219,18 @@ individual Toxin tactics already forge Synthetic Toxin.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Temper | Tactic / Instant / Martial | 1 Natural Martial, your die | Forge 1 Synthetic Martial face on your die. |
-| 2 | Opening Cut | Tactic / Instant / Martial | 1 Natural Martial, your die | *Requires: Martial.* Deal 2 damage to a chosen enemy. |
-| 2 | Press the Attack | Tactic / Instant / Martial | 1 Natural Martial, your die | The next attack this turn deals +2 damage. |
-| 2 | Riposte | Tactic / Reaction / Martial | 1 Natural Martial, your die | Prevent 1 damage. The next attack this turn deals +1 damage. |
-| 2 | Whetstone | Tactic / Equipment / Martial | 1 Natural Martial, your die | On attack: generate 1 Martial. |
-| 2 | Untamed | Tactic / Instant / Wild | 1 Natural Wild, your die | Forge 1 Synthetic Wild face on your die. |
-| 2 | Pounce | Tactic / Instant / Wild | 1 Natural Wild, your die | *Requires: Wild.* Choose an allied creature. Its next attack deals +2 damage. |
-| 2 | Pack Surge | Tactic / Instant / Wild | 1 Natural Wild, your die | Generate 1 Wild. The next attack this turn deals +1 damage. |
-| 2 | Rending Mark | Tactic / Instant / Wild | 1 Natural Wild, your die | A chosen enemy creature loses 2 Shield. |
-| 2 | Snarl | Tactic / Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: the next attack this turn deals +1 damage. |
-| 2 | Dose | Tactic / Instant / Toxin | 1 Synthetic Toxin, your die | *Requires: Toxin.* Apply 2 Toxin markers to a chosen enemy. |
-| 2 | Blight Strike | Tactic / Instant / Toxin | 1 Synthetic Toxin, your die | The next attack this turn deals +1 damage. All attacks this turn apply 1 Toxin marker. |
+| 2 | Temper | Instant / Martial | 1 Natural Martial, your die | Forge 1 Synthetic Martial face on your die. |
+| 2 | Opening Cut | Instant / Martial | 1 Natural Martial, your die | *Requires: Martial.* Deal 2 damage to a chosen enemy. |
+| 2 | Press the Attack | Instant / Martial | 1 Natural Martial, your die | The next attack this turn deals +2 damage. |
+| 2 | Riposte | Reaction / Martial | 1 Natural Martial, your die | Prevent 1 damage. The next attack this turn deals +1 damage. |
+| 2 | Whetstone | Equipment / Martial | 1 Natural Martial, your die | On attack: generate 1 Martial. |
+| 2 | Untamed | Instant / Wild | 1 Natural Wild, your die | Forge 1 Synthetic Wild face on your die. |
+| 2 | Pounce | Instant / Wild | 1 Natural Wild, your die | *Requires: Wild.* Choose an allied creature. Its next attack deals +2 damage. |
+| 2 | Pack Surge | Instant / Wild | 1 Natural Wild, your die | Generate 1 Wild. The next attack this turn deals +1 damage. |
+| 2 | Rending Mark | Instant / Wild | 1 Natural Wild, your die | A chosen enemy creature loses 2 Shield. |
+| 2 | Snarl | Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: the next attack this turn deals +1 damage. |
+| 2 | Dose | Instant / Toxin | 1 Synthetic Toxin, your die | *Requires: Toxin.* Apply 2 Toxin markers to a chosen enemy. |
+| 2 | Blight Strike | Instant / Toxin | 1 Synthetic Toxin, your die | The next attack this turn deals +1 damage. All attacks this turn apply 1 Toxin marker. |
 | 3 | Call to Arms | Ritual / Instant / Martial | 1 Natural Martial, your die | *Active when: Martial + Martial.* The next attack this turn deals +2 damage. |
 | 3 | Battle Hymn | Ritual / Continuous / Martial | 1 Natural Martial, your die | *Active when: Martial + Martial.* On attack: the next attack this turn deals +1 damage. |
 | 3 | Pack Law | Ritual / Continuous / Wild | 1 Natural Wild, your die | *Active when: Wild + Wild.* On absorb Wild: the next attack this turn deals +1 damage. |
@@ -244,10 +244,10 @@ Catalogue-only until deck-designer adds copies to builtin control lists.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 3 | Siphon Sigil | Tactic / Instant / Arcane | 1 Natural Arcane, your die | A chosen enemy creature discards 2 attribute tokens. |
-| 4 | Dispel Circle | Tactic / Instant / Arcane | 1 Natural Arcane, your die | Send 1 opposing Ritual to its owner's graveyard. |
-| 3 | Seal the Rite | Tactic / Reaction / Arcane | 1 Synthetic Arcane, your die | Negate 1 Ritual. |
-| 3 | Fade | Tactic / Reaction / Darkness | 1 Synthetic Darkness, your die | Negate the effect of 1 Tactic card. |
+| 3 | Siphon Sigil | Instant / Arcane | 1 Natural Arcane, your die | A chosen enemy creature discards 2 attribute tokens. |
+| 4 | Dispel Circle | Instant / Arcane | 1 Natural Arcane, your die | Send 1 opposing Ritual to its owner's graveyard. |
+| 3 | Seal the Rite | Reaction / Arcane | 1 Synthetic Arcane, your die | Negate 1 Ritual. |
+| 3 | Fade | Reaction / Darkness | 1 Synthetic Darkness, your die | Negate the effect of 1 card. |
 
 ## What this slice implements
 
@@ -268,7 +268,8 @@ already express.
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
 | Damage, heal, shield, symbol generation, draw, discard, Energy gain, destroy equipment, apply-toxin | See DEFERRED_CATALOGUE |
 
-Equipment, Overload and Ritual are wired as board subtypes. Remaining catalogue
+Equipment, Overload and Ritual are wired as board regions (main types for
+equipment/overload; ritual is main type with subtypes). Remaining catalogue
 depth (reactions, triggers, unfinished vocabulary) is deferred — see
 [`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
@@ -279,7 +280,7 @@ depth (reactions, triggers, unfinished vocabulary) is deferred — see
 ```text
 Name                                          ⟨cost⟩
 (art)
-[Tactic / <subtype…> / <attribute>]
+[Type / … / <attribute>]
 [Forge] N face [Natural|Synthetic] [Attribute] on your die
 or
 ⟨gate⟩

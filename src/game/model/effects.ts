@@ -1,4 +1,5 @@
 import type { Attribute } from "./attributes.js";
+import type { CardType } from "./cards.js";
 import type { FaceKind } from "./dice.js";
 import type { SymbolType } from "./symbols.js";
 
@@ -25,13 +26,13 @@ export type EffectDefinition =
   | { readonly type: "draw-cards"; readonly amount: number }
   | { readonly type: "discard-cards"; readonly amount: number }
   /**
-   * Look through the controller's deck, choose up to `amount` cards matching
-   * `filter`, add them to hand, then shuffle the remaining deck.
+   * Look through the controller's deck, choose up to `amount` cards whose main
+   * `CardType` is in `filter`, add them to hand, then shuffle the remaining deck.
    */
   | {
       readonly type: "search-deck";
       readonly amount: number;
-      readonly filter: "tactic";
+      readonly filter: readonly CardType[];
     }
   /**
    * Choose up to `amount` cards in the controller's graveyard and return them
@@ -69,12 +70,15 @@ export type EffectDefinition =
    */
   | { readonly type: "arm-attack-toxin"; readonly amount: number }
   /**
-   * Negate the top chain link if it is a tactic-card link (not an attack).
-   * Spec `008` — Runic Nullification, Arcane Silence.
-   * Note: despite the name, this still covers non-attack “tactic-card-ish”
-   * links (ritual place/activate, equip, overload) as today — not ritual-only.
+   * Negate the top chain link when it is a card-sourced link (not an attack;
+   * forge never opens the chain) and the source card's main type is allowed.
+   * `cardTypes: "any"` = any card link. Spec `008` — Runic Nullification
+   * (`["instant"]`), Arcane Silence / Fade (`"any"`).
    */
-  | { readonly type: "negate-tactic" }
+  | {
+      readonly type: "negate-card";
+      readonly cardTypes: readonly CardType[] | "any";
+    }
   /**
    * Negate the top chain link only when it is `ritual-place` or
    * `ritual-activate`. Other tops whiff. Spec `008` — Seal the Rite.

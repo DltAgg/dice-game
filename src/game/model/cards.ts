@@ -12,7 +12,7 @@ import type { SymbolRequirement, SymbolType, AttributeTokens } from "./symbols.j
  * The shape every card shares:
  *
  *   Name                                  ⟨cost⟩
- *   [Tactic / Type / Attribute]
+ *   [Type / … / Attribute]
  *   [Forge] N face [Natural|Synthetic] [Attribute] on your die
  *   or
  *   ⟨effect⟩
@@ -23,24 +23,29 @@ import type { SymbolRequirement, SymbolType, AttributeTokens } from "./symbols.j
  */
 
 /**
- * Card kinds that sit in the hand deck. Creatures and faces are separate
- * catalogues. Rituals share the tactics frame historically, but print as their
- * own main type on the type line (`[Ritual / …]` rather than `[Tactic / Ritual / …]`).
+ * Main kinds that sit in the hand deck. Creatures and faces are separate
+ * catalogues. Instant / Reaction / Equipment / Overload are first-class types
+ * (the former umbrella "tactic" main type is gone). Ritual keeps subtypes on
+ * the type line (`[Ritual / Instant / …]`, `[Ritual / Continuous / …]`, …).
  */
-export type CardType = "tactic" | "ritual";
+export type CardType =
+  | "instant"
+  | "reaction"
+  | "equipment"
+  | "overload"
+  | "ritual";
 
-/** Modifiers on the type line after the main kind. */
+/**
+ * Type-line modifiers after the main kind. Only Rituals use these in print;
+ * Instant / Reaction / Equipment / Overload are main `CardType` values.
+ */
 export type CardSubtype =
-  /** Resolves once, immediately (tactics) or leaves after activation (rituals). */
+  /** Leaves after activation (rituals). */
   | "instant"
   /** Stays in play after activation (rituals); exhausts until the owner's next turn. */
   | "continuous"
-  /** Resolves in response to something else happening. */
-  | "reaction"
-  /** Attaches to a creature and grants a standing ability. */
-  | "equipment"
-  /** Attaches to an existing die face and modifies it. */
-  | "overload";
+  /** Resolves in response to something else (ritual reactions). */
+  | "reaction";
 
 /**
  * How a Ritual behaves after activation. Derived from subtypes (`instant` /
@@ -181,8 +186,8 @@ export type StandingTrigger =
 export type EquipmentAbility = StandingTrigger;
 
 /**
- * How the card attaches. Present only on Equipment subtypes; its presence is
- * what makes PLAY_CARD install the card rather than resolve `effect`.
+ * How the card attaches. Present on Equipment cards; its presence is what
+ * makes PLAY_CARD install the card rather than resolve `effect`.
  */
 export interface EquipmentRegion {
   /** Black Plague can sit on an opposing creature; most equipment cannot. */
@@ -278,15 +283,15 @@ export interface CardDefinition {
    */
   readonly rulesText: string;
   /**
-   * Instant / one-shot effect region. Absent while unimplemented, or when the
-   * card's only playable region is equipment / overload / ritual / forge.
+   * Instant / reaction one-shot effect region. Absent while unimplemented, or
+   * when the card's only playable region is equipment / overload / ritual / forge.
    */
   readonly effect?: EffectRegion;
-  /** Present on playable Equipment. Absent means the subtype is not yet wired. */
+  /** Present on playable Equipment (`type: "equipment"`). */
   readonly equipment?: EquipmentRegion;
-  /** Present on playable Overloads. */
+  /** Present on playable Overloads (`type: "overload"`). */
   readonly overload?: OverloadRegion;
-  /** Present on playable Rituals. */
+  /** Present on playable Rituals (`type: "ritual"`). */
   readonly ritual?: RitualRegion;
 }
 

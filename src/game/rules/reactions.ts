@@ -2,9 +2,11 @@ import type { CardDefinition } from "../model/cards.js";
 import type { EffectDefinition } from "../model/effects.js";
 import type { ChainLink, GameState } from "../model/state.js";
 import {
-  isNegatableLinkKind,
   isRitualNegatableLinkKind,
+  linkMatchesNegateCard,
 } from "../reducer/chain.js";
+import type { Draft } from "../reducer/draft.js";
+import { isReactionCard } from "./cards.js";
 
 /** Top of the reaction chain (LILO), or `undefined` when empty. */
 export function topChainLinkOf(state: GameState): ChainLink | undefined {
@@ -21,14 +23,17 @@ export function negateEffectsLegalAgainstTop(
   effects: readonly EffectDefinition[],
 ): boolean {
   const top = topChainLinkOf(state);
-  if (effects.some((effect) => effect.type === "negate-tactic")) {
-    if (top === undefined || top.negated || !isNegatableLinkKind(top.kind)) {
-      return false;
+  const draft = state as Draft;
+  for (const effect of effects) {
+    if (effect.type === "negate-card") {
+      if (top === undefined || !linkMatchesNegateCard(draft, top, effect.cardTypes)) {
+        return false;
+      }
     }
-  }
-  if (effects.some((effect) => effect.type === "negate-ritual")) {
-    if (top === undefined || top.negated || !isRitualNegatableLinkKind(top.kind)) {
-      return false;
+    if (effect.type === "negate-ritual") {
+      if (top === undefined || top.negated || !isRitualNegatableLinkKind(top.kind)) {
+        return false;
+      }
     }
   }
   return true;
@@ -36,7 +41,7 @@ export function negateEffectsLegalAgainstTop(
 
 /** Hand reaction legal to offer during a reaction window (chain-target gate). */
 export function isLegalHandReaction(state: GameState, definition: CardDefinition): boolean {
-  if (!definition.subtypes.includes("reaction") || definition.effect === undefined) {
+  if (!isReactionCard(definition) || definition.effect === undefined) {
     return false;
   }
   return negateEffectsLegalAgainstTop(state, definition.effect.effects);
@@ -44,7 +49,7 @@ export function isLegalHandReaction(state: GameState, definition: CardDefinition
 
 /** Ready ritual-reaction legal to offer during a reaction window (chain-target gate). */
 export function isLegalRitualReaction(state: GameState, definition: CardDefinition): boolean {
-  if (!definition.subtypes.includes("reaction") || definition.ritual === undefined) {
+  if (!isReactionCard(definition) || definition.ritual === undefined) {
     return false;
   }
   return negateEffectsLegalAgainstTop(state, definition.ritual.effects);
