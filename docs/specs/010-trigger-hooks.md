@@ -16,9 +16,9 @@ regions in `OPEN_DESIGN`; deferred catalogue §1 / §5.
 ## Intent
 
 When the game performs a natural rules event (attack declared, HP damage,
-die shows a symbol, symbol absorbed, discard), eligible hosts may queue
-data-driven effects. Print clauses stay as catalogue data; the reducer only
-knows the hook kinds and passes instance ids for filtering.
+die shows a symbol, symbol absorbed, discard, position change), eligible hosts
+may queue data-driven effects. Print clauses stay as catalogue data; the
+reducer only knows the hook kinds and passes instance ids for filtering.
 
 ## Hosts
 
@@ -54,10 +54,8 @@ knows the hook kinds and passes instance ids for filtering.
    `effects` queue after HP is dealt.
 7. **On-discard.** After one or more hand cards are discarded, fire
    `on-discard` with `discardingPlayer` filter (default `controller`).
-8. **On-change-position.** After a creature's `position` actually changes via
-   `setCreaturePosition` (the only legal mover), fire `on-change-position`
-   with `creatureRelation` (default `self`). Ally swap / reposition use this;
-   **enemy push is banned** and must not call the mover on opposing creatures.
+8. **On-change-position.** When a creature's position changes (shared mover
+   must call this), fire `on-change-position` with `creatureRelation` filter.
 9. **Order.** Hooks push onto the resolution stack (reverse push). Call sites
    `drainResolution` so choices pause correctly.
 10. **No new player actions.** Hooks are system-side only.
@@ -91,15 +89,14 @@ knows the hook kinds and passes instance ids for filtering.
 - [x] Corrupting Elder / Serrated Stinger wired in catalogue (opponent roll /
   ally special → toxin).
 - [x] Toxic Blessing: roll → `arm-attack-toxin`; attacks apply toxin.
-- [x] Hunter's Collar: change position → Martial.
-- [x] Twin Blades: remove-shield (enemy push banned). Insignia / Predator's Claws: ally reposition restored.
+- [x] Hunter's Collar: position change → Martial.
 - [x] Void Summoner: any Natural absorb → generate Arcane.
 - [x] War Axe: Basic-only `attack-damage-bonus` via `attackKinds`.
 - [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy.
-- [x] Garuda Dive / War Minotaur Poisoned Charge: ally `swap-positions` (enemy push banned).
-- [x] Instinct / Pack / Command: ally `reposition-creature` where print restores (enemy move still banned).
+- [x] `energy-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
+- [x] Movers fire `on-change-position` (Hunter’s Collar) via `setCreaturePosition`.
 
 ## Tests
 
 - [x] `src/game/reducer/triggers.test.ts`
-- [x] `src/game/reducer/movers.test.ts`
+- [x] `src/game/reducer/movers.test.ts` (Collar + reposition)

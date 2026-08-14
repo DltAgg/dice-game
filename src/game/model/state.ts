@@ -3,7 +3,12 @@ import type { GameRulesConfig } from "./config.js";
 import type { CreatureState } from "./creatures.js";
 import type { DieState, FaceKind } from "./dice.js";
 import type { Attribute } from "./attributes.js";
-import type { EffectDefinition } from "./effects.js";
+import type {
+  CreatureChoiceFilter,
+  DieChoiceFilter,
+  DieSlotChoiceFilter,
+  EffectDefinition,
+} from "./effects.js";
 import type { LoggedEvent } from "./events.js";
 import type {
   AttackId,
@@ -14,8 +19,9 @@ import type {
   FaceCardId,
   MatchId,
   PlayerId,
+  SymbolInstanceId,
 } from "./ids.js";
-import type { SymbolInstance } from "./symbols.js";
+import type { SymbolInstance, SymbolType } from "./symbols.js";
 import type { RngState } from "../rng/rng.js";
 
 /** Chain link kinds for the reaction stack (`008-reaction-chain`). */
@@ -47,7 +53,7 @@ export interface ChainLink {
   readonly attackId: AttackId | null;
   readonly attackTargetId: CreatureId | null;
   readonly attackEffect: EffectDefinition | null;
-  /** Attack `followUpEffects` — queued after the body when the link conducts. */
+  /** Queued after `attackEffect` when the attack link conducts. */
   readonly attackFollowUpEffects: readonly EffectDefinition[];
   /** Used when finishing a ritual-activate link (exhaust vs GY). */
   readonly ritualDuration: CardDuration | null;
@@ -101,6 +107,10 @@ export interface PendingEffect {
   readonly declaredTargetCreatureId: CreatureId | null;
   /** Set after `RESOLVE_CHOOSE_RITUAL` for `declared-ritual` targets. */
   readonly declaredTargetCardInstanceId: CardInstanceId | null;
+  readonly sourceDieId: DieId | null;
+  readonly sourceSlotIndex: number | null;
+  /** Attack damage only: skip this many Shield (spec `012`). */
+  readonly ignoreShield: number;
 }
 
 /**
@@ -120,6 +130,7 @@ export type PendingDecision =
       readonly controllerId: PlayerId;
       /** Maximum cards that may be returned (already capped to GY size). */
       readonly amount: number;
+      readonly maxEnergyCost?: number;
     }
   | {
       readonly type: "discard-cards";
@@ -131,15 +142,22 @@ export type PendingDecision =
        * discard resolves so an overshoot does not end the turn mid-choice.
        */
       readonly turnEnds: boolean;
+      readonly optional?: boolean;
+      readonly thenEffects?: readonly EffectDefinition[];
+      readonly sourceCreatureId?: CreatureId | null;
+      readonly declaredTargetCreatureId?: CreatureId | null;
+      readonly sourceDieId?: DieId | null;
+      readonly sourceSlotIndex?: number | null;
     }
   | {
       readonly type: "choose-creature";
       readonly controllerId: PlayerId;
-      readonly filter: "ally" | "enemy" | "allied-frontline";
+      readonly filter: CreatureChoiceFilter;
+      readonly optional?: boolean;
       /**
-       * Effect waiting for a target. `effect.target` / `swap-positions.with` is
-       * rewritten to `declared-target` so applying it after the choice does not
-       * re-open this decision.
+       * Effect waiting for a target. `effect.target` / `effect.with` is rewritten
+       * to `declared-target` so applying it after the choice does not re-open
+       * this decision.
        */
       readonly deferred: PendingEffect;
     }
@@ -168,6 +186,99 @@ export type PendingDecision =
       readonly kind: FaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
+    }
+  | {
+      readonly type: "choose-die";
+      readonly controllerId: PlayerId;
+      readonly filter: DieChoiceFilter;
+      readonly optional?: boolean;
+      readonly deferred: PendingEffect;
+    }
+  | {
+      readonly type: "convert-symbols";
+      readonly controllerId: PlayerId;
+      readonly amount: number;
+      readonly eligibleSymbolIds: readonly SymbolInstanceId[];
+    }
+  | {
+      readonly type: "copy-pool-symbol";
+      readonly controllerId: PlayerId;
+    }
+  | {
+      readonly type: "replay-graveyard-tactic";
+      readonly controllerId: PlayerId;
+    }
+  | {
+      readonly type: "look-top-deck";
+      readonly controllerId: PlayerId;
+      readonly cardInstanceIds: readonly CardInstanceId[];
+    }
+  | {
+      readonly type: "peek-deck";
+      readonly controllerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  | {
+      readonly type: "dark-pact";
+      readonly controllerId: PlayerId;
+    }
+  | {
+      readonly type: "mind-control";
+      readonly controllerId: PlayerId;
+    }
+  | {
+      readonly type: "split-damage";
+      readonly controllerId: PlayerId;
+      readonly amount: number;
+      readonly maxTargets: number;
+      /** When set, targets must be legal attack targets for this attacker. */
+      readonly attackerId: CreatureId | null;
+      readonly range: boolean;
+      readonly sourceCreatureId: CreatureId | null;
+      readonly ignoreShield?: number;
+      readonly thenEffects?: readonly EffectDefinition[];
+    }
+  | {
+      readonly type: "optional-reroll";
+      readonly controllerId: PlayerId;
+      readonly dieId: DieId;
+      readonly faceCardId: FaceCardId;
+    }
+  | {
+      readonly type: "choose-die-slot";
+      readonly controllerId: PlayerId;
+      readonly filter: DieSlotChoiceFilter;
+      readonly optional?: boolean;
+      /** For `same-die-other-slot`: die already chosen. */
+      readonly contextDieId?: DieId;
+      /** For `same-die-other-slot`: slot that must not be chosen again. */
+      readonly excludedSlotIndex?: number;
+      readonly deferred: PendingEffect;
+    }
+  | {
+      readonly type: "choose-pool-symbol";
+      readonly controllerId: PlayerId;
+      /** Eligible symbol instance ids (synthetic-in-pool). */
+      readonly eligibleSymbolIds: readonly SymbolInstanceId[];
+      readonly deferred: PendingEffect;
+    }
+  | {
+      readonly type: "remove-toxin-amount";
+      readonly controllerId: PlayerId;
+      readonly creatureId: CreatureId;
+      readonly maxAmount: number;
+    }
+  | {
+      readonly type: "optional-overcharge";
+      readonly controllerId: PlayerId;
+      readonly amount: number;
+      readonly dieId: DieId;
+      readonly slotIndex: number;
+    }
+  | {
+      readonly type: "optional-bonus-attack";
+      readonly controllerId: PlayerId;
+      readonly creatureId: CreatureId;
     };
 
 export interface PlayerState {
@@ -194,6 +305,10 @@ export interface PlayerState {
   readonly overload: readonly CardInstanceId[];
   /** Ritual cards this player owns that are waiting / ready on the engine field. */
   readonly ritual: readonly CardInstanceId[];
+  /**
+   * Player-scoped once-per-turn keys (Adrenaline reroll, etc.). Cleared on END_TURN.
+   */
+  readonly spentOncePerTurnKeys: readonly string[];
 }
 
 export interface GameState {
@@ -243,6 +358,34 @@ export interface GameState {
    * cards, then clear. Spec `009`.
    */
   readonly preventDrawArmed: Readonly<Record<string, number>>;
+  /** Controller's attacks this turn ignore this many Shield (Rust). */
+  readonly ignoreShieldThisTurn: Readonly<Record<string, number>>;
+  /** Next FORGE_CARD this turn costs this much less (Gear absorb). */
+  readonly forgeDiscountThisTurn: Readonly<Record<string, number>>;
+  /**
+   * One-shot requirement wildcards (Resonance / Catalyst). Consumed when a
+   * `[Requires]` check or ritual absorb uses one.
+   */
+  readonly requirementWildcardsThisTurn: Readonly<
+    Record<string, readonly { readonly fromSymbol?: SymbolType }[]>
+  >;
+  /** Blade Rain: next attack this turn splits its damage. */
+  readonly bladeRainArmed: Readonly<Record<string, boolean>>;
+  /**
+   * Faces that showed during the active player's last `ROLL_DICE` this turn
+   * (Catalyst absorb). Cleared on `END_TURN` / next roll. Spec `013`.
+   */
+  readonly facesAppearedThisRoll: readonly {
+    readonly dieId: DieId;
+    readonly slotIndex: number;
+    readonly faceCardId: FaceCardId;
+    readonly kind: FaceKind;
+  }[];
+  /**
+   * Overcharge absorb: next face-sourced effect (`sourceDieId` set) resolves
+   * twice. Spec `013`.
+   */
+  readonly resolveNextFaceEffectTwice: Readonly<Record<string, boolean>>;
   readonly winner: PlayerId | null;
   readonly log: readonly LoggedEvent[];
 

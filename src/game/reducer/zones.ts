@@ -383,8 +383,9 @@ export function setCreaturePosition(
 }
 
 /**
- * Swap two living creatures via `setCreaturePosition`. Same creature or same
- * position is a no-op.
+ * Swap two living **allied** creatures via `setCreaturePosition`. Opposing
+ * pairs whiff (enemy push/move is banned). Same creature or same position is a
+ * no-op (Garuda already frontline swapping with another frontline).
  */
 export function swapCreaturePositions(
   draft: Draft,
@@ -396,6 +397,7 @@ export function swapCreaturePositions(
   const second = draft.creatures[secondId];
   if (first === undefined || second === undefined) return;
   if (first.defeated || second.defeated) return;
+  if (first.ownerId !== second.ownerId) return;
   const firstTo = second.position;
   const secondTo = first.position;
   setCreaturePosition(draft, firstId, firstTo);

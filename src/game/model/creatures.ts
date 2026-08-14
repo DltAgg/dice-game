@@ -50,8 +50,8 @@ export interface AttackDefinition {
    */
   readonly effect?: EffectDefinition;
   /**
-   * Effects queued after the attack body when the attack chain link conducts
-   * (Garuda Dive swap, Minotaur back-row swap). Damage resolves first.
+   * Additional effects queued after the damage link (Arcane Burst draw, etc.).
+   * Existing cards omit this.
    */
   readonly followUpEffects?: readonly EffectDefinition[];
 }
@@ -111,4 +111,19 @@ export interface CreatureState {
    * END_TURN.
    */
   readonly spentOncePerTurnTriggers: readonly string[];
+  /**
+   * Aegis: remaining damage that would hit another ally is redirected here.
+   * Cleared at end of turn.
+   */
+  readonly redirectDamageThisTurn: number;
+  /**
+   * Venom absorb: extra incoming damage on the next hit. Cleared when consumed
+   * or at end of turn.
+   */
+  readonly nextIncomingDamageBonus: number;
+  /**
+   * Adaptive Toxin: remaining markers this creature may still receive until its
+   * owner's next turn starts. `null` / omitted = uncapped. Spec `013`.
+   */
+  readonly toxinReceiveCapRemaining?: number | null;
 }

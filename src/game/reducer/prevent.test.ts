@@ -25,6 +25,7 @@ import {
 } from "../testing/scenario.js";
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
+const CHARGE = asAttackId("attack-varcolac-charge");
 
 function combatWithAttacker(tokens: { martial: number }) {
   const base = withPhase(newMatch(), "actions");
@@ -37,10 +38,22 @@ function combatWithAttacker(tokens: { martial: number }) {
   };
 }
 
+/** Varcolac Charge deals 2 and has no ignore-shield, so 009 shield tests stay vanilla. */
+function combatWithCharge() {
+  const base = withPhase(newMatch(), "actions");
+  const attacker = creatureIdAt(base, P1, 1);
+  const target = creatureIdAt(base, P2, 0);
+  return {
+    attacker,
+    target,
+    state: withTokens(base, attacker, { wild: 1 }),
+  };
+}
+
 describe("true prevent (009)", () => {
   it("applies buffer before shields then HP", () => {
-    // Strike deals 3. Buffer 1 + shield 1 → 1 HP damage.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
+    // Charge deals 2 (no pierce). Buffer 1 + shield 1 → 0 HP damage.
+    const { attacker, target, state: combat } = combatWithCharge();
     const armed = {
       ...combat,
       creatures: {
@@ -59,7 +72,7 @@ describe("true prevent (009)", () => {
           type: "ATTACK",
           playerId: P1,
           attackerId: attacker,
-          attackId: HEAVY_AXE,
+          attackId: CHARGE,
           targetId: target,
         }),
       ),
@@ -67,7 +80,7 @@ describe("true prevent (009)", () => {
 
     expect(after.creatures[target]?.damagePreventBuffer).toBe(0);
     expect(after.creatures[target]?.shields).toBe(0);
-    expect(after.creatures[target]?.damage).toBe(1);
+    expect(after.creatures[target]?.damage).toBe(0);
     const prevented = after.log.map((entry) => entry.event);
     expect(
       prevented.some((event) => event.type === "damage-prevented" && event.source === "buffer"),
@@ -268,16 +281,16 @@ describe("true prevent (009)", () => {
   });
 
   it("shield-only path still prevents with source shield", () => {
-    // 2 shields vs Strike 3 → 0 shields, 1 damage.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
-    const shielded = withShields(combat, target, 2);
+    // 1 shield vs Charge 2 → 0 shields, 1 damage.
+    const { attacker, target, state: combat } = combatWithCharge();
+    const shielded = withShields(combat, target, 1);
     const after = resolveOpenChain(
       expectOk(
         advance(shielded, {
           type: "ATTACK",
           playerId: P1,
           attackerId: attacker,
-          attackId: HEAVY_AXE,
+          attackId: CHARGE,
           targetId: target,
         }),
       ),

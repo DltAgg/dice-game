@@ -20,6 +20,7 @@ import {
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 const POISONED_CHARGE = asAttackId("attack-minotaur-poisoned-charge");
 const DIVE = asAttackId("attack-garuda-dive");
+const CHARGE = asAttackId("attack-varcolac-charge");
 const COORDINATED_HUNT = asAttackId("attack-varcolac-coordinated-hunt");
 
 /**
@@ -219,7 +220,7 @@ describe("attacking", () => {
 
 describe("shields", () => {
   it("prevents damage one point at a time and is spent doing so", () => {
-    const base = combatState(0, { martial: 2 });
+    const base = combatState(1, { wild: 1 });
     const targetId = creatureIdAt(base, P2, 0);
     const state = withShields(base, targetId, 1);
 
@@ -227,28 +228,28 @@ describe("shields", () => {
       advance(state, {
         type: "ATTACK",
         playerId: P1,
-        attackerId: creatureIdAt(state, P1, 0),
-        attackId: HEAVY_AXE,
+        attackerId: creatureIdAt(state, P1, 1),
+        attackId: CHARGE,
         targetId,
       }),
     );
 
-    expect(after.creatures[targetId]?.damage).toBe(2);
+    expect(after.creatures[targetId]?.damage).toBe(1);
     expect(after.creatures[targetId]?.shields).toBe(0);
     expect(eventTypes(after)).toContain("damage-prevented");
   });
 
   it("can absorb an attack outright, leaving the creature untouched", () => {
-    const base = combatState(0, { martial: 2 });
+    const base = combatState(1, { wild: 1 });
     const targetId = creatureIdAt(base, P2, 0);
-    const state = withShields(base, targetId, 4);
+    const state = withShields(base, targetId, 3);
 
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
         playerId: P1,
-        attackerId: creatureIdAt(state, P1, 0),
-        attackId: HEAVY_AXE,
+        attackerId: creatureIdAt(state, P1, 1),
+        attackId: CHARGE,
         targetId,
       }),
     );

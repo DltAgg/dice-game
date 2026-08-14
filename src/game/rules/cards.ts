@@ -1,4 +1,5 @@
 import { getCard } from "../content/cards.js";
+import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
 import type {
   CardDefinition,
@@ -178,11 +179,11 @@ export function attackDamageBonus(
   if (creature === undefined) return 0;
 
   let bonus = 0;
-  for (const cardInstanceId of creature.equipmentIds) {
-    const instance = state.cards[cardInstanceId];
-    if (instance === undefined) continue;
-    const definition = getCard(instance.cardId);
-    for (const ability of definition?.equipment?.abilities ?? []) {
+  const addFromAbilities = (
+    abilities: readonly { type: string; amount?: number; attackKinds?: readonly ("basic" | "special")[]; bearerRelation?: "self" | "left-ally" }[],
+    bearerId: CreatureId,
+  ): void => {
+    for (const ability of abilities) {
       if (ability.type !== "attack-damage-bonus") continue;
       if (
         ability.attackKinds !== undefined &&
@@ -191,8 +192,41 @@ export function attackDamageBonus(
       ) {
         continue;
       }
-      bonus += ability.amount;
+      const relation = ability.bearerRelation ?? "self";
+      if (relation === "self") {
+        if (bearerId !== creatureId) continue;
+      } else if (relation === "left-ally") {
+        if (livingLeftAllyId(state, bearerId) !== creatureId) continue;
+      }
+      bonus += ability.amount ?? 0;
+    }
+  };
+
+  for (const ally of Object.values(state.creatures)) {
+    if (ally.defeated || ally.ownerId !== creature.ownerId) continue;
+    const standing = getCreatureDefinition(ally.definitionId)?.standingAbilities ?? [];
+    addFromAbilities(standing, ally.id);
+    for (const cardInstanceId of ally.equipmentIds) {
+      const instance = state.cards[cardInstanceId];
+      if (instance === undefined) continue;
+      const definition = getCard(instance.cardId);
+      addFromAbilities(definition?.equipment?.abilities ?? [], ally.id);
     }
   }
   return bonus;
+}
+
+function livingLeftAllyId(state: GameState, bearerId: CreatureId): CreatureId | null {
+  const bearer = state.creatures[bearerId];
+  if (bearer === undefined) return null;
+  const ids = state.players[bearer.ownerId]?.creatureIds ?? [];
+  const index = ids.indexOf(bearerId);
+  if (index <= 0) return null;
+  for (let i = index - 1; i >= 0; i -= 1) {
+    const id = ids[i];
+    if (id === undefined) continue;
+    const creature = state.creatures[id];
+    if (creature !== undefined && !creature.defeated) return id;
+  }
+  return null;
 }

@@ -48,6 +48,15 @@ export interface FaceCardDefinition {
    * this face (Arcane Echo).
    */
   readonly forgeRestriction: "echo-cards" | null;
+  /**
+   * Player-activated face ability (Forbidden Heritage / Pestilent Plague).
+   * Paid with `ACTIVATE_FACE` during the actions phase.
+   */
+  readonly activated?: {
+    readonly kind: "remove-corruption-face";
+    readonly energyBase: number;
+    readonly energyPerCorruptionOnDie: number;
+  };
 }
 
 /**
@@ -63,6 +72,23 @@ export interface DieSlot {
   readonly index: number;
   readonly faceCardId: FaceCardId;
   readonly faceCardOwnerId: PlayerId;
+  /** Pestilent Plague counters on this physical slot. */
+  readonly pestilenceCounters?: number;
+  /**
+   * Corruption markers on this physical slot (Stain / Infection). A slot with
+   * ≥1 is a Corrupted face. Spec `013`.
+   */
+  readonly corruptionMarkers?: number;
+  /**
+   * Skip this slot's face `onRoll` on the controller's next `ROLL_DICE`, then
+   * clear (Decay suppress / Overcharge). Spec `013`.
+   */
+  readonly suppressInherentNextRoll?: boolean;
+  /**
+   * Showing / generated symbols from this slot cannot pay costs this turn
+   * (Stain absorb). Cleared `END_TURN`. Spec `013`.
+   */
+  readonly resourceLockedThisTurn?: boolean;
 }
 
 export interface DieState {
