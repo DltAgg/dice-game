@@ -96,7 +96,12 @@ describe("structural invariants across played matches", () => {
         if (event.type === "shield-gained") {
           net.set(event.creatureId, (net.get(event.creatureId) ?? 0) + event.amount);
         }
-        if (event.type === "damage-prevented") {
+        // Spent blocking damage (`damage-prevented` source shield) or stripped by
+        // effects (`shield-removed` — Cleaving Strike, Rending Mark, …).
+        if (event.type === "damage-prevented" && event.source === "shield") {
+          net.set(event.creatureId, (net.get(event.creatureId) ?? 0) - event.amount);
+        }
+        if (event.type === "shield-removed") {
           net.set(event.creatureId, (net.get(event.creatureId) ?? 0) - event.amount);
         }
       }

@@ -1,4 +1,5 @@
 import type { CreatureState } from "../model/creatures.js";
+import { ATTRIBUTES } from "../model/attributes.js";
 import {
   requirementEntries,
   type AttributeTokens,
@@ -37,6 +38,28 @@ export function removeTokens(
     else delete next[attribute];
   }
   return next;
+}
+
+/**
+ * Strip up to `amount` tokens in `ATTRIBUTES` order (martial → … → darkness).
+ * Controller does not choose attributes. Returns fewer than `amount` when the
+ * creature has less fuel (including empty). Spec `011`.
+ */
+export function discardTokensInAttributeOrder(
+  tokens: AttributeTokens,
+  amount: number,
+): { readonly next: AttributeTokens; readonly discarded: SymbolRequirement } {
+  let remaining = amount;
+  const discarded: Partial<Record<(typeof ATTRIBUTES)[number], number>> = {};
+  for (const attribute of ATTRIBUTES) {
+    if (remaining <= 0) break;
+    const have = tokens[attribute] ?? 0;
+    if (have <= 0) continue;
+    const take = Math.min(have, remaining);
+    discarded[attribute] = take;
+    remaining -= take;
+  }
+  return { next: removeTokens(tokens, discarded), discarded };
 }
 
 export const totalTokens = (tokens: AttributeTokens): number =>

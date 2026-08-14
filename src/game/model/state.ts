@@ -97,6 +97,8 @@ export interface PendingEffect {
   readonly effect: EffectDefinition;
   readonly sourceCreatureId: CreatureId | null;
   readonly declaredTargetCreatureId: CreatureId | null;
+  /** Set after `RESOLVE_CHOOSE_RITUAL` for `declared-ritual` targets. */
+  readonly declaredTargetCardInstanceId: CardInstanceId | null;
 }
 
 /**
@@ -135,6 +137,18 @@ export type PendingDecision =
       /**
        * Effect waiting for a target. `effect.target` is rewritten to
        * `declared-target` so applying it after the choice does not re-open
+       * this decision.
+       */
+      readonly deferred: PendingEffect;
+    }
+  | {
+      readonly type: "choose-ritual";
+      readonly controllerId: PlayerId;
+      /** Only opposing field rituals are legal today (`011`). */
+      readonly filter: "opponent";
+      /**
+       * Effect waiting for a ritual. `effect.target` is rewritten to
+       * `declared-ritual` so applying it after the choice does not re-open
        * this decision.
        */
       readonly deferred: PendingEffect;

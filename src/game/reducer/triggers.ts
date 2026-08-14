@@ -53,6 +53,7 @@ function pushEffect(
     effect,
     sourceCreatureId,
     declaredTargetCreatureId,
+    declaredTargetCardInstanceId: null,
   });
 }
 

@@ -236,6 +236,19 @@ individual Toxin tactics already forge Synthetic Toxin.
 | 3 | Pack Law | Ritual / Continuous / Wild | 1 Natural Wild, your die | *Active when: Wild + Wild.* On absorb Wild: the next attack this turn deals +1 damage. |
 | 3 | Virulent Rite | Ritual / Instant / Toxin | 1 Synthetic Toxin, your die | *Active when: Toxin + Toxin.* Forge 2 Synthetic Toxin faces on your die. |
 
+### Control interaction (authored)
+
+Playtest gap-fill for Control (Arcane / Corruption / Darkness): token strip,
+ritual destroy, cheaper tactic negate, ritual-only negate. Fully wired.
+Catalogue-only until deck-designer adds copies to builtin control lists.
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 3 | Siphon Sigil | Instant / Arcane | 1 Natural Arcane, your die | A chosen enemy creature discards 2 attribute tokens. |
+| 4 | Dispel Circle | Instant / Arcane | 1 Natural Arcane, your die | Send 1 opposing Ritual to its owner's graveyard. |
+| 3 | Seal the Rite | Reaction / Arcane | 1 Synthetic Arcane, your die | Negate 1 Ritual. |
+| 3 | Fade | Reaction / Darkness | 1 Synthetic Darkness, your die | Negate the effect of 1 card. |
+
 ## What this slice implements
 
 The grammar in full, and the subset of the effect vocabulary the engine can

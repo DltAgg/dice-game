@@ -58,6 +58,7 @@ import {
   buildRitualPlaceLink,
   cardCommittedToChain,
   linkMatchesNegateCard,
+  isRitualNegatableLinkKind,
   noteDeferredTurnEnd,
   openReactionWindow,
   pushChainLink,
@@ -136,6 +137,11 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
       action.type === "RESOLVE_CHOOSE_CREATURE"
     ) {
       allowed = true;
+    } else if (
+      pending.type === "choose-ritual" &&
+      action.type === "RESOLVE_CHOOSE_RITUAL"
+    ) {
+      allowed = true;
     } else if (pending.type === "forge-faces" && action.type === "RESOLVE_FORGE_FACES") {
       allowed = true;
     }
@@ -202,6 +208,8 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return resolveDiscard(draft, action.playerId, action.cardInstanceIds);
     case "RESOLVE_CHOOSE_CREATURE":
       return resolveChooseCreature(draft, action.playerId, action.creatureId);
+    case "RESOLVE_CHOOSE_RITUAL":
+      return resolveChooseRitual(draft, action.playerId, action.cardInstanceId);
     case "RESOLVE_FORGE_FACES":
       return resolveForgeFaces(
         draft,
@@ -477,6 +485,34 @@ function resolveChooseCreature(
     declaredTargetCreatureId: creatureId,
   };
   // Re-enter applyEffect with a declared target so choose-* cannot loop.
+  applyDeferredEffect(draft, deferred);
+  return resumeAfterEffectPause(draft);
+}
+
+/**
+ * Completes a pending ritual choice (destroy-ritual). The chosen card is
+ * stamped onto the deferred effect, then resolution resumes.
+ */
+function resolveChooseRitual(
+  draft: Draft,
+  playerId: PlayerId,
+  cardInstanceId: CardInstanceId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "choose-ritual") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const card = draft.cards[cardInstanceId];
+  if (card === undefined || card.zone !== "ritual") return "INVALID_CHOICE";
+  if (pending.filter === "opponent" && card.ownerId === playerId) return "INVALID_CHOICE";
+
+  draft.pendingDecision = null;
+  emit(draft, { type: "choose-ritual-resolved", playerId, cardInstanceId });
+
+  const deferred = {
+    ...pending.deferred,
+    declaredTargetCardInstanceId: cardInstanceId,
+  };
   applyDeferredEffect(draft, deferred);
   return resumeAfterEffectPause(draft);
 }
@@ -909,6 +945,12 @@ function playCard(
       return "INVALID_CHAIN_TARGET";
     }
   }
+  if (region.effects.some((effect) => effect.type === "negate-ritual")) {
+    const top = topChainLink(draft);
+    if (top === undefined || top.negated || !isRitualNegatableLinkKind(top.kind)) {
+      return "INVALID_CHAIN_TARGET";
+    }
+  }
   if (
     region.effects.some(
       (effect) =>
@@ -1127,6 +1169,12 @@ function activateRitual(
     if (effect.type !== "negate-card") continue;
     const top = topChainLink(draft);
     if (top === undefined || !linkMatchesNegateCard(draft, top, effect.cardTypes)) {
+      return "INVALID_CHAIN_TARGET";
+    }
+  }
+  if (region.effects.some((effect) => effect.type === "negate-ritual")) {
+    const top = topChainLink(draft);
+    if (top === undefined || top.negated || !isRitualNegatableLinkKind(top.kind)) {
       return "INVALID_CHAIN_TARGET";
     }
   }

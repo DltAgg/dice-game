@@ -117,6 +117,14 @@ export type GameAction =
       readonly creatureId: CreatureId;
     }
   /**
+   * Completes a pending ritual choice (Dispel Circle / destroy-ritual).
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_RITUAL";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  /**
    * Completes a pending forge-from-effect: install `faces` copies of one face
    * card onto the named die slots.
    */

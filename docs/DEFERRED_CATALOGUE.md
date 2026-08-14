@@ -18,7 +18,10 @@ needs them — never as unreachable stubs.
 | Vocabulary | Needed for | Notes |
 |---|---|---|
 | **Reaction chain** (YGO-style LILO) | Prevent reactions (Barrier …) | **IMPLEMENTED** (`008`) — windows on play/place/activate/equip/overload/attack; forge silent |
-| **Negate card effect** | Runic Nullification, Arcane Silence | **IMPLEMENTED** — `negate-card` with `cardTypes: readonly CardType[] \| "any"` (instant-only vs any card link; not attacks; forge never on chain) |
+| **Negate card effect** | Runic Nullification, Arcane Silence, Fade | **IMPLEMENTED** — `negate-card` with `cardTypes: readonly CardType[] \| "any"` (instant-only vs any card link; not attacks; forge never on chain) |
+| **Negate ritual only** | Seal the Rite | **IMPLEMENTED** — `negate-ritual` (`ritual-place` / `ritual-activate` only); see `008` |
+| **Discard attribute tokens (effect)** | Siphon Sigil | **IMPLEMENTED** — `discard-attribute-tokens` strips in `ATTRIBUTES` order; see `011` |
+| **Destroy opposing ritual** | Dispel Circle | **IMPLEMENTED** — `destroy-ritual` + `choose-opponent-ritual`; see `011` |
 | **Prevent N damage** (one-shot) | — | **IMPLEMENTED** (`009`) — `grant-damage-prevent` buffer; Barrier wired |
 | **Prevent + reflect** | — | **IMPLEMENTED** — `prevent-attack-reflect` (Luminar Judgement) |
 | **Draw on prevent** | — | **IMPLEMENTED** — `arm-prevent-draw` (Glimmer) |
@@ -36,9 +39,9 @@ needs them — never as unreachable stubs.
 | **Energy cost reduction** | Archmage passive, Tome of Interdiction | First Arcane card (any type) / first Instant Arcane |
 | **Multi-target damage split** | Blade Rain, Extermination | Player chooses distribution |
 | **Copy / re-apply die modifiers** | Arcane Echo tactic + face | |
-| **Forge-from-effect** (not PLAY forge region) | Corrupting Elder Contamination | **PARTIAL** — `forge-faces` wired (Great Contamination, Ritual of Contamination); attack-driven forge still deferred |
+| **Forge-from-effect** (not PLAY forge region) | Great Contamination, Ritual of Contamination | **PARTIAL** — `forge-faces` wired on those cards; attack-driven forge still unused |
 | **Consume faces → damage** | Extermination | |
-| **Retain-from-effect** | Void Summoner Dimensional Rift, Forbidden Heritage | `RETAIN_DIE` exists; effect path does not |
+| **Retain-from-effect** | Forbidden Heritage | `RETAIN_DIE` exists; effect path does not |
 | **Destroy / strip overloads** | Mind Control | |
 | **Send cards deck → GY** | Dark Pact | Mill 2 Rituals of different attributes |
 | **Continuous ritual standing triggers** | — | Abyssal Sacrifice, Serrated Stinger, Foundry, **Battle Hymn**, **Pack Law** wired; others as needed |
@@ -97,7 +100,8 @@ Silence, Prismatic Barrier, Luminar Judgement, Glimmer, Great Contamination,
 Ritual of Contamination, Ratchet, Assembly Line, Governor, Spare Cog, Die Press,
 Foundry, Temper, Opening Cut, Press the Attack, Riposte, Whetstone, Untamed,
 Pounce, Pack Surge, Rending Mark, Snarl, Dose, Blight Strike, Call to Arms,
-Battle Hymn, Pack Law, Virulent Rite.
+Battle Hymn, Pack Law, Virulent Rite, Siphon Sigil, Dispel Circle, Seal the Rite,
+Fade.
 
 Named faces **Flywheel** and **Piston** are fully wired (Flywheel: roll Energy /
 absorb Shield; Piston: roll Mechanical / absorb Energy). Authored aggro faces
@@ -115,9 +119,9 @@ Damage lines resolve; passives and most special riders do not.
 | War Minotaur | Passive ignore 1 Shield; Poisoned Charge toxin + back-row swap |
 | Varcolac | Coordinated Hunt conditional push (passive **wired**) |
 | Garuda | Dive optional swap; Bombardment frontline toxin (Range flag exists) |
-| Archmage of the Runes | Passive first Arcane card discount; Arcane Burst draw; Mystic Overload frontline shields |
-| Corrupting Elder | Touch strip shield; Contamination forge opp (passive **wired**) |
-| Void Summoner | Rupture convert; Dimensional Rift retain | Passive **wired** (Natural absorb → Arcane) |
+| Archmage of the Runes | Passive first Arcane card discount. Burst draw + Overload Energy/Arcane **wired** (`on-attack`) |
+| Corrupting Elder | Contamination forge-opp retuned to generate Corruption (**wired**). Touch strip **wired**. Passive **wired** |
+| Void Summoner | Convert/retain retuned to generate Arcane / Energy+draw (**wired**). Passive **wired** (Natural absorb → Arcane) |
 
 Fast-game HP/cost variants from Figma are not encoded.
 
