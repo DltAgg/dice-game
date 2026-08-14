@@ -16,3 +16,4 @@ alwaysApply: true
 - Engine/reducer/hooks/resolution → subagent `.cursor/agents/engine-developer.md` (skills `develop-engine`, `implement-hooks`).
 - Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.
 - Match / lobby / deck builder / PeerJS adapters → subagent `.cursor/agents/match-ui.md` (skill `match-ui`). No rules in UI.
+- Constructed loadouts / “does this card have a home?” / attribute identity in builds → subagent `.cursor/agents/deck-designer.md`.

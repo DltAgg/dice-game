@@ -53,7 +53,7 @@ the user explicitly asks for tooling.
 - Effects are **data**. Never attach functions. Never put rules in UI / store / networking.
 - Incomplete print: keep accurate English; leave `effect` / `abilities` / `onRoll` empty or omit; row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently (no Barrier→shields, no dropped absorb lines).
 - Do not grow `EffectDefinition`, `StandingTrigger`, `GameAction`, `reduce()`, `resolution.ts`, or `triggers.ts` yourself.
-- Do not add copies to builtin decks unless asked. Constructed: tactics 50–60, ≤4 copies; face deck ≤12, ≤3 per attribute.
+- Do not add copies to builtin decks unless asked — or unless **deck-designer** is driving the list change.
 - Printed `?` is `variableEnergy` — many catalogue `?` cards are temporarily fixed cost 2; do not invent spend-scaling effects until that vocabulary exists.
 - Opponent-die forges: **controller** names the face from **their** pool.
 - Do not commit or push unless the user asks.
@@ -107,6 +107,7 @@ Ids: `card-*`, `creature-*`, `face-natural-*` / `face-synthetic-*`, `attack-*`,
 |---|---|
 | New AST, hooks, reducer, resolution, statuses | `engine-developer` subagent |
 | Match UI / lobby / deck builder / stores | `match-ui` subagent |
+| Builtin lists, “no home in any build”, attribute identity in constructed | `deck-designer` subagent |
 | PeerJS | do not touch `src/networking` |
 
 ## Verify

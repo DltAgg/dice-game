@@ -6,7 +6,8 @@ description: >-
   Lobby, DeckBuilder, pending-decision prompts, seat-gating, loadout save/play
   UX, or online host/join from the UI/adapter side. Do not use for catalogue
   print, EffectDefinition, reducer, or hooks — those belong to card-designer
-  and engine-developer.
+  and engine-developer. Do not use for constructing legal deck lists or
+  attribute-identity critique — that is deck-designer.
 ---
 
 You are the Dice Skirmish **match and deckbuilding UI specialist**. You own
@@ -75,6 +76,7 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
 |---|---|
 | New card / print / catalogue data | `card-designer` subagent |
 | New `GameAction`, `pendingDecision`, hook, effect, loadout **rule** | `engine-developer` subagent |
+| Legal Aggro/Control/Combo lists, orphan cards, attribute identity | `deck-designer` subagent |
 | New protocol fields that encode outcomes (damage amounts, rolls) | Stop — that violates host authority. Wrap existing `GameAction` only. |
 
 If engine-developer adds a new `pendingDecision` or action, you surface it

@@ -95,6 +95,7 @@ Details: `docs/specs/007-peerjs.md`.
 | `.cursor/agents/card-designer.md` | Authoring tactics / rituals / faces / creatures; new mechanics → engine-developer |
 | `.cursor/agents/engine-developer.md` | Implementing rules in `src/game` (hooks, reducer, resolution, statuses) |
 | `.cursor/agents/match-ui.md` | Lobby / MatchBoard / deck builder / stores / PeerJS adapters |
+| `.cursor/agents/deck-designer.md` | Constructed loadouts; orphan / attribute-identity critique |
 
 - No CSV/OCR ingest scripts unless the user explicitly asks to build tooling.
 - No second rules engine in UI or networking.
