@@ -223,7 +223,7 @@ describe("reaction chain (008)", () => {
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
-      withEnergy(withTokens(base, attacker, { martial: 1 }), P1, 10),
+      withEnergy(withTokens(base, attacker, { martial: 2 }), P1, 10),
       P2,
       [ARCANE_SILENCE],
     );

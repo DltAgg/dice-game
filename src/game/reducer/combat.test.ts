@@ -18,6 +18,7 @@ import {
 } from "../testing/scenario.js";
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
+const POISONED_CHARGE = asAttackId("attack-minotaur-poisoned-charge");
 const DIVE = asAttackId("attack-garuda-dive");
 const COORDINATED_HUNT = asAttackId("attack-varcolac-coordinated-hunt");
 
@@ -32,7 +33,7 @@ function combatState(creatureIndex: number, tokens: AttributeTokens) {
 
 describe("attacking", () => {
   it("damages the target when the attacker holds the required attributes", () => {
-    const state = combatState(0, { martial: 1 });
+    const state = combatState(0, { martial: 2 });
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
 
@@ -78,8 +79,27 @@ describe("attacking", () => {
     if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
   });
 
+  it("burns discarded tokens when the attack lists discards", () => {
+    const state = combatState(0, { martial: 1, toxin: 1 });
+    const attackerId = creatureIdAt(state, P1, 0);
+
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: POISONED_CHARGE,
+        targetId: creatureIdAt(state, P2, 0),
+      }),
+    );
+
+    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ toxin: 1 });
+    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+  });
+
   it("leaves absorbed tokens when the attack has no discards", () => {
-    const state = combatState(0, { martial: 1 });
+    // Heavy Axe gates on Martial 2 but does not burn tokens; specials still discard.
+    const state = combatState(0, { martial: 2 });
     const attackerId = creatureIdAt(state, P1, 0);
 
     const after = expectOk(
@@ -92,7 +112,7 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ martial: 1 });
+    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ martial: 2 });
     expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
   });
 
@@ -112,7 +132,7 @@ describe("attacking", () => {
   });
 
   it("allows only one attack per creature per combat phase", () => {
-    const state = combatState(0, { martial: 1 });
+    const state = combatState(0, { martial: 2 });
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
 
@@ -132,7 +152,7 @@ describe("attacking", () => {
   });
 
   it("lets a creature attack again on the following turn", () => {
-    const state = combatState(0, { martial: 1 });
+    const state = combatState(0, { martial: 2 });
     const attackerId = creatureIdAt(state, P1, 0);
 
     const attacked = expectOk(
@@ -151,7 +171,7 @@ describe("attacking", () => {
 
   it("refuses to attack outside the actions phase", () => {
     const base = withPhase(newMatch(), "absorption");
-    const state = withTokens(base, creatureIdAt(base, P1, 0), { martial: 1 });
+    const state = withTokens(base, creatureIdAt(base, P1, 0), { martial: 2 });
 
     const result = advance(state, {
       type: "ATTACK",
@@ -166,7 +186,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack a friendly creature", () => {
-    const state = combatState(0, { martial: 1 });
+    const state = combatState(0, { martial: 2 });
 
     const result = advance(state, {
       type: "ATTACK",
@@ -181,7 +201,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack with a defeated creature", () => {
-    const state = combatState(0, { martial: 1 });
+    const state = combatState(0, { martial: 2 });
     const attackerId = creatureIdAt(state, P1, 0);
 
     const result = advance(withDefeatedCreature(state, attackerId), {
@@ -199,7 +219,7 @@ describe("attacking", () => {
 
 describe("shields", () => {
   it("prevents damage one point at a time and is spent doing so", () => {
-    const base = combatState(0, { martial: 1 });
+    const base = combatState(0, { martial: 2 });
     const targetId = creatureIdAt(base, P2, 0);
     const state = withShields(base, targetId, 1);
 
@@ -219,7 +239,7 @@ describe("shields", () => {
   });
 
   it("can absorb an attack outright, leaving the creature untouched", () => {
-    const base = combatState(0, { martial: 1 });
+    const base = combatState(0, { martial: 2 });
     const targetId = creatureIdAt(base, P2, 0);
     const state = withShields(base, targetId, 4);
 
@@ -252,7 +272,7 @@ describe("shields", () => {
 
 describe("frontline protection", () => {
   it("stops a melee attack from reaching the back row", () => {
-    const state = combatState(0, { martial: 1 });
+    const state = combatState(0, { martial: 2 });
 
     const result = advance(state, {
       type: "ATTACK",
@@ -284,7 +304,7 @@ describe("frontline protection", () => {
   });
 
   it("opens the back row to melee once the frontline is gone", () => {
-    const base = combatState(0, { martial: 1 });
+    const base = combatState(0, { martial: 2 });
     const cleared = withDefeatedCreature(
       withDefeatedCreature(base, creatureIdAt(base, P2, 0)),
       creatureIdAt(base, P2, 1),
@@ -307,7 +327,7 @@ describe("frontline protection", () => {
 
 describe("creature defeat and victory", () => {
   it("defeats a creature whose damage reaches its life", () => {
-    const state = combatState(0, { martial: 1 });
+    const state = combatState(0, { martial: 2 });
     const targetId = creatureIdAt(state, P2, 0);
     // War Minotaur has 13 life; 10 prior + Heavy Axe 3 = lethal.
     const nearlyDead = withDamage(state, targetId, 10);

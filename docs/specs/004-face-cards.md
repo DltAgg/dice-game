@@ -91,6 +91,12 @@ Named specials:
 | Shadow Echo | 2 | Print only | Discard-draw / GY recursion — OPEN |
 | Drain | 2 | Print only | Opp loses Energy / transfer — OPEN |
 | Sacrifice | 2 | Print only | Discard for Energy / discard for damage — OPEN |
+| Warhorn | 2 | On roll: generate Martial; On absorb: next attack +1 | Authored Martial aggro |
+| Cleaving Strike | 2 | On roll: remove 2 Shield (most-shielded enemy); On absorb: next attack +1 | Authored Martial aggro |
+| Bloodscent | 2 | On roll: next attack +1; On absorb: generate Wild | Authored Wild aggro |
+| Gore | 2 | On roll: 1 damage (choose enemy); On absorb: next attack +1 | Authored Wild aggro |
+| Needle | 2 | On roll: next attack +1; On absorb: apply 1 Toxin (choose enemy) | Authored Toxin aggro |
+| Seep | 2 | On roll: generate Toxin; On absorb: arm attack-toxin 1 | Authored Toxin aggro |
 
 Great Spark and Rekindle appear as art on the page but have no printed rules text yet.
 The CSV batch (`synthetic_faces.csv`) uses **On roll** / **On absorb** clauses;

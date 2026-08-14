@@ -107,6 +107,12 @@ export const PISTON: FaceCardId = asFaceCardId("face-synthetic-piston");
 export const SHADOW_ECHO: FaceCardId = asFaceCardId("face-synthetic-shadow-echo");
 export const DRAIN: FaceCardId = asFaceCardId("face-synthetic-drain");
 export const SACRIFICE: FaceCardId = asFaceCardId("face-synthetic-sacrifice");
+export const WARHORN: FaceCardId = asFaceCardId("face-synthetic-warhorn");
+export const CLEAVING_STRIKE: FaceCardId = asFaceCardId("face-synthetic-cleaving-strike");
+export const BLOODSCENT: FaceCardId = asFaceCardId("face-synthetic-bloodscent");
+export const GORE: FaceCardId = asFaceCardId("face-synthetic-gore");
+export const NEEDLE: FaceCardId = asFaceCardId("face-synthetic-needle");
+export const SEEP: FaceCardId = asFaceCardId("face-synthetic-seep");
 
 /** Named synthetic with accurate English; wire hooks only for modellable clauses. */
 const namedSynthetic = (
@@ -534,6 +540,72 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "On roll: discard a card; if you do, gain 2 Energy.\n" +
       "On absorb: discard a card to deal 2 damage to a creature.",
   ),
+  namedSynthetic(
+    WARHORN,
+    "Warhorn",
+    "martial",
+    "On roll: generate 1 Martial.\n" +
+      "On absorb: the next attack this turn deals +1 damage.",
+    {
+      onRoll: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
+      onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
+    },
+  ),
+  namedSynthetic(
+    CLEAVING_STRIKE,
+    "Cleaving Strike",
+    "martial",
+    "On roll: an enemy creature with the most Shield loses 2 Shield.\n" +
+      "On absorb: the next attack this turn deals +1 damage.",
+    {
+      onRoll: [{ type: "remove-shield", amount: 2, target: { kind: "most-shielded-enemy" } }],
+      onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
+    },
+  ),
+  namedSynthetic(
+    BLOODSCENT,
+    "Bloodscent",
+    "wild",
+    "On roll: the next attack this turn deals +1 damage.\n" +
+      "On absorb: generate 1 Wild.",
+    {
+      onRoll: [{ type: "next-attack-bonus", amount: 1 }],
+      onAbsorb: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
+    },
+  ),
+  namedSynthetic(
+    GORE,
+    "Gore",
+    "wild",
+    "On roll: deal 1 damage to a chosen enemy.\n" +
+      "On absorb: the next attack this turn deals +1 damage.",
+    {
+      onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
+      onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
+    },
+  ),
+  namedSynthetic(
+    NEEDLE,
+    "Needle",
+    "toxin",
+    "On roll: the next attack this turn deals +1 damage.\n" +
+      "On absorb: apply 1 Toxin marker to a chosen enemy.",
+    {
+      onRoll: [{ type: "next-attack-bonus", amount: 1 }],
+      onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+    },
+  ),
+  namedSynthetic(
+    SEEP,
+    "Seep",
+    "toxin",
+    "On roll: generate 1 Toxin.\n" +
+      "On absorb: all attacks this turn apply 1 Toxin marker.",
+    {
+      onRoll: [{ type: "generate-symbol", symbol: "toxin", amount: 1 }],
+      onAbsorb: [{ type: "arm-attack-toxin", amount: 1 }],
+    },
+  ),
 ];
 
 export const FACE_CARDS: Readonly<Record<string, FaceCardDefinition>> = Object.fromEntries(
@@ -578,6 +650,12 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[SHADOW_ECHO]!,
   FACE_CARDS[DRAIN]!,
   FACE_CARDS[SACRIFICE]!,
+  FACE_CARDS[WARHORN]!,
+  FACE_CARDS[CLEAVING_STRIKE]!,
+  FACE_CARDS[BLOODSCENT]!,
+  FACE_CARDS[GORE]!,
+  FACE_CARDS[NEEDLE]!,
+  FACE_CARDS[SEEP]!,
 ];
 
 /** Starting naturals only — Martial, Wild, Arcane, Luminar, plus Shield. */

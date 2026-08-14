@@ -160,6 +160,12 @@ describe("face deck", () => {
       "Shadow Echo",
       "Drain",
       "Sacrifice",
+      "Warhorn",
+      "Cleaving Strike",
+      "Bloodscent",
+      "Gore",
+      "Needle",
+      "Seep",
     ]);
   });
 

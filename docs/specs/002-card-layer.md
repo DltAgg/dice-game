@@ -209,6 +209,33 @@ Aggro / Control lists; catalogue-only until a combo loadout is requested.
 | 3 | Die Press | Tactic / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
 | 3 | Foundry | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On absorb Mechanical: gain 1 Energy. |
 
+### Martial / Wild / Toxin aggro package (authored)
+
+Playtest gap-fill for Aggro (Martial / Wild / Toxin). Fully wired on existing
+vocabulary. Catalogue-only — not added to builtin decks. Temper / Untamed exist
+so named synthetic Martial / Wild specials can be forged (existing Martial /
+Wild tactics only forge Natural). Virulent Rite is a two-face Toxin burst;
+individual Toxin tactics already forge Synthetic Toxin.
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 2 | Temper | Tactic / Instant / Martial | 1 Natural Martial, your die | Forge 1 Synthetic Martial face on your die. |
+| 2 | Opening Cut | Tactic / Instant / Martial | 1 Natural Martial, your die | *Requires: Martial.* Deal 2 damage to a chosen enemy. |
+| 2 | Press the Attack | Tactic / Instant / Martial | 1 Natural Martial, your die | The next attack this turn deals +2 damage. |
+| 2 | Riposte | Tactic / Reaction / Martial | 1 Natural Martial, your die | Prevent 1 damage. The next attack this turn deals +1 damage. |
+| 2 | Whetstone | Tactic / Equipment / Martial | 1 Natural Martial, your die | On attack: generate 1 Martial. |
+| 2 | Untamed | Tactic / Instant / Wild | 1 Natural Wild, your die | Forge 1 Synthetic Wild face on your die. |
+| 2 | Pounce | Tactic / Instant / Wild | 1 Natural Wild, your die | *Requires: Wild.* Choose an allied creature. Its next attack deals +2 damage. |
+| 2 | Pack Surge | Tactic / Instant / Wild | 1 Natural Wild, your die | Generate 1 Wild. The next attack this turn deals +1 damage. |
+| 2 | Rending Mark | Tactic / Instant / Wild | 1 Natural Wild, your die | A chosen enemy creature loses 2 Shield. |
+| 2 | Snarl | Tactic / Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: the next attack this turn deals +1 damage. |
+| 2 | Dose | Tactic / Instant / Toxin | 1 Synthetic Toxin, your die | *Requires: Toxin.* Apply 2 Toxin markers to a chosen enemy. |
+| 2 | Blight Strike | Tactic / Instant / Toxin | 1 Synthetic Toxin, your die | The next attack this turn deals +1 damage. All attacks this turn apply 1 Toxin marker. |
+| 3 | Call to Arms | Ritual / Instant / Martial | 1 Natural Martial, your die | *Active when: Martial + Martial.* The next attack this turn deals +2 damage. |
+| 3 | Battle Hymn | Ritual / Continuous / Martial | 1 Natural Martial, your die | *Active when: Martial + Martial.* On attack: the next attack this turn deals +1 damage. |
+| 3 | Pack Law | Ritual / Continuous / Wild | 1 Natural Wild, your die | *Active when: Wild + Wild.* On absorb Wild: the next attack this turn deals +1 damage. |
+| 3 | Virulent Rite | Ritual / Instant / Toxin | 1 Synthetic Toxin, your die | *Active when: Toxin + Toxin.* Forge 2 Synthetic Toxin faces on your die. |
+
 ## What this slice implements
 
 The grammar in full, and the subset of the effect vocabulary the engine can

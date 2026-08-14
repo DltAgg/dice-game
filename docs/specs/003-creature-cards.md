@@ -34,9 +34,9 @@ authority for the six playable creature designs.
 
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
-| War Minotaur | Martial | 13 | Heavy Axe (Martial) 3 dmg | Poisoned Charge (Martial+Toxin) 4 dmg + toxin / swap |
-| Varcolac | Wild | 9 | Charge (Wild) 2 dmg | Coordinated Hunt (Wild+Martial) 4 dmg / push |
-| Garuda | Wild | 7 | Dive (Wild, Range) 2 dmg / swap | Bombardment (Wild+Toxin) 3 dmg + frontline toxin |
+| War Minotaur | Martial | 13 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
+| Varcolac | Wild | 9 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg / push |
+| Garuda | Wild | 7 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
 | Archmage of the Runes | Arcane | 8 | Arcane Burst (Arcane) 2 dmg + draw | Mystic Overload (Arcane+Luminar) 3 dmg + shields |
 | Corrupting Elder | Arcane | 10 | Touch of Decay (Arcane) 2 dmg / strip shield | Contamination (Arcane+Corruption) 4 dmg / forge |
 | Void Summoner | Arcane | 9 | Rupture (Arcane) 2 dmg / convert | Dimensional Rift (Arcane+Darkness) 3 dmg / retain |

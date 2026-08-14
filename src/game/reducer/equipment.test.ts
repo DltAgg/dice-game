@@ -149,7 +149,7 @@ describe("equipment", () => {
     const combat = withTokens(
       withEnergy(withPhase(equipped, "actions"), P1, 10),
       attackerId,
-      { martial: 1 },
+      { martial: 2 },
     );
 
     const after = expectOk(
@@ -220,7 +220,7 @@ describe("equipment", () => {
         10,
       ),
       creatureIdAt(equipped, P2, 0),
-      { martial: 1 },
+      { martial: 2 },
     );
 
     const after = expectOk(

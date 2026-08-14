@@ -36,7 +36,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-minotaur-heavy-axe"),
         name: "Heavy Axe",
         kind: "basic",
-        requires: { martial: 1 },
+        requires: { martial: 2 },
         range: false,
         rulesText: "Deal 3 damage.",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
@@ -46,6 +46,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Poisoned Charge",
         kind: "special",
         requires: { martial: 1, toxin: 1 },
+        discards: { martial: 1 },
         range: false,
         rulesText:
           "Deal 4 damage and 1 [Toxin] marker. If War Minotaur is in the back row, swap it with a frontline creature.",
@@ -78,6 +79,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Charge",
         kind: "basic",
         requires: { wild: 1 },
+        discards: { wild: 1 },
         range: false,
         rulesText: "Deal 2 damage.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
@@ -87,6 +89,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Coordinated Hunt",
         kind: "special",
         requires: { wild: 1, martial: 1 },
+        discards: { wild: 1 },
         range: false,
         rulesText:
           "Deal 4 damage. If another ally attacked this turn, [push] the target to the back row.",
@@ -106,6 +109,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Dive",
         kind: "basic",
         requires: { wild: 1 },
+        discards: { wild: 1 },
         range: true,
         rulesText:
           "Deal 2 damage. On deal damage: you may swap Garuda with a frontline creature.",
@@ -116,6 +120,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Bombardment",
         kind: "special",
         requires: { wild: 1, toxin: 1 },
+        discards: { wild: 1 },
         range: true,
         rulesText:
           "Deal 3 damage. Every enemy on the frontline receives 1 [Toxin] marker.",
