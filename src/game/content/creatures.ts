@@ -82,6 +82,11 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
           },
         ],
       },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [{ type: "next-attack-bonus", amount: 1 }],
+      },
     ],
     attacks: [
       {
@@ -101,8 +106,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1, martial: 1 },
         discards: { wild: 1 },
         range: false,
-        rulesText:
-          "Deal 4 damage. If another ally attacked this turn, [push] the target to the back row.",
+        rulesText: "Deal 4 damage. The next attack this turn deals +1 damage.",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],

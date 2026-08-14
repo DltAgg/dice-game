@@ -1,8 +1,8 @@
 # 003 — Creature cards
 
 Status: **IMPLEMENTED DEPTH** — Figma catalogue + English UI; passives and
-attack riders wired in `011` except Coordinated Hunt **push**. Fast-game
-HP/cost variants are not encoded.
+attack riders wired in `011`–`012` (Hunt push rewritten to next-attack bonus).
+Fast-game HP/cost variants are not encoded.
 
 Derived from the `Creature card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, page `0:1`). The Slow game test section is the
@@ -41,7 +41,7 @@ to 1 damage plus wired resource riders; those attacks now discard fuel on use.
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
 | War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
-| Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg / push |
+| Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg + next attack +1 |
 | Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
 | Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 1 dmg + draw | Mystic Overload (Arcane+Luminar; discard Arcane 1) 1 dmg + Energy + generate Arcane |
 | Corrupting Elder | Arcane | 14 | Touch of Decay (Arcane; discard Arcane 1) 1 dmg + strip shield | Contamination (Arcane+Corruption; discard Corruption 1) 1 dmg + generate Corruption |
@@ -54,7 +54,7 @@ encoded yet.
 
 | In | Out (deferred) |
 |---|---|
-| Six Figma creatures as content + English `CreatureCard` UI | Fast-game HP/cost variants; Coordinated Hunt **push** |
+| Six Figma creatures as content + English `CreatureCard` UI | Fast-game HP/cost variants |
 | Basic/Special costs, damage, `followUpEffects` / `on-attack` riders | Stun |
 | Passives: Minotaur pierce, Archmage Arcane discount, Varcolac / Elder / Void / Garuda Range | — |
 

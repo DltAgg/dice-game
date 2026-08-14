@@ -3,9 +3,9 @@ name: implement-hooks
 description: >-
   Design and implement standing trigger hooks as shared rules events with rich
   context ids and catalogue-side filters. Use when adding on-attack, on-take-damage,
-  on-discard, on-change-position, extending on-roll-symbol / on-absorb, wiring
-  equipment / creature / continuous-ritual standing abilities, or when the user
-  mentions trigger hooks, StandingTrigger, or spec 010.
+  on-discard, extending on-roll-symbol / on-absorb, wiring equipment / creature /
+  continuous-ritual standing abilities, or when the user mentions trigger hooks,
+  StandingTrigger, or spec 010.
 ---
 
 # Implement standing trigger hooks
@@ -46,7 +46,7 @@ Companion skills: [develop-engine](../develop-engine/SKILL.md),
 | `on-deal-damage` | bearer = source; damaged creature as declared target |
 | `on-take-damage` | `damagedCreatureId`, incoming amount (pre or post prevent — document which) |
 | `on-discard` | `discardingPlayerId` |
-| `on-change-position` | `creatureId`, `from`, `to` |
+| `on-change-position` | `creatureId` that moved (`from` / `to` available to `fire*` but unused by filters today) |
 
 ## Relation filters (canonical)
 
@@ -86,7 +86,7 @@ Hook Progress:
 | HP dealt | `dealDamage` / attack damage path |
 | Incoming damage modify | inside `dealDamage` **before** prevent/shield when `reduceBy` |
 | Discard | `discardSpecificCards` (and any other discard entry) |
-| Position change | the future mover helper (one function all movers call) |
+| Position change | `setCreaturePosition` in `zones.ts` only |
 
 ### once-per-turn
 

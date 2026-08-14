@@ -526,7 +526,7 @@ export function fireOnDiscard(draft: Draft, discardingPlayerId: PlayerId): void 
   }
 }
 
-/** After a creature changes battlefield position. */
+/** After a creature changes battlefield position (ally swap / reposition). */
 export function fireOnChangePosition(
   draft: Draft,
   creatureId: CreatureId,

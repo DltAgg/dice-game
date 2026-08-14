@@ -23,9 +23,11 @@ honest partial wiring:
 
 | Clause | If vocabulary exists | If not |
 |---|---|---|
+| On roll: ally may reposition | `onRoll: [{ type: "reposition-creature", target: { kind: "choose-ally" } }]` | Keep text; `onRoll: []` |
+| On absorb: Basic if not attacked | Needs extra-attack effect | Keep text; `onAbsorb: []` |
 | On absorb: next Basic +1 | `onAbsorb: [{ type: "next-attack-bonus", amount: 1 }]` | Keep text; `onAbsorb: []` |
 | On roll: gain 1 Energy if attacked | Needs conditional roll effect | Keep text; `onRoll: []` |
-| On roll: reposition | Needs reposition effect | Keep text; defer |
+| On roll: gain 1 Energy | `onRoll: [{ type: "gain-energy", amount: 1 }]` | Keep text; defer |
 
 ## Before → after (face text)
 

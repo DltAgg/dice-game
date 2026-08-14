@@ -881,10 +881,18 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On basic attack: push the target one position.",
+    rulesText: "On basic attack: remove 1 Shield from the target.",
     equipment: {
       mayTargetOpponent: false,
-      abilities: [],
+      abilities: [
+        {
+          type: "on-attack",
+          attackKinds: ["basic"],
+          effects: [
+            { type: "remove-shield", amount: 1, target: { kind: "declared-target" } },
+          ],
+        },
+      ],
     },
   }),
   card({

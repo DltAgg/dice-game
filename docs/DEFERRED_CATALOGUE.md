@@ -13,7 +13,7 @@ are now data-driven. This file lists only what is still honestly unfinished.
 
 | Item | Needed for | Why |
 |---|---|---|
-| **Push** | Twin Blades (basic → push); Varcolac Coordinated Hunt push rider; Impact On-roll push | **DECIDED no.** Do not approximate as reposition/swap. Accurate `rulesText` stays. |
+| **Push / enemy move** | — | **DECIDED no / banned.** Ally swap & reposition stay. Former Twin Blades / Varcolac Hunt / Impact roll / Command absorb push print was **rewritten** to non-move effects. Do not reintroduce. |
 | **Stun application** | — | `OPEN_DESIGN.md` stays `DEFERRED`. `DieState.stunMarkers` exists; nothing applies stun. |
 | **Great Spark / Rekindle** | Named faces | Empty print — no clauses to wire. |
 | **Energy-spent scaling** (`energyPaid` → draw) | Future `?` cards | TEMP fixed costs; no printed clause needs it yet. |
@@ -28,22 +28,16 @@ suppress / lock / Instinct absorb (`013`).
 
 ## Tactic / creature leftovers
 
-| Card / creature | Gap |
-|---|---|
-| Twin Blades | Equip + `on-attack` ready; **push** not modelled |
-| Varcolac Coordinated Hunt | Damage resolves; **push** rider not modelled |
-| Impact On roll | Absorb +2 is wired; **push** on next basic is not |
-
-Alpha's Hide special→generate Wild is wired (`012` ASSUMED: controller pool).
+No push leftovers. Alpha's Hide special→generate Wild is wired (`012` ASSUMED:
+controller pool).
 
 ---
 
 ## Revisit checklist
 
-1. Push (if design reopens it — not reposition/swap).
-2. Stun application / removal (only if `OPEN_DESIGN` stun is reopened).
-3. Great Spark / Rekindle printings.
-4. Energy-spent scaling when a `?` card needs `energyPaid`.
-5. Re-measure first-player win rate after catalogue depth.
+1. Stun application / removal (only if `OPEN_DESIGN` stun is reopened).
+2. Great Spark / Rekindle printings.
+3. Energy-spent scaling when a `?` card needs `energyPaid`.
+4. Re-measure first-player win rate after catalogue depth.
 
 Do not treat approximate effects as final without an `OPEN_DESIGN.md` row.

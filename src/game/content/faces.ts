@@ -469,19 +469,24 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "Command",
     "martial",
     "On roll: reposition an allied creature 1 space.\n" +
-      "On absorb: move an enemy creature 1 space.",
+      "On absorb: remove 1 Shield from an enemy creature.",
     {
       onRoll: [{ type: "reposition-creature", target: { kind: "choose-ally" } }],
-      onAbsorb: [{ type: "reposition-creature", target: { kind: "choose-enemy" } }],
+      onAbsorb: [
+        { type: "remove-shield", amount: 1, target: { kind: "most-shielded-enemy" } },
+      ],
     },
   ),
   namedSynthetic(
     IMPACT,
     "Impact",
     "martial",
-    "On roll: the next Basic Attack this turn pushes the target 1 space.\n" +
+    "On roll: the next attack this turn deals +1 damage.\n" +
       "On absorb: this creature's next attack deals +2 damage.",
-    { onAbsorb: [{ type: "next-attack-bonus", amount: 2 }] },
+    {
+      onRoll: [{ type: "next-attack-bonus", amount: 1 }],
+      onAbsorb: [{ type: "next-attack-bonus", amount: 2 }],
+    },
   ),
   namedSynthetic(
     FORMATION,

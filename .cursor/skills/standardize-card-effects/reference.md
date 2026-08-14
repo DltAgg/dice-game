@@ -26,7 +26,6 @@ See `src/game/model/effects.ts`. Current members include: `damage`, `heal`,
 From `docs/DEFERRED_CATALOGUE.md` — if print needs these, standardize text and
 park until vocabulary exists:
 
-- Reposition / push / swap
 - Peek / dig / bottom deck
 - Symbol conversion / treat-as
 - Conditional “if attacked / if frontline / if adjacent”
@@ -34,6 +33,19 @@ park until vocabulary exists:
 - Face copy / echo
 - Prevent + reflect (Judgement-style is partially in `009` — check before deferring)
 - Forge-from-effect
+
+Do **not** design or restore **enemy push** (forced move of opposing creatures).
+Ally **swap** / **reposition** are legal — prefer:
+
+| Print cue | Wire |
+|---|---|
+| Swap with a frontline ally | `swap-positions` + `choose-allied-frontline` |
+| This creature may move 1 position | `reposition-creature` + `source-creature` |
+| An allied creature may reposition | `reposition-creature` + `choose-ally` |
+| On change position: … | `on-change-position` StandingTrigger |
+
+Optional “may” without a decline action → OPEN_DESIGN ASSUMED (choose when
+legal; whiff when none).
 
 ## Ritual timing reminder
 

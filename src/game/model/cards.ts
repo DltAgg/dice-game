@@ -196,8 +196,8 @@ export type StandingTrigger =
       readonly effects: readonly EffectDefinition[];
     }
   /**
-   * When a creature changes battlefield position. Default `creatureRelation:
-   * "self"` (the host moved).
+   * When a creature changes battlefield position (ally swap / reposition).
+   * Default `creatureRelation: "self"` (the host moved). Enemy push is banned.
    */
   | {
       readonly type: "on-change-position";

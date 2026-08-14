@@ -23,15 +23,15 @@ are that union; creatures/rituals reuse it).
 | `on-attack` | Attack declared | Filter `attackerRelation` / `attackKinds` |
 | `on-take-damage` | Incoming damage | `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
 | `on-discard` | Cards discarded | Filter `discardingPlayer` |
-| `on-change-position` | Position changes | Call only from the shared mover |
+| `on-change-position` | Creature position changed | Filter `creatureRelation`; only via `setCreaturePosition` |
 
 ## Proving cards (target wiring)
 
 | Card | Hook + filter | Effect gap? |
 |---|---|---|
-| Twin Blades | `on-attack` self + basic | Needs push |
+| Twin Blades | `on-attack` self + basic | remove-shield on declared target |
 | Alpha's Hide | `on-attack` self + special | “On another card” still soft |
-| Insignia of Command | `on-attack` self + oncePerTurn | Needs reposition |
+| Insignia of Command | `on-attack` self + oncePerTurn | `reposition-creature` → choose-ally |
 | Varcolac | `on-attack` ally-other | Creature-scoped next-attack bonus |
 | Serrated Stinger | `on-attack` ally + special | apply-toxin on attack target |
 | Black Plague | `on-roll-symbol` controller | Already wired |
@@ -40,9 +40,12 @@ are that union; creatures/rituals reuse it).
 | Void Summoner | `on-attack` self + basic/special | generate Arcane / Energy+draw |
 | Hunting Armour | `on-take-damage` reduceBy 1 oncePerTurn | Modifier path |
 | Abyssal Sacrifice | `on-discard` controller | generate Darkness |
-| Hunter's Collar | `on-change-position` self | Needs movers to call hook |
-| Predator's Claws / Mirrored Rune | `on-absorb` self | Need move / copy effects |
+| Hunter's Collar | `on-change-position` self | generate Martial |
+| Predator's Claws | `on-absorb` Wild | `reposition-creature` → source-creature |
+| Mirrored Rune | `on-absorb` self | Need copy effect |
 | Void Summoner | `on-absorb` any + Natural | Natural face filter |
+| Garuda Dive | attack `followUpEffects` | `swap-positions` + `choose-allied-frontline` |
+| War Minotaur Poisoned Charge | attack `followUpEffects` + conditional | back-row ally swap |
 
 ## Files
 

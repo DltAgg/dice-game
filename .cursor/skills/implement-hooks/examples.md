@@ -39,12 +39,14 @@
 ## Equipment on-attack (self + kind)
 
 ```ts
-// Twin Blades — wire when push exists
+// Twin Blades — strip Shield on basic
 {
   type: "on-attack",
   attackerRelation: "self",
   attackKinds: ["basic"],
-  effects: [{ type: "push", amount: 1, target: { kind: "declared-target" } }],
+  effects: [
+    { type: "remove-shield", amount: 1, target: { kind: "declared-target" } },
+  ],
 }
 
 // Alpha's Hide — only if print maps fully to pool generate

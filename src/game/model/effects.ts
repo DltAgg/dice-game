@@ -16,7 +16,8 @@ import type { SymbolType } from "./symbols.js";
  *
  * There is no store-symbol effect: nothing survives the turn but a retained
  * die, so banking a symbol is not a thing an effect can do.
- * There is no push effect (intentionally not modelled — see DEFERRED_CATALOGUE).
+ * There is no push / enemy-move effect — ally swap/reposition only
+ * (`OPEN_DESIGN.md`). Former push print was rewritten in the catalogue.
  */
 export type EffectDefinition =
   | { readonly type: "damage"; readonly amount: number; readonly target: TargetSelector }
@@ -143,9 +144,9 @@ export type EffectDefinition =
       readonly target: "own-die" | "opponent-die";
     }
   /**
-   * Toggle the target between frontline and back. If moving to frontline would
+   * Toggle an **ally** between frontline and back. If moving to frontline would
    * exceed `frontlineSlots`, the controller chooses a living frontline ally to
-   * swap with (via `setCreaturePosition`). Spec `012`.
+   * swap with (via `setCreaturePosition`). Enemy targets whiff. Spec `012`.
    */
   | {
       readonly type: "reposition-creature";
@@ -153,8 +154,9 @@ export type EffectDefinition =
       readonly optional?: boolean;
     }
   /**
-   * Swap the source creature with `with` through `setCreaturePosition` twice.
-   * Same-position swaps are no-ops. Spec `012`.
+   * Swap the source creature with an **ally** `with` through
+   * `setCreaturePosition` twice. Same-position swaps are no-ops. Opposing
+   * targets whiff (push banned). Spec `012`.
    */
   | {
       readonly type: "swap-positions";

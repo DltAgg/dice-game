@@ -293,7 +293,7 @@ printed header cost.
   (Black Plague).
 
 Roll-triggered gear (Black Plague) and on-damage / on-absorb / on-change-position
-hooks landed in `010-trigger-hooks`. Remaining print: Twin Blades **push**.
+hooks landed in `010-trigger-hooks`. Twin Blades push print rewritten (remove Shield).
 
 ### Forging draws a card
 
@@ -635,6 +635,26 @@ player attribute pick; fewer tokens than `amount` discards all remaining
 Token **cap** remains OPEN.
 
 **Decision (cap).** TBD.
+
+---
+
+### Optional ally swap / reposition without a decline action
+
+**Status:** `ASSUMED` · 2026-08-14 · `swap-positions` / `reposition-creature`
+
+Print often says “you may swap/reposition”. The engine has no cancel /
+decline action for creature choices today.
+
+**ASSUMED:** when at least one legal ally (or self) move exists, open
+`choose-creature` and the controller must name a legal target; when none
+exist, the effect whiffs. Do not invent `creatureId: null` decline unless
+design reopens optional choices.
+
+Garuda Dive swap is queued as attack `followUpEffects` (after the damage
+effect resolves on the chain). Print may still say “On deal damage”; if
+Shields reduce damage to 0 the follow-up still runs under this assumption.
+
+**Banned forever:** any effect that moves an **enemy** creature (push).
 
 ---
 

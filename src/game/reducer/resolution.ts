@@ -705,6 +705,9 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
     case "reposition-creature": {
       const targetId = resolveTarget(draft, pending, effect.target);
       if (targetId === null) return false;
+      // Ally-only: never reposition an opposing creature (push banned).
+      const target = draft.creatures[targetId];
+      if (target === undefined || target.ownerId !== pending.controllerId) return false;
       return applyReposition(draft, pending, targetId, effect.optional === true);
     }
     case "swap-positions": {

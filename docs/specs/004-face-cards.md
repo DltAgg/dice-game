@@ -1,8 +1,8 @@
 # 004 — Face cards and the face deck
 
 Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; On roll / On absorb
-wired where modellable (`011`–`013`). Remaining: push (Impact roll), empty print
-(Great Spark / Rekindle) — [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+wired where modellable (`011`–`013`). Remaining: empty print (Great Spark /
+Rekindle) — [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
 Derived from the `Face card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, node `2:13`).
@@ -74,8 +74,8 @@ Named specials:
 | Instinct | 2 | On roll: optional ally reposition; On absorb: optional absorption-phase basic | Spec `013` |
 | Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: optional reposition | |
-| Command | 2 | On roll: ally move; On absorb: enemy move | |
-| Impact | 2 | On absorb: next attack +2 | On roll **push** deferred |
+| Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
+| Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | |
 | Formation | 2 | On roll: Energy if controller has FL; On absorb: prevent on other FL | |
 | Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 | |
 | Spores | 2 | On roll: extra toxin if already toxined; On absorb: heal toxined ally | |
