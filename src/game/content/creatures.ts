@@ -1,6 +1,5 @@
 import type { CreatureDefinition } from "../model/creatures.js";
 import {
-  asAbilityId,
   asAttackId,
   asCreatureDefinitionId,
   type CreatureDefinitionId,
@@ -12,9 +11,6 @@ import {
  * the damage line (and a few simple single-effect riders) are modelled.
  * Multi-clause attacks stay partial until attack `effects[]` exists — do not
  * approximate missing riders.
- *
- * Engine abilities on the aggro trio are vertical-slice absorb ↔ resolve hooks
- * (bible §31 placeholders), not Figma print.
  */
 
 export const MINOTAUR: CreatureDefinitionId = asCreatureDefinitionId("creature-minotaur");
@@ -54,14 +50,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         rulesText:
           "Deal 4 damage and 1 [Toxin] marker. If War Minotaur is in the back row, swap it with a frontline creature.",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
-      },
-    ],
-    engineAbilities: [
-      {
-        id: asAbilityId("ability-minotaur-bulwark"),
-        name: "Bulwark",
-        consumes: { martial: 1 },
-        effect: { type: "grant-shield", amount: 1, target: { kind: "source-creature" } },
       },
     ],
   },
@@ -105,14 +93,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],
-    engineAbilities: [
-      {
-        id: asAbilityId("ability-varcolac-hunt-call"),
-        name: "Hunt Call",
-        consumes: { wild: 1 },
-        effect: { type: "generate-symbol", symbol: "martial", amount: 1 },
-      },
-    ],
   },
   {
     id: GARUDA,
@@ -140,14 +120,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         rulesText:
           "Deal 3 damage. Every enemy on the frontline receives 1 [Toxin] marker.",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
-      },
-    ],
-    engineAbilities: [
-      {
-        id: asAbilityId("ability-garuda-mend"),
-        name: "Mend",
-        consumes: { wild: 1 },
-        effect: { type: "heal", amount: 2, target: { kind: "source-creature" } },
       },
     ],
   },
@@ -178,7 +150,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
       },
     ],
-    engineAbilities: [],
   },
   {
     id: CORRUPTING_ELDER,
@@ -215,7 +186,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],
-    engineAbilities: [],
   },
   {
     id: VOID_SUMMONER,
@@ -251,7 +221,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
       },
     ],
-    engineAbilities: [],
   },
 ];
 

@@ -24,7 +24,7 @@ who may act; the inactive side is read-only until the turn passes.
 | Zustand store owning `GameState` + last reject error | PeerJS / host authority |
 | New match (seeded) with prototype squads / decks / face decks | Deck builder |
 | Board: creatures, dice faces, symbols, energy, phase, hand | Fancy card art on the board (catalogue remains separate) |
-| Actions: roll, absorb, engine ability, attack, play **and forge** in the shared actions phase, retain, activate ritual, resolve search, advance phase, end turn | Reaction chain UI |
+| Actions: roll, absorb, then one **actions** phase for attack / play / forge / activate ritual (any order; rituals also during absorb), retain, resolve search, advance phase, end turn | Reaction chain UI |
 | Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
 | Sticky error snackbar | |
 | Catalogue still reachable from the app shell | Persistence / resume |

@@ -26,7 +26,7 @@ const COORDINATED_HUNT = asAttackId("attack-varcolac-coordinated-hunt");
  * scenario begins by fuelling a creature rather than by filling the pool.
  */
 function combatState(creatureIndex: number, tokens: AttributeTokens) {
-  const state = withPhase(newMatch(), "combat");
+  const state = withPhase(newMatch(), "actions");
   return withTokens(state, creatureIdAt(state, P1, creatureIndex), tokens);
 }
 
@@ -64,7 +64,7 @@ describe("attacking", () => {
   });
 
   it("cannot be funded from the shared symbol pool", () => {
-    const state = withPhase(newMatch(), "combat");
+    const state = withPhase(newMatch(), "actions");
 
     const result = advance(state, {
       type: "ATTACK",
@@ -149,8 +149,8 @@ describe("attacking", () => {
     expect(nextTurn.creatures[attackerId]?.attacksUsedThisCombat).toBe(0);
   });
 
-  it("refuses to attack outside the combat phase", () => {
-    const base = withPhase(newMatch(), "engine");
+  it("refuses to attack outside the actions phase", () => {
+    const base = withPhase(newMatch(), "absorption");
     const state = withTokens(base, creatureIdAt(base, P1, 0), { martial: 1 });
 
     const result = advance(state, {
@@ -239,7 +239,7 @@ describe("shields", () => {
   });
 
   it("survives the end of turn", () => {
-    const base = withPhase(newMatch(), "combat");
+    const base = withPhase(newMatch(), "actions");
     const creatureId = creatureIdAt(base, P1, 0);
 
     const nextTurn = expectOk(

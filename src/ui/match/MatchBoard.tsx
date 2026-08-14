@@ -29,10 +29,8 @@ import {
   searchableInGraveyard,
   usableSymbols,
   holdsTokens,
-  canPay,
   overloadsOnFace,
   SHIELD,
-  type AbilityId,
   type AttackDefinition,
   type AttackId,
   type CardInstance,
@@ -54,8 +52,6 @@ import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@/decks";
 const PHASE_LABELS: Record<TurnPhase, string> = {
   roll: "Roll",
   absorption: "Absorb",
-  engine: "Engine",
-  combat: "Combat",
   actions: "Actions",
 };
 
@@ -224,7 +220,7 @@ export function MatchBoard() {
       return;
     }
 
-    if (intent.kind === "attack" && phase === "combat") {
+    if (intent.kind === "attack" && phase === "actions") {
       if (intent.attackId === undefined) {
         if (creature.ownerId !== activeId) return;
         if (!creatureHasArmedAttack(state, creature)) return;
@@ -255,7 +251,7 @@ export function MatchBoard() {
       return;
     }
 
-    if (phase === "combat" && creature.ownerId === activeId) {
+    if (phase === "actions" && creature.ownerId === activeId) {
       if (!creatureHasArmedAttack(state, creature)) return;
       setIntent({ kind: "attack", attackerId: creature.id });
     }
@@ -723,14 +719,6 @@ export function MatchBoard() {
             symbolId: intent.symbolId,
           });
         }}
-        onEngineAbility={(creatureId, abilityId) =>
-          tryDispatch({
-            type: "RESOLVE_ENGINE_ABILITY",
-            playerId: activeId,
-            creatureId,
-            abilityId,
-          })
-        }
       />
 
       <EnergyBar
@@ -764,14 +752,6 @@ export function MatchBoard() {
             symbolId: intent.symbolId,
           });
         }}
-        onEngineAbility={(creatureId, abilityId) =>
-          tryDispatch({
-            type: "RESOLVE_ENGINE_ABILITY",
-            playerId: activeId,
-            creatureId,
-            abilityId,
-          })
-        }
       />
 
       <FaceCardsInPlay
@@ -927,15 +907,11 @@ function hintFor(intent: Intent, state: GameState): string {
 
   switch (state.phase) {
     case "roll":
-      return "Dice roll automatically. Overloads on showing faces fire immediately (not in engine), once per die that shows them.";
+      return "Dice roll automatically. Overloads on showing faces fire immediately, once per die that shows them. Rituals cannot activate during roll.";
     case "absorption":
-      return "Overloads already resolved on the roll. Select a rolled symbol to absorb onto a creature or ritual, or leave it for the engine pool. Use the phase bar to skip ahead or end turn.";
-    case "engine":
-      return "Spend available pool symbols on engine abilities (not absorbed tokens). Disabled abilities lack the matching pool symbol. Skip phases or end turn from the bar.";
-    case "combat":
-      return "Click your creature → attack → enemy. Skip phases or end turn from the bar.";
+      return "Select a rolled symbol to absorb onto a creature or ritual, or leave it for the available pool. Ready rituals may activate. Use the phase bar to skip ahead or end turn.";
     case "actions":
-      return "Play or Forge from hand in this phase. Hover a card for its text. End turn from the phase bar when finished.";
+      return "Attack, play tactics, forge, and activate ready rituals in any order. Hover a card for its text. End turn from the phase bar when finished.";
     default:
       return "";
   }
@@ -1029,7 +1005,6 @@ function Battlefield({
   onCancelAttack,
   onRitualActivate,
   onRitualAbsorb,
-  onEngineAbility,
 }: {
   state: GameState;
   playerId: PlayerId;
@@ -1042,7 +1017,6 @@ function Battlefield({
   onCancelAttack: () => void;
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
   onRitualAbsorb: (cardInstanceId: CardInstanceId) => void;
-  onEngineAbility: (creatureId: CreatureId, abilityId: AbilityId) => void;
 }) {
   const living = livingCreaturesOf(state, playerId);
   const front = living.filter((c) => c.position === "frontline");
@@ -1062,7 +1036,6 @@ function Battlefield({
           onCreatureClick={onCreatureClick}
           onAttackChoose={onAttackChoose}
           onCancelAttack={onCancelAttack}
-          onEngineAbility={onEngineAbility}
         />
       ))}
     </div>
@@ -1080,7 +1053,6 @@ function Battlefield({
           onCreatureClick={onCreatureClick}
           onAttackChoose={onAttackChoose}
           onCancelAttack={onCancelAttack}
-          onEngineAbility={onEngineAbility}
         />
       ))}
     </div>
@@ -1122,7 +1094,7 @@ function Battlefield({
                 key={card.id}
                 card={card}
                 absorbArmed={absorbArmed && isActive}
-                canActivate={isActive && card.ritualOrientation === "ready" && !absorbArmed}
+                canActivate={isActive && state.phase !== "roll" && card.ritualOrientation === "ready" && !absorbArmed}
                 onActivate={() => onRitualActivate(card.id)}
                 onAbsorb={() => onRitualAbsorb(card.id)}
               />
@@ -1292,7 +1264,6 @@ function CreatureTile({
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
-  onEngineAbility,
 }: {
   state: GameState;
   creature: CreatureState;
@@ -1301,7 +1272,6 @@ function CreatureTile({
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
-  onEngineAbility: (creatureId: CreatureId, abilityId: AbilityId) => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [flipAside, setFlipAside] = useState(false);
@@ -1319,7 +1289,6 @@ function CreatureTile({
   if (def === undefined) return null;
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
-  const isActive = state.activePlayerId === creature.ownerId;
   const equipment = creature.equipmentIds.flatMap((id) => {
     const instance = state.cards[id];
     if (instance === undefined) return [];
@@ -1384,12 +1353,6 @@ function CreatureTile({
                   : ""}
                 ]
               </span>
-            </p>
-          ))}
-          {def.engineAbilities.map((ability) => (
-            <p key={ability.id}>
-              <span className="text-stone-500">Engine:</span> {ability.name} [
-              {formatAttackCost(ability.consumes) || "—"}]
             </p>
           ))}
         </div>
@@ -1500,28 +1463,6 @@ function CreatureTile({
           <button type="button" className={btnClass} onClick={onCancelAttack}>
             Cancel
           </button>
-        </div>
-      )}
-
-      {isActive && state.phase === "engine" && def.engineAbilities.length > 0 && (
-        <div className="mt-2 flex flex-col gap-1">
-          {def.engineAbilities.map((ability) => {
-            const affordable = canPay(state, creature.ownerId, ability.consumes);
-            const cost = formatAttackCost(ability.consumes) || "—";
-            return (
-              <button
-                key={ability.id}
-                type="button"
-                disabled={!affordable}
-                className={affordable ? btnPrimary : `${btnClass} opacity-40`}
-                onClick={() => onEngineAbility(creature.id, ability.id)}
-              >
-                {ability.name}{" "}
-                <span className="font-normal text-stone-400">[{cost}]</span>
-                {!affordable ? " · need pool" : ""}
-              </button>
-            );
-          })}
         </div>
       )}
     </div>
@@ -1907,7 +1848,7 @@ function SymbolPool({
   const symbols =
     phase === "absorption" ? rolledSymbols(state, playerId) : usableSymbols(state, playerId);
   const canPick = phase === "absorption";
-  const label = phase === "absorption" ? "Rolled (absorb)" : "Available pool (engine / cards)";
+  const label = phase === "absorption" ? "Rolled (absorb)" : "Available pool (card requires)";
 
   if (symbols.length === 0) {
     return (
@@ -2213,7 +2154,7 @@ function ChooseCreatureModal({
           Choose {filter === "ally" ? "your creature" : "an enemy"}
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          An on-roll overload needs a target (this fired when the face was rolled, not in engine). Pick a creature below or on the board.
+          An on-roll overload needs a target (this fired when the face was rolled). Pick a creature below or on the board.
         </p>
         <ul className="mt-4 space-y-2">
           {creatures.map((creature) => {

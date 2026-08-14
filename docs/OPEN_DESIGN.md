@@ -81,7 +81,7 @@ This makes the central tension of bible §33 real for the first time:
 
 ```text
 absorb  → attribute sits on the creature → enables that creature's attacks
-resolve → symbol stays in the pool       → feeds engine abilities and cards
+resolve → symbol stays in the pool       → feeds card `[Requires: …]` spends
 ```
 
 Creatures therefore have two distinct cost surfaces, and both already exist in
@@ -185,7 +185,7 @@ Wild, Arcane and Luminar, not renames.
   `SymbolRequirement` rather than by convention.
 
 A consequence worth naming: an unabsorbed Shield is simply wasted, because no
-engine ability or card can spend one. That is deliberate — it means Shield never
+card can spend one. That is deliberate — it means Shield never
 competes with the engine for the same symbol, and the absorb-or-resolve decision
 stays about attributes.
 
@@ -203,8 +203,8 @@ Effects that say "draw N and discard N" draw first, then open a
 Auto-discarding the front of the hand is gone — it silently ate the card just
 drawn when the hand was otherwise empty (Eclipse).
 
-Bulwark on War Minotaur (vertical-slice engine ability) also grants shields, so
-the engine has a route to defence that does not go through absorption.
+War Minotaur's printed combat kit and absorb choices cover pressure without a
+separate pool-spend ability.
 
 ### Only "retain" exists; "store" is dropped
 
@@ -311,7 +311,7 @@ Dice, face cards, and overloads are decoupled:
 Capacity (`maxOverloads`) is per face card. When the last installed copy of that
 face returns to the pool, its overloads detach to the graveyard.
 
-**Trigger timing (not the engine phase):** Overload `onRoll` effects fire in
+**Trigger timing (not a dedicated engine phase):** Overload `onRoll` effects fire in
 `ROLL_DICE` as soon as a die shows that face card — once per such die during
 that roll action. Which physical die or slot does not matter; only the shared
 `faceCardId` does. They do **not** wait for engine resolution, and they do

@@ -147,7 +147,7 @@ describe("equipment", () => {
     );
 
     const combat = withTokens(
-      withEnergy(withPhase(equipped, "combat"), P1, 10),
+      withEnergy(withPhase(equipped, "actions"), P1, 10),
       attackerId,
       { martial: 1 },
     );
@@ -215,7 +215,7 @@ describe("equipment", () => {
 
     const combat = withTokens(
       withEnergy(
-        withPhase(withActivePlayer(withDamage(equipped, hostId, 10), P2), "combat"),
+        withPhase(withActivePlayer(withDamage(equipped, hostId, 10), P2), "actions"),
         P2,
         10,
       ),

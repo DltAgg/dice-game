@@ -6,7 +6,6 @@ import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
 import type { GameError } from "../model/errors.js";
 import {
   asSymbolInstanceId,
-  type AbilityId,
   type AttackId,
   type CardInstanceId,
   type CreatureId,
@@ -159,8 +158,6 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return absorbSymbol(draft, action.playerId, action.creatureId, action.symbolId);
     case "ABSORB_SYMBOL_TO_RITUAL":
       return absorbSymbolToRitual(draft, action.playerId, action.cardInstanceId, action.symbolId);
-    case "RESOLVE_ENGINE_ABILITY":
-      return resolveEngineAbility(draft, action.playerId, action.creatureId, action.abilityId);
     case "ATTACK":
       return attack(draft, action.playerId, action.attackerId, action.attackId, action.targetId);
     case "FORGE_CARD":
@@ -551,12 +548,7 @@ function absorbSymbolToRitual(
   if (credited.includes(attribute)) return "SYMBOL_UNAVAILABLE";
   if ((progress[attribute] ?? 0) >= needed) return "INVALID_TARGET";
 
-  draft.symbols[symbolId] = { ...symbol, status: "consumed", absorbedByCreatureId: null };
-  emit(draft, {
-    type: "symbols-consumed",
-    symbolIds: [symbolId],
-    reason: "ritual-progress",
-  });
+  consumeSymbols(draft, [symbolId], "ritual-progress");
 
   const nextProgress: AttributeTokens = {
     ...progress,
@@ -572,34 +564,6 @@ function absorbSymbolToRitual(
   return null;
 }
 
-/* ------------------------------------------------------------ engine --- */
-
-function resolveEngineAbility(
-  draft: Draft,
-  playerId: PlayerId,
-  creatureId: CreatureId,
-  abilityId: AbilityId,
-): GameError | null {
-  if (draft.phase !== "engine") return "INVALID_PHASE";
-
-  const creature = draft.creatures[creatureId];
-  if (creature === undefined) return "UNKNOWN_ENTITY";
-  if (creature.ownerId !== playerId) return "INVALID_TARGET";
-  if (creature.defeated) return "CREATURE_DEFEATED";
-
-  const definition = getCreatureDefinition(creature.definitionId);
-  const ability = definition?.engineAbilities.find((candidate) => candidate.id === abilityId);
-  if (ability === undefined) return "CARD_NOT_AVAILABLE";
-
-  const payment = planConsumption(draft, playerId, ability.consumes);
-  if (payment === null) return "INSUFFICIENT_SYMBOLS";
-
-  consumeSymbols(draft, payment, "engine-ability");
-  pushEffect(draft, playerId, ability.effect, creatureId, null);
-  drainResolution(draft);
-  return null;
-}
-
 /* ------------------------------------------------------------ combat --- */
 
 function attack(
@@ -609,7 +573,7 @@ function attack(
   attackId: AttackId,
   targetId: CreatureId,
 ): GameError | null {
-  if (draft.phase !== "combat") return "INVALID_PHASE";
+  if (draft.phase !== "actions") return "INVALID_PHASE";
 
   const attacker = draft.creatures[attackerId];
   if (attacker === undefined) return "UNKNOWN_ENTITY";
@@ -1035,7 +999,8 @@ function activateRitual(
   declaredTargetCreatureId: CreatureId | null,
 ): GameError | null {
   const inReactionWindow = draft.pendingDecision?.type === "reaction-priority";
-  if (!inReactionWindow && draft.phase !== "engine" && draft.phase !== "actions") {
+  // Ready rituals may activate in any phase except roll (and in reaction windows).
+  if (!inReactionWindow && draft.phase === "roll") {
     return "INVALID_PHASE";
   }
 
@@ -1440,10 +1405,9 @@ function enterPhase(draft: Draft, phase: TurnPhase): GameError | null {
   draft.phase = phase;
 
   // Closing the absorption window releases every symbol the creatures did not
-  // take to the engine. Absorbed symbols are deliberately left behind.
-  if (phase === "engine") {
-    // Rolled leftovers become the engine pool. Ritual Active-when is not
-    // auto-credited from this pool — players assign symbols during absorption.
+  // take into the available pool for card `[Requires: …]` and similar spends.
+  // Absorbed symbols are deliberately left behind.
+  if (phase === "actions") {
     for (const symbol of Object.values(draft.symbols)) {
       if (symbol.status === "rolled") {
         draft.symbols[symbol.id] = { ...symbol, status: "available" };
@@ -1568,7 +1532,7 @@ function resetCombatCounters(draft: Draft): void {
 function consumeSymbols(
   draft: Draft,
   symbolIds: readonly SymbolInstanceId[],
-  reason: "engine-ability" | "ritual-progress",
+  reason: "ritual-progress",
 ): void {
   for (const id of symbolIds) {
     const symbol = draft.symbols[id];

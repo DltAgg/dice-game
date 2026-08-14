@@ -27,7 +27,7 @@ import {
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 function combatWithAttacker(tokens: { martial: number }) {
-  const base = withPhase(newMatch(), "combat");
+  const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
   return {

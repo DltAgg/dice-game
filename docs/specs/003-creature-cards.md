@@ -53,7 +53,6 @@ encoded yet.
 
 The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder) has
 been removed; hotseat and scenario matches use the Figma Aggro or Control
-trios. Absorb ↔ resolve coverage lives on thin engine abilities on the Aggro
-squad until print defines them.
+trios.
 
 Run `npm run dev` to see the catalogue.

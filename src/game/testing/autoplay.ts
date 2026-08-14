@@ -3,7 +3,7 @@ import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
 import { resolveFaceForForge } from "../rules/faces.js";
 import type { CreatureState } from "../model/creatures.js";
-import { asAbilityId, type DieId, type PlayerId } from "../model/ids.js";
+import { type DieId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols.js";
 import { handOf, searchableInDeck, searchableInGraveyard } from "../rules/cards.js";
@@ -22,7 +22,6 @@ import { advance } from "../reducer/reduce.js";
  * a victory state and to exercise each part of the engine on the way.
  */
 
-const MEND = asAbilityId("ability-garuda-mend");
 
 export interface AutoplayPolicy {
   /**
@@ -46,7 +45,7 @@ const DEFAULT_POLICY: AutoplayPolicy = {
   forgeCards: true,
 };
 
-/** The engine-only policy: never absorb, so every symbol reaches resolution. */
+/** Never absorb, so every symbol reaches the available pool. */
 export const NEVER_ABSORB: AutoplayPolicy = {
   ...DEFAULT_POLICY,
   absorbForAttacks: false,
@@ -61,10 +60,9 @@ export const NEVER_USE_CARDS: AutoplayPolicy = {
 };
 
 /**
- * Absorption (bible §7 and §33). Every symbol taken here is one the engine will
- * not see, so the policy only absorbs what actually arms something: an
- * attribute a creature is still short of for one of its attacks, or a Shield,
- * which the engine could not have spent anyway.
+ * Absorption (bible §7 and §33). Every symbol taken here leaves the available
+ * pool, so the policy only absorbs what actually arms something: an attribute
+ * a creature is still short of for one of its attacks, or a Shield.
  */
 function absorb(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): GameState {
   let current = state;
@@ -114,43 +112,6 @@ function creatureNeeding(
 
 function mostDamaged(state: GameState, playerId: PlayerId): CreatureState | undefined {
   return [...livingCreaturesOf(state, playerId)].sort((a, b) => b.damage - a.damage)[0];
-}
-
-/**
- * Resolves every engine ability that can pay. Bible §17 makes ordering the
- * interesting decision, but the pool and the creatures' fuel are now separate
- * supplies, so spending a symbol here can never cost the player an attack.
- */
-function resolveEngine(state: GameState, playerId: PlayerId): GameState {
-  let current = state;
-  let progressed = true;
-
-  while (progressed && current.status === "in-progress") {
-    progressed = false;
-
-    for (const creature of livingCreaturesOf(current, playerId)) {
-      const definition = getCreatureDefinition(creature.definitionId);
-      if (definition === undefined) continue;
-
-      for (const ability of definition.engineAbilities) {
-        // Healing an undamaged creature would burn a symbol for nothing.
-        if (ability.id === MEND && creature.damage === 0) continue;
-
-        const result = advance(current, {
-          type: "RESOLVE_ENGINE_ABILITY",
-          playerId,
-          creatureId: creature.id,
-          abilityId: ability.id,
-        });
-        if (!result.ok) continue;
-
-        current = result.state;
-        progressed = true;
-      }
-    }
-  }
-
-  return current;
 }
 
 /** Attacks with every creature that is fuelled, hitting the first legal target. */
@@ -285,8 +246,8 @@ function shieldSlotsFor(
 /* ---------------------------------------------------------------- turn --- */
 
 /**
- * A card can end the turn by pushing Energy past zero, so every step after the
- * combat phase has to check that the turn is still the one it started.
+ * A card can end the turn by pushing Energy past zero, so every step in the
+ * actions window has to check that the turn is still the one it started.
  */
 const stillActive = (state: GameState, playerId: PlayerId): boolean =>
   state.status === "in-progress" && state.activePlayerId === playerId;
@@ -386,12 +347,8 @@ export function playTurn(state: GameState, policy: AutoplayPolicy = DEFAULT_POLI
   current = absorb(current, playerId, policy);
 
   current = step(current, { type: "ADVANCE_PHASE", playerId });
-  current = resolveEngine(current, playerId);
-  current = step(current, { type: "ADVANCE_PHASE", playerId });
   current = fight(current, playerId);
-
   if (!stillActive(current, playerId)) return current;
-  current = step(current, { type: "ADVANCE_PHASE", playerId });
   current = playCards(current, playerId, policy);
   if (!stillActive(current, playerId)) return current;
   current = forgeCards(current, playerId, policy);

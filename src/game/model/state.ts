@@ -58,17 +58,17 @@ export interface ChainLink {
  * END_TURN action rather than a phase, because a phase offering exactly one
  * legal move is noise rather than a decision point.
  *
- * The `actions` phase covers both playing cards and forging faces (one shared
- * window). "Generate Symbols" is not a phase: it resolves inside ROLL_DICE.
- * "End Turn" is an action rather than a phase.
+ * The `actions` phase is one shared window for attacking, playing cards,
+ * forging, and activating ready rituals (in any order). There is no separate
+ * combat phase. Leftover rolled symbols become `available` when absorption
+ * ends (entering actions). Ready rituals may also activate during absorption;
+ * they cannot during roll.
  */
-export type TurnPhase = "roll" | "absorption" | "engine" | "combat" | "actions";
+export type TurnPhase = "roll" | "absorption" | "actions";
 
 export const TURN_PHASE_ORDER: readonly TurnPhase[] = [
   "roll",
   "absorption",
-  "engine",
-  "combat",
   "actions",
 ];
 

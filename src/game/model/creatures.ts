@@ -2,7 +2,6 @@ import type { Attribute } from "./attributes.js";
 import type { StandingTrigger } from "./cards.js";
 import type { EffectDefinition } from "./effects.js";
 import type {
-  AbilityId,
   AttackId,
   CardInstanceId,
   CreatureDefinitionId,
@@ -20,8 +19,8 @@ export type BattlefieldPosition = "frontline" | "back";
  *
  * The cost is paid from attributes the *attacker itself* absorbed, never from
  * the shared symbol pool — the Pokémon TCG attachment model. That is what makes
- * absorbing a real choice rather than a loss: an absorbed symbol leaves engine
- * resolution (bible §7) but arms the creature that took it.
+ * absorbing a real choice rather than a loss: an absorbed symbol leaves the
+ * available pool (bible §7) but arms the creature that took it.
  */
 export interface AttackDefinition {
   readonly id: AttackId;
@@ -52,19 +51,6 @@ export interface AttackDefinition {
   readonly effect?: EffectDefinition;
 }
 
-/**
- * An engine ability: the creature consumes symbols during engine resolution to
- * produce an effect. This is the "creatures are converters" pillar (SPDD §52).
- * Figma creature cards do not print these; they remain on the vertical-slice
- * prototype squad only.
- */
-export interface CreatureAbilityDefinition {
-  readonly id: AbilityId;
-  readonly name: string;
-  readonly consumes: SymbolRequirement;
-  readonly effect: EffectDefinition;
-}
-
 export interface CreatureDefinition {
   readonly id: CreatureDefinitionId;
   readonly name: string;
@@ -78,7 +64,6 @@ export interface CreatureDefinition {
    */
   readonly standingAbilities?: readonly StandingTrigger[];
   readonly attacks: readonly AttackDefinition[];
-  readonly engineAbilities: readonly CreatureAbilityDefinition[];
 }
 
 export interface CreatureState {

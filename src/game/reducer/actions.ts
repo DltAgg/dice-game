@@ -1,5 +1,4 @@
 import type {
-  AbilityId,
   AttackId,
   CardInstanceId,
   CreatureId,
@@ -33,12 +32,6 @@ export type GameAction =
       readonly playerId: PlayerId;
       readonly cardInstanceId: CardInstanceId;
       readonly symbolId: SymbolInstanceId;
-    }
-  | {
-      readonly type: "RESOLVE_ENGINE_ABILITY";
-      readonly playerId: PlayerId;
-      readonly creatureId: CreatureId;
-      readonly abilityId: AbilityId;
     }
   | {
       readonly type: "ATTACK";

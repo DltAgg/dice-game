@@ -355,7 +355,7 @@ describe("rituals on the field", () => {
     const ritualId = ritualsOf(placed.state, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
 
-    const ready = withSymbols(withPhase(placed.state, "engine"), P1, ["arcane", "arcane"]);
+    const ready = withSymbols(withPhase(placed.state, "actions"), P1, ["arcane", "arcane"]);
     const oriented = {
       ...ready,
       cards: {
@@ -415,7 +415,7 @@ describe("rituals on the field", () => {
 
     // Force ready with an empty deck — amount 0 auto-completes; seed one card.
     const withDeck = withEnergy(
-      withHand(withPhase(placed.state, "engine"), P1, [ECLIPSE]),
+      withHand(withPhase(placed.state, "actions"), P1, [ECLIPSE]),
       P1,
       10,
     );
@@ -476,7 +476,7 @@ describe("rituals on the field", () => {
     const ritualId = ritualsOf(placed.state, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
 
-    const result = advance(withPhase(placed.state, "engine"), {
+    const result = advance(withPhase(placed.state, "actions"), {
       type: "ACTIVATE_RITUAL",
       playerId: P1,
       cardInstanceId: ritualId,
@@ -532,7 +532,7 @@ describe("rituals on the field", () => {
     const ritualId = ritualsOf(placed.state, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
 
-    const ready = withSymbols(withPhase(placed.state, "engine"), P1, [
+    const ready = withSymbols(withPhase(placed.state, "actions"), P1, [
       "darkness",
       "darkness",
     ]);
@@ -593,7 +593,7 @@ describe("what playing refuses", () => {
   });
 
   it("refuses outside the actions phase", () => {
-    const state = withEnergy(withHand(withPhase(newMatch(), "combat"), P1, [ECLIPSE]), P1, 10);
+    const state = withEnergy(withHand(withPhase(newMatch(), "absorption"), P1, [ECLIPSE]), P1, 10);
 
     const result = advance(state, {
       type: "PLAY_CARD",

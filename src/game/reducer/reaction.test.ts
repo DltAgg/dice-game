@@ -219,7 +219,7 @@ describe("reaction chain (008)", () => {
   });
 
   it("rejects negate when the top link is an attack", () => {
-    const base = withPhase(newMatch(), "combat");
+    const base = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(

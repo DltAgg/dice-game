@@ -31,15 +31,6 @@ export const EXAMPLE: CreatureDefinitionId =
       },
     },
   ],
-  engineAbilities: [
-    // Prototype squad only today — Figma cards usually leave this [].
-    // {
-    //   id: asAbilityId("ability-example-convert"),
-    //   name: "Convert",
-    //   consumes: { arcane: 1 },
-    //   effect: { type: "gain-energy", amount: 1 },
-    // },
-  ],
 }
 ```
 
@@ -55,5 +46,4 @@ export const EXAMPLE: CreatureDefinitionId =
 ## Population in `creatures.ts`
 
 **Figma catalogue** — Slow-game-test creatures (print-first), including builtin
-Aggro and Control squads. Thin vertical-slice `engineAbilities` on the Aggro
-trio keep absorb ↔ resolve tests honest until print defines them.
+Aggro and Control squads.

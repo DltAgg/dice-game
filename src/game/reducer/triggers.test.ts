@@ -105,7 +105,7 @@ describe("on-deal-damage equipment", () => {
     const attackerId = creatureIdAt(actionsReady([VENOMOUS_FANGS]), P1, 0);
     const targetId = creatureIdAt(actionsReady([VENOMOUS_FANGS]), P2, 0);
     let state = equip(actionsReady([VENOMOUS_FANGS]), attackerId);
-    state = withPhase(withTokens(state, attackerId, { martial: 1 }), "combat");
+    state = withPhase(withTokens(state, attackerId, { martial: 1 }), "actions");
 
     const after = expectOk(
       advance(state, {
@@ -128,7 +128,7 @@ describe("on-deal-damage equipment", () => {
     let state = equip(base, attackerId);
     state = withPhase(
       withTokens(withShields(state, targetId, 10), attackerId, { martial: 1 }),
-      "combat",
+      "actions",
     );
 
     const after = expectOk(
@@ -152,7 +152,7 @@ describe("on-deal-damage equipment", () => {
     const targetId = creatureIdAt(base, P2, 0);
     let state = equip(base, attackerId);
     state = withDamage(state, allyId, 2);
-    state = withPhase(withTokens(state, attackerId, { martial: 1 }), "combat");
+    state = withPhase(withTokens(state, attackerId, { martial: 1 }), "actions");
 
     const afterAttack = expectOk(
       advance(state, {
@@ -549,7 +549,7 @@ describe("on-attack shared event", () => {
     const varcolacId = creatureIdAt(base, P1, 1);
     const targetId = creatureIdAt(base, P2, 0);
 
-    let state = withPhase(withTokens(base, minotaurId, { martial: 1 }), "combat");
+    let state = withPhase(withTokens(base, minotaurId, { martial: 1 }), "actions");
     state = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -574,7 +574,7 @@ describe("on-take-damage reduce", () => {
       ...state,
       activePlayerId: P2,
       energy: { holderId: P2, value: 5 },
-      phase: "combat",
+      phase: "actions",
     };
     state = withTokens(state, attackerId, { martial: 1 });
 
@@ -716,7 +716,7 @@ describe("Toxic Blessing arm-attack-toxin", () => {
 
     const attackerId = creatureIdAt(afterRoll, P1, 0);
     const targetId = creatureIdAt(afterRoll, P2, 0);
-    let combat = withPhase(withTokens(afterRoll, attackerId, { martial: 1 }), "combat");
+    let combat = withPhase(withTokens(afterRoll, attackerId, { martial: 1 }), "actions");
     combat = expectOk(
       advance(combat, {
         type: "ATTACK",

@@ -9,9 +9,9 @@ with no UI, no store and no networking in the call stack.
 ## Intent
 
 Two players each field three creatures and two customizable dice. On a turn a
-player rolls, decides which rolled symbols to feed to creatures and which to
-leave for the engine, resolves engine abilities in an order of their choosing,
-attacks, and passes the turn. Reducing an opponent's squad to zero wins.
+player rolls, decides which rolled symbols to feed to creatures (or rituals) and
+which to leave available, attacks, plays cards / forges, and passes the turn.
+Reducing an opponent's squad to zero wins.
 
 ## Rules
 
@@ -37,7 +37,7 @@ attacks, and passes the turn. Reducing an opponent's squad to zero wins.
 | The player chooses the order engine effects resolve in | §17 |
 | A creature makes at most one attack per Combat phase | §7 |
 | The frontline protects the back row; Range ignores that | §6 |
-| Turn flow: roll, absorb, engine, combat, actions, forge, end | §16 |
+| Turn flow: roll, absorb, actions (attack / play / forge), end | §16 |
 | One shared Energy marker; crossing zero ends the turn | §18, decision of 2026-08-07 |
 
 Because fuel appears only at end of turn, a creature can never attack on the
@@ -56,17 +56,18 @@ It is registered in `../OPEN_DESIGN.md` and read from `GameRulesConfig`.
 
 ## Actions
 
-`ROLL_DICE`, `ABSORB_SYMBOL`, `ADVANCE_PHASE`, `RESOLVE_ENGINE_ABILITY`,
-`ATTACK`, `END_TURN`. Each names its actor and describes intent only — no
-action carries a damage figure, a dice result or a symbol count.
+`ROLL_DICE`, `ABSORB_SYMBOL`, `ABSORB_SYMBOL_TO_RITUAL`, `ADVANCE_PHASE`,
+`ATTACK`, `PLAY_CARD`, `FORGE_CARD`, `ACTIVATE_RITUAL`, `END_TURN`, …. Each names
+its actor and describes intent only — no action carries a damage figure, a dice
+result or a symbol count.
 
 ## Validation
 
 The match must be in progress and the actor must be the active player. Beyond
 that each action checks its own phase, ownership, entity existence and defeat
-state. Engine abilities additionally check the symbol pool; attacks check the
-attacker's tokens, targeting and the per-combat attack limit. An illegal action
-returns a `GameError` and the original state object unchanged, by reference.
+state. Attacks check the attacker's tokens, targeting and the per-combat attack
+limit. An illegal action returns a `GameError` and the original state object
+unchanged, by reference.
 
 ## Resolution
 
@@ -102,7 +103,7 @@ None in this slice, by design.
 - [x] A creature cannot attack on the turn it was fuelled.
 - [x] Shields prevent damage, are spent doing so, and survive the turn.
 - [x] Attacks respect the frontline and honour Range.
-- [x] A creature attacks at most once per combat phase.
+- [x] A creature attacks at most once per turn (actions phase).
 - [x] Damage defeats a creature and defeat can end the match.
 - [x] The Energy marker moves between players on a turn transition.
 - [x] An illegal action leaves state untouched.
