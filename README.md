@@ -64,9 +64,17 @@ data, so settling a question is a data edit rather than an engine change.
 
 Feature specifications live in [`docs/specs/`](./docs/specs).
 
-## Agent guidance
+## Cursor specialists
 
-AI agents should start at [`AGENTS.md`](./AGENTS.md). Commands and verification:
-[`TOOLS.md`](./TOOLS.md). Cursor skills live under [`.cursor/skills/`](./.cursor/skills/)
-(content authoring, engine work, match UI); persistent rules under
-[`.cursor/rules/`](./.cursor/rules/).
+Project subagents live in [`.cursor/agents/`](./.cursor/agents/). They are
+proactive: ask for the job, or say `Use the <name> subagent to …`.
+
+| Subagent | Owns | Hands off |
+|---|---|---|
+| [card-designer](.cursor/agents/card-designer.md) | Catalogue identity and print → typed data in `src/game/content` (tactics, rituals, faces, creatures) | New AST / hooks / reducer → **engine-developer** |
+| [engine-developer](.cursor/agents/engine-developer.md) | Pure rules in `src/game`: hooks, `EffectDefinition`, reducer, resolution, statuses | Catalogue beyond the proving card → **card-designer**; play surface → **match-ui** |
+| [match-ui](.cursor/agents/match-ui.md) | Lobby, hotseat/online board, deck builder, catalogues, Zustand stores, `src/decks/`, PeerJS adapters | Cards → **card-designer**; rules / `pendingDecision` types → **engine-developer** |
+
+Workflows those agents load: [`.cursor/skills/`](./.cursor/skills/). Routing and
+hard rules: [`AGENTS.md`](./AGENTS.md). Commands: [`TOOLS.md`](./TOOLS.md).
+Persistent constraints: [`.cursor/rules/`](./.cursor/rules/).

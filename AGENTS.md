@@ -31,12 +31,23 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 | Task | Start here |
 |---|---|
-| New or updated tactic / ritual / face / creature cards | Skill: [author-content](.cursor/skills/author-content/SKILL.md) |
-| Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) |
-| Implement / extend shared trigger hooks (`010`) | Skill: [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
-| New effect vocabulary, reducer, phases | Skill: [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
-| Match UI / lobby / decks | `src/ui`, `src/store`, `src/decks` — do not put rules there |
-| PeerJS / protocol | `src/networking` + `docs/specs/007-peerjs.md` |
+| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) |
+| Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
+| Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
+| New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
+| Match UI / lobby / decks | Subagent: [match-ui](.cursor/agents/match-ui.md) + skill [match-ui](.cursor/skills/match-ui/SKILL.md) — do not put rules there |
+| PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/networking` + `docs/specs/007-peerjs.md` |
+
+## Subagents
+
+Project specialists live in [`.cursor/agents/`](.cursor/agents/). Delegate rather
+than doing their job in the parent thread.
+
+| Subagent | Use when |
+|---|---|
+| [card-designer](.cursor/agents/card-designer.md) | New/updated catalogue cards; print → data; delegates new mechanics to engine-developer |
+| [engine-developer](.cursor/agents/engine-developer.md) | `src/game` rules: hooks, triggers, `EffectDefinition`, reducer, resolution, statuses |
+| [match-ui](.cursor/agents/match-ui.md) | Lobby, MatchBoard, deck builder, catalogues, stores, decks persistence, PeerJS adapters |
 
 ## Specs & design trackers
 

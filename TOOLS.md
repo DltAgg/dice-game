@@ -85,7 +85,16 @@ Details: `docs/specs/007-peerjs.md`.
 | `.cursor/skills/author-content/` | Adding catalogue cards from print / CSV |
 | `.cursor/skills/standardize-card-effects/` | Normalizing On roll / On absorb text and wiring triggers |
 | `.cursor/skills/develop-engine/` | New effect AST, reducer, hooks |
+| `.cursor/skills/implement-hooks/` | Shared standing trigger events (`010`) |
 | `.cursor/skills/match-ui/` | Lobby / MatchBoard / stores |
+
+## Subagents (project)
+
+| Agent | Use when |
+|---|---|
+| `.cursor/agents/card-designer.md` | Authoring tactics / rituals / faces / creatures; new mechanics → engine-developer |
+| `.cursor/agents/engine-developer.md` | Implementing rules in `src/game` (hooks, reducer, resolution, statuses) |
+| `.cursor/agents/match-ui.md` | Lobby / MatchBoard / deck builder / stores / PeerJS adapters |
 
 - No CSV/OCR ingest scripts unless the user explicitly asks to build tooling.
 - No second rules engine in UI or networking.
