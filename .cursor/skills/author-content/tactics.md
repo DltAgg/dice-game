@@ -22,7 +22,7 @@ card({
   forge: {
     faces: 1,
     kind: "synthetic", // "natural" only for dual-kind attributes
-    attribute: "arcane", // may differ from card.attribute
+    attribute: "arcane", // match card.attribute unless a future splash forge is explicit
     target: "own-die", // or "opponent-die"
   },
   // forgeTags?: ["echo"]

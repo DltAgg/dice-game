@@ -52,12 +52,14 @@ onto a die or played for its effect, never both. This is bible §19–20's
 two-region architecture, and it is what makes every card a decision rather than
 a resource.
 
-### The card's attribute is not the attribute it forges
+### The card's attribute and the forge attribute
 
-They coincide on most cards but not all. *Eternal Darkness* is an Arcane card
-that forges a Darkness face; *Latent Corruption* is a Corruption card that
-forges an Arcane one; *Serrated Stinger* is a Toxin card that forges Wild. They
-are two independent fields.
+They are two fields on the card. The current catalogue **forges its own
+attribute**: dual-kind cards typically forge Natural of that attribute;
+synthetic-only attributes (Toxin, Mechanical, Corruption, Darkness) always
+forge Synthetic. Overload/equip gates and generated symbols may still splash
+(*Latent Corruption* is Corruption and forges Corruption, but can only
+overload an Arcane face).
 
 ### Subtypes
 
@@ -124,22 +126,22 @@ is used.
 |---|---|---|---|---|
 | 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 3 Energy, negate the effect of 1 Tactic card. |
 | 5 | Arcane Echo | Tactic / Instant / Arcane | 1 Synthetic Arcane, your die | Apply the modifiers of one of the dice again. |
-| ? | Blessing of the Hunt | Tactic / Overload / Arcane | 1 Natural Arcane, your die | On roll: generate Martial. |
-| ? | Martial Blessing | Tactic / Overload / Arcane | 1 Natural Arcane, your die | On roll: the next attack this turn deals +1 damage. |
-| ? | Toxic Blessing | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Toxin faces only.* On roll: all attacks this turn apply 1 Toxin marker. |
-| ? | Mutant Spores | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Toxin faces only.* On absorb: heal 1. |
-| ? | Wild Echo | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Natural Wild faces only.* On absorb: generate Wild. |
-| ? | Adrenaline | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Natural Wild faces only.* On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures. |
-| ? | Rust | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Natural Martial faces only.* On absorb: your attacks this turn ignore 2 Shield. |
+| ? | Blessing of the Hunt | Tactic / Overload / Martial | 1 Natural Martial, your die | On roll: generate Martial. |
+| ? | Martial Blessing | Tactic / Overload / Martial | 1 Natural Martial, your die | On roll: the next attack this turn deals +1 damage. |
+| ? | Toxic Blessing | Tactic / Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On roll: all attacks this turn apply 1 Toxin marker. |
+| ? | Mutant Spores | Tactic / Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On absorb: heal 1. |
+| ? | Wild Echo | Tactic / Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On absorb: generate Wild. |
+| ? | Adrenaline | Tactic / Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures. |
+| ? | Rust | Tactic / Overload / Martial | 1 Natural Martial, your die | *Natural Martial faces only.* On absorb: your attacks this turn ignore 2 Shield. |
 | 2 | Ritual of Contamination | Tactic / Instant / Corruption | 1 Synthetic Corruption, your die | *Requires: Arcane + Corruption.* Forge 1 Synthetic Corruption face on the opponent's die. |
 | 4 | Luminar Judgement | Tactic / Reaction / Luminar | 1 Natural Luminar, your die | On ally would take damage: prevent it; if you do, deal that much to the attacking creature. |
 | 2 | Glimmer | Tactic / Reaction / Luminar | 1 Synthetic Luminar, your die | On prevent damage: draw 2 cards. |
 | 2 | Predator's Claws | Tactic / Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: this creature may move 1 position. |
-| 3 | Venomous Fangs | Tactic / Equipment / Wild | 1 Natural Wild, your die | On deal damage: apply 1 Toxin marker. |
-| 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Natural Wild, your die | *Active when: Wild + Toxin.* On special attack: apply 1 Toxin marker. |
+| 3 | Venomous Fangs | Tactic / Equipment / Toxin | 1 Synthetic Toxin, your die | On deal damage: apply 1 Toxin marker. |
+| 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Synthetic Toxin, your die | *Active when: Wild + Toxin.* On special attack: apply 1 Toxin marker. |
 | 4 | War Banner | Tactic / Equipment / Wild | 1 Natural Wild, your die | On basic attack, allied creature to the left: deal +1 damage. |
 | 4 | Alpha's Hide | Tactic / Equipment / Wild | 1 Natural Wild, your die | On special attack: generate Wild on another card. |
-| 5 | Toxic Heart | Tactic / Equipment / Wild | 1 Natural Wild, your die | On toxin damage: heal 1 on this creature. |
+| 5 | Toxic Heart | Tactic / Equipment / Toxin | 1 Synthetic Toxin, your die | On toxin damage: heal 1 on this creature. |
 | 3 | Hunter's Collar | Tactic / Equipment / Wild | 1 Natural Wild, your die | On change position: generate Martial. |
 | 5 | Insignia of Command | Tactic / Equipment / Wild | 1 Natural Wild, your die | *Martial creatures only.* On attack, once per turn: another ally may reposition. |
 | 2 | War Axe | Tactic / Equipment / Martial | 1 Natural Martial, your die | On basic attack: deal +1 damage. |
@@ -155,8 +157,8 @@ is used.
 | 6 | Extermination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption + Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
 | 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Add 2 Tactic cards from your deck to your hand. |
 | 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Tactic card in your graveyard and use its effect immediately, ignoring its requirements. |
-| 5 | Eternal Darkness | Ritual / Instant / Arcane | 1 Synthetic Darkness, your die | *Active when: Darkness + Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
-| 4 | Latent Corruption | Tactic / Overload / Corruption | 1 Synthetic Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
+| 5 | Eternal Darkness | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | *Active when: Darkness + Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
+| 4 | Latent Corruption | Tactic / Overload / Corruption | 1 Synthetic Corruption, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
 | 3 | Luminar Prism | Tactic / Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
 | 2 | Arcane Amplifier | Tactic / Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
 | 4 | Arcane Resonance | Tactic / Overload / Arcane | 1 Natural Arcane, your die | On roll: generate 1 Arcane. |
@@ -187,9 +189,10 @@ used in all cases.
 | Arcana | Arcano | Arcane |
 
 *Blessing of the Hunt*, *Martial Blessing*, *Toxic Blessing* and *Mutant Spores*
-are all typed Arcane and all forge a Natural Arcane face, which looks like a
-copy-paste artefact given their effects are Martial and Toxin flavoured. Left as
-printed.
+were typed Arcane and forged Natural Arcane in the layout dump (copy-paste).
+Catalogue entries now match their primary identity (Martial / Toxin, with
+synthetic Toxin forges). *Wild Echo* / *Adrenaline* / *Rust* were similarly
+Corruption in that dump and are now Wild / Wild / Martial.
 
 ## What this slice implements
 

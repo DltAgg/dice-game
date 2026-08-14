@@ -54,6 +54,13 @@ describe("card subtype ↔ region consistency", () => {
     }
   });
 
+  it.each(ALL_CARDS)("$name: forges its own attribute", (card) => {
+    expect(
+      card.forge.attribute,
+      `${card.name} is ${card.attribute} but forges ${card.forge.attribute}`,
+    ).toBe(card.attribute);
+  });
+
   it("lists every attachment subtype so new ones cannot be forgotten", () => {
     const known: readonly CardSubtype[] = [
       "instant",
