@@ -196,7 +196,8 @@ describe("reaction chain (008)", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    // Cost paid immediately: 2−3 overshoots to B with 1; turn must NOT end yet.
+    // Cost paid immediately: 2−3 overshoots to B with 1 (bonus not yet applied);
+    // turn must NOT end yet.
     expect(afterEclipse.energy).toEqual({ holderId: P2, value: 1 });
     expect(afterEclipse.activePlayerId).toBe(P1);
     expect(afterEclipse.pendingDecision?.type).toBe("reaction-priority");

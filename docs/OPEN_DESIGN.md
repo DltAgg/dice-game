@@ -35,9 +35,11 @@ different turn-end mechanisms. The decision:
 - a spend that pushes the marker **past** zero ends the turn once the current
   action has finished;
 - landing exactly on zero does **not** end the turn;
-- the overshoot is mirrored onto the incoming player's side, capped at the
-  track size;
-- the starting player opens the match with 3.
+- the overshoot is mirrored onto the incoming player's side immediately
+  (capped at the track size); when that overshoot actually ends the turn,
+  the incoming player also receives `energyOnOvershootBonus` (+2), still
+  capped at `trackMax`;
+- the starting player opens the match with 3 (not the clean-pass amount).
 
 ### Variable (`?`) tactic Energy costs
 
@@ -115,11 +117,22 @@ match never resolves.
 
 ### The Energy handed over on a voluntary pass
 
-**Status:** `DECIDED` · `energyOnVoluntaryPass: 3`
+**Status:** `DECIDED` · 2026-08-14 · `energyOnVoluntaryPass: 5`,
+`energyOnOvershootBonus: 2`, `startingEnergy: 3`
 
-A fixed amount, not a floor. An overshoot pass still hands over only the
-overshoot, even when that is smaller than 3, so pushing the marker past zero
-buys tempo — the same dynamic as the Digimon memory model this is drawn from.
+Three distinct amounts:
+
+| When | Incoming Energy |
+|---|---|
+| First player's first turn | `startingEnergy` (3) |
+| Clean `END_TURN` (marker never crossed this turn) | `energyOnVoluntaryPass` (5) |
+| Turn ends because the marker crossed zero | overshoot + `energyOnOvershootBonus` (e.g. spend 3 with 1 → overshoot 2 → incoming 4) |
+
+The +2 is applied when the turn **actually passes**, not at the moment of
+spend, so a reaction can still restore the marker before the bonus lands
+(see “Turn end vs chain” below). The clean-pass 5 is not a floor on
+overshoot: a 1-point overshoot still hands over 3, which is less than a
+clean pass.
 
 ### Every symbol is attribute-typed
 
