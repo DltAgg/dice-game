@@ -1,4 +1,13 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   countInstalledCopies,
@@ -111,6 +120,7 @@ export function MatchBoard() {
   const [forgeFacesDieId, setForgeFacesDieId] = useState<DieId | undefined>();
   const [forgeFacesSlots, setForgeFacesSlots] = useState<readonly number[]>([]);
   const [forgeFacesFaceId, setForgeFacesFaceId] = useState<FaceCardId | undefined>();
+  const [handCollapsed, setHandCollapsed] = useState(false);
 
   const activeId = state.activePlayerId;
   const finished = state.status === "finished";
@@ -441,7 +451,7 @@ export function MatchBoard() {
   }
 
   return (
-    <div className="relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pb-80 pt-28 sm:px-6 sm:pb-96">
+    <div className="relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pb-96 pt-28 sm:px-6 sm:pb-[28rem]">
       <ErrorSnackbar error={lastError} onDismiss={clearError} />
 
       <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur">
@@ -769,9 +779,6 @@ export function MatchBoard() {
         state={state}
         playerId={MATCH_P2}
         label="P2 face cards"
-        onRetain={(dieId, retain) =>
-          tryDispatch({ type: "RETAIN_DIE", playerId: activeId, dieId, retain })
-        }
       />
 
       <Battlefield
@@ -837,13 +844,37 @@ export function MatchBoard() {
         state={state}
         playerId={MATCH_P1}
         label="P1 face cards"
-        onRetain={(dieId, retain) =>
-          tryDispatch({ type: "RETAIN_DIE", playerId: activeId, dieId, retain })
-        }
       />
 
       <div className="fixed inset-x-0 bottom-0 z-30 overflow-visible border-t border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] backdrop-blur">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 overflow-visible px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-5xl flex-col gap-2 overflow-visible px-4 py-2 sm:px-6">
+          <button
+            type="button"
+            className="-mb-1 flex w-full items-center justify-center py-1 text-stone-500 hover:text-[var(--accent)]"
+            aria-expanded={!handCollapsed}
+            aria-controls="match-hand-dock"
+            aria-label={handCollapsed ? "Show hand" : "Hide hand"}
+            onClick={() => setHandCollapsed((collapsed) => !collapsed)}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={
+                handCollapsed
+                  ? "size-5 rotate-180 transition-transform"
+                  : "size-5 transition-transform"
+              }
+              aria-hidden="true"
+            >
+              <path
+                d="M6 9l6 6 6-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
           <SymbolPool
             state={state}
             playerId={dockPlayerId}
@@ -879,8 +910,11 @@ export function MatchBoard() {
             </div>
           )}
 
-          <div className="flex items-stretch gap-3 overflow-visible">
-            <div className="min-w-0 flex-1 overflow-visible">
+          <div
+            id="match-hand-dock"
+            className={handCollapsed ? "hidden" : "flex items-end gap-3"}
+          >
+            <div className="min-w-0 flex-1 overflow-hidden">
               <HandStrip
                 state={state}
                 playerId={dockPlayerId}
@@ -894,7 +928,7 @@ export function MatchBoard() {
                 onCancel={clearIntent}
               />
             </div>
-            <GraveyardDock state={state} playerId={dockPlayerId} />
+            <ZoneDocks state={state} playerId={dockPlayerId} />
           </div>
         </div>
       </div>
@@ -1244,6 +1278,38 @@ function Battlefield({
     </div>
   );
 
+  const ritualStrip =
+    rituals.length > 0 ? (
+      <div
+        className={
+          facing === "down"
+            ? "mb-3 border-b border-stone-800/80 pb-3"
+            : "mt-3 border-t border-stone-800/80 pt-3"
+        }
+      >
+        <h3 className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
+          Rituals
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {rituals.map((card) => (
+            <RitualTile
+              key={card.id}
+              card={card}
+              absorbArmed={absorbArmed && isActive}
+              canActivate={
+                isActive &&
+                state.phase !== "roll" &&
+                card.ritualOrientation === "ready" &&
+                !absorbArmed
+              }
+              onActivate={() => onRitualActivate(card.id)}
+              onAbsorb={() => onRitualAbsorb(card.id)}
+            />
+          ))}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <section
       className={
@@ -1256,6 +1322,7 @@ function Battlefield({
         {label}
         {isActive ? " · acting" : ""} · frontline / back
       </h2>
+      {facing === "down" ? ritualStrip : null}
       <div className="flex flex-col gap-3">
         {facing === "down" ? (
           <>
@@ -1269,25 +1336,7 @@ function Battlefield({
           </>
         )}
       </div>
-      {rituals.length > 0 && (
-        <div className="mt-3 border-t border-stone-800/80 pt-3">
-          <h3 className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
-            Rituals
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {rituals.map((card) => (
-              <RitualTile
-                key={card.id}
-                card={card}
-                absorbArmed={absorbArmed && isActive}
-                canActivate={isActive && state.phase !== "roll" && card.ritualOrientation === "ready" && !absorbArmed}
-                onActivate={() => onRitualActivate(card.id)}
-                onAbsorb={() => onRitualAbsorb(card.id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      {facing === "up" ? ritualStrip : null}
     </section>
   );
 }
@@ -1915,16 +1964,13 @@ function FaceCardsInPlay({
   state,
   playerId,
   label,
-  onRetain,
 }: {
   state: GameState;
   playerId: PlayerId;
   label: string;
-  onRetain: (dieId: DieId, retain: boolean) => void;
 }) {
   const dice = diceOf(state, playerId);
   const faces = uniqueInstalledFaces(state, playerId);
-  const isActive = state.activePlayerId === playerId;
   const hasRolled = dice.some((die) => die.rolledSlotIndex !== null);
 
   return (
@@ -1944,36 +1990,6 @@ function FaceCardsInPlay({
           />
         ))}
         {faces.length === 0 && <p className="text-sm text-stone-600">No faces installed</p>}
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-3 border-t border-stone-800/80 pt-3">
-        {dice.map((die) => {
-          const rolledSlot =
-            die.rolledSlotIndex !== null ? die.slots[die.rolledSlotIndex] : undefined;
-          const rolledName =
-            rolledSlot !== undefined
-              ? (getFaceCard(rolledSlot.faceCardId)?.name ?? "face")
-              : null;
-          return (
-            <div key={die.id} className="flex items-center gap-2 text-xs text-stone-500">
-              <span className="uppercase tracking-wider">
-                Die · {die.id}
-                {die.retained ? " · retained" : ""}
-                {die.stunMarkers > 0 ? ` · stun ${String(die.stunMarkers)}` : ""}
-                {rolledName !== null ? ` · rolled ${rolledName}` : ""}
-              </span>
-              {isActive && die.rolledSlotIndex !== null && (
-                <button
-                  type="button"
-                  className={btnClass}
-                  onClick={() => onRetain(die.id, !die.retained)}
-                >
-                  {die.retained ? "Release" : "Retain"}
-                </button>
-              )}
-            </div>
-          );
-        })}
       </div>
     </section>
   );
@@ -2143,102 +2159,228 @@ function SymbolPool({
   );
 }
 
-function GraveyardDock({
+function BoardModal({
+  title,
+  subtitle,
+  children,
+  onDismiss,
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+  onDismiss?: () => void;
+}) {
+  const titleId = useId();
+
+  useEffect(() => {
+    if (onDismiss === undefined) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onDismiss();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onDismiss]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      onClick={onDismiss}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <h2
+          id={titleId}
+          className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]"
+        >
+          {title}
+        </h2>
+        {subtitle !== undefined && (
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">{subtitle}</p>
+        )}
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function TacticChoiceContent({
+  def,
+  fallbackId,
+}: {
+  def: ReturnType<typeof getCard>;
+  fallbackId: string;
+}) {
+  if (def === undefined) {
+    return <p className="text-sm font-medium text-stone-100">{fallbackId}</p>;
+  }
+
+  return (
+    <>
+      <p className="text-sm font-medium text-stone-100">{def.name}</p>
+      <p className="text-xs text-stone-500">
+        {def.variableEnergy === true ? "?" : def.energyCost}E · {def.subtypes.join("/")}
+      </p>
+      <p className="mt-1 text-[0.7rem] text-stone-400">{formatTypeLine(def)}</p>
+      {formatEffectRegion(def).length > 0 && (
+        <p className="mt-1 text-[0.7rem] leading-relaxed text-stone-400">
+          {formatEffectRegion(def).join(" ")}
+        </p>
+      )}
+    </>
+  );
+}
+
+function FaceChoiceContent({ faceCardId }: { faceCardId: FaceCardId }) {
+  const face = getFaceCard(faceCardId);
+  if (face === undefined) {
+    return <p className="text-sm font-medium text-stone-100">{faceCardId}</p>;
+  }
+
+  const kindLabel = face.kind === "natural" ? "Natural" : "Synthetic";
+
+  return (
+    <>
+      <p className="text-sm font-medium text-stone-100">{face.name}</p>
+      <p className="text-xs capitalize text-stone-500">
+        {kindLabel} · {face.symbol}
+        {face.maxOverloads > 0 ? ` · +${String(face.maxOverloads)} overload` : ""}
+      </p>
+      {face.rulesText !== "" && (
+        <p className="mt-1 text-[0.7rem] leading-relaxed text-stone-400">{face.rulesText}</p>
+      )}
+    </>
+  );
+}
+
+function DockPeekButton({
+  label,
+  count,
+  open,
+  ariaLabel,
+  onOpen,
+}: {
+  label: string;
+  count: number;
+  open: boolean;
+  ariaLabel: string;
+  onOpen: () => void;
+}) {
+  return (
+    <section
+      className={
+        open
+          ? "flex min-h-[4.25rem] flex-1 flex-col rounded-lg border border-[var(--accent)] bg-black/30 p-2"
+          : "flex min-h-[4.25rem] flex-1 flex-col rounded-lg border border-stone-800/80 bg-black/30 p-2"
+      }
+    >
+      <button
+        type="button"
+        className="flex h-full w-full flex-col items-center justify-center gap-0.5 text-center"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+        onClick={onOpen}
+      >
+        <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-amber-200/70">
+          {label}
+        </span>
+        <span className="text-lg font-medium leading-none tabular-nums text-stone-100">
+          {count}
+        </span>
+        <span className="text-[0.6rem] uppercase tracking-wide text-stone-500">View</span>
+      </button>
+    </section>
+  );
+}
+
+function ZoneDocks({
   state,
   playerId,
 }: {
   state: GameState;
   playerId: PlayerId;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<"graveyard" | "faces" | null>(null);
   const gy = graveyardOf(state, playerId);
+  const facePool = state.players[playerId]?.facePool ?? [];
 
   useEffect(() => {
-    setOpen(false);
+    setOpen(null);
   }, [playerId]);
 
   return (
-    <section
-      className={
-        open
-          ? "flex w-56 shrink-0 flex-col rounded-lg border border-stone-800/80 bg-black/30 p-3"
-          : "flex w-[4.5rem] shrink-0 flex-col rounded-lg border border-stone-800/80 bg-black/30 p-2"
-      }
-    >
-      <button
-        type="button"
-        className={
-          open
-            ? "mb-2 flex w-full items-center justify-between gap-2 text-left"
-            : "flex h-full min-h-[5.5rem] w-full flex-col items-center justify-center gap-1 text-center"
-        }
-        aria-expanded={open}
-        aria-label={open ? "Hide graveyard" : `View graveyard (${String(gy.length)})`}
-        onClick={() => setOpen((value) => !value)}
-      >
-        {open ? (
-          <>
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
-              GY ({gy.length})
-            </span>
-            <span className="text-[0.65rem] uppercase tracking-wide text-stone-500">Close</span>
-          </>
-        ) : (
-          <>
-            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-amber-200/70">
-              GY
-            </span>
-            <span className="text-lg font-medium tabular-nums text-stone-100">{gy.length}</span>
-            <span className="text-[0.6rem] uppercase tracking-wide text-stone-500">View</span>
-          </>
-        )}
-      </button>
-
-      {open && (
-        <ul className="max-h-40 space-y-2 overflow-y-auto pr-0.5">
-          {gy.map((card) => {
-            const def = getCard(card.cardId);
-            return (
+    <>
+      <div className="flex w-[4.5rem] shrink-0 flex-col gap-2 self-stretch">
+        <DockPeekButton
+          label="GY"
+          count={gy.length}
+          open={open === "graveyard"}
+          ariaLabel={`View graveyard (${String(gy.length)})`}
+          onOpen={() => setOpen("graveyard")}
+        />
+        <DockPeekButton
+          label="Faces"
+          count={facePool.length}
+          open={open === "faces"}
+          ariaLabel={`View face deck (${String(facePool.length)})`}
+          onOpen={() => setOpen("faces")}
+        />
+      </div>
+      {open === "graveyard" && (
+        <BoardModal
+          title="Graveyard"
+          subtitle={`${String(gy.length)} card${gy.length === 1 ? "" : "s"} in your graveyard.`}
+          onDismiss={() => setOpen(null)}
+        >
+          <ul className="mt-4 space-y-2">
+            {gy.map((card) => (
               <li
                 key={card.id}
-                className="group relative rounded border border-stone-800 bg-stone-950/80 px-2 py-1.5"
+                className="rounded border border-stone-700 bg-stone-900 px-3 py-2"
               >
-                <p className="truncate text-xs font-medium text-stone-200">
-                  {def?.name ?? card.cardId}
-                </p>
-                <p className="mt-0.5 text-[0.65rem] text-stone-500">
-                  {def === undefined
-                    ? "—"
-                    : `${def.variableEnergy === true ? "?" : def.energyCost}E · ${def.subtypes.join("/")}`}
-                </p>
-                {def !== undefined && (
-                  <div
-                    className="pointer-events-none absolute bottom-[calc(100%+0.4rem)] left-0 z-40 hidden w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-                    role="tooltip"
-                  >
-                    <p className="text-sm font-medium text-stone-100">{def.name}</p>
-                    <p className="mt-1 text-xs text-stone-400">
-                      {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
-                    </p>
-                    <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-                      {[
-                        formatTypeLine(def),
-                        formatForgeLine(def.forge),
-                        "or",
-                        ...formatEffectRegion(def),
-                      ].join("\n")}
-                    </pre>
-                  </div>
-                )}
+                <TacticChoiceContent def={getCard(card.cardId)} fallbackId={card.cardId} />
               </li>
-            );
-          })}
-          {gy.length === 0 && (
-            <li className="text-xs text-stone-600">Empty graveyard</li>
-          )}
-        </ul>
+            ))}
+            {gy.length === 0 && (
+              <li className="text-sm text-stone-500">Empty graveyard</li>
+            )}
+          </ul>
+          <button type="button" className={`${btnClass} mt-4`} onClick={() => setOpen(null)}>
+            Close
+          </button>
+        </BoardModal>
       )}
-    </section>
+      {open === "faces" && (
+        <BoardModal
+          title="Face deck"
+          subtitle={`${String(facePool.length)} card${facePool.length === 1 ? "" : "s"} left to forge onto a die.`}
+          onDismiss={() => setOpen(null)}
+        >
+          <ul className="mt-4 space-y-2">
+            {facePool.map((faceCardId, index) => (
+              <li
+                key={`${faceCardId}-${String(index)}`}
+                className="rounded border border-stone-700 bg-stone-900 px-3 py-2"
+              >
+                <FaceChoiceContent faceCardId={faceCardId} />
+              </li>
+            ))}
+            {facePool.length === 0 && (
+              <li className="text-sm text-stone-500">No face cards left in your pool.</li>
+            )}
+          </ul>
+          <button type="button" className={`${btnClass} mt-4`} onClick={() => setOpen(null)}>
+            Close
+          </button>
+        </BoardModal>
+      )}
+    </>
   );
 }
 
@@ -2267,23 +2409,58 @@ function HandStrip({
   const [hoveredId, setHoveredId] = useState<CardInstanceId | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ left: number; bottom: number } | null>(null);
   const cardRefs = useRef<Map<CardInstanceId, HTMLDivElement>>(new Map());
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    if (hoveredId === null) {
-      setTooltipPos(null);
-      return;
-    }
-    const node = cardRefs.current.get(hoveredId);
-    if (node === undefined) {
-      setTooltipPos(null);
-      return;
-    }
-    const rect = node.getBoundingClientRect();
-    setTooltipPos({
-      left: Math.min(rect.left, window.innerWidth - 272),
-      bottom: window.innerHeight - rect.top + 8,
-    });
+    const placeTooltip = () => {
+      if (hoveredId === null) {
+        setTooltipPos(null);
+        return;
+      }
+      const node = cardRefs.current.get(hoveredId);
+      if (node === undefined) {
+        setTooltipPos(null);
+        return;
+      }
+      const rect = node.getBoundingClientRect();
+      const scroller = scrollerRef.current;
+      if (scroller !== null) {
+        const box = scroller.getBoundingClientRect();
+        if (rect.bottom < box.top || rect.top > box.bottom) {
+          setTooltipPos(null);
+          return;
+        }
+      }
+      setTooltipPos({
+        left: Math.min(rect.left, window.innerWidth - 272),
+        bottom: window.innerHeight - rect.top + 8,
+      });
+    };
+
+    placeTooltip();
+    const scroller = scrollerRef.current;
+    if (scroller === null) return;
+    scroller.addEventListener("scroll", placeTooltip, { passive: true });
+    return () => scroller.removeEventListener("scroll", placeTooltip);
   }, [hoveredId, hand.length]);
+
+  useEffect(() => {
+    const node = scrollerRef.current;
+    if (node === null) return;
+    const onWheel = (event: WheelEvent) => {
+      if (node.scrollHeight <= node.clientHeight + 1) return;
+      if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const step = node.clientHeight + 12;
+      const dir = event.deltaY > 0 ? 1 : -1;
+      node.scrollTo({
+        top: Math.max(0, Math.round(node.scrollTop / step) * step + dir * step),
+      });
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, [hand.length]);
 
   const hoveredCard = hoveredId !== null ? hand.find((card) => card.id === hoveredId) : undefined;
   const hoveredDef =
@@ -2308,7 +2485,10 @@ function HandStrip({
           </button>
         )}
       </div>
-      <div className="flex flex-wrap gap-3">
+      <div
+        ref={scrollerRef}
+        className="flex max-h-[7.25rem] flex-wrap gap-3 overflow-x-hidden overflow-y-auto overscroll-y-contain snap-y snap-mandatory"
+      >
         {hand.map((card) => {
           const def = getCard(card.cardId);
           if (def === undefined) return null;
@@ -2324,8 +2504,8 @@ function HandStrip({
               }}
               className={
                 isSelected
-                  ? "w-48 rounded border border-[var(--accent)] bg-stone-900 p-3"
-                  : "w-48 rounded border border-stone-700 bg-stone-950 p-3"
+                  ? "h-[7.25rem] w-48 shrink-0 snap-start snap-always rounded border border-[var(--accent)] bg-stone-900 p-3"
+                  : "h-[7.25rem] w-48 shrink-0 snap-start snap-always rounded border border-stone-700 bg-stone-950 p-3"
               }
               onMouseEnter={() => setHoveredId(card.id)}
               onMouseLeave={() => setHoveredId((current) => (current === card.id ? null : current))}
@@ -2758,43 +2938,48 @@ function SearchPanel({
     : pick.length <= amount;
 
   return (
-    <section className="rounded border border-[var(--accent)]/40 bg-[var(--accent)]/10 p-4">
-      <h2 className="text-sm font-medium text-[var(--accent)]">
-        {mode === "deck"
-          ? `Search deck — pick ${String(amount)}`
-          : `Graveyard — pick up to ${String(amount)}`}
-      </h2>
-      <ul className="mt-3 space-y-2">
+    <BoardModal
+      title={mode === "deck" ? "Search deck" : "Search graveyard"}
+      subtitle={
+        mode === "deck"
+          ? `Pick ${String(amount)} card${amount === 1 ? "" : "s"} from your deck.`
+          : `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} from your graveyard to return to hand.`
+      }
+    >
+      <ul className="mt-4 space-y-2">
         {options.map((instanceId) => {
           const instance = state.cards[instanceId];
           const def = instance !== undefined ? getCard(instance.cardId) : undefined;
           const checked = pick.includes(instanceId);
           return (
             <li key={instanceId}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  disabled={!checked && pick.length >= amount}
-                  onChange={() => onToggle(instanceId)}
-                />
-                {def?.name ?? instanceId}
-              </label>
+              <button
+                type="button"
+                className={
+                  checked
+                    ? "w-full rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-2 text-left"
+                    : "w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-stone-500"
+                }
+                disabled={!checked && pick.length >= amount}
+                onClick={() => onToggle(instanceId)}
+              >
+                <TacticChoiceContent def={def} fallbackId={instanceId} />
+              </button>
             </li>
           );
         })}
         {options.length === 0 && (
-          <li className="text-sm text-stone-400">No eligible cards.</li>
+          <li className="text-sm text-red-300">No eligible cards.</li>
         )}
       </ul>
       <button
         type="button"
-        className={`${btnPrimary} mt-3`}
+        className={`${btnPrimary} mt-4`}
         disabled={!canConfirm}
         onClick={onConfirm}
       >
-        Confirm
+        Confirm ({String(pick.length)}/{String(amount)})
       </button>
-    </section>
+    </BoardModal>
   );
 }
