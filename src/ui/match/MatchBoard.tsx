@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import {
   countInstalledCopies,
@@ -42,6 +42,7 @@ import {
   type FaceCardId,
   type FaceKind,
   type GameState,
+  type ChainLink,
   type PlayerId,
   type SymbolInstanceId,
   type SymbolType,
@@ -856,13 +857,16 @@ export function MatchBoard() {
 
           {pending?.type === "reaction-priority" && (
             <div className="flex flex-wrap items-center gap-3 rounded border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
-              <span>
+              <span className="flex min-w-0 flex-wrap items-center gap-x-1">
                 Chain ({String(state.chainStack.length)} link
                 {state.chainStack.length === 1 ? "" : "s"}) — priority:{" "}
                 <strong>{pending.priorityPlayerId}</strong>
-                {state.chainStack.length > 0
-                  ? ` · top: ${state.chainStack[state.chainStack.length - 1]?.kind ?? "?"}`
-                  : ""}
+                {state.chainStack.length > 0 && (
+                  <>
+                    {" · "}
+                    <ChainLinkHover state={state} link={state.chainStack.at(-1)} />
+                  </>
+                )}
               </span>
               <button
                 type="button"
@@ -902,6 +906,94 @@ const btnClass =
   "rounded border border-stone-600 bg-stone-900/80 px-3 py-1.5 text-sm text-stone-100 hover:border-[var(--accent)] hover:text-[var(--accent)]";
 const btnPrimary =
   "rounded border border-[var(--accent)] bg-[var(--accent)]/15 px-3 py-1.5 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/25";
+
+function ChainLinkHover({
+  state,
+  link,
+}: {
+  state: GameState;
+  link: ChainLink | undefined;
+}) {
+  if (link === undefined) return null;
+
+  const card =
+    link.cardInstanceId !== null ? state.cards[link.cardInstanceId] : undefined;
+  const def = card !== undefined ? getCard(card.cardId) : undefined;
+
+  if (def !== undefined) {
+    return (
+      <span className="group relative inline-block">
+        <span
+          className={
+            link.negated
+              ? "cursor-help font-medium text-amber-100/70 underline decoration-dotted line-through"
+              : "cursor-help font-medium text-amber-50 underline decoration-dotted"
+          }
+        >
+          {def.name}
+        </span>
+        <div
+          className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-50 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+          role="tooltip"
+        >
+          <p className="text-sm font-medium text-stone-100">{def.name}</p>
+          <p className="mt-1 text-xs text-stone-400">
+            {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
+            {link.negated ? " · negated" : ""}
+          </p>
+          <div className="mt-2 space-y-1 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+            <p>{formatTypeLine(def)}</p>
+            <p className="text-stone-500">{formatForgeLine(def.forge)}</p>
+            {formatEffectRegion(def).map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        </div>
+      </span>
+    );
+  }
+
+  if (link.kind === "attack" && link.attackerId !== null && link.attackId !== null) {
+    const creature = state.creatures[link.attackerId];
+    const creatureDef =
+      creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
+    const attack = creatureDef?.attacks.find((entry) => entry.id === link.attackId);
+    const title =
+      attack !== undefined && creatureDef !== undefined
+        ? `${creatureDef.name} — ${attack.name}`
+        : (creatureDef?.name ?? "Attack");
+
+    return (
+      <span className="group relative inline-block">
+        <span
+          className={
+            link.negated
+              ? "cursor-help font-medium text-amber-100/70 underline decoration-dotted line-through"
+              : "cursor-help font-medium text-amber-50 underline decoration-dotted"
+          }
+        >
+          {title}
+        </span>
+        <div
+          className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-50 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
+          role="tooltip"
+        >
+          <p className="text-sm font-medium text-stone-100">{title}</p>
+          {attack !== undefined && (
+            <p className="mt-1 text-xs text-stone-400">{formatAttackLine(attack)}</p>
+          )}
+          {attack?.rulesText !== undefined && attack.rulesText !== "" && (
+            <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+              {attack.rulesText}
+            </p>
+          )}
+        </div>
+      </span>
+    );
+  }
+
+  return <span className="font-medium text-amber-50">{link.kind}</span>;
+}
 
 function ErrorSnackbar({
   error,
@@ -1349,6 +1441,73 @@ function creatureHasArmedAttack(state: GameState, creature: CreatureState): bool
 
 const CREATURE_TOOLTIP_WIDTH_PX = 256; // w-64
 const CREATURE_TOOLTIP_GAP_PX = 8;
+const TOOLTIP_VIEW_MARGIN_PX = 8;
+
+function clampTooltipLeft(left: number, width: number): number {
+  const max = window.innerWidth - TOOLTIP_VIEW_MARGIN_PX - width;
+  return Math.min(Math.max(left, TOOLTIP_VIEW_MARGIN_PX), Math.max(TOOLTIP_VIEW_MARGIN_PX, max));
+}
+
+/** Places a primary + aside tooltip pair above `anchor`, flipped/clamped so neither spills the viewport. */
+function placeTooltipPair(
+  anchor: DOMRect,
+  tooltipWidth: number,
+  gap: number,
+): { readonly primaryLeft: number; readonly secondaryLeft: number; readonly bottom: number } {
+  const primaryPreferred = anchor.left;
+  const secondaryPreferred = primaryPreferred + tooltipWidth + gap;
+  const fitsRight =
+    secondaryPreferred + tooltipWidth <= window.innerWidth - TOOLTIP_VIEW_MARGIN_PX;
+
+  const primaryLeft = clampTooltipLeft(
+    fitsRight ? primaryPreferred : anchor.right - tooltipWidth,
+    tooltipWidth,
+  );
+  const secondaryLeft = clampTooltipLeft(
+    fitsRight ? secondaryPreferred : primaryLeft - gap - tooltipWidth,
+    tooltipWidth,
+  );
+
+  return {
+    primaryLeft,
+    secondaryLeft,
+    bottom: window.innerHeight - anchor.top + gap,
+  };
+}
+
+function useAnchoredTooltipPair(
+  hovered: boolean,
+  rootRef: RefObject<HTMLElement | null>,
+  tooltipWidth: number,
+  gap: number,
+) {
+  const [pos, setPos] = useState<{
+    readonly primaryLeft: number;
+    readonly secondaryLeft: number;
+    readonly bottom: number;
+  } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!hovered) {
+      setPos(null);
+      return;
+    }
+    const update = () => {
+      const node = rootRef.current;
+      if (node === null) return;
+      setPos(placeTooltipPair(node.getBoundingClientRect(), tooltipWidth, gap));
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [hovered, rootRef, tooltipWidth, gap]);
+
+  return pos;
+}
 
 function CreatureTile({
   state,
@@ -1368,16 +1527,13 @@ function CreatureTile({
   onCancelAttack: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [flipAside, setFlipAside] = useState(false);
-
-  const updateFlip = () => {
-    const node = rootRef.current;
-    if (node === null) return;
-    const rect = node.getBoundingClientRect();
-    const pairWidth = CREATURE_TOOLTIP_WIDTH_PX * 2 + CREATURE_TOOLTIP_GAP_PX;
-    const margin = 8;
-    setFlipAside(rect.left + pairWidth > window.innerWidth - margin);
-  };
+  const [hovered, setHovered] = useState(false);
+  const pairPos = useAnchoredTooltipPair(
+    hovered,
+    rootRef,
+    CREATURE_TOOLTIP_WIDTH_PX,
+    CREATURE_TOOLTIP_GAP_PX,
+  );
 
   const def = getCreatureDefinition(creature.definitionId);
   if (def === undefined) return null;
@@ -1394,102 +1550,104 @@ function CreatureTile({
   return (
     <div
       ref={rootRef}
-      onMouseEnter={updateFlip}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={
         selectedAttacker || absorbArmed
-          ? "group relative w-52 rounded border border-[var(--accent)] bg-stone-900 p-3"
-          : "group relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
+          ? "relative w-52 rounded border border-[var(--accent)] bg-stone-900 p-3"
+          : "relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
       }
     >
-      <div
-        className={
-          flipAside
-            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-0 z-40 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-40 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-        }
-        role="tooltip"
-      >
-        <p className="text-sm font-medium text-stone-100">{def.name}</p>
-        <p className="mt-1 text-xs text-stone-400">
-          HP {life}/{def.life} · Shield {creature.shields}
-          {creature.damagePreventBuffer > 0
-            ? ` · Prevent ${creature.damagePreventBuffer}`
-            : ""}
-          {creature.nextAttackBonus > 0 ? ` · Next ATK +${creature.nextAttackBonus}` : ""} · Toxin{" "}
-          {creature.toxinMarkers}
-        </p>
-        <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-          {creature.position} · {def.attributes.join(", ")}
-        </p>
-        <p className="mt-1 text-xs capitalize text-stone-400">
-          tokens:{" "}
-          {Object.entries(creature.attributeTokens)
-            .filter(([, n]) => (n ?? 0) > 0)
-            .map(([k, n]) => `${k} ${String(n)}`)
-            .join(", ") || "none"}
-        </p>
-        <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-          {def.passiveRulesText !== "" && (
-            <p>
-              <span className="text-stone-500">Passive:</span> {def.passiveRulesText}
-            </p>
-          )}
-          {def.attacks.map((attack) => (
-            <p key={attack.id}>
-              <span className="text-stone-500">{attack.kind === "basic" ? "Basic" : "Special"}:</span>{" "}
-              {formatAttackLine(attack)}
-              {attack.range ? " (Range)" : ""}
-              {" · "}
-              <span className="text-[var(--accent)]">
-                [{formatAttackCost(attack.requires) || "—"}
-                {attack.discards !== undefined
-                  ? `; discard ${formatAttackCost(attack.discards)}`
+      {pairPos !== null &&
+        createPortal(
+          <>
+            <div
+              className="pointer-events-none fixed z-[60] w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
+              style={{ left: pairPos.primaryLeft, bottom: pairPos.bottom }}
+              role="tooltip"
+            >
+              <p className="text-sm font-medium text-stone-100">{def.name}</p>
+              <p className="mt-1 text-xs text-stone-400">
+                HP {life}/{def.life} · Shield {creature.shields}
+                {creature.damagePreventBuffer > 0
+                  ? ` · Prevent ${creature.damagePreventBuffer}`
                   : ""}
-                ]
-              </span>
-            </p>
-          ))}
-        </div>
-      </div>
-
-      <div
-        className={
-          flipAside
-            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-[16.5rem] z-40 hidden w-64 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-[16.5rem] z-40 hidden w-64 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-        }
-        role="tooltip"
-      >
-        <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
-          Equipment
-        </p>
-        {equipment.length === 0 ? (
-          <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
-        ) : (
-          <ul className="mt-2 space-y-2">
-            {equipment.map(({ instanceId, def: equipDef }) => (
-              <li
-                key={instanceId}
-                className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
-              >
-                <p className="text-sm font-medium text-stone-100">{equipDef.name}</p>
-                <p className="mt-0.5 text-[0.65rem] text-stone-500">
-                  {formatEnergyCost(equipDef)}E · {formatTypeLine(equipDef)}
-                </p>
-                <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-                  {formatEffectRegion(equipDef).join("\n")}
-                </pre>
-                {(equipDef.equipment?.abilities.length ?? 0) > 0 && (
-                  <p className="mt-1 text-[0.65rem] text-stone-500">
-                    Standing: {String(equipDef.equipment?.abilities.length)} abilit
-                    {(equipDef.equipment?.abilities.length ?? 0) === 1 ? "y" : "ies"}
+                {creature.nextAttackBonus > 0 ? ` · Next ATK +${creature.nextAttackBonus}` : ""} ·
+                Toxin {creature.toxinMarkers}
+              </p>
+              <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
+                {creature.position} · {def.attributes.join(", ")}
+              </p>
+              <p className="mt-1 text-xs capitalize text-stone-400">
+                tokens:{" "}
+                {Object.entries(creature.attributeTokens)
+                  .filter(([, n]) => (n ?? 0) > 0)
+                  .map(([k, n]) => `${k} ${String(n)}`)
+                  .join(", ") || "none"}
+              </p>
+              <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                {def.passiveRulesText !== "" && (
+                  <p>
+                    <span className="text-stone-500">Passive:</span> {def.passiveRulesText}
                   </p>
                 )}
-              </li>
-            ))}
-          </ul>
+                {def.attacks.map((attack) => (
+                  <p key={attack.id}>
+                    <span className="text-stone-500">
+                      {attack.kind === "basic" ? "Basic" : "Special"}:
+                    </span>{" "}
+                    {formatAttackLine(attack)}
+                    {attack.range ? " (Range)" : ""}
+                    {" · "}
+                    <span className="text-[var(--accent)]">
+                      [{formatAttackCost(attack.requires) || "—"}
+                      {attack.discards !== undefined
+                        ? `; discard ${formatAttackCost(attack.discards)}`
+                        : ""}
+                      ]
+                    </span>
+                  </p>
+                ))}
+              </div>
+            </div>
+            <div
+              className="pointer-events-none fixed z-[60] w-64 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              style={{ left: pairPos.secondaryLeft, bottom: pairPos.bottom }}
+              role="tooltip"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
+                Equipment
+              </p>
+              {equipment.length === 0 ? (
+                <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {equipment.map(({ instanceId, def: equipDef }) => (
+                    <li
+                      key={instanceId}
+                      className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
+                    >
+                      <p className="text-sm font-medium text-stone-100">{equipDef.name}</p>
+                      <p className="mt-0.5 text-[0.65rem] text-stone-500">
+                        {formatEnergyCost(equipDef)}E · {formatTypeLine(equipDef)}
+                      </p>
+                      <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                        {formatEffectRegion(equipDef).join("\n")}
+                      </pre>
+                      {(equipDef.equipment?.abilities.length ?? 0) > 0 && (
+                        <p className="mt-1 text-[0.65rem] text-stone-500">
+                          Standing: {String(equipDef.equipment?.abilities.length)} abilit
+                          {(equipDef.equipment?.abilities.length ?? 0) === 1 ? "y" : "ies"}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </>,
+          document.body,
         )}
-      </div>
 
       <button type="button" className="w-full text-left" onClick={() => onCreatureClick(creature)}>
         <p className="font-medium text-stone-100">{def.name}</p>
@@ -1642,16 +1800,13 @@ function FaceCardTile({
   hasRolled: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [flipAside, setFlipAside] = useState(false);
-
-  const updateFlip = () => {
-    const node = rootRef.current;
-    if (node === null) return;
-    const rect = node.getBoundingClientRect();
-    const pairWidth = FACE_TOOLTIP_WIDTH_PX * 2 + FACE_TOOLTIP_GAP_PX;
-    const margin = 8;
-    setFlipAside(rect.left + pairWidth > window.innerWidth - margin);
-  };
+  const [hovered, setHovered] = useState(false);
+  const pairPos = useAnchoredTooltipPair(
+    hovered,
+    rootRef,
+    FACE_TOOLTIP_WIDTH_PX,
+    FACE_TOOLTIP_GAP_PX,
+  );
 
   const face = getFaceCard(entry.faceCardId);
   const kindLabel =
@@ -1669,64 +1824,65 @@ function FaceCardTile({
   return (
     <div
       ref={rootRef}
-      onMouseEnter={updateFlip}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={
         entry.showing
-          ? "group relative w-40 rounded border border-[var(--accent)] bg-[var(--accent)]/15 p-3"
+          ? "relative w-40 rounded border border-[var(--accent)] bg-[var(--accent)]/15 p-3"
           : hasRolled
-            ? "group relative w-40 rounded border border-stone-800 bg-stone-950/70 p-3 opacity-55"
-            : "group relative w-40 rounded border border-stone-700 bg-stone-950 p-3"
+            ? "relative w-40 rounded border border-stone-800 bg-stone-950/70 p-3 opacity-55"
+            : "relative w-40 rounded border border-stone-700 bg-stone-950 p-3"
       }
     >
-      <div
-        className={
-          flipAside
-            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-0 z-20 hidden w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-20 hidden w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-        }
-        role="tooltip"
-      >
-        <p className="text-sm font-medium text-stone-100">{face?.name ?? entry.faceCardId}</p>
-        <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-          {tooltip}
-        </pre>
-      </div>
-      <div
-        className={
-          flipAside
-            ? "pointer-events-none absolute bottom-[calc(100%+0.5rem)] right-[14.5rem] z-20 hidden w-56 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-            : "pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-[14.5rem] z-20 hidden w-56 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-        }
-        role="tooltip"
-      >
-        <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
-          Overloads
-        </p>
-        {attached.length === 0 ? (
-          <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
-        ) : (
-          <ul className="mt-2 space-y-2">
-            {attached.map((card) => {
-              const def = getCard(card.cardId);
-              const effects = def !== undefined ? formatEffectRegion(def) : ["(unknown card)"];
-              return (
-                <li
-                  key={card.id}
-                  className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
-                >
-                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
-                  {def !== undefined && (
-                    <p className="mt-0.5 text-[0.65rem] text-stone-500">{formatTypeLine(def)}</p>
-                  )}
-                  <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-                    {effects.join("\n")}
-                  </pre>
-                </li>
-              );
-            })}
-          </ul>
+      {pairPos !== null &&
+        createPortal(
+          <>
+            <div
+              className="pointer-events-none fixed z-[60] w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
+              style={{ left: pairPos.primaryLeft, bottom: pairPos.bottom }}
+              role="tooltip"
+            >
+              <p className="text-sm font-medium text-stone-100">{face?.name ?? entry.faceCardId}</p>
+              <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                {tooltip}
+              </pre>
+            </div>
+            <div
+              className="pointer-events-none fixed z-[60] w-56 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              style={{ left: pairPos.secondaryLeft, bottom: pairPos.bottom }}
+              role="tooltip"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
+                Overloads
+              </p>
+              {attached.length === 0 ? (
+                <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {attached.map((card) => {
+                    const def = getCard(card.cardId);
+                    const effects = def !== undefined ? formatEffectRegion(def) : ["(unknown card)"];
+                    return (
+                      <li
+                        key={card.id}
+                        className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
+                      >
+                        <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                        {def !== undefined && (
+                          <p className="mt-0.5 text-[0.65rem] text-stone-500">{formatTypeLine(def)}</p>
+                        )}
+                        <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                          {effects.join("\n")}
+                        </pre>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </>,
+          document.body,
         )}
-      </div>
       <p
         className={
           entry.showing
