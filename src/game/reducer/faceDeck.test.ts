@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY } from "../content/cards.js";
 import {
   ARCANE_ECHO_FACE,
+  COMBO_MECHANICAL_FACE_DECK,
   CONTROL_FACE_DECK,
   ENGINE_TEST_FACE_DECK,
   PROTOTYPE_FACE_DECK,
   SPECIAL_FACE_CARDS,
+  TEMPO_FACE_DECK,
   syntheticFaceId,
 } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
@@ -39,6 +41,18 @@ describe("face deck", () => {
     expect(validateFaceDeck(CONTROL_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
     expect(CONTROL_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
     expect(new Set(CONTROL_FACE_DECK).size).toBe(CONTROL_FACE_DECK.length);
+  });
+
+  it("keeps the builtin tempo face deck legal under attribute caps", () => {
+    expect(validateFaceDeck(TEMPO_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
+    expect(TEMPO_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(new Set(TEMPO_FACE_DECK).size).toBe(TEMPO_FACE_DECK.length);
+  });
+
+  it("keeps the builtin combo mechanical face deck legal under attribute caps", () => {
+    expect(validateFaceDeck(COMBO_MECHANICAL_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
+    expect(COMBO_MECHANICAL_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(new Set(COMBO_MECHANICAL_FACE_DECK).size).toBe(COMBO_MECHANICAL_FACE_DECK.length);
   });
 
   it("refuses a face deck over the twelve-card cap", () => {

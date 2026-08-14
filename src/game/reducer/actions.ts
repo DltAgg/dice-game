@@ -137,6 +137,18 @@ export type GameAction =
       readonly slotIndexes: readonly number[];
       readonly faceCardId: FaceCardId;
     }
+  /**
+   * Completes a pending replace-synthetic-face (Reforge): uninstall the named
+   * slot's matching face to the pool and install a different pool face there.
+   * Not a forge — no forge-draw.
+   */
+  | {
+      readonly type: "RESOLVE_REPLACE_SYNTHETIC_FACE";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId;
+      readonly slotIndex: number;
+      readonly faceCardId: FaceCardId;
+    }
   | {
       readonly type: "RESOLVE_CHOOSE_DIE";
       readonly playerId: PlayerId;

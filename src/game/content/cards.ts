@@ -75,6 +75,16 @@ export const GOVERNOR: CardId = asCardId("card-governor");
 export const SPARE_COG: CardId = asCardId("card-spare-cog");
 export const DIE_PRESS: CardId = asCardId("card-die-press");
 export const FOUNDRY: CardId = asCardId("card-foundry");
+export const TRANSMISSION: CardId = asCardId("card-transmission");
+export const CAMSHAFT: CardId = asCardId("card-camshaft");
+export const SERVOMOTOR: CardId = asCardId("card-servomotor");
+export const SAFETY_LATCH: CardId = asCardId("card-safety-latch");
+export const BLUEPRINT: CardId = asCardId("card-blueprint");
+export const STAMP: CardId = asCardId("card-stamp");
+export const COUPLING: CardId = asCardId("card-coupling");
+export const CLOCKWORK: CardId = asCardId("card-clockwork");
+export const RECALIBRATE: CardId = asCardId("card-recalibrate");
+export const REFORGE: CardId = asCardId("card-reforge");
 export const TEMPER: CardId = asCardId("card-temper");
 export const OPENING_CUT: CardId = asCardId("card-opening-cut");
 export const PRESS_THE_ATTACK: CardId = asCardId("card-press-the-attack");
@@ -1026,6 +1036,178 @@ const DEFINITIONS: readonly CardDefinition[] = [
     },
   }),
 
+  // --- Mechanical combo wave 2 (sequencing / conversion / loops) ---
+  card({
+    id: TRANSMISSION,
+    name: "Transmission",
+    energyCost: 2,
+    type: "overload",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Can only overload a Mechanical face.\nOn absorb: copy another symbol onto it.",
+    overload: {
+      faceSymbols: ["mechanical"],
+      onRoll: [],
+      onAbsorb: [{ type: "copy-pool-symbol" }],
+    },
+  }),
+  card({
+    id: CAMSHAFT,
+    name: "Camshaft",
+    energyCost: 2,
+    type: "overload",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText:
+      "Can only overload a Mechanical face.\n" +
+      "On roll: the next face you install this turn costs 1 Energy less.",
+    overload: {
+      faceSymbols: ["mechanical"],
+      onRoll: [{ type: "arm-forge-discount", amount: 1 }],
+    },
+  }),
+  card({
+    id: SERVOMOTOR,
+    name: "Servomotor",
+    energyCost: 2,
+    type: "equipment",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "On absorb Mechanical: generate Mechanical.",
+    equipment: {
+      mayTargetOpponent: false,
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["mechanical"],
+          effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: SAFETY_LATCH,
+    name: "Safety Latch",
+    energyCost: 2,
+    type: "reaction",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Prevent 1 damage. Generate 1 Mechanical.",
+    effect: {
+      effects: [
+        { type: "grant-damage-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+        { type: "generate-symbol", symbol: "mechanical", amount: 1 },
+      ],
+    },
+  }),
+  card({
+    id: BLUEPRINT,
+    name: "Blueprint",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText:
+      "Generate 1 Mechanical.\nThe next face you install this turn costs 1 Energy less.",
+    effect: {
+      effects: [
+        { type: "generate-symbol", symbol: "mechanical", amount: 1 },
+        { type: "arm-forge-discount", amount: 1 },
+      ],
+    },
+  }),
+  card({
+    id: STAMP,
+    name: "Stamp",
+    energyCost: 3,
+    type: "instant",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Apply the modifiers of one of your dice again.",
+    effect: {
+      requires: { mechanical: 1 },
+      effects: [{ type: "reapply-die-modifiers" }],
+    },
+  }),
+  card({
+    id: COUPLING,
+    name: "Coupling",
+    energyCost: 3,
+    type: "instant",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "The next face effect you resolve this turn is resolved twice.",
+    effect: {
+      requires: { mechanical: 2 },
+      effects: [{ type: "arm-resolve-next-face-effect-twice" }],
+    },
+  }),
+  card({
+    id: CLOCKWORK,
+    name: "Clockwork",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["continuous"],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "On roll Mechanical: generate Mechanical.",
+    ritual: {
+      activeWhen: { mechanical: 2 },
+      effects: [],
+      standingAbilities: [
+        {
+          type: "on-roll-symbol",
+          symbol: "mechanical",
+          rollingPlayer: "controller",
+          effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: RECALIBRATE,
+    name: "Recalibrate",
+    energyCost: 3,
+    type: "reaction",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText: "Return a card that costs 2 or less from your discard pile to your hand.",
+    effect: {
+      effects: [{ type: "search-graveyard", amount: 1, maxEnergyCost: 2 }],
+    },
+  }),
+  card({
+    id: REFORGE,
+    name: "Reforge",
+    energyCost: 3,
+    type: "instant",
+    subtypes: [],
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    rulesText:
+      "Choose one Synthetic Mechanical face on one of your dice; return it to your face pool " +
+      "and install a different Synthetic Mechanical face from your pool onto that slot. " +
+      "This is not a forge — no forge-draw.",
+    effect: {
+      requires: { mechanical: 1 },
+      effects: [
+        {
+          type: "replace-synthetic-face",
+          kind: "synthetic",
+          attribute: "mechanical",
+        },
+      ],
+    },
+  }),
+
   // --- Martial / Wild / Toxin aggro package (authored) ---
   card({
     id: TEMPER,
@@ -1446,4 +1628,88 @@ const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
 
 export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id, copies]) =>
   Array.from({ length: copies }, () => id),
+);
+
+/**
+ * Builtin Tempo tactics deck — Mechanical / Luminar sequencing with light Wild /
+ * Toxin splash. Showcases clean absorb→pressure (Ratchet / Servomotor / Foundry
+ * feeding Cogwork Driver and Prism Herald), Camshaft / Blueprint discounts, and
+ * Aegis Link’s Luminar cost reduction — not Martial face-race and not Control
+ * disruption. Legal under M4: 50–60 cards, ≤4 copies per id.
+ */
+const TEMPO_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  // Absorb → pressure
+  [RATCHET, 4],
+  [SERVOMOTOR, 3],
+  [FOUNDRY, 3],
+  [TRANSMISSION, 2],
+  // Discounts / forge tempo
+  [CAMSHAFT, 3],
+  [BLUEPRINT, 3],
+  [SPARE_COG, 3],
+  [GOVERNOR, 2],
+  [ASSEMBLY_LINE, 2],
+  [DIE_PRESS, 2],
+  // Incremental tools
+  [SAFETY_LATCH, 3],
+  [STAMP, 2],
+  [RECALIBRATE, 2],
+  [CLOCKWORK, 2],
+  // Luminar glue (Aegis discount)
+  [BLADE_OF_SERENE_LIGHT, 3],
+  [LUMINAR_PRISM, 3],
+  [BARRIER_OF_LIGHT, 3],
+  [GLIMMER, 3],
+  [LUMINAR_JUDGEMENT, 2],
+  // Wild / Toxin splash — conversion, not Aggro beatdown
+  [WILD_ECHO, 2],
+  [UNTAMED, 2],
+  [PACK_SURGE, 2],
+  [DOSE, 2],
+];
+
+export const TEMPO_DECK: readonly CardId[] = TEMPO_DECK_COUNTS.flatMap(([id, copies]) =>
+  Array.from({ length: copies }, () => id),
+);
+
+/**
+ * Builtin Combo Mechanical tactics deck — densifies wave 1+2 Mechanical engine
+ * cards around absorb-vs-pool tension (Ratchet / Transmission / Foundry vs
+ * Governor / Clockwork / Camshaft), with Stamp / Coupling / Reforge payoffs and
+ * Luminar + Wild glue for Lens Choir. Showcases chaining and symbol conversion,
+ * not large generic damage. Legal under M4: 50–60 cards, ≤4 copies per id.
+ */
+const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  // Absorb line
+  [RATCHET, 4],
+  [SERVOMOTOR, 3],
+  [TRANSMISSION, 3],
+  [FOUNDRY, 4],
+  // Pool / roll line
+  [GOVERNOR, 3],
+  [CAMSHAFT, 3],
+  [CLOCKWORK, 4],
+  [BLUEPRINT, 3],
+  // Forge density
+  [ASSEMBLY_LINE, 3],
+  [DIE_PRESS, 3],
+  // Combo payoffs
+  [STAMP, 3],
+  [COUPLING, 3],
+  [REFORGE, 3],
+  [RECALIBRATE, 2],
+  [SAFETY_LATCH, 2],
+  // Luminar glue
+  [LUMINAR_PRISM, 2],
+  [BLADE_OF_SERENE_LIGHT, 2],
+  [GLIMMER, 2],
+  [BARRIER_OF_LIGHT, 2],
+  // Wild / Toxin — Lens Choir Cascade + Combo attrition splash
+  [WILD_ECHO, 2],
+  [UNTAMED, 2],
+  [DOSE, 2],
+];
+
+export const COMBO_MECHANICAL_DECK: readonly CardId[] = COMBO_MECHANICAL_DECK_COUNTS.flatMap(
+  ([id, copies]) => Array.from({ length: copies }, () => id),
 );

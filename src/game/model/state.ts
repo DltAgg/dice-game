@@ -188,6 +188,12 @@ export type PendingDecision =
       readonly target: "own-die" | "opponent-die";
     }
   | {
+      readonly type: "replace-synthetic-face";
+      readonly controllerId: PlayerId;
+      readonly kind: FaceKind;
+      readonly attribute: Attribute;
+    }
+  | {
       readonly type: "choose-die";
       readonly controllerId: PlayerId;
       readonly filter: DieChoiceFilter;

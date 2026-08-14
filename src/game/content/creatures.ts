@@ -12,6 +12,9 @@ import {
  * and multi-clause riders print in full; attack `effect` is the damage line.
  * Control attack resource riders are wired via `on-attack` + `attackKinds`
  * (no attack `effects[]` yet). Do not approximate missing riders.
+ *
+ * Plus authored Mechanical / Luminar creatures for Tempo and Combo Mechanical
+ * constructed (not on builtin Aggro/Control squads).
  */
 
 export const MINOTAUR: CreatureDefinitionId = asCreatureDefinitionId("creature-minotaur");
@@ -24,6 +27,23 @@ export const CORRUPTING_ELDER: CreatureDefinitionId = asCreatureDefinitionId(
 export const VOID_SUMMONER: CreatureDefinitionId = asCreatureDefinitionId(
   "creature-void-summoner",
 );
+
+/** Luminar — Tempo glue: absorb → attack bonus, heal / ally buff. */
+export const PRISM_HERALD: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-prism-herald");
+/** Luminar — Combo glue: absorb / attack → generate Luminar. */
+export const LENS_CHOIR: CreatureDefinitionId = asCreatureDefinitionId("creature-lens-choir");
+/** Luminar — Tempo/support: Luminar discount + ally-attack heal. */
+export const AEGIS_LINK: CreatureDefinitionId = asCreatureDefinitionId("creature-aegis-link");
+/** Mechanical — Tempo: absorb → attack bonus; Overclock regenerates Mechanical. */
+export const COGWORK_DRIVER: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-cogwork-driver");
+/** Mechanical — Combo: absorb → generate Mechanical; Stamp Pulse re-fires dice. */
+export const SERVO_ASSEMBLY: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-servo-assembly");
+/** Mechanical — Combo: roll Mechanical → attack bonus; forge-discount special. */
+export const CLOCKWORK_DYNAMO: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-clockwork-dynamo");
 
 const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
@@ -304,15 +324,322 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   },
 ];
 
+/**
+ * Mechanical / Luminar catalogue for Tempo and Combo Mechanical constructed.
+ * Fully wired with existing `010` / `012` vocabulary — no deferred clauses.
+ */
+const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
+  {
+    id: PRISM_HERALD,
+    name: "Prism Herald",
+    life: 13,
+    attributes: ["luminar"],
+    passiveRulesText: "On absorb Luminar: this creature's next attack deals +1 damage.",
+    standingAbilities: [
+      {
+        type: "on-absorb",
+        symbols: ["luminar"],
+        effects: [
+          {
+            type: "grant-next-attack-bonus",
+            amount: 1,
+            target: { kind: "source-creature" },
+          },
+        ],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-prism-herald-gleam"),
+        name: "Gleam",
+        kind: "basic",
+        requires: { luminar: 1 },
+        discards: { luminar: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Heal 1 on the most damaged ally.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "heal", amount: 1, target: { kind: "most-damaged-ally" } },
+        ],
+      },
+      {
+        id: asAttackId("attack-prism-herald-concord"),
+        name: "Concord",
+        kind: "special",
+        requires: { luminar: 1, mechanical: 1 },
+        discards: { luminar: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. An allied creature's next attack deals +1 damage.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [
+          {
+            type: "grant-next-attack-bonus",
+            amount: 1,
+            target: { kind: "choose-ally" },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: LENS_CHOIR,
+    name: "Lens Choir",
+    life: 12,
+    attributes: ["luminar"],
+    passiveRulesText: "On absorb Luminar: generate 1 Luminar.",
+    standingAbilities: [
+      {
+        type: "on-absorb",
+        symbols: ["luminar"],
+        effects: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["basic"],
+        effects: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [
+          { type: "gain-energy", amount: 1 },
+          { type: "generate-symbol", symbol: "luminar", amount: 1 },
+        ],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-lens-choir-focus"),
+        name: "Focus Beam",
+        kind: "basic",
+        requires: { luminar: 1 },
+        discards: { luminar: 1 },
+        range: false,
+        rulesText: "Deal 1 damage. Generate 1 Luminar.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
+      },
+      {
+        id: asAttackId("attack-lens-choir-cascade"),
+        name: "Cascade",
+        kind: "special",
+        requires: { luminar: 1, wild: 1 },
+        discards: { luminar: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Gain 1 Energy. Generate 1 Luminar.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+    ],
+  },
+  {
+    id: AEGIS_LINK,
+    name: "Aegis Link",
+    life: 14,
+    attributes: ["luminar"],
+    passiveRulesText:
+      "The first [Luminar] card used each turn costs 1 Energy less.\n" +
+      "On attack, another ally: heal 1 on the most damaged ally.",
+    standingAbilities: [
+      {
+        type: "energy-cost-discount",
+        amount: 1,
+        oncePerTurn: true,
+        attributes: ["luminar"],
+      },
+      {
+        type: "on-attack",
+        attackerRelation: "ally-other",
+        effects: [
+          { type: "heal", amount: 1, target: { kind: "most-damaged-ally" } },
+        ],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-aegis-link-ward-strike"),
+        name: "Ward Strike",
+        kind: "basic",
+        requires: { luminar: 1 },
+        discards: { luminar: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Grant 1 Shield to this creature.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "grant-shield", amount: 1, target: { kind: "source-creature" } },
+        ],
+      },
+      {
+        id: asAttackId("attack-aegis-link-beacon"),
+        name: "Beacon",
+        kind: "special",
+        requires: { luminar: 1, mechanical: 1 },
+        discards: { luminar: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Prevent 1 damage on an allied creature.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [
+          {
+            type: "grant-damage-prevent",
+            amount: 1,
+            target: { kind: "choose-ally" },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: COGWORK_DRIVER,
+    name: "Cogwork Driver",
+    life: 14,
+    attributes: ["mechanical"],
+    passiveRulesText: "On absorb Mechanical: this creature's next attack deals +1 damage.",
+    standingAbilities: [
+      {
+        type: "on-absorb",
+        symbols: ["mechanical"],
+        effects: [
+          {
+            type: "grant-next-attack-bonus",
+            amount: 1,
+            target: { kind: "source-creature" },
+          },
+        ],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-cogwork-driver-drive"),
+        name: "Drive",
+        kind: "basic",
+        requires: { mechanical: 1 },
+        discards: { mechanical: 1 },
+        range: false,
+        rulesText: "Deal 2 damage.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+      {
+        id: asAttackId("attack-cogwork-driver-overclock"),
+        name: "Overclock",
+        kind: "special",
+        requires: { mechanical: 1, luminar: 1 },
+        discards: { mechanical: 1 },
+        range: false,
+        rulesText: "Deal 3 damage. Generate 1 Mechanical.",
+        effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
+      },
+    ],
+  },
+  {
+    id: SERVO_ASSEMBLY,
+    name: "Servo Assembly",
+    life: 13,
+    attributes: ["mechanical"],
+    passiveRulesText: "On absorb Mechanical: generate 1 Mechanical.",
+    standingAbilities: [
+      {
+        type: "on-absorb",
+        symbols: ["mechanical"],
+        effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["basic"],
+        effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-servo-assembly-ratchet"),
+        name: "Ratchet",
+        kind: "basic",
+        requires: { mechanical: 1 },
+        discards: { mechanical: 1 },
+        range: false,
+        rulesText: "Deal 1 damage. Generate 1 Mechanical.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
+      },
+      {
+        id: asAttackId("attack-servo-assembly-stamp-pulse"),
+        name: "Stamp Pulse",
+        kind: "special",
+        requires: { mechanical: 2 },
+        discards: { mechanical: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Apply the modifiers of one of your dice again.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [{ type: "reapply-die-modifiers" }],
+      },
+    ],
+  },
+  {
+    id: CLOCKWORK_DYNAMO,
+    name: "Clockwork Dynamo",
+    life: 12,
+    attributes: ["mechanical"],
+    passiveRulesText: "On roll Mechanical: this creature's next attack deals +1 damage.",
+    standingAbilities: [
+      {
+        type: "on-roll-symbol",
+        symbol: "mechanical",
+        rollingPlayer: "controller",
+        effects: [
+          {
+            type: "grant-next-attack-bonus",
+            amount: 1,
+            target: { kind: "source-creature" },
+          },
+        ],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [{ type: "arm-forge-discount", amount: 1 }],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-clockwork-dynamo-spark"),
+        name: "Spark",
+        kind: "basic",
+        requires: { mechanical: 1 },
+        discards: { mechanical: 1 },
+        range: false,
+        rulesText: "Deal 2 damage.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+      {
+        id: asAttackId("attack-clockwork-dynamo-recalibrate"),
+        name: "Recalibrate",
+        kind: "special",
+        requires: { mechanical: 1, luminar: 1 },
+        discards: { mechanical: 1 },
+        range: false,
+        rulesText:
+          "Deal 2 damage. The next face you install this turn costs 1 Energy less.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+    ],
+  },
+];
+
+const ALL_DEFINITIONS: readonly CreatureDefinition[] = [
+  ...FIGMA_DEFINITIONS,
+  ...TEMPO_COMBO_DEFINITIONS,
+];
+
 export const CREATURES: Readonly<Record<string, CreatureDefinition>> = Object.fromEntries(
-  FIGMA_DEFINITIONS.map((definition) => [definition.id, definition]),
+  ALL_DEFINITIONS.map((definition) => [definition.id, definition]),
 );
 
 export const getCreatureDefinition = (id: CreatureDefinitionId): CreatureDefinition | undefined =>
   CREATURES[id];
 
-/** The six Figma Slow-game-test creatures, in board order. */
-export const ALL_CREATURES: readonly CreatureDefinition[] = FIGMA_DEFINITIONS;
+/** Figma Slow-game-test creatures plus Mechanical / Luminar Tempo–Combo catalogue. */
+export const ALL_CREATURES: readonly CreatureDefinition[] = ALL_DEFINITIONS;
 
 /**
  * Builtin Aggro loadout squad: Martial / Wild pressure (bible §27).
@@ -329,4 +656,24 @@ export const CONTROL_SQUAD: readonly CreatureDefinitionId[] = [
   ARCHMAGE,
   CORRUPTING_ELDER,
   VOID_SUMMONER,
+];
+
+/**
+ * Builtin Tempo squad: Mechanical absorb→pressure + Luminar discount/sustain.
+ * Deployment order: Cogwork Driver, Prism Herald, Aegis Link.
+ */
+export const TEMPO_SQUAD: readonly CreatureDefinitionId[] = [
+  COGWORK_DRIVER,
+  PRISM_HERALD,
+  AEGIS_LINK,
+];
+
+/**
+ * Builtin Combo Mechanical squad: Mech symbol loops + Luminar cascade glue.
+ * Deployment order: Servo Assembly, Clockwork Dynamo, Lens Choir.
+ */
+export const COMBO_MECHANICAL_SQUAD: readonly CreatureDefinitionId[] = [
+  SERVO_ASSEMBLY,
+  CLOCKWORK_DYNAMO,
+  LENS_CHOIR,
 ];

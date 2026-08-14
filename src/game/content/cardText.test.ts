@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   ASSEMBLY_LINE,
+  CLOCKWORK,
+  COUPLING,
   DIE_PRESS,
   ECLIPSE,
   ETERNAL_DARKNESS,
@@ -78,6 +80,20 @@ describe("English card printing", () => {
 
   it("prints Requires for Die Press as Mechanical + Mechanical", () => {
     const card = getCard(DIE_PRESS);
+    if (card === undefined) throw new Error("missing card");
+    expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
+  });
+
+  it("prints Active when for Clockwork as Mechanical + Mechanical", () => {
+    const card = getCard(CLOCKWORK);
+    if (card === undefined) throw new Error("missing card");
+    expect(formatTypeLine(card)).toBe("[Ritual / Continuous / Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Active when: Mechanical + Mechanical]");
+  });
+
+  it("prints Requires for Coupling as Mechanical + Mechanical", () => {
+    const card = getCard(COUPLING);
     if (card === undefined) throw new Error("missing card");
     expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
     expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");

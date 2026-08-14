@@ -1,7 +1,12 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
-import { resolveFaceForForge, preferredSlotsForForgeFaces } from "../rules/faces.js";
+import {
+  resolveFaceForForge,
+  preferredSlotsForForgeFaces,
+  legalSlotsForReplaceSyntheticFace,
+  eligiblePoolFacesForReplace,
+} from "../rules/faces.js";
 import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type FaceCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -420,6 +425,44 @@ function resolvePending(state: GameState): GameState {
       return resolvePending(result.state);
     }
     throw new Error("autoplay: no die for forge-faces");
+  }
+
+  if (pending.type === "replace-synthetic-face") {
+    const slots = legalSlotsForReplaceSyntheticFace(
+      state,
+      pending.controllerId,
+      pending.kind,
+      pending.attribute,
+    );
+    const choice = slots[0];
+    if (choice === undefined) {
+      throw new Error("autoplay: no slot for replace-synthetic-face");
+    }
+    const removedId = state.dice[choice.dieId]?.slots[choice.slotIndex]?.faceCardId;
+    if (removedId === undefined) {
+      throw new Error("autoplay: missing face on replace slot");
+    }
+    const [faceCardId] = eligiblePoolFacesForReplace(
+      state,
+      pending.controllerId,
+      pending.kind,
+      pending.attribute,
+      removedId,
+    );
+    if (faceCardId === undefined) {
+      throw new Error("autoplay: no pool face for replace-synthetic-face");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
+      playerId: pending.controllerId,
+      dieId: choice.dieId,
+      slotIndex: choice.slotIndex,
+      faceCardId,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_REPLACE_SYNTHETIC_FACE`);
+    }
+    return resolvePending(result.state);
   }
 
   if (pending.type === "choose-die") {

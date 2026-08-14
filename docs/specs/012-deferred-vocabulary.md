@@ -72,6 +72,11 @@ engine can resolve the clause honestly. Movers always go through
   back to pool; slot becomes natural Shield. Not a forge (no draw).
 - Pestilent Plague: +1 counter on roll; at 5, reset and try adjacent-slot
   install of another Plague.
+- `replace-synthetic-face` (Reforge): pending choice of an owned die slot whose
+  installed face matches `kind`+`attribute` (Synthetic Mechanical), return that
+  face to the pool (last-copy overload detach applies), then install a
+  **different** matching face from the pool onto the same slot. Not a forge —
+  no forge-draw. Whiffs when no legal complete choice exists.
 
 ## State Changes
 
@@ -104,6 +109,7 @@ engine can resolve the clause honestly. Movers always go through
 | `RESOLVE_MIND_CONTROL` | Strip overloads (one face all, or one each of up to two) |
 | `RESOLVE_SPLIT_DAMAGE` | Blade Rain / Extermination |
 | `RESOLVE_OPTIONAL_REROLL` | Adrenaline |
+| `RESOLVE_REPLACE_SYNTHETIC_FACE` | Reforge (`replace-synthetic-face`) |
 | `ACTIVATE_FACE` | Heritage / Plague activated ability |
 
 Illegal moves return `GameError` + original state.
@@ -156,6 +162,7 @@ Match-ui must render these pendings (hotseat + online):
 | `mind-control` | Mode + 1 or 2 opposing face cards |
 | `split-damage` | Assign integer damage that sums to `amount` |
 | `optional-reroll` | Accept or decline reroll of that die |
+| `replace-synthetic-face` | Pick owned Synthetic Mechanical slot + different matching pool face |
 
 Also: **Activate** control on a showing Forbidden Heritage / Pestilent Plague
 face during actions (`ACTIVATE_FACE`). Display Energy cost
@@ -163,9 +170,11 @@ face during actions (`ACTIVATE_FACE`). Display Energy cost
 Show optional reposition / swap prompts after Dive / Poisoned Charge /
 Instinct.
 
-`choose-creature` already has a Decline path for optional filters. The other
-pending types above are **not** in MatchBoard yet — the engine will sit on
-`pendingDecision` until the UI dispatches the matching resolve.
+`choose-creature` already has a Decline path for optional filters.
+`replace-synthetic-face` is wired in MatchBoard (slot → pool face →
+`RESOLVE_REPLACE_SYNTHETIC_FACE`). Other pending types above that are still
+missing a chooser will leave the engine sitting on `pendingDecision` until the
+UI dispatches the matching resolve.
 
 ## Acceptance Criteria
 
@@ -183,4 +192,5 @@ pending types above are **not** in MatchBoard yet — the engine will sit on
 - [x] `src/game/reducer/discounts.test.ts`
 - [x] `src/game/reducer/replay.test.ts`
 - [x] `src/game/reducer/pierce.test.ts`
+- [x] `src/game/reducer/replaceSyntheticFace.test.ts` (Reforge)
 - [x] Existing combat / prevent / playcard / triggers / autoplay suites

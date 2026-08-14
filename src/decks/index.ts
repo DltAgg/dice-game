@@ -5,11 +5,15 @@ export {
   AGGRO_SAVED_DECK_ID,
   buildAggroSavedDeck,
   buildBuiltinDecks,
+  buildComboMechanicalSavedDeck,
   buildControlSavedDeck,
   buildPrototypeSavedDeck,
+  buildTempoSavedDeck,
+  COMBO_MECHANICAL_SAVED_DECK_ID,
   CONTROL_SAVED_DECK_ID,
   isBuiltinDeckId,
   PROTOTYPE_SAVED_DECK_ID,
+  TEMPO_SAVED_DECK_ID,
   withBuiltinDecks,
 } from "./prototype.js";
 export { createMemoryDeckRepository } from "./memoryRepo.js";

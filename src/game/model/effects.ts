@@ -144,6 +144,17 @@ export type EffectDefinition =
       readonly target: "own-die" | "opponent-die";
     }
   /**
+   * Pending: choose an owned die slot whose installed face matches
+   * `kind`+`attribute`, return that face to the pool, then install a
+   * **different** matching face from the pool onto the same slot.
+   * Not a forge — no forge-draw (Reforge). Spec `012`.
+   */
+  | {
+      readonly type: "replace-synthetic-face";
+      readonly kind: FaceKind;
+      readonly attribute: Attribute;
+    }
+  /**
    * Toggle an **ally** between frontline and back. If moving to frontline would
    * exceed `frontlineSlots`, the controller chooses a living frontline ally to
    * swap with (via `setCreaturePosition`). Enemy targets whiff. Spec `012`.

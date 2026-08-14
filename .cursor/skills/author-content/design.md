@@ -50,9 +50,11 @@ Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/To
 Control = Arcane/Corruption/Darkness; Support = Arcane/Luminar/Wild/Mechanical
 (low-cost cards may splash).
 
-Builtin decks: `PROTOTYPE_DECK` (aggro) and `CONTROL_DECK` in `cards.ts`. Do not
-dump a new card into both without an identity reason. Legal constructed: 50–60
-tactics, ≤4 copies per id; face deck ≤12, ≤3 per attribute.
+Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`, and
+`COMBO_MECHANICAL_DECK` in `cards.ts` (snapshots in `src/decks/prototype.ts`).
+Do not dump a new card into Aggro and Control without an identity reason; Mech
+homes are Tempo / Combo Mechanical. Legal constructed: 50–60 tactics, ≤4 copies
+per id; face deck ≤12, ≤3 per attribute.
 
 ## Card kinds — when to use which
 

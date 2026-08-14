@@ -249,6 +249,20 @@ export type GameEvent =
       readonly faceCardId: FaceCardId;
     }
   | {
+      readonly type: "replace-synthetic-face-started";
+      readonly playerId: PlayerId;
+      readonly kind: FaceKind;
+      readonly attribute: Attribute;
+    }
+  | {
+      readonly type: "replace-synthetic-face-resolved";
+      readonly playerId: PlayerId;
+      readonly dieId: DieId;
+      readonly slotIndex: number;
+      readonly removedFaceCardId: FaceCardId;
+      readonly installedFaceCardId: FaceCardId;
+    }
+  | {
       readonly type: "energy-spent";
       readonly playerId: PlayerId;
       readonly amount: number;

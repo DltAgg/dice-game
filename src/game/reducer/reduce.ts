@@ -50,6 +50,7 @@ import {
 import {
   countInstalledCopies,
   eligibleFacesForForge,
+  eligiblePoolFacesForReplace,
   isLegalForgeKindForAttribute,
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
@@ -162,6 +163,11 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
     ) {
       allowed = true;
     } else if (pending.type === "forge-faces" && action.type === "RESOLVE_FORGE_FACES") {
+      allowed = true;
+    } else if (
+      pending.type === "replace-synthetic-face" &&
+      action.type === "RESOLVE_REPLACE_SYNTHETIC_FACE"
+    ) {
       allowed = true;
     } else if (pending.type === "choose-die" && action.type === "RESOLVE_CHOOSE_DIE") {
       allowed = true;
@@ -280,6 +286,14 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.playerId,
         action.dieId,
         action.slotIndexes,
+        action.faceCardId,
+      );
+    case "RESOLVE_REPLACE_SYNTHETIC_FACE":
+      return resolveReplaceSyntheticFace(
+        draft,
+        action.playerId,
+        action.dieId,
+        action.slotIndex,
         action.faceCardId,
       );
     case "RESOLVE_CHOOSE_DIE":
@@ -758,6 +772,78 @@ function resolveForgeFaces(
     dieId,
     slotIndexes: [...slotIndexes],
     faceCardId,
+  });
+  return resumeAfterEffectPause(draft);
+}
+
+/**
+ * Completes a pending replace-synthetic-face (Reforge). Uninstalls the named
+ * slot's matching face to the pool and installs a different pool face onto the
+ * same slot. Not a forge — no forge-draw.
+ */
+function resolveReplaceSyntheticFace(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId,
+  slotIndex: number,
+  faceCardId: FaceCardId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "replace-synthetic-face") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
+  if (die.ownerId !== playerId) return "INVALID_TARGET";
+
+  const slot = die.slots[slotIndex];
+  if (slot === undefined) return "INVALID_FACE";
+
+  const installedFace = getFaceCard(slot.faceCardId);
+  if (
+    installedFace === undefined ||
+    installedFace.kind !== pending.kind ||
+    installedFace.symbol !== pending.attribute
+  ) {
+    return "INVALID_CHOICE";
+  }
+
+  if (faceCardId === slot.faceCardId) return "INVALID_CHOICE";
+
+  const eligible = eligiblePoolFacesForReplace(
+    draft,
+    playerId,
+    pending.kind,
+    pending.attribute,
+    slot.faceCardId,
+  );
+  if (!eligible.includes(faceCardId)) return "FACE_NOT_AVAILABLE";
+
+  if (!takeFaceFromPool(draft, playerId, faceCardId)) {
+    return "FACE_NOT_AVAILABLE";
+  }
+
+  const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
+  const slots = die.slots.map((candidate) =>
+    candidate.index === slotIndex
+      ? { ...candidate, faceCardId, faceCardOwnerId: playerId }
+      : candidate,
+  );
+  patchDie(draft, dieId, { slots });
+
+  returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
+  if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
+    clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+  }
+
+  draft.pendingDecision = null;
+  emit(draft, {
+    type: "replace-synthetic-face-resolved",
+    playerId,
+    dieId,
+    slotIndex,
+    removedFaceCardId: displaced.faceCardId,
+    installedFaceCardId: faceCardId,
   });
   return resumeAfterEffectPause(draft);
 }

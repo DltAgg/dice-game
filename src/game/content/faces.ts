@@ -898,3 +898,45 @@ export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
   VITAL_SPARK,
   AEGIS,
 ];
+
+/**
+ * Builtin Tempo face deck — twelve unique cards, ≤3 per attribute.
+ * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
+ * Mechanical absorb/discount faces and Luminar sustain; Wild / Toxin synthetics
+ * cover Untamed / Dose forges and light conversion.
+ */
+export const TEMPO_FACE_DECK: readonly FaceCardId[] = [
+  GEAR,
+  PISTON,
+  FLYWHEEL,
+  VITAL_SPARK,
+  AEGIS,
+  REVELATION,
+  INSTINCT,
+  PACK,
+  BLOODSCENT,
+  NEEDLE,
+  SEEP,
+  VENOM,
+];
+
+/**
+ * Builtin Combo Mechanical face deck — twelve unique cards, ≤3 per attribute.
+ * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
+ * effectful Mechanical Reforge targets (Gear / Catalyst / Overcharge) plus
+ * Luminar / Wild / Toxin synthetics for Lens Choir, Untamed, and Dose.
+ */
+export const COMBO_MECHANICAL_FACE_DECK: readonly FaceCardId[] = [
+  GEAR,
+  CATALYST,
+  OVERCHARGE,
+  VITAL_SPARK,
+  AEGIS,
+  REVELATION,
+  INSTINCT,
+  PACK,
+  BLOODSCENT,
+  NEEDLE,
+  SEEP,
+  VENOM,
+];

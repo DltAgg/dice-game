@@ -114,6 +114,12 @@ card and an effect may demand more.
 | Control | Arcane, Corruption, Darkness |
 | Support | Arcane, Luminar, Wild, Mechanical |
 
+Builtin constructed lists (content + `src/decks/prototype.ts`): **Aggro**
+(`PROTOTYPE_*` / `deck-prototype`), **Control** (`CONTROL_*` /
+`deck-control`), **Tempo** (`TEMPO_*` / `deck-tempo` — Mech+Luminar sequencing),
+**Combo Mechanical** (`COMBO_MECHANICAL_*` / `deck-combo-mechanical` — Mech
+engine chaining). Do not dump Mech into Aggro/Control without an identity reason.
+
 > Support faces are not limited to only this, but should have low-cost cards
 > that contribute to other builds.
 
@@ -200,8 +206,8 @@ Corruption in that dump and are now Wild / Wild / Martial.
 ### Mechanical assembly (authored)
 
 First Mechanical engine-construction package (absorb-vs-pool: Ratchet / Foundry
-want absorb; Governor / Spare Cog / Die Press want the pool). Not in the Figma
-Aggro / Control lists; catalogue-only until a combo loadout is requested.
+want absorb; Governor / Spare Cog / Die Press want the pool). Not dumped into
+Aggro / Control; featured in builtin **Tempo** and **Combo Mechanical** lists.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -211,6 +217,27 @@ Aggro / Control lists; catalogue-only until a combo loadout is requested.
 | 2 | Spare Cog | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. |
 | 3 | Die Press | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
 | 3 | Foundry | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On absorb Mechanical: gain 1 Energy. |
+
+### Mechanical combo wave 2 (authored)
+
+Deepens Combo sequencing on the same absorb-vs-pool tension: Transmission /
+Servomotor / Foundry lean absorb; Camshaft / Clockwork / Blueprint / Stamp lean
+roll-pool; Coupling spends a stacked pool; Safety Latch / Recalibrate protect or
+reset without Arcane negate. Densified in builtin **Combo Mechanical**; Tempo
+takes a lighter cut. **Reforge** uses `replace-synthetic-face` (spec `012`).
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 2 | Transmission | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: copy another symbol onto it. |
+| 2 | Camshaft | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: next forge costs 1 less Energy. |
+| 2 | Servomotor | Equipment / Mechanical | 1 Synthetic Mechanical, your die | On absorb Mechanical: generate Mechanical. |
+| 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | Prevent 1 damage. Generate 1 Mechanical. |
+| 2 | Blueprint | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. Next forge costs 1 less Energy. |
+| 3 | Stamp | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* Reapply one of your dice's face modifiers. |
+| 3 | Coupling | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Next face effect this turn resolves twice. |
+| 3 | Clockwork | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On roll Mechanical: generate Mechanical. |
+| 3 | Recalibrate | Reaction / Mechanical | 1 Synthetic Mechanical, your die | Return a card that costs 2 or less from your GY to hand. |
+| 3 | Reforge | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* Replace one Synthetic Mechanical face on your die with a different pool face (no forge-draw). |
 
 ### Martial / Wild / Toxin aggro package (authored)
 

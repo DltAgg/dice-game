@@ -22,7 +22,15 @@ export * from "./rules/targeting.js";
 export * from "./rules/targets.js";
 export * from "./rules/tokens.js";
 
-export { ALL_CARDS, CARDS, CONTROL_DECK, PROTOTYPE_DECK, getCard } from "./content/cards.js";
+export {
+  ALL_CARDS,
+  CARDS,
+  COMBO_MECHANICAL_DECK,
+  CONTROL_DECK,
+  PROTOTYPE_DECK,
+  TEMPO_DECK,
+  getCard,
+} from "./content/cards.js";
 export {
   attributeLabel,
   formatEffectRegion,
@@ -33,9 +41,11 @@ export {
 } from "./content/cardText.js";
 export {
   ALL_CREATURES,
+  COMBO_MECHANICAL_SQUAD,
   CONTROL_SQUAD,
   CREATURES,
   PROTOTYPE_SQUAD,
+  TEMPO_SQUAD,
   getCreatureDefinition,
 } from "./content/creatures.js";
 export {
@@ -50,6 +60,7 @@ export {
   ARCANE_ECHO_FACE,
   BASIC_FACE_CARDS,
   BLADE_RAIN,
+  COMBO_MECHANICAL_FACE_DECK,
   CONTROL_FACE_DECK,
   CRUSH,
   FACE_CARDS,
@@ -63,6 +74,7 @@ export {
   SPECIAL_FACE_CARDS,
   SHIELD_FACE_ID,
   STARTING_DIE_SYMBOLS,
+  TEMPO_FACE_DECK,
   faceIdFor,
   faceIdForSymbol,
   getFaceCard,

@@ -1,10 +1,16 @@
 import {
+  COMBO_MECHANICAL_DECK,
+  COMBO_MECHANICAL_FACE_DECK,
+  COMBO_MECHANICAL_SQUAD,
   CONTROL_DECK,
   CONTROL_FACE_DECK,
   CONTROL_SQUAD,
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  TEMPO_DECK,
+  TEMPO_FACE_DECK,
+  TEMPO_SQUAD,
 } from "@/game";
 import { DECK_SCHEMA_VERSION, type SavedDeck, type SavedDeckId } from "./types.js";
 
@@ -13,10 +19,14 @@ export const PROTOTYPE_SAVED_DECK_ID: SavedDeckId = "deck-prototype";
 export const AGGRO_SAVED_DECK_ID = PROTOTYPE_SAVED_DECK_ID;
 
 export const CONTROL_SAVED_DECK_ID: SavedDeckId = "deck-control";
+export const TEMPO_SAVED_DECK_ID: SavedDeckId = "deck-tempo";
+export const COMBO_MECHANICAL_SAVED_DECK_ID: SavedDeckId = "deck-combo-mechanical";
 
 const BUILTIN_IDS: ReadonlySet<string> = new Set([
   PROTOTYPE_SAVED_DECK_ID,
   CONTROL_SAVED_DECK_ID,
+  TEMPO_SAVED_DECK_ID,
+  COMBO_MECHANICAL_SAVED_DECK_ID,
 ]);
 
 export const isBuiltinDeckId = (id: string): boolean => BUILTIN_IDS.has(id);
@@ -50,9 +60,40 @@ export function buildControlSavedDeck(): SavedDeck {
   };
 }
 
-/** Builtin loadouts in list order (Aggro, then Control). */
+export function buildTempoSavedDeck(): SavedDeck {
+  return {
+    schemaVersion: DECK_SCHEMA_VERSION,
+    id: TEMPO_SAVED_DECK_ID,
+    name: "Tempo",
+    squad: TEMPO_SQUAD,
+    deck: TEMPO_DECK,
+    faceDeck: TEMPO_FACE_DECK,
+    updatedAt: "1970-01-01T00:00:00.000Z",
+    builtin: true,
+  };
+}
+
+export function buildComboMechanicalSavedDeck(): SavedDeck {
+  return {
+    schemaVersion: DECK_SCHEMA_VERSION,
+    id: COMBO_MECHANICAL_SAVED_DECK_ID,
+    name: "Combo Mechanical",
+    squad: COMBO_MECHANICAL_SQUAD,
+    deck: COMBO_MECHANICAL_DECK,
+    faceDeck: COMBO_MECHANICAL_FACE_DECK,
+    updatedAt: "1970-01-01T00:00:00.000Z",
+    builtin: true,
+  };
+}
+
+/** Builtin loadouts in list order (Aggro, Control, Tempo, Combo Mechanical). */
 export function buildBuiltinDecks(): readonly SavedDeck[] {
-  return [buildAggroSavedDeck(), buildControlSavedDeck()];
+  return [
+    buildAggroSavedDeck(),
+    buildControlSavedDeck(),
+    buildTempoSavedDeck(),
+    buildComboMechanicalSavedDeck(),
+  ];
 }
 
 /** Prepends fresh builtin snapshots and strips any stored copies of those ids. */

@@ -26,8 +26,24 @@ who may act; the inactive side is read-only until the turn passes.
 | Board: creatures, dice faces, symbols, energy, phase, hand | Fancy card art on the board (catalogue remains separate) |
 | Actions: roll, absorb, then one **actions** phase for attack / play / forge / activate ritual (any order; rituals also during absorb), retain, resolve search, advance phase, end turn | Reaction chain UI |
 | Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
+| Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge) | Second legality engine in React |
 | Sticky error snackbar | |
 | Catalogue still reachable from the app shell | Persistence / resume |
+
+## Pending decisions
+
+`MatchBoard` renders `state.pendingDecision` with a seat-gated chooser for the
+controller and a waiting banner for everyone else. Resolve via
+`useMatchStore.dispatch` only — query `src/game` helpers for legal options
+(e.g. `legalSlotsForReplaceSyntheticFace` / `eligiblePoolFacesForReplace` for
+Reforge). Do not special-case catalogue card ids.
+
+Notable Reforge UX (`replace-synthetic-face`):
+
+1. Pick an owned matching die slot to uninstall.
+2. Pick a **different** matching face from the controller's pool.
+3. Dispatch `RESOLVE_REPLACE_SYNTHETIC_FACE` (engine handles uninstall / install;
+   no forge-draw).
 
 ## Acceptance criteria
 
@@ -35,6 +51,7 @@ who may act; the inactive side is read-only until the turn passes.
 - [x] Illegal actions leave state unchanged and surface the `GameError` code
 - [x] A match can be played to victory through the UI (manual smoke; reducer autoplay covers rules)
 - [x] Engine purity guard still green; store/UI never imported by `src/game`
+- [x] `replace-synthetic-face` pending has chooser + waiting UI
 
 ## Layout
 

@@ -25,6 +25,7 @@ import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import {
   countInstalledCopies,
   hasLegalForgeFacesChoice,
+  hasLegalReplaceSyntheticFaceChoice,
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
 } from "../rules/faces.js";
@@ -699,6 +700,31 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         kind: effect.kind,
         attribute: effect.attribute,
         target: effect.target,
+      });
+      return true;
+    }
+    case "replace-synthetic-face": {
+      if (
+        !hasLegalReplaceSyntheticFaceChoice(
+          draft,
+          pending.controllerId,
+          effect.kind,
+          effect.attribute,
+        )
+      ) {
+        return false;
+      }
+      draft.pendingDecision = {
+        type: "replace-synthetic-face",
+        controllerId: pending.controllerId,
+        kind: effect.kind,
+        attribute: effect.attribute,
+      };
+      emit(draft, {
+        type: "replace-synthetic-face-started",
+        playerId: pending.controllerId,
+        kind: effect.kind,
+        attribute: effect.attribute,
       });
       return true;
     }
