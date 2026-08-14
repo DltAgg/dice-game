@@ -92,11 +92,13 @@ the model:
 | Engine ability | unabsorbed symbols in the shared pool | §17 |
 | Attack | attributes absorbed onto that creature | §7, §31 |
 
-An attack names two costs. `requires` is **checked and not spent**, so a
-creature that has been fuelled stays fuelled and can attack every turn
-thereafter; `discards` is the part an attack actually burns, normally a subset
-of what it requires. No Figma attack currently prints a `discards` cost, so the
-difference is only exercised when content adds one.
+An attack names two costs. `requires` is **checked and not spent**; `discards`
+is the part an attack actually burns, normally a subset of what it requires.
+Most Aggro Slow-game-test attacks (Varcolac, Garuda, and War Minotaur's special)
+set `discards` to one primary-attribute token so a fuelled creature cannot spam
+forever without re-absorbing. War Minotaur's basic Heavy Axe instead requires
+Martial 2 and omits `discards` (higher gate, reusable fuel). Control-squad
+attacks still omit `discards` and therefore keep absorbed tokens after attacking.
 
 Fuel only exists once the turn is over, so **a creature can never attack on the
 turn it absorbed**. Bible §7 has the die sit on the creature and become a token

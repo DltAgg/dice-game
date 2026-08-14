@@ -75,6 +75,22 @@ export const GOVERNOR: CardId = asCardId("card-governor");
 export const SPARE_COG: CardId = asCardId("card-spare-cog");
 export const DIE_PRESS: CardId = asCardId("card-die-press");
 export const FOUNDRY: CardId = asCardId("card-foundry");
+export const TEMPER: CardId = asCardId("card-temper");
+export const OPENING_CUT: CardId = asCardId("card-opening-cut");
+export const PRESS_THE_ATTACK: CardId = asCardId("card-press-the-attack");
+export const RIPOSTE: CardId = asCardId("card-riposte");
+export const WHETSTONE: CardId = asCardId("card-whetstone");
+export const UNTAMED: CardId = asCardId("card-untamed");
+export const POUNCE: CardId = asCardId("card-pounce");
+export const PACK_SURGE: CardId = asCardId("card-pack-surge");
+export const RENDING_MARK: CardId = asCardId("card-rending-mark");
+export const SNARL: CardId = asCardId("card-snarl");
+export const DOSE: CardId = asCardId("card-dose");
+export const BLIGHT_STRIKE: CardId = asCardId("card-blight-strike");
+export const CALL_TO_ARMS: CardId = asCardId("card-call-to-arms");
+export const BATTLE_HYMN: CardId = asCardId("card-battle-hymn");
+export const PACK_LAW: CardId = asCardId("card-pack-law");
+export const VIRULENT_RITE: CardId = asCardId("card-virulent-rite");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -931,6 +947,284 @@ const DEFINITIONS: readonly CardDefinition[] = [
           symbols: ["mechanical"],
           absorberRelation: "ally",
           effects: [{ type: "gain-energy", amount: 1 }],
+        },
+      ],
+    },
+  }),
+
+  // --- Martial / Wild / Toxin aggro package (authored) ---
+  card({
+    id: TEMPER,
+    name: "Temper",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "Forge 1 Synthetic Martial face on your die.",
+    effect: {
+      effects: [
+        {
+          type: "forge-faces",
+          faces: 1,
+          kind: "synthetic",
+          attribute: "martial",
+          target: "own-die",
+        },
+      ],
+    },
+  }),
+  card({
+    id: OPENING_CUT,
+    name: "Opening Cut",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "Deal 2 damage to a chosen enemy.",
+    effect: {
+      requires: { martial: 1 },
+      effects: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
+    },
+  }),
+  card({
+    id: PRESS_THE_ATTACK,
+    name: "Press the Attack",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "The next attack this turn deals +2 damage.",
+    effect: {
+      effects: [{ type: "next-attack-bonus", amount: 2 }],
+    },
+  }),
+  card({
+    id: RIPOSTE,
+    name: "Riposte",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["reaction"],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "Prevent 1 damage. The next attack this turn deals +1 damage.",
+    effect: {
+      effects: [
+        { type: "grant-damage-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+        { type: "next-attack-bonus", amount: 1 },
+      ],
+    },
+  }),
+  card({
+    id: WHETSTONE,
+    name: "Whetstone",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["equipment"],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "On attack: generate 1 Martial.",
+    equipment: {
+      mayTargetOpponent: false,
+      abilities: [
+        {
+          type: "on-attack",
+          attackerRelation: "self",
+          effects: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: UNTAMED,
+    name: "Untamed",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText: "Forge 1 Synthetic Wild face on your die.",
+    effect: {
+      effects: [
+        {
+          type: "forge-faces",
+          faces: 1,
+          kind: "synthetic",
+          attribute: "wild",
+          target: "own-die",
+        },
+      ],
+    },
+  }),
+  card({
+    id: POUNCE,
+    name: "Pounce",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText: "Choose an allied creature. Its next attack deals +2 damage.",
+    effect: {
+      requires: { wild: 1 },
+      effects: [
+        { type: "grant-next-attack-bonus", amount: 2, target: { kind: "choose-ally" } },
+      ],
+    },
+  }),
+  card({
+    id: PACK_SURGE,
+    name: "Pack Surge",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText: "Generate 1 Wild. The next attack this turn deals +1 damage.",
+    effect: {
+      effects: [
+        { type: "generate-symbol", symbol: "wild", amount: 1 },
+        { type: "next-attack-bonus", amount: 1 },
+      ],
+    },
+  }),
+  card({
+    id: RENDING_MARK,
+    name: "Rending Mark",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText: "A chosen enemy creature loses 2 Shield.",
+    effect: {
+      effects: [{ type: "remove-shield", amount: 2, target: { kind: "choose-enemy" } }],
+    },
+  }),
+  card({
+    id: SNARL,
+    name: "Snarl",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["overload"],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText:
+      "Can only overload a Natural Wild face.\nOn roll: the next attack this turn deals +1 damage.",
+    overload: {
+      faceSymbols: ["wild"],
+      faceKinds: ["natural"],
+      onRoll: [{ type: "next-attack-bonus", amount: 1 }],
+    },
+  }),
+  card({
+    id: DOSE,
+    name: "Dose",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText: "Apply 2 Toxin markers to a chosen enemy.",
+    effect: {
+      requires: { toxin: 1 },
+      effects: [{ type: "apply-toxin", amount: 2, target: { kind: "choose-enemy" } }],
+    },
+  }),
+  card({
+    id: BLIGHT_STRIKE,
+    name: "Blight Strike",
+    energyCost: 2,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText:
+      "The next attack this turn deals +1 damage. All attacks this turn apply 1 Toxin marker.",
+    effect: {
+      effects: [
+        { type: "next-attack-bonus", amount: 1 },
+        { type: "arm-attack-toxin", amount: 1 },
+      ],
+    },
+  }),
+  card({
+    id: CALL_TO_ARMS,
+    name: "Call to Arms",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["instant"],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "The next attack this turn deals +2 damage.",
+    ritual: {
+      activeWhen: { martial: 2 },
+      effects: [{ type: "next-attack-bonus", amount: 2 }],
+    },
+  }),
+  card({
+    id: BATTLE_HYMN,
+    name: "Battle Hymn",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["continuous"],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "On attack: the next attack this turn deals +1 damage.",
+    ritual: {
+      activeWhen: { martial: 2 },
+      effects: [],
+      standingAbilities: [
+        {
+          type: "on-attack",
+          attackerRelation: "ally",
+          effects: [{ type: "next-attack-bonus", amount: 1 }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: PACK_LAW,
+    name: "Pack Law",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["continuous"],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText: "On absorb Wild: the next attack this turn deals +1 damage.",
+    ritual: {
+      activeWhen: { wild: 2 },
+      effects: [],
+      standingAbilities: [
+        {
+          type: "on-absorb",
+          symbols: ["wild"],
+          absorberRelation: "ally",
+          effects: [{ type: "next-attack-bonus", amount: 1 }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: VIRULENT_RITE,
+    name: "Virulent Rite",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["instant"],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText: "Forge 2 Synthetic Toxin faces on your die.",
+    ritual: {
+      activeWhen: { toxin: 2 },
+      effects: [
+        {
+          type: "forge-faces",
+          faces: 2,
+          kind: "synthetic",
+          attribute: "toxin",
+          target: "own-die",
         },
       ],
     },

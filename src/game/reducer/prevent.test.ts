@@ -40,7 +40,7 @@ function combatWithAttacker(tokens: { martial: number }) {
 describe("true prevent (009)", () => {
   it("applies buffer before shields then HP", () => {
     // Strike deals 3. Buffer 1 + shield 1 → 1 HP damage.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
     const armed = {
       ...combat,
       creatures: {
@@ -79,7 +79,7 @@ describe("true prevent (009)", () => {
 
   it("Prismatic Barrier grants a prevent-2 buffer on the attack target", () => {
     // Strike 3 into Barrier 2 → 1 damage, buffer spent.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
     const withBarrier = withHand(withEnergy(combat, P2, 10), P2, [BARRIER_OF_LIGHT]);
 
     const opened = expectOk(
@@ -129,7 +129,7 @@ describe("true prevent (009)", () => {
   });
 
   it("Luminar Judgement prevents the attack and reflects to the attacker", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
     const lifeBefore = currentLife(combat.creatures[attacker]!);
     const withJudgement = withHand(withEnergy(combat, P2, 10), P2, [LUMINAR_JUDGEMENT]);
 
@@ -157,7 +157,7 @@ describe("true prevent (009)", () => {
   });
 
   it("Glimmer draws when prevent resolves after Barrier", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
     const seeded = withHand(withEnergy(combat, P2, 10), P2, [
       BARRIER_OF_LIGHT,
       GLIMMER,
@@ -219,7 +219,7 @@ describe("true prevent (009)", () => {
 
   it("leftover buffer persists for a later hit", () => {
     // Buffer 5 vs Strike 3 → 2 left; second Strike consumes 2 and deals 1.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
     const buffered = {
       ...combat,
       creatures: {
@@ -248,7 +248,7 @@ describe("true prevent (009)", () => {
         [attacker]: {
           ...first.creatures[attacker]!,
           attacksUsedThisCombat: 0,
-          attributeTokens: { martial: 1 },
+          attributeTokens: { martial: 2 },
         },
       },
     };
@@ -269,7 +269,7 @@ describe("true prevent (009)", () => {
 
   it("shield-only path still prevents with source shield", () => {
     // 2 shields vs Strike 3 → 0 shields, 1 damage.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
     const shielded = withShields(combat, target, 2);
     const after = resolveOpenChain(
       expectOk(

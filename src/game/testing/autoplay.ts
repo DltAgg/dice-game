@@ -10,7 +10,6 @@ import { handOf, searchableInDeck, searchableInGraveyard } from "../rules/cards.
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { diceOf } from "../rules/dice.js";
 import { legalTargetsFor } from "../rules/targeting.js";
-import { holdsTokens } from "../rules/tokens.js";
 import { advance } from "../reducer/reduce.js";
 
 /**
@@ -94,19 +93,26 @@ const rolledSymbols = (state: GameState, playerId: PlayerId): readonly SymbolIns
     .filter((symbol) => symbol.ownerId === playerId && symbol.status === "rolled")
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
-/** The first living creature that cannot yet pay for an attack needing this symbol. */
+/** The first living creature still short of this attribute for one of its attacks. */
 function creatureNeeding(
   state: GameState,
   playerId: PlayerId,
   symbol: SymbolInstance,
 ): CreatureState | undefined {
+  if (!isAttributeSymbol(symbol.symbol)) return undefined;
+  const attribute = symbol.symbol;
+
   return livingCreaturesOf(state, playerId).find((creature) => {
     const definition = getCreatureDefinition(creature.definitionId);
-    return definition?.attacks.some(
-      (attack) =>
-        (attack.requires[symbol.symbol as keyof typeof attack.requires] ?? 0) > 0 &&
-        !holdsTokens(creature, attack.requires),
-    );
+    if (definition === undefined) return false;
+    const held = creature.attributeTokens[attribute] ?? 0;
+    return definition.attacks.some((attack) => {
+      const needed = attack.requires[attribute] ?? 0;
+      // Count only the shortfall vs `requires`. Extra primary tokens for an
+      // incomplete multi-cost special used to stockpile forever and starve
+      // combat once attacks began discarding fuel each swing.
+      return needed > held;
+    });
   });
 }
 

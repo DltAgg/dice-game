@@ -41,7 +41,7 @@ needs them — never as unreachable stubs.
 | **Retain-from-effect** | Void Summoner Dimensional Rift, Forbidden Heritage | `RETAIN_DIE` exists; effect path does not |
 | **Destroy / strip overloads** | Mind Control | |
 | **Send cards deck → GY** | Dark Pact | |
-| **Continuous ritual standing triggers** | — | Abyssal Sacrifice, Serrated Stinger, **Foundry** wired; others as needed |
+| **Continuous ritual standing triggers** | — | Abyssal Sacrifice, Serrated Stinger, Foundry, **Battle Hymn**, **Pack Law** wired; others as needed |
 | **Toxin on all attacks this turn** | — | **IMPLEMENTED** — `arm-attack-toxin` (Toxic Blessing) |
 | **Reroll face once / self-damage** | Adrenaline | |
 | **Energy-spent scaling amounts** | Future `?` cards (e.g. spent N → draw) | Payment path exists; no effect reads `energyPaid` yet |
@@ -95,10 +95,14 @@ Calculated Sacrifice, War Axe, Eternal Darkness, Latent Corruption, Arcane
 Amplifier, Blessing of the Hunt, Martial Blessing, Runic Nullification, Arcane
 Silence, Prismatic Barrier, Luminar Judgement, Glimmer, Great Contamination,
 Ritual of Contamination, Ratchet, Assembly Line, Governor, Spare Cog, Die Press,
-Foundry.
+Foundry, Temper, Opening Cut, Press the Attack, Riposte, Whetstone, Untamed,
+Pounce, Pack Surge, Rending Mark, Snarl, Dose, Blight Strike, Call to Arms,
+Battle Hymn, Pack Law, Virulent Rite.
 
 Named faces **Flywheel** and **Piston** are fully wired (Flywheel: roll Energy /
-absorb Shield; Piston: roll Mechanical / absorb Energy).
+absorb Shield; Piston: roll Mechanical / absorb Energy). Authored aggro faces
+**Warhorn**, **Cleaving Strike**, **Bloodscent**, **Gore**, **Needle**, and
+**Seep** are fully wired (On roll / On absorb).
 
 ---
 

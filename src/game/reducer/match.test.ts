@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { livingCreaturesOf } from "../rules/creatures.js";
-import { totalTokens } from "../rules/tokens.js";
 import { autoplay, NEVER_ABSORB } from "../testing/autoplay.js";
 import { newMatch, P1, P2 } from "../testing/scenario.js";
 
@@ -69,16 +68,18 @@ describe("a full match through the reducer alone", () => {
     expect(types.at(-1)).toBe("match-finished");
   });
 
-  it("leaves the winner holding the fuel it fought with", () => {
+  it("proves the winner funded attacks from absorbed tokens", () => {
+    // With discard costs, a final swing can empty the board of leftover fuel —
+    // the proof is that absorption and token-spend actually happened.
     const { state } = autoplay(newMatch({ seed: 5 }));
     const winnerId = state.winner;
     if (winnerId === null) throw new Error("expected a winner");
 
-    const tokensHeld = livingCreaturesOf(state, winnerId).reduce(
-      (total, creature) => total + totalTokens(creature.attributeTokens),
-      0,
-    );
-    expect(tokensHeld).toBeGreaterThan(0);
+    const types = state.log.map((entry) => entry.event.type);
+    expect(types).toContain("symbol-absorbed");
+    expect(types).toContain("attribute-tokens-discarded");
+    expect(types).toContain("attack-declared");
+    expect(livingCreaturesOf(state, winnerId).length).toBeGreaterThan(0);
   });
 
   it("never resolves for a player who refuses to absorb", () => {
