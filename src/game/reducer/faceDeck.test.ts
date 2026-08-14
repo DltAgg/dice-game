@@ -155,6 +155,7 @@ describe("face deck", () => {
       "Gear",
       "Catalyst",
       "Overcharge",
+      "Flywheel",
       "Shadow Echo",
       "Drain",
       "Sacrifice",

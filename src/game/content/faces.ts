@@ -102,6 +102,7 @@ export const DECAY: FaceCardId = asFaceCardId("face-synthetic-decay");
 export const GEAR: FaceCardId = asFaceCardId("face-synthetic-gear");
 export const CATALYST: FaceCardId = asFaceCardId("face-synthetic-catalyst");
 export const OVERCHARGE: FaceCardId = asFaceCardId("face-synthetic-overcharge");
+export const FLYWHEEL: FaceCardId = asFaceCardId("face-synthetic-flywheel");
 export const SHADOW_ECHO: FaceCardId = asFaceCardId("face-synthetic-shadow-echo");
 export const DRAIN: FaceCardId = asFaceCardId("face-synthetic-drain");
 export const SACRIFICE: FaceCardId = asFaceCardId("face-synthetic-sacrifice");
@@ -492,6 +493,16 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       "On absorb: the next face effect you resolve this turn is resolved twice.",
   ),
   namedSynthetic(
+    FLYWHEEL,
+    "Flywheel",
+    "mechanical",
+    "On roll: gain 1 Energy.\nOn absorb: generate 1 Shield.",
+    {
+      onRoll: [{ type: "gain-energy", amount: 1 }],
+      onAbsorb: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }],
+    },
+  ),
+  namedSynthetic(
     SHADOW_ECHO,
     "Shadow Echo",
     "darkness",
@@ -551,6 +562,7 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[GEAR]!,
   FACE_CARDS[CATALYST]!,
   FACE_CARDS[OVERCHARGE]!,
+  FACE_CARDS[FLYWHEEL]!,
   FACE_CARDS[SHADOW_ECHO]!,
   FACE_CARDS[DRAIN]!,
   FACE_CARDS[SACRIFICE]!,

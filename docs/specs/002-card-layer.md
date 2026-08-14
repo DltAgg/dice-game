@@ -191,6 +191,16 @@ are all typed Arcane and all forge a Natural Arcane face, which looks like a
 copy-paste artefact given their effects are Martial and Toxin flavoured. Left as
 printed.
 
+### Mechanical assembly (authored)
+
+First Mechanical engine-construction package. Not in the Figma Aggro / Control
+lists; catalogue-only until a combo loadout is requested.
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 2 | Ratchet | Tactic / Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: generate Mechanical. |
+| 3 | Assembly Line | Ritual / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
+
 ## What this slice implements
 
 The grammar in full, and the subset of the effect vocabulary the engine can

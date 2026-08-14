@@ -94,7 +94,9 @@ Eclipse, Living Library, Luminar Prism, Arcane Resonance, Persistent Infection,
 Calculated Sacrifice, War Axe, Eternal Darkness, Latent Corruption, Arcane
 Amplifier, Blessing of the Hunt, Martial Blessing, Runic Nullification, Arcane
 Silence, Prismatic Barrier, Luminar Judgement, Glimmer, Great Contamination,
-Ritual of Contamination.
+Ritual of Contamination, Ratchet, Assembly Line.
+
+Named face **Flywheel** is fully wired (roll: Energy; absorb: Shield).
 
 ---
 
