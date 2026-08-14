@@ -71,8 +71,28 @@ export type EffectDefinition =
   /**
    * Negate the top chain link if it is a tactic-card link (not an attack).
    * Spec `008` — Runic Nullification, Arcane Silence.
+   * Note: despite the name, this still covers non-attack “tactic-card-ish”
+   * links (ritual place/activate, equip, overload) as today — not ritual-only.
    */
   | { readonly type: "negate-tactic" }
+  /**
+   * Negate the top chain link only when it is `ritual-place` or
+   * `ritual-activate`. Other tops whiff. Spec `008` — Seal the Rite.
+   */
+  | { readonly type: "negate-ritual" }
+  /**
+   * Strip up to `amount` attribute tokens from the target in `ATTRIBUTES`
+   * order (martial → … → darkness). Whiffs legally if none remain. Spec `011`.
+   */
+  | {
+      readonly type: "discard-attribute-tokens";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
+  /**
+   * Send one opposing field ritual to its owner's graveyard. Spec `011`.
+   */
+  | { readonly type: "destroy-ritual"; readonly target: TargetSelector }
   /**
    * Add to a creature’s prevent-next-N damage buffer (before Shields). Spec `009`.
    */
@@ -128,6 +148,16 @@ export type TargetSelector =
   | { readonly kind: "choose-ally" }
   /** Pause for the controller to name one opposing living creature. */
   | { readonly kind: "choose-enemy" }
+  /**
+   * Pause for the controller to name one opposing field ritual
+   * (preparing / ready / exhausted). Spec `011`.
+   */
+  | { readonly kind: "choose-opponent-ritual" }
+  /**
+   * Ritual named by a completed `choose-ritual` decision (after rewrite).
+   * Spec `011`.
+   */
+  | { readonly kind: "declared-ritual" }
   /**
    * The creature targeted by the waiting attack chain link (Prismatic Barrier).
    * Spec `009`.

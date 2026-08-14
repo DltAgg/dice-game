@@ -40,21 +40,29 @@ interrupted.
 6. **What does not open a window:** `FORGE_CARD` only.
 7. **Legal responders:** hand `reaction` cards, and ready ritual-reactions.
 8. **Response kinds:**
-   - **Negate** — legal only when the **top** link is a tactic-card link
-     (effect / ritual place / ritual activate / equip / overload). Illegal
-     against an **attack** link.
+   - **Negate (general)** — `negate-tactic`: legal when the **top** link is a
+     non-attack tactic-card link (effect / ritual place / ritual activate /
+     equip / overload). Illegal against an **attack** link. Despite the name,
+     this is still the broad “tactic-card-ish” negate used by Arcane Silence /
+     Runic Nullification.
+   - **Negate ritual** — `negate-ritual`: legal only when the **top** link is
+     `ritual-place` or `ritual-activate` (and not already negated). Against a
+     tactic / equip / overload / attack top, play is refused
+     (`INVALID_CHAIN_TARGET`); if somehow resolved against a non-ritual top,
+     the effect whiffs (does not negate). Seal the Rite.
    - **Prevent** — response path for attack / damage (`009`; not required to
      ship negate in this slice, but attack links must still open the window
      so prevent can plug in).
 9. **Negate** targets the **top** chain link only. (`OPEN_DESIGN`; print:
-   Runic Nullification, Arcane Silence — `002`.)
+   Runic Nullification, Arcane Silence — `002`; Seal the Rite — ritual-only.)
 10. **Runic Nullification.** Place as ritual (header Energy). `[Active when:
     Arcane + Arcane]` (cumulative) → ready. Activation pays **+3 Energy**, then negates the top
     tactic link.
 11. **Arcane Silence.** Hand reaction; header cost 5; negate top tactic link.
+11b. **Seal the Rite.** Hand reaction; header cost 3; `negate-ritual` only.
 12. **No mid-conduct reactions.** While `pendingDecision` is `search-deck`,
-    `search-graveyard`, `discard-cards`, or `choose-creature`, no reaction
-    window — those choices are part of conducting.
+    `search-graveyard`, `discard-cards`, `choose-creature`, or `choose-ritual`,
+    no reaction window — those choices are part of conducting.
 13. **Negated tactic link.** Costs stay paid; body skipped. Ritual place:
     card never sits preparing (ends in GY). Equip/overload: attach does not
     land. Ritual activate: continuous rituals exhaust; Instant / Reaction
@@ -93,6 +101,8 @@ crosses.
 - Hand reaction / ritual-reaction: priority seat; card legal; costs met.
 - `negate-tactic` (or equivalent): top link exists, kind is negatable
   tactic-card kind, not already negated — **not** `attack`.
+- `negate-ritual`: top link exists, kind is `ritual-place` or
+  `ritual-activate`, not already negated.
 - No respond/pass while a non-reaction `pendingDecision` is set.
 - `FORGE_CARD` never opens a reaction window.
 
@@ -133,7 +143,9 @@ None.
 - Show open chain (top link kind + summary) when `reaction-window` is set.
 - Show whose priority; **Pass priority** for that seat.
 - Enable legal hand reactions / ready ritual-reactions for the priority seat.
-- Disable negate affordances when top link is `attack` (prevent UI in `009`).
+- Disable `negate-tactic` affordances when top link is `attack` (prevent UI in `009`).
+- Enable `negate-ritual` (Seal the Rite) only when top is `ritual-place` or
+  `ritual-activate`.
 
 ## Acceptance Criteria
 
@@ -144,7 +156,7 @@ None.
 - [ ] Double pass resolves LILO; negated tactic link skips body
 - [ ] Negate illegal against top `attack` link
 - [ ] Runic Nullification + Arcane Silence fully wired and tested
-- [ ] No reaction mid search / discard / choose-creature
+- [ ] No reaction mid search / discard / choose-creature / choose-ritual
 - [ ] Host broadcasts chain state
 - [ ] DoD green; `DEFERRED_CATALOGUE.md` updated for chain + negate + those two cards
 
@@ -154,6 +166,7 @@ None.
 - [ ] Nullification negates top tactic link; Energy accounted
 - [ ] Silence from hand negates top tactic link
 - [ ] Negate rejected when top is `attack`
+- [ ] Seal the Rite negates ritual place / activate; refused against tactic top
 - [ ] Attack opens window; Pass ×2 → damage applies (pre-`009`)
 - [ ] Equip / overload / ritual place open window; negate cancels attach/place
 - [ ] FORGE_CARD leaves no reaction window
@@ -165,4 +178,5 @@ None.
 - Prevent buffers / prevent-N-attacks / Barrier migration (`009`)
 - Phase B trigger hooks
 - Choose-any-link negate; per-link windows during drain
+- Attack negate
 - Engine ability activations as chain links (not decided)

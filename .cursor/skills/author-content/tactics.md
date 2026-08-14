@@ -93,11 +93,13 @@ Read `src/game/model/effects.ts` as authority. Today:
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,
 `search-deck`, `search-graveyard`, `gain-energy`, `destroy-equipment`,
 `apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
-`arm-attack-toxin`, `negate-tactic`, `grant-damage-prevent`,
+`arm-attack-toxin`, `negate-tactic`, `negate-ritual`, `discard-attribute-tokens`,
+`destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
-`most-shielded-enemy`, `choose-ally`, `choose-enemy`, `chain-attack-target`
+`most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
+`declared-ritual`, `chain-attack-target`
 
 Standing triggers live on equipment / continuous rituals — see
 [implement-hooks](../implement-hooks/SKILL.md).
@@ -117,6 +119,10 @@ Standing triggers live on equipment / continuous rituals — see
 | War Axe | Equipment `attack-damage-bonus` |
 | Black Plague | Equipment `mayTargetOpponent` + `on-roll-symbol`; forge `opponent-die` |
 | Abyssal Sacrifice | Continuous ritual `standingAbilities` on discard |
+| Siphon Sigil | Instant `discard-attribute-tokens` + choose-enemy |
+| Dispel Circle | Instant `destroy-ritual` + choose-opponent-ritual |
+| Seal the Rite | Reaction `negate-ritual` |
+| Fade | Reaction `negate-tactic` (cheaper Darkness Silence) |
 
 ## After editing
 

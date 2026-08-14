@@ -32,14 +32,19 @@ authority for the six playable creature designs.
 
 ## Catalogue (Slow game test)
 
+HP is a **uniform +4** over the original Figma Slow print (playtest 2026-08-14:
+skirmishes ended before control could interact). Relative identity is unchanged
+(Garuda still glassiest, Minotaur still tankiest). Control attacks were retuned
+to 1 damage plus wired resource riders; those attacks now discard fuel on use.
+
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
-| War Minotaur | Martial | 13 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
-| Varcolac | Wild | 9 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg / push |
-| Garuda | Wild | 7 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
-| Archmage of the Runes | Arcane | 8 | Arcane Burst (Arcane) 2 dmg + draw | Mystic Overload (Arcane+Luminar) 3 dmg + shields |
-| Corrupting Elder | Arcane | 10 | Touch of Decay (Arcane) 2 dmg / strip shield | Contamination (Arcane+Corruption) 4 dmg / forge |
-| Void Summoner | Arcane | 9 | Rupture (Arcane) 2 dmg / convert | Dimensional Rift (Arcane+Darkness) 3 dmg / retain |
+| War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
+| Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg / push |
+| Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
+| Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 1 dmg + draw | Mystic Overload (Arcane+Luminar; discard Arcane 1) 1 dmg + Energy + generate Arcane |
+| Corrupting Elder | Arcane | 14 | Touch of Decay (Arcane; discard Arcane 1) 1 dmg + strip shield | Contamination (Arcane+Corruption; discard Corruption 1) 1 dmg + generate Corruption |
+| Void Summoner | Arcane | 13 | Rupture (Arcane; discard Arcane 1) 1 dmg + generate Arcane | Dimensional Rift (Arcane+Darkness; discard Darkness 1) 1 dmg + Energy + draw |
 
 A separate Fast game test section in Figma adjusts some HP and costs; it is not
 encoded yet.
@@ -48,8 +53,8 @@ encoded yet.
 
 | In | Out (deferred) |
 |---|---|
-| Six Figma creatures as content + English `CreatureCard` UI | Passives, riders, Fast-game variants — see DEFERRED_CATALOGUE |
-| Basic/Special costs and primary damage effects | |
+| Six Figma creatures as content + English `CreatureCard` UI | Aggro passives / reposition / toxin-on-special — see DEFERRED_CATALOGUE |
+| Basic/Special costs, damage, and control resource riders (`on-attack`) | Archmage tactic-discount passive |
 
 The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder) has
 been removed; hotseat and scenario matches use the Figma Aggro or Control

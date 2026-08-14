@@ -215,7 +215,7 @@ describe("equipment", () => {
 
     const combat = withTokens(
       withEnergy(
-        withPhase(withActivePlayer(withDamage(equipped, hostId, 10), P2), "actions"),
+        withPhase(withActivePlayer(withDamage(equipped, hostId, 14), P2), "actions"),
         P2,
         10,
       ),

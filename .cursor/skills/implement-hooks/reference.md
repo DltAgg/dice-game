@@ -36,6 +36,8 @@ are that union; creatures/rituals reuse it).
 | Serrated Stinger | `on-attack` ally + special | apply-toxin on attack target |
 | Black Plague | `on-roll-symbol` controller | Already wired |
 | Corrupting Elder | `on-roll-symbol` opponent | choose-enemy damage |
+| Archmage of the Runes | `on-attack` self + basic/special | draw / Energy+Arcane |
+| Void Summoner | `on-attack` self + basic/special | generate Arcane / Energy+draw |
 | Hunting Armour | `on-take-damage` reduceBy 1 oncePerTurn | Modifier path |
 | Abyssal Sacrifice | `on-discard` controller | generate Darkness |
 | Hunter's Collar | `on-change-position` self | Needs movers to call hook |

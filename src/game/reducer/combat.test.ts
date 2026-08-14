@@ -44,8 +44,8 @@ describe("attacking", () => {
     const target = after.creatures[targetId];
     if (target === undefined) throw new Error("expected the target");
     expect(target.damage).toBe(3);
-    // War Minotaur starts at 13 life.
-    expect(currentLife(target)).toBe(10);
+    // War Minotaur starts at 17 life.
+    expect(currentLife(target)).toBe(14);
   });
 
   it("refuses an attack the creature has not absorbed the fuel for", () => {
@@ -329,8 +329,8 @@ describe("creature defeat and victory", () => {
   it("defeats a creature whose damage reaches its life", () => {
     const state = combatState(0, { martial: 2 });
     const targetId = creatureIdAt(state, P2, 0);
-    // War Minotaur has 13 life; 10 prior + Heavy Axe 3 = lethal.
-    const nearlyDead = withDamage(state, targetId, 10);
+    // War Minotaur has 17 life; 14 prior + Heavy Axe 3 = lethal.
+    const nearlyDead = withDamage(state, targetId, 14);
 
     const after = expectOk(
       advance(nearlyDead, {
@@ -354,11 +354,11 @@ describe("creature defeat and victory", () => {
       throw new Error("expected three enemy creatures");
     }
 
-    // Garuda (back) has 7 life; Coordinated Hunt deals 4.
+    // Garuda (back) has 11 life; Coordinated Hunt deals 4.
     const almostWon = withDamage(
       withDefeatedCreature(withDefeatedCreature(base, front), mid),
       back,
-      3,
+      7,
     );
 
     const after = expectOk(

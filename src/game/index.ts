@@ -16,6 +16,7 @@ export * from "./rules/dice.js";
 export * from "./rules/energy.js";
 export * from "./rules/faces.js";
 export * from "./rules/loadout.js";
+export * from "./rules/reactions.js";
 export * from "./rules/symbols.js";
 export * from "./rules/targeting.js";
 export * from "./rules/tokens.js";

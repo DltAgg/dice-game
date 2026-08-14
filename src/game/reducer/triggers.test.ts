@@ -745,3 +745,100 @@ describe("Hunter's Collar on-change-position", () => {
     expect(martial.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe("control creature attack riders", () => {
+  const controlMatch = () =>
+    newMatch({
+      players: [
+        { id: P1, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+        { id: P2, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+      ],
+    });
+
+  it("Archmage Arcane Burst deals 1, draws 1, and burns the Arcane token", () => {
+    let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
+    const attackerId = creatureIdAt(state, P1, 0);
+    const targetId = creatureIdAt(state, P2, 0);
+    const deckCardId = asCardInstanceId("deck-burst-draw");
+    const player = state.players[P1];
+    if (player === undefined) throw new Error("p1");
+    state = {
+      ...state,
+      cards: {
+        ...state.cards,
+        [deckCardId]: {
+          id: deckCardId,
+          cardId: ECLIPSE,
+          ownerId: P1,
+          zone: "deck",
+          attachedToCreatureId: null,
+          attachedToFaceCardId: null,
+          ritualOrientation: null,
+          ritualProgress: null,
+          ritualProgressCreditedThisTurn: null,
+        },
+      },
+      players: {
+        ...state.players,
+        [P1]: { ...player, deck: [deckCardId, ...player.deck] },
+      },
+    };
+    state = withTokens(state, attackerId, { arcane: 1 });
+
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: asAttackId("attack-archmage-arcane-burst"),
+        targetId,
+      }),
+    );
+
+    expect(after.creatures[targetId]?.damage).toBe(1);
+    expect(after.creatures[attackerId]?.attributeTokens.arcane).toBeUndefined();
+    expect(eventTypes(after)).toContain("card-drawn");
+    expect(after.players[P1]?.hand).toContain(deckCardId);
+  });
+
+  it("Corrupting Elder Touch of Decay strips 1 Shield then deals 1", () => {
+    let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
+    const attackerId = creatureIdAt(state, P1, 1);
+    const targetId = creatureIdAt(state, P2, 0);
+    state = withShields(withTokens(state, attackerId, { arcane: 1 }), targetId, 1);
+
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: asAttackId("attack-elder-decay-touch"),
+        targetId,
+      }),
+    );
+
+    expect(after.creatures[targetId]?.shields).toBe(0);
+    expect(after.creatures[targetId]?.damage).toBe(1);
+  });
+
+  it("Void Summoner Rupture deals 1 and generates Arcane", () => {
+    let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
+    const attackerId = creatureIdAt(state, P1, 2);
+    const targetId = creatureIdAt(state, P2, 0);
+    state = withTokens(state, attackerId, { arcane: 1 });
+
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: asAttackId("attack-void-rupture"),
+        targetId,
+      }),
+    );
+
+    expect(after.creatures[targetId]?.damage).toBe(1);
+    const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
+    expect(arcane.length).toBeGreaterThanOrEqual(1);
+  });
+});

@@ -263,6 +263,22 @@ export function destroyOverload(draft: Draft, cardInstanceId: CardInstanceId): v
   moveCard(draft, cardInstanceId, "graveyard");
 }
 
+/**
+ * Sends a field ritual to its owner's graveyard (orientation / progress cleared
+ * by `moveCard`). Spec `011` — Dispel Circle.
+ */
+export function destroyRitual(draft: Draft, cardInstanceId: CardInstanceId): void {
+  const card = draft.cards[cardInstanceId];
+  if (card === undefined || card.zone !== "ritual") return;
+
+  emit(draft, {
+    type: "ritual-destroyed",
+    cardInstanceId,
+    playerId: card.ownerId,
+  });
+  moveCard(draft, cardInstanceId, "graveyard");
+}
+
 /** When a face card leaves play (last copy orphaned), its overloads leave too. */
 export function clearOverloadsOnFace(
   draft: Draft,

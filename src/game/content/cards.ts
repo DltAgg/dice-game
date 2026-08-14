@@ -91,6 +91,10 @@ export const CALL_TO_ARMS: CardId = asCardId("card-call-to-arms");
 export const BATTLE_HYMN: CardId = asCardId("card-battle-hymn");
 export const PACK_LAW: CardId = asCardId("card-pack-law");
 export const VIRULENT_RITE: CardId = asCardId("card-virulent-rite");
+export const SIPHON_SIGIL: CardId = asCardId("card-siphon-sigil");
+export const DISPEL_CIRCLE: CardId = asCardId("card-dispel-circle");
+export const SEAL_THE_RITE: CardId = asCardId("card-seal-the-rite");
+export const FADE: CardId = asCardId("card-fade");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -1229,6 +1233,61 @@ const DEFINITIONS: readonly CardDefinition[] = [
       ],
     },
   }),
+  // --- Control interaction proving cards (engine vocab `011` / `008`) ---
+  card({
+    id: SIPHON_SIGIL,
+    name: "Siphon Sigil",
+    energyCost: 3,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    rulesText: "A chosen enemy creature discards 2 attribute tokens.",
+    effect: {
+      effects: [
+        { type: "discard-attribute-tokens", amount: 2, target: { kind: "choose-enemy" } },
+      ],
+    },
+  }),
+  card({
+    id: DISPEL_CIRCLE,
+    name: "Dispel Circle",
+    energyCost: 4,
+    type: "tactic",
+    subtypes: ["instant"],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    rulesText: "Send 1 opposing Ritual to its owner's graveyard.",
+    effect: {
+      effects: [{ type: "destroy-ritual", target: { kind: "choose-opponent-ritual" } }],
+    },
+  }),
+  card({
+    id: SEAL_THE_RITE,
+    name: "Seal the Rite",
+    energyCost: 3,
+    type: "tactic",
+    subtypes: ["reaction"],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    rulesText: "Negate 1 Ritual.",
+    effect: {
+      effects: [{ type: "negate-ritual" }],
+    },
+  }),
+  card({
+    id: FADE,
+    name: "Fade",
+    energyCost: 3,
+    type: "tactic",
+    subtypes: ["reaction"],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText: "Negate the effect of 1 Tactic card.",
+    effect: {
+      effects: [{ type: "negate-tactic" }],
+    },
+  }),
 ];
 
 export const CARDS: Readonly<Record<string, CardDefinition>> = Object.fromEntries(
@@ -1242,28 +1301,42 @@ export const ALL_CARDS: readonly CardDefinition[] = DEFINITIONS;
 
 /**
  * Builtin aggro tactics deck (spec 002 “Aggro deck” identity: Martial / Wild /
- * Toxin pressure). Legal under M4: 50–60 cards, ≤4 copies per id.
+ * Toxin pressure). Tuned for the +4 creature HP band: densifies live reach /
+ * conversion (Opening Cut, Dose, Temper…) and drops deferred equipment plus
+ * Control/Support splash. Legal under M4: 50–60 cards, ≤4 copies per id.
  */
 const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  // Pressure equipment / continuous
   [WAR_AXE, 4],
-  [VENOMOUS_FANGS, 4],
-  [TWIN_BLADES, 4],
-  [WAR_BANNER, 3],
-  [HUNTING_ARMOUR, 3],
-  [PREDATORS_CLAWS, 3],
-  [HUNTERS_COLLAR, 2],
+  [VENOMOUS_FANGS, 3],
+  [HUNTING_ARMOUR, 2],
   [SERRATED_STINGER, 2],
-  [MARTIAL_BLESSING, 4],
-  [BLESSING_OF_THE_HUNT, 4],
-  [RUST, 3],
-  [TOXIC_BLESSING, 3],
+  [HUNTERS_COLLAR, 2],
+  [WHETSTONE, 2],
+  [TOXIC_HEART, 2],
+  [WILD_CARAPACE, 2],
+  // Overloads
+  [MARTIAL_BLESSING, 2],
+  [BLESSING_OF_THE_HUNT, 2],
+  [TOXIC_BLESSING, 2],
   [WILD_ECHO, 2],
-  [ADRENALINE, 2],
-  [CALCULATED_SACRIFICE, 2],
-  [LUMINAR_JUDGEMENT, 2],
-  [GLIMMER, 2],
-  [ALPHAS_HIDE, 2],
   [MUTANT_SPORES, 2],
+  [SNARL, 2],
+  // Reach / tempo (tankier boards)
+  [OPENING_CUT, 2],
+  [PRESS_THE_ATTACK, 2],
+  [DOSE, 3],
+  [BLIGHT_STRIKE, 2],
+  [POUNCE, 2],
+  [PACK_SURGE, 2],
+  [RENDING_MARK, 2],
+  [CALL_TO_ARMS, 2],
+  [BATTLE_HYMN, 2],
+  [PACK_LAW, 2],
+  [VIRULENT_RITE, 2],
+  [RIPOSTE, 2],
+  [TEMPER, 2],
+  [UNTAMED, 2],
 ];
 
 export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
@@ -1272,29 +1345,33 @@ export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
 
 /**
  * Builtin control tactics deck (spec 002 “Control deck” identity: Arcane /
- * Corruption / Darkness). Legal under M4: 50–60 cards, ≤4 copies per id.
+ * Corruption / Darkness). Engine + disruption for resource-generating control
+ * creatures; live interaction (Fade / Siphon / Dispel / Seal) replaces deferred
+ * dead weight (Paradox, Tome, Mirrored Rune, Extermination, Mind Control,
+ * Collapse). Legal under M4: 50–60 cards, ≤4 copies per id.
  */
 const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  // Engine / filter
   [LIVING_LIBRARY, 4],
   [ECLIPSE, 4],
   [ARCANE_AMPLIFIER, 4],
   [ARCANE_RESONANCE, 3],
-  [PARADOX, 3],
-  [CALCULATED_SACRIFICE, 3],
-  [PERSISTENT_INFECTION, 3],
   [ARCHMAGES_GRIMOIRE, 3],
-  [TOME_OF_INTERDICTION, 3],
   [ABYSSAL_SACRIFICE, 3],
-  [MIRRORED_RUNE, 3],
-  [LATENT_CORRUPTION, 2],
-  [BLACK_PLAGUE, 2],
-  [ETERNAL_DARKNESS, 2],
-  [GREAT_CONTAMINATION, 2],
-  [EXTERMINATION, 2],
-  [MIND_CONTROL, 2],
+  [PERSISTENT_INFECTION, 3],
+  [LATENT_CORRUPTION, 3],
+  // Interaction (new + deepen)
+  [FADE, 4],
+  [SIPHON_SIGIL, 4],
+  [DISPEL_CIRCLE, 3],
+  [SEAL_THE_RITE, 3],
   [ARCANE_SILENCE, 2],
-  [LUMINAR_PRISM, 2],
-  [COLLAPSE_OF_REALITY, 2],
+  [RUNIC_NULLIFICATION, 2],
+  [CALCULATED_SACRIFICE, 3],
+  [BLACK_PLAGUE, 3],
+  [GREAT_CONTAMINATION, 3],
+  [ETERNAL_DARKNESS, 3],
+  [RITUAL_OF_CONTAMINATION, 3],
 ];
 
 export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id, copies]) =>
