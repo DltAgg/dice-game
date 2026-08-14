@@ -1,6 +1,11 @@
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
-import type { CardDefinition, CardDuration, CardInstance } from "../model/cards.js";
+import type {
+  CardDefinition,
+  CardDuration,
+  CardInstance,
+  CardType,
+} from "../model/cards.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { DieState } from "../model/dice.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
@@ -103,6 +108,17 @@ export const hasPlayableEffect = (definition: CardDefinition): boolean =>
   definition.overload !== undefined ||
   definition.ritual !== undefined;
 
+/** True for Instant / Reaction / Equipment / Overload (anything that is not a Ritual). */
+export const isNonRitualCard = (definition: CardDefinition): boolean =>
+  definition.type !== "ritual";
+
+/**
+ * Hand reactions (`type: "reaction"`) and ritual reactions (`subtypes` include
+ * `"reaction"`). Used for reaction-window legality.
+ */
+export const isReactionCard = (definition: CardDefinition): boolean =>
+  definition.type === "reaction" || definition.subtypes.includes("reaction");
+
 /**
  * Resolves how much Energy a play or forge spends. Fixed costs ignore
  * `energyPaid`. Variable (`?`) costs require an integer ≥ `energyCost`
@@ -123,11 +139,14 @@ export function resolveEnergyPayment(
   return definition.energyCost + additionalEnergy;
 }
 
-/** Deck cards matching a search filter, in current deck order. */
+/**
+ * Deck cards matching a search filter, in current deck order.
+ * A card matches when its main `CardType` is listed in `filter`.
+ */
 export function searchableInDeck(
   state: GameState,
   playerId: PlayerId,
-  filter: "tactic",
+  filter: readonly CardType[],
 ): readonly CardInstanceId[] {
   const player = state.players[playerId];
   if (player === undefined) return [];
@@ -137,7 +156,7 @@ export function searchableInDeck(
     if (card === undefined) return false;
     const definition = getCard(card.cardId);
     if (definition === undefined) return false;
-    return filter === "tactic" && definition.type === "tactic";
+    return filter.includes(definition.type);
   });
 }
 

@@ -27,6 +27,7 @@ import { createRng, type RNG } from "../rng/rng.js";
 import {
   attackDamageBonus,
   forgeExceedsAttributeLimit,
+  isReactionCard,
   resolveEnergyPayment,
   ritualDurationOf,
 } from "../rules/cards.js";
@@ -56,7 +57,7 @@ import {
   buildOverloadLink,
   buildRitualPlaceLink,
   cardCommittedToChain,
-  isNegatableLinkKind,
+  linkMatchesNegateCard,
   noteDeferredTurnEnd,
   openReactionWindow,
   pushChainLink,
@@ -870,7 +871,7 @@ function playCard(
   if (definition === undefined) return "UNKNOWN_ENTITY";
 
   // During a reaction window only hand reactions may respond.
-  if (inReactionWindow && !definition.subtypes.includes("reaction")) {
+  if (inReactionWindow && !isReactionCard(definition)) {
     return "CARD_NOT_AVAILABLE";
   }
 
@@ -901,9 +902,10 @@ function playCard(
   }
 
   // Negate / prevent reactions need a legal top link.
-  if (region.effects.some((effect) => effect.type === "negate-tactic")) {
+  for (const effect of region.effects) {
+    if (effect.type !== "negate-card") continue;
     const top = topChainLink(draft);
-    if (top === undefined || top.negated || !isNegatableLinkKind(top.kind)) {
+    if (top === undefined || !linkMatchesNegateCard(draft, top, effect.cardTypes)) {
       return "INVALID_CHAIN_TARGET";
     }
   }
@@ -1103,8 +1105,8 @@ function activateRitual(
   const region = definition?.ritual;
   if (region === undefined) return "CARD_HAS_NO_EFFECT";
 
-  // During a window only ritual-reactions may respond.
-  if (inReactionWindow && !definition?.subtypes.includes("reaction")) {
+  // During a window only ritual-reactions (or type reaction) may respond.
+  if (inReactionWindow && (definition === undefined || !isReactionCard(definition))) {
     return "CARD_NOT_AVAILABLE";
   }
 
@@ -1121,9 +1123,10 @@ function activateRitual(
     if (target.defeated) return "CREATURE_DEFEATED";
   }
 
-  if (region.effects.some((effect) => effect.type === "negate-tactic")) {
+  for (const effect of region.effects) {
+    if (effect.type !== "negate-card") continue;
     const top = topChainLink(draft);
-    if (top === undefined || top.negated || !isNegatableLinkKind(top.kind)) {
+    if (top === undefined || !linkMatchesNegateCard(draft, top, effect.cardTypes)) {
       return "INVALID_CHAIN_TARGET";
     }
   }

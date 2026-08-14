@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { ARCANE_ECHO, ECLIPSE, ETERNAL_DARKNESS, LIVING_LIBRARY, PROTOTYPE_DECK } from "../content/cards.js";
-import { handOf, graveyardOf, ritualsOf } from "../rules/cards.js";
+import {
+  ARCANE_ECHO,
+  ECLIPSE,
+  ETERNAL_DARKNESS,
+  LIVING_LIBRARY,
+  PROTOTYPE_DECK,
+  WAR_AXE,
+  getCard,
+} from "../content/cards.js";
+import { handOf, graveyardOf, ritualsOf, searchableInDeck } from "../rules/cards.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -383,7 +391,7 @@ describe("rituals on the field", () => {
       type: "search-deck",
       controllerId: P1,
       amount: 2,
-      filter: "tactic",
+      filter: ["instant", "ritual"],
     });
     expect(ritualsOf(activated.state, P1)).toHaveLength(0);
     expect(graveyardOf(activated.state, P1).some((card) => card.id === ritualId)).toBe(true);
@@ -400,6 +408,92 @@ describe("rituals on the field", () => {
     expect(resolved.state.pendingDecision).toBeNull();
     expect(resolved.state.players[P1]?.hand).toHaveLength(2);
     expect(eventTypes(resolved.state)).toContain("search-resolved");
+  });
+
+  it("Living Library search only offers Instant and Ritual cards", () => {
+    const base = withEnergy(
+      withHand(withPhase(newMatch(), "actions"), P1, [
+        LIVING_LIBRARY,
+        ECLIPSE,
+        WAR_AXE,
+        LIVING_LIBRARY,
+      ]),
+      P1,
+      10,
+    );
+    const player = base.players[P1];
+    if (player === undefined) throw new Error("test: no player");
+    const [ritualHand, ...deckIds] = player.hand;
+    if (ritualHand === undefined) throw new Error("test: no ritual");
+    const seeded = {
+      ...base,
+      cards: Object.fromEntries(
+        Object.entries(base.cards).map(([id, card]) => [
+          id,
+          deckIds.includes(card.id) ? { ...card, zone: "deck" as const } : card,
+        ]),
+      ),
+      players: {
+        ...base.players,
+        [P1]: { ...player, hand: [ritualHand], deck: deckIds },
+      },
+    };
+
+    const placed = advance(seeded, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: ritualHand,
+    });
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+
+    const ritualId = ritualsOf(placed.state, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("test: no ritual");
+
+    const oriented = {
+      ...withSymbols(withPhase(placed.state, "actions"), P1, ["arcane", "arcane"]),
+      cards: {
+        ...placed.state.cards,
+        [ritualId]: {
+          ...placed.state.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 2 },
+        },
+      },
+    };
+
+    const activated = advance(oriented, {
+      type: "ACTIVATE_RITUAL",
+      playerId: P1,
+      cardInstanceId: ritualId,
+    });
+    expect(activated.ok).toBe(true);
+    if (!activated.ok) return;
+
+    expect(activated.state.pendingDecision).toEqual({
+      type: "search-deck",
+      controllerId: P1,
+      amount: 2,
+      filter: ["instant", "ritual"],
+    });
+
+    const eligible = searchableInDeck(activated.state, P1, ["instant", "ritual"]);
+    expect(eligible).toHaveLength(2);
+    for (const id of eligible) {
+      const instance = activated.state.cards[id];
+      const definition = instance !== undefined ? getCard(instance.cardId) : undefined;
+      expect(definition?.type === "instant" || definition?.type === "ritual").toBe(true);
+    }
+
+    const axeId = deckIds.find((id) => activated.state.cards[id]?.cardId === WAR_AXE);
+    if (axeId === undefined) throw new Error("test: no axe in deck");
+    const rejected = advance(activated.state, {
+      type: "RESOLVE_SEARCH",
+      playerId: P1,
+      cardInstanceIds: [axeId, eligible[0]!],
+    });
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) expect(rejected.error).toBe("INVALID_SEARCH");
   });
 
   it("refuses other actions while a search is pending", () => {

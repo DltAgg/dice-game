@@ -77,5 +77,5 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - `src/game` cannot import React, Zustand, PeerJS, nanoid, or touch DOM / storage / network / clock / `Math.random`.
 - Effects are **data** (discriminated unions), never functions.
 - Content ids: `card-*`, `creature-*`, `face-*`, `attack-*`, `ability-*` (kebab after prefix).
-- Attachment subtypes (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region.
+- Attachment types (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region and ritual subtypes.
 - Grow effect AST only when a concrete card needs it; implement resolver + tests in the same change.

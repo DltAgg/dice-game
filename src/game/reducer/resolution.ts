@@ -12,6 +12,7 @@ import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { opponentOf } from "../rules/creatures.js";
 import { hasLegalForgeFacesChoice } from "../rules/faces.js";
 import { emit, nextInstanceId, patchCreature, type Draft } from "./draft.js";
+import { linkMatchesNegateCard } from "./chain.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
 import {
   destroyEquipment,
@@ -324,13 +325,9 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       };
       return false;
     }
-    case "negate-tactic": {
+    case "negate-card": {
       const top = draft.chainStack[draft.chainStack.length - 1];
-      if (
-        top !== undefined &&
-        top.kind !== "attack" &&
-        !top.negated
-      ) {
+      if (top !== undefined && linkMatchesNegateCard(draft, top, effect.cardTypes)) {
         top.negated = true;
         emit(draft, { type: "chain-link-negated", linkId: top.id });
       }

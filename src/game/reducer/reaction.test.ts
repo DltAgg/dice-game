@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ARCANE_SILENCE, ECLIPSE, RUNIC_NULLIFICATION } from "../content/cards.js";
+import { ARCANE_SILENCE, ECLIPSE, RUNIC_NULLIFICATION, WAR_AXE } from "../content/cards.js";
 import { asAttackId } from "../model/ids.js";
-import { graveyardOf, ritualsOf } from "../rules/cards.js";
+import { equipmentOf, graveyardOf, ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
 import {
   creatureIdAt,
@@ -251,6 +251,98 @@ describe("reaction chain (008)", () => {
 
     const resolved = resolveOpenChain(opened);
     expect(eventTypes(resolved)).toContain("damage-dealt");
+  });
+
+  it("rejects Runic Nullification when the top link is equipment (not Instant)", () => {
+    const p2Place = withEnergy(
+      withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
+        RUNIC_NULLIFICATION,
+      ]),
+      P2,
+      10,
+    );
+    const afterP2Place = resolveOpenChain(
+      expectOk(
+        advance(p2Place, {
+          type: "PLAY_CARD",
+          playerId: P2,
+          cardInstanceId: handCardIdAt(p2Place, P2, 0),
+        }),
+      ),
+    );
+    const ritualId = ritualsOf(afterP2Place, P2)[0]?.id;
+    if (ritualId === undefined) throw new Error("test: no ritual");
+
+    const p1Turn = withHand(
+      withSymbols(
+        withEnergy(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, 10),
+        P2,
+        ["arcane", "arcane"],
+      ),
+      P1,
+      [WAR_AXE],
+    );
+    const ready = {
+      ...p1Turn,
+      cards: {
+        ...p1Turn.cards,
+        [ritualId]: {
+          ...p1Turn.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 2 },
+        },
+      },
+    };
+
+    const afterEquip = expectOk(
+      advance(ready, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+        declaredTargetCreatureId: creatureIdAt(ready, P1, 0),
+      }),
+    );
+    expect(afterEquip.chainStack[0]?.kind).toBe("equip-attach");
+
+    const denied = advance(afterEquip, {
+      type: "ACTIVATE_RITUAL",
+      playerId: P2,
+      cardInstanceId: ritualId,
+    });
+    expect(denied.ok).toBe(false);
+    if (denied.ok) return;
+    expect(denied.error).toBe("INVALID_CHAIN_TARGET");
+  });
+
+  it("lets Arcane Silence negate a non-Instant equipment attach link", () => {
+    const state = withHand(
+      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [WAR_AXE]), P1, 10),
+      P2,
+      [ARCANE_SILENCE],
+    );
+
+    const opened = expectOk(
+      advance(state, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(state, P1, 0),
+        declaredTargetCreatureId: creatureIdAt(state, P1, 0),
+      }),
+    );
+    expect(opened.chainStack[0]?.kind).toBe("equip-attach");
+
+    const silenced = expectOk(
+      advance(opened, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(opened, P2, 0),
+      }),
+    );
+    expect(silenced.chainStack).toHaveLength(2);
+
+    const resolved = resolveOpenChain(silenced);
+    expect(eventTypes(resolved)).toContain("chain-link-negated");
+    expect(equipmentOf(resolved, P1)).toHaveLength(0);
   });
 
   it("activates Runic Nullification to negate after place + ready", () => {

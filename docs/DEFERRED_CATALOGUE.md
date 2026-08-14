@@ -18,12 +18,12 @@ needs them — never as unreachable stubs.
 | Vocabulary | Needed for | Notes |
 |---|---|---|
 | **Reaction chain** (YGO-style LILO) | Prevent reactions (Barrier …) | **IMPLEMENTED** (`008`) — windows on play/place/activate/equip/overload/attack; forge silent |
-| **Negate tactic effect** | — | **IMPLEMENTED** — top tactic-card link only (`negate-tactic`) |
+| **Negate card effect** | Runic Nullification, Arcane Silence | **IMPLEMENTED** — `negate-card` with `cardTypes: readonly CardType[] \| "any"` (instant-only vs any card link; not attacks; forge never on chain) |
 | **Prevent N damage** (one-shot) | — | **IMPLEMENTED** (`009`) — `grant-damage-prevent` buffer; Barrier wired |
 | **Prevent + reflect** | — | **IMPLEMENTED** — `prevent-attack-reflect` (Luminar Judgement) |
 | **Draw on prevent** | — | **IMPLEMENTED** — `arm-prevent-draw` (Glimmer) |
 | **Graveyard recursion** | Paradox | Eternal Darkness wired (`search-graveyard`) |
-| **Replay GY card effect** | Paradox | Ignore requirements |
+| **Replay GY card effect** | Paradox | Instant or Ritual in GY; ignore requirements |
 | **Symbol conversion** | Collapse of Reality, Void Summoner Rupture | Change rolled/available symbols |
 | **Reposition / push / swap** | Varcolac, Garuda, Twin Blades, Predator's Claws, … | Board positions exist; movers do not |
 | **On-damage triggers** | Venomous Fangs → apply toxin; Blade of Serene Light → heal | **IMPLEMENTED** (`010`) — `on-deal-damage` / `on-toxin-damage` |
@@ -33,14 +33,14 @@ needs them — never as unreachable stubs.
 | **Ignore Shield / pierce** | War Minotaur passive, Rust | |
 | **Attack-damage conditional buffs** | War Banner (left ally aura) | Varcolac passive **wired** (`on-attack` + `ally-other` + `grant-next-attack-bonus`) |
 | **Shared trigger events** | Twin Blades, Insignia, Alpha's Hide, … | **IMPLEMENTED** infrastructure; movers / push / “another card” still block some wires |
-| **Energy cost reduction** | Archmage passive, Tome of Interdiction | |
+| **Energy cost reduction** | Archmage passive, Tome of Interdiction | First Arcane card (any type) / first Instant Arcane |
 | **Multi-target damage split** | Blade Rain, Extermination | Player chooses distribution |
 | **Copy / re-apply die modifiers** | Arcane Echo tactic + face | |
 | **Forge-from-effect** (not PLAY forge region) | Corrupting Elder Contamination | **PARTIAL** — `forge-faces` wired (Great Contamination, Ritual of Contamination); attack-driven forge still deferred |
 | **Consume faces → damage** | Extermination | |
 | **Retain-from-effect** | Void Summoner Dimensional Rift, Forbidden Heritage | `RETAIN_DIE` exists; effect path does not |
 | **Destroy / strip overloads** | Mind Control | |
-| **Send cards deck → GY** | Dark Pact | |
+| **Send cards deck → GY** | Dark Pact | Mill 2 Rituals of different attributes |
 | **Continuous ritual standing triggers** | — | Abyssal Sacrifice, Serrated Stinger, Foundry, **Battle Hymn**, **Pack Law** wired; others as needed |
 | **Toxin on all attacks this turn** | — | **IMPLEMENTED** — `arm-attack-toxin` (Toxic Blessing) |
 | **Reroll face once / self-damage** | Adrenaline | |
@@ -64,11 +64,11 @@ Full English grammar is in `002`. Cards below either lack an `effect` /
 |---|---|
 | Arcane Echo (tactic) | Re-apply die modifiers (forge-only play) |
 | Extermination | Ritual place; consume + split damage deferred |
-| Paradox | Ritual place (no Active when); GY replay deferred |
+| Paradox | Ritual place (no Active when); GY Instant/Ritual replay deferred |
 | Collapse of Reality | Forge-only; symbol convert deferred |
-| Dark Pact | Forge-only; deck→GY deferred |
+| Dark Pact | Forge-only; mill 2 Rituals (different attributes) deferred |
 | Mind Control | Forge-only; strip overloads deferred |
-| Tome of Interdiction | Equip; cost reduction deferred |
+| Tome of Interdiction | Equip; Instant Arcane cost reduction deferred |
 | Abyssal Sacrifice | **Wired** discard → Darkness |
 | Mirrored Rune | Equip; absorb→copy deferred |
 | Toxic Blessing | — | **Wired** `arm-attack-toxin` on roll |
@@ -115,7 +115,7 @@ Damage lines resolve; passives and most special riders do not.
 | War Minotaur | Passive ignore 1 Shield; Poisoned Charge toxin + back-row swap |
 | Varcolac | Coordinated Hunt conditional push (passive **wired**) |
 | Garuda | Dive optional swap; Bombardment frontline toxin (Range flag exists) |
-| Archmage of the Runes | Passive Arcane tactic discount; Arcane Burst draw; Mystic Overload frontline shields |
+| Archmage of the Runes | Passive first Arcane card discount; Arcane Burst draw; Mystic Overload frontline shields |
 | Corrupting Elder | Touch strip shield; Contamination forge opp (passive **wired**) |
 | Void Summoner | Rupture convert; Dimensional Rift retain | Passive **wired** (Natural absorb → Arcane) |
 

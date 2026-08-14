@@ -1,4 +1,4 @@
-# 008 — Reaction chain & negate tactic
+# 008 — Reaction chain & negate card
 
 Status: **IMPLEMENTED**
 
@@ -12,11 +12,11 @@ and “Damage prevention” (DECIDED / partial 2026-08-12). Bible §37, §43.
 ## Intent
 
 Players can respond on a last-in, first-out chain before card plays, attaches,
-ritual activations, and attacks fully resolve. Negate answers **tactic-card**
-links (top only). Attacks open the same window but are answered with
-**prevention** (vocabulary in `009`), not negate. Costs are paid when the link
-is built; once both seats pass and a link conducts, its body cannot be
-interrupted.
+ritual activations, and attacks fully resolve. Negate answers **card-sourced**
+links (top only), filtered by `negate-card.cardTypes`. Attacks open the same
+window but are answered with **prevention** (vocabulary in `009`), not negate.
+Costs are paid when the link is built; once both seats pass and a link
+conducts, its body cannot be interrupted.
 
 ## Rules
 
@@ -40,22 +40,26 @@ interrupted.
 6. **What does not open a window:** `FORGE_CARD` only.
 7. **Legal responders:** hand `reaction` cards, and ready ritual-reactions.
 8. **Response kinds:**
-   - **Negate** — legal only when the **top** link is a tactic-card link
-     (effect / ritual place / ritual activate / equip / overload). Illegal
-     against an **attack** link.
+   - **Negate** — legal only when the **top** link is a card-sourced link
+     (effect / ritual place / ritual activate / equip / overload) whose source
+     card matches the effect's `cardTypes` filter. Illegal against an
+     **attack** link. `FORGE_CARD` never opens a window, so forge is out of
+     scope for negate.
    - **Prevent** — response path for attack / damage (`009`; not required to
      ship negate in this slice, but attack links must still open the window
      so prevent can plug in).
 9. **Negate** targets the **top** chain link only. (`OPEN_DESIGN`; print:
    Runic Nullification, Arcane Silence — `002`.)
 10. **Runic Nullification.** Place as ritual (header Energy). `[Active when:
-    Arcane + Arcane]` (cumulative) → ready. Activation pays **+3 Energy**, then negates the top
-    tactic link.
-11. **Arcane Silence.** Hand reaction; header cost 5; negate top tactic link.
+    Arcane + Arcane]` (cumulative) → ready. Activation pays **+3 Energy**, then
+    negates the top link if its source card is an **Instant**
+    (`negate-card` / `cardTypes: ["instant"]`).
+11. **Arcane Silence.** Hand reaction; header cost 5; negate top card link
+    (`negate-card` / `cardTypes: "any"`).
 12. **No mid-conduct reactions.** While `pendingDecision` is `search-deck`,
     `search-graveyard`, `discard-cards`, or `choose-creature`, no reaction
     window — those choices are part of conducting.
-13. **Negated tactic link.** Costs stay paid; body skipped. Ritual place:
+13. **Negated card link.** Costs stay paid; body skipped. Ritual place:
     card never sits preparing (ends in GY). Equip/overload: attach does not
     land. Ritual activate: continuous rituals exhaust; Instant / Reaction
     rituals leave for the graveyard after resolving.
@@ -91,8 +95,9 @@ crosses.
 
 - `PASS_PRIORITY`: actor is priority seat; reaction window open.
 - Hand reaction / ritual-reaction: priority seat; card legal; costs met.
-- `negate-tactic` (or equivalent): top link exists, kind is negatable
-  tactic-card kind, not already negated — **not** `attack`.
+- `negate-card`: top link exists, kind is negatable card kind, source card
+  matches `cardTypes` (`"any"` or listed main types), not already negated —
+  **not** `attack`.
 - No respond/pass while a non-reaction `pendingDecision` is set.
 - `FORGE_CARD` never opens a reaction window.
 

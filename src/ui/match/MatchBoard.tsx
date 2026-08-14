@@ -39,6 +39,7 @@ import {
   searchableInGraveyard,
   usableSymbols,
   holdsTokens,
+  isReactionCard,
   overloadsOnFace,
   SHIELD,
   type AttackDefinition,
@@ -293,7 +294,7 @@ export function MatchBoard() {
     if (pending?.type === "reaction-priority") {
       if (card.ownerId !== actingId) return;
       const def = getCard(card.cardId);
-      if (def === undefined || !def.subtypes.includes("reaction") || def.effect === undefined) {
+      if (def === undefined || !isReactionCard(def) || def.effect === undefined) {
         return;
       }
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });

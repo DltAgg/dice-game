@@ -1,18 +1,19 @@
 import { describe, expect, it } from "vitest";
-import type { CardDefinition, CardSubtype } from "../model/cards.js";
+import type { CardDefinition, CardSubtype, CardType } from "../model/cards.js";
 import { ALL_CARDS } from "./cards.js";
 
 /**
- * Equipment / Overload stay subtype ↔ region. Ritual is a main `CardType`, so
- * its region locks to `type === "ritual"` instead of a subtype token.
+ * Equipment / Overload are main `CardType` values locked to their regions.
+ * Ritual is also a main type with a matching `ritual` region. Instant /
+ * Continuous / Reaction remain ritual `CardSubtype` modifiers only.
  */
 
-const ATTACHMENT_SUBTYPES = ["equipment", "overload"] as const satisfies readonly CardSubtype[];
+const ATTACHMENT_TYPES = ["equipment", "overload"] as const satisfies readonly CardType[];
 
-type AttachmentSubtype = (typeof ATTACHMENT_SUBTYPES)[number];
+type AttachmentType = (typeof ATTACHMENT_TYPES)[number];
 
-function regionFor(card: CardDefinition, subtype: AttachmentSubtype): unknown {
-  switch (subtype) {
+function regionFor(card: CardDefinition, type: AttachmentType): unknown {
+  switch (type) {
     case "equipment":
       return card.equipment;
     case "overload":
@@ -20,25 +21,25 @@ function regionFor(card: CardDefinition, subtype: AttachmentSubtype): unknown {
   }
 }
 
-describe("card subtype ↔ region consistency", () => {
-  it.each(ALL_CARDS)("$name: attachment subtypes have matching regions", (card) => {
-    for (const subtype of ATTACHMENT_SUBTYPES) {
-      if (card.subtypes.includes(subtype)) {
+describe("card type ↔ region consistency", () => {
+  it.each(ALL_CARDS)("$name: attachment types have matching regions", (card) => {
+    for (const type of ATTACHMENT_TYPES) {
+      if (card.type === type) {
         expect(
-          regionFor(card, subtype),
-          `${card.name} prints ${subtype} but has no ${subtype} region`,
+          regionFor(card, type),
+          `${card.name} is type ${type} but has no ${type} region`,
         ).toBeDefined();
       }
     }
   });
 
-  it.each(ALL_CARDS)("$name: attachment regions appear on the type line", (card) => {
-    for (const subtype of ATTACHMENT_SUBTYPES) {
-      if (regionFor(card, subtype) !== undefined) {
+  it.each(ALL_CARDS)("$name: attachment regions appear as main type", (card) => {
+    for (const type of ATTACHMENT_TYPES) {
+      if (regionFor(card, type) !== undefined) {
         expect(
-          card.subtypes,
-          `${card.name} has a ${subtype} region but does not list ${subtype}`,
-        ).toContain(subtype);
+          card.type,
+          `${card.name} has a ${type} region but type is not ${type}`,
+        ).toBe(type);
       }
     }
   });
@@ -61,14 +62,13 @@ describe("card subtype ↔ region consistency", () => {
     ).toBe(card.attribute);
   });
 
-  it("lists every attachment subtype so new ones cannot be forgotten", () => {
-    const known: readonly CardSubtype[] = [
-      "instant",
-      "continuous",
-      "reaction",
-      "equipment",
-      "overload",
-    ];
-    expect(ATTACHMENT_SUBTYPES.every((subtype) => known.includes(subtype))).toBe(true);
+  it("lists every CardSubtype so new ones cannot be forgotten", () => {
+    const known: Record<CardSubtype, true> = {
+      instant: true,
+      continuous: true,
+      reaction: true,
+    };
+    expect(Object.keys(known).sort()).toEqual(["continuous", "instant", "reaction"]);
+    expect(ATTACHMENT_TYPES.every((type) => !(type in known))).toBe(true);
   });
 });

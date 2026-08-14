@@ -1,4 +1,4 @@
-import type { CardDuration, CardInstance } from "./cards.js";
+import type { CardDuration, CardInstance, CardType } from "./cards.js";
 import type { GameRulesConfig } from "./config.js";
 import type { CreatureState } from "./creatures.js";
 import type { DieState, FaceKind } from "./dice.js";
@@ -109,7 +109,7 @@ export type PendingDecision =
       readonly controllerId: PlayerId;
       /** How many cards must be chosen (already capped to eligible count). */
       readonly amount: number;
-      readonly filter: "tactic";
+      readonly filter: readonly CardType[];
     }
   | {
       readonly type: "search-graveyard";

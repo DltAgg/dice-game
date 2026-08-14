@@ -17,7 +17,7 @@ If headers or order differ, **stop and confirm** before mass-authoring.
 
 ## Process
 
-1. List every row with proposed: subtypes, attribute, forge, playable region, deferred gaps.
+1. List every row with proposed: main type, ritual subtypes if any, attribute, forge, playable region, deferred gaps.
 2. Get alignment (or proceed if the user said to implement the batch).
 3. Author each row into `src/game/content/cards.ts` per [tactics.md](tactics.md).
 4. Update `docs/specs/002-card-layer.md` tables and `docs/DEFERRED_CATALOGUE.md`.
@@ -27,9 +27,10 @@ If headers or order differ, **stop and confirm** before mass-authoring.
 
 | Text cues | Region |
 |---|---|
-| Instant / one-shot verbs (draw, deal, search…) | `effect` (type `tactic`) |
-| “Equip” / “whenever this creature…” standing | `equipment` |
-| “When this face is rolled” / face-only gate | `overload` |
+| Instant / one-shot verbs (draw, deal, search…) | `type: "instant"` + `effect` |
+| Reaction window from hand | `type: "reaction"` + `effect` |
+| “Equip” / “whenever this creature…” standing | `type: "equipment"` + `equipment` |
+| “When this face is rolled” / face-only gate | `type: "overload"` + `overload` |
 | “Active when:” / stays on field | `type: "ritual"` + `ritual` region |
 | “None” / empty effect / forge-only | forge only |
 

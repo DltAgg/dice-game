@@ -1,4 +1,5 @@
 import type { Attribute } from "./attributes.js";
+import type { CardType } from "./cards.js";
 import type { FaceKind } from "./dice.js";
 import type { SymbolType } from "./symbols.js";
 
@@ -25,13 +26,13 @@ export type EffectDefinition =
   | { readonly type: "draw-cards"; readonly amount: number }
   | { readonly type: "discard-cards"; readonly amount: number }
   /**
-   * Look through the controller's deck, choose up to `amount` cards matching
-   * `filter`, add them to hand, then shuffle the remaining deck.
+   * Look through the controller's deck, choose up to `amount` cards whose main
+   * `CardType` is in `filter`, add them to hand, then shuffle the remaining deck.
    */
   | {
       readonly type: "search-deck";
       readonly amount: number;
-      readonly filter: "tactic";
+      readonly filter: readonly CardType[];
     }
   /**
    * Choose up to `amount` cards in the controller's graveyard and return them
@@ -69,10 +70,15 @@ export type EffectDefinition =
    */
   | { readonly type: "arm-attack-toxin"; readonly amount: number }
   /**
-   * Negate the top chain link if it is a tactic-card link (not an attack).
-   * Spec `008` — Runic Nullification, Arcane Silence.
+   * Negate the top chain link when it is a card-sourced link (not an attack;
+   * forge never opens the chain) and the source card's main type is allowed.
+   * `cardTypes: "any"` = any card link. Spec `008` — Runic Nullification
+   * (`["instant"]`), Arcane Silence (`"any"`).
    */
-  | { readonly type: "negate-tactic" }
+  | {
+      readonly type: "negate-card";
+      readonly cardTypes: readonly CardType[] | "any";
+    }
   /**
    * Add to a creature’s prevent-next-N damage buffer (before Shields). Spec `009`.
    */

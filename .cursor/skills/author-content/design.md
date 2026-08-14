@@ -58,10 +58,10 @@ tactics, ≤4 copies per id; face deck ≤12, ≤3 per attribute.
 
 | Kind | Use for | Play path |
 |---|---|---|
-| Tactic / Instant | Burst, conversion, combat trick | `PLAY_CARD` → `effect` → GY |
-| Tactic / Reaction | Window response from hand | Same, only in reaction window |
-| Tactic / Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
-| Tactic / Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
+| Instant | Burst, conversion, combat trick | `PLAY_CARD` → `effect` → GY |
+| Reaction | Window response from hand | Same, only in reaction window |
+| Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
+| Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
 | Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → absorb Active-when → `ACTIVATE_RITUAL` → GY |
 | Ritual / Continuous | Lasting field engine | Activate then exhaust; `standingAbilities` while ready |
 | Face (natural) | Starting identity faces | Dual-kind attrs + Shield only |

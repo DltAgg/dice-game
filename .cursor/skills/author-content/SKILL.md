@@ -57,8 +57,8 @@ Card Progress:
 - [ ] 7. DoD
 ```
 
-1. Identify kind: **tactic** (instant / reaction / equipment / overload),
-   **ritual** (instant / reaction / continuous), or **face** (natural / synthetic).
+1. Identify kind: **instant** / **reaction** / **equipment** / **overload**,
+   **ritual** (subtypes instant / reaction / continuous), or **face** (natural / synthetic).
 2. Check [design.md](design.md) — identity, cost band, what the card is *for*.
 3. Align names and attributes with English specs (`002` / `003` / `004`).
 4. Timing print → [standardize-card-effects](../standardize-card-effects/SKILL.md).
@@ -81,7 +81,7 @@ Card Progress:
 
 | Kind | Pattern | Example |
 |---|---|---|
-| Tactic / ritual | `card-<kebab>` | `card-great-contamination` |
+| Hand card / ritual | `card-<kebab>` | `card-great-contamination` |
 | Creature | `creature-<kebab>` | `creature-minotaur` |
 | Natural face | `face-natural-<attr\|shield>` | `face-natural-arcane` |
 | Synthetic / named | `face-synthetic-<kebab>` | `face-synthetic-crush` |

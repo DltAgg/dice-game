@@ -1,5 +1,5 @@
 import type { Attribute } from "../model/attributes.js";
-import type { CardZone, RitualOrientation } from "../model/cards.js";
+import type { CardType, CardZone, RitualOrientation } from "../model/cards.js";
 import type { BattlefieldPosition } from "../model/creatures.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { AttributeTokens } from "../model/symbols.js";
@@ -122,7 +122,7 @@ export function discardCards(draft: Draft, playerId: PlayerId, amount: number): 
 export function searchableDeckCards(
   draft: Draft,
   playerId: PlayerId,
-  filter: "tactic",
+  filter: readonly CardType[],
 ): readonly CardInstanceId[] {
   const player = draft.players[playerId];
   if (player === undefined) return [];
@@ -132,7 +132,7 @@ export function searchableDeckCards(
     if (card === undefined) return false;
     const definition = getCard(card.cardId);
     if (definition === undefined) return false;
-    return filter === "tactic" && definition.type === "tactic";
+    return filter.includes(definition.type);
   });
 }
 
