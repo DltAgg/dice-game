@@ -12,7 +12,9 @@ import {
   getFaceCard,
   type CardDefinition,
   type CardId,
+  type CardType,
   type CreatureDefinitionId,
+  type FaceCardDefinition,
   type FaceCardId,
 } from "@/game";
 import {
@@ -24,6 +26,29 @@ import { useDeckStore } from "@/store/deckStore";
 import { CardInspectPanel } from "@/ui/decks/CardInspectPanel";
 
 const creatureOptions = Object.values(CREATURES);
+
+/** Main hand-deck kinds from `CardType`, plus Faces (separate catalogue). */
+const CARD_TYPE_FILTERS = [
+  "instant",
+  "reaction",
+  "equipment",
+  "overload",
+  "ritual",
+] as const satisfies readonly CardType[];
+
+type CatalogueFilter = "all" | CardType | "faces";
+
+const CATALOGUE_FILTERS: readonly {
+  readonly id: CatalogueFilter;
+  readonly label: string;
+}[] = [
+  { id: "all", label: "All" },
+  ...CARD_TYPE_FILTERS.map((id) => ({
+    id,
+    label: id.charAt(0).toUpperCase() + id.slice(1),
+  })),
+  { id: "faces", label: "Faces" },
+];
 
 type PreviewTarget =
   | { readonly kind: "tactic"; readonly id: CardId }
@@ -57,11 +82,16 @@ function uniqueSortedCounts<T extends string>(
     .sort((a, b) => labelOf(a.id).localeCompare(labelOf(b.id)));
 }
 
-function matchesTacticQuery(card: CardDefinition, raw: string): boolean {
-  const q = raw.trim().toLowerCase();
-  if (q.length === 0) return true;
+function normalizeQuery(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
+/** Full-text match over hand-deck catalogue fields. */
+function matchesCardQuery(card: CardDefinition, query: string): boolean {
+  if (query.length === 0) return true;
   const haystack = [
     card.name,
+    card.id,
     card.type,
     card.attribute,
     ...card.subtypes,
@@ -69,7 +99,22 @@ function matchesTacticQuery(card: CardDefinition, raw: string): boolean {
   ]
     .join(" ")
     .toLowerCase();
-  return haystack.includes(q);
+  return haystack.includes(query);
+}
+
+/** Full-text match over face catalogue fields. */
+function matchesFaceQuery(face: FaceCardDefinition, query: string): boolean {
+  if (query.length === 0) return true;
+  const haystack = [
+    face.name,
+    face.id,
+    face.kind,
+    face.symbol,
+    face.rulesText,
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(query);
 }
 
 export function DeckBuilder() {
@@ -93,7 +138,7 @@ export function DeckBuilder() {
   ]);
   const [message, setMessage] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [catalogueTab, setCatalogueTab] = useState<"tactics" | "faces">("tactics");
+  const [catalogueFilter, setCatalogueFilter] = useState<CatalogueFilter>("all");
   const [preview, setPreview] = useState<PreviewTarget | null>(null);
 
   const load = (id: SavedDeckId) => {
@@ -127,32 +172,61 @@ export function DeckBuilder() {
     [faceDeck],
   );
 
-  const filteredTactics = useMemo(
-    () => ALL_CARDS.filter((card) => matchesTacticQuery(card, search)),
-    [search],
-  );
+  const searchQuery = normalizeQuery(search);
+  const searchActive = searchQuery.length > 0;
+  /** Type tabs only scope the list when search is empty. */
+  const showingFaces = !searchActive && catalogueFilter === "faces";
+  const browseHandCards = !searchActive && catalogueFilter !== "faces";
+
+  const filteredTactics = useMemo(() => {
+    if (searchActive) {
+      return ALL_CARDS.filter((card) => matchesCardQuery(card, searchQuery));
+    }
+    if (!browseHandCards) return [];
+    return ALL_CARDS.filter((card) => {
+      if (catalogueFilter !== "all" && card.type !== catalogueFilter) return false;
+      return true;
+    });
+  }, [browseHandCards, catalogueFilter, searchActive, searchQuery]);
 
   const filteredFaces = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (q.length === 0) return ALL_FACE_CARDS;
-    return ALL_FACE_CARDS.filter((face) => {
-      const hay = `${face.name} ${face.kind} ${face.symbol} ${face.rulesText}`.toLowerCase();
-      return hay.includes(q);
-    });
-  }, [search]);
+    if (searchActive) {
+      return ALL_FACE_CARDS.filter((face) => matchesFaceQuery(face, searchQuery));
+    }
+    if (!showingFaces) return [];
+    return ALL_FACE_CARDS;
+  }, [searchActive, searchQuery, showingFaces]);
+
+  const catalogueEmpty =
+    filteredTactics.length === 0 && filteredFaces.length === 0;
 
   const resolvedPreview = useMemo((): PreviewTarget => {
     if (preview !== null) return preview;
-    if (catalogueTab === "faces") {
+    if (searchActive) {
+      const firstHit = filteredTactics[0]?.id;
+      if (firstHit !== undefined) return { kind: "tactic", id: firstHit };
+      const firstFaceHit = filteredFaces[0]?.id;
+      if (firstFaceHit !== undefined) return { kind: "face", id: firstFaceHit };
+    }
+    if (showingFaces) {
       const firstFace = faceEntries[0]?.id ?? ALL_FACE_CARDS[0]?.id;
       if (firstFace !== undefined) return { kind: "face", id: firstFace };
     }
-    const firstTactic = deckEntries[0]?.id ?? ALL_CARDS[0]?.id;
+    const firstFiltered = filteredTactics[0]?.id;
+    const firstTactic = firstFiltered ?? deckEntries[0]?.id ?? ALL_CARDS[0]?.id;
     if (firstTactic !== undefined) return { kind: "tactic", id: firstTactic };
     const fallbackFace = ALL_FACE_CARDS[0]?.id;
     if (fallbackFace !== undefined) return { kind: "face", id: fallbackFace };
     return { kind: "tactic", id: ALL_CARDS[0]!.id };
-  }, [preview, catalogueTab, deckEntries, faceEntries]);
+  }, [
+    preview,
+    searchActive,
+    showingFaces,
+    deckEntries,
+    faceEntries,
+    filteredTactics,
+    filteredFaces,
+  ]);
 
   const previewTactic =
     resolvedPreview.kind === "tactic" ? getCard(resolvedPreview.id) : undefined;
@@ -304,39 +378,43 @@ export function DeckBuilder() {
 
           <div className="flex h-1/2 min-h-0 flex-col px-3 pb-3 pt-2">
             <div className="mb-2 flex shrink-0 flex-wrap items-center gap-2">
-              <div className="flex rounded border border-stone-700 p-0.5">
-                <CatalogueTab
-                  label="Tactics"
-                  active={catalogueTab === "tactics"}
-                  onClick={() => {
-                    setCatalogueTab("tactics");
-                    setSearch("");
-                  }}
-                />
-                <CatalogueTab
-                  label="Faces"
-                  active={catalogueTab === "faces"}
-                  onClick={() => {
-                    setCatalogueTab("faces");
-                    setSearch("");
-                  }}
-                />
+              <div
+                className={
+                  searchActive
+                    ? "flex max-w-full flex-wrap rounded border border-stone-700/60 p-0.5 opacity-50"
+                    : "flex max-w-full flex-wrap rounded border border-stone-700 p-0.5"
+                }
+                title={
+                  searchActive
+                    ? "Type filter paused while searching all cards"
+                    : undefined
+                }
+              >
+                {CATALOGUE_FILTERS.map((entry) => (
+                  <CatalogueTab
+                    key={entry.id}
+                    label={entry.label}
+                    active={!searchActive && catalogueFilter === entry.id}
+                    onClick={() => {
+                      setCatalogueFilter(entry.id);
+                      setSearch("");
+                    }}
+                  />
+                ))}
               </div>
               <label className="relative min-w-[10rem] flex-1">
-                <span className="sr-only">Search cards</span>
+                <span className="sr-only">Search all cards</span>
                 <input
                   className="w-full rounded border border-stone-700 bg-stone-950 py-1.5 pl-3 pr-3 text-sm text-stone-100 placeholder:text-stone-600"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder={
-                    catalogueTab === "tactics" ? "Search tactics…" : "Search faces…"
-                  }
+                  placeholder="Search all cards…"
                 />
               </label>
             </div>
 
             <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
-              {catalogueTab === "tactics" &&
+              {(searchActive || browseHandCards) &&
                 filteredTactics.map((card) => {
                   const copies = countOf(deck, card.id);
                   const active =
@@ -345,7 +423,7 @@ export function DeckBuilder() {
                     <li key={card.id}>
                       <DeckRow
                         title={card.name}
-                        subtitle={`${card.attribute} · in deck ${copies}/${cfg.deckMaxCopiesPerCard}`}
+                        subtitle={`${card.type} · ${card.attribute} · in deck ${copies}/${cfg.deckMaxCopiesPerCard}`}
                         copies={copies}
                         maxCopies={cfg.deckMaxCopiesPerCard}
                         active={active}
@@ -359,11 +437,8 @@ export function DeckBuilder() {
                     </li>
                   );
                 })}
-              {catalogueTab === "tactics" && filteredTactics.length === 0 && (
-                <li className="py-8 text-center text-sm text-stone-600">No matching tactics</li>
-              )}
 
-              {catalogueTab === "faces" &&
+              {(searchActive || showingFaces) &&
                 filteredFaces.map((face) => {
                   const copies = countOf(faceDeck, face.id);
                   const active =
@@ -372,7 +447,7 @@ export function DeckBuilder() {
                     <li key={face.id}>
                       <DeckRow
                         title={face.name}
-                        subtitle={`${face.kind} · ${face.symbol} · in deck ×${copies}`}
+                        subtitle={`face · ${face.kind} · ${face.symbol} · in deck ×${copies}`}
                         copies={copies}
                         maxCopies={cfg.faceDeckMaxCards}
                         active={active}
@@ -387,8 +462,9 @@ export function DeckBuilder() {
                     </li>
                   );
                 })}
-              {catalogueTab === "faces" && filteredFaces.length === 0 && (
-                <li className="py-8 text-center text-sm text-stone-600">No matching faces</li>
+
+              {catalogueEmpty && (
+                <li className="py-8 text-center text-sm text-stone-600">No matching cards</li>
               )}
             </ul>
           </div>
