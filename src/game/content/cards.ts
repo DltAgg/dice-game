@@ -170,7 +170,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: PERSISTENT_INFECTION,
     name: "Persistent Infection",
-    energyCost: 4,
+    energyCost: 2,
     type: "overload",
     subtypes: [],
     attribute: "corruption",
@@ -288,7 +288,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: BLACK_PLAGUE,
     name: "Black Plague",
-    energyCost: 4,
+    energyCost: 2,
     type: "equipment",
     subtypes: [],
     attribute: "corruption",
@@ -312,7 +312,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: GREAT_CONTAMINATION,
     name: "Great Contamination",
-    energyCost: 5,
+    energyCost: 3,
     type: "ritual",
     subtypes: ["instant"],
     attribute: "corruption",
@@ -320,7 +320,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText:
       "Forge 3 Synthetic Corruption faces on one of the opponent's dice.",
     ritual: {
-      activeWhen: { arcane: 1, corruption: 2 },
+      activeWhen: { arcane: 1, corruption: 1 },
       effects: [
         {
           type: "forge-faces",
@@ -365,7 +365,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: LATENT_CORRUPTION,
     name: "Latent Corruption",
-    energyCost: 4,
+    energyCost: 3,
     type: "overload",
     subtypes: [],
     attribute: "corruption",
@@ -480,7 +480,6 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText: "Forge 1 Synthetic Corruption face on the opponent's die.",
     effect: {
-      requires: { arcane: 1, corruption: 1 },
       effects: [
         {
           type: "forge-faces",

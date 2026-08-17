@@ -63,8 +63,8 @@ Named specials:
 | Blade Rain | 3 | On roll: arm next-attack split | `split-damage` pending |
 | Rending Claw | 3 | On roll: remove 3 Shields from most-shielded enemy | |
 | Crush | 3 | On roll: next attack +1 damage | |
-| Forbidden Heritage | 1 | On roll: opp draw + retain; `ACTIVATE_FACE` strip Corruption | |
-| Pestilent Plague | 2 | On roll: counters → adjacent forge at 5; `ACTIVATE_FACE` | |
+| Forbidden Heritage | 1 | On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel | |
+| Pestilent Plague | 2 | On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` | |
 | Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
 | Conversion Rune | 2 | On roll: convert; On absorb: +Energy | |
 | Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |
@@ -104,13 +104,26 @@ Portuguese *Sobrecarga* is catalogued as **Overcharge**.
 ## State Changes
 
 `players[*].facePool`, `attackBonusThisTurn` (Crush), `DieSlot.pestilenceCounters`,
+`DieSlot.forgeLockRemaining`, `FaceCardDefinition.stayPolicy` / `pestilenceSpreadAt`,
 `DieSlot.corruptionMarkers` / `suppressInherentNextRoll` / `resourceLockedThisTurn`,
 `FaceCardDefinition.activated`, turn maps in `011`–`013`.
 
 ## Actions
 
-`FORGE_CARD` respects face forge restrictions. `ACTIVATE_FACE` for Heritage /
-Plague (spec `012`). Face-marker pending resolves in spec `013`.
+`FORGE_CARD` / `forge-faces` / `replace-synthetic-face` refuse slots that
+`slotCannotBeReplacedByForge` (Heritage always; Plague while `forgeLockRemaining > 0`).
+`ACTIVATE_FACE` for Heritage / Plague peel (spec `012`) remains legal while locked.
+
+## UI
+
+Match-ui must show **remaining forge-lock** on Pestilent Plague slots and a
+**cannot-replace** cue on Forbidden Heritage (and locked Plague) so players do
+not target those slots for forge / Reforge. Do not hide `ACTIVATE_FACE` peel.
+Engine query: `slotCannotBeReplacedByForge` from `src/game/rules/faces.ts`.
+
+- [x] Remaining forge-lock on Pestilent Plague slots (`DieSlot.forgeLockRemaining`)
+- [x] Cannot-replace cue (Heritage always; Plague while lock > 0)
+- [x] Forge / forge-faces / Reforge omit locked slots; `ACTIVATE_FACE` peel stays
 
 ## Acceptance Criteria
 
@@ -120,6 +133,7 @@ Plague (spec `012`). Face-marker pending resolves in spec `013`.
 - [x] Crush and Rending Claw on-roll effects
 - [x] Modellable CSV / named special On roll / On absorb wired (`011`–`013`)
 - [x] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll, Instinct absorb)
+- [x] Stay-on-slot (Heritage never-replace; Plague forge-lock + spread at 2)
 
 ## Tests
 
@@ -127,3 +141,4 @@ Plague (spec `012`). Face-marker pending resolves in spec `013`.
 - [x] `src/game/reducer/faceMarkers.test.ts`
 - [x] Existing forge / invariant / triggers suites
 - [x] Spec `011` / `012` / `013` focused suites
+- [x] `src/game/reducer/stayOnSlot.test.ts`

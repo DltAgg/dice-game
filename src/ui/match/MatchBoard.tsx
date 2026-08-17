@@ -36,9 +36,10 @@ import {
   isLegalRitualReaction,
   legalDiceForFilter,
   legalDieSlotsForFilter,
+  legalCreaturesForFilter,
   legalSlotsForReplaceSyntheticFace,
   legalTargetsFor,
-  legalCreaturesForFilter,
+  slotCannotBeReplacedByForge,
   livingCreaturesOf,
   NATURAL_CONVERT_SYMBOLS,
   opponentOf,
@@ -60,6 +61,7 @@ import {
   type CreatureState,
   type DieChoiceFilter,
   type DieId,
+  type DieSlot,
   type DieSlotChoiceFilter,
   type DualKindAttribute,
   type FaceCardId,
@@ -741,6 +743,8 @@ export function MatchBoard() {
           }}
           onToggleSlot={(slotIndex) => {
             if (forgeFacesFaceId === undefined || forgeFacesDieId === undefined) return;
+            const slot = state.dice[forgeFacesDieId]?.slots[slotIndex];
+            if (slot !== undefined && slotCannotBeReplacedByForge(slot)) return;
             const next = forgeFacesSlots.includes(slotIndex)
               ? forgeFacesSlots.filter((index) => index !== slotIndex)
               : forgeFacesSlots.length < pending.faces
@@ -1093,6 +1097,8 @@ export function MatchBoard() {
           }
           onToggleSlot={(slotIndex) => {
             if (intent.dieId === undefined) return;
+            const slot = state.dice[intent.dieId]?.slots[slotIndex];
+            if (slot !== undefined && slotCannotBeReplacedByForge(slot)) return;
             const current = intent.slotIndexes ?? [];
             const next = current.includes(slotIndex)
               ? current.filter((index) => index !== slotIndex)
@@ -1509,21 +1515,57 @@ function chooseDieSlotFilterHint(filter: DieSlotChoiceFilter): string {
   }
 }
 
-function slotStatusLine(slot: {
-  readonly pestilenceCounters?: number;
-  readonly corruptionMarkers?: number;
-  readonly suppressInherentNextRoll?: boolean;
-  readonly resourceLockedThisTurn?: boolean;
-}): string | null {
+function pestilenceStatusLabel(count: number, faceCardId: FaceCardId): string | null {
+  if (count <= 0) return null;
+  const denom = getFaceCard(faceCardId)?.pestilenceSpreadAt;
+  return denom !== undefined
+    ? `Pestilence ${String(count)}/${String(denom)}`
+    : `Pestilence ${String(count)}`;
+}
+
+function forgeLockStatusLabel(remaining: number | undefined): string | null {
+  if ((remaining ?? 0) <= 0) return null;
+  return `Forge-lock ${String(remaining)}`;
+}
+
+function slotStatusLine(slot: DieSlot): string | null {
   const parts: string[] = [];
   if ((slot.corruptionMarkers ?? 0) > 0) {
     parts.push(`Corruption ×${String(slot.corruptionMarkers)}`);
   }
-  if ((slot.pestilenceCounters ?? 0) > 0) {
-    parts.push(`Pestilence ${String(slot.pestilenceCounters)}/5`);
-  }
+  const pestilence = pestilenceStatusLabel(slot.pestilenceCounters ?? 0, slot.faceCardId);
+  if (pestilence !== null) parts.push(pestilence);
+  const forgeLock = forgeLockStatusLabel(slot.forgeLockRemaining);
+  if (forgeLock !== null) parts.push(forgeLock);
+  if (slotCannotBeReplacedByForge(slot)) parts.push("Cannot replace");
   if (slot.suppressInherentNextRoll === true) parts.push("Suppress next roll");
   if (slot.resourceLockedThisTurn === true) parts.push("Resource locked");
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+/** Aggregated stay-on-slot cues for a unique installed face card. */
+function stayStatusForFace(
+  state: GameState,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+): string | null {
+  let pestilence = 0;
+  let forgeLock = 0;
+  let cannotReplace = false;
+  for (const die of diceOf(state, playerId)) {
+    for (const slot of die.slots) {
+      if (slot.faceCardId !== faceCardId) continue;
+      pestilence = Math.max(pestilence, slot.pestilenceCounters ?? 0);
+      forgeLock = Math.max(forgeLock, slot.forgeLockRemaining ?? 0);
+      if (slotCannotBeReplacedByForge(slot)) cannotReplace = true;
+    }
+  }
+  const parts: string[] = [];
+  const pestilenceLine = pestilenceStatusLabel(pestilence, faceCardId);
+  if (pestilenceLine !== null) parts.push(pestilenceLine);
+  const lockLine = forgeLockStatusLabel(forgeLock);
+  if (lockLine !== null) parts.push(lockLine);
+  if (cannotReplace) parts.push("Cannot replace");
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
@@ -1557,17 +1599,6 @@ function showingSlotsForFace(
     });
   }
   return result;
-}
-
-function maxPestilenceForFace(state: GameState, playerId: PlayerId, faceCardId: FaceCardId): number {
-  let max = 0;
-  for (const die of diceOf(state, playerId)) {
-    for (const slot of die.slots) {
-      if (slot.faceCardId !== faceCardId) continue;
-      max = Math.max(max, slot.pestilenceCounters ?? 0);
-    }
-  }
-  return max;
 }
 
 function faceMarkerSummary(
@@ -2726,7 +2757,7 @@ function FaceCardTile({
   const activated = face?.activated;
   const kindLabel =
     face === undefined ? "?" : face.kind === "natural" ? "Natural" : "Synthetic";
-  const pestilence = maxPestilenceForFace(state, playerId, entry.faceCardId);
+  const stayBits = stayStatusForFace(state, playerId, entry.faceCardId);
   const showingSlots = showingSlotsForFace(state, playerId, entry.faceCardId);
   const markerBits = faceMarkerSummary(state, playerId, entry.faceCardId);
   const tooltip = [
@@ -2734,7 +2765,7 @@ function FaceCardTile({
     face?.symbol ?? "",
     entry.copies > 1 ? `Installed on ${String(entry.copies)} faces` : "Installed on dice",
     face?.rulesText !== undefined && face.rulesText !== "" ? face.rulesText : null,
-    pestilence > 0 ? `Pestilence counters: ${String(pestilence)}` : null,
+    stayBits,
     markerBits,
   ]
     .filter((line): line is string => line !== null && line !== "")
@@ -2821,10 +2852,8 @@ function FaceCardTile({
           Showing
         </p>
       )}
-      {pestilence > 0 && (
-        <p className="mt-1 text-[0.65rem] text-rose-300/90">
-          Pestilence {String(pestilence)}/5
-        </p>
+      {stayBits !== null && (
+        <p className="mt-1 text-[0.65rem] text-rose-300/90">{stayBits}</p>
       )}
       {markerBits !== null && (
         <p className="mt-1 text-[0.65rem] text-violet-300/90">{markerBits}</p>
@@ -2948,25 +2977,43 @@ function DieSlotPickModal({
 
         {selectedDieId === undefined && (
           <ul className="mt-4 space-y-2">
-            {dice.map((die, index) => (
-              <li key={die.id}>
-                <button
-                  type="button"
-                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-[var(--accent)]"
-                  onClick={() => onSelectDie(die.id)}
-                >
-                  <p className="text-sm font-medium text-stone-100">
-                    Die {index + 1}
-                    <span className="ml-2 text-xs font-normal text-stone-500">{die.id}</span>
-                  </p>
-                  <p className="mt-1 text-xs capitalize text-stone-500">
-                    {die.slots
-                      .map((slot) => getFaceCard(slot.faceCardId)?.name ?? "?")
-                      .join(" · ")}
-                  </p>
-                </button>
-              </li>
-            ))}
+            {dice.map((die, index) => {
+              const replaceable = die.slots.filter(
+                (slot) => !slotCannotBeReplacedByForge(slot),
+              ).length;
+              const canPickDie = replaceable >= facesNeeded;
+              return (
+                <li key={die.id}>
+                  <button
+                    type="button"
+                    disabled={!canPickDie}
+                    className={
+                      canPickDie
+                        ? "w-full rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-[var(--accent)]"
+                        : "w-full cursor-not-allowed rounded border border-stone-800 bg-stone-950 px-3 py-3 text-left opacity-50"
+                    }
+                    onClick={() => {
+                      if (canPickDie) onSelectDie(die.id);
+                    }}
+                  >
+                    <p className="text-sm font-medium text-stone-100">
+                      Die {index + 1}
+                      <span className="ml-2 text-xs font-normal text-stone-500">{die.id}</span>
+                    </p>
+                    <p className="mt-1 text-xs capitalize text-stone-500">
+                      {die.slots
+                        .map((slot) => getFaceCard(slot.faceCardId)?.name ?? "?")
+                        .join(" · ")}
+                    </p>
+                    {!canPickDie && (
+                      <p className="mt-1 text-[0.65rem] text-rose-300/90">
+                        Not enough replaceable faces
+                      </p>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
 
@@ -2982,23 +3029,30 @@ function DieSlotPickModal({
               {selectedDie.slots.map((slot) => {
                 const face = getFaceCard(slot.faceCardId);
                 const picked = selectedSlots.includes(slot.index);
+                const cannotReplace = slotCannotBeReplacedByForge(slot);
+                const status = slotStatusLine(slot);
                 return (
                   <button
                     key={slot.index}
                     type="button"
+                    disabled={cannotReplace}
                     className={
-                      picked
-                        ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-3 text-left"
-                        : "rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-stone-500"
+                      cannotReplace
+                        ? "cursor-not-allowed rounded border border-stone-800 bg-stone-950 px-3 py-3 text-left opacity-50"
+                        : picked
+                          ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-3 text-left"
+                          : "rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-stone-500"
                     }
-                    onClick={() => onToggleSlot(slot.index)}
+                    onClick={() => {
+                      if (!cannotReplace) onToggleSlot(slot.index);
+                    }}
                   >
                     <p className="text-sm font-medium text-stone-100">{face?.name ?? "?"}</p>
                     <p className="mt-1 text-[0.65rem] capitalize text-stone-500">
                       Slot {slot.index + 1} · {face?.kind ?? "?"} · {face?.symbol ?? "—"}
                     </p>
-                    {slotStatusLine(slot) !== null && (
-                      <p className="mt-1 text-[0.65rem] text-rose-300/90">{slotStatusLine(slot)}</p>
+                    {status !== null && (
+                      <p className="mt-1 text-[0.65rem] text-rose-300/90">{status}</p>
                     )}
                   </button>
                 );
