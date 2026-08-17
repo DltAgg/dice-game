@@ -57,8 +57,11 @@ import {
   eligibleFacesForForge,
   eligiblePoolFacesForReplace,
   isLegalForgeKindForAttribute,
+  overwrittenSlot,
   returnFaceToPoolIfOrphaned,
+  slotCannotBeReplacedByForge,
   takeFaceFromPool,
+  withForgeLockResetOnInstall,
 } from "../rules/faces.js";
 import {
   isUnabsorbedPoolSymbol,
@@ -99,6 +102,7 @@ import {
   grantShield,
   pushEffect,
   replayableGraveyardTactics,
+  tickForgeLocksForOwner,
   tickToxins,
 } from "./resolution.js";
 import {
@@ -757,6 +761,14 @@ function resolveForgeFaces(
   const ownerId = pending.target === "own-die" ? playerId : opponentOf(draft, playerId);
   if (die.ownerId !== ownerId) return "INVALID_TARGET";
   if (slotIndexes.some((index) => die.slots[index] === undefined)) return "INVALID_FACE";
+  if (
+    slotIndexes.some((index) => {
+      const slot = die.slots[index];
+      return slot !== undefined && slotCannotBeReplacedByForge(slot);
+    })
+  ) {
+    return "INVALID_FACE";
+  }
 
   if (
     forgeExceedsAttributeLimit(die, slotIndexes, pending.attribute, pending.faces, draft.config)
@@ -807,6 +819,7 @@ function resolveReplaceSyntheticFace(
 
   const slot = die.slots[slotIndex];
   if (slot === undefined) return "INVALID_FACE";
+  if (slotCannotBeReplacedByForge(slot)) return "INVALID_FACE";
 
   const installedFace = getFaceCard(slot.faceCardId);
   if (
@@ -833,10 +846,13 @@ function resolveReplaceSyntheticFace(
   }
 
   const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
-  const slots = die.slots.map((candidate) =>
-    candidate.index === slotIndex
-      ? { ...candidate, faceCardId, faceCardOwnerId: playerId }
-      : candidate,
+  const slots = withForgeLockResetOnInstall(
+    die.slots.map((candidate) =>
+      candidate.index === slotIndex
+        ? overwrittenSlot(candidate, faceCardId, playerId)
+        : candidate,
+    ),
+    faceCardId,
   );
   patchDie(draft, dieId, { slots });
 
@@ -1345,6 +1361,7 @@ function activateFace(
           faceCardId: SHIELD_FACE_ID,
           faceCardOwnerId: playerId,
           pestilenceCounters: 0,
+          forgeLockRemaining: 0,
         }
       : candidate,
   );
@@ -1370,20 +1387,34 @@ function installFacesOnDie(
   faceCardId: FaceCardId,
   cardInstanceId: CardInstanceId | null,
 ): GameError | null {
+  const currentDie = draft.dice[dieId];
+  if (currentDie === undefined) return "UNKNOWN_ENTITY";
+  if (
+    slotIndexes.some((index) => {
+      const slot = currentDie.slots[index];
+      return slot !== undefined && slotCannotBeReplacedByForge(slot);
+    })
+  ) {
+    return "INVALID_FACE";
+  }
+
   const alreadyInstalled = countInstalledCopies(draft, faceCardId, playerId) > 0;
   if (!alreadyInstalled && !takeFaceFromPool(draft, playerId, faceCardId)) {
     return "FACE_NOT_AVAILABLE";
   }
 
-  const currentDie = draft.dice[dieId];
-  if (currentDie === undefined) return "UNKNOWN_ENTITY";
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
 
   const displaced: Array<{ faceCardId: FaceCardId; ownerId: PlayerId }> = [];
-  const slots = currentDie.slots.map((slot) => {
-    if (!slotIndexes.includes(slot.index)) return slot;
-    displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
-    return { ...slot, faceCardId, faceCardOwnerId: playerId };
-  });
+  const slots = withForgeLockResetOnInstall(
+    die.slots.map((slot) => {
+      if (!slotIndexes.includes(slot.index)) return slot;
+      displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
+      return overwrittenSlot(slot, faceCardId, playerId);
+    }),
+    faceCardId,
+  );
   patchDie(draft, dieId, { slots });
 
   for (const old of displaced) {
@@ -1443,15 +1474,22 @@ function absorbSymbol(
     grantShield(draft, creatureId, 1);
   }
 
-  queueAbsorbTriggers(draft, playerId, creatureId, symbol.symbol, symbol.sourceDieId);
+  queueAbsorbTriggers(
+    draft,
+    playerId,
+    { kind: "creature", id: creatureId },
+    symbol.symbol,
+    symbol.sourceDieId,
+  );
   drainResolution(draft);
   return null;
 }
 
 /**
  * Spend an unabsorbed attribute symbol on a field ritual's Active-when gate.
- * Same actions-window as creature absorb; the symbol is consumed (not banked
- * on a creature) and never remains in the engine pool.
+ * Same actions-window and standing `on-absorb` hooks as creature absorb;
+ * progress is credited immediately (not banked until END_TURN). The symbol is
+ * consumed (not placed on a creature) and never remains in the engine pool.
  */
 function absorbSymbolToRitual(
   draft: Draft,
@@ -1507,6 +1545,14 @@ function absorbSymbolToRitual(
   };
 
   refreshRitualOrientations(draft, playerId);
+  queueAbsorbTriggers(
+    draft,
+    playerId,
+    { kind: "ritual", id: cardInstanceId },
+    symbol.symbol,
+    symbol.sourceDieId,
+  );
+  drainResolution(draft);
   return null;
 }
 
@@ -1641,6 +1687,14 @@ function forgeCard(
     return "INVALID_TARGET";
   }
   if (slotIndexes.some((index) => die.slots[index] === undefined)) return "INVALID_FACE";
+  if (
+    slotIndexes.some((index) => {
+      const slot = die.slots[index];
+      return slot !== undefined && slotCannotBeReplacedByForge(slot);
+    })
+  ) {
+    return "INVALID_FACE";
+  }
 
   if (forgeExceedsAttributeLimit(die, slotIndexes, forge.attribute, forge.faces, draft.config)) {
     return "ATTRIBUTE_LIMIT_REACHED";
@@ -2438,6 +2492,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   draft.facesAppearedThisRoll = [];
   draft.resolveNextFaceEffectTwice = {};
   clearResourceLocks(draft);
+  tickForgeLocksForOwner(draft, playerId);
   clearTurnTriggerState(draft);
 
   draft.energy = track;

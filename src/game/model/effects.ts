@@ -265,7 +265,11 @@ export type EffectDefinition =
   | { readonly type: "copy-other-die-face" }
   /** Pending optional reroll of the source die (Adrenaline). */
   | { readonly type: "optional-reroll-die" }
-  /** Add 1 pestilence counter on the source slot; at 5, reset and try adjacent forge. */
+  /**
+   * Add 1 pestilence counter on the source slot; at the showing face's
+   * `pestilenceSpreadAt`, reset and try an adjacent forge of that face from
+   * the slot's `faceCardOwnerId` pool / copies.
+   */
   | { readonly type: "add-pestilence-counter" }
   /**
    * Until the target's owner's next turn, further `apply-toxin` applications

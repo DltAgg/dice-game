@@ -22,6 +22,11 @@ import {
   generateRoomCode,
   type WireLoadout,
 } from "@/networking";
+import {
+  clearOnlineSessionHint,
+  readOnlineSessionHint,
+  writeOnlineSessionHint,
+} from "./onlineSessionHint.js";
 
 const P1 = asPlayerId("p1");
 const P2 = asPlayerId("p2");
@@ -34,7 +39,7 @@ export type MatchMode = "local" | "host" | "client";
 function requireDeck(id: SavedDeckId): SavedDeck {
   const deck = deckRepo.get(id);
   if (deck === undefined) {
-    throw new Error(`matchStore: deck “${id}” not found`);
+    throw new Error(`matchStore: deck “${id}” was not found`);
   }
   return deck;
 }
@@ -87,6 +92,32 @@ function newMatchState(
   });
 }
 
+function persistHostHint(roomCode: string, deckId: SavedDeckId, seed: number, state: GameState | null): void {
+  writeOnlineSessionHint({
+    v: 1,
+    role: "host",
+    roomCode,
+    deckId,
+    seed,
+    ...(state !== null ? { state } : {}),
+  });
+}
+
+function persistGuestHint(roomCode: string, deckId: SavedDeckId): void {
+  writeOnlineSessionHint({
+    v: 1,
+    role: "guest",
+    roomCode,
+    deckId,
+  });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export interface MatchStore {
   readonly state: GameState;
   readonly lastError: GameError | null;
@@ -111,20 +142,37 @@ export interface MatchStore {
   clearPlayBlockReason: () => void;
 
   startLocal: (p1DeckId?: SavedDeckId, p2DeckId?: SavedDeckId) => void;
-  hostRoom: (deckId?: SavedDeckId) => Promise<void>;
+  hostRoom: (deckId?: SavedDeckId, options?: { readonly resume?: boolean }) => Promise<void>;
   joinRoom: (roomCode: string, deckId?: SavedDeckId) => Promise<void>;
   leaveOnline: () => void;
   requestResync: () => void;
+  /** After a full page reload, resume host Peer id or re-join as guest. */
+  tryResumeOnlineSession: () => Promise<void>;
 }
 
 let hostSession: HostSession | null = null;
 let clientSession: ClientSession | null = null;
+let guestTransport: PeerTransport | null = null;
+let guestReconnectGen = 0;
+let didAttemptResume = false;
+let pageHideBound = false;
 
-function tearDownSessions(): void {
-  hostSession?.destroy();
+function tearDownSessions(announceClose = true): void {
+  guestReconnectGen += 1;
+  hostSession?.destroy(announceClose);
   clientSession?.destroy();
   hostSession = null;
   clientSession = null;
+  guestTransport = null;
+}
+
+function bindPageHideRelease(): void {
+  if (pageHideBound || typeof window === "undefined") return;
+  pageHideBound = true;
+  window.addEventListener("pagehide", () => {
+    // Free the PeerJS room-code id; do not send room-closed (guest should retry).
+    tearDownSessions(false);
+  });
 }
 
 export const useMatchStore = create<MatchStore>((set, get) => {
@@ -171,6 +219,7 @@ export const useMatchStore = create<MatchStore>((set, get) => {
 
     startLocal: (p1DeckId, p2DeckId) => {
       tearDownSessions();
+      clearOnlineSessionHint();
       const p1 = p1DeckId ?? get().p1DeckId;
       const p2 = p2DeckId ?? get().p2DeckId;
       const blocked = playBlockReasonFor(p1, p2);
@@ -195,9 +244,10 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       });
     },
 
-    hostRoom: async (deckId) => {
-      tearDownSessions();
-      const chosen = deckId ?? get().p1DeckId;
+    hostRoom: async (deckId, options) => {
+      const resume = options?.resume === true;
+      const hint = resume ? readOnlineSessionHint() : null;
+      const chosen = deckId ?? (hint?.role === "host" ? hint.deckId : get().p1DeckId);
       const resolved = resolvePlayableLoadout(chosen);
       if (!resolved.ok) {
         set({
@@ -210,39 +260,55 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         });
         return;
       }
+      tearDownSessions();
       const loadout = toWireLoadout(resolved.deck);
-      const roomCode = generateRoomCode();
+      const roomCode =
+        resume && hint?.role === "host" ? hint.roomCode : generateRoomCode();
+      const restoredState = resume && hint?.role === "host" ? hint.state : undefined;
+      const matchSeed =
+        restoredState?.rng.seed ??
+        (resume && hint?.role === "host" ? hint.seed : undefined) ??
+        Date.now() % 100_000;
       set({
         mode: "host",
         localPlayerId: P1,
         roomCode,
-        connectionStatus: "starting host…",
-        onlineReady: false,
+        connectionStatus: restoredState !== undefined ? "resuming host…" : "starting host…",
+        onlineReady: restoredState !== undefined,
         view: "match",
         p1DeckId: chosen,
         lastError: null,
         playBlockReason: null,
+        ...(restoredState !== undefined ? { state: restoredState, seed: restoredState.rng.seed } : {}),
       });
 
       try {
+        bindPageHideRelease();
         const transport = await PeerTransport.create(roomCode);
+        persistHostHint(roomCode, chosen, matchSeed, restoredState ?? null);
         hostSession = new HostSession({
           roomCode,
           transport,
           hostLoadout: loadout,
-          onState: (state) =>
+          seed: matchSeed,
+          ...(restoredState !== undefined ? { restoredState } : {}),
+          onState: (state) => {
+            persistHostHint(roomCode, chosen, state.rng.seed, state);
             set({
               state,
               seed: state.rng.seed,
               onlineReady: true,
               lastError: null,
-            }),
+            });
+          },
           onError: (error) => set({ lastError: error }),
           onStatus: (connectionStatus) => set({ connectionStatus }),
-          onGuestJoined: () => set({ connectionStatus: "guest connected" }),
-          onGuestLeft: () => set({ connectionStatus: "guest disconnected" }),
+          onGuestLeft: () =>
+            set({ connectionStatus: "guest disconnected — they can rejoin with this room code" }),
         });
-        set({ connectionStatus: "waiting for guest", roomCode });
+        if (restoredState === undefined) {
+          set({ connectionStatus: "waiting for guest", roomCode });
+        }
       } catch (error) {
         tearDownSessions();
         set({
@@ -286,9 +352,51 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         playBlockReason: null,
       });
 
+      const reconnectGen = guestReconnectGen;
+
+      const retryConnect = async (transport: PeerTransport, session: ClientSession): Promise<void> => {
+        const delays = [400, 800, 1200, 2000, 3000, 4000] as const;
+        for (let attempt = 0; attempt < 24; attempt += 1) {
+          if (guestReconnectGen !== reconnectGen || clientSession !== session) return;
+          set({ connectionStatus: "reconnecting…" });
+          try {
+            await transport.connect(code);
+            if (guestReconnectGen !== reconnectGen || clientSession !== session) return;
+            session.greet();
+            return;
+          } catch {
+            await sleep(delays[Math.min(attempt, delays.length - 1)]!);
+          }
+        }
+        if (guestReconnectGen === reconnectGen && clientSession === session) {
+          set({
+            connectionStatus: "reconnect failed — Join again with this room code",
+          });
+        }
+      };
+
       try {
+        bindPageHideRelease();
         const transport = await PeerTransport.create();
-        await transport.connect(code);
+        guestTransport = transport;
+        const joinDelays = [400, 800, 1200, 2000, 3000] as const;
+        let connected = false;
+        let joinError: unknown;
+        for (let attempt = 0; attempt < 12; attempt += 1) {
+          if (guestReconnectGen !== reconnectGen) return;
+          try {
+            await transport.connect(code);
+            connected = true;
+            break;
+          } catch (error) {
+            joinError = error;
+            set({ connectionStatus: "connecting… retrying" });
+            await sleep(joinDelays[Math.min(attempt, joinDelays.length - 1)]!);
+          }
+        }
+        if (!connected) {
+          throw joinError instanceof Error ? joinError : new Error("join failed");
+        }
         clientSession = new ClientSession({
           roomCode: code,
           transport,
@@ -301,15 +409,26 @@ export const useMatchStore = create<MatchStore>((set, get) => {
               onlineReady: true,
               lastError: null,
             }),
-          onWelcome: (playerId) =>
+          onWelcome: (playerId) => {
+            persistGuestHint(code, chosen);
             set({
               localPlayerId: playerId,
               connectionStatus: "connected",
               onlineReady: true,
-            }),
+            });
+          },
           onError: (error) => set({ lastError: error }),
           onStatus: (connectionStatus) => set({ connectionStatus }),
-          onRoomClosed: () => set({ connectionStatus: "room closed", onlineReady: false }),
+          onRoomClosed: () => {
+            clearOnlineSessionHint();
+            set({ connectionStatus: "room closed", onlineReady: false });
+          },
+          onHostDropped: () => {
+            const session = clientSession;
+            const current = guestTransport;
+            if (session === null || current === null) return;
+            void retryConnect(current, session);
+          },
         });
         clientSession.greet();
       } catch (error) {
@@ -327,7 +446,8 @@ export const useMatchStore = create<MatchStore>((set, get) => {
     },
 
     leaveOnline: () => {
-      tearDownSessions();
+      tearDownSessions(true);
+      clearOnlineSessionHint();
       const nextSeed = Date.now() % 100_000;
       set({
         mode: "local",
@@ -346,6 +466,19 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       clientSession?.requestResync();
     },
 
+    tryResumeOnlineSession: async () => {
+      if (didAttemptResume) return;
+      didAttemptResume = true;
+      if (get().mode !== "local" || hostSession !== null || clientSession !== null) return;
+      const hint = readOnlineSessionHint();
+      if (hint === null) return;
+      if (hint.role === "host") {
+        await get().hostRoom(hint.deckId, { resume: true });
+        return;
+      }
+      await get().joinRoom(hint.roomCode, hint.deckId);
+    },
+
     dispatch: (action) => {
       const { mode, localPlayerId } = get();
 
@@ -359,19 +492,20 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         return false;
       }
 
-      if (localPlayerId !== null && action.playerId !== localPlayerId) {
-        set({ lastError: "NOT_ACTIVE_PLAYER" });
-        return false;
-      }
+      // Stamp the bound seat. Do not refuse P2 reactions with NOT_ACTIVE_PLAYER
+      // just because the UI named the turn player — host/client sessions also
+      // override playerId, and the reducer decides priority vs turn player.
+      const seated: GameAction =
+        localPlayerId !== null ? { ...action, playerId: localPlayerId } : action;
 
       if (mode === "host") {
         if (hostSession === null) return false;
-        return hostSession.submitLocalAction(action);
+        return hostSession.submitLocalAction(seated);
       }
 
       if (mode === "client") {
         if (clientSession === null) return false;
-        return clientSession.submitAction(action);
+        return clientSession.submitAction(seated);
       }
 
       return false;

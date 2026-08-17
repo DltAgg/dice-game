@@ -16,6 +16,15 @@ export const FACE_SLOTS_PER_DIE = 6;
 export type FaceKind = "natural" | "synthetic";
 
 /**
+ * Whether forging (or other overwrite-installs) may replace a slot showing
+ * this face. Omitted means the slot may be overwritten. Peel via
+ * `ACTIVATE_FACE` / unforge / consume is never this restriction.
+ */
+export type FaceStayPolicy =
+  | { readonly kind: "cannot-replace-by-forge" }
+  | { readonly kind: "forge-lock"; readonly turns: number };
+
+/**
  * The reusable definition of a face (bible §11). Several physical die faces —
  * even on different dice — may point at the same face card (1:N). Overloads
  * attach to the face card, not to a physical slot.
@@ -57,6 +66,18 @@ export interface FaceCardDefinition {
     readonly energyBase: number;
     readonly energyPerCorruptionOnDie: number;
   };
+  /**
+   * Stay-on-slot while installed. Forbidden Heritage never yields to a forge
+   * overwrite; Pestilent Plague uses a per-slot forge-lock of `turns` owner
+   * turns. `forgeRestriction` (who may *install* this type) is a different axis.
+   */
+  readonly stayPolicy?: FaceStayPolicy;
+  /**
+   * Pestilent Plague: after this many counters on the physical slot, reset
+   * them and try to forge another copy onto an adjacent slot. Catalogue owns
+   * the threshold (currently 2).
+   */
+  readonly pestilenceSpreadAt?: number;
 }
 
 /**
@@ -74,6 +95,12 @@ export interface DieSlot {
   readonly faceCardOwnerId: PlayerId;
   /** Pestilent Plague counters on this physical slot. */
   readonly pestilenceCounters?: number;
+  /**
+   * Remaining die-owner turns this slot cannot be replaced by forging
+   * (`stayPolicy.kind === "forge-lock"`). Decremented on that owner's
+   * `END_TURN` / turn finish; floor 0. OPEN_DESIGN ASSUMED.
+   */
+  readonly forgeLockRemaining?: number;
   /**
    * Corruption markers on this physical slot (Stain / Infection). A slot with
    * ≥1 is a Corrupted face. Spec `013`.

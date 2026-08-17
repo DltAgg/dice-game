@@ -311,8 +311,9 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
-      "On roll: your opponent draws 1 card. [Retain] this face.\n" +
-      "Activated: you may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
+      "On roll: your opponent draws 1 card. Retain this die.\n" +
+      "This face cannot be replaced by forging.\n" +
+      "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
     onRoll: [
       { type: "draw-cards", amount: 1, player: "opponent" },
       { type: "retain-die" },
@@ -320,6 +321,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     onAbsorb: [],
     maxOverloads: 1,
     forgeRestriction: null,
+    stayPolicy: { kind: "cannot-replace-by-forge" },
     activated: {
       kind: "remove-corruption-face",
       energyBase: 2,
@@ -332,13 +334,15 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
-      "On roll: put 1 pestilence counter on this card.\n" +
-      "At 5 pestilence counters: remove them and [Forge] 1 [Pestilent Plague] face next to a [Pestilent Plague] face.\n" +
-      "Activated: you may pay [Energy], 2 + 1 per [Corruption] face on your die, to remove 1 [Corruption] face from your die.",
+      "On roll: put 1 pestilence counter on this face. At 2 pestilence counters: remove them and forge 1 Pestilent Plague onto an adjacent slot of this die.\n" +
+      "Cannot be replaced by forging for 4 of this die's owner's turns. Whenever a Pestilent Plague is forged onto this die, reset the remaining lock to 4 on every Pestilent Plague on this die.\n" +
+      "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
     onRoll: [{ type: "add-pestilence-counter" }],
     onAbsorb: [],
     maxOverloads: 2,
     forgeRestriction: null,
+    stayPolicy: { kind: "forge-lock", turns: 4 },
+    pestilenceSpreadAt: 2,
     activated: {
       kind: "remove-corruption-face",
       energyBase: 2,
@@ -883,14 +887,17 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
  * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
  * Darkness / Corruption / Arcane for rituals and forges; Luminar synthetics
  * gate Archmage’s special (arcane + luminar) without Mechanical combo splash.
+ * Corruption payloads are the stay specials (Forbidden Heritage, Pestilent
+ * Plague) plus Stain — not the generic +1-attack synthetic (a miss on an
+ * opponent die).
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
   syntheticFaceId("darkness"),
   SHADOW_ECHO,
   DRAIN,
-  syntheticFaceId("corruption"),
   STAIN,
   FORBIDDEN_HERITAGE,
+  PESTILENT_PLAGUE,
   syntheticFaceId("arcane"),
   INSIGHT_RUNE,
   CONVERSION_RUNE,

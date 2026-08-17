@@ -443,4 +443,43 @@ describe("reaction chain (008)", () => {
     if (pass.ok) return;
     expect(pass.error).toBe("PENDING_DECISION");
   });
+
+  it("lets P2 pass and respond after a JSON round-trip of the window", () => {
+    const state = withHand(
+      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      P2,
+      [ARCANE_SILENCE],
+    );
+    const opened = expectOk(
+      advance(state, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(state, P1, 0),
+      }),
+    );
+    const cloned = JSON.parse(JSON.stringify(opened)) as typeof opened;
+    expect(cloned.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P2,
+    });
+
+    const afterP2Pass = expectOk(
+      advance(cloned, { type: "PASS_PRIORITY", playerId: P2 }),
+    );
+    expect(afterP2Pass.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P1,
+      consecutivePasses: 1,
+    });
+
+    const reopened = JSON.parse(JSON.stringify(opened)) as typeof opened;
+    const silenced = expectOk(
+      advance(reopened, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(reopened, P2, 0),
+      }),
+    );
+    expect(silenced.chainStack).toHaveLength(2);
+  });
 });
