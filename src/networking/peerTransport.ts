@@ -1,10 +1,28 @@
 import { Peer, type DataConnection } from "peerjs";
 import type { MessageHandler, NetTransport, PeerHandler } from "./transport.js";
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function isUnavailableId(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "type" in error &&
+    (error as { type: unknown }).type === "unavailable-id"
+  );
+}
+
 /**
  * PeerJS-backed transport. The host should pass a fixed `localId` (the room
  * code). Guests omit it so PeerJS assigns an ephemeral id, then `connect` to
  * the host room code.
+ *
+ * Host refresh reuses the same room-code id; PeerJS may still hold it briefly,
+ * so `create` retries `unavailable-id`.
  */
 export class PeerTransport implements NetTransport {
   readonly localId: string;
@@ -29,10 +47,41 @@ export class PeerTransport implements NetTransport {
   }
 
   static async create(localId?: string): Promise<PeerTransport> {
+    const attempts = localId === undefined ? 1 : 6;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      try {
+        return await PeerTransport.createOnce(localId);
+      } catch (error) {
+        lastError = error;
+        const retry =
+          localId !== undefined && isUnavailableId(error) && attempt < attempts - 1;
+        if (!retry) throw error;
+        await sleep(350 * (attempt + 1));
+      }
+    }
+    throw lastError;
+  }
+
+  private static async createOnce(localId: string | undefined): Promise<PeerTransport> {
     const peer = localId !== undefined ? new Peer(localId) : new Peer();
     const ready = new Promise<void>((resolve, reject) => {
-      peer.on("open", () => resolve());
-      peer.on("error", (error) => reject(error));
+      let settled = false;
+      peer.on("open", () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      });
+      peer.on("error", (error) => {
+        if (settled) return;
+        settled = true;
+        try {
+          peer.destroy();
+        } catch {
+          // ignore
+        }
+        reject(error);
+      });
     });
     await ready;
     return new PeerTransport(peer, peer.id, ready);
@@ -41,7 +90,16 @@ export class PeerTransport implements NetTransport {
   /** Guest: open a data connection to the host's room code. */
   async connect(hostRoomCode: string): Promise<void> {
     await this.ready;
-    if (this.connections.has(hostRoomCode)) return;
+    const existing = this.connections.get(hostRoomCode);
+    if (existing?.open === true) return;
+    if (existing !== undefined) {
+      this.connections.delete(hostRoomCode);
+      try {
+        existing.close();
+      } catch {
+        // ignore
+      }
+    }
     const conn = this.peer.connect(hostRoomCode, { reliable: true });
     await new Promise<void>((resolve, reject) => {
       conn.on("open", () => resolve());
@@ -73,6 +131,18 @@ export class PeerTransport implements NetTransport {
     this.disconnectHandler = handler;
   }
 
+  disconnectPeer(peerId: string): void {
+    const conn = this.connections.get(peerId);
+    if (conn === undefined) return;
+    this.connections.delete(peerId);
+    try {
+      conn.close();
+    } catch {
+      // ignore
+    }
+    this.disconnectHandler?.(peerId);
+  }
+
   destroy(): void {
     for (const conn of this.connections.values()) {
       conn.close();
@@ -101,10 +171,12 @@ export class PeerTransport implements NetTransport {
       this.pendingMessages.push({ peerId, data });
     });
     conn.on("close", () => {
+      if (!this.connections.has(peerId)) return;
       this.connections.delete(peerId);
       this.disconnectHandler?.(peerId);
     });
     conn.on("error", () => {
+      if (!this.connections.has(peerId)) return;
       this.connections.delete(peerId);
       this.disconnectHandler?.(peerId);
     });

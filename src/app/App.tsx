@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { CardCatalogue } from "@/ui/cards/CardCatalogue";
 import { DeckBuilder } from "@/ui/decks/DeckBuilder";
 import { Lobby } from "@/ui/match/Lobby";
@@ -7,6 +8,10 @@ import { useMatchStore, type MatchView } from "@/store/matchStore";
 export function App() {
   const view = useMatchStore((s) => s.view);
   const setView = useMatchStore((s) => s.setView);
+
+  useEffect(() => {
+    void useMatchStore.getState().tryResumeOnlineSession();
+  }, []);
 
   return (
     <div className="min-h-screen text-[var(--ink)]">

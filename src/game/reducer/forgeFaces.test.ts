@@ -14,7 +14,6 @@ import {
   withEnergy,
   withHand,
   withPhase,
-  withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
@@ -211,11 +210,8 @@ describe("forge-faces (Great Contamination)", () => {
 });
 
 describe("forge-faces (Ritual of Contamination)", () => {
-  it("opens a one-face opponent forge when played with Arcane + Corruption", () => {
-    const state = withSymbols(actionsReady([RITUAL_OF_CONTAMINATION]), P1, [
-      "arcane",
-      "corruption",
-    ]);
+  it("opens a one-face opponent forge when played (no Requires gate)", () => {
+    const state = actionsReady([RITUAL_OF_CONTAMINATION]);
     const played = advance(state, {
       type: "PLAY_CARD",
       playerId: P1,
