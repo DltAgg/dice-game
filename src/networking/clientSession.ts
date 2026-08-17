@@ -13,6 +13,8 @@ export interface ClientSessionOptions {
   readonly onError?: (error: GameError) => void;
   readonly onStatus?: (status: string) => void;
   readonly onRoomClosed?: () => void;
+  /** Live tab: host DataConnection dropped (guest page still mounted). */
+  readonly onHostDropped?: () => void;
 }
 
 /**
@@ -28,6 +30,7 @@ export class ClientSession {
   private readonly onError: ((error: GameError) => void) | undefined;
   private readonly onStatus: ((status: string) => void) | undefined;
   private readonly onRoomClosed: (() => void) | undefined;
+  private readonly onHostDropped: (() => void) | undefined;
 
   private playerId: PlayerId | null = null;
   private clientSeq = 0;
@@ -43,6 +46,7 @@ export class ClientSession {
     this.onError = options.onError;
     this.onStatus = options.onStatus;
     this.onRoomClosed = options.onRoomClosed;
+    this.onHostDropped = options.onHostDropped;
 
     this.transport.onMessage((peerId, data) => {
       if (peerId !== this.hostPeerId) return;
@@ -51,6 +55,7 @@ export class ClientSession {
     this.transport.onDisconnect((peerId) => {
       if (peerId === this.hostPeerId) {
         this.onStatus?.("disconnected from host");
+        this.onHostDropped?.();
       }
     });
   }
@@ -110,6 +115,7 @@ export class ClientSession {
         this.onWelcome(message.playerId, message.roomCode);
         this.onState(message.state);
         this.onStatus?.("connected");
+        this.requestResync();
         break;
       case "state":
         this.state = message.state;

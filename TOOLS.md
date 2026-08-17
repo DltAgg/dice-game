@@ -69,6 +69,8 @@ npx vitest run src/game/reducer/playcard.test.ts
 2. Tab A: Play → Host room → copy room code.
 3. Tab B: Play → Join with code.
 4. Confirm shared state, seat-gated actions, Resync on guest.
+5. Guest: refresh the page with the same room code — must rebind as p2 and restore host state.
+6. Optional: host refresh in the same tab — same room code, guest reconnects to the live match.
 
 Details: `docs/specs/007-peerjs.md`.
 

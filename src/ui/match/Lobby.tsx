@@ -6,6 +6,7 @@ import {
 } from "@/decks";
 import { useDeckStore } from "@/store/deckStore";
 import { useMatchStore } from "@/store/matchStore";
+import { readOnlineSessionHint } from "@/store/onlineSessionHint";
 
 export function Lobby() {
   const decks = useDeckStore((s) => s.decks);
@@ -19,8 +20,14 @@ export function Lobby() {
   const connectionStatus = useMatchStore((s) => s.connectionStatus);
   const playBlockReason = useMatchStore((s) => s.playBlockReason);
   const clearPlayBlockReason = useMatchStore((s) => s.clearPlayBlockReason);
+  const mode = useMatchStore((s) => s.mode);
+  const roomCode = useMatchStore((s) => s.roomCode);
+  const setView = useMatchStore((s) => s.setView);
 
-  const [joinCode, setJoinCode] = useState("");
+  const sessionHint = readOnlineSessionHint();
+  const [joinCode, setJoinCode] = useState(
+    () => sessionHint?.role === "guest" ? sessionHint.roomCode : "",
+  );
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -68,9 +75,26 @@ export function Lobby() {
         </h1>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Local hotseat on one machine, or host/join a PeerJS room. Only legal loadouts can be
-          played (you can still save WIP decks from Decks).
+          played (you can still save WIP decks from Decks). Refresh mid-match: rejoin with the
+          same room code — guest is rebound as P2 and the host resyncs state. Host refresh reuses
+          that code if you <span className="text-stone-300">Resume</span> in this tab.
         </p>
       </header>
+
+      {mode !== "local" && roomCode !== null && (
+        <p className="rounded border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-2 text-sm text-stone-200">
+          You are in room <span className="font-mono text-[var(--accent)]">{roomCode}</span>
+          {" · "}
+          {connectionStatus}.{" "}
+          <button
+            type="button"
+            className="underline decoration-[var(--accent)] underline-offset-2"
+            onClick={() => setView("match")}
+          >
+            Back to match
+          </button>
+        </p>
+      )}
 
       <section className="space-y-3 rounded border border-stone-800 bg-stone-950/50 p-4">
         <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
@@ -151,6 +175,16 @@ export function Lobby() {
         >
           Host room
         </button>
+        {sessionHint?.role === "host" && mode === "local" && (
+          <button
+            type="button"
+            className={btnPrimary}
+            disabled={busy || !p1Legal}
+            onClick={() => void run(() => hostRoom(sessionHint.deckId, { resume: true }))}
+          >
+            Resume room {sessionHint.roomCode}
+          </button>
+        )}
       </section>
 
       <section className="space-y-3 rounded border border-stone-800 bg-stone-950/50 p-4">
@@ -192,6 +226,16 @@ export function Lobby() {
         >
           Join room
         </button>
+        {sessionHint?.role === "guest" && mode === "local" && (
+          <button
+            type="button"
+            className={btnPrimary}
+            disabled={busy || !p2Legal}
+            onClick={() => void run(() => joinRoom(sessionHint.roomCode, sessionHint.deckId))}
+          >
+            Rejoin {sessionHint.roomCode}
+          </button>
+        )}
       </section>
 
       {playBlockReason !== null && (
