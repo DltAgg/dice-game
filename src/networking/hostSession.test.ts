@@ -80,8 +80,8 @@ describe("host/client over fake transport", () => {
       playerId: asPlayerId("p1"),
     });
     expect(ok).toBe(true);
-    expect(hostBox.state?.phase).toBe("absorption");
-    expect(guestBox.state?.phase).toBe("absorption");
+    expect(hostBox.state?.phase).toBe("actions");
+    expect(guestBox.state?.phase).toBe("actions");
     expect(guestBox.state).toEqual(hostBox.state);
 
     hostSession.destroy();
@@ -164,7 +164,7 @@ describe("host/client over fake transport", () => {
     guestBox.state = null;
     clientSession.requestResync();
     expect(guestBox.state).toEqual(afterRoll);
-    expect(afterRoll?.phase).toBe("absorption");
+    expect(afterRoll?.phase).toBe("actions");
 
     hostSession.destroy();
     clientSession.destroy();

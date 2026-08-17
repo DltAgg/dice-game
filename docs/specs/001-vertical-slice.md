@@ -9,9 +9,9 @@ with no UI, no store and no networking in the call stack.
 ## Intent
 
 Two players each field three creatures and two customizable dice. On a turn a
-player rolls, decides which rolled symbols to feed to creatures (or rituals) and
-which to leave available, attacks, plays cards / forges, and passes the turn.
-Reducing an opponent's squad to zero wins.
+player rolls, then in one **actions** window absorbs symbols onto creatures
+(or rituals), spends leftover pips for `[Requires]`, attacks, plays cards /
+forges, and passes the turn. Reducing an opponent's squad to zero wins.
 
 ## Rules
 
@@ -37,7 +37,7 @@ Reducing an opponent's squad to zero wins.
 | The player chooses the order engine effects resolve in | §17 |
 | A creature makes at most one attack per Combat phase | §7 |
 | The frontline protects the back row; Range ignores that | §6 |
-| Turn flow: roll, absorb, actions (attack / play / forge), end | §16 |
+| Turn flow: roll, then actions (absorb / spend / attack / play / forge), end | §16, playtest 2026-08-17 |
 | One shared Energy marker; crossing zero ends the turn | §18, decision of 2026-08-07 |
 | First turn 3 Energy; clean pass 5; overshoot pass = overshoot + 2 | decision of 2026-08-14 |
 
@@ -94,7 +94,7 @@ None in this slice, by design.
 ## Acceptance Criteria
 
 - [x] A match can be created deterministically from a seed and a squad.
-- [x] Rolling produces one symbol per unstunned die and opens absorption.
+- [x] Rolling produces one symbol per unstunned die and enters actions.
 - [x] An absorbed symbol is unavailable to the engine for the rest of the turn.
 - [x] An absorbed attribute becomes a token at end of turn; an absorbed Shield grants a shield immediately.
 - [x] The absorbing die is freed at end of turn.

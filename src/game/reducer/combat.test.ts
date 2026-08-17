@@ -171,7 +171,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack outside the actions phase", () => {
-    const base = withPhase(newMatch(), "absorption");
+    const base = withPhase(newMatch(), "roll");
     const state = withTokens(base, creatureIdAt(base, P1, 0), { martial: 2 });
 
     const result = advance(state, {

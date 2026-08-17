@@ -23,9 +23,14 @@ import {
   type GameState,
   type TurnPhase,
 } from "../model/state.js";
-import { isAttributeSymbol, requirementEntries, type AttributeTokens } from "../model/symbols.js";
+import {
+  isAttributeSymbol,
+  requirementEntries,
+  type AttributeTokens,
+  type SymbolRequirement,
+  type SymbolType,
+} from "../model/symbols.js";
 import type { Attribute, DualKindAttribute } from "../model/attributes.js";
-import type { SymbolType } from "../model/symbols.js";
 import { createRng, type RNG } from "../rng/rng.js";
 import {
   attackDamageBonus,
@@ -55,7 +60,11 @@ import {
   returnFaceToPoolIfOrphaned,
   takeFaceFromPool,
 } from "../rules/faces.js";
-import { planConsumption, requirementShortfall } from "../rules/symbols.js";
+import {
+  isUnabsorbedPoolSymbol,
+  planConsumption,
+  requirementShortfall,
+} from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
 import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
 import { addToken, holdsTokens, removeTokens } from "../rules/tokens.js";
@@ -453,7 +462,7 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
   }
 
   drainResolution(draft);
-  return enterPhase(draft, "absorption");
+  return enterPhase(draft, "actions");
 }
 
 function fireFaceOnRoll(
@@ -1292,11 +1301,9 @@ function resolveOptionalBonusAttack(
   if (attackDefinition.kind !== "basic") return "INVALID_CHOICE";
   if (attackDefinition.effect === undefined) return "CARD_HAS_NO_EFFECT";
 
-  // Absorption-phase exception for Instinct (OPEN_DESIGN ASSUMED).
-  const priorPhase = draft.phase;
-  draft.phase = "actions";
+  // Instinct optional basic shares the combined actions window (no dedicated
+  // absorption phase). Same pending type; no extra action.
   const error = attack(draft, playerId, pending.creatureId, attackId, targetId);
-  draft.phase = priorPhase;
   if (error !== null) return error;
   return resumeAfterEffectPause(draft);
 }
@@ -1408,13 +1415,12 @@ function absorbSymbol(
   creatureId: CreatureId,
   symbolId: SymbolInstanceId,
 ): GameError | null {
-  if (draft.phase !== "absorption") return "INVALID_PHASE";
+  if (draft.phase !== "actions") return "INVALID_PHASE";
 
   const symbol = draft.symbols[symbolId];
   if (symbol === undefined) return "UNKNOWN_ENTITY";
   if (symbol.ownerId !== playerId) return "INVALID_TARGET";
-  if (symbol.status !== "rolled") return "SYMBOL_UNAVAILABLE";
-  if (symbol.usable === false) return "SYMBOL_UNAVAILABLE";
+  if (!isUnabsorbedPoolSymbol(symbol)) return "SYMBOL_UNAVAILABLE";
 
   const creature = draft.creatures[creatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
@@ -1443,9 +1449,9 @@ function absorbSymbol(
 }
 
 /**
- * Spend a rolled attribute symbol on a field ritual's Active-when gate.
- * Same absorption window as creature absorb; the symbol is consumed (not
- * banked on a creature) and never reaches the engine pool.
+ * Spend an unabsorbed attribute symbol on a field ritual's Active-when gate.
+ * Same actions-window as creature absorb; the symbol is consumed (not banked
+ * on a creature) and never remains in the engine pool.
  */
 function absorbSymbolToRitual(
   draft: Draft,
@@ -1453,13 +1459,12 @@ function absorbSymbolToRitual(
   cardInstanceId: CardInstanceId,
   symbolId: SymbolInstanceId,
 ): GameError | null {
-  if (draft.phase !== "absorption") return "INVALID_PHASE";
+  if (draft.phase !== "actions") return "INVALID_PHASE";
 
   const symbol = draft.symbols[symbolId];
   if (symbol === undefined) return "UNKNOWN_ENTITY";
   if (symbol.ownerId !== playerId) return "INVALID_TARGET";
-  if (symbol.status !== "rolled") return "SYMBOL_UNAVAILABLE";
-  if (symbol.usable === false) return "SYMBOL_UNAVAILABLE";
+  if (!isUnabsorbedPoolSymbol(symbol)) return "SYMBOL_UNAVAILABLE";
   if (!isAttributeSymbol(symbol.symbol)) return "INVALID_TARGET";
 
   const card = draft.cards[cardInstanceId];
@@ -1732,11 +1737,9 @@ function playCard(
     if (target.defeated) return "CREATURE_DEFEATED";
   }
 
-  if (region.requires !== undefined && planConsumption(draft, playerId, region.requires) === null) {
-    const shortfall = requirementShortfall(draft, playerId, region.requires);
-    const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
-    if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
-    consumeRequirementWildcards(draft, playerId, shortfall);
+  if (region.requires !== undefined) {
+    const requiresError = payCardRequires(draft, playerId, region.requires);
+    if (requiresError !== null) return requiresError;
   }
 
   // Negate / prevent reactions need a legal top link.
@@ -2396,18 +2399,6 @@ function advancePhase(draft: Draft): GameError | null {
 
 function enterPhase(draft: Draft, phase: TurnPhase): GameError | null {
   draft.phase = phase;
-
-  // Closing the absorption window releases every symbol the creatures did not
-  // take into the available pool for card `[Requires: …]` and similar spends.
-  // Absorbed symbols are deliberately left behind.
-  if (phase === "actions") {
-    for (const symbol of Object.values(draft.symbols)) {
-      if (symbol.status === "rolled") {
-        draft.symbols[symbol.id] = { ...symbol, status: "available" };
-      }
-    }
-  }
-
   emit(draft, { type: "phase-entered", phase });
   return null;
 }
@@ -2474,7 +2465,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
 /**
  * Bible §7 step 4: absorbed attributes harden into tokens once the turn ends.
  * That delay is what stops a creature attacking on the turn it was fuelled.
- * Shields are granted at absorption time instead (see absorbSymbol).
+ * Shields are granted at absorb time instead (see absorbSymbol).
  */
 function payOutAbsorbedSymbols(draft: Draft): void {
   for (const symbol of Object.values(draft.symbols)) {
@@ -2530,10 +2521,27 @@ function resetCombatCounters(draft: Draft): void {
 
 /* ------------------------------------------------------------ shared --- */
 
+function payCardRequires(
+  draft: Draft,
+  playerId: PlayerId,
+  requirement: SymbolRequirement,
+): GameError | null {
+  const planned = planConsumption(draft, playerId, requirement);
+  if (planned !== null) {
+    consumeSymbols(draft, planned, "card-requires");
+    return null;
+  }
+  const shortfall = requirementShortfall(draft, playerId, requirement);
+  const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
+  if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
+  consumeRequirementWildcards(draft, playerId, shortfall);
+  return null;
+}
+
 function consumeSymbols(
   draft: Draft,
   symbolIds: readonly SymbolInstanceId[],
-  reason: "ritual-progress",
+  reason: "ritual-progress" | "card-requires",
 ): void {
   for (const id of symbolIds) {
     const symbol = draft.symbols[id];

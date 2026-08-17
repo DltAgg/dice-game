@@ -14,6 +14,7 @@ import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols
 import { handOf, searchableInDeck, searchableInGraveyard, ritualsOf } from "../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { diceOf } from "../rules/dice.js";
+import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
 import { legalTargetsFor } from "../rules/targeting.js";
 import { legalCreaturesForFilter, legalDiceForFilter } from "../rules/targets.js";
 import { advance } from "../reducer/reduce.js";
@@ -73,7 +74,7 @@ export const NEVER_USE_CARDS: AutoplayPolicy = {
 function absorb(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): GameState {
   let current = state;
 
-  for (const symbol of rolledSymbols(current, playerId)) {
+  for (const symbol of poolSymbols(current, playerId)) {
     const creature = isAttributeSymbol(symbol.symbol)
       ? policy.absorbForAttacks
         ? creatureNeeding(current, playerId, symbol)
@@ -95,9 +96,9 @@ function absorb(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): G
   return current;
 }
 
-const rolledSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInstance[] =>
+const poolSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInstance[] =>
   Object.values(state.symbols)
-    .filter((symbol) => symbol.ownerId === playerId && symbol.status === "rolled")
+    .filter((symbol) => symbol.ownerId === playerId && isUnabsorbedPoolSymbol(symbol))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
 /** The first living creature still short of this attribute for one of its attacks. */
@@ -656,12 +657,14 @@ export function playTurn(state: GameState, policy: AutoplayPolicy = DEFAULT_POLI
   let current = step(state, { type: "ROLL_DICE", playerId });
   current = absorb(current, playerId, policy);
 
-  current = step(current, { type: "ADVANCE_PHASE", playerId });
   current = fight(current, playerId);
+  current = absorb(current, playerId, policy);
   if (!stillActive(current, playerId)) return current;
   current = playCards(current, playerId, policy);
+  current = absorb(current, playerId, policy);
   if (!stillActive(current, playerId)) return current;
   current = forgeCards(current, playerId, policy);
+  current = absorb(current, playerId, policy);
 
   if (!stillActive(current, playerId)) return current;
   return step(current, { type: "END_TURN", playerId });

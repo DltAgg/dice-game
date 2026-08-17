@@ -3,7 +3,7 @@
 Status: **IMPLEMENTED** (2026-08-14)
 
 Face-marker / suppress-inherent / resource-lock / unusable-symbol vocabulary
-plus Instinct’s optional absorption-phase basic attack. Assumptions live in
+plus Instinct’s optional actions-window basic attack. Assumptions live in
 [`OPEN_DESIGN.md`](../OPEN_DESIGN.md) (ASSUMED, face-marker block). Proving
 faces: Adaptive Toxin, Stain, Infection (roll), Decay, Catalyst, Overcharge,
 Instinct (absorb).
@@ -75,7 +75,7 @@ as data — no card-id special cases in the reducer.
 - If the absorbing creature has `attacksUsedThisCombat === 0`, open
   `optional-bonus-attack`.
 - Player may decline, or declare that creature’s **basic** attack (fuel /
-  range legality as normal) during **absorption** (phase exception).
+  range legality as normal) during **actions**.
 - Declaring increments `attacksUsedThisCombat` and opens the usual attack
   reaction window.
 
@@ -133,7 +133,7 @@ Match-ui must render (hotseat + online), **in addition to `012` pendings**:
 | `choose-pool-symbol` | Pick an eligible synthetic pool symbol (Catalyst wildcard). |
 | `remove-toxin-amount` | Choose how many Toxin markers to strip (0..max); deals that damage. |
 | `optional-overcharge` | Accept (+1 Energy, Overcharge face) or decline. |
-| `optional-bonus-attack` | During absorption: Decline, or declare the named creature’s **basic** attack (pick target). |
+| `optional-bonus-attack` | During actions: Decline, or declare the named creature’s **basic** attack (pick target). |
 
 Also surface Corruption markers / suppress / resource-lock on die faces, and
 unusable pool symbols as non-spendable.
@@ -146,7 +146,7 @@ unusable pool symbols as non-spendable.
 - [x] Decay suppress + strip→unusable Corruption
 - [x] Catalyst wildcard + copy appeared synthetic onRoll
 - [x] Overcharge optional Energy / suppress / double next face effect
-- [x] Instinct optional absorption-phase basic
+- [x] Instinct optional actions-window basic
 - [x] No push; stun untouched
 
 ## Tests

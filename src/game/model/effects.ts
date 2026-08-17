@@ -329,7 +329,7 @@ export type EffectDefinition =
   | { readonly type: "arm-resolve-next-face-effect-twice" }
   /**
    * Pending optional: the absorbing creature may declare a basic attack now
-   * (absorption-phase exception) if it has not attacked this turn. Spec `013`.
+   * during the actions window if it has not attacked this turn. Spec `013`.
    */
   | { readonly type: "optional-bonus-basic-attack" };
 

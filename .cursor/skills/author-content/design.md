@@ -71,7 +71,7 @@ per id; face deck ≤12, ≤3 per attribute.
 
 Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
 cumulative (`Arcane + Corruption + Corruption`), absorbed onto the ritual during
-absorption — not auto-from the pool.
+actions — not auto-from the pool.
 
 Current catalogue cards **forge their own attribute**. Dual-kind → typically
 `kind: "natural"`; synthetic-only (Toxin, Mechanical, Corruption, Darkness) →

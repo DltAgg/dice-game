@@ -86,3 +86,11 @@ which works if a definition carries executable code.
 Actions describe intent. There is no `DEAL_DAMAGE` action carrying an amount,
 because the amount is the host's to derive. Every action names its actor so the
 host can check the sender against the claim.
+
+## Turn phases
+
+Playtest (2026-08-17, `OPEN_DESIGN.md` DECIDED): `TURN_PHASE_ORDER` is
+`roll` → `actions`. `ROLL_DICE` enters `actions`. There is no dedicated
+absorb phase. Absorb, `[Requires]` spend, attack, play, forge, and ready-ritual
+activate share `actions`. `END_TURN` is an action, not a phase. `ADVANCE_PHASE`
+from roll goes to actions; the last phase is left only via `END_TURN`.

@@ -247,7 +247,7 @@ describe("on-absorb equipment", () => {
     const base = actionsReady([WILD_CARAPACE]);
     const hostId = creatureIdAt(base, P1, 0);
     let state = withDamage(equip(base, hostId), hostId, 2);
-    state = withPhase(state, "absorption");
+    state = withPhase(state, "actions");
     const symbolId = asSymbolInstanceId("sym-wild");
     state = {
       ...state,
@@ -323,7 +323,7 @@ describe("on-absorb equipment", () => {
       },
     };
 
-    state = withPhase(state, "absorption");
+    state = withPhase(state, "actions");
     const symbolId = asSymbolInstanceId("sym-arcane");
     state = {
       ...state,

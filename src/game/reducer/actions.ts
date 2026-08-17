@@ -25,8 +25,8 @@ export type GameAction =
       readonly symbolId: SymbolInstanceId;
     }
   /**
-   * Assign a rolled attribute symbol to a field ritual toward its
-   * `[Active when: …]` gate (same absorption window as creature absorb).
+   * Assign an unabsorbed attribute symbol to a field ritual toward its
+   * `[Active when: …]` gate (same actions window as creature absorb).
    */
   | {
       readonly type: "ABSORB_SYMBOL_TO_RITUAL";
@@ -240,7 +240,7 @@ export type GameAction =
       readonly accept: boolean;
     }
   /**
-   * Completes Instinct optional bonus basic during absorption. Spec `013`.
+   * Completes Instinct optional bonus basic during the actions window. Spec `013`.
    */
   | {
       readonly type: "RESOLVE_OPTIONAL_BONUS_ATTACK";

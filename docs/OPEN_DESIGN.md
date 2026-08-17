@@ -352,7 +352,7 @@ A Ritual is played onto the engine area, not resolved from hand like an Instant:
 | `ready` | untapped | Condition met; standing abilities on; may activate if print has an activate body |
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
-Rituals are placed empty. During absorption the owner may assign rolled
+Rituals are placed empty. During actions the owner may assign unabsorbed
 attribute symbols to a ritual (same window as creature absorb); each attribute
 may receive at most one pip per turn toward printed `Attr + Attr` gates. Symbols
 spent this way are consumed and never reach the engine pool. Rituals with no
@@ -485,6 +485,41 @@ separate forge phase was removed so hotseat play is not split across two
 windows for one decision. `FORGE_CARD` names the face card from the owner's
 face pool (or an installed copy) explicitly.
 
+## Two phases: Roll and Actions (no dedicated absorb)
+
+**Status:** `DECIDED` · playtest 2026-08-17 · user-directed
+· bible §16 still lists an Absorption step — this overrides that sequence
+· implemented in `src/game/model/state.ts`, `src/game/rules/symbols.ts`,
+  `src/game/reducer/reduce.ts`
+
+The game is better with **only two phases: Roll and Actions**. Absorption is
+not a dedicated engine phase. The `actions` window includes everything
+absorption used to allow (creature absorb, ritual absorb, ready-ritual
+activate, Instinct optional bonus basic) and keeps every action already legal
+in `actions` (attack, play, forge, end turn). No new player actions; none
+removed.
+
+- `TURN_PHASE_ORDER`: `roll` → `actions`. `END_TURN` stays an action, not a phase.
+- `ROLL_DICE` enters `actions` (not absorption).
+- `ADVANCE_PHASE` from roll → actions. There is no skip-over-absorption.
+  The last phase is left only via `END_TURN`.
+- Absorb (creature + ritual) is legal **throughout actions**, including on
+  symbols created mid-turn (effects, extra rolls).
+- `[Requires]` spends see the same unabsorbed pool. Absorb vs spend is bible
+  §7: absorbed symbols leave the engine pool; spending them for Requires
+  consumes them so they cannot be absorbed.
+- The old “close absorption → flip remaining `rolled` to `available`, absorb
+  now illegal” path is gone. Attribute tokens still pay out at **END_TURN**,
+  not at an absorb-close.
+- Ready rituals may activate during actions (not during roll). Absorb-to-ritual
+  is also available in actions.
+- Instinct’s optional bonus basic is legal in this combined window (same
+  `optional-bonus-attack` pending).
+
+**ASSUMED:** `rolled` vs `available` remain distinct statuses as provenance
+(die pip vs effect-generated). They are **not** a phase gate. Both are the
+same unabsorbed set for absorb and spend (`usableSymbols` / `planConsumption`).
+
 ### Face deck and tactics deck are separate
 
 **Status:** `DECIDED` · implemented
@@ -575,7 +610,7 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Retain-from-effect** | Marks a chosen owned die retained (same rules as `RETAIN_DIE`, including a known rolled slot). |
 | **Requirement wildcard** | One-shot: a matching pool symbol may pay any `[Requires]` / ritual Active-when attribute this turn (Resonance absorb). Consumed when used. |
 | **Pack adjacent** | Another living ally shares a **`creatureIds` neighbor (±1)** among living creatures. At roll, `has-adjacent-ally` is true if any two consecutive entries in the controller’s `creatureIds` are both living. |
-| **Instinct On absorb** | Optional immediate basic during absorption: pending `optional-bonus-attack` for the absorbing creature if `attacksUsedThisCombat === 0`. Player may decline or declare that creature’s basic (fuel/range as normal). Spec `013`. |
+| **Instinct On absorb** | Optional immediate basic during the actions window: pending `optional-bonus-attack` for the absorbing creature if `attacksUsedThisCombat === 0`. Player may decline or declare that creature’s basic (fuel/range as normal). Spec `013`. |
 | **Aegis redirect** | Until EOT, up to 2 damage that would be dealt to **another** allied creature is dealt to the absorber instead (before prevent/shield on the original). Turn-scoped `redirectDamageThisTurn` on the absorber. |
 | **Revelation heal** | Heal 2 on an allied creature with damage **strictly greater than** half life (`damage > life/2`). |
 | **Mirrored Rune** | On absorb Arcane: generate 1 extra symbol matching **another** symbol currently in the controller’s available/rolled pool (`copy-pool-symbol`). |
@@ -603,7 +638,7 @@ Push stays unmodelled (DECIDED no). Stun stays `DEFERRED`.
 | **Toxin receive cap** | At most `amount` markers **gained** while the cap remains (remaining counter), until that creature’s owner’s next turn starts. |
 | **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this controller’s last `ROLL_DICE` (`facesAppearedThisRoll`). Not overloads. |
 | **Overcharge double** | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. |
-| **Instinct absorb** | Optional absorption-phase basic via `optional-bonus-attack` (see row above). |
+| **Instinct absorb** | Optional actions-window basic via `optional-bonus-attack` (see row above). |
 
 ---
 

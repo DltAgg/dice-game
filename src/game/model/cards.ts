@@ -341,9 +341,9 @@ export interface CardInstance {
   readonly ritualOrientation: RitualOrientation | null;
   /**
    * Cumulative Active-when progress while `zone === "ritual"`. Banked when the
-   * owner absorbs matching rolled symbols onto the ritual during absorption
-   * (same window as creature absorb). At most one pip per attribute per turn.
-   * Null outside the ritual zone.
+   * owner absorbs matching unabsorbed pool symbols onto the ritual during
+   * actions (same window as creature absorb). At most one pip per attribute
+   * per turn. Null outside the ritual zone.
    */
   readonly ritualProgress: AttributeTokens | null;
   /**

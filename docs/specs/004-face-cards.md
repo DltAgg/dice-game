@@ -71,7 +71,7 @@ Named specials:
 | Vital Spark | 2 | On roll: heal; On absorb: prevent 1 | |
 | Aegis | 2 | On roll: generate Shield; On absorb: redirect | |
 | Revelation | 2 | On roll: peek/bottom; On absorb: heal if damage >½ life | |
-| Instinct | 2 | On roll: optional ally reposition; On absorb: optional absorption-phase basic | Spec `013` |
+| Instinct | 2 | On roll: optional ally reposition; On absorb: optional actions-window basic | Spec `013` |
 | Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: optional reposition | |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |

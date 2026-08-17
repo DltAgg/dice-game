@@ -304,9 +304,10 @@ describe("Governor", () => {
     );
 
     const afterRoll = rollShowingSlot(attached, 0);
-    const generated = usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical");
+    const generated = usableSymbols(afterRoll, P1).filter(
+      (s) => s.symbol === "mechanical" && s.sourceDieId === null,
+    );
     expect(generated).toHaveLength(1);
-    expect(generated[0]?.sourceDieId).toBeNull();
   });
 
   it("refuses a non-Mechanical face", () => {
@@ -416,7 +417,7 @@ describe("Foundry", () => {
     const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
     const seeded: GameState = {
       ...withEnergy(
-        withSymbols(withPhase(state, "absorption"), P2, ["mechanical"], "rolled"),
+        withSymbols(withPhase(state, "actions"), P2, ["mechanical"], "rolled"),
         P1,
         5,
       ),
@@ -443,7 +444,11 @@ describe("Piston", () => {
   it("generates Mechanical on roll and gains Energy on absorb", () => {
     const seeded = withEnergy(installFace(newMatch(), PISTON), P1, 5);
     const afterRoll = rollShowingSlot(seeded, 0);
-    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(1);
+    expect(
+      usableSymbols(afterRoll, P1).filter(
+        (s) => s.symbol === "mechanical" && s.sourceDieId === null,
+      ),
+    ).toHaveLength(1);
 
     const mechanical = Object.values(afterRoll.symbols).find(
       (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),

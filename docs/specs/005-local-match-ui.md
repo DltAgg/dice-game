@@ -24,7 +24,7 @@ who may act; the inactive side is read-only until the turn passes.
 | Zustand store owning `GameState` + last reject error | PeerJS / host authority |
 | New match (seeded) with prototype squads / decks / face decks | Deck builder |
 | Board: creatures, dice faces, symbols, energy, phase, hand | Fancy card art on the board (catalogue remains separate) |
-| Actions: roll, absorb, then one **actions** phase for attack / play / forge / activate ritual (any order; rituals also during absorb), retain, resolve search, advance phase, end turn | Reaction chain UI |
+| Actions: roll, then **actions** for absorb / attack / play / forge / activate ritual (any order), retain, resolve search, skip to actions from roll, end turn | Reaction chain UI |
 | Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
 | Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge) | Second legality engine in React |
 | Sticky error snackbar | |
@@ -44,6 +44,22 @@ Notable Reforge UX (`replace-synthetic-face`):
 2. Pick a **different** matching face from the controller's pool.
 3. Dispatch `RESOLVE_REPLACE_SYNTHETIC_FACE` (engine handles uninstall / install;
    no forge-draw).
+
+## UI — two-phase turn (playtest 2026-08-17)
+
+Engine: `TurnPhase` is `roll` | `actions` only (`OPEN_DESIGN.md` DECIDED). Match-ui
+must not keep an Absorb phase chrome or gate absorb clicks on `phase === "absorption"`.
+
+| Surface | Behavior |
+|---|---|
+| Phase bar | **Roll \| Actions** only. Highlight `state.phase`. From roll, skip/advance enters actions (or `ROLL_DICE` auto-enters actions). Last phase left only via **End turn**. Do not show or dispatch a middle Absorb step. |
+| Symbol pool | During **actions**, the unabsorbed pool is both **absorb-target** and **`[Requires]` spend**. Clicking a pool pip can select it for absorb onto a creature or ritual. Effect-generated (`available`) and die (`rolled`) pips are the same pool — labels should not imply “rolled = absorb only, available = spend only”. |
+| Absorb UX | Creature / ritual absorb click targets are legal whenever `phase === "actions"` (and `canAct`). After a mid-turn generate-symbol, those new pips must be absorbable without changing phase. |
+| Instinct | Optional bonus basic copy is “during this turn’s actions”, not “during absorption”. Same `optional-bonus-attack` pending. |
+| Lobby / help | Any three-step “Roll → Absorb → Act” copy becomes Roll → Actions. |
+
+Do not reimplement absorb legality in React. Query `usableSymbols` / dispatch
+`ABSORB_SYMBOL` / `ABSORB_SYMBOL_TO_RITUAL`; let `advance()` reject.
 
 ## Acceptance criteria
 

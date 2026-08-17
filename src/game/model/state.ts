@@ -67,19 +67,16 @@ export interface ChainLink {
  * END_TURN action rather than a phase, because a phase offering exactly one
  * legal move is noise rather than a decision point.
  *
- * The `actions` phase is one shared window for attacking, playing cards,
- * forging, and activating ready rituals (in any order). There is no separate
- * combat phase. Leftover rolled symbols become `available` when absorption
- * ends (entering actions). Ready rituals may also activate during absorption;
- * they cannot during roll.
+ * Playtest DECIDED (2026-08-17): there is no dedicated absorption phase.
+ * `ROLL_DICE` enters `actions`. Absorb (creature + ritual), `[Requires]`
+ * spends, attacks, plays, forges, and ready-ritual activates all share that
+ * window. Unabsorbed pool symbols stay spendable and absorbable until used
+ * or the turn ends — there is no leftover-rolled → available flip. Rituals
+ * cannot activate during roll.
  */
-export type TurnPhase = "roll" | "absorption" | "actions";
+export type TurnPhase = "roll" | "actions";
 
-export const TURN_PHASE_ORDER: readonly TurnPhase[] = [
-  "roll",
-  "absorption",
-  "actions",
-];
+export const TURN_PHASE_ORDER: readonly TurnPhase[] = ["roll", "actions"];
 
 export type MatchStatus = "in-progress" | "finished";
 

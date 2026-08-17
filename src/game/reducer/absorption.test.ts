@@ -1,22 +1,25 @@
 import { describe, expect, it } from "vitest";
+import { COUPLING, PACK_SURGE, POUNCE } from "../content/cards.js";
 import { SHIELD, type SymbolInstance } from "../model/symbols.js";
 import { usableSymbols } from "../rules/symbols.js";
 import {
   creatureIdAt,
   expectOk,
+  handCardIdAt,
   newMatch,
   P1,
   P2,
   play,
   withActivePlayer,
   withDefeatedCreature,
+  withEnergy,
+  withHand,
   withPhase,
   withSymbols,
 } from "../testing/scenario.js";
 import { advanceResolvingChain as advance } from "../testing/scenario.js";
 
 const roll = { type: "ROLL_DICE", playerId: P1 } as const;
-const advancePhase = { type: "ADVANCE_PHASE", playerId: P1 } as const;
 
 /** Rolls, then hands back the state plus the symbols now awaiting a decision. */
 function afterRoll(): { state: ReturnType<typeof newMatch>; symbols: SymbolInstance[] } {
@@ -24,36 +27,33 @@ function afterRoll(): { state: ReturnType<typeof newMatch>; symbols: SymbolInsta
   return { state, symbols: Object.values(state.symbols) };
 }
 
-describe("creature absorption", () => {
+describe("creature absorb during actions", () => {
   it("removes the absorbed symbol from engine resolution", () => {
     const { state, symbols } = afterRoll();
     const [first] = symbols;
     if (first === undefined) throw new Error("expected a rolled symbol");
+    expect(state.phase).toBe("actions");
     const creatureId = creatureIdAt(state, P1, 0);
 
-    const absorbed = play(
-      state,
-      { type: "ABSORB_SYMBOL", playerId: P1, creatureId, symbolId: first.id },
-      advancePhase,
+    const absorbed = expectOk(
+      advance(state, { type: "ABSORB_SYMBOL", playerId: P1, creatureId, symbolId: first.id }),
     );
 
     expect(absorbed.symbols[first.id]?.status).toBe("absorbed");
     expect(usableSymbols(absorbed, P1).map((symbol) => symbol.id)).not.toContain(first.id);
   });
 
-  it("leaves unabsorbed symbols available to the engine", () => {
+  it("leaves unabsorbed symbols in the shared spend-or-absorb pool", () => {
     const { state, symbols } = afterRoll();
     const [first, second] = symbols;
     if (first === undefined || second === undefined) throw new Error("expected two symbols");
     const creatureId = creatureIdAt(state, P1, 0);
 
-    const engine = play(
-      state,
-      { type: "ABSORB_SYMBOL", playerId: P1, creatureId, symbolId: first.id },
-      advancePhase,
+    const engine = expectOk(
+      advance(state, { type: "ABSORB_SYMBOL", playerId: P1, creatureId, symbolId: first.id }),
     );
 
-    expect(engine.symbols[second.id]?.status).toBe("available");
+    expect(engine.symbols[second.id]?.status).toBe("rolled");
     expect(usableSymbols(engine, P1).map((symbol) => symbol.id)).toEqual([second.id]);
   });
 
@@ -86,14 +86,58 @@ describe("creature absorption", () => {
     expect(nextTurn.symbols[first.id]).toBeUndefined();
   });
 
-  it("refuses to absorb once the absorption window has closed", () => {
+  it("lets the player absorb throughout actions, including after other actions", () => {
     const { state, symbols } = afterRoll();
     const [first] = symbols;
     if (first === undefined) throw new Error("expected a rolled symbol");
     const creatureId = creatureIdAt(state, P1, 0);
 
-    const engine = expectOk(advance(state, advancePhase));
-    const result = advance(engine, {
+    expect(state.phase).toBe("actions");
+    const result = advance(state, {
+      type: "ABSORB_SYMBOL",
+      playerId: P1,
+      creatureId,
+      symbolId: first.id,
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
+  it("lets the player absorb an effect-generated symbol created mid-actions", () => {
+    const ready = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [PACK_SURGE]), P1, 10);
+    const played = expectOk(
+      advance(ready, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+      }),
+    );
+    const generated = usableSymbols(played, P1).find(
+      (symbol) => symbol.symbol === "wild" && symbol.sourceDieId === null,
+    );
+    if (generated === undefined) throw new Error("expected generated Wild");
+    const creatureId = creatureIdAt(played, P1, 0);
+
+    const absorbed = expectOk(
+      advance(played, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId,
+        symbolId: generated.id,
+      }),
+    );
+
+    expect(absorbed.symbols[generated.id]?.status).toBe("absorbed");
+    expect(usableSymbols(absorbed, P1).map((symbol) => symbol.id)).not.toContain(generated.id);
+  });
+
+  it("refuses to absorb during roll", () => {
+    const state = withSymbols(withPhase(newMatch(), "roll"), P1, ["martial"], "rolled");
+    const first = Object.values(state.symbols)[0];
+    if (first === undefined) throw new Error("expected a rolled symbol");
+    const creatureId = creatureIdAt(state, P1, 0);
+
+    const result = advance(state, {
       type: "ABSORB_SYMBOL",
       playerId: P1,
       creatureId,
@@ -102,7 +146,69 @@ describe("creature absorption", () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("INVALID_PHASE");
-    expect(result.state).toBe(engine);
+    expect(result.state).toBe(state);
+  });
+
+  it("spending a symbol for Requires removes it from the absorb pool", () => {
+    const state = withEnergy(
+      withHand(
+        withSymbols(
+          withPhase(newMatch(), "actions"),
+          P1,
+          ["mechanical", "mechanical"],
+          "rolled",
+        ),
+        P1,
+        [COUPLING],
+      ),
+      P1,
+      10,
+    );
+    const [first] = Object.values(state.symbols).filter((symbol) => symbol.symbol === "mechanical");
+    if (first === undefined) throw new Error("expected mechanical");
+    const played = expectOk(
+      advance(state, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(state, P1, 0),
+      }),
+    );
+
+    expect(played.symbols[first.id]?.status).toBe("consumed");
+    const result = advance(played, {
+      type: "ABSORB_SYMBOL",
+      playerId: P1,
+      creatureId: creatureIdAt(played, P1, 0),
+      symbolId: first.id,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("SYMBOL_UNAVAILABLE");
+  });
+
+  it("absorbing a symbol means it cannot pay Requires", () => {
+    const state = withEnergy(
+      withHand(withSymbols(withPhase(newMatch(), "actions"), P1, ["wild"], "rolled"), P1, [POUNCE]),
+      P1,
+      10,
+    );
+    const wild = Object.values(state.symbols).find((symbol) => symbol.symbol === "wild");
+    if (wild === undefined) throw new Error("expected wild");
+    const absorbed = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: creatureIdAt(state, P1, 0),
+        symbolId: wild.id,
+      }),
+    );
+
+    const result = advance(absorbed, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(absorbed, P1, 0),
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("INSUFFICIENT_SYMBOLS");
   });
 
   it("refuses to absorb the same symbol twice", () => {
@@ -161,15 +267,26 @@ describe("creature absorption", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("CREATURE_DEFEATED");
   });
+
+  it("ADVANCE_PHASE from roll enters actions; the last phase is left only via END_TURN", () => {
+    const start = newMatch();
+    const skipped = expectOk(advance(start, { type: "ADVANCE_PHASE", playerId: P1 }));
+    expect(skipped.phase).toBe("actions");
+
+    const refused = advance(skipped, { type: "ADVANCE_PHASE", playerId: P1 });
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.error).toBe("INVALID_PHASE");
+    expect(refused.state).toBe(skipped);
+  });
 });
 
 /**
  * What absorbing actually buys. Bible §7 pays out at end of turn, which is also
  * why a creature can never attack on the turn it was fed.
  */
-describe("what absorption pays out", () => {
+describe("what absorb pays out", () => {
   const absorbAll = (symbols: Parameters<typeof withSymbols>[2], creatureIndex = 0) => {
-    const state = withSymbols(withPhase(newMatch(), "absorption"), P1, symbols, "rolled");
+    const state = withSymbols(withPhase(newMatch(), "actions"), P1, symbols, "rolled");
     const creatureId = creatureIdAt(state, P1, creatureIndex);
     const absorbed = Object.values(state.symbols).reduce(
       (current, symbol) =>
@@ -221,7 +338,7 @@ describe("what absorption pays out", () => {
 
     // Back round to P1, who feeds the same creature a second, different symbol.
     const secondRoll = withSymbols(
-      withPhase(withActivePlayer(afterFirst, P1), "absorption"),
+      withPhase(withActivePlayer(afterFirst, P1), "actions"),
       P1,
       ["wild"],
       "rolled",

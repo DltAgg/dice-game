@@ -48,11 +48,13 @@ Never put rules in `networking/` or the UI.
 
 ## Phases
 
-`TURN_PHASE_ORDER`: `roll` → `absorption` → `actions`.
-`END_TURN` is an action, not a phase. Symbol generation happens inside `ROLL_DICE`.
-Leftover rolled symbols become `available` when absorption ends (entering actions).
-The actions phase is one window for attacks, plays, forges, and ready rituals
-(any order). Ready rituals may also activate during absorption; not during roll.
+`TURN_PHASE_ORDER`: `roll` → `actions`.
+`END_TURN` is an action, not a phase. Symbol generation happens inside `ROLL_DICE`,
+which then enters `actions`. Absorb (creature + ritual) and `[Requires]` spend
+share the unabsorbed pool throughout actions (`rolled` die pips and `available`
+effect-generated symbols). There is no leftover-rolled flip. The actions phase
+is one window for absorb, attacks, plays, forges, and ready rituals (any order).
+Ready rituals may activate during actions; not during roll.
 
 ## When content-only is enough
 
