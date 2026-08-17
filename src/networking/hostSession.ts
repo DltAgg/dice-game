@@ -22,6 +22,8 @@ export interface HostSessionOptions {
   readonly transport: NetTransport;
   readonly hostLoadout: WireLoadout;
   readonly seed?: number;
+  /** When set, skip `createMatch` and start from this state (tests). */
+  readonly initialState?: GameState;
   /** Resume after host refresh: keep the same match instead of `createMatch`. */
   readonly restoredState?: GameState;
   readonly onState: (state: GameState) => void;
@@ -60,12 +62,19 @@ export class HostSession {
     this.roomCode = options.roomCode;
     this.transport = options.transport;
     this.hostLoadout = options.hostLoadout;
-    this.seed = options.restoredState?.rng.seed ?? options.seed ?? Date.now() % 100_000;
+    const resumeState = options.restoredState ?? options.initialState;
+    this.seed = resumeState?.rng.seed ?? options.seed ?? Date.now() % 100_000;
     this.onState = options.onState;
     this.onError = options.onError;
     this.onGuestJoined = options.onGuestJoined;
     this.onGuestLeft = options.onGuestLeft;
     this.onStatus = options.onStatus;
+
+    if (resumeState !== undefined) {
+      this.state = resumeState;
+      this.started = true;
+      this.onState(this.state);
+    }
 
     this.transport.onMessage((peerId, data) => this.handleMessage(peerId, data));
     this.transport.onDisconnect((peerId) => {
@@ -77,9 +86,6 @@ export class HostSession {
     });
 
     if (options.restoredState !== undefined) {
-      this.state = options.restoredState;
-      this.started = true;
-      this.onState(this.state);
       this.onStatus?.("waiting for guest to rejoin");
       return;
     }

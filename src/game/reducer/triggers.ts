@@ -11,6 +11,7 @@ import type { FaceKind } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
 import {
   asEffectInstanceId,
+  type CardInstanceId,
   type CreatureId,
   type DieId,
   type FaceCardId,
@@ -37,8 +38,18 @@ type TriggerHost = {
   /** Owner used for controller/opponent/ally filters (bearer for equipment). */
   readonly filterOwnerId: PlayerId;
   readonly hostCreatureId: CreatureId | null;
+  /** Ritual instance id; equipment / creature hosts leave this null. */
+  readonly hostCardInstanceId: CardInstanceId | null;
   readonly abilities: readonly StandingTrigger[];
 };
+
+/**
+ * Who absorbed the symbol. Shared `on-absorb` event — not a coupled ritual hook.
+ * Identity is the instance id (creature or ritual card), never a definition id.
+ */
+export type AbsorbAbsorber =
+  | { readonly kind: "creature"; readonly id: CreatureId }
+  | { readonly kind: "ritual"; readonly id: CardInstanceId };
 
 function pushEffect(
   draft: Draft,
@@ -93,6 +104,31 @@ function matchesCreatureRelation(
   }
 }
 
+function absorberIsHost(host: TriggerHost, absorber: AbsorbAbsorber): boolean {
+  if (absorber.kind === "creature") {
+    return host.hostCreatureId !== null && absorber.id === host.hostCreatureId;
+  }
+  return host.hostCardInstanceId !== null && absorber.id === host.hostCardInstanceId;
+}
+
+function matchesAbsorberRelation(
+  relation: CreatureRelation,
+  host: TriggerHost,
+  absorber: AbsorbAbsorber,
+  absorberOwnerId: PlayerId,
+): boolean {
+  switch (relation) {
+    case "any":
+      return true;
+    case "self":
+      return absorberIsHost(host, absorber);
+    case "ally":
+      return absorberOwnerId === host.filterOwnerId;
+    case "ally-other":
+      return absorberOwnerId === host.filterOwnerId && !absorberIsHost(host, absorber);
+  }
+}
+
 function matchesPlayerRelation(
   relation: PlayerRelation,
   hostControllerId: PlayerId,
@@ -142,6 +178,7 @@ function collectHosts(draft: Draft): TriggerHost[] {
         effectControllerId: creature.ownerId,
         filterOwnerId: creature.ownerId,
         hostCreatureId: creature.id,
+        hostCardInstanceId: null,
         abilities: standing,
       });
     }
@@ -158,6 +195,7 @@ function collectHosts(draft: Draft): TriggerHost[] {
         // creature's controller rolling, not the card owner's roll.
         filterOwnerId: creature.ownerId,
         hostCreatureId: creature.id,
+        hostCardInstanceId: null,
         abilities,
       });
     }
@@ -175,6 +213,7 @@ function collectHosts(draft: Draft): TriggerHost[] {
       effectControllerId: card.ownerId,
       filterOwnerId: card.ownerId,
       hostCreatureId: null,
+      hostCardInstanceId: card.id,
       abilities,
     });
   }
@@ -263,7 +302,7 @@ export const fireEquipmentOnRollSymbol = fireOnRollSymbol;
 export function queueAbsorbTriggers(
   draft: Draft,
   absorbingPlayerId: PlayerId,
-  creatureId: CreatureId,
+  absorber: AbsorbAbsorber,
   symbol: SymbolType,
   sourceDieId: DieId | null,
 ): void {
@@ -281,20 +320,23 @@ export function queueAbsorbTriggers(
     }
   }
 
-  fireOnAbsorb(draft, creatureId, absorbingPlayerId, symbol, faceKind);
+  fireOnAbsorb(draft, absorber, absorbingPlayerId, symbol, faceKind);
 
+  // Face/overload onAbsorb are bible §7 die-on-creature absorb. Ritual Active-when
+  // assignment shares standing `on-absorb` only — no absorbing creature, no die marker.
+  if (absorber.kind !== "creature") return;
   if (faceCardId === undefined) return;
   const die = sourceDieId === null ? undefined : draft.dice[sourceDieId];
   const slotIndex = die?.rolledSlotIndex ?? null;
   // Absorbing creature is the face/overload source so `source-creature` targets
   // (e.g. Vital Spark prevent) resolve against the absorber.
-  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId, sourceDieId, slotIndex);
-  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, creatureId, sourceDieId, slotIndex);
+  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, absorber.id, sourceDieId, slotIndex);
+  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, absorber.id, sourceDieId, slotIndex);
 }
 
 function fireOnAbsorb(
   draft: Draft,
-  absorberId: CreatureId,
+  absorber: AbsorbAbsorber,
   absorberOwnerId: PlayerId,
   symbol: SymbolType,
   faceKind: FaceKind | null,
@@ -310,22 +352,16 @@ function fireOnAbsorb(
         continue;
       }
       const relation = ability.absorberRelation ?? "self";
-      if (
-        !matchesCreatureRelation(
-          relation,
-          host.hostCreatureId,
-          host.filterOwnerId,
-          absorberId,
-          absorberOwnerId,
-        )
-      ) {
+      if (!matchesAbsorberRelation(relation, host, absorber, absorberOwnerId)) {
         continue;
       }
+      const declaredTarget =
+        absorber.kind === "creature" ? absorber.id : null;
       pushAbilityEffects(
         draft,
         host.effectControllerId,
-        host.hostCreatureId ?? absorberId,
-        absorberId,
+        host.hostCreatureId ?? declaredTarget,
+        declaredTarget,
         ability.effects,
       );
     }

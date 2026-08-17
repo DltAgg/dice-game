@@ -52,6 +52,7 @@ Notable Reforge UX (`replace-synthetic-face`):
 - [x] A match can be played to victory through the UI (manual smoke; reducer autoplay covers rules)
 - [x] Engine purity guard still green; store/UI never imported by `src/game`
 - [x] `replace-synthetic-face` pending has chooser + waiting UI
+- [x] Stay-on-slot UI: pestilence uses catalogue `pestilenceSpreadAt`; remaining forge-lock and cannot-replace shown; forge / forge-faces / Reforge omit locked slots; Activate peel stays
 
 ## Layout
 

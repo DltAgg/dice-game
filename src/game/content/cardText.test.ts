@@ -6,8 +6,10 @@ import {
   DIE_PRESS,
   ECLIPSE,
   ETERNAL_DARKNESS,
+  GREAT_CONTAMINATION,
   LIVING_LIBRARY,
   MARTIAL_BLESSING,
+  RITUAL_OF_CONTAMINATION,
   getCard,
 } from "./cards.js";
 import {
@@ -97,5 +99,23 @@ describe("English card printing", () => {
     if (card === undefined) throw new Error("missing card");
     expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
     expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
+  });
+
+  it("prints Ritual of Contamination as an ungated Energy-2 opponent forge", () => {
+    const card = getCard(RITUAL_OF_CONTAMINATION);
+    if (card === undefined) throw new Error("missing card");
+    expect(formatEnergyCost(card)).toBe("2");
+    expect(formatTypeLine(card)).toBe("[Instant / Corruption]");
+    expect(formatRequirementLine(card)).toBeNull();
+    expect(formatForgeLine(card.forge)).toBe(
+      "[Forge] 1 face [Synthetic] [Corruption] on your die",
+    );
+  });
+
+  it("prints Great Contamination Active when as Arcane + Corruption", () => {
+    const card = getCard(GREAT_CONTAMINATION);
+    if (card === undefined) throw new Error("missing card");
+    expect(formatEnergyCost(card)).toBe("3");
+    expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Corruption]");
   });
 });

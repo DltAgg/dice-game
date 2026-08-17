@@ -412,6 +412,40 @@ describe("Foundry", () => {
     expect(after.energy).toEqual({ holderId: P1, value: 6 });
   });
 
+  it("gains Energy when an allied ritual absorbs Mechanical", () => {
+    const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
+    const withAssembly = withHand(withEnergy(state, P1, 10), P1, [ASSEMBLY_LINE]);
+    const placed = expectOk(
+      advance(withAssembly, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(withAssembly, P1, 0),
+      }),
+    );
+    const assemblyId = ritualsOf(placed, P1).find((card) => card.cardId === ASSEMBLY_LINE)?.id;
+    if (assemblyId === undefined) throw new Error("test: no Assembly Line");
+    const absorbing = withEnergy(
+      withSymbols(withPhase(placed, "absorption"), P1, ["mechanical"], "rolled"),
+      P1,
+      5,
+    );
+    const mechanical = Object.values(absorbing.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
+    );
+    if (mechanical === undefined) throw new Error("expected Mechanical");
+
+    const after = expectOk(
+      advance(absorbing, {
+        type: "ABSORB_SYMBOL_TO_RITUAL",
+        playerId: P1,
+        cardInstanceId: assemblyId,
+        symbolId: mechanical.id,
+      }),
+    );
+    expect(after.cards[assemblyId]?.ritualProgress).toEqual({ mechanical: 1 });
+    expect(after.energy).toEqual({ holderId: P1, value: 6 });
+  });
+
   it("does not gain Energy when the opponent absorbs Mechanical", () => {
     const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
     const seeded: GameState = {

@@ -158,8 +158,9 @@ export type StandingTrigger =
       readonly effects: readonly EffectDefinition[];
     }
   /**
-   * When a creature absorbs a symbol. Default absorber is the host (`self`).
-   * Optional `symbols` / `faceKinds` filters; omit to fire on any absorb.
+   * When a creature or ritual absorbs a symbol. Default absorber is the host
+   * (`self`). Optional `symbols` / `faceKinds` filters; omit to fire on any
+   * absorb. Ritual assignment shares this event; identity is instance id.
    */
   | {
       readonly type: "on-absorb";
@@ -340,10 +341,11 @@ export interface CardInstance {
   /** Set only while `zone === "ritual"`. */
   readonly ritualOrientation: RitualOrientation | null;
   /**
-   * Cumulative Active-when progress while `zone === "ritual"`. Banked when the
-   * owner absorbs matching rolled symbols onto the ritual during absorption
-   * (same window as creature absorb). At most one pip per attribute per turn.
-   * Null outside the ritual zone.
+   * Cumulative Active-when progress while `zone === "ritual"`. Credited
+   * immediately when the owner assigns a matching rolled symbol onto the
+   * ritual during absorption (same window and `on-absorb` event as creature
+   * absorb; unlike creature tokens this is not delayed to end of turn). At
+   * most one pip per attribute per turn. Null outside the ritual zone.
    */
   readonly ritualProgress: AttributeTokens | null;
   /**
