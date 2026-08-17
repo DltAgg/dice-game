@@ -3,9 +3,19 @@ import {
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  advance,
   asPlayerId,
   type GameState,
 } from "@/game";
+import { ARCANE_SILENCE, ECLIPSE } from "@/game/content/cards.js";
+import {
+  expectOk,
+  handCardIdAt,
+  newMatch,
+  withEnergy,
+  withHand,
+  withPhase,
+} from "@/game/testing/scenario.js";
 import { ClientSession } from "./clientSession.js";
 import { HostSession } from "./hostSession.js";
 import { openFakeLink } from "./memoryTransport.js";
@@ -165,6 +175,166 @@ describe("host/client over fake transport", () => {
     clientSession.requestResync();
     expect(guestBox.state).toEqual(afterRoll);
     expect(afterRoll?.phase).toBe("absorption");
+
+    hostSession.destroy();
+    clientSession.destroy();
+  });
+});
+
+function jsonClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+describe("host/client reaction-priority (P2 guest)", () => {
+  const P1 = asPlayerId("p1");
+  const P2 = asPlayerId("p2");
+
+  function openP1TacticWindow(): GameState {
+    const ready = withEnergy(
+      withHand(
+        withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]),
+        P2,
+        [ARCANE_SILENCE],
+      ),
+      P1,
+      10,
+    );
+    const opened = expectOk(
+      advance(ready, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+      }),
+    );
+    return jsonClone(opened);
+  }
+
+  function connectWithChain(roomCode: string, guestId: string) {
+    const opened = openP1TacticWindow();
+    const { host, guest } = openFakeLink(roomCode, guestId);
+    const hostBox: { state: GameState | null } = { state: null };
+    const guestBox: { state: GameState | null } = { state: null };
+    let lastError: string | null = null;
+
+    const hostSession = new HostSession({
+      roomCode,
+      transport: host,
+      hostLoadout: loadout,
+      seed: 1,
+      initialState: opened,
+      onState: (state) => {
+        hostBox.state = state;
+      },
+      onError: (error) => {
+        lastError = error;
+      },
+    });
+
+    const clientSession = new ClientSession({
+      roomCode,
+      transport: guest,
+      hostPeerId: roomCode,
+      loadout,
+      onState: (state) => {
+        guestBox.state = state;
+      },
+      onWelcome: () => undefined,
+      onError: (error) => {
+        lastError = error;
+      },
+    });
+
+    clientSession.greet();
+    return { hostSession, clientSession, hostBox, guestBox, lastError: () => lastError, opened };
+  }
+
+  it("broadcasts a JSON-safe reaction window with P2 holding priority", () => {
+    const { hostSession, clientSession, hostBox, guestBox } = connectWithChain("CHAIN1", "g-chain-1");
+
+    expect(hostBox.state?.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P2,
+    });
+    expect(guestBox.state?.pendingDecision).toEqual(hostBox.state?.pendingDecision);
+    expect(guestBox.state?.chainStack).toHaveLength(1);
+    expect(guestBox.state?.activePlayerId).toBe(P1);
+
+    hostSession.destroy();
+    clientSession.destroy();
+  });
+
+  it("lets the guest Pass even if the intent claims the turn player (host seat override)", () => {
+    const { hostSession, clientSession, hostBox, guestBox, lastError } = connectWithChain(
+      "CHAIN2",
+      "g-chain-2",
+    );
+
+    const ok = clientSession.submitAction({
+      type: "PASS_PRIORITY",
+      playerId: P1,
+    });
+    expect(ok).toBe(true);
+    expect(lastError()).toBeNull();
+    expect(hostBox.state?.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P1,
+      consecutivePasses: 1,
+    });
+    expect(guestBox.state?.pendingDecision).toEqual(hostBox.state?.pendingDecision);
+    expect(guestBox.state?.chainStack).toHaveLength(1);
+
+    hostSession.destroy();
+    clientSession.destroy();
+  });
+
+  it("lets the guest respond with Arcane Silence and rebroadcasts the new link", () => {
+    const { hostSession, clientSession, hostBox, guestBox, lastError, opened } = connectWithChain(
+      "CHAIN3",
+      "g-chain-3",
+    );
+    const silenceId = handCardIdAt(opened, P2, 0);
+
+    const ok = clientSession.submitAction({
+      type: "PLAY_CARD",
+      playerId: P2,
+      cardInstanceId: silenceId,
+    });
+    expect(ok).toBe(true);
+    expect(lastError()).toBeNull();
+    expect(hostBox.state?.chainStack).toHaveLength(2);
+    expect(hostBox.state?.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P1,
+      consecutivePasses: 0,
+    });
+    expect(guestBox.state).toEqual(hostBox.state);
+
+    hostSession.destroy();
+    clientSession.destroy();
+  });
+
+  it("rejects a host Pass while P2 holds priority and does not strand the guest", () => {
+    const { hostSession, clientSession, hostBox, guestBox, lastError } = connectWithChain(
+      "CHAIN4",
+      "g-chain-4",
+    );
+    const before = guestBox.state;
+
+    const ok = hostSession.submitLocalAction({
+      type: "PASS_PRIORITY",
+      playerId: P1,
+    });
+    expect(ok).toBe(false);
+    expect(lastError()).toBe("NOT_PRIORITY_PLAYER");
+    expect(hostBox.state?.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P2,
+    });
+    expect(guestBox.state).toEqual(before);
+    expect(guestBox.state?.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P2,
+    });
 
     hostSession.destroy();
     clientSession.destroy();

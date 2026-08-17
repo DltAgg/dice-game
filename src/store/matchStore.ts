@@ -359,19 +359,20 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         return false;
       }
 
-      if (localPlayerId !== null && action.playerId !== localPlayerId) {
-        set({ lastError: "NOT_ACTIVE_PLAYER" });
-        return false;
-      }
+      // Stamp the bound seat. Do not refuse P2 reactions with NOT_ACTIVE_PLAYER
+      // just because the UI named the turn player — host/client sessions also
+      // override playerId, and the reducer decides priority vs turn player.
+      const seated: GameAction =
+        localPlayerId !== null ? { ...action, playerId: localPlayerId } : action;
 
       if (mode === "host") {
         if (hostSession === null) return false;
-        return hostSession.submitLocalAction(action);
+        return hostSession.submitLocalAction(seated);
       }
 
       if (mode === "client") {
         if (clientSession === null) return false;
-        return clientSession.submitAction(action);
+        return clientSession.submitAction(seated);
       }
 
       return false;
