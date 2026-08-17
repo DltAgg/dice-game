@@ -142,7 +142,7 @@ is used.
 | ? | Wild Echo | Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On absorb: generate Wild. |
 | ? | Adrenaline | Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures. |
 | ? | Rust | Overload / Martial | 1 Natural Martial, your die | *Natural Martial faces only.* On absorb: your attacks this turn ignore 2 Shield. |
-| 2 | Ritual of Contamination | Instant / Corruption | 1 Synthetic Corruption, your die | *Requires: Arcane + Corruption.* Forge 1 Synthetic Corruption face on the opponent's die. |
+| 2 | Ritual of Contamination | Instant / Corruption | 1 Synthetic Corruption, your die | Forge 1 Synthetic Corruption face on the opponent's die. |
 | 4 | Luminar Judgement | Reaction / Luminar | 1 Natural Luminar, your die | On ally would take damage: prevent it; if you do, deal that much to the attacking creature. |
 | 2 | Glimmer | Reaction / Luminar | 1 Synthetic Luminar, your die | On prevent damage: draw 2 cards. |
 | 2 | Predator's Claws | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: this creature may move 1 position. |
@@ -162,12 +162,12 @@ is used.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 5 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Arcane + Corruption + Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
+| 3 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Arcane + Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
 | 6 | Extermination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption + Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
 | 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Add 2 Instant or Ritual cards from your deck to your hand. |
 | 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements. |
 | 5 | Eternal Darkness | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | *Active when: Darkness + Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
-| 4 | Latent Corruption | Overload / Corruption | 1 Synthetic Corruption, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
+| 3 | Latent Corruption | Overload / Corruption | 1 Synthetic Corruption, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
 | 3 | Luminar Prism | Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
 | 2 | Arcane Amplifier | Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
 | 4 | Arcane Resonance | Overload / Arcane | 1 Natural Arcane, your die | On roll: generate 1 Arcane. |
@@ -177,9 +177,9 @@ is used.
 | 4 | Dark Pact | Instant / Darkness | 1 Synthetic Darkness, your die | Send 2 Ritual cards of different attributes from your deck to the graveyard. |
 | 6 | Mind Control | Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |
 | 5 | Arcane Silence | Reaction / Arcane | 2 Synthetic Arcane, your die | Negate the effect of 1 card. |
-| 4 | Persistent Infection | Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: gain 1 Energy. |
+| 2 | Persistent Infection | Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: gain 1 Energy. |
 | 2 | Blade of Serene Light | Equipment / Luminar | 1 Natural Luminar, your die | On deal damage: heal 1 on an allied creature. |
-| 4 | Black Plague | Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: this creature takes 1 damage. |
+| 2 | Black Plague | Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: this creature takes 1 damage. |
 | 2 | Archmage's Grimoire | Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Arcane or Darkness: draw 1 card and discard 1. |
 | 3 | Tome of Interdiction | Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane used each turn costs 1 less Energy. |
 | 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: Arcane + Darkness.* On discard: generate 1 Darkness. |

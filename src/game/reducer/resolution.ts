@@ -1,6 +1,6 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { getFaceCard, PESTILENT_PLAGUE, SHIELD_FACE_ID } from "../content/faces.js";
+import { getFaceCard, SHIELD_FACE_ID } from "../content/faces.js";
 import type {
   CreatureChoiceFilter,
   DieChoiceFilter,
@@ -26,8 +26,11 @@ import {
   countInstalledCopies,
   hasLegalForgeFacesChoice,
   hasLegalReplaceSyntheticFaceChoice,
+  overwrittenSlot,
   returnFaceToPoolIfOrphaned,
+  slotCannotBeReplacedByForge,
   takeFaceFromPool,
+  withForgeLockResetOnInstall,
 } from "../rules/faces.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, choiceFilterForSelector } from "../rules/targets.js";
 import { discardTokensInAttributeOrder, totalTokens } from "../rules/tokens.js";
@@ -1311,12 +1314,16 @@ function applyPestilenceCounter(draft: Draft, pending: PendingEffect): void {
   if (die === undefined) return;
   const slot = die.slots[pending.sourceSlotIndex];
   if (slot === undefined) return;
+  const spreading = getFaceCard(slot.faceCardId);
+  const threshold = spreading?.pestilenceSpreadAt;
+  const spreadingId = slot.faceCardId;
+  const ownerId = slot.faceCardOwnerId;
   const next = (slot.pestilenceCounters ?? 0) + 1;
   const slots = die.slots.map((candidate) =>
     candidate.index === slot.index ? { ...candidate, pestilenceCounters: next } : candidate,
   );
   patchDie(draft, die.id, { slots });
-  if (next < 5) return;
+  if (threshold === undefined || next < threshold) return;
 
   const reset = (draft.dice[die.id]?.slots ?? []).map((candidate) =>
     candidate.index === slot.index ? { ...candidate, pestilenceCounters: 0 } : candidate,
@@ -1326,27 +1333,30 @@ function applyPestilenceCounter(draft: Draft, pending: PendingEffect): void {
   const adjacent = [slot.index - 1, slot.index + 1].filter(
     (index) => die.slots[index] !== undefined,
   );
-  const alreadyInstalled = countInstalledCopies(draft, PESTILENT_PLAGUE, pending.controllerId) > 0;
-  const inPool = (draft.players[pending.controllerId]?.facePool ?? []).includes(PESTILENT_PLAGUE);
+  const alreadyInstalled = countInstalledCopies(draft, spreadingId, ownerId) > 0;
+  const inPool = (draft.players[ownerId]?.facePool ?? []).includes(spreadingId);
   if (!alreadyInstalled && !inPool) return;
 
   for (const index of adjacent) {
     const current = draft.dice[die.id];
     if (current === undefined) return;
-    if (forgeExceedsAttributeLimit(current, [index], "corruption", 1, draft.config)) continue;
-    if (!alreadyInstalled && !takeFaceFromPool(draft, pending.controllerId, PESTILENT_PLAGUE)) {
+    const target = current.slots[index];
+    if (target === undefined || slotCannotBeReplacedByForge(target)) continue;
+    if (
+      spreading !== undefined &&
+      forgeExceedsAttributeLimit(current, [index], spreading.symbol, 1, draft.config)
+    ) {
+      continue;
+    }
+    if (!alreadyInstalled && !takeFaceFromPool(draft, ownerId, spreadingId)) {
       return;
     }
     const displaced = current.slots[index];
-    const nextSlots = current.slots.map((candidate) =>
-      candidate.index === index
-        ? {
-            ...candidate,
-            faceCardId: PESTILENT_PLAGUE,
-            faceCardOwnerId: pending.controllerId,
-            pestilenceCounters: 0,
-          }
-        : candidate,
+    const nextSlots = withForgeLockResetOnInstall(
+      current.slots.map((candidate) =>
+        candidate.index === index ? overwrittenSlot(candidate, spreadingId, ownerId) : candidate,
+      ),
+      spreadingId,
     );
     patchDie(draft, die.id, { slots: nextSlots });
     if (displaced !== undefined) {
@@ -1357,11 +1367,11 @@ function applyPestilenceCounter(draft: Draft, pending: PendingEffect): void {
     }
     emit(draft, {
       type: "face-forged",
-      playerId: pending.controllerId,
+      playerId: ownerId,
       cardInstanceId: null,
       dieId: die.id,
       slotIndex: index,
-      faceCardId: PESTILENT_PLAGUE,
+      faceCardId: spreadingId,
     });
     return;
   }
@@ -1385,6 +1395,7 @@ export function consumeSyntheticCorruptionOnDie(
       faceCardId: SHIELD_FACE_ID,
       faceCardOwnerId: die.ownerId,
       pestilenceCounters: 0,
+      forgeLockRemaining: 0,
     };
   });
   if (consumed === 0) return 0;
@@ -1599,6 +1610,7 @@ export function stripFaceToShield(
           faceCardId: SHIELD_FACE_ID,
           faceCardOwnerId: shieldOwnerId,
           pestilenceCounters: 0,
+          forgeLockRemaining: 0,
           corruptionMarkers: 0,
           suppressInherentNextRoll: false,
           resourceLockedThisTurn: false,
@@ -1619,6 +1631,24 @@ export function clearResourceLocks(draft: Draft): void {
       if (slot.resourceLockedThisTurn !== true) return slot;
       changed = true;
       return { ...slot, resourceLockedThisTurn: false };
+    });
+    if (changed) patchDie(draft, die.id, { slots });
+  }
+}
+
+/**
+ * Decrement remaining forge-lock on dice owned by `ownerId` (that player's
+ * turn just ended). Floor 0. Opponent-owned dice are not ticked.
+ */
+export function tickForgeLocksForOwner(draft: Draft, ownerId: PlayerId): void {
+  for (const die of Object.values(draft.dice)) {
+    if (die.ownerId !== ownerId) continue;
+    let changed = false;
+    const slots = die.slots.map((slot) => {
+      const remaining = slot.forgeLockRemaining ?? 0;
+      if (remaining <= 0) return slot;
+      changed = true;
+      return { ...slot, forgeLockRemaining: remaining - 1 };
     });
     if (changed) patchDie(draft, die.id, { slots });
   }
