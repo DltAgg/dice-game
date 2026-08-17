@@ -246,7 +246,7 @@ describe("what forging refuses", () => {
   });
 
   it("refuses outside the actions phase", () => {
-    const state = withEnergy(withHand(withPhase(newMatch(), "absorption"), P1, [ECLIPSE]), P1, 10);
+    const state = withEnergy(withHand(withPhase(newMatch(), "roll"), P1, [ECLIPSE]), P1, 10);
     const result = forge(state);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("INVALID_PHASE");

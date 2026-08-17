@@ -404,7 +404,7 @@ describe("face markers / suppress / lock (013)", () => {
     expect(state.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Instinct absorb opens optional bonus basic during absorption", () => {
+  it("Instinct absorb opens optional bonus basic during actions", () => {
     const attackerId = creatureIdAt(newMatch(), P1, 0);
     const targetId = creatureIdAt(newMatch(), P2, 0);
     let state = withTokens(installFace(newMatch(), INSTINCT), attackerId, { martial: 2 });
@@ -421,7 +421,7 @@ describe("face markers / suppress / lock (013)", () => {
     }
     state = absorbShowing(state, "wild", attackerId);
     expect(state.pendingDecision?.type).toBe("optional-bonus-attack");
-    expect(state.phase).toBe("absorption");
+    expect(state.phase).toBe("actions");
     state = expectOk(
       advance(state, {
         type: "RESOLVE_OPTIONAL_BONUS_ATTACK",

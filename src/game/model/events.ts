@@ -65,7 +65,7 @@ export type GameEvent =
   | {
       readonly type: "symbols-consumed";
       readonly symbolIds: readonly SymbolInstanceId[];
-      readonly reason: "ritual-progress";
+      readonly reason: "ritual-progress" | "card-requires";
     }
   | { readonly type: "symbols-expired"; readonly symbolIds: readonly SymbolInstanceId[] }
   | {

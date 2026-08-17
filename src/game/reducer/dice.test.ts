@@ -4,6 +4,7 @@ import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { createRng } from "../rng/rng.js";
 import { diceOf } from "../rules/dice.js";
+import { usableSymbols } from "../rules/symbols.js";
 import { newMatch, P1, P2, expectOk, eventTypes } from "../testing/scenario.js";
 import { advance, reduce } from "./reduce.js";
 
@@ -23,14 +24,15 @@ function withFirstDie(state: GameState, patch: Partial<DieState>): [GameState, D
 }
 
 describe("rolling dice", () => {
-  it("generates one symbol per die and opens the absorption window", () => {
+  it("generates one symbol per die and opens the actions window", () => {
     const state = expectOk(advance(newMatch(), roll));
 
     const generated = Object.values(state.symbols);
     expect(generated).toHaveLength(2);
     expect(generated.every((symbol) => symbol.status === "rolled")).toBe(true);
     expect(generated.every((symbol) => symbol.ownerId === P1)).toBe(true);
-    expect(state.phase).toBe("absorption");
+    expect(state.phase).toBe("actions");
+    expect(usableSymbols(state, P1)).toHaveLength(2);
   });
 
   it("records which physical face came up on each die", () => {

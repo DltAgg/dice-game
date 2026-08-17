@@ -342,8 +342,8 @@ export interface CardInstance {
   readonly ritualOrientation: RitualOrientation | null;
   /**
    * Cumulative Active-when progress while `zone === "ritual"`. Credited
-   * immediately when the owner assigns a matching rolled symbol onto the
-   * ritual during absorption (same window and `on-absorb` event as creature
+   * immediately when the owner assigns a matching unabsorbed pool symbol onto
+   * the ritual during actions (same window and `on-absorb` event as creature
    * absorb; unlike creature tokens this is not delayed to end of turn). At
    * most one pip per attribute per turn. Null outside the ritual zone.
    */

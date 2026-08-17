@@ -4,12 +4,23 @@ import {
   requirementEntries,
   type SymbolInstance,
   type SymbolRequirement,
+  type SymbolStatus,
   type SymbolType,
 } from "../model/symbols.js";
 
 /**
- * Symbols the engine may spend right now. Nothing outlives the turn, so this is
- * simply the unabsorbed part of this turn's roll.
+ * Die pips (`rolled`) and effect-generated symbols (`available`) share one
+ * unabsorbed pool. Absorb and `[Requires]` spend both see this set.
+ */
+export const isUnabsorbedPoolStatus = (status: SymbolStatus): boolean =>
+  status === "rolled" || status === "available";
+
+export const isUnabsorbedPoolSymbol = (symbol: SymbolInstance): boolean =>
+  isUnabsorbedPoolStatus(symbol.status) && symbol.usable !== false;
+
+/**
+ * Symbols the engine may spend or absorb right now. Nothing outlives the turn,
+ * so this is the unabsorbed pool (rolled pips and effect-generated symbols).
  *
  * An absorbed symbol is deliberately absent: bible §7 removes it from engine
  * resolution, and that exclusion is the game's central tradeoff. It reappears
@@ -17,15 +28,12 @@ import {
  */
 export const usableSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInstance[] =>
   Object.values(state.symbols).filter(
-    (symbol) =>
-      symbol.ownerId === playerId &&
-      symbol.status === "available" &&
-      symbol.usable !== false,
+    (symbol) => symbol.ownerId === playerId && isUnabsorbedPoolSymbol(symbol),
   );
 
 /**
- * Symbols still in the absorption window (status `rolled`). Once the engine
- * phase opens they flip to `available` and leave this list.
+ * Symbols generated from dice this turn (`rolled`). Effect-generated pips use
+ * `available`; both are unabsorbed pool and appear in `usableSymbols`.
  */
 export const rolledSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInstance[] =>
   Object.values(state.symbols).filter(

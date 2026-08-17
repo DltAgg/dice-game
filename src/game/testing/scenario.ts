@@ -30,7 +30,7 @@ import { createMatch, type MatchSetup } from "../setup/createMatch.js";
 /**
  * Arrangement helpers for scenario tests (SPDD §37). These write state
  * directly on purpose: a test that had to roll the right symbols before it
- * could check absorption would be testing luck, not the rule.
+ * could check absorb would be testing luck, not the rule.
  */
 
 export const P1: PlayerId = asPlayerId("p1");

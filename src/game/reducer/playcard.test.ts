@@ -257,17 +257,17 @@ describe("rituals on the field", () => {
     if (ritualId === undefined) throw new Error("test: no ritual");
 
     // Pool leftovers do not auto-credit — rituals stay empty until assigned.
-    const skipped = advance(
-      withSymbols(withPhase(placed.state, "absorption"), P1, ["arcane", "arcane"], "rolled"),
-      { type: "ADVANCE_PHASE", playerId: P1 },
+    const skipped = withSymbols(
+      withPhase(placed.state, "actions"),
+      P1,
+      ["arcane", "arcane"],
+      "rolled",
     );
-    expect(skipped.ok).toBe(true);
-    if (!skipped.ok) return;
-    expect(ritualsOf(skipped.state, P1)[0]?.ritualOrientation).toBe("preparing");
-    expect(ritualsOf(skipped.state, P1)[0]?.ritualProgress).toEqual({});
+    expect(ritualsOf(skipped, P1)[0]?.ritualOrientation).toBe("preparing");
+    expect(ritualsOf(skipped, P1)[0]?.ritualProgress).toEqual({});
 
     const absorbing = withSymbols(
-      withPhase(placed.state, "absorption"),
+      withPhase(placed.state, "actions"),
       P1,
       ["arcane", "arcane"],
       "rolled",
@@ -301,17 +301,14 @@ describe("rituals on the field", () => {
     expect(sameTurn.ok).toBe(false);
 
     // Next owner turn clears the per-turn credit; a second Arcane finishes the gate.
-    const afterSkip = advance(first.state, { type: "ADVANCE_PHASE", playerId: P1 });
-    expect(afterSkip.ok).toBe(true);
-    if (!afterSkip.ok) return;
-    const afterP1End = advance(afterSkip.state, { type: "END_TURN", playerId: P1 });
+    const afterP1End = advance(first.state, { type: "END_TURN", playerId: P1 });
     expect(afterP1End.ok).toBe(true);
     if (!afterP1End.ok) return;
     const afterP2End = advance(afterP1End.state, { type: "END_TURN", playerId: P2 });
     expect(afterP2End.ok).toBe(true);
     if (!afterP2End.ok) return;
 
-    const nextAbsorb = withSymbols(withPhase(afterP2End.state, "absorption"), P1, ["arcane"], "rolled");
+    const nextAbsorb = withSymbols(withPhase(afterP2End.state, "actions"), P1, ["arcane"], "rolled");
     const nextArcane = Object.values(nextAbsorb.symbols).find(
       (symbol) => symbol.status === "rolled" && symbol.symbol === "arcane",
     );
@@ -764,7 +761,7 @@ describe("what playing refuses", () => {
   });
 
   it("refuses outside the actions phase", () => {
-    const state = withEnergy(withHand(withPhase(newMatch(), "absorption"), P1, [ECLIPSE]), P1, 10);
+    const state = withEnergy(withHand(withPhase(newMatch(), "roll"), P1, [ECLIPSE]), P1, 10);
 
     const result = advance(state, {
       type: "PLAY_CARD",

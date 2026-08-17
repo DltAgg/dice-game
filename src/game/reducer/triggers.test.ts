@@ -254,7 +254,7 @@ describe("on-absorb equipment", () => {
     const base = actionsReady([WILD_CARAPACE]);
     const hostId = creatureIdAt(base, P1, 0);
     let state = withDamage(equip(base, hostId), hostId, 2);
-    state = withPhase(state, "absorption");
+    state = withPhase(state, "actions");
     const symbolId = asSymbolInstanceId("sym-wild");
     state = {
       ...state,
@@ -330,7 +330,7 @@ describe("on-absorb equipment", () => {
       },
     };
 
-    state = withPhase(state, "absorption");
+    state = withPhase(state, "actions");
     const symbolId = asSymbolInstanceId("sym-arcane");
     state = {
       ...state,
@@ -739,7 +739,7 @@ describe("ritual absorb shares on-absorb hooks", () => {
         },
       },
     };
-    state = withSymbols(withPhase(state, "absorption"), P1, ["mechanical"], "rolled");
+    state = withSymbols(withPhase(state, "actions"), P1, ["mechanical"], "rolled");
     const mechanical = Object.values(state.symbols).find(
       (s) => s.symbol === "mechanical" && s.status === "rolled",
     );
@@ -782,7 +782,7 @@ describe("ritual absorb shares on-absorb hooks", () => {
         },
       },
     };
-    state = withSymbols(withPhase(state, "absorption"), P1, ["mechanical"], "rolled");
+    state = withSymbols(withPhase(state, "actions"), P1, ["mechanical"], "rolled");
     const mechanical = Object.values(state.symbols).find(
       (s) => s.symbol === "mechanical" && s.status === "rolled",
     );
@@ -813,7 +813,7 @@ describe("ritual absorb shares on-absorb hooks", () => {
     );
     const ritualId = ritualInZone(placed, ASSEMBLY_LINE).id;
     const absorbing = withSymbols(
-      withPhase(placed, "absorption"),
+      withPhase(placed, "actions"),
       P1,
       ["mechanical"],
       "rolled",
@@ -838,7 +838,7 @@ describe("ritual absorb shares on-absorb hooks", () => {
   });
 
   it("still banks creature attribute tokens until END_TURN", () => {
-    const state = withSymbols(withPhase(newMatch(), "absorption"), P1, ["martial"], "rolled");
+    const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial"], "rolled");
     const creatureId = creatureIdAt(state, P1, 0);
     const martial = Object.values(state.symbols).find((s) => s.symbol === "martial");
     if (martial === undefined) throw new Error("martial");
@@ -869,7 +869,7 @@ describe("ritual absorb shares on-absorb hooks", () => {
     );
     const ritualId = ritualInZone(afterRitual, ASSEMBLY_LINE).id;
     const absorbing = withSymbols(
-      withPhase(afterRitual, "absorption"),
+      withPhase(afterRitual, "actions"),
       P1,
       ["mechanical"],
       "rolled",

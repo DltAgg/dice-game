@@ -41,7 +41,7 @@ describe("a full match through the reducer alone", () => {
   });
 
   it("cannot land an attack on the opening turn", () => {
-    // Bible §25 wants early destruction to be hard, and the absorption timing
+    // Bible §25 wants early destruction to be hard, and absorb payout timing
     // guarantees it outright: fuel only becomes a token at end of turn, so the
     // first turn is necessarily spent arming rather than swinging.
     for (const seed of SEEDS) {

@@ -102,8 +102,9 @@ If the user asks for engine **and** UI in one request: implement engine + spec U
 | Tests / scenarios | `src/game/reducer/*.test.ts`, `src/game/testing/scenario.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 
-Phases: `roll` → `absorption` → `actions`. `END_TURN` is an action, not a phase.
-Ready rituals may activate during absorption, not during roll.
+Phases: `roll` → `actions`. `END_TURN` is an action, not a phase.
+Ready rituals may activate during actions, not during roll. Absorb (creature +
+ritual) is legal throughout actions on the same unabsorbed pool as `[Requires]`.
 
 ## Specs
 

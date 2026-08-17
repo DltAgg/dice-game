@@ -92,8 +92,8 @@ describe("host/client over fake transport", () => {
       playerId: asPlayerId("p1"),
     });
     expect(ok).toBe(true);
-    expect(hostBox.state?.phase).toBe("absorption");
-    expect(guestBox.state?.phase).toBe("absorption");
+    expect(hostBox.state?.phase).toBe("actions");
+    expect(guestBox.state?.phase).toBe("actions");
     expect(guestBox.state).toEqual(hostBox.state);
 
     hostSession.destroy();
@@ -176,7 +176,7 @@ describe("host/client over fake transport", () => {
     guestBox.state = null;
     clientSession.requestResync();
     expect(guestBox.state).toEqual(afterRoll);
-    expect(afterRoll?.phase).toBe("absorption");
+    expect(afterRoll?.phase).toBe("actions");
 
     hostSession.destroy();
     clientSession.destroy();
@@ -224,7 +224,7 @@ describe("guest reconnection over fake transport", () => {
       playerId: asPlayerId("p1"),
     });
     expect(rolled).toBe(true);
-    expect(hostBox.state?.phase).toBe("absorption");
+    expect(hostBox.state?.phase).toBe("actions");
     const matchId = hostBox.state?.matchId;
 
     host.drop("guest-old");
@@ -248,7 +248,7 @@ describe("guest reconnection over fake transport", () => {
 
     expect(reboundSeat).toBe(asPlayerId("p2"));
     expect(hostSession.boundGuestPeerId).toBe("guest-new");
-    expect(onboardBox.state?.phase).toBe("absorption");
+    expect(onboardBox.state?.phase).toBe("actions");
     expect(onboardBox.state?.matchId).toBe(matchId);
     expect(onboardBox.state).toEqual(hostBox.state);
     const p2 = onboardBox.state!.players[asPlayerId("p2")]!;
@@ -290,7 +290,7 @@ describe("guest reconnection over fake transport", () => {
     expect(staleBox.welcomes).toBe(1);
 
     hostSession.submitLocalAction({ type: "ROLL_DICE", playerId: asPlayerId("p1") });
-    expect(staleBox.state?.phase).toBe("absorption");
+    expect(staleBox.state?.phase).toBe("actions");
 
     const replacement = attachFakeGuest(host, "guest-reload");
     const freshClient = new ClientSession({
@@ -309,15 +309,15 @@ describe("guest reconnection over fake transport", () => {
 
     expect(freshBox.seat).toBe(asPlayerId("p2"));
     expect(hostSession.boundGuestPeerId).toBe("guest-reload");
-    expect(freshBox.state?.phase).toBe("absorption");
+    expect(freshBox.state?.phase).toBe("actions");
 
     staleBox.state = null;
-    const advanced = hostSession.submitLocalAction({
-      type: "ADVANCE_PHASE",
+    const ended = hostSession.submitLocalAction({
+      type: "END_TURN",
       playerId: asPlayerId("p1"),
     });
-    expect(advanced).toBe(true);
-    expect(freshBox.state?.phase).toBe("actions");
+    expect(ended).toBe(true);
+    expect(freshBox.state?.activePlayerId).toBe(asPlayerId("p2"));
     expect(staleBox.state).toBeNull();
 
     hostSession.destroy();
@@ -348,7 +348,7 @@ describe("guest reconnection over fake transport", () => {
       onWelcome: () => undefined,
     }).greet();
     firstHost.submitLocalAction({ type: "ROLL_DICE", playerId: asPlayerId("p1") });
-    expect(snapshotBox.state?.phase).toBe("absorption");
+    expect(snapshotBox.state?.phase).toBe("actions");
     const frozen = snapshotBox.state!;
     firstHost.destroy(false);
 
@@ -380,7 +380,7 @@ describe("guest reconnection over fake transport", () => {
 
     expect(resumedBox.seat).toBe(asPlayerId("p2"));
     expect(resumedBox.state?.matchId).toBe(frozen.matchId);
-    expect(resumedBox.state?.phase).toBe("absorption");
+    expect(resumedBox.state?.phase).toBe("actions");
     expect(resumedHost.currentState?.rng.cursor).toBe(frozen.rng.cursor);
 
     resumedHost.destroy();

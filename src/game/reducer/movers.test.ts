@@ -53,7 +53,7 @@ describe("reposition via setCreaturePosition", () => {
           },
         },
       },
-      "absorption",
+      "actions",
     );
 
     const absorbed = expectOk(
@@ -94,7 +94,7 @@ describe("reposition via setCreaturePosition", () => {
           },
         },
       },
-      "absorption",
+      "actions",
     );
 
     const absorbed = expectOk(
