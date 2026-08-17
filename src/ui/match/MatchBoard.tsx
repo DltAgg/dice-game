@@ -75,6 +75,12 @@ import {
 import { MATCH_P1, MATCH_P2, useMatchStore } from "@/store/matchStore";
 import { useDeckStore } from "@/store/deckStore";
 import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@/decks";
+import {
+  actingPlayerIdOf,
+  localSeatCanAct,
+  localSeatIsPendingChooser,
+  seatedAction,
+} from "./seatGate";
 
 const PHASE_LABELS: Record<TurnPhase, string> = {
   roll: "Roll",
@@ -144,14 +150,9 @@ export function MatchBoard() {
   const pending = state.pendingDecision;
   const phase = state.phase;
   const isOnline = mode !== "local";
-  const reactionPriority =
-    pending?.type === "reaction-priority" ? pending.priorityPlayerId : null;
-  const actingId = reactionPriority ?? activeId;
-  const canAct = !isOnline || localPlayerId === actingId;
-  const pendingControllerId =
-    pending !== null && "controllerId" in pending ? pending.controllerId : null;
-  const isPendingChooser =
-    !isOnline || pendingControllerId === null || localPlayerId === pendingControllerId;
+  const actingId = actingPlayerIdOf(state);
+  const canAct = localSeatCanAct(isOnline, localPlayerId, state);
+  const isPendingChooser = localSeatIsPendingChooser(isOnline, localPlayerId, state);
   /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. */
   const dockPlayerId =
     isOnline && localPlayerId !== null ? localPlayerId : actingId;
@@ -190,10 +191,7 @@ export function MatchBoard() {
   const clearIntent = () => setIntent({ kind: "idle" });
 
   const tryDispatch = (action: Parameters<typeof dispatch>[0]): boolean => {
-    if (isOnline && localPlayerId !== null && action.playerId !== localPlayerId) {
-      return false;
-    }
-    const ok = dispatch(action);
+    const ok = dispatch(seatedAction(isOnline, localPlayerId, action));
     if (ok) clearIntent();
     return ok;
   };
@@ -333,6 +331,7 @@ export function MatchBoard() {
     // Respond during a reaction chain with a hand Reaction.
     if (pending?.type === "reaction-priority") {
       if (card.ownerId !== actingId) return;
+      if (isOnline && localPlayerId !== pending.priorityPlayerId) return;
       const def = getCard(card.cardId);
       if (def === undefined || !isLegalHandReaction(state, def)) return;
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
@@ -369,7 +368,8 @@ export function MatchBoard() {
   };
 
   const passPriority = () => {
-    if (!canAct || finished || pending?.type !== "reaction-priority") return;
+    if (finished || pending?.type !== "reaction-priority") return;
+    if (!canAct) return;
     tryDispatch({ type: "PASS_PRIORITY", playerId: actingId });
   };
 
@@ -516,6 +516,12 @@ export function MatchBoard() {
               {seed} · turn {state.turn} · phase{" "}
               <span className="text-[var(--accent)]">{phase}</span> · active{" "}
               <span className="text-[var(--accent)]">{activeId}</span>
+              {pending?.type === "reaction-priority" ? (
+                <>
+                  {" · priority "}
+                  <span className="text-[var(--accent)]">{pending.priorityPlayerId}</span>
+                </>
+              ) : null}
               {!canAct && isOnline ? " · waiting for opponent" : null}
             </p>
           </div>
@@ -1069,6 +1075,12 @@ export function MatchBoard() {
       )}
       {pending?.type === "optional-bonus-attack" && !isPendingChooser && (
         <WaitingBanner>Opponent may declare a bonus basic attack.</WaitingBanner>
+      )}
+
+      {pending?.type === "reaction-priority" && !isPendingChooser && (
+        <WaitingBanner>
+          {`${pending.priorityPlayerId} holds reaction priority — they may respond or Pass.`}
+        </WaitingBanner>
       )}
 
       {forgeNeedsDieOrSlots && intent.kind === "forge" && forgeTarget !== null && (
@@ -1762,7 +1774,10 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       : "Waiting for the opponent to decide on a bonus basic attack.";
   }
   if (state.pendingDecision?.type === "reaction-priority") {
-    return "Reaction chain: Pass priority, or play a Reaction / activate a ready ritual-reaction.";
+    const who = state.pendingDecision.priorityPlayerId;
+    return isPendingChooser
+      ? `Your reaction priority (${who}): Pass, or play a Reaction / activate a ready ritual-reaction.`
+      : `${who} holds reaction priority. Waiting.`;
   }
   if (state.status === "finished") return "Start a new match to play again.";
 
@@ -1991,14 +2006,15 @@ function Battlefield({
   return (
     <section
       className={
-        isActive
+        playerId === actingPlayerId
           ? "rounded-lg border border-[var(--accent)]/35 bg-black/30 p-4"
           : "rounded-lg border border-stone-800 bg-black/20 p-4"
       }
     >
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
         {label}
-        {isActive ? " · acting" : ""} · frontline / back
+        {playerId === actingPlayerId ? (inReactionWindow ? " · priority" : " · acting") : ""}
+        {isActive && playerId !== actingPlayerId ? " · turn" : ""} · frontline / back
       </h2>
       {facing === "down" ? ritualStrip : null}
       <div className="flex flex-col gap-3">

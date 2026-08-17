@@ -22,6 +22,8 @@ export interface HostSessionOptions {
   readonly transport: NetTransport;
   readonly hostLoadout: WireLoadout;
   readonly seed?: number;
+  /** When set, skip `createMatch` and start from this state (tests). */
+  readonly initialState?: GameState;
   readonly onState: (state: GameState) => void;
   readonly onError?: (error: GameError) => void;
   readonly onGuestJoined?: (peerId: string) => void;
@@ -59,6 +61,12 @@ export class HostSession {
     this.onGuestJoined = options.onGuestJoined;
     this.onGuestLeft = options.onGuestLeft;
     this.onStatus = options.onStatus;
+
+    if (options.initialState !== undefined) {
+      this.state = options.initialState;
+      this.started = true;
+      this.onState(this.state);
+    }
 
     this.transport.onMessage((peerId, data) => this.handleMessage(peerId, data));
     this.transport.onDisconnect((peerId) => {
