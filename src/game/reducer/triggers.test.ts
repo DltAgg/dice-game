@@ -2,12 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   ABYSSAL_SACRIFICE,
   ARCHMAGES_GRIMOIRE,
+  ASSEMBLY_LINE,
   BLACK_PLAGUE,
   BLADE_OF_SERENE_LIGHT,
+  CALL_TO_ARMS,
   ECLIPSE,
+  FOUNDRY,
   HUNTERS_COLLAR,
   HUNTING_ARMOUR,
   MUTANT_SPORES,
+  SERVOMOTOR,
   TOXIC_BLESSING,
   TOXIC_HEART,
   VENOMOUS_FANGS,
@@ -36,11 +40,13 @@ import {
   asAttackId,
   asCardInstanceId,
   asSymbolInstanceId,
+  type CardId,
   type CreatureId,
   type DieId,
   type FaceCardId,
 } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import { ritualsOf } from "../rules/cards.js";
 import { usableSymbols } from "../rules/symbols.js";
 import {
   creatureIdAt,
@@ -55,6 +61,7 @@ import {
   withHand,
   withPhase,
   withShields,
+  withSymbols,
   withTokens,
   advanceResolvingChain as advance,
   newMatchWithDecks,
@@ -686,6 +693,243 @@ describe("Void Summoner on-absorb Natural", () => {
         type: "ABSORB_SYMBOL",
         playerId: P1,
         creatureId: absorber,
+        symbolId: martial.id,
+      }),
+    );
+    const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
+    expect(arcane.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("ritual absorb shares on-absorb hooks", () => {
+  const ritualInZone = (state: GameState, cardId: CardId) => {
+    const ritual = ritualsOf(state, P1).find((card) => card.cardId === cardId);
+    if (ritual === undefined) throw new Error(`test: missing ritual ${cardId}`);
+    return ritual;
+  };
+
+  it("Foundry gains Energy when an allied ritual absorbs Mechanical", () => {
+    const base = actionsReady([FOUNDRY, ASSEMBLY_LINE]);
+    const afterFoundry = expectOk(
+      advance(base, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+      }),
+    );
+    const afterAssembly = expectOk(
+      advance(afterFoundry, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(afterFoundry, P1, 0),
+      }),
+    );
+    const foundryId = ritualInZone(afterAssembly, FOUNDRY).id;
+    const assemblyId = ritualInZone(afterAssembly, ASSEMBLY_LINE).id;
+    const foundry = afterAssembly.cards[foundryId];
+    if (foundry === undefined) throw new Error("foundry");
+    let state: GameState = {
+      ...withEnergy(afterAssembly, P1, 5),
+      cards: {
+        ...afterAssembly.cards,
+        [foundryId]: {
+          ...foundry,
+          ritualOrientation: "ready",
+          ritualProgress: { mechanical: 2 },
+        },
+      },
+    };
+    state = withSymbols(withPhase(state, "absorption"), P1, ["mechanical"], "rolled");
+    const mechanical = Object.values(state.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
+    );
+    if (mechanical === undefined) throw new Error("mechanical");
+
+    const after = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL_TO_RITUAL",
+        playerId: P1,
+        cardInstanceId: assemblyId,
+        symbolId: mechanical.id,
+      }),
+    );
+
+    expect(after.cards[assemblyId]?.ritualProgress).toEqual({ mechanical: 1 });
+    expect(after.energy).toEqual({ holderId: P1, value: 6 });
+  });
+
+  it("Foundry's on-absorb fires when the completing Mechanical assignment readies it", () => {
+    const base = actionsReady([FOUNDRY]);
+    const placed = expectOk(
+      advance(base, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+      }),
+    );
+    const foundryId = ritualInZone(placed, FOUNDRY).id;
+    const foundry = placed.cards[foundryId];
+    if (foundry === undefined) throw new Error("foundry");
+    let state: GameState = {
+      ...withEnergy(placed, P1, 5),
+      cards: {
+        ...placed.cards,
+        [foundryId]: {
+          ...foundry,
+          ritualOrientation: "preparing",
+          ritualProgress: { mechanical: 1 },
+          ritualProgressCreditedThisTurn: [],
+        },
+      },
+    };
+    state = withSymbols(withPhase(state, "absorption"), P1, ["mechanical"], "rolled");
+    const mechanical = Object.values(state.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
+    );
+    if (mechanical === undefined) throw new Error("mechanical");
+
+    const after = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL_TO_RITUAL",
+        playerId: P1,
+        cardInstanceId: foundryId,
+        symbolId: mechanical.id,
+      }),
+    );
+
+    expect(after.cards[foundryId]?.ritualProgress).toEqual({ mechanical: 2 });
+    expect(after.cards[foundryId]?.ritualOrientation).toBe("ready");
+    expect(after.energy).toEqual({ holderId: P1, value: 6 });
+  });
+
+  it("credits ritualProgress immediately, not at END_TURN", () => {
+    const base = actionsReady([ASSEMBLY_LINE]);
+    const placed = expectOk(
+      advance(base, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+      }),
+    );
+    const ritualId = ritualInZone(placed, ASSEMBLY_LINE).id;
+    const absorbing = withSymbols(
+      withPhase(placed, "absorption"),
+      P1,
+      ["mechanical"],
+      "rolled",
+    );
+    const mechanical = Object.values(absorbing.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
+    );
+    if (mechanical === undefined) throw new Error("mechanical");
+
+    const after = expectOk(
+      advance(absorbing, {
+        type: "ABSORB_SYMBOL_TO_RITUAL",
+        playerId: P1,
+        cardInstanceId: ritualId,
+        symbolId: mechanical.id,
+      }),
+    );
+    expect(after.cards[ritualId]?.ritualProgress).toEqual({ mechanical: 1 });
+
+    const afterEnd = expectOk(advance(after, { type: "END_TURN", playerId: P1 }));
+    expect(afterEnd.cards[ritualId]?.ritualProgress).toEqual({ mechanical: 1 });
+  });
+
+  it("still banks creature attribute tokens until END_TURN", () => {
+    const state = withSymbols(withPhase(newMatch(), "absorption"), P1, ["martial"], "rolled");
+    const creatureId = creatureIdAt(state, P1, 0);
+    const martial = Object.values(state.symbols).find((s) => s.symbol === "martial");
+    if (martial === undefined) throw new Error("martial");
+
+    const absorbed = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId,
+        symbolId: martial.id,
+      }),
+    );
+    expect(absorbed.creatures[creatureId]?.attributeTokens).toEqual({});
+
+    const nextTurn = expectOk(advance(absorbed, { type: "END_TURN", playerId: P1 }));
+    expect(nextTurn.creatures[creatureId]?.attributeTokens).toEqual({ martial: 1 });
+  });
+
+  it("does not fire self-only equipment when a ritual absorbs Mechanical", () => {
+    const base = actionsReady([SERVOMOTOR, ASSEMBLY_LINE]);
+    const equipped = equip(base, creatureIdAt(base, P1, 0));
+    const afterRitual = expectOk(
+      advance(equipped, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(equipped, P1, 0),
+      }),
+    );
+    const ritualId = ritualInZone(afterRitual, ASSEMBLY_LINE).id;
+    const absorbing = withSymbols(
+      withPhase(afterRitual, "absorption"),
+      P1,
+      ["mechanical"],
+      "rolled",
+    );
+    const mechanical = Object.values(absorbing.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
+    );
+    if (mechanical === undefined) throw new Error("mechanical");
+
+    const after = expectOk(
+      advance(absorbing, {
+        type: "ABSORB_SYMBOL_TO_RITUAL",
+        playerId: P1,
+        cardInstanceId: ritualId,
+        symbolId: mechanical.id,
+      }),
+    );
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
+  });
+
+  it("Void Summoner generates Arcane when a ritual absorbs a Natural face", () => {
+    const state0 = newMatch({
+      players: [
+        {
+          id: P1,
+          squad: [VOID_SUMMONER, MINOTAUR, GARUDA],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+        {
+          id: P2,
+          squad: [MINOTAUR, GARUDA, VOID_SUMMONER],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+      ],
+    });
+    const ready = withEnergy(withHand(withPhase(state0, "actions"), P1, [CALL_TO_ARMS]), P1, 10);
+    const placed = expectOk(
+      advance(ready, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+      }),
+    );
+    const ritualId = ritualInZone(placed, CALL_TO_ARMS).id;
+    let rolled: GameState = withPhase(placed, "roll");
+    rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 1 });
+    const afterRoll = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+    const martial = Object.values(afterRoll.symbols).find(
+      (s) => s.symbol === "martial" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
+    );
+    if (martial === undefined) throw new Error("martial");
+
+    const after = expectOk(
+      advance(afterRoll, {
+        type: "ABSORB_SYMBOL_TO_RITUAL",
+        playerId: P1,
+        cardInstanceId: ritualId,
         symbolId: martial.id,
       }),
     );
