@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  ABYSSAL_SACRIFICE,
   ARCANE_ECHO,
   ECLIPSE,
   ETERNAL_DARKNESS,
+  FOUNDRY,
   LIVING_LIBRARY,
   PROTOTYPE_DECK,
   WAR_AXE,
@@ -670,6 +672,79 @@ describe("rituals on the field", () => {
     if (!resolved.ok) return;
     expect(handOf(resolved.state, P1).map((card) => card.id).sort()).toEqual([...picks].sort());
     expect(resolved.state.pendingDecision).toBeNull();
+  });
+
+  it("refuses Activate on a standing-only continuous ritual", () => {
+    const placed = advance(actionsReady([ABYSSAL_SACRIFICE]), {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(actionsReady([ABYSSAL_SACRIFICE]), P1, 0),
+    });
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+
+    const ritualId = ritualsOf(placed.state, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("test: no ritual");
+
+    const oriented = {
+      ...placed.state,
+      cards: {
+        ...placed.state.cards,
+        [ritualId]: {
+          ...placed.state.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: { arcane: 1, darkness: 1 },
+        },
+      },
+    };
+
+    const result = advance(withPhase(oriented, "actions"), {
+      type: "ACTIVATE_RITUAL",
+      playerId: P1,
+      cardInstanceId: ritualId,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("CARD_HAS_NO_EFFECT");
+    if (result.ok) return;
+    expect(ritualsOf(result.state, P1)[0]?.ritualProgress).toEqual({ arcane: 1, darkness: 1 });
+    expect(ritualsOf(result.state, P1)[0]?.ritualOrientation).toBe("ready");
+  });
+
+  it("keeps Active-when symbols when an exhausted continuous ritual's owner starts a turn", () => {
+    const placed = advance(actionsReady([FOUNDRY]), {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(actionsReady([FOUNDRY]), P1, 0),
+    });
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+
+    const ritualId = ritualsOf(placed.state, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("test: no ritual");
+
+    const exhausted = {
+      ...withPhase(placed.state, "actions"),
+      cards: {
+        ...placed.state.cards,
+        [ritualId]: {
+          ...placed.state.cards[ritualId]!,
+          ritualOrientation: "exhausted" as const,
+          ritualProgress: { mechanical: 2 },
+          ritualProgressCreditedThisTurn: ["mechanical" as const],
+        },
+      },
+    };
+
+    const afterP1 = advance(exhausted, { type: "END_TURN", playerId: P1 });
+    expect(afterP1.ok).toBe(true);
+    if (!afterP1.ok) return;
+    const afterP2 = advance(afterP1.state, { type: "END_TURN", playerId: P2 });
+    expect(afterP2.ok).toBe(true);
+    if (!afterP2.ok) return;
+
+    const ritual = ritualsOf(afterP2.state, P1)[0];
+    expect(ritual?.ritualProgress).toEqual({ mechanical: 2 });
+    expect(ritual?.ritualOrientation).toBe("ready");
   });
 });
 

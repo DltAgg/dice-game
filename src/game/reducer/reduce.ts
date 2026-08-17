@@ -1931,9 +1931,11 @@ function placeRitualCard(
 }
 
 /**
- * Activates a ready Ritual. Non-continuous rituals (Instant / Reaction) leave
- * for the graveyard after resolving; continuous ones exhaust until the owner's
- * next turn.
+ * Activates a ready Ritual that has an activate body (`ritual.effects`).
+ * Standing-only continuous rituals cannot be activated. Non-continuous rituals
+ * (Instant / Reaction) leave for the graveyard after resolving; continuous
+ * ones with an activate body exhaust until the owner's next turn (banked
+ * Active-when symbols stay).
  */
 function activateRitual(
   draft: Draft,
@@ -1955,7 +1957,7 @@ function activateRitual(
 
   const definition = getCard(card.cardId);
   const region = definition?.ritual;
-  if (region === undefined) return "CARD_HAS_NO_EFFECT";
+  if (region === undefined || region.effects.length === 0) return "CARD_HAS_NO_EFFECT";
 
   // During a window only ritual-reactions (or type reaction) may respond.
   if (inReactionWindow && (definition === undefined || !isReactionCard(definition))) {
@@ -2047,7 +2049,11 @@ function ritualProgressMeets(
   );
 }
 
-/** Once-per-turn rituals come off diagonal at the start of the owner's turn. */
+/**
+ * Once-per-turn rituals come off diagonal at the start of the owner's turn.
+ * Banked Active-when symbols stay unless an effect explicitly discards them;
+ * the ritual returns to ready when the gate is still met.
+ */
 function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
@@ -2057,16 +2063,22 @@ function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
     if (card === undefined) continue;
 
     if (card.ritualOrientation === "exhausted") {
+      const region = getCard(card.cardId)?.ritual;
+      const progress = card.ritualProgress ?? {};
+      const ready =
+        region === undefined ||
+        region.activeWhen === undefined ||
+        ritualProgressMeets(progress, region.activeWhen);
+      const orientation = ready ? "ready" : "preparing";
       draft.cards[cardInstanceId] = {
         ...card,
-        ritualOrientation: "preparing",
-        ritualProgress: {},
+        ritualOrientation: orientation,
         ritualProgressCreditedThisTurn: [],
       };
       emit(draft, {
         type: "ritual-orientation-changed",
         cardInstanceId,
-        orientation: "preparing",
+        orientation,
       });
       continue;
     }
@@ -2447,8 +2459,8 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   clearToxinReceiveCapsForOwner(draft, track.holderId);
   // Toxin counters tick at the start of the creature's owner's turn.
   tickToxins(draft, track.holderId);
-  // Exhausted once-per-turn rituals come off diagonal; Active when is met by
-  // absorbing symbols onto them during absorption, not from the engine pool.
+  // Exhausted once-per-turn rituals come off diagonal; banked Active-when
+  // symbols persist unless an effect discarded them.
   resetExhaustedRituals(draft, track.holderId);
 
   // Drawn on entering your own turn, so the opening hand is not topped up

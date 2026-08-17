@@ -79,8 +79,10 @@ card({
 - Place from hand (`PLAY_CARD`) → `preparing`. Ready when Active-when is met
   via `ABSORB_SYMBOL_TO_RITUAL` (or immediately if no `activeWhen`).
 - Instant / reaction: activate → effects → GY.
-- Continuous: activate → exhaust until owner’s next turn; standing triggers
-  while `ready`.
+- Continuous: standing triggers while `ready`. Activate only when
+  `ritual.effects` is non-empty (then exhaust until the owner's next turn).
+  Banked Active-when symbols persist through exhaust unless an effect
+  discards them; next turn the ritual is ready again if the gate is still met.
 - Ready rituals may activate in any phase **except roll** (and in reaction
   windows if subtype includes `reaction`).
 

@@ -74,7 +74,7 @@ overload an Arcane face).
 | **Overload** (main type) | Attaches to an existing die face and modifies it. |
 | **Ritual** (main type) | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. Subtypes below. |
 | Ritual / Instant | Leaves for the GY after one activation. |
-| Ritual / Continuous | Stays in play after activation (exhausts until the owner's next turn). |
+| Ritual / Continuous | Stays in play. Standing triggers while ready. Activate (then exhaust) only when print has an activate body. Banked Active-when symbols persist unless an effect discards them. |
 | Ritual / Reaction | May respond in a reaction window from the field; leaves for the GY after activation — same fate as Ritual / Instant; the difference is *when* it can be used. |
 
 ### Requirement forms

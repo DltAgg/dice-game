@@ -65,7 +65,7 @@ per id; face deck ≤12, ≤3 per attribute.
 | Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
 | Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
 | Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → absorb Active-when → `ACTIVATE_RITUAL` → GY |
-| Ritual / Continuous | Lasting field engine | Activate then exhaust; `standingAbilities` while ready |
+| Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when symbols persist unless an effect discards them |
 | Face (natural) | Starting identity faces | Dual-kind attrs + Shield only |
 | Face (synthetic) | Forge targets and named specials | Pool → install; `onRoll` / `onAbsorb` |
 

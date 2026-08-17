@@ -647,6 +647,9 @@ describe("on-discard continuous ritual", () => {
     );
     const darkness = usableSymbols(discarded, P1).filter((s) => s.symbol === "darkness");
     expect(darkness.length).toBeGreaterThanOrEqual(1);
+    const ritual = discarded.cards[ritualId];
+    expect(ritual?.ritualOrientation).toBe("ready");
+    expect(ritual?.ritualProgress).toEqual({ arcane: 1, darkness: 1 });
   });
 });
 

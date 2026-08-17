@@ -264,6 +264,7 @@ export interface RitualRegion {
   /**
    * Standing triggers while this continuous ritual is `ready` on the field
    * (Abyssal Sacrifice, Serrated Stinger). Instant/reaction rituals ignore.
+   * Standing fire does not spend Active-when progress or exhaust the ritual.
    */
   readonly standingAbilities?: readonly StandingTrigger[];
 }

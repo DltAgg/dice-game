@@ -1966,6 +1966,7 @@ function Battlefield({
             const ready = card.ritualOrientation === "ready";
             const canActivate = (() => {
               if (!canAct || !ready || absorbArmed || def === undefined) return false;
+              if ((def.ritual?.effects?.length ?? 0) === 0) return false;
               if (inReactionWindow) {
                 if (playerId !== actingPlayerId) return false;
                 return isLegalRitualReaction(state, def);
@@ -2043,6 +2044,9 @@ function RitualTile({
     def.ritual?.additionalEnergy !== undefined && def.ritual.additionalEnergy > 0
       ? `+${String(def.ritual.additionalEnergy)}E to activate`
       : null;
+  const hasActivateEffects = (def.ritual?.effects?.length ?? 0) > 0;
+  const standingOnly =
+    !hasActivateEffects && (def.ritual?.standingAbilities?.length ?? 0) > 0;
   const ready = card.ritualOrientation === "ready";
   const preparing = card.ritualOrientation === "preparing";
   const exhausted = card.ritualOrientation === "exhausted";
@@ -2135,14 +2139,20 @@ function RitualTile({
           <p className="mt-1 text-[0.65rem] text-[var(--accent)]">Assign symbol</p>
         )}
       </button>
-      <button
-        type="button"
-        className={`mt-2 w-full ${canActivate ? btnPrimary : `${btnClass} opacity-40`}`}
-        disabled={!canActivate}
-        onClick={onActivate}
-      >
-        Activate
-      </button>
+      {hasActivateEffects ? (
+        <button
+          type="button"
+          className={`mt-2 w-full ${canActivate ? btnPrimary : `${btnClass} opacity-40`}`}
+          disabled={!canActivate}
+          onClick={onActivate}
+        >
+          Activate
+        </button>
+      ) : standingOnly ? (
+        <p className="mt-2 text-[0.6rem] leading-snug text-stone-500">
+          Passive while ready — does not spend banked symbols
+        </p>
+      ) : null}
     </div>
   );
 }

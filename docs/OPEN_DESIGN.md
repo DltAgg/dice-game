@@ -342,13 +342,14 @@ Retention that keeps a showing face also re-fires on that roll step.
 ### Rituals live on the engine field with an orientation
 
 **Status:** `DECIDED` · implemented for place / prepare / activate
+· corrected 2026-08-16: Active-when symbols persist unless an effect discards them
 
 A Ritual is played onto the engine area, not resolved from hand like an Instant:
 
 | Orientation | Visual | Meaning |
 |---|---|---|
 | `preparing` | tapped | Waiting for Active-when symbols absorbed onto it |
-| `ready` | untapped | Condition met; may be activated |
+| `ready` | untapped | Condition met; standing abilities on; may activate if print has an activate body |
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
 Rituals are placed empty. During absorption the owner may assign rolled
@@ -357,10 +358,13 @@ may receive at most one pip per turn toward printed `Attr + Attr` gates. Symbols
 spent this way are consumed and never reach the engine pool. Rituals with no
 `[Active when: …]` become ready as soon as they hit the field.
 
-At the start of your turn, exhausted rituals return to preparing (progress
-cleared) and must be fueled again; preparing ones flip to ready once their
-banked progress meets the gate. Instant and reaction rituals leave for the
-graveyard after one activation; only `continuous` rituals stay and exhaust.
+At the start of your turn, exhausted rituals come off diagonal. Banked
+Active-when symbols stay on the card unless an effect explicitly discards or
+consumes them; if the gate is still met the ritual returns to ready, otherwise
+it returns to preparing. Preparing ones flip to ready once their banked
+progress meets the gate. Instant and reaction rituals leave for the graveyard
+after one activation; only `continuous` rituals stay and exhaust. Standing
+triggers fire while ready and do not spend those symbols.
 
 ### Reactions use a Yu-Gi-Oh style chain
 
