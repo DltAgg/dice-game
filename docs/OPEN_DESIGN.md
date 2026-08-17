@@ -584,10 +584,47 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Arcane Echo face** | On roll: re-fire the **other** owned die’s showing-face `onRoll` + overload `onRoll` (same as the tactic). Not a full attribute/overlay copy of the other face. |
 | **Extermination consume** | Consumed Synthetic Corruption slots are replaced with natural Shield (placeholder so the die stays 6 faces). Not a forge — no forge-draw. Damage `2 * consumed` split across up to 2 creatures. |
 | **Adrenaline self-damage** | After optional reroll, if the new face is still this overloaded face: 1 damage to each of up to 2 **distinct** living allied creatures (fewer if fewer living). |
-| **Pestilent Plague at 5** | Counters **reset** then try to forge another Pestilent Plague onto an adjacent slot of the same die (pool / already-installed copy, existing install rules). If illegal (no slot / no pool / attribute cap), skip the forge; counters stay at 0. |
-| **ACTIVATE_FACE** | Legal in actions on the showing slot. Cost `energyBase + energyPerCorruptionOnDie * (synthetic Corruption faces on that die)`. Removed face returns to its owner’s pool like unforge; slot becomes Shield. Draw-on-forge does not apply. |
+| **Pestilent Plague at 2** | Counters **reset** then try to forge another Pestilent Plague onto an adjacent slot of the same die (pool / already-installed copy, existing install rules). Threshold is catalogue `pestilenceSpreadAt` (2). Copy comes from the spreading slot’s `faceCardOwnerId` (the corrupter), not the rolling die owner. If illegal (no slot / cannot-replace / no pool / attribute cap), skip the forge; counters stay at 0. |
+| **ACTIVATE_FACE** | Legal in actions on the showing slot. Cost `energyBase + energyPerCorruptionOnDie * (synthetic Corruption faces on that die)`. Removed face returns to its owner’s pool like unforge; slot becomes Shield. Draw-on-forge does not apply. Peel is **not** blocked by stay / forge-lock. |
 
 Push stays unmodelled (DECIDED no). Stun stays `DEFERRED`.
+
+---
+
+## Prototype assumptions — stay-on-slot (2026-08-17)
+
+**Status:** `ASSUMED` · implemented in `src/game` · specs `docs/specs/004-face-cards.md`, `docs/specs/012-deferred-vocabulary.md`
+
+Bible is silent on “cannot be replaced by forging” duration and whose turns count. Stun remains `DEFERRED` — do not approximate stun with stay.
+
+| Topic | Assumption coded |
+|---|---|
+| **Cannot-replace is data** | `FaceCardDefinition.stayPolicy`. Forbidden Heritage: `{ kind: "cannot-replace-by-forge" }` while the slot shows that face. Not a name check. Blocks `FORGE_CARD`, `forge-faces`, `replace-synthetic-face`, pestilence adjacent spread, and any `installFacesOnDie` overwrite. Unforge / consume / `ACTIVATE_FACE` peel are not this restriction. |
+| **“4 turns”** | Die **owner’s** turns (`DieState.ownerId`), not complete rounds. Decrement remaining lock by 1 on each finish of that owner’s turn (voluntary `END_TURN` or spent-to-zero), floor 0. The opponent’s turn does not tick. |
+| **Lock lives on the slot** | `DieSlot.forgeLockRemaining`, like `pestilenceCounters`. Copies of the same face on other slots / dice do not share it. |
+| **Duration 4 is catalogue** | Pestilent Plague `stayPolicy: { kind: "forge-lock", turns: 4 }`. While remaining > 0 the slot cannot be replaced by forging; at 0, forging over it is legal again. |
+| **Reset on new PP install** | Whenever a Pestilent Plague is installed onto a die (player `FORGE_CARD` / `forge-faces` **or** pestilence spread), set remaining lock to 4 on **every** slot of **that same die** that currently shows Pestilent Plague, including the newly installed slot. |
+| **Non-PP install** | Installing a different face does not reset PP locks on other slots of that die. |
+| **New lock after expiry** | Installing PP onto a slot whose remaining was 0 (or which never had a lock) still starts that slot (and every other PP on the die) at 4. |
+
+---
+
+## Prototype assumptions — Corruption install tempo (2026-08-17)
+
+**Status:** `ASSUMED` · catalogue in `src/game/content/{cards,faces}.ts`
+
+Bible §27 says Corruption effects should be **expensive**. Playtests showed Energy 2 + Requires Arcane+Corruption for **one** opponent-die face was too expensive versus own-die forge instants, and free overwrite made contamination a stall rather than a tempo steal.
+
+Assumption: **install is affordable; stay and peel are the expense.** Stick comes from stay-on-slot (Forbidden Heritage never-replace; Pestilent Plague 4 die-owner-turn forge-lock that resets on new Plague) plus `ACTIVATE_FACE` peel `2 + Corruption faces on that die`. Stain / Infection remain marker harassment that does not occupy a slot (the cheap dodge of a face install).
+
+| Card | Old | Tempo retune |
+|---|---|---|
+| Ritual of Contamination | Energy 2, Requires Arcane+Corruption, 1 opponent-die face | Energy **1**, Requires **Corruption** (cheaper Instant; still not an ungated copy of own-die forge instants) |
+| Great Contamination | Energy 5, Active when Arcane+Corruption+Corruption, 3 faces | Energy 3, Active when Arcane+Corruption, still 3 faces |
+| Black Plague | Energy 4, forge opponent-die **or** equip | Energy 2 |
+| Persistent Infection | Energy 4, own-die overload | Energy 2 |
+| Latent Corruption | Energy 4, Arcane-face overload | Energy **2** (On-roll refund/engine band) |
+| Extermination | Energy 6, consume Corruption → damage | Unchanged (late conversion, not an install) |
 
 ---
 

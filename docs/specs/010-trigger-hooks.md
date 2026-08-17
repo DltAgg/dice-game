@@ -41,10 +41,19 @@ reducer only knows the hook kinds and passes instance ids for filtering.
    (`controller` = **bearer's** owner for equipment, creature owner for
    passives, ritual owner for rituals; `opponent` / `any` likewise). Default
    `controller`.
-4. **On-absorb.** When a creature absorbs symbol `S`, fire `on-absorb`
-   abilities whose `absorberRelation` matches (`self` default, `ally`,
-   `ally-other`, `any`) and optional `symbols` filter. Face/overload
-   `onAbsorb` still fire for the showing face (`sourceCreatureId` = absorber).
+4. **On-absorb.** When a creature **or ritual** absorbs symbol `S`
+   (`ABSORB_SYMBOL` / `ABSORB_SYMBOL_TO_RITUAL`), fire `on-absorb` abilities
+   whose `absorberRelation` matches (`self` default, `ally`, `ally-other`,
+   `any`) and optional `symbols` / `faceKinds` filters. Absorber identity is
+   the creature id or ritual **card instance** id (not a definition id).
+   `self` matches that host instance; `ally` is same owner (includes self).
+   Fire **after** ritual Active-when credit and orientation refresh, so a
+   ritual that becomes `ready` from this assignment may listen (`ally`
+   includes self). Face/overload `onAbsorb` still fire only when a **creature**
+   absorbs the showing face (`sourceCreatureId` = absorbing creature; bible §7
+   die marker). Ritual assignment does not place the die or delay tokens —
+   `ritualProgress` is present as soon as the assign action succeeds.
+   Creature attribute tokens still pay out at `END_TURN` (bible §7).
 5. **On-attack.** When an attack is declared (costs paid, link pushed), fire
    `on-attack` abilities whose `attackerRelation` / `attackKinds` /
    `oncePerTurn` match. Context: attacker id + owner, kind, target id.
@@ -64,7 +73,7 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 
 | Enum | Meaning |
 |---|---|
-| `self` | Subject instance id === host creature id |
+| `self` | Subject instance id === host creature id **or** host ritual card instance id |
 | `ally` | Same owner (includes self) |
 | `ally-other` | Same owner, different instance id (two Varcolacs buff each other) |
 | `any` | No creature/owner restriction |
@@ -73,9 +82,11 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 ## State Changes
 
 - `StandingTrigger` union on equipment / creature / continuous ritual.
+- Absorber context is `AbsorbAbsorber` (`creature` + creature id, or `ritual`
+  + card instance id) — not `CreatureId` alone.
 - `CreatureState.nextAttackBonus`, `spentOncePerTurnTriggers`.
 - Effect `grant-next-attack-bonus` (creature-scoped).
-- Face `onAbsorb` / overload `onAbsorb` unchanged.
+- Face `onAbsorb` / overload `onAbsorb` unchanged (creature absorb only).
 
 ## Acceptance Criteria
 
@@ -90,9 +101,10 @@ reducer only knows the hook kinds and passes instance ids for filtering.
   ally special → toxin).
 - [x] Toxic Blessing: roll → `arm-attack-toxin`; attacks apply toxin.
 - [x] Hunter's Collar: position change → Martial.
-- [x] Void Summoner: any Natural absorb → generate Arcane.
+- [x] Void Summoner: any Natural absorb → generate Arcane (creature or ritual).
 - [x] War Axe: Basic-only `attack-damage-bonus` via `attackKinds`.
-- [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy.
+- [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy
+      (creature **or** allied ritual assignment).
 - [x] `energy-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
 - [x] Movers fire `on-change-position` (Hunter’s Collar) via `setCreaturePosition`.
 

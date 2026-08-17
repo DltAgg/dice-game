@@ -113,7 +113,7 @@ Standing triggers live on equipment / continuous rituals — see
 | Card | Why |
 |---|---|
 | Eclipse | Instant `effect` draw + discard |
-| Ritual of Contamination | Instant with `requires` + `forge-faces` onto opponent |
+| Ritual of Contamination | Instant `forge-faces` onto opponent (`Requires: Corruption`; stay is on the named face) |
 | Living Library | Ritual + `search-deck`; Active-when Arcane + Arcane |
 | Great Contamination | Ritual + `forge-faces` (3 Corruption on opponent die) |
 | Eternal Darkness | Ritual + `search-graveyard` |

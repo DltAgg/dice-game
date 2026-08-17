@@ -23,8 +23,11 @@ The **or** between forge and effect is load-bearing: one use, one region.
 - The player is making a **tradeoff** (forge now vs play now; absorb vs leave
   the symbol in the pool; contaminate their die vs build yours).
 - The attribute’s **primary identity** is still recognizable (bible §28–29).
-- Costs match role: cheap support / combat tricks; expensive control and
-  Corruption contamination; Arcane control generally medium/high.
+- Costs match role: cheap support / combat tricks; Arcane control generally
+  medium/high. Corruption **install** is on the cheap Instant band (Ritual of
+  Contamination: Energy 1 + Requires Corruption; Great Contamination 3). The
+  expense is **stay** (cannot-overwrite / forge-lock) plus a paid peel. See
+  `OPEN_DESIGN.md` Corruption install tempo.
 - Opponent-die forges (Corruption, Black Plague, Great Contamination): the
   **controller** names the face from **their** pool and installs it. Ownership
   stays with the forger; the physical face sits on the target die (§12).

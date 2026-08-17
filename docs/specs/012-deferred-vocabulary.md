@@ -70,8 +70,14 @@ engine can resolve the clause honestly. Movers always go through
 - `ACTIVATE_FACE` (actions): pay `energyBase + energyPerCorruptionOnDie ×`
   synthetic Corruption faces on that die; strip the showing Corruption face
   back to pool; slot becomes natural Shield. Not a forge (no draw).
-- Pestilent Plague: +1 counter on roll; at 5, reset and try adjacent-slot
-  install of another Plague.
+- Pestilent Plague: +1 counter on roll; at `pestilenceSpreadAt` (2), reset and
+  try adjacent-slot install of another Plague from the spreading slot’s
+  `faceCardOwnerId` (corrupter) pool / copies. Adjacent slots that
+  `slotCannotBeReplacedByForge` are skipped.
+- Stay-on-slot: `stayPolicy` on the face definition. Heritage never yields to a
+  forge overwrite. Plague uses `DieSlot.forgeLockRemaining` (catalogue `turns: 4`,
+  ticked on the **die owner’s** turn finish). Installing Plague onto a die
+  resets remaining lock to 4 on every Plague slot of **that die**.
 - `replace-synthetic-face` (Reforge): pending choice of an owned die slot whose
   installed face matches `kind`+`attribute` (Synthetic Mechanical), return that
   face to the pool (last-copy overload detach applies), then install a
@@ -86,6 +92,8 @@ engine can resolve the clause honestly. Movers always go through
 | `CreatureState.redirectDamageThisTurn` | Aegis |
 | `CreatureState.nextIncomingDamageBonus` | Venom absorb |
 | `DieSlot.pestilenceCounters` | Pestilent Plague |
+| `DieSlot.forgeLockRemaining` | Pestilent Plague forge-lock |
+| `FaceCardDefinition.stayPolicy` / `pestilenceSpreadAt` | Heritage never-replace; Plague lock + spread |
 | `GameState.ignoreShieldThisTurn` | Rust |
 | `GameState.forgeDiscountThisTurn` | Gear absorb |
 | `GameState.requirementWildcardsThisTurn` | Resonance |
@@ -166,7 +174,10 @@ Match-ui must render these pendings (hotseat + online):
 
 Also: **Activate** control on a showing Forbidden Heritage / Pestilent Plague
 face during actions (`ACTIVATE_FACE`). Display Energy cost
-`2 + Corruption faces on that die`. Show pestilence counters on Plague slots.
+`2 + Corruption faces on that die`. Show pestilence counters **and remaining
+forge-lock** on Plague slots. Surface **cannot-replace-by-forge** on Heritage
+and on Plague while lock > 0 (forbid targeting those slots for
+`FORGE_CARD` / `forge-faces` / Reforge). Peel stays available.
 Show optional reposition / swap prompts after Dive / Poisoned Charge /
 Instinct.
 
@@ -184,7 +195,7 @@ UI dispatches the matching resolve.
 - [x] Minotaur pierce ignores 1 Shield without spending it
 - [x] Attack follow-ups (Burst draw, Overload shields, Bombardment toxin, …)
 - [x] Push clauses remain unwired with accurate print
-- [x] Stun not applied
+- [x] Stay-on-slot: Heritage cannot-replace; Plague lock / reset / spread at 2; corrupter-owned copy
 
 ## Tests
 
@@ -193,4 +204,5 @@ UI dispatches the matching resolve.
 - [x] `src/game/reducer/replay.test.ts`
 - [x] `src/game/reducer/pierce.test.ts`
 - [x] `src/game/reducer/replaceSyntheticFace.test.ts` (Reforge)
+- [x] `src/game/reducer/stayOnSlot.test.ts` (Heritage / Plague stay + spread)
 - [x] Existing combat / prevent / playcard / triggers / autoplay suites

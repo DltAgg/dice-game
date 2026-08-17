@@ -1,6 +1,6 @@
 import { getFaceCard } from "../content/faces.js";
 import { attributeAllowsNaturalFaces, isAttribute } from "../model/attributes.js";
-import type { DieState, FaceKind } from "../model/dice.js";
+import type { DieSlot, DieState, FaceKind } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { DieId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -262,8 +262,54 @@ export function returnFaceToPoolIfOrphaned(
 }
 
 /**
+ * True when a forge / forge-faces / replace-synthetic-face / pestilence-spread
+ * install may not overwrite this physical slot. Peel (`ACTIVATE_FACE`),
+ * consume, and strip-to-Shield are not this check.
+ */
+export function slotCannotBeReplacedByForge(slot: DieSlot): boolean {
+  const face = getFaceCard(slot.faceCardId);
+  const policy = face?.stayPolicy;
+  if (policy === undefined) return false;
+  if (policy.kind === "cannot-replace-by-forge") return true;
+  return (slot.forgeLockRemaining ?? 0) > 0;
+}
+
+/**
+ * After installing `installedFaceCardId`, reset remaining forge-lock on every
+ * slot of this die that currently shows that same face (including new copies).
+ * No-op when the incoming face is not a forge-lock stay policy.
+ */
+export function withForgeLockResetOnInstall(
+  slots: readonly DieSlot[],
+  installedFaceCardId: FaceCardId,
+): readonly DieSlot[] {
+  const face = getFaceCard(installedFaceCardId);
+  if (face?.stayPolicy?.kind !== "forge-lock") return slots;
+  const turns = face.stayPolicy.turns;
+  return slots.map((slot) =>
+    slot.faceCardId === installedFaceCardId ? { ...slot, forgeLockRemaining: turns } : slot,
+  );
+}
+
+/** Overwrite a slot with a new face, clearing slot-local pestilence / forge-lock. */
+export function overwrittenSlot(
+  slot: DieSlot,
+  faceCardId: FaceCardId,
+  faceCardOwnerId: PlayerId,
+): DieSlot {
+  return {
+    ...slot,
+    faceCardId,
+    faceCardOwnerId,
+    pestilenceCounters: 0,
+    forgeLockRemaining: 0,
+  };
+}
+
+/**
  * Slot indexes that keep a forge-from-effect inside the §9.1 cap, preferring
- * to overwrite existing faces of the incoming attribute.
+ * to overwrite existing faces of the incoming attribute. Slots that cannot be
+ * replaced by forging are skipped.
  */
 export function preferredSlotsForForgeFaces(
   die: DieState,
@@ -276,6 +322,7 @@ export function preferredSlotsForForgeFaces(
   const matching: number[] = [];
   const others: number[] = [];
   for (const slot of die.slots) {
+    if (slotCannotBeReplacedByForge(slot)) continue;
     const face = getFaceCard(slot.faceCardId);
     if (face?.symbol === attribute) matching.push(slot.index);
     else others.push(slot.index);
@@ -341,6 +388,7 @@ export function legalSlotsForReplaceSyntheticFace(
     for (const slot of die.slots) {
       const face = getFaceCard(slot.faceCardId);
       if (face === undefined || face.kind !== kind || face.symbol !== attribute) continue;
+      if (slotCannotBeReplacedByForge(slot)) continue;
       if (
         eligiblePoolFacesForReplace(state, controllerId, kind, attribute, slot.faceCardId).length ===
         0
