@@ -9,6 +9,8 @@ export interface NetTransport {
   onMessage(handler: (peerId: string, data: unknown) => void): void;
   onConnect(handler: (peerId: string) => void): void;
   onDisconnect(handler: (peerId: string) => void): void;
+  /** Drop one peer without destroying the local transport (guest seat replace). */
+  disconnectPeer(peerId: string): void;
   destroy(): void;
 }
 

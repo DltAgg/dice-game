@@ -41,9 +41,16 @@ class MemoryTransport implements NetTransport {
     this.disconnectHandler = handler;
   }
 
+  disconnectPeer(peerId: string): void {
+    this.drop(peerId);
+  }
+
   /** Test helper: simulate the remote peer dropping. */
   drop(peerId: string): void {
     const peer = this.peers.get(peerId);
+    if (peer === undefined && !this.peers.has(peerId)) {
+      return;
+    }
     this.peers.delete(peerId);
     if (peer !== undefined) {
       peer.peers.delete(this.localId);
@@ -71,6 +78,13 @@ export function openFakeLink(
   const guest = new MemoryTransport(guestId);
   host.link(guest);
   return { host, guest };
+}
+
+/** Attach an extra guest to an existing host transport (reconnect / replace tests). */
+export function attachFakeGuest(host: MemoryTransport, guestId: string): MemoryTransport {
+  const guest = new MemoryTransport(guestId);
+  host.link(guest);
+  return guest;
 }
 
 export type { MemoryTransport };
