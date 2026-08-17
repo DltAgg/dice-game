@@ -70,7 +70,7 @@ describe("English card printing", () => {
   it("prints fixed Energy for former ? costs (temporary catalogue decision)", () => {
     const card = getCard(MARTIAL_BLESSING);
     if (card === undefined) throw new Error("missing card");
-    expect(formatEnergyCost(card)).toBe("2");
+    expect(formatEnergyCost(card)).toBe("1");
   });
 
   it("prints Active when for Assembly Line as Mechanical + Mechanical", () => {
@@ -101,12 +101,12 @@ describe("English card printing", () => {
     expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
   });
 
-  it("prints Ritual of Contamination as an ungated Energy-2 opponent forge", () => {
+  it("prints Ritual of Contamination as Energy 1 with Requires Corruption", () => {
     const card = getCard(RITUAL_OF_CONTAMINATION);
     if (card === undefined) throw new Error("missing card");
-    expect(formatEnergyCost(card)).toBe("2");
+    expect(formatEnergyCost(card)).toBe("1");
     expect(formatTypeLine(card)).toBe("[Instant / Corruption]");
-    expect(formatRequirementLine(card)).toBeNull();
+    expect(formatRequirementLine(card)).toBe("[Requires: Corruption]");
     expect(formatForgeLine(card.forge)).toBe(
       "[Forge] 1 face [Synthetic] [Corruption] on your die",
     );

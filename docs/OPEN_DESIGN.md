@@ -51,8 +51,9 @@ much more as you want**. Engine support: `energyCost` minimum +
 `variableEnergy: true`, with declared `energyPaid` an integer ≥ that minimum.
 
 **TEMP authoring (2026-08-13):** catalogue cards that print `?` currently use
-fixed `energyCost: 2` and omit `variableEnergy` until spend UX / scaling
-effects are ready — see comment in `src/game/content/cards.ts`.
+fixed integer `energyCost` (no `variableEnergy`) until spend UX / scaling
+effects are ready — see comment in `src/game/content/cards.ts`. On-roll primary
+cards use the cheap support band (1, or 2 for ungated / refund engines).
 
 Effects that scale off the amount spent (e.g. "spent 3: draw 1") are not yet in
 `EffectDefinition`; park those clauses in `DEFERRED_CATALOGUE.md` until a
@@ -653,11 +654,11 @@ Assumption: **install is affordable; stay and peel are the expense.** Stick come
 
 | Card | Old | Tempo retune |
 |---|---|---|
-| Ritual of Contamination | Energy 2, Requires Arcane+Corruption, 1 opponent-die face | Energy 2, **no Requires** (same Energy as forging this card onto your own die) |
+| Ritual of Contamination | Energy 2, Requires Arcane+Corruption, 1 opponent-die face | Energy **1**, Requires **Corruption** (cheaper Instant; still not an ungated copy of own-die forge instants) |
 | Great Contamination | Energy 5, Active when Arcane+Corruption+Corruption, 3 faces | Energy 3, Active when Arcane+Corruption, still 3 faces |
 | Black Plague | Energy 4, forge opponent-die **or** equip | Energy 2 |
 | Persistent Infection | Energy 4, own-die overload | Energy 2 |
-| Latent Corruption | Energy 4, Arcane-face overload | Energy 3 |
+| Latent Corruption | Energy 4, Arcane-face overload | Energy **2** (On-roll refund/engine band) |
 | Extermination | Energy 6, consume Corruption → damage | Unchanged (late conversion, not an install) |
 
 ---
