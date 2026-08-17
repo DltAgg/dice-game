@@ -1437,15 +1437,22 @@ function absorbSymbol(
     grantShield(draft, creatureId, 1);
   }
 
-  queueAbsorbTriggers(draft, playerId, creatureId, symbol.symbol, symbol.sourceDieId);
+  queueAbsorbTriggers(
+    draft,
+    playerId,
+    { kind: "creature", id: creatureId },
+    symbol.symbol,
+    symbol.sourceDieId,
+  );
   drainResolution(draft);
   return null;
 }
 
 /**
  * Spend a rolled attribute symbol on a field ritual's Active-when gate.
- * Same absorption window as creature absorb; the symbol is consumed (not
- * banked on a creature) and never reaches the engine pool.
+ * Same absorption window and standing `on-absorb` hooks as creature absorb;
+ * progress is credited immediately (not banked until END_TURN). The symbol is
+ * consumed (not placed on a creature) and never reaches the engine pool.
  */
 function absorbSymbolToRitual(
   draft: Draft,
@@ -1502,6 +1509,14 @@ function absorbSymbolToRitual(
   };
 
   refreshRitualOrientations(draft, playerId);
+  queueAbsorbTriggers(
+    draft,
+    playerId,
+    { kind: "ritual", id: cardInstanceId },
+    symbol.symbol,
+    symbol.sourceDieId,
+  );
+  drainResolution(draft);
   return null;
 }
 
