@@ -394,6 +394,8 @@ describe("rituals on the field", () => {
       controllerId: P1,
       amount: 2,
       filter: ["instant", "ritual"],
+      sourceCardInstanceId: ritualId,
+      sourceFaceCardId: null,
     });
     expect(ritualsOf(activated.state, P1)).toHaveLength(0);
     expect(graveyardOf(activated.state, P1).some((card) => card.id === ritualId)).toBe(true);
@@ -477,6 +479,8 @@ describe("rituals on the field", () => {
       controllerId: P1,
       amount: 2,
       filter: ["instant", "ritual"],
+      sourceCardInstanceId: ritualId,
+      sourceFaceCardId: null,
     });
 
     const eligible = searchableInDeck(activated.state, P1, ["instant", "ritual"]);

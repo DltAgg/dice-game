@@ -109,6 +109,11 @@ export interface PendingEffect {
   readonly declaredTargetCardInstanceId: CardInstanceId | null;
   readonly sourceDieId: DieId | null;
   readonly sourceSlotIndex: number | null;
+  /**
+   * Card instance that originated this effect (tactic, ritual, overload, gear).
+   * Null for face on-roll / on-absorb, attacks, and creature passives.
+   */
+  readonly sourceCardInstanceId: CardInstanceId | null;
   /** Attack damage only: skip this many Shield (spec `012`). */
   readonly ignoreShield: number;
 }
@@ -124,6 +129,8 @@ export type PendingDecision =
       /** How many cards must be chosen (already capped to eligible count). */
       readonly amount: number;
       readonly filter: readonly CardType[];
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "search-graveyard";
@@ -131,6 +138,8 @@ export type PendingDecision =
       /** Maximum cards that may be returned (already capped to GY size). */
       readonly amount: number;
       readonly maxEnergyCost?: number;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "discard-cards";
@@ -148,6 +157,8 @@ export type PendingDecision =
       readonly declaredTargetCreatureId?: CreatureId | null;
       readonly sourceDieId?: DieId | null;
       readonly sourceSlotIndex?: number | null;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "choose-creature";
@@ -186,12 +197,16 @@ export type PendingDecision =
       readonly kind: FaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "replace-synthetic-face";
       readonly controllerId: PlayerId;
       readonly kind: FaceKind;
       readonly attribute: Attribute;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "choose-die";
@@ -209,28 +224,40 @@ export type PendingDecision =
   | {
       readonly type: "copy-pool-symbol";
       readonly controllerId: PlayerId;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "replay-graveyard-tactic";
       readonly controllerId: PlayerId;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "look-top-deck";
       readonly controllerId: PlayerId;
       readonly cardInstanceIds: readonly CardInstanceId[];
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "peek-deck";
       readonly controllerId: PlayerId;
       readonly cardInstanceId: CardInstanceId;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "dark-pact";
       readonly controllerId: PlayerId;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "mind-control";
       readonly controllerId: PlayerId;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
       readonly type: "split-damage";

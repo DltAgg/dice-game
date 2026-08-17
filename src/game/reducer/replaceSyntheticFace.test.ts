@@ -88,6 +88,8 @@ describe("replace-synthetic-face (Reforge)", () => {
       controllerId: P1,
       kind: "synthetic",
       attribute: "mechanical",
+      sourceCardInstanceId: handCardIdAt(ready, P1, 0),
+      sourceFaceCardId: null,
     });
   });
 

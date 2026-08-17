@@ -11,13 +11,18 @@ import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type FaceCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols.js";
-import { handOf, searchableInDeck, searchableInGraveyard, ritualsOf } from "../rules/cards.js";
+import {
+  handOf,
+  replayableGraveyardTactics,
+  ritualsOf,
+  searchableInDeck,
+  searchableInGraveyard,
+} from "../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { diceOf } from "../rules/dice.js";
 import { legalTargetsFor } from "../rules/targeting.js";
 import { legalCreaturesForFilter, legalDiceForFilter } from "../rules/targets.js";
 import { advance } from "../reducer/reduce.js";
-import { replayableGraveyardTactics } from "../reducer/resolution.js";
 
 /**
  * A deterministic driver used only by tests, so that a whole match can be
@@ -306,15 +311,10 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "search-graveyard") {
-    const picks = searchableInGraveyard(state, pending.controllerId)
-      .filter((id) => {
-        if (pending.maxEnergyCost === undefined) return true;
-        const card = state.cards[id];
-        if (card === undefined) return false;
-        const definition = getCard(card.cardId);
-        return definition !== undefined && definition.energyCost <= pending.maxEnergyCost;
-      })
-      .slice(0, pending.amount);
+    const picks = searchableInGraveyard(state, pending.controllerId, pending.maxEnergyCost).slice(
+      0,
+      pending.amount,
+    );
     const result = advance(state, {
       type: "RESOLVE_SEARCH",
       playerId: pending.controllerId,
