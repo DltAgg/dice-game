@@ -161,12 +161,46 @@ export function searchableInDeck(
   });
 }
 
-/** Graveyard card instance ids in current order (Eternal Darkness). */
+/**
+ * Graveyard card instance ids in current order. When `maxEnergyCost` is set,
+ * only cards whose definition costs that Energy or less (Recalibrate / Assembly).
+ */
 export function searchableInGraveyard(
   state: GameState,
   playerId: PlayerId,
+  maxEnergyCost?: number,
 ): readonly CardInstanceId[] {
-  return state.players[playerId]?.graveyard ?? [];
+  const graveyard = state.players[playerId]?.graveyard ?? [];
+  if (maxEnergyCost === undefined) return graveyard;
+  return graveyard.filter((id) => {
+    const card = state.cards[id];
+    if (card === undefined) return false;
+    const definition = getCard(card.cardId);
+    return definition !== undefined && definition.energyCost <= maxEnergyCost;
+  });
+}
+
+/**
+ * GY tactics Paradox may replay: Instant or Ritual cards that have modelled
+ * effect arrays. Preserves graveyard order.
+ */
+export function replayableGraveyardTactics(
+  state: Pick<GameState, "players" | "cards">,
+  playerId: PlayerId,
+): readonly CardInstanceId[] {
+  return (state.players[playerId]?.graveyard ?? []).filter((id) => {
+    const card = state.cards[id];
+    if (card === undefined) return false;
+    const definition = getCard(card.cardId);
+    if (definition === undefined) return false;
+    if (definition.type === "instant") {
+      return (definition.effect?.effects.length ?? 0) > 0;
+    }
+    if (definition.type === "ritual") {
+      return (definition.ritual?.effects.length ?? 0) > 0;
+    }
+    return false;
+  });
 }
 
 /** Sum of attack-damage-bonus abilities on gear attached to a creature. */

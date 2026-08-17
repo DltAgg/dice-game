@@ -144,6 +144,8 @@ describe("Temper", () => {
       kind: "synthetic",
       attribute: "martial",
       target: "own-die",
+      sourceCardInstanceId: handCardIdAt(ready, P1, 0),
+      sourceFaceCardId: null,
     });
 
     const dieId = dieIdOf(played);
@@ -281,6 +283,8 @@ describe("Untamed", () => {
       kind: "synthetic",
       attribute: "wild",
       target: "own-die",
+      sourceCardInstanceId: handCardIdAt(ready, P1, 0),
+      sourceFaceCardId: null,
     });
     const dieId = dieIdOf(played);
     const resolved = expectOk(
@@ -477,6 +481,8 @@ describe("Virulent Rite", () => {
       kind: "synthetic",
       attribute: "toxin",
       target: "own-die",
+      sourceCardInstanceId: ritualId,
+      sourceFaceCardId: null,
     });
     const dieId = dieIdOf(activated);
     const faceCardId = syntheticFaceId("toxin");

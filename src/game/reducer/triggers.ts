@@ -38,7 +38,7 @@ type TriggerHost = {
   /** Owner used for controller/opponent/ally filters (bearer for equipment). */
   readonly filterOwnerId: PlayerId;
   readonly hostCreatureId: CreatureId | null;
-  /** Ritual instance id; equipment / creature hosts leave this null. */
+  /** Equipment and ready continuous rituals; null for creature passives. */
   readonly hostCardInstanceId: CardInstanceId | null;
   readonly abilities: readonly StandingTrigger[];
 };
@@ -59,6 +59,7 @@ function pushEffect(
   declaredTargetCreatureId: CreatureId | null,
   sourceDieId: DieId | null = null,
   sourceSlotIndex: number | null = null,
+  sourceCardInstanceId: CardInstanceId | null = null,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -69,6 +70,7 @@ function pushEffect(
     declaredTargetCardInstanceId: null,
     sourceDieId,
     sourceSlotIndex,
+    sourceCardInstanceId,
     ignoreShield: 0,
   });
 }
@@ -79,9 +81,19 @@ function pushAbilityEffects(
   sourceCreatureId: CreatureId | null,
   declaredTargetCreatureId: CreatureId | null,
   effects: readonly EffectDefinition[],
+  sourceCardInstanceId: CardInstanceId | null = null,
 ): void {
   for (const effect of [...effects].reverse()) {
-    pushEffect(draft, controllerId, effect, sourceCreatureId, declaredTargetCreatureId);
+    pushEffect(
+      draft,
+      controllerId,
+      effect,
+      sourceCreatureId,
+      declaredTargetCreatureId,
+      null,
+      null,
+      sourceCardInstanceId,
+    );
   }
 }
 
@@ -195,7 +207,7 @@ function collectHosts(draft: Draft): TriggerHost[] {
         // creature's controller rolling, not the card owner's roll.
         filterOwnerId: creature.ownerId,
         hostCreatureId: creature.id,
-        hostCardInstanceId: null,
+        hostCardInstanceId: cardInstanceId,
         abilities,
       });
     }
@@ -242,6 +254,7 @@ export function fireOnDealDamage(
         sourceCreatureId,
         damagedCreatureId,
         ability.effects,
+        cardInstanceId,
       );
     }
   }
@@ -266,7 +279,7 @@ export function fireOnToxinDamage(draft: Draft, damagedCreatureId: CreatureId): 
       const abilities = getCard(instance.cardId)?.equipment?.abilities ?? [];
       for (const ability of abilities) {
         if (ability.type !== "on-toxin-damage") continue;
-        pushAbilityEffects(draft, instance.ownerId, creatureId, null, ability.effects);
+        pushAbilityEffects(draft, instance.ownerId, creatureId, null, ability.effects, cardInstanceId);
       }
     }
   }
@@ -290,6 +303,7 @@ export function fireOnRollSymbol(
         host.hostCreatureId,
         host.hostCreatureId,
         ability.effects,
+        host.hostCardInstanceId,
       );
     }
   }
@@ -363,6 +377,7 @@ function fireOnAbsorb(
         host.hostCreatureId ?? declaredTarget,
         declaredTarget,
         ability.effects,
+        host.hostCardInstanceId,
       );
     }
   }
@@ -415,6 +430,7 @@ function fireOverloadsOnAbsorb(
         null,
         sourceDieId,
         sourceSlotIndex,
+        cardInstanceId,
       );
     }
   }
@@ -457,6 +473,7 @@ export function fireOnAttack(
         host.hostCreatureId,
         targetId,
         ability.effects,
+        host.hostCardInstanceId,
       );
     }
   }
@@ -539,6 +556,7 @@ export function fireOnTakeDamageEffects(
         damagedCreatureId,
         damagedCreatureId,
         ability.effects,
+        cardInstanceId,
       );
     }
   }
@@ -557,6 +575,7 @@ export function fireOnDiscard(draft: Draft, discardingPlayerId: PlayerId): void 
         host.hostCreatureId,
         null,
         ability.effects,
+        host.hostCardInstanceId,
       );
     }
   }
@@ -595,6 +614,7 @@ export function fireOnChangePosition(
         host.hostCreatureId,
         creatureId,
         ability.effects,
+        host.hostCardInstanceId,
       );
     }
   }

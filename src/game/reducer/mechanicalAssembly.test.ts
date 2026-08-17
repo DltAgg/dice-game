@@ -182,6 +182,8 @@ describe("Assembly Line", () => {
       kind: "synthetic",
       attribute: "mechanical",
       target: "own-die",
+      sourceCardInstanceId: ritualId,
+      sourceFaceCardId: null,
     });
 
     const dieId = dieIdOf(activated);
@@ -357,6 +359,8 @@ describe("Die Press", () => {
       kind: "synthetic",
       attribute: "mechanical",
       target: "own-die",
+      sourceCardInstanceId: handCardIdAt(ready, P1, 0),
+      sourceFaceCardId: null,
     });
 
     const dieId = dieIdOf(played);

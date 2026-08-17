@@ -43,6 +43,7 @@ import {
   livingCreaturesOf,
   NATURAL_CONVERT_SYMBOLS,
   opponentOf,
+  replayableGraveyardTactics,
   ritualDurationOf,
   ritualsOf,
   searchableInDeck,
@@ -55,6 +56,7 @@ import {
   type AttackId,
   type CardInstance,
   type CardInstanceId,
+  type CardType,
   type CreatureChoiceFilter,
   type CreatureId,
   type CreatureState,
@@ -1350,6 +1352,196 @@ const btnClass =
 const btnPrimary =
   "rounded border border-[var(--accent)] bg-[var(--accent)]/15 px-3 py-1.5 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/25";
 
+function NameInspectHover({
+  name,
+  negated = false,
+  placement = "above",
+  children,
+}: {
+  name: string;
+  negated?: boolean;
+  placement?: "above" | "below";
+  children: ReactNode;
+}) {
+  const pos =
+    placement === "below"
+      ? "top-[calc(100%+0.5rem)] left-0"
+      : "bottom-[calc(100%+0.5rem)] left-0";
+  return (
+    <span className="group relative inline-block">
+      <span
+        className={
+          negated
+            ? "cursor-help font-medium text-amber-100/70 underline decoration-dotted line-through"
+            : "cursor-help font-medium text-amber-50 underline decoration-dotted"
+        }
+      >
+        {name}
+      </span>
+      <div
+        className={`pointer-events-none absolute z-50 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block ${pos}`}
+        role="tooltip"
+      >
+        {children}
+      </div>
+    </span>
+  );
+}
+
+function TacticInspectHover({
+  def,
+  negated = false,
+  placement = "above",
+}: {
+  def: NonNullable<ReturnType<typeof getCard>>;
+  negated?: boolean;
+  placement?: "above" | "below";
+}) {
+  return (
+    <NameInspectHover name={def.name} negated={negated} placement={placement}>
+      <p className="text-sm font-medium text-stone-100">{def.name}</p>
+      <p className="mt-1 text-xs text-stone-400">
+        {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
+        {negated ? " · negated" : ""}
+      </p>
+      <div className="mt-2 space-y-1 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+        <p>{formatTypeLine(def)}</p>
+        <p className="text-stone-500">{formatForgeLine(def.forge)}</p>
+        {formatEffectRegion(def).map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
+    </NameInspectHover>
+  );
+}
+
+function FaceInspectHover({
+  face,
+  placement = "above",
+}: {
+  face: NonNullable<ReturnType<typeof getFaceCard>>;
+  placement?: "above" | "below";
+}) {
+  return (
+    <NameInspectHover name={face.name} placement={placement}>
+      <p className="text-sm font-medium text-stone-100">{face.name}</p>
+      <p className="mt-1 text-xs capitalize text-stone-400">
+        {face.kind} · {face.symbol}
+      </p>
+      {face.rulesText !== "" && (
+        <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+          {face.rulesText}
+        </p>
+      )}
+    </NameInspectHover>
+  );
+}
+
+function DecisionSourceHover({
+  state,
+  cardInstanceId,
+  faceCardId,
+  placement = "below",
+}: {
+  state: GameState;
+  cardInstanceId: CardInstanceId | null;
+  faceCardId: FaceCardId | null;
+  placement?: "above" | "below";
+}) {
+  if (cardInstanceId !== null) {
+    const card = state.cards[cardInstanceId];
+    const def = card !== undefined ? getCard(card.cardId) : undefined;
+    if (def !== undefined) return <TacticInspectHover def={def} placement={placement} />;
+  }
+  if (faceCardId !== null) {
+    const face = getFaceCard(faceCardId);
+    if (face !== undefined) return <FaceInspectHover face={face} placement={placement} />;
+  }
+  return null;
+}
+
+function faceIdFromDieSlot(
+  state: GameState,
+  dieId: DieId | null,
+  slotIndex: number | null,
+): FaceCardId | null {
+  if (dieId === null || slotIndex === null) return null;
+  return state.dice[dieId]?.slots[slotIndex]?.faceCardId ?? null;
+}
+
+function pendingSourceOf(
+  state: GameState,
+  pending: NonNullable<GameState["pendingDecision"]>,
+): { readonly cardInstanceId: CardInstanceId | null; readonly faceCardId: FaceCardId | null } | null {
+  switch (pending.type) {
+    case "search-deck":
+    case "search-graveyard":
+    case "discard-cards":
+    case "forge-faces":
+    case "replace-synthetic-face":
+    case "replay-graveyard-tactic":
+    case "look-top-deck":
+    case "peek-deck":
+    case "dark-pact":
+    case "mind-control":
+    case "copy-pool-symbol":
+      return {
+        cardInstanceId: pending.sourceCardInstanceId,
+        faceCardId: pending.sourceFaceCardId,
+      };
+    case "choose-creature":
+    case "choose-ritual":
+    case "choose-die":
+    case "choose-die-slot":
+    case "choose-pool-symbol":
+      return {
+        cardInstanceId: pending.deferred.sourceCardInstanceId,
+        faceCardId:
+          pending.deferred.sourceCardInstanceId !== null
+            ? null
+            : faceIdFromDieSlot(
+                state,
+                pending.deferred.sourceDieId,
+                pending.deferred.sourceSlotIndex,
+              ),
+      };
+    case "optional-reroll":
+      return { cardInstanceId: null, faceCardId: pending.faceCardId };
+    case "optional-overcharge":
+      return {
+        cardInstanceId: null,
+        faceCardId: faceIdFromDieSlot(state, pending.dieId, pending.slotIndex),
+      };
+    default:
+      return null;
+  }
+}
+
+function CausedByLine({ state }: { state: GameState }) {
+  const pending = state.pendingDecision;
+  if (pending === null) return null;
+  const source = pendingSourceOf(state, pending);
+  if (source === null) return null;
+
+  const card =
+    source.cardInstanceId !== null ? state.cards[source.cardInstanceId] : undefined;
+  const def = card !== undefined ? getCard(card.cardId) : undefined;
+  const face = source.faceCardId !== null ? getFaceCard(source.faceCardId) : undefined;
+  if (def === undefined && face === undefined) return null;
+
+  return (
+    <p className="mt-2 text-sm text-amber-100/80">
+      Caused by{" "}
+      <DecisionSourceHover
+        state={state}
+        cardInstanceId={source.cardInstanceId}
+        faceCardId={source.faceCardId}
+        placement="below"
+      />
+    </p>
+  );
+}
+
 function ChainLinkHover({
   state,
   link,
@@ -1364,36 +1556,7 @@ function ChainLinkHover({
   const def = card !== undefined ? getCard(card.cardId) : undefined;
 
   if (def !== undefined) {
-    return (
-      <span className="group relative inline-block">
-        <span
-          className={
-            link.negated
-              ? "cursor-help font-medium text-amber-100/70 underline decoration-dotted line-through"
-              : "cursor-help font-medium text-amber-50 underline decoration-dotted"
-          }
-        >
-          {def.name}
-        </span>
-        <div
-          className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-50 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-          role="tooltip"
-        >
-          <p className="text-sm font-medium text-stone-100">{def.name}</p>
-          <p className="mt-1 text-xs text-stone-400">
-            {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
-            {link.negated ? " · negated" : ""}
-          </p>
-          <div className="mt-2 space-y-1 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-            <p>{formatTypeLine(def)}</p>
-            <p className="text-stone-500">{formatForgeLine(def.forge)}</p>
-            {formatEffectRegion(def).map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-          </div>
-        </div>
-      </span>
-    );
+    return <TacticInspectHover def={def} negated={link.negated} />;
   }
 
   if (link.kind === "attack" && link.attackerId !== null && link.attackId !== null) {
@@ -1407,31 +1570,17 @@ function ChainLinkHover({
         : (creatureDef?.name ?? "Attack");
 
     return (
-      <span className="group relative inline-block">
-        <span
-          className={
-            link.negated
-              ? "cursor-help font-medium text-amber-100/70 underline decoration-dotted line-through"
-              : "cursor-help font-medium text-amber-50 underline decoration-dotted"
-          }
-        >
-          {title}
-        </span>
-        <div
-          className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-0 z-50 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-          role="tooltip"
-        >
-          <p className="text-sm font-medium text-stone-100">{title}</p>
-          {attack !== undefined && (
-            <p className="mt-1 text-xs text-stone-400">{formatAttackLine(attack)}</p>
-          )}
-          {attack?.rulesText !== undefined && attack.rulesText !== "" && (
-            <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-              {attack.rulesText}
-            </p>
-          )}
-        </div>
-      </span>
+      <NameInspectHover name={title} negated={link.negated}>
+        <p className="text-sm font-medium text-stone-100">{title}</p>
+        {attack !== undefined && (
+          <p className="mt-1 text-xs text-stone-400">{formatAttackLine(attack)}</p>
+        )}
+        {attack?.rulesText !== undefined && attack.rulesText !== "" && (
+          <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+            {attack.rulesText}
+          </p>
+        )}
+      </NameInspectHover>
     );
   }
 
@@ -1635,13 +1784,22 @@ function faceMarkerSummary(
 }
 
 function replayableGyCards(state: GameState, playerId: PlayerId): readonly CardInstance[] {
-  return graveyardOf(state, playerId).filter((card) => {
-    const definition = getCard(card.cardId);
-    if (definition === undefined) return false;
-    if (definition.type === "instant") return (definition.effect?.effects.length ?? 0) > 0;
-    if (definition.type === "ritual") return (definition.ritual?.effects.length ?? 0) > 0;
-    return false;
+  return replayableGraveyardTactics(state, playerId).flatMap((id) => {
+    const card = state.cards[id];
+    return card === undefined ? [] : [card];
   });
+}
+
+function formatCardTypeList(types: readonly CardType[]): string {
+  const labels = types.map((type) => type.charAt(0).toUpperCase() + type.slice(1));
+  if (labels.length === 0) return "card";
+  if (labels.length === 1) return labels[0] ?? "card";
+  if (labels.length === 2) return `${labels[0] ?? ""} or ${labels[1] ?? ""}`;
+  return `${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1] ?? ""}`;
+}
+
+function maxEnergyCostPhrase(maxEnergyCost: number): string {
+  return maxEnergyCost === 1 ? "cost 1 Energy or less" : `cost ${String(maxEnergyCost)} or less Energy`;
 }
 
 function opposingOverloadedFaces(
@@ -1685,13 +1843,18 @@ function legalSplitDamageTargets(
 
 function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): string {
   if (state.pendingDecision?.type === "search-deck") {
+    const types = formatCardTypeList(state.pendingDecision.filter);
     return isPendingChooser
-      ? "Choose cards from the deck search, then confirm."
+      ? `Choose ${types} cards from the deck search, then confirm.`
       : "Waiting for the opponent to search their deck.";
   }
   if (state.pendingDecision?.type === "search-graveyard") {
+    const cost =
+      state.pendingDecision.maxEnergyCost !== undefined
+        ? ` that ${maxEnergyCostPhrase(state.pendingDecision.maxEnergyCost)}`
+        : "";
     return isPendingChooser
-      ? `Choose up to ${String(state.pendingDecision.amount)} card(s) from your graveyard to return to hand.`
+      ? `Choose up to ${String(state.pendingDecision.amount)} card(s)${cost} from your graveyard to return to hand.`
       : "Waiting for the opponent to choose from their graveyard.";
   }
   if (state.pendingDecision?.type === "discard-cards") {
@@ -2984,6 +3147,7 @@ function DieSlotPickModal({
       <div className="max-h-[80vh] w-full max-w-lg overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">{title}</h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">{subtitle}</p>
+        <CausedByLine state={state} />
 
         {selectedDieId === undefined && (
           <ul className="mt-4 space-y-2">
@@ -3167,11 +3331,13 @@ function SymbolPool({
 function BoardModal({
   title,
   subtitle,
+  causedBy,
   children,
   onDismiss,
 }: {
   title: string;
   subtitle?: string;
+  causedBy?: ReactNode;
   children: ReactNode;
   onDismiss?: () => void;
 }) {
@@ -3207,6 +3373,7 @@ function BoardModal({
         {subtitle !== undefined && (
           <p className="mt-2 text-sm text-[var(--ink-muted)]">{subtitle}</p>
         )}
+        {causedBy}
         {children}
       </div>
     </div>,
@@ -3619,6 +3786,7 @@ function ChooseCreatureModal({
           Pick a legal creature below or on the board.
           {optional ? " You may Decline." : ""}
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {creatures.map((creature) => {
             const def = getCreatureDefinition(creature.definitionId);
@@ -3689,6 +3857,7 @@ function ChooseDieModal({
           Choose a die
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">{chooseDieFilterHint(filter)}</p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {dieIds.map((dieId) => {
             const die = state.dice[dieId];
@@ -3876,6 +4045,7 @@ function CopyPoolSymbolModal({
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Choose a symbol type already in your rolled / available pool to copy.
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {options.map((symbol) => (
             <li key={symbol}>
@@ -3918,21 +4088,19 @@ function ReplayGraveyardModal({
           Choose an Instant or Ritual with playable effects. It stays in the graveyard; no Energy /
           Requires.
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {cards.map((card) => {
             const def = getCard(card.cardId);
             return (
               <li key={card.id}>
-                <button
-                  type="button"
-                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
-                  onClick={() => onPick(card.id)}
-                >
-                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
-                  <p className="text-xs text-stone-500">
-                    {def !== undefined ? formatTypeLine(def) : ""}
-                  </p>
-                </button>
+                  <button
+                    type="button"
+                    className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                    onClick={() => onPick(card.id)}
+                  >
+                    <TacticChoiceContent def={def} fallbackId={card.cardId} />
+                  </button>
               </li>
             );
           })}
@@ -3963,22 +4131,20 @@ function LookTopDeckModal({
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Pick one card to keep in hand. The other goes to the bottom of your deck.
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {cardInstanceIds.map((id) => {
             const card = state.cards[id];
             const def = card !== undefined ? getCard(card.cardId) : undefined;
             return (
               <li key={id}>
-                <button
-                  type="button"
-                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
-                  onClick={() => onKeep(id)}
-                >
-                  <p className="text-sm font-medium text-stone-100">{def?.name ?? id}</p>
-                  <p className="text-xs text-stone-500">
-                    {def !== undefined ? formatTypeLine(def) : "Keep this card"}
-                  </p>
-                </button>
+                  <button
+                    type="button"
+                    className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                    onClick={() => onKeep(id)}
+                  >
+                    <TacticChoiceContent def={def} fallbackId={id} />
+                  </button>
               </li>
             );
           })}
@@ -4006,9 +4172,12 @@ function PeekDeckModal({
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
           Peek at deck
         </h2>
+        <CausedByLine state={state} />
+        <div className="mt-2">
+          <TacticChoiceContent def={def} fallbackId={cardInstanceId} />
+        </div>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Top card: <strong className="text-stone-100">{def?.name ?? cardInstanceId}</strong>
-          {def !== undefined ? ` · ${formatTypeLine(def)}` : ""}
+          Keep this card on top, or put it on the bottom of your deck.
         </p>
         <div className="mt-4 flex flex-col gap-2">
           <button type="button" className={btnPrimary} onClick={() => onResolve(false)}>
@@ -4033,14 +4202,7 @@ function DarkPactModal({
   onConfirm: (cardInstanceIds: readonly [CardInstanceId, CardInstanceId]) => void;
 }) {
   const [pick, setPick] = useState<readonly CardInstanceId[]>([]);
-  const deckIds = state.players[controllerId]?.deck ?? [];
-  const rituals = deckIds
-    .map((id) => state.cards[id])
-    .filter((card): card is CardInstance => {
-      if (card === undefined) return false;
-      const def = getCard(card.cardId);
-      return def?.type === "ritual";
-    });
+  const ritualIds = searchableInDeck(state, controllerId, ["ritual"]);
 
   const toggle = (id: CardInstanceId) => {
     setPick((prev) => {
@@ -4067,12 +4229,14 @@ function DarkPactModal({
           Choose exactly two Rituals from your deck with different attributes. They go to the
           graveyard.
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
-          {rituals.map((card) => {
-            const def = getCard(card.cardId);
-            const checked = pick.includes(card.id);
+          {ritualIds.map((id) => {
+            const card = state.cards[id];
+            const def = card !== undefined ? getCard(card.cardId) : undefined;
+            const checked = pick.includes(id);
             return (
-              <li key={card.id}>
+              <li key={id}>
                 <button
                   type="button"
                   className={
@@ -4081,9 +4245,9 @@ function DarkPactModal({
                       : "w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-stone-500"
                   }
                   disabled={!checked && pick.length >= 2}
-                  onClick={() => toggle(card.id)}
+                  onClick={() => toggle(id)}
                 >
-                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card?.cardId ?? id}</p>
                   <p className="text-xs capitalize text-stone-500">
                     {def !== undefined ? attributeLabel(def.attribute) : ""}
                   </p>
@@ -4091,7 +4255,7 @@ function DarkPactModal({
               </li>
             );
           })}
-          {rituals.length === 0 && (
+          {ritualIds.length === 0 && (
             <li className="text-sm text-red-300">No Rituals in your deck.</li>
           )}
         </ul>
@@ -4148,6 +4312,7 @@ function MindControlModal({
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Strip overloads from opposing faces that currently have them.
         </p>
+        <CausedByLine state={state} />
         <div className="mt-4 flex flex-col gap-2">
           <button
             type="button"
@@ -4346,6 +4511,7 @@ function OptionalRerollModal({
           Reroll {dieIndex >= 0 ? `die ${String(dieIndex + 1)}` : "this die"} (currently{" "}
           {face?.name ?? faceCardId})?
         </p>
+        <CausedByLine state={state} />
         <div className="mt-4 flex flex-col gap-2">
           <button type="button" className={btnPrimary} onClick={() => onResolve(true)}>
             Accept reroll
@@ -4398,6 +4564,7 @@ function ChooseDieSlotModal({
           Choose a die face
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">{chooseDieSlotFilterHint(filter)}</p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {slots.map(({ dieId, slotIndex }) => {
             const die = state.dice[dieId];
@@ -4461,6 +4628,7 @@ function ChoosePoolSymbolModal({
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Pick a synthetic symbol from your pool to arm as a requirement wildcard.
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {eligibleSymbolIds.map((symbolId) => {
             const symbol = state.symbols[symbolId];
@@ -4574,6 +4742,7 @@ function OptionalOverchargeModal({
           Gain +{String(amount)} Energy from {face?.name ?? "this face"}? Accepting suppresses
           that face&apos;s inherent effect on the next roll.
         </p>
+        <CausedByLine state={state} />
         <div className="mt-4 flex flex-col gap-2">
           <button type="button" className={btnPrimary} onClick={() => onResolve(true)}>
             Accept (+{String(amount)}E)
@@ -4693,6 +4862,7 @@ function ChooseRitualModal({
           Pick one ritual on the opponent&apos;s field (preparing, ready, or exhausted) to send to
           their graveyard.
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {rituals.map((card) => {
             const def = getCard(card.cardId);
@@ -4756,6 +4926,7 @@ function DiscardModal({
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Choose {amount} card{amount === 1 ? "" : "s"} from your hand to discard.
         </p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {hand.map((card) => {
             const def = getCard(card.cardId);
@@ -4907,6 +5078,7 @@ function FacePickModal({
           Choose face card
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">{subtitle}</p>
+        <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
           {eligible.map((faceCardId) => {
             const face = getFaceCard(faceCardId);
@@ -4992,6 +5164,7 @@ function ReplaceSyntheticFacePrompt({
             Choose a {kindLabel} {pending.attribute} face on your die to uninstall. You will
             install a different matching face from your pool (no forge-draw).
           </p>
+          <CausedByLine state={state} />
           <ul className="mt-4 space-y-2">
             {legalSlots.map(({ dieId, slotIndex }) => {
               const die = state.dice[dieId];
@@ -5143,21 +5316,25 @@ function SearchPanel({
   const options =
     pending.type === "search-deck"
       ? searchableInDeck(state, pending.controllerId, pending.filter)
-      : searchableInGraveyard(state, pending.controllerId);
+      : searchableInGraveyard(state, pending.controllerId, pending.maxEnergyCost);
 
   const exact = mode === "deck";
   const canConfirm = exact
     ? pick.length === Math.min(amount, options.length)
     : pick.length <= amount;
 
+  const subtitle =
+    pending.type === "search-deck"
+      ? `Pick ${String(amount)} ${formatCardTypeList(pending.filter)} card${amount === 1 ? "" : "s"} from your deck.`
+      : pending.maxEnergyCost !== undefined
+        ? `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} that ${maxEnergyCostPhrase(pending.maxEnergyCost)} from your graveyard to return to hand.`
+        : `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} from your graveyard to return to hand.`;
+
   return (
     <BoardModal
       title={mode === "deck" ? "Search deck" : "Search graveyard"}
-      subtitle={
-        mode === "deck"
-          ? `Pick ${String(amount)} card${amount === 1 ? "" : "s"} from your deck.`
-          : `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} from your graveyard to return to hand.`
-      }
+      subtitle={subtitle}
+      causedBy={<CausedByLine state={state} />}
     >
       <ul className="mt-4 space-y-2">
         {options.map((instanceId) => {

@@ -70,6 +70,8 @@ describe("forge-faces (Great Contamination)", () => {
       kind: "synthetic",
       attribute: "corruption",
       target: "opponent-die",
+      sourceCardInstanceId: ritualId,
+      sourceFaceCardId: null,
     });
   });
 
@@ -228,6 +230,8 @@ describe("forge-faces (Ritual of Contamination)", () => {
       kind: "synthetic",
       attribute: "corruption",
       target: "opponent-die",
+      sourceCardInstanceId: handCardIdAt(state, P1, 0),
+      sourceFaceCardId: null,
     });
 
     const dieId = played.state.players[P2]?.dieIds[0];

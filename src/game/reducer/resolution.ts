@@ -14,13 +14,18 @@ import {
   type CardInstanceId,
   type CreatureId,
   type DieId,
+  type FaceCardId,
   type PlayerId,
   type SymbolInstanceId,
 } from "../model/ids.js";
-import type { GameState, PendingEffect } from "../model/state.js";
+import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { isSyntheticOnlyAttribute } from "../model/attributes.js";
-import { forgeExceedsAttributeLimit } from "../rules/cards.js";
+import {
+  forgeExceedsAttributeLimit,
+  replayableGraveyardTactics,
+  searchableInGraveyard,
+} from "../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import {
   countInstalledCopies,
@@ -84,6 +89,7 @@ export function pushEffect(
   sourceDieId: DieId | null = null,
   sourceSlotIndex: number | null = null,
   ignoreShield = 0,
+  sourceCardInstanceId: CardInstanceId | null = null,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -94,8 +100,32 @@ export function pushEffect(
     declaredTargetCardInstanceId,
     sourceDieId,
     sourceSlotIndex,
+    sourceCardInstanceId,
     ignoreShield,
   });
+}
+
+/**
+ * Inspect subject for a card/face-selection pending. Card origin wins:
+ * `sourceFaceCardId` is set only when there is no source card (face on-roll /
+ * on-absorb). Overload on a rolled face therefore inspects the overload.
+ */
+function effectChoiceSource(
+  draft: Draft,
+  pending: PendingEffect,
+): {
+  readonly sourceCardInstanceId: CardInstanceId | null;
+  readonly sourceFaceCardId: FaceCardId | null;
+} {
+  if (pending.sourceCardInstanceId !== null) {
+    return { sourceCardInstanceId: pending.sourceCardInstanceId, sourceFaceCardId: null };
+  }
+  if (pending.sourceDieId === null || pending.sourceSlotIndex === null) {
+    return { sourceCardInstanceId: null, sourceFaceCardId: null };
+  }
+  const faceCardId =
+    draft.dice[pending.sourceDieId]?.slots[pending.sourceSlotIndex]?.faceCardId ?? null;
+  return { sourceCardInstanceId: null, sourceFaceCardId: faceCardId };
 }
 
 /**
@@ -389,6 +419,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       pending.sourceDieId,
       pending.sourceSlotIndex,
       pending.ignoreShield,
+      pending.sourceCardInstanceId,
     );
   }
 
@@ -490,6 +521,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         declaredTargetCreatureId: pending.declaredTargetCreatureId,
         sourceDieId: pending.sourceDieId,
         sourceSlotIndex: pending.sourceSlotIndex,
+        ...effectChoiceSource(draft, pending),
       };
       emit(draft, {
         type: "discard-started",
@@ -515,6 +547,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         controllerId: pending.controllerId,
         amount,
         filter: effect.filter,
+        ...effectChoiceSource(draft, pending),
       };
       emit(draft, {
         type: "search-started",
@@ -525,13 +558,11 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       return true;
     }
     case "search-graveyard": {
-      const graveyard = (draft.players[pending.controllerId]?.graveyard ?? []).filter((id) => {
-        if (effect.maxEnergyCost === undefined) return true;
-        const card = draft.cards[id];
-        if (card === undefined) return false;
-        const definition = getCard(card.cardId);
-        return definition !== undefined && definition.energyCost <= effect.maxEnergyCost;
-      });
+      const graveyard = searchableInGraveyard(
+        draft,
+        pending.controllerId,
+        effect.maxEnergyCost,
+      );
       const amount = Math.min(effect.amount, graveyard.length);
       if (amount === 0) {
         emit(draft, {
@@ -547,6 +578,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         controllerId: pending.controllerId,
         amount,
         ...(effect.maxEnergyCost !== undefined ? { maxEnergyCost: effect.maxEnergyCost } : {}),
+        ...effectChoiceSource(draft, pending),
       };
       emit(draft, {
         type: "search-started",
@@ -695,6 +727,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         kind: effect.kind,
         attribute: effect.attribute,
         target: effect.target,
+        ...effectChoiceSource(draft, pending),
       };
       emit(draft, {
         type: "forge-faces-started",
@@ -722,6 +755,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         controllerId: pending.controllerId,
         kind: effect.kind,
         attribute: effect.attribute,
+        ...effectChoiceSource(draft, pending),
       };
       emit(draft, {
         type: "replace-synthetic-face-started",
@@ -757,6 +791,8 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
             pending.declaredTargetCardInstanceId,
             pending.sourceDieId,
             pending.sourceSlotIndex,
+            pending.ignoreShield,
+            pending.sourceCardInstanceId,
           );
         }
       }
@@ -848,13 +884,18 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       draft.pendingDecision = {
         type: "replay-graveyard-tactic",
         controllerId: pending.controllerId,
+        ...effectChoiceSource(draft, pending),
       };
       return true;
     }
     case "copy-pool-symbol": {
       const types = new Set(poolSymbols(draft, pending.controllerId).map((s) => s.symbol));
       if (types.size === 0) return false;
-      draft.pendingDecision = { type: "copy-pool-symbol", controllerId: pending.controllerId };
+      draft.pendingDecision = {
+        type: "copy-pool-symbol",
+        controllerId: pending.controllerId,
+        ...effectChoiceSource(draft, pending),
+      };
       return true;
     }
     case "look-top-deck": {
@@ -865,6 +906,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         type: "look-top-deck",
         controllerId: pending.controllerId,
         cardInstanceIds: ids,
+        ...effectChoiceSource(draft, pending),
       };
       return true;
     }
@@ -875,6 +917,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         type: "peek-deck",
         controllerId: pending.controllerId,
         cardInstanceId: top,
+        ...effectChoiceSource(draft, pending),
       };
       return true;
     }
@@ -888,7 +931,11 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       });
       const attributes = new Set(rituals);
       if (rituals.length < 2 || attributes.size < 2) return false;
-      draft.pendingDecision = { type: "dark-pact", controllerId: pending.controllerId };
+      draft.pendingDecision = {
+        type: "dark-pact",
+        controllerId: pending.controllerId,
+        ...effectChoiceSource(draft, pending),
+      };
       return true;
     }
     case "mind-control": {
@@ -904,7 +951,11 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         }
       }
       if (overloaded.size === 0) return false;
-      draft.pendingDecision = { type: "mind-control", controllerId: pending.controllerId };
+      draft.pendingDecision = {
+        type: "mind-control",
+        controllerId: pending.controllerId,
+        ...effectChoiceSource(draft, pending),
+      };
       return true;
     }
     case "extermination": {
@@ -1244,25 +1295,6 @@ function reduceOpponentEnergy(
   emit(draft, { type: "energy-lost", playerId: opponentId, amount: lost, remaining: value });
 }
 
-export function replayableGraveyardTactics(
-  state: Pick<GameState, "players" | "cards">,
-  playerId: PlayerId,
-): readonly CardInstanceId[] {
-  return (state.players[playerId]?.graveyard ?? []).filter((id) => {
-    const card = state.cards[id];
-    if (card === undefined) return false;
-    const definition = getCard(card.cardId);
-    if (definition === undefined) return false;
-    if (definition.type === "instant") {
-      return (definition.effect?.effects.length ?? 0) > 0;
-    }
-    if (definition.type === "ritual") {
-      return (definition.ritual?.effects.length ?? 0) > 0;
-    }
-    return false;
-  });
-}
-
 export function applyRetainDieFromEffect(draft: Draft, playerId: PlayerId, dieId: DieId): void {
   const die = draft.dice[dieId];
   if (die === undefined || die.ownerId !== playerId) return;
@@ -1296,7 +1328,18 @@ export function fireDieModifiers(
     const region = getCard(card.cardId)?.overload;
     if (region === undefined) continue;
     for (const effect of [...region.onRoll].reverse()) {
-      pushEffect(draft, controllerId, effect, null, null, null, dieId, slotIndex);
+      pushEffect(
+        draft,
+        controllerId,
+        effect,
+        null,
+        null,
+        null,
+        dieId,
+        slotIndex,
+        0,
+        cardInstanceId,
+      );
     }
   }
 }

@@ -153,6 +153,8 @@ describe("Forbidden Heritage stay (cannot-replace-by-forge)", () => {
         controllerId: P1,
         kind: "synthetic",
         attribute: "corruption",
+        sourceCardInstanceId: null,
+        sourceFaceCardId: null,
       },
     };
     const refused = advance(pending, {

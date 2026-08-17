@@ -36,8 +36,10 @@ import {
   attackDamageBonus,
   forgeExceedsAttributeLimit,
   isReactionCard,
+  replayableGraveyardTactics,
   resolveEnergyPayment,
   ritualDurationOf,
+  searchableInGraveyard,
 } from "../rules/cards.js";
 import {
   discountedPlayCost,
@@ -101,7 +103,6 @@ import {
   drainResolution,
   grantShield,
   pushEffect,
-  replayableGraveyardTactics,
   tickForgeLocksForOwner,
   tickToxins,
 } from "./resolution.js";
@@ -507,7 +508,18 @@ function fireOverloadsForShownFace(
     const region = getCard(card.cardId)?.overload;
     if (region === undefined) continue;
     for (const effect of [...region.onRoll].reverse()) {
-      pushEffect(draft, controllerId, effect, null, null, null, dieId, slotIndex);
+      pushEffect(
+        draft,
+        controllerId,
+        effect,
+        null,
+        null,
+        null,
+        dieId,
+        slotIndex,
+        0,
+        cardInstanceId,
+      );
     }
   }
 }
@@ -584,16 +596,11 @@ function resolveSearch(
   if (pending.type === "search-graveyard") {
     if (cardInstanceIds.length > pending.amount) return "INVALID_SEARCH";
 
-    const graveyard = new Set(draft.players[playerId]?.graveyard ?? []);
+    const eligible = new Set(
+      searchableInGraveyard(draft, playerId, pending.maxEnergyCost),
+    );
     for (const id of cardInstanceIds) {
-      if (!graveyard.has(id)) return "INVALID_SEARCH";
-      if (pending.maxEnergyCost !== undefined) {
-        const card = draft.cards[id];
-        const definition = card === undefined ? undefined : getCard(card.cardId);
-        if (definition === undefined || definition.energyCost > pending.maxEnergyCost) {
-          return "INVALID_SEARCH";
-        }
-      }
+      if (!eligible.has(id)) return "INVALID_SEARCH";
     }
 
     for (const id of cardInstanceIds) {
@@ -651,6 +658,8 @@ function resolveDiscard(
         null,
         pending.sourceDieId ?? null,
         pending.sourceSlotIndex ?? null,
+        0,
+        pending.sourceCardInstanceId,
       );
     }
   }
@@ -971,7 +980,7 @@ function resolveReplayGraveyard(
   draft.pendingDecision = null;
   if (effects !== undefined) {
     for (const effect of [...effects].reverse()) {
-      pushEffect(draft, playerId, effect, null, null);
+      pushEffect(draft, playerId, effect, null, null, null, null, null, 0, cardInstanceId);
     }
   }
   return resumeAfterEffectPause(draft);
@@ -2297,6 +2306,11 @@ function conductLink(draft: Draft, link: ChainLink): void {
           effect,
           link.sourceCreatureId,
           link.declaredTargetCreatureId,
+          null,
+          null,
+          null,
+          0,
+          link.cardInstanceId,
         );
       }
       drainResolution(draft);
@@ -2310,6 +2324,11 @@ function conductLink(draft: Draft, link: ChainLink): void {
           effect,
           link.sourceCreatureId,
           link.declaredTargetCreatureId,
+          null,
+          null,
+          null,
+          0,
+          link.cardInstanceId,
         );
       }
       drainResolution(draft);
