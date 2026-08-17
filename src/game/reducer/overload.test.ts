@@ -67,7 +67,7 @@ describe("overload attachment", () => {
     expect(overload?.attachedToFaceCardId).toBe(luminarFace);
     expect(overloadsOnFace(result.state, P1, luminarFace)).toHaveLength(1);
     expect(eventTypes(result.state)).toContain("overload-attached");
-    expect(result.state.energy).toEqual({ holderId: P1, value: 7 });
+    expect(result.state.energy).toEqual({ holderId: P1, value: 9 });
   });
 
   it("refuses a face that does not match the printed restriction", () => {
@@ -264,8 +264,8 @@ describe("forging and face-card overloads", () => {
   });
 });
 
-describe("former variable Energy costs (? → temporary fixed 2)", () => {
-  it("pays the fixed catalogue cost of 2", () => {
+describe("former variable Energy costs (? → temporary cheap On-roll band)", () => {
+  it("pays the fixed catalogue cost of 1 for Martial Blessing", () => {
     const state = actionsReady([MARTIAL_BLESSING]);
     const result = advance(state, {
       type: "PLAY_CARD",
@@ -276,7 +276,7 @@ describe("former variable Energy costs (? → temporary fixed 2)", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.energy).toEqual({ holderId: P1, value: 8 });
+    expect(result.state.energy).toEqual({ holderId: P1, value: 9 });
     expect(overloadsOf(result.state, P1)).toHaveLength(1);
   });
 });

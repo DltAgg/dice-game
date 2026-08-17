@@ -51,8 +51,9 @@ much more as you want**. Engine support: `energyCost` minimum +
 `variableEnergy: true`, with declared `energyPaid` an integer ≥ that minimum.
 
 **TEMP authoring (2026-08-13):** catalogue cards that print `?` currently use
-fixed `energyCost: 2` and omit `variableEnergy` until spend UX / scaling
-effects are ready — see comment in `src/game/content/cards.ts`.
+fixed integer `energyCost` (no `variableEnergy`) until spend UX / scaling
+effects are ready — see comment in `src/game/content/cards.ts`. On-roll primary
+cards use the cheap support band (1, or 2 for ungated / refund engines).
 
 Effects that scale off the amount spent (e.g. "spent 3: draw 1") are not yet in
 `EffectDefinition`; park those clauses in `DEFERRED_CATALOGUE.md` until a

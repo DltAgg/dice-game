@@ -209,9 +209,8 @@ describe("forge-faces (Great Contamination)", () => {
 });
 
 describe("forge-faces (Ritual of Contamination)", () => {
-  it("opens a one-face opponent forge when played with Arcane + Corruption", () => {
+  it("opens a one-face opponent forge when played with Corruption", () => {
     const state = withSymbols(actionsReady([RITUAL_OF_CONTAMINATION]), P1, [
-      "arcane",
       "corruption",
     ]);
     const played = advance(state, {

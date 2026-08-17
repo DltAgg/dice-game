@@ -14,10 +14,13 @@ import { asCardId, type CardId } from "../model/ids.js";
  * the layouts). That is not a stub: bible §19 allows a card whose only region
  * is the forge.
  *
- * TEMP (2026-08-13): printed `?` Energy costs are authored as fixed `energyCost: 2`
+ * TEMP (2026-08-13): printed `?` Energy costs are authored as fixed integers
  * (no `variableEnergy`) until variable spend UX / scaling effects are wired.
  * Restore `variableEnergy: true` with minimum 1 when that lands — see
  * docs/OPEN_DESIGN.md and resolveEnergyPayment.
+ * On-roll primary cards sit in the cheap support band (usually 1; 2 for ungated
+ * or refund engines) so they can share a turn with another action on starting
+ * Energy 3.
  */
 
 const card = (definition: CardDefinition): CardDefinition => definition;
@@ -142,7 +145,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: LUMINAR_PRISM,
     name: "Luminar Prism",
-    energyCost: 3,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "luminar",
@@ -157,7 +160,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: ARCANE_RESONANCE,
     name: "Arcane Resonance",
-    energyCost: 4,
+    energyCost: 2,
     type: "overload",
     subtypes: [],
     attribute: "arcane",
@@ -170,7 +173,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: PERSISTENT_INFECTION,
     name: "Persistent Infection",
-    energyCost: 4,
+    energyCost: 2,
     type: "overload",
     subtypes: [],
     attribute: "corruption",
@@ -288,7 +291,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: BLACK_PLAGUE,
     name: "Black Plague",
-    energyCost: 4,
+    energyCost: 3,
     type: "equipment",
     subtypes: [],
     attribute: "corruption",
@@ -365,7 +368,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: LATENT_CORRUPTION,
     name: "Latent Corruption",
-    energyCost: 4,
+    energyCost: 2,
     type: "overload",
     subtypes: [],
     attribute: "corruption",
@@ -379,7 +382,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: ARCANE_AMPLIFIER,
     name: "Arcane Amplifier",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "arcane",
@@ -473,14 +476,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: RITUAL_OF_CONTAMINATION,
     name: "Ritual of Contamination",
-    energyCost: 2,
+    energyCost: 1,
     type: "instant",
     subtypes: [],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText: "Forge 1 Synthetic Corruption face on the opponent's die.",
     effect: {
-      requires: { arcane: 1, corruption: 1 },
+      requires: { corruption: 1 },
       effects: [
         {
           type: "forge-faces",
@@ -601,11 +604,11 @@ const DEFINITIONS: readonly CardDefinition[] = [
     },
   }),
 
-  // --- Aggro deck (printed `?` → temporary fixed cost 2; see file header) ---
+  // --- Aggro deck (printed `?` → temporary fixed costs; On-roll overloads 1) ---
   card({
     id: BLESSING_OF_THE_HUNT,
     name: "Blessing of the Hunt",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "martial",
@@ -618,7 +621,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: MARTIAL_BLESSING,
     name: "Martial Blessing",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "martial",
@@ -631,7 +634,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: TOXIC_BLESSING,
     name: "Toxic Blessing",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "toxin",
@@ -676,7 +679,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: ADRENALINE,
     name: "Adrenaline",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "wild",
@@ -967,7 +970,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: GOVERNOR,
     name: "Governor",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "mechanical",
@@ -1055,7 +1058,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: CAMSHAFT,
     name: "Camshaft",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "mechanical",
@@ -1152,7 +1155,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: CLOCKWORK,
     name: "Clockwork",
-    energyCost: 3,
+    energyCost: 2,
     type: "ritual",
     subtypes: ["continuous"],
     attribute: "mechanical",
@@ -1362,7 +1365,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: SNARL,
     name: "Snarl",
-    energyCost: 2,
+    energyCost: 1,
     type: "overload",
     subtypes: [],
     attribute: "wild",

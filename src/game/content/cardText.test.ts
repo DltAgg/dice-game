@@ -68,7 +68,7 @@ describe("English card printing", () => {
   it("prints fixed Energy for former ? costs (temporary catalogue decision)", () => {
     const card = getCard(MARTIAL_BLESSING);
     if (card === undefined) throw new Error("missing card");
-    expect(formatEnergyCost(card)).toBe("2");
+    expect(formatEnergyCost(card)).toBe("1");
   });
 
   it("prints Active when for Assembly Line as Mechanical + Mechanical", () => {
