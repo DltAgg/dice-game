@@ -60,7 +60,7 @@ vocabulary.
 | Creature | Attr | HP | Passive | Basic | Special |
 |---|---|---|---|---|---|
 | Prism Herald | Luminar | 13 | On absorb Luminar: next attack +1 | Gleam (L; disc L) 2 dmg + heal 1 most-damaged ally | Concord (L+Mech; disc L) 2 dmg + ally next attack +1 |
-| Lens Choir | Luminar | 12 | On absorb Luminar: generate Luminar | Focus Beam (L; disc L) 1 dmg + generate Luminar | Cascade (L+Wild; disc L) 2 dmg + Energy + generate Luminar |
+| Lens Choir | Luminar | 12 | On absorb Luminar, once per turn: generate Luminar | Focus Beam (L; disc L) 1 dmg + generate Luminar | Cascade (L+Wild; disc L) 2 dmg + Energy + generate Luminar |
 | Aegis Link | Luminar | 14 | First Luminar card −1 Energy / On attack, another ally: heal 1 most-damaged | Ward Strike (L; disc L) 2 dmg + Shield 1 self | Beacon (L+Mech; disc L) 2 dmg + prevent 1 on ally |
 | Cogwork Driver | Mechanical | 14 | On absorb Mechanical: next attack +1 | Drive (Mech; disc Mech) 2 dmg | Overclock (Mech+L; disc Mech) 3 dmg + generate Mechanical |
 | Servo Assembly | Mechanical | 13 | On absorb Mechanical: generate Mechanical | Ratchet (Mech; disc Mech) 1 dmg + generate Mechanical | Stamp Pulse (Mech 2; disc Mech 1) 2 dmg + reapply die modifiers |

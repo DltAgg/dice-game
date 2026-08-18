@@ -161,12 +161,14 @@ export type StandingTrigger =
    * When a creature or ritual absorbs a symbol. Default absorber is the host
    * (`self`). Optional `symbols` / `faceKinds` filters; omit to fire on any
    * absorb. Ritual assignment shares this event; identity is instance id.
+   * `oncePerTurn` spends a host key (Lens Choir).
    */
   | {
       readonly type: "on-absorb";
       readonly symbols?: readonly SymbolType[];
       readonly faceKinds?: readonly FaceKind[];
       readonly absorberRelation?: CreatureRelation;
+      readonly oncePerTurn?: boolean;
       readonly effects: readonly EffectDefinition[];
     }
   /**

@@ -386,11 +386,12 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Lens Choir",
     life: 12,
     attributes: ["luminar"],
-    passiveRulesText: "On absorb Luminar: generate 1 Luminar.",
+    passiveRulesText: "On absorb Luminar, once per turn: generate 1 Luminar.",
     standingAbilities: [
       {
         type: "on-absorb",
         symbols: ["luminar"],
+        oncePerTurn: true,
         effects: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
       },
       {

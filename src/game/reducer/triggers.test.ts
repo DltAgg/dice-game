@@ -21,6 +21,7 @@ import {
 import { CONTROL_SQUAD } from "../content/creatures.js";
 import {
   GARUDA,
+  LENS_CHOIR,
   MINOTAUR,
   PROTOTYPE_SQUAD,
   VOID_SUMMONER,
@@ -738,6 +739,54 @@ describe("Void Summoner on-absorb Natural", () => {
     );
     const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
     expect(arcane).toHaveLength(0);
+  });
+});
+
+describe("Lens Choir on-absorb Luminar once per turn", () => {
+  it("generates Luminar once, then refuses to loop by absorbing that generated pip", () => {
+    const state0 = newMatch({
+      players: [
+        {
+          id: P1,
+          squad: [LENS_CHOIR, MINOTAUR, GARUDA],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+        {
+          id: P2,
+          squad: [MINOTAUR, GARUDA, LENS_CHOIR],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+      ],
+    });
+    const choir = creatureIdAt(state0, P1, 0);
+    const primed = withSymbols(withPhase(state0, "actions"), P1, ["luminar"], "available");
+    const firstPip = usableSymbols(primed, P1).find((s) => s.symbol === "luminar");
+    if (firstPip === undefined) throw new Error("luminar");
+
+    const afterFirst = expectOk(
+      advance(primed, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: choir,
+        symbolId: firstPip.id,
+      }),
+    );
+    const generated = usableSymbols(afterFirst, P1).filter((s) => s.symbol === "luminar");
+    expect(generated).toHaveLength(1);
+    const offspring = generated[0];
+    if (offspring === undefined) throw new Error("generated");
+
+    const afterSecond = expectOk(
+      advance(afterFirst, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: choir,
+        symbolId: offspring.id,
+      }),
+    );
+    expect(usableSymbols(afterSecond, P1).filter((s) => s.symbol === "luminar")).toHaveLength(0);
   });
 });
 
