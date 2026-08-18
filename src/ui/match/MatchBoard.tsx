@@ -1405,9 +1405,14 @@ function TacticInspectHover({
         {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
         {negated ? " · negated" : ""}
       </p>
-      <div className="mt-2 space-y-1 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+      <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
         <p>{formatTypeLine(def)}</p>
-        <p className="text-stone-500">{formatForgeLine(def.forge)}</p>
+        <p className="mt-1 text-stone-500">{formatForgeLine(def.forge)}</p>
+        <div
+          className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
+          role="separator"
+          aria-hidden
+        />
         {formatEffectRegion(def).map((line) => (
           <p key={line}>{line}</p>
         ))}
@@ -2293,9 +2298,14 @@ function RitualTile({
         {progressLine !== null && progressLine !== "" && (
           <p className="mt-1 text-xs text-amber-200/80">Progress: {progressLine}</p>
         )}
-        <div className="mt-2 space-y-1 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+        <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
           <p>{formatTypeLine(def)}</p>
-          <p className="text-stone-500">{formatForgeLine(def.forge)}</p>
+          <p className="mt-1 text-stone-500">{formatForgeLine(def.forge)}</p>
+          <div
+            className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
+            role="separator"
+            aria-hidden
+          />
           {formatEffectRegion(def).map((line) => (
             <p key={line}>{line}</p>
           ))}
@@ -3742,14 +3752,18 @@ function HandStrip({
             <p className="mt-1 text-xs text-stone-400">
               {hoveredDef.variableEnergy === true ? "? (1+)" : hoveredDef.energyCost} Energy
             </p>
-            <pre className="mt-2 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-              {[
-                formatTypeLine(hoveredDef),
-                formatForgeLine(hoveredDef.forge),
-                "or",
-                ...formatEffectRegion(hoveredDef),
-              ].join("\n")}
-            </pre>
+            <div className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+              <p>{formatTypeLine(hoveredDef)}</p>
+              <p className="mt-0.5">{formatForgeLine(hoveredDef.forge)}</p>
+              <div
+                className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
+                role="separator"
+                aria-hidden
+              />
+              {formatEffectRegion(hoveredDef).map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
           </div>,
           document.body,
         )}

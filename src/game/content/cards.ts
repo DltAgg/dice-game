@@ -1162,7 +1162,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     rulesText: "On roll Mechanical: generate Mechanical.",
     ritual: {
-      activeWhen: { mechanical: 2 },
+      activeWhen: { mechanical: 1 },
       effects: [],
       standingAbilities: [
         {

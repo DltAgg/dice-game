@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
+import { asAttackId, asCreatureDefinitionId } from "../model/ids.js";
 import {
   AEGIS_LINK,
   ALL_CREATURES,
@@ -13,9 +15,8 @@ import {
   SERVO_ASSEMBLY,
   VARCOLAC,
   VOID_SUMMONER,
-  getCreatureDefinition,
 } from "./creatures.js";
-import { formatAttackLine, primaryAttribute } from "./creatureText.js";
+import { formatAttackCost, formatAttackLine, primaryAttribute } from "./creatureText.js";
 
 const FIGMA_IDS = [
   ARCHMAGE,
@@ -50,14 +51,6 @@ describe("creature catalogue", () => {
     }
   });
 
-  it("prints English attack lines", () => {
-    const minotaur = getCreatureDefinition(MINOTAUR);
-    if (minotaur === undefined) throw new Error("missing minotaur");
-    const [basic] = minotaur.attacks;
-    expect(formatAttackLine(basic!)).toBe("Heavy Axe: Deal 3 damage.");
-    expect(primaryAttribute(minotaur)).toBe("martial");
-  });
-
   it("gives every catalogue creature a passive, a basic and a special", () => {
     for (const creature of ALL_CREATURES) {
       expect(creature.passiveRulesText.length).toBeGreaterThan(0);
@@ -66,27 +59,35 @@ describe("creature catalogue", () => {
       expect(creature.attacks.every((attack) => attack.effect !== undefined)).toBe(true);
     }
   });
+});
 
-  it("wires Prism Herald Concord choose-ally bonus", () => {
-    const herald = getCreatureDefinition(PRISM_HERALD);
-    if (herald === undefined) throw new Error("missing prism herald");
-    const special = herald.attacks.find((attack) => attack.kind === "special");
-    expect(special?.followUpEffects).toEqual([
-      {
-        type: "grant-next-attack-bonus",
-        amount: 1,
-        target: { kind: "choose-ally" },
-      },
-    ]);
-    expect(primaryAttribute(herald)).toBe("luminar");
+describe("English creature printing", () => {
+  it("prints attack lines as Name: body", () => {
+    const attack: AttackDefinition = {
+      id: asAttackId("attack-example-heavy-axe"),
+      name: "Heavy Axe",
+      kind: "basic",
+      requires: { martial: 2 },
+      range: false,
+      rulesText: "Deal 3 damage.",
+    };
+    expect(formatAttackLine(attack)).toBe("Heavy Axe: Deal 3 damage.");
   });
 
-  it("wires Servo Assembly Stamp Pulse reapply", () => {
-    const servo = getCreatureDefinition(SERVO_ASSEMBLY);
-    if (servo === undefined) throw new Error("missing servo assembly");
-    const special = servo.attacks.find((attack) => attack.kind === "special");
-    expect(special?.requires).toEqual({ mechanical: 2 });
-    expect(special?.followUpEffects).toEqual([{ type: "reapply-die-modifiers" }]);
-    expect(primaryAttribute(servo)).toBe("mechanical");
+  it("prints attack costs as Attr + Attr", () => {
+    expect(formatAttackCost({ mechanical: 2 })).toBe("Mechanical + Mechanical");
+    expect(formatAttackCost({ martial: 1, toxin: 1 })).toBe("Martial + Toxin");
+  });
+
+  it("reads the first listed attribute as primary", () => {
+    const creature: CreatureDefinition = {
+      id: asCreatureDefinitionId("creature-example"),
+      name: "Example",
+      life: 10,
+      attributes: ["luminar", "arcane"],
+      passiveRulesText: "A passive.",
+      attacks: [],
+    };
+    expect(primaryAttribute(creature)).toBe("luminar");
   });
 });

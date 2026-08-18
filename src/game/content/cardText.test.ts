@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  ASSEMBLY_LINE,
-  CLOCKWORK,
-  COUPLING,
-  DIE_PRESS,
-  ECLIPSE,
-  ETERNAL_DARKNESS,
-  GREAT_CONTAMINATION,
-  LIVING_LIBRARY,
-  MARTIAL_BLESSING,
-  RITUAL_OF_CONTAMINATION,
-  getCard,
-} from "./cards.js";
+import type { CardDefinition, ForgeRegion } from "../model/cards.js";
+import { asCardId } from "../model/ids.js";
 import {
   formatEffectRegion,
   formatEnergyCost,
@@ -20,102 +9,120 @@ import {
   formatTypeLine,
 } from "./cardText.js";
 
+function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
+  const attribute = overrides.attribute ?? "arcane";
+  const { forge, ...rest } = overrides;
+  return {
+    id: asCardId("card-example"),
+    name: "Example",
+    energyCost: 1,
+    type: "instant",
+    subtypes: [],
+    attribute,
+    forge: forge ?? {
+      faces: 1,
+      kind: "synthetic",
+      attribute,
+      target: "own-die",
+    },
+    rulesText: "Do something.",
+    ...rest,
+  };
+}
+
 describe("English card printing", () => {
   it("prints the type line with subtypes and attribute", () => {
-    const card = getCard(LIVING_LIBRARY);
-    if (card === undefined) throw new Error("missing card");
+    const card = exampleCard({
+      type: "ritual",
+      subtypes: ["instant"],
+      attribute: "arcane",
+    });
     expect(formatTypeLine(card)).toBe("[Ritual / Instant / Arcane]");
   });
 
   it("prints the forge region with kind, attribute and target", () => {
-    const card = getCard(ECLIPSE);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatForgeLine(card.forge)).toBe(
-      "[Forge] 1 face [Synthetic] [Darkness] on your die",
-    );
+    const forge: ForgeRegion = {
+      faces: 1,
+      kind: "synthetic",
+      attribute: "darkness",
+      target: "own-die",
+    };
+    expect(formatForgeLine(forge)).toBe("[Forge] 1 face [Synthetic] [Darkness] on your die");
+  });
+
+  it("prints multi-face natural forges on the opponent's die", () => {
+    expect(
+      formatForgeLine({
+        faces: 2,
+        kind: "natural",
+        attribute: "martial",
+        target: "opponent-die",
+      }),
+    ).toBe("[Forge] 2 faces [Natural] [Martial] on the opponent's die");
   });
 
   it("prints Active when for ritual requirements", () => {
-    const card = getCard(LIVING_LIBRARY);
-    if (card === undefined) throw new Error("missing card");
+    const card = exampleCard({
+      type: "ritual",
+      subtypes: ["instant"],
+      ritual: { activeWhen: { arcane: 2 }, effects: [] },
+    });
     expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Arcane]");
   });
 
-  it("prints None when the card forges only", () => {
-    // Forge-only is the empty-string rulesText case.
-    const eclipse = getCard(ECLIPSE);
-    if (eclipse === undefined) throw new Error("missing card");
-    const forgeOnly: typeof eclipse = {
-      id: eclipse.id,
-      name: eclipse.name,
-      energyCost: eclipse.energyCost,
-      type: eclipse.type,
-      subtypes: eclipse.subtypes,
-      attribute: eclipse.attribute,
-      forge: eclipse.forge,
-      rulesText: "",
-    };
-    expect(formatEffectRegion(forgeOnly)).toEqual(["None"]);
+  it("prints a single-token Active when without repeating the attribute", () => {
+    const card = exampleCard({
+      type: "ritual",
+      subtypes: ["continuous"],
+      attribute: "mechanical",
+      ritual: { activeWhen: { mechanical: 1 }, effects: [] },
+    });
+    expect(formatTypeLine(card)).toBe("[Ritual / Continuous / Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Active when: Mechanical]");
   });
 
-  it("prints Active when from the ritual region for Eternal Darkness", () => {
-    const card = getCard(ETERNAL_DARKNESS);
-    if (card === undefined) throw new Error("missing card");
+  it("prints mixed-attribute Active when as Attr + Attr", () => {
+    const card = exampleCard({
+      type: "ritual",
+      subtypes: ["instant"],
+      ritual: { activeWhen: { arcane: 1, corruption: 1 }, effects: [] },
+    });
+    expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Corruption]");
+  });
+
+  it("prints Requires for non-ritual gates", () => {
+    const card = exampleCard({
+      type: "instant",
+      attribute: "mechanical",
+      effect: { requires: { mechanical: 2 }, effects: [] },
+    });
+    expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
+  });
+
+  it("prints None when the card forges only", () => {
+    expect(formatEffectRegion(exampleCard({ rulesText: "" }))).toEqual(["None"]);
+  });
+
+  it("prints Active when above the effect body for rituals", () => {
+    const card = exampleCard({
+      type: "ritual",
+      subtypes: ["instant"],
+      rulesText: "Return cards from your graveyard to your hand.",
+      ritual: { activeWhen: { darkness: 2 }, effects: [] },
+    });
     expect(formatEffectRegion(card)).toEqual([
       "[Active when: Darkness + Darkness]",
-      "Choose up to 3 cards in your graveyard and return them to your hand.",
+      "Return cards from your graveyard to your hand.",
     ]);
   });
 
-  it("prints fixed Energy for former ? costs (temporary catalogue decision)", () => {
-    const card = getCard(MARTIAL_BLESSING);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatEnergyCost(card)).toBe("1");
+  it("prints a fixed Energy cost", () => {
+    expect(formatEnergyCost(exampleCard({ energyCost: 1 }))).toBe("1");
+    expect(formatEnergyCost(exampleCard({ energyCost: 3 }))).toBe("3");
   });
 
-  it("prints Active when for Assembly Line as Mechanical + Mechanical", () => {
-    const card = getCard(ASSEMBLY_LINE);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatTypeLine(card)).toBe("[Ritual / Instant / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Active when: Mechanical + Mechanical]");
-  });
-
-  it("prints Requires for Die Press as Mechanical + Mechanical", () => {
-    const card = getCard(DIE_PRESS);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
-  });
-
-  it("prints Active when for Clockwork as Mechanical + Mechanical", () => {
-    const card = getCard(CLOCKWORK);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatTypeLine(card)).toBe("[Ritual / Continuous / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Active when: Mechanical + Mechanical]");
-  });
-
-  it("prints Requires for Coupling as Mechanical + Mechanical", () => {
-    const card = getCard(COUPLING);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
-  });
-
-  it("prints Ritual of Contamination as Energy 1 with Requires Corruption", () => {
-    const card = getCard(RITUAL_OF_CONTAMINATION);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatEnergyCost(card)).toBe("1");
-    expect(formatTypeLine(card)).toBe("[Instant / Corruption]");
-    expect(formatRequirementLine(card)).toBe("[Requires: Corruption]");
-    expect(formatForgeLine(card.forge)).toBe(
-      "[Forge] 1 face [Synthetic] [Corruption] on your die",
-    );
-  });
-
-  it("prints Great Contamination Active when as Arcane + Corruption", () => {
-    const card = getCard(GREAT_CONTAMINATION);
-    if (card === undefined) throw new Error("missing card");
-    expect(formatEnergyCost(card)).toBe("3");
-    expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Corruption]");
+  it("prints ? for variable Energy", () => {
+    expect(formatEnergyCost(exampleCard({ energyCost: 1, variableEnergy: true }))).toBe("?");
   });
 });

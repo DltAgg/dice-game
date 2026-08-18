@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ARCANE_SILENCE, SEAL_THE_RITE, getCard } from "../content/cards.js";
+import type { CardDefinition } from "../model/cards.js";
+import type { EffectDefinition } from "../model/effects.js";
+import { asCardId, asEffectInstanceId, asPlayerId } from "../model/ids.js";
 import type { ChainLink, GameState } from "../model/state.js";
-import { asEffectInstanceId, asPlayerId } from "../model/ids.js";
 import {
   isLegalHandReaction,
   negateEffectsLegalAgainstTop,
@@ -9,6 +10,20 @@ import {
 } from "./reactions.js";
 
 const P1 = asPlayerId("p1");
+
+function exampleReaction(effects: readonly EffectDefinition[]): CardDefinition {
+  return {
+    id: asCardId("card-example-reaction"),
+    name: "Example Reaction",
+    energyCost: 1,
+    type: "reaction",
+    subtypes: [],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    rulesText: "Negate.",
+    effect: { effects },
+  };
+}
 
 function link(kind: ChainLink["kind"], negated = false): ChainLink {
   return {
@@ -45,9 +60,7 @@ describe("reaction chain-target gates (UI queries)", () => {
   });
 
   it("allows negate-ritual only vs ritual-place / ritual-activate", () => {
-    const seal = getCard(SEAL_THE_RITE);
-    expect(seal).toBeDefined();
-    const effects = seal!.effect!.effects;
+    const effects: readonly EffectDefinition[] = [{ type: "negate-ritual" }];
 
     expect(negateEffectsLegalAgainstTop(stateWithTop(link("ritual-place")), effects)).toBe(true);
     expect(negateEffectsLegalAgainstTop(stateWithTop(link("ritual-activate")), effects)).toBe(
@@ -61,17 +74,15 @@ describe("reaction chain-target gates (UI queries)", () => {
   });
 
   it("allows negate-card any against non-attack tops", () => {
-    const silence = getCard(ARCANE_SILENCE);
-    expect(silence).toBeDefined();
-    expect(isLegalHandReaction(stateWithTop(link("tactic-effect")), silence!)).toBe(true);
-    expect(isLegalHandReaction(stateWithTop(link("ritual-place")), silence!)).toBe(true);
-    expect(isLegalHandReaction(stateWithTop(link("attack")), silence!)).toBe(false);
+    const silence = exampleReaction([{ type: "negate-card", cardTypes: "any" }]);
+    expect(isLegalHandReaction(stateWithTop(link("tactic-effect")), silence)).toBe(true);
+    expect(isLegalHandReaction(stateWithTop(link("ritual-place")), silence)).toBe(true);
+    expect(isLegalHandReaction(stateWithTop(link("attack")), silence)).toBe(false);
   });
 
-  it("refuses Seal the Rite when top is not a ritual link", () => {
-    const seal = getCard(SEAL_THE_RITE);
-    expect(seal).toBeDefined();
-    expect(isLegalHandReaction(stateWithTop(link("tactic-effect")), seal!)).toBe(false);
-    expect(isLegalHandReaction(stateWithTop(link("ritual-activate")), seal!)).toBe(true);
+  it("refuses negate-ritual when top is not a ritual link", () => {
+    const seal = exampleReaction([{ type: "negate-ritual" }]);
+    expect(isLegalHandReaction(stateWithTop(link("tactic-effect")), seal)).toBe(false);
+    expect(isLegalHandReaction(stateWithTop(link("ritual-activate")), seal)).toBe(true);
   });
 });

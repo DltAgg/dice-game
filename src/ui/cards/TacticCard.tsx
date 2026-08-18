@@ -50,17 +50,23 @@ export function TacticCard({ card, width = 280 }: TacticCardProps) {
         </div>
       </header>
 
-      <div className="absolute inset-x-[6.4%] bottom-[7.4%] flex h-[21.7%] flex-col justify-start overflow-hidden px-[2.5%] pt-[2%]">
-        <KeywordLine text={formatTypeLine(card)} bold />
-        <ForgeLine text={forge} />
+      {/*
+        Full-article rules region so the forge/effect split can run edge-to-edge.
+        Text keeps the old inner inset (6.4% frame + 2.5% column padding).
+      */}
+      <div className="absolute inset-x-0 bottom-[7.4%] flex h-[21.7%] flex-col justify-start overflow-hidden pt-[2%]">
+        <div className="mx-[6.4%] px-[2.5%]">
+          <KeywordLine text={formatTypeLine(card)} bold />
+          <ForgeLine text={forge} />
+        </div>
 
-        <p className="my-[0.35em] font-[family-name:var(--font-card)] text-[length:clamp(0.55rem,3.1cqw,0.78rem)] font-normal leading-snug">
-          or
-        </p>
+        <ForgeEffectSplit />
 
-        {effectLines.map((line) => (
-          <KeywordLine key={line} text={line} bold={line.startsWith("[")} />
-        ))}
+        <div className="mx-[6.4%] px-[2.5%]">
+          {effectLines.map((line) => (
+            <KeywordLine key={line} text={line} bold={line.startsWith("[")} />
+          ))}
+        </div>
       </div>
     </article>
   );
@@ -77,6 +83,28 @@ function KeywordLine({ text, bold }: { text: string; bold?: boolean }) {
     >
       {text}
     </p>
+  );
+}
+
+/**
+ * Horizontal split between forge and effect. Spans the card body (just inside
+ * the ornate inner frame), not the padded text column.
+ */
+function ForgeEffectSplit() {
+  return (
+    <div
+      className="relative my-[0.45em] h-px w-full shrink-0"
+      role="separator"
+      aria-hidden
+    >
+      <span
+        className="absolute inset-y-0 left-[3.8%] right-[3.8%]"
+        style={{
+          background:
+            "linear-gradient(to right, transparent, #b4a79c 6%, #b4a79c 94%, transparent)",
+        }}
+      />
+    </div>
   );
 }
 
