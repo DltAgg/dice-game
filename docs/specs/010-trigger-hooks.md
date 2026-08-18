@@ -102,6 +102,7 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 - [x] Toxic Blessing: roll → `arm-attack-toxin`; attacks apply toxin.
 - [x] Hunter's Collar: position change → Martial.
 - [x] Void Summoner: any Natural absorb → generate Arcane (creature or ritual).
+      Untyped Shield absorb does not count.
 - [x] War Axe: Basic-only `attack-damage-bonus` via `attackKinds`.
 - [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy
       (creature **or** allied ritual assignment).

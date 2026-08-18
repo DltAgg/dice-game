@@ -88,6 +88,7 @@ needs a true forge splash.
 - Dual-kind (Martial, Wild, Arcane, Luminar): natural **and** synthetic forges.
 - Synthetic-only (Toxin, Mechanical, Corruption, Darkness): **never**
   `kind: "natural"` faces or forge regions.
+- Shield: `kind: "untyped"` only. Starting-die identity; never forged; not Natural.
 
 ## Cost and Energy
 

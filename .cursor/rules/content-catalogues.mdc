@@ -16,7 +16,7 @@ Rules:
 
 - `rulesText` / print fields are English authority for the UI.
 - Structured regions (`effect`, `equipment`, `overload`, `ritual`, attack `effect`, face `onRoll`) only when every clause is modelled.
-- Ids: `card-<kebab>`, `creature-<kebab>`, `face-natural|synthetic-<kebab>`, `attack-<creature>-<kebab>`.
+- Ids: `card-<kebab>`, `creature-<kebab>`, `face-natural|synthetic|untyped-<kebab>`, `attack-<creature>-<kebab>`.
 - `equipment` / `overload` are main `CardType` values and must match their regions (and vice versa).
 - Rituals use main `type: "ritual"` with ritual subtypes (`instant` / `continuous` / `reaction`) and must have a `ritual` region.
 - Update `docs/specs/002|003|004-*.md` and `docs/DEFERRED_CATALOGUE.md` when print coverage changes.

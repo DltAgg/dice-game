@@ -1,5 +1,5 @@
 import type { Attribute } from "./attributes.js";
-import type { FaceKind } from "./dice.js";
+import type { FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { EffectDefinition } from "./effects.js";
 import type { CardId, CardInstanceId, CreatureId, FaceCardId, PlayerId } from "./ids.js";
 import type { SymbolRequirement, SymbolType, AttributeTokens } from "./symbols.js";
@@ -72,7 +72,7 @@ export type ForgeTarget = "own-die" | "opponent-die";
  */
 export interface ForgeRegion {
   readonly faces: number;
-  readonly kind: FaceKind;
+  readonly kind: ForgeableFaceKind;
   readonly attribute: Attribute;
   readonly target: ForgeTarget;
 }

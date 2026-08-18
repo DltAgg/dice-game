@@ -1,5 +1,5 @@
 import type { Attribute, FaceCardDefinition, SymbolType } from "@/game";
-import { SHIELD } from "@/game";
+import { formatFaceKind, SHIELD } from "@/game";
 import faceLayout from "./assets/faces/face-layout.jpg";
 import arcaneIcon from "./assets/faces/icons/arcane.png";
 import luminarIcon from "./assets/faces/icons/luminar.png";
@@ -70,8 +70,7 @@ function attributeLabel(symbol: SymbolType): string {
 }
 
 function typeLine(face: FaceCardDefinition): string {
-  const kind = face.kind === "synthetic" ? "Synthetic" : "Natural";
-  return `[Face / ${kind} / ${attributeLabel(face.symbol)}]`;
+  return `[Face / ${formatFaceKind(face.kind)} / ${attributeLabel(face.symbol)}]`;
 }
 
 /** Split on `[…]` tokens so keywords print bold, matching the Figma treatment. */
@@ -97,7 +96,7 @@ export interface FaceCardProps {
 
 export function FaceCard({ face, width = 280 }: FaceCardProps) {
   const art = medallionFor(face);
-  const kindLabel = face.kind === "synthetic" ? "Synthetic" : "Natural";
+  const kindLabel = formatFaceKind(face.kind);
   const lines = face.rulesText === "" ? [] : face.rulesText.split("\n");
   const overloadLabel = `+${String(face.maxOverloads)} Overload`;
 

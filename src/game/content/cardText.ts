@@ -4,6 +4,7 @@ import type {
   ForgeRegion,
 } from "../model/cards.js";
 import type { Attribute } from "../model/attributes.js";
+import type { FaceKind } from "../model/dice.js";
 import { requirementEntries, type SymbolRequirement } from "../model/symbols.js";
 
 /**
@@ -38,6 +39,17 @@ const SUBTYPE_LABEL: Readonly<Record<CardSubtype, string>> = {
 
 export const attributeLabel = (attribute: Attribute): string => ATTRIBUTE_LABEL[attribute];
 
+export function formatFaceKind(kind: FaceKind): string {
+  switch (kind) {
+    case "natural":
+      return "Natural";
+    case "synthetic":
+      return "Synthetic";
+    case "untyped":
+      return "Untyped";
+  }
+}
+
 /** Header cost glyph: fixed amount, or `?` for variable (pay 1+). */
 export function formatEnergyCost(card: CardDefinition): string {
   return card.variableEnergy === true ? "?" : String(card.energyCost);
@@ -55,7 +67,7 @@ export function formatTypeLine(card: CardDefinition): string {
 
 /** `[Forge] 1 Synthetic Arcane face on your die` */
 export function formatForgeLine(forge: ForgeRegion): string {
-  const kind = forge.kind === "natural" ? "Natural" : "Synthetic";
+  const kind = formatFaceKind(forge.kind);
   const faces = forge.faces === 1 ? "1 face" : `${String(forge.faces)} faces`;
   const where = forge.target === "own-die" ? "on your die" : "on the opponent's die";
   return `[Forge] ${faces} [${kind}] [${ATTRIBUTE_LABEL[forge.attribute]}] ${where}`;

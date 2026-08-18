@@ -4,7 +4,7 @@ import {
   type Attribute,
   type DualKindAttribute,
 } from "../model/attributes.js";
-import type { FaceCardDefinition, FaceKind } from "../model/dice.js";
+import type { FaceCardDefinition, ForgeableFaceKind } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
 import { asFaceCardId, type FaceCardId } from "../model/ids.js";
 import { SHIELD, type SymbolType } from "../model/symbols.js";
@@ -13,8 +13,8 @@ import { SHIELD, type SymbolType } from "../model/symbols.js";
  * Face cards from the Figma `Face card` page (`2:13`), plus named synthetics
  * staged from `synthetic_faces.csv`. Translated to English.
  *
- * Basics are natural identity faces on the starting die only (Martial, Wild,
- * Arcane, Luminar, Shield). Toxin / Mechanical / Corruption / Darkness are
+ * Basics are starting-die identity faces: Natural Martial / Wild / Arcane /
+ * Luminar, plus untyped Shield. Toxin / Mechanical / Corruption / Darkness are
  * synthetic-only attributes — forge those as effectful generics or named
  * specials. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
  * `onAbsorb` only for clauses the engine can resolve — leave the other array
@@ -29,7 +29,7 @@ export const naturalFaceId = (attribute: DualKindAttribute): FaceCardId =>
 export const syntheticFaceId = (attribute: Attribute): FaceCardId =>
   asFaceCardId(`face-synthetic-${attribute}`);
 
-export const faceIdFor = (kind: FaceKind, attribute: Attribute): FaceCardId => {
+export const faceIdFor = (kind: ForgeableFaceKind, attribute: Attribute): FaceCardId => {
   if (kind === "natural") {
     if (!isDualKindAttribute(attribute)) {
       throw new Error(
@@ -41,8 +41,8 @@ export const faceIdFor = (kind: FaceKind, attribute: Attribute): FaceCardId => {
   return syntheticFaceId(attribute);
 };
 
-/** Shield is the one untyped natural face (bible §10 / starting dice). */
-export const SHIELD_FACE_ID: FaceCardId = asFaceCardId("face-natural-shield");
+/** Shield is the one untyped starting face (bible §10 / starting dice). */
+export const SHIELD_FACE_ID: FaceCardId = asFaceCardId("face-untyped-shield");
 
 export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
   if (symbol === SHIELD) return SHIELD_FACE_ID;
@@ -226,7 +226,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
   face({
     id: SHIELD_FACE_ID,
     name: "Shield",
-    kind: "natural",
+    kind: "untyped",
     symbol: SHIELD,
     rulesText: "",
     onRoll: [],
@@ -776,7 +776,7 @@ export const FACE_CARDS: Readonly<Record<string, FaceCardDefinition>> = Object.f
 
 export const getFaceCard = (id: FaceCardId): FaceCardDefinition | undefined => FACE_CARDS[id];
 
-/** Catalogue order: starting naturals (+ Shield), then named specials with printings. */
+/** Catalogue order: starting naturals, untyped Shield, then named specials with printings. */
 export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   ...DUAL_KIND_ATTRIBUTES.map((attribute) => FACE_CARDS[naturalFaceId(attribute)]!),
   FACE_CARDS[SHIELD_FACE_ID]!,
@@ -827,8 +827,9 @@ export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.sl
 export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(5);
 
 /**
- * Opening die for both players (OPEN_DESIGN). Four attributes plus two Shields.
- * These installed naturals sit outside the twelve-card face-deck limit (bible §12).
+ * Opening die for both players (OPEN_DESIGN). Four Natural attributes plus two
+ * untyped Shields. These installed starting faces sit outside the twelve-card
+ * face-deck limit (bible §12).
  */
 export const STARTING_DIE_SYMBOLS: readonly SymbolType[] = [
   "martial",

@@ -13,7 +13,17 @@ import type { SymbolType } from "./symbols.js";
  */
 export const FACE_SLOTS_PER_DIE = 6;
 
-export type FaceKind = "natural" | "synthetic";
+/**
+ * Natural and synthetic are bible §10. Untyped is Shield only: a starting-die
+ * identity face that is not an attribute and is not Natural.
+ */
+export type FaceKind = "natural" | "synthetic" | "untyped";
+
+/**
+ * Attribute-keyed faces that can be forged. Shield is `untyped` and is never
+ * a forge target.
+ */
+export type ForgeableFaceKind = Exclude<FaceKind, "untyped">;
 
 /**
  * Whether forging (or other overwrite-installs) may replace a slot showing
@@ -33,7 +43,7 @@ export interface FaceCardDefinition {
   readonly id: FaceCardId;
   readonly name: string;
   readonly kind: FaceKind;
-  /** The attribute this face produces, or Shield for the one untyped face. */
+  /** The attribute this face produces, or Shield for the untyped starting face. */
   readonly symbol: SymbolType;
   /**
    * English printing of the inherent-effect region. Empty on identity faces

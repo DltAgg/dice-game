@@ -15,8 +15,9 @@ export function CardCatalogue() {
           Face cards
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-400">
-          English printing of the Figma Face card page. Basics are natural identity faces; named
-          specials are synthetics. The face deck holds up to twelve of these (bible §12).
+          English printing of the Figma Face card page. Basics are starting identity
+          faces (Natural attributes plus untyped Shield); named specials are synthetics.
+          The face deck holds up to twelve of these (bible §12).
         </p>
 
         <h3 className="mt-8 font-[family-name:var(--font-display)] text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">

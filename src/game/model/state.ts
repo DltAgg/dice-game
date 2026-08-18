@@ -1,7 +1,7 @@
 import type { CardDuration, CardInstance, CardType } from "./cards.js";
 import type { GameRulesConfig } from "./config.js";
 import type { CreatureState } from "./creatures.js";
-import type { DieState, FaceKind } from "./dice.js";
+import type { DieState, FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { Attribute } from "./attributes.js";
 import type {
   CreatureChoiceFilter,
@@ -191,7 +191,7 @@ export type PendingDecision =
       readonly type: "forge-faces";
       readonly controllerId: PlayerId;
       readonly faces: number;
-      readonly kind: FaceKind;
+      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
       readonly sourceCardInstanceId: CardInstanceId | null;
@@ -200,7 +200,7 @@ export type PendingDecision =
   | {
       readonly type: "replace-synthetic-face";
       readonly controllerId: PlayerId;
-      readonly kind: FaceKind;
+      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;

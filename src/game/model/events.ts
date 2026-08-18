@@ -12,7 +12,7 @@ import type {
 } from "./ids.js";
 import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
-import type { FaceKind } from "./dice.js";
+import type { ForgeableFaceKind } from "./dice.js";
 import type { CreatureChoiceFilter } from "./effects.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
 import type { ChainLinkKind, TurnPhase } from "./state.js";
@@ -237,7 +237,7 @@ export type GameEvent =
       readonly type: "forge-faces-started";
       readonly playerId: PlayerId;
       readonly faces: number;
-      readonly kind: FaceKind;
+      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
     }
@@ -251,7 +251,7 @@ export type GameEvent =
   | {
       readonly type: "replace-synthetic-face-started";
       readonly playerId: PlayerId;
-      readonly kind: FaceKind;
+      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
     }
   | {

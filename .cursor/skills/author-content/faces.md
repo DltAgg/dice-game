@@ -9,7 +9,7 @@ Types: `src/game/model/dice.ts` (`FaceCardDefinition`)
 | Kind | Role | Typical `maxOverloads` |
 |---|---|---|
 | Natural attribute | Dual-kind only: Martial / Wild / Arcane / Luminar (`face-natural-*`) | 1 |
-| Natural Shield | Untyped (`face-natural-shield`) | 1 |
+| Untyped Shield | Untyped (`face-untyped-shield`) | 1 |
 | Effectful generic synthetic | Forge targets for Arcane / Toxin / Mechanical / Corruption / Darkness (`face-synthetic-<attr>`) | 2 |
 | Blank generic synthetic | Forge targets for Martial / Wild / Luminar (`face-synthetic-<attr>`, no inherent effect yet) | 2 |
 | Named special | Printed inherent effect (`face-synthetic-<name>`) | usually 2 |

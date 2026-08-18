@@ -46,6 +46,7 @@ import {
   type FaceCardId,
 } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import { SHIELD } from "../model/symbols.js";
 import { ritualsOf } from "../rules/cards.js";
 import { usableSymbols } from "../rules/symbols.js";
 import {
@@ -698,6 +699,45 @@ describe("Void Summoner on-absorb Natural", () => {
     );
     const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
     expect(arcane.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("does not generate Arcane when a creature absorbs an untyped Shield face", () => {
+    const state0 = newMatch({
+      players: [
+        {
+          id: P1,
+          squad: [VOID_SUMMONER, MINOTAUR, GARUDA],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+        {
+          id: P2,
+          squad: [MINOTAUR, GARUDA, VOID_SUMMONER],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+      ],
+    });
+    // Starting die slot 4 is Shield (untyped).
+    let state = withPhase(state0, "roll");
+    state = withDie(state, dieIdOf(state), { retained: true, rolledSlotIndex: 4 });
+    state = withDie(state, dieIdOf(state, P1, 1), { retained: true, rolledSlotIndex: 1 });
+    state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P1 }));
+    const shield = Object.values(state.symbols).find(
+      (s) => s.symbol === SHIELD && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
+    );
+    if (shield === undefined) throw new Error("shield");
+    const absorber = creatureIdAt(state, P1, 1);
+    const after = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: absorber,
+        symbolId: shield.id,
+      }),
+    );
+    const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
+    expect(arcane).toHaveLength(0);
   });
 });
 

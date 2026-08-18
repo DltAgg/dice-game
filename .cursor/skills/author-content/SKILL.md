@@ -58,7 +58,8 @@ Card Progress:
 ```
 
 1. Identify kind: **instant** / **reaction** / **equipment** / **overload**,
-   **ritual** (subtypes instant / reaction / continuous), or **face** (natural / synthetic).
+   **ritual** (subtypes instant / reaction / continuous), or **face**
+   (natural / synthetic / untyped).
 2. Check [design.md](design.md) — identity, cost band, what the card is *for*.
 3. Align names and attributes with English specs (`002` / `003` / `004`).
 4. Timing print → [standardize-card-effects](../standardize-card-effects/SKILL.md).
@@ -83,7 +84,8 @@ Card Progress:
 |---|---|---|
 | Hand card / ritual | `card-<kebab>` | `card-great-contamination` |
 | Creature | `creature-<kebab>` | `creature-minotaur` |
-| Natural face | `face-natural-<attr\|shield>` | `face-natural-arcane` |
+| Natural face | `face-natural-<attr>` | `face-natural-arcane` |
+| Untyped face | `face-untyped-shield` | `face-untyped-shield` |
 | Synthetic / named | `face-synthetic-<kebab>` | `face-synthetic-crush` |
 | Attack | `attack-<creature>-<kebab>` | `attack-minotaur-heavy-axe` |
 | Ability | `ability-<creature>-<kebab>` | `ability-warden-ward` |

@@ -35,6 +35,7 @@ export {
   attributeLabel,
   formatEffectRegion,
   formatEnergyCost,
+  formatFaceKind,
   formatForgeLine,
   formatRequirementLine,
   formatTypeLine,

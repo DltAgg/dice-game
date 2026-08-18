@@ -43,7 +43,7 @@ are that union; creatures/rituals reuse it).
 | Hunter's Collar | `on-change-position` self | generate Martial |
 | Predator's Claws | `on-absorb` Wild | `reposition-creature` → source-creature |
 | Mirrored Rune | `on-absorb` self | Need copy effect |
-| Void Summoner | `on-absorb` any + Natural | Natural face filter |
+| Void Summoner | `on-absorb` any + Natural | Natural face filter (not untyped Shield) |
 | Garuda Dive | attack `followUpEffects` | `swap-positions` + `choose-allied-frontline` |
 | War Minotaur Poisoned Charge | attack `followUpEffects` + conditional | back-row ally swap |
 

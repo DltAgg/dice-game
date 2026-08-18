@@ -62,7 +62,7 @@ type PlayerRelation = "controller" | "opponent" | "any";
 | `On roll Corruption:` (host controller) | `on-roll-symbol` + `rollingPlayer: "controller"` |
 | `On opponent roll Corruption:` | `on-roll-symbol` + `rollingPlayer: "opponent"` |
 | `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "self"` |
-| `On absorb Natural:` (any creature / ritual) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter) |
+| `On absorb Natural:` (any creature / ritual) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
 
 ## Workflow
 
