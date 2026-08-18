@@ -23,6 +23,7 @@ description: >-
 | Shell tabs | `src/app/App.tsx` |
 | Lobby | `src/ui/match/Lobby.tsx` |
 | Board | `src/ui/match/MatchBoard.tsx` |
+| Metrics dashboard | `src/ui/metrics/MetricsDashboard.tsx` |
 | Match store | `src/store/matchStore.ts` |
 | Deck store | `src/store/deckStore.ts` |
 | Deck repo | `src/decks/` |
@@ -38,6 +39,8 @@ description: >-
 - `docs/specs/005-local-match-ui.md`
 - `docs/specs/006-deck-persistence.md`
 - `docs/specs/007-peerjs.md`
+- Metrics tab → `docs/specs/014-match-metrics.md` — observer only; do not put
+  rules in the dashboard. Collector lives in `src/metrics/`.
 
 ## Verify
 

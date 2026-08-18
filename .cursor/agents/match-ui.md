@@ -44,8 +44,7 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
 - Deck builder: name, squad, tactics, faces, live legality; save illegal drafts
   for later; **Play** still refuses illegal loadouts.
 - Catalogue views: render existing content; do not author cards.
-- Stores: `src/store/matchStore.ts` (`dispatch` → `advance` or host/client
-  session), `src/store/deckStore.ts`.
+- Metrics dashboard: `src/ui/metrics/`, store `src/store/metricsStore.ts`, collector hook in `matchStore` / host `onAdvance`. Observer only — spec `014`.
 - Persistence: `src/decks/` (`DeckRepository`, localStorage, `schemaVersion`).
   Ids via nanoid **only** at this boundary.
 - Networking: `src/networking/` wraps `advance()` on the host and ships JSON

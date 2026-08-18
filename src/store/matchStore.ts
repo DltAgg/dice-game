@@ -27,13 +27,14 @@ import {
   readOnlineSessionHint,
   writeOnlineSessionHint,
 } from "./onlineSessionHint.js";
+import { trackMetrics } from "./trackMetrics.js";
 
 const P1 = asPlayerId("p1");
 const P2 = asPlayerId("p2");
 
 const deckRepo = createLocalStorageDeckRepository();
 
-export type MatchView = "lobby" | "match" | "catalogue" | "decks";
+export type MatchView = "lobby" | "match" | "catalogue" | "decks" | "metrics";
 export type MatchMode = "local" | "host" | "client";
 
 function requireDeck(id: SavedDeckId): SavedDeck {
@@ -89,6 +90,34 @@ function newMatchState(
       { id: P1, squad: p1.squad, deck: p1.deck, faceDeck: p1.faceDeck },
       { id: P2, squad: p2.squad, deck: p2.deck, faceDeck: p2.faceDeck },
     ],
+  });
+}
+
+function deckName(id: SavedDeckId): string {
+  return deckRepo.get(id)?.name ?? id;
+}
+
+function observeMatch(
+  prevState: GameState | null,
+  state: GameState,
+  action: GameAction | null,
+  accepted: boolean,
+  error: GameError | null,
+): void {
+  const snapshot = useMatchStore.getState();
+  trackMetrics({
+    prevState,
+    state,
+    action,
+    accepted,
+    error,
+    recordedAs: snapshot.mode,
+    roomCode: snapshot.roomCode,
+    localPlayerId: snapshot.localPlayerId,
+    p1DeckId: snapshot.p1DeckId,
+    p2DeckId: snapshot.p2DeckId,
+    p1DeckName: deckName(snapshot.p1DeckId),
+    p2DeckName: deckName(snapshot.p2DeckId),
   });
 }
 
@@ -204,14 +233,17 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         set({ playBlockReason: blocked });
         return;
       }
+      const prev = get().state;
+      const next = newMatchState(nextSeed, p1, p2);
       set({
-        state: newMatchState(nextSeed, p1, p2),
+        state: next,
         lastError: null,
         playBlockReason: null,
         seed: nextSeed,
         p1DeckId: p1,
         p2DeckId: p2,
       });
+      observeMatch(prev, next, null, true, null);
     },
 
     clearError: () => set({ lastError: null }),
@@ -228,6 +260,8 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         return;
       }
       const nextSeed = Date.now() % 100_000;
+      const prev = get().state;
+      const next = newMatchState(nextSeed, p1, p2);
       set({
         mode: "local",
         localPlayerId: null,
@@ -235,13 +269,14 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         connectionStatus: "local",
         onlineReady: true,
         view: "match",
-        state: newMatchState(nextSeed, p1, p2),
+        state: next,
         seed: nextSeed,
         p1DeckId: p1,
         p2DeckId: p2,
         lastError: null,
         playBlockReason: null,
       });
+      observeMatch(prev, next, null, true, null);
     },
 
     hostRoom: async (deckId, options) => {
@@ -294,12 +329,19 @@ export const useMatchStore = create<MatchStore>((set, get) => {
           ...(restoredState !== undefined ? { restoredState } : {}),
           onState: (state) => {
             persistHostHint(roomCode, chosen, state.rng.seed, state);
+            const prev = get().state;
             set({
               state,
               seed: state.rng.seed,
               onlineReady: true,
               lastError: null,
             });
+            if (prev.matchId !== state.matchId) {
+              observeMatch(null, state, null, true, null);
+            }
+          },
+          onAdvance: ({ prev, next, action, ok, error }) => {
+            observeMatch(prev, ok ? next : prev, action, ok, error);
           },
           onError: (error) => set({ lastError: error }),
           onStatus: (connectionStatus) => set({ connectionStatus }),
@@ -402,13 +444,16 @@ export const useMatchStore = create<MatchStore>((set, get) => {
           transport,
           hostPeerId: code,
           loadout,
-          onState: (state) =>
+          onState: (state) => {
+            const prev = get().state;
             set({
               state,
               seed: state.rng.seed,
               onlineReady: true,
               lastError: null,
-            }),
+            });
+            observeMatch(prev, state, null, true, null);
+          },
           onWelcome: (playerId) => {
             persistGuestHint(code, chosen);
             set({
@@ -483,12 +528,15 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       const { mode, localPlayerId } = get();
 
       if (mode === "local") {
-        const result = advance(get().state, action);
+        const prev = get().state;
+        const result = advance(prev, action);
         if (result.ok) {
           set({ state: result.state, lastError: null });
+          observeMatch(prev, result.state, action, true, null);
           return true;
         }
         set({ lastError: result.error });
+        observeMatch(prev, prev, action, false, result.error);
         return false;
       }
 

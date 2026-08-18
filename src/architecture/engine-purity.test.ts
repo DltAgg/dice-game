@@ -85,7 +85,7 @@ describe("game engine purity", () => {
     expect(banned).toEqual([]);
 
     const outward = specifiers.filter((specifier) =>
-      /^@\/(ui|store|networking|app|decks)\b/.test(specifier),
+      /^@\/(ui|store|networking|app|decks|metrics)\b/.test(specifier),
     );
     expect(outward).toEqual([]);
   });

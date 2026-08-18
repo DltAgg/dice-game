@@ -20,7 +20,7 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 ## Before you change code
 
-1. Identify the layer: `game` (rules) · `store` · `decks` · `networking` · `ui`.
+1. Identify the layer: `game` (rules) · `store` · `decks` · `networking` · `metrics` · `ui`.
 2. If the change is **rules or content**, stay inside `src/game` and keep it pure.
 3. If the change is **online**, host owns `reduce()`; clients send intents only.
 4. Prefer extending data (`EffectDefinition`, catalogues) over special-casing UI.
@@ -37,6 +37,7 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
 | Match UI / lobby / decks | Subagent: [match-ui](.cursor/agents/match-ui.md) + skill [match-ui](.cursor/skills/match-ui/SKILL.md) — do not put rules there |
 | Builtin / constructed loadouts, card-has-no-home, attribute identity in builds | Subagent: [deck-designer](.cursor/agents/deck-designer.md) |
+| Match metrics, pacing charts, agent export of playtest recordings | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/metrics` (spec `014`) |
 | PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/networking` + `docs/specs/007-peerjs.md` |
 
 ## Subagents
@@ -61,6 +62,7 @@ than doing their job in the parent thread.
 | `docs/specs/005-local-match-ui.md` | Hotseat UI |
 | `docs/specs/006-deck-persistence.md` | Deck builder / loadouts |
 | `docs/specs/007-peerjs.md` | Online host authority |
+| `docs/specs/014-match-metrics.md` | Observer telemetry, dashboard, agent export |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
 | `docs/DEFERRED_CATALOGUE.md` | Print clauses not fully modelled |
 
@@ -74,7 +76,7 @@ Do not commit unless the user asks. Do not push unless the user asks.
 
 ## Hard rules (summary)
 
-- `src/game` cannot import React, Zustand, PeerJS, nanoid, or touch DOM / storage / network / clock / `Math.random`.
+- `src/game` cannot import React, Zustand, PeerJS, nanoid, `@/metrics`, or touch DOM / storage / network / clock / `Math.random`.
 - Effects are **data** (discriminated unions), never functions.
 - Content ids: `card-*`, `creature-*`, `face-*`, `attack-*`, `ability-*` (kebab after prefix).
 - Attachment types (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region and ritual subtypes.

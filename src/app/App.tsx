@@ -3,6 +3,7 @@ import { CardCatalogue } from "@/ui/cards/CardCatalogue";
 import { DeckBuilder } from "@/ui/decks/DeckBuilder";
 import { Lobby } from "@/ui/match/Lobby";
 import { MatchBoard } from "@/ui/match/MatchBoard";
+import { MetricsDashboard } from "@/ui/metrics/MetricsDashboard";
 import { useMatchStore, type MatchView } from "@/store/matchStore";
 
 export function App() {
@@ -27,6 +28,7 @@ export function App() {
           onClick={() => setView("catalogue")}
           label="Catalogue"
         />
+        <Tab active={view === "metrics"} onClick={() => setView("metrics")} label="Metrics" />
       </nav>
 
       {view === "lobby" ? (
@@ -35,6 +37,8 @@ export function App() {
         <MatchBoard />
       ) : view === "decks" ? (
         <DeckBuilder />
+      ) : view === "metrics" ? (
+        <MetricsDashboard />
       ) : (
         <main className="mx-auto max-w-6xl px-6 py-10">
           <CardCatalogue />

@@ -32,8 +32,9 @@ src/
 │
 ├── store/                 Zustand match + deck stores
 ├── decks/                 DeckRepository (localStorage) + loadout helpers
+├── metrics/               match telemetry observer (IndexedDB / localStorage)
 ├── networking/            PeerJS host/client adapters (no rules)
-├── ui/                    React: match board, lobby, deck builder, catalogues
+├── ui/                    React: match board, lobby, deck builder, catalogues, metrics
 ├── app/                   Vite entry / shell
 └── architecture/          the purity guard
 ```

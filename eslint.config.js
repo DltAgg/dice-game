@@ -47,9 +47,10 @@ export default tseslint.config(
             { name: "zustand", message: "The game engine must not depend on Zustand." },
             { name: "peerjs", message: "The game engine must not depend on PeerJS." },
             { name: "nanoid", message: "Ids entering the engine are supplied by the caller." },
+            { name: "@/metrics", message: "Metrics is an adapter, not a rules source." },
           ],
           patterns: [
-            { group: ["@/ui/*", "@/store/*", "@/networking/*", "@/decks/*", "@/app/*"] },
+            { group: ["@/ui/*", "@/store/*", "@/networking/*", "@/decks/*", "@/app/*", "@/metrics/*"] },
           ],
         },
       ],

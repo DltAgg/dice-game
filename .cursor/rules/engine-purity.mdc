@@ -10,7 +10,7 @@ alwaysApply: false
 
 Forbidden inside `src/game`:
 
-- Imports of React, Zustand, PeerJS, nanoid, `@/ui`, `@/store`, `@/networking`, `@/decks`, `@/app`
+- Imports of React, Zustand, PeerJS, nanoid, `@/ui`, `@/store`, `@/networking`, `@/decks`, `@/app`, `@/metrics`
 - `window`, `document`, `localStorage`, `fetch`, `WebSocket`
 - `Date.now()`, `Math.random()` — randomness only via injected `RNG`
 

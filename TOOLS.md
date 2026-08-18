@@ -44,6 +44,7 @@ npm run typecheck && npm test && npm run lint
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 | Match store | `src/store/matchStore.ts` |
 | Deck store / localStorage | `src/store/deckStore.ts`, `src/decks/` |
+| Match metrics / IndexedDB | `src/metrics/`, `src/ui/metrics/`, `src/store/metricsStore.ts` |
 | PeerJS sessions | `src/networking/` |
 
 ## Tests that matter for content
@@ -89,6 +90,7 @@ Details: `docs/specs/007-peerjs.md`.
 | `.cursor/skills/develop-engine/` | New effect AST, reducer, hooks |
 | `.cursor/skills/implement-hooks/` | Shared standing trigger events (`010`) |
 | `.cursor/skills/match-ui/` | Lobby / MatchBoard / stores |
+| `.cursor/skills/analyze-match-metrics/` | Diagnose pacing from a Metrics export |
 
 ## Subagents (project)
 

@@ -27,6 +27,18 @@ export interface HostSessionOptions {
   /** Resume after host refresh: keep the same match instead of `createMatch`. */
   readonly restoredState?: GameState;
   readonly onState: (state: GameState) => void;
+  /**
+   * Fires after every `advance()` the host runs (local or guest), including
+   * rejects. Metrics observes this; `onState` still broadcasts successful
+   * snapshots only.
+   */
+  readonly onAdvance?: (event: {
+    readonly prev: GameState;
+    readonly next: GameState;
+    readonly action: GameAction;
+    readonly ok: boolean;
+    readonly error: GameError | null;
+  }) => void;
   readonly onError?: (error: GameError) => void;
   readonly onGuestJoined?: (peerId: string) => void;
   readonly onGuestLeft?: () => void;
@@ -47,6 +59,15 @@ export class HostSession {
   private readonly hostLoadout: WireLoadout;
   private readonly seed: number;
   private readonly onState: (state: GameState) => void;
+  private readonly onAdvance:
+    | ((event: {
+        readonly prev: GameState;
+        readonly next: GameState;
+        readonly action: GameAction;
+        readonly ok: boolean;
+        readonly error: GameError | null;
+      }) => void)
+    | undefined;
   private readonly onError: ((error: GameError) => void) | undefined;
   private readonly onGuestJoined: ((peerId: string) => void) | undefined;
   private readonly onGuestLeft: (() => void) | undefined;
@@ -65,6 +86,7 @@ export class HostSession {
     const resumeState = options.restoredState ?? options.initialState;
     this.seed = resumeState?.rng.seed ?? options.seed ?? Date.now() % 100_000;
     this.onState = options.onState;
+    this.onAdvance = options.onAdvance;
     this.onError = options.onError;
     this.onGuestJoined = options.onGuestJoined;
     this.onGuestLeft = options.onGuestLeft;
@@ -218,9 +240,17 @@ export class HostSession {
     if (this.state === null) return false;
 
     const bound: GameAction = { ...action, playerId: seat };
+    const prev = this.state;
     const result = advance(this.state, bound);
 
     if (!result.ok) {
+      this.onAdvance?.({
+        prev,
+        next: result.state,
+        action: bound,
+        ok: false,
+        error: result.error,
+      });
       if (clientSeq !== undefined && this.guestPeerId !== null) {
         this.send(this.guestPeerId, {
           v: 1,
@@ -236,6 +266,13 @@ export class HostSession {
 
     this.state = result.state;
     this.actionLog.push(bound);
+    this.onAdvance?.({
+      prev,
+      next: this.state,
+      action: bound,
+      ok: true,
+      error: null,
+    });
     this.onState(this.state);
 
     if (this.guestPeerId !== null) {
