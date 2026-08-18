@@ -22,6 +22,7 @@ import {
   formatAttackLine,
   formatEffectRegion,
   formatEnergyCost,
+  formatFaceKind,
   formatForgeLine,
   formatRequirementLine,
   formatTypeLine,
@@ -66,7 +67,7 @@ import {
   type DieSlotChoiceFilter,
   type DualKindAttribute,
   type FaceCardId,
-  type FaceKind,
+  type ForgeableFaceKind,
   type GameState,
   type ChainLink,
   type PlayerId,
@@ -1878,7 +1879,7 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       return "Waiting for the opponent to choose a face from their pool to install on your die.";
     }
     const pending = state.pendingDecision;
-    const kind = pending.kind === "natural" ? "Natural" : "Synthetic";
+    const kind = formatFaceKind(pending.kind);
     const where = pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
     return `Choose a ${kind} ${pending.attribute} face from your face pool, then install it on ${where} (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}).`;
   }
@@ -1887,7 +1888,7 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       return "Waiting for the opponent to replace a Synthetic face on their die.";
     }
     const pending = state.pendingDecision;
-    const kind = pending.kind === "natural" ? "Natural" : "Synthetic";
+    const kind = formatFaceKind(pending.kind);
     return `Choose a ${kind} ${pending.attribute} face on your die to uninstall, then a different matching face from your pool to install (no forge-draw).`;
   }
   if (state.pendingDecision?.type === "choose-die") {
@@ -2928,8 +2929,7 @@ function FaceCardTile({
 
   const face = getFaceCard(entry.faceCardId);
   const activated = face?.activated;
-  const kindLabel =
-    face === undefined ? "?" : face.kind === "natural" ? "Natural" : "Synthetic";
+  const kindLabel = face === undefined ? "?" : formatFaceKind(face.kind);
   const stayBits = stayStatusForFace(state, playerId, entry.faceCardId);
   const showingSlots = showingSlotsForFace(state, playerId, entry.faceCardId);
   const markerBits = faceMarkerSummary(state, playerId, entry.faceCardId);
@@ -3414,7 +3414,7 @@ function FaceChoiceContent({ faceCardId }: { faceCardId: FaceCardId }) {
     return <p className="text-sm font-medium text-stone-100">{faceCardId}</p>;
   }
 
-  const kindLabel = face.kind === "natural" ? "Natural" : "Synthetic";
+  const kindLabel = formatFaceKind(face.kind);
 
   return (
     <>
@@ -5057,7 +5057,7 @@ function FacePickModal({
 }: {
   state: GameState;
   playerId: PlayerId;
-  kind: FaceKind;
+  kind: ForgeableFaceKind;
   attribute: SymbolType;
   forgingCard?: { readonly forgeTags?: readonly string[] };
   /** When set, overrides forge eligibility (e.g. Reforge pool-only list). */
@@ -5138,7 +5138,7 @@ function ReplaceSyntheticFacePrompt({
   onClearSlot: () => void;
   onPickFace: (faceCardId: FaceCardId) => void;
 }) {
-  const kindLabel = pending.kind === "natural" ? "Natural" : "Synthetic";
+  const kindLabel = formatFaceKind(pending.kind);
   const legalSlots = legalSlotsForReplaceSyntheticFace(
     state,
     pending.controllerId,
@@ -5256,7 +5256,7 @@ function ForgeFacesPrompt({
     pending.target === "own-die"
       ? pending.controllerId
       : opponentOf(state, pending.controllerId);
-  const kindLabel = pending.kind === "natural" ? "Natural" : "Synthetic";
+  const kindLabel = formatFaceKind(pending.kind);
   const where =
     pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
   const chosenFace = selectedFaceCardId !== undefined ? getFaceCard(selectedFaceCardId) : undefined;

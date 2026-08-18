@@ -1,5 +1,5 @@
 import type { Attribute } from "./attributes.js";
-import type { FaceKind } from "./dice.js";
+import type { FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { EffectDefinition } from "./effects.js";
 import type { CardId, CardInstanceId, CreatureId, FaceCardId, PlayerId } from "./ids.js";
 import type { SymbolRequirement, SymbolType, AttributeTokens } from "./symbols.js";
@@ -72,7 +72,7 @@ export type ForgeTarget = "own-die" | "opponent-die";
  */
 export interface ForgeRegion {
   readonly faces: number;
-  readonly kind: FaceKind;
+  readonly kind: ForgeableFaceKind;
   readonly attribute: Attribute;
   readonly target: ForgeTarget;
 }
@@ -161,12 +161,14 @@ export type StandingTrigger =
    * When a creature or ritual absorbs a symbol. Default absorber is the host
    * (`self`). Optional `symbols` / `faceKinds` filters; omit to fire on any
    * absorb. Ritual assignment shares this event; identity is instance id.
+   * `oncePerTurn` spends a host key (Lens Choir).
    */
   | {
       readonly type: "on-absorb";
       readonly symbols?: readonly SymbolType[];
       readonly faceKinds?: readonly FaceKind[];
       readonly absorberRelation?: CreatureRelation;
+      readonly oncePerTurn?: boolean;
       readonly effects: readonly EffectDefinition[];
     }
   /**

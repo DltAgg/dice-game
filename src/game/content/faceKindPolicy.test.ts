@@ -9,7 +9,7 @@ import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { SHIELD } from "../model/symbols.js";
 import { isLegalForgeKindForAttribute, validateFaceDeck } from "../rules/faces.js";
 import { ALL_CARDS } from "./cards.js";
-import { ALL_FACE_CARDS, FACE_CARDS, syntheticFaceId } from "./faces.js";
+import { ALL_FACE_CARDS, FACE_CARDS, SHIELD_FACE_ID, syntheticFaceId } from "./faces.js";
 
 describe("attribute face-kind policy", () => {
   it("allows natural faces only for Martial / Wild / Arcane / Luminar", () => {
@@ -23,12 +23,12 @@ describe("attribute face-kind policy", () => {
       expect(isLegalForgeKindForAttribute("natural", attribute)).toBe(false);
       expect(isLegalForgeKindForAttribute("synthetic", attribute)).toBe(true);
     }
+    expect(isLegalForgeKindForAttribute("untyped", "martial")).toBe(false);
   });
 
   it("catalogues no natural faces for synthetic-only attributes", () => {
     for (const face of Object.values(FACE_CARDS)) {
       if (face.kind !== "natural") continue;
-      if (face.symbol === SHIELD) continue;
       expect(
         attributeAllowsNaturalFaces(face.symbol as Attribute),
         `${face.name} (${face.id}) is natural but ${face.symbol} is synthetic-only`,
@@ -68,8 +68,15 @@ describe("card forge regions respect face-kind policy", () => {
 });
 
 describe("listed face catalogue basics", () => {
-  it("publishes natural basics only for dual-kind attributes plus Shield", () => {
+  it("publishes natural basics only for dual-kind attributes", () => {
     const basics = ALL_FACE_CARDS.filter((face) => face.kind === "natural");
-    expect(basics.map((face) => face.symbol)).toEqual([...DUAL_KIND_ATTRIBUTES, SHIELD]);
+    expect(basics.map((face) => face.symbol)).toEqual([...DUAL_KIND_ATTRIBUTES]);
+  });
+
+  it("catalogues Shield as the untyped starting face", () => {
+    const shield = FACE_CARDS[SHIELD_FACE_ID];
+    expect(shield?.kind).toBe("untyped");
+    expect(shield?.symbol).toBe(SHIELD);
+    expect(shield?.id).toBe("face-untyped-shield");
   });
 });

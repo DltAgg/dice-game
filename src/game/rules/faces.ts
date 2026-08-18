@@ -1,6 +1,6 @@
 import { getFaceCard } from "../content/faces.js";
 import { attributeAllowsNaturalFaces, isAttribute } from "../model/attributes.js";
-import type { DieSlot, DieState, FaceKind } from "../model/dice.js";
+import type { DieSlot, DieState, FaceKind, ForgeableFaceKind } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { DieId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -122,9 +122,10 @@ export function validateFaceDeck(
   return { ok: true };
 }
 
-/** Whether a forge region's kind is legal for the named attribute. */
+/** Whether a forge region's kind is legal for the named attribute. Untyped is never forgeable. */
 export function isLegalForgeKindForAttribute(kind: FaceKind, attribute: SymbolType): boolean {
   if (!isAttribute(attribute)) return false;
+  if (kind === "untyped") return false;
   if (kind === "synthetic") return true;
   return attributeAllowsNaturalFaces(attribute);
 }
@@ -133,7 +134,7 @@ export function isLegalForgeKindForAttribute(kind: FaceKind, attribute: SymbolTy
 export function matchingFacesInPool(
   state: GameState | Draft,
   playerId: PlayerId,
-  kind: FaceKind,
+  kind: ForgeableFaceKind,
   attribute: SymbolType,
 ): readonly FaceCardId[] {
   if (!isLegalForgeKindForAttribute(kind, attribute)) return [];
@@ -152,7 +153,7 @@ export function matchingFacesInPool(
 export function eligibleFacesForForge(
   state: GameState | Draft,
   playerId: PlayerId,
-  kind: FaceKind,
+  kind: ForgeableFaceKind,
   attribute: SymbolType,
   forgingCard?: { readonly forgeTags?: readonly string[] },
 ): readonly FaceCardId[] {
@@ -202,7 +203,7 @@ export function eligibleFacesForForge(
 export function resolveFaceForForge(
   state: GameState | Draft,
   playerId: PlayerId,
-  kind: FaceKind,
+  kind: ForgeableFaceKind,
   attribute: SymbolType,
   forgingCard?: { readonly forgeTags?: readonly string[] },
 ): FaceCardId | null {
@@ -340,7 +341,7 @@ export function hasLegalForgeFacesChoice(
   state: GameState | Draft,
   controllerId: PlayerId,
   faces: number,
-  kind: FaceKind,
+  kind: ForgeableFaceKind,
   attribute: SymbolType,
   target: "own-die" | "opponent-die",
 ): boolean {
@@ -360,7 +361,7 @@ export function hasLegalForgeFacesChoice(
 export function eligiblePoolFacesForReplace(
   state: GameState | Draft,
   playerId: PlayerId,
-  kind: FaceKind,
+  kind: ForgeableFaceKind,
   attribute: SymbolType,
   excludedFaceCardId: FaceCardId,
 ): readonly FaceCardId[] {
@@ -376,7 +377,7 @@ export function eligiblePoolFacesForReplace(
 export function legalSlotsForReplaceSyntheticFace(
   state: GameState | Draft,
   controllerId: PlayerId,
-  kind: FaceKind,
+  kind: ForgeableFaceKind,
   attribute: SymbolType,
 ): ReadonlyArray<{ readonly dieId: DieId; readonly slotIndex: number }> {
   const player = state.players[controllerId];
@@ -405,7 +406,7 @@ export function legalSlotsForReplaceSyntheticFace(
 export function hasLegalReplaceSyntheticFaceChoice(
   state: GameState | Draft,
   controllerId: PlayerId,
-  kind: FaceKind,
+  kind: ForgeableFaceKind,
   attribute: SymbolType,
 ): boolean {
   return legalSlotsForReplaceSyntheticFace(state, controllerId, kind, attribute).length > 0;

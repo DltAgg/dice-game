@@ -1,6 +1,6 @@
 import type { Attribute, DualKindAttribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
-import type { FaceKind } from "./dice.js";
+import type { FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { SymbolType } from "./symbols.js";
 
 /**
@@ -139,7 +139,7 @@ export type EffectDefinition =
   | {
       readonly type: "forge-faces";
       readonly faces: number;
-      readonly kind: FaceKind;
+      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
     }
@@ -151,7 +151,7 @@ export type EffectDefinition =
    */
   | {
       readonly type: "replace-synthetic-face";
-      readonly kind: FaceKind;
+      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
     }
   /**

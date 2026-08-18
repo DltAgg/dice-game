@@ -18,6 +18,7 @@ import {
   type PlayerId,
   type SymbolInstanceId,
 } from "../model/ids.js";
+import type { FaceKind } from "../model/dice.js";
 import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { isSyntheticOnlyAttribute } from "../model/attributes.js";
@@ -317,7 +318,7 @@ function poolSymbols(draft: Draft, playerId: PlayerId) {
   );
 }
 
-function faceKindOfSymbol(draft: Draft, sourceDieId: DieId | null): "natural" | "synthetic" | null {
+function faceKindOfSymbol(draft: Draft, sourceDieId: DieId | null): FaceKind | null {
   if (sourceDieId === null) return null;
   const die = draft.dice[sourceDieId];
   const slot = die?.rolledSlotIndex;

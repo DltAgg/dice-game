@@ -38,7 +38,7 @@ Do **not** use “Whenever…”, “When you…”, or “When this creature…
 | `on-deal-damage` | `On deal damage:` |
 | `on-toxin-damage` | `On toxin damage:` |
 | `on-roll-symbol` | `On roll <Symbol>:` / `On opponent roll <Symbol>:` |
-| `on-absorb` | `On absorb:` / `On absorb <Symbol>:` / `On absorb Natural:` |
+| `on-absorb` | `On absorb:` / `On absorb <Symbol>:` / `On absorb Natural:` / `On absorb <Symbol>, once per turn:` |
 | `on-attack` | `On attack:` / `On basic attack:` / `On special attack:` / `On attack, another ally:` |
 | `on-take-damage` | `On take damage:` (add `, once per turn` before the colon when needed) |
 | `on-discard` | `On discard:` |

@@ -369,6 +369,9 @@ function fireOnAbsorb(
       if (!matchesAbsorberRelation(relation, host, absorber, absorberOwnerId)) {
         continue;
       }
+      const key = onceKey(host.keyPrefix, "on-absorb");
+      if (ability.oncePerTurn === true && isSpent(draft, host.hostCreatureId, key)) continue;
+      if (ability.oncePerTurn === true) markSpent(draft, host.hostCreatureId, key);
       const declaredTarget =
         absorber.kind === "creature" ? absorber.id : null;
       pushAbilityEffects(

@@ -193,8 +193,10 @@ Wild, Arcane and Luminar, not renames.
 
 **Status:** `DECIDED` · implemented
 
-- **Not an attribute.** Shield is the one untyped face. It is the single
-  exception to *Every symbol is attribute-typed* above.
+- **Not an attribute.** Shield is the one untyped face (`FaceKind: "untyped"`).
+  It is the single exception to *Every symbol is attribute-typed* above, and it
+  is **not** a Natural face. `On absorb Natural` (Void Summoner) does not fire
+  when a Shield is absorbed.
 - **One shield prevents 1 damage, once.** It is spent doing so.
 - **Shields stack and persist across turns** until something spends them.
 - **Costs can never require it**, which is enforced by the type of

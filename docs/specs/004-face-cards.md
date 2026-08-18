@@ -20,7 +20,7 @@ dice, the card returns to its owner.
 |---|---|
 | Face deck holds up to 12 cards | bible §12 |
 | At most 3 face cards of the same attribute | bible §12 |
-| Starting natural faces are separate from the 12-card limit | bible §12 |
+| Starting natural / untyped faces are separate from the 12-card limit | bible §12 |
 | A face card is in the pool XOR installed — never both | bible §12 |
 | Ownership is independent of which die the face sits on | bible §12 |
 | Forging may copy an already-installed face, or take one from the pool | bible §13 |
@@ -35,14 +35,21 @@ Identity faces on the starting die. Footer `+1 Attribute`. Overload capacity 1.
 No inherent effect.
 
 **Dual-kind attributes** (natural + synthetic allowed): Martial, Wild, Arcane,
-Luminar, plus Shield (`+1 Shield`).
+Luminar.
+
+### Basics (Untyped)
+
+**Shield** (`+1 Shield`, `kind: "untyped"`, id `face-untyped-shield`). Starting-die
+identity face: no inherent effect, overload capacity 1. Shield is not an attribute
+and is not Natural — `On absorb Natural` (Void Summoner) does not fire when a
+Shield is absorbed.
+
+### Specials (Synthetic)
 
 **Synthetic-only attributes** (no natural faces / natural forges): Toxin,
 Mechanical, Corruption, Darkness. Enforced by `DUAL_KIND_ATTRIBUTES` /
 `SYNTHETIC_ONLY_ATTRIBUTES` in `src/game/model/attributes.ts`, face-deck
 validation, forge eligibility, and catalogue consistency tests.
-
-### Specials (Synthetic)
 
 Effectful forge-target generics (same `face-synthetic-<attr>` ids as the old
 blank “Forged …” cards for Arcane / Toxin / Mechanical / Corruption / Darkness):

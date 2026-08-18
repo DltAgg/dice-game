@@ -98,7 +98,7 @@ Card Progress:
 - [ ] 7. DoD
 ```
 
-Ids: `card-*`, `creature-*`, `face-natural-*` / `face-synthetic-*`, `attack-*`,
+Ids: `card-*`, `creature-*`, `face-natural-*` / `face-synthetic-*` / `face-untyped-*`, `attack-*`,
 `ability-*`. Const exports: `SCREAMING_SNAKE`.
 
 ## Out of scope

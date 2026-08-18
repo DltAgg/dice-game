@@ -44,7 +44,7 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 4. **On-absorb.** When a creature **or ritual** absorbs symbol `S`
    (`ABSORB_SYMBOL` / `ABSORB_SYMBOL_TO_RITUAL`), fire `on-absorb` abilities
    whose `absorberRelation` matches (`self` default, `ally`, `ally-other`,
-   `any`) and optional `symbols` / `faceKinds` filters. Absorber identity is
+   `any`) and optional `symbols` / `faceKinds` / `oncePerTurn` filters. Absorber identity is
    the creature id or ritual **card instance** id (not a definition id).
    `self` matches that host instance; `ally` is same owner (includes self).
    Fire **after** ritual Active-when credit and orientation refresh, so a
@@ -102,6 +102,8 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 - [x] Toxic Blessing: roll → `arm-attack-toxin`; attacks apply toxin.
 - [x] Hunter's Collar: position change → Martial.
 - [x] Void Summoner: any Natural absorb → generate Arcane (creature or ritual).
+      Untyped Shield absorb does not count.
+- [x] Lens Choir: On absorb Luminar, once per turn → generate Luminar (no self-loop).
 - [x] War Axe: Basic-only `attack-damage-bonus` via `attackKinds`.
 - [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy
       (creature **or** allied ritual assignment).

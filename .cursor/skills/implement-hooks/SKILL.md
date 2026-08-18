@@ -62,7 +62,8 @@ type PlayerRelation = "controller" | "opponent" | "any";
 | `On roll Corruption:` (host controller) | `on-roll-symbol` + `rollingPlayer: "controller"` |
 | `On opponent roll Corruption:` | `on-roll-symbol` + `rollingPlayer: "opponent"` |
 | `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "self"` |
-| `On absorb Natural:` (any creature / ritual) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter) |
+| `On absorb <Symbol>, once per turn:` | `on-absorb` + `oncePerTurn` (Lens Choir) |
+| `On absorb Natural:` (any creature / ritual) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
 
 ## Workflow
 
@@ -92,7 +93,7 @@ Hook Progress:
 
 Track spent keys on `CreatureState` / player (e.g.
 `spentOncePerTurnTriggers`) keyed by host + trigger kind; clear on `END_TURN`.
-Ability sets `oncePerTurn: true` (Insignia, Hunting Armour).
+Ability sets `oncePerTurn: true` (Insignia, Hunting Armour, Lens Choir).
 
 ## Anti-patterns
 
