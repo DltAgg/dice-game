@@ -6,8 +6,13 @@ import {
   formatAgentPrompt,
   formatMetricsMarkdown,
   insightsFor,
+  firstAttackTurn,
+  firstDamageTurn,
+  firstDefeatTurn,
   forgeCardCountOf,
   forgeCardsOnTurn,
+  energySpentOf,
+  energySpentOnTurn,
   matchPace,
   turnKind,
   type Insight,
@@ -179,6 +184,30 @@ export function MetricsDashboard() {
           warn={aggregates.meanDamagePerTurn !== null && aggregates.meanDamagePerTurn < 2}
         />
         <StatCard
+          label="Median first death"
+          value={aggregates.medianFirstDefeatTurn?.toFixed(1) ?? "—"}
+          hint={`dmg T${aggregates.medianFirstDamageTurn?.toFixed(0) ?? "—"} · atk T${aggregates.medianFirstAttackTurn?.toFixed(0) ?? "—"} · never ${formatPct(aggregates.pctNeverDefeat)}`}
+          warn={
+            (aggregates.medianFirstDefeatTurn !== null && aggregates.medianFirstDefeatTurn <= 3) ||
+            (aggregates.pctNeverDefeat !== null && aggregates.pctNeverDefeat >= 40)
+          }
+        />
+        <StatCard
+          label="Energy spent / turn"
+          value={aggregates.meanEnergySpentPerTurn?.toFixed(2) ?? "—"}
+          hint="Amounts from energy-spent, not event counts"
+        />
+        <StatCard
+          label="First-player wins"
+          value={formatPct(aggregates.firstPlayerWinRate === null ? null : aggregates.firstPlayerWinRate * 100)}
+          hint={`n=${String(aggregates.firstPlayerDecided)} · P1 ${formatPct(aggregates.p1WinRate === null ? null : aggregates.p1WinRate * 100)}`}
+          warn={
+            aggregates.firstPlayerWinRate !== null &&
+            aggregates.firstPlayerDecided >= 6 &&
+            (aggregates.firstPlayerWinRate >= 0.7 || aggregates.firstPlayerWinRate <= 0.3)
+          }
+        />
+        <StatCard
           label="Idle / stall turns"
           value={`${formatPct(aggregates.meanLateIdleRate === null ? null : aggregates.meanLateIdleRate * 100)} / ${formatPct(aggregates.stallTurnRate === null ? null : aggregates.stallTurnRate * 100)}`}
           hint="Late idle (no action/decision) vs 0-dmg 0-atk"
@@ -222,6 +251,39 @@ export function MetricsDashboard() {
         </ChartPanel>
         <ChartPanel title="Energy pass cause" caption="Overshoot vs a clean END_TURN.">
           <BarList items={aggregates.energyPassMix} />
+        </ChartPanel>
+        <ChartPanel
+          title="First creature death"
+          caption="Bible §45: death on turns 1–3 is early for a three-creature skirmish. After turn 10 (or never) the close is not arriving."
+        >
+          <BarList
+            items={aggregates.firstDefeatHistogram}
+            warnKeys={new Set(["1–3 early", "11+ overtime", "never"])}
+          />
+        </ChartPanel>
+        <ChartPanel
+          title="Creature deaths by turn"
+          caption="Mean deaths that turn among matches that reached it."
+        >
+          <BarList items={aggregates.deathsByTurnMix} />
+        </ChartPanel>
+        <ChartPanel
+          title="Energy spent by turn"
+          caption="Mean Energy spent (energy-spent amounts). Older recordings without amounts are omitted."
+        >
+          <BarList items={aggregates.energyByTurnMix} />
+        </ChartPanel>
+        <ChartPanel
+          title="Opening seat"
+          caption="Finished matches with a known first player. Host/local recordings only for think time; seat bias is rules-side."
+        >
+          <BarList items={aggregates.firstPlayerWinMix} />
+        </ChartPanel>
+        <ChartPanel
+          title="Deck pairs"
+          caption="Finished matches. Label is P1 deck vs P2 deck with P1 wins / sample."
+        >
+          <BarList items={aggregates.deckPairMix} />
         </ChartPanel>
         <ChartPanel title="Think time by action (p90)" caption="Wall-clock gaps before that action.">
           <BarList
@@ -321,6 +383,8 @@ export function MetricsDashboard() {
                   <th className="px-3 py-2">Idle/stall</th>
                   <th className="px-3 py-2">Duration</th>
                   <th className="px-3 py-2">Dmg/turn</th>
+                  <th className="px-3 py-2">Energy/turn</th>
+                  <th className="px-3 py-2">First death</th>
                   <th className="px-3 py-2">Play/forge</th>
                   <th className="px-3 py-2">Decks</th>
                   <th className="px-3 py-2">Winner</th>
@@ -331,6 +395,10 @@ export function MetricsDashboard() {
                 {recordings.map((row) => {
                   const dpt =
                     row.totalTurns > 0 ? (row.totalDamageDealt / row.totalTurns).toFixed(2) : "—";
+                  const energy = energySpentOf(row);
+                  const ept =
+                    energy !== null && row.totalTurns > 0 ? (energy / row.totalTurns).toFixed(2) : "—";
+                  const death = firstDefeatTurn(row);
                   const active = row.recordingId === selectedId;
                   const pace = matchPace(row);
                   const turnsClass = pace.overBaseline ? "text-red-300" : "text-stone-200";
@@ -354,6 +422,8 @@ export function MetricsDashboard() {
                       </td>
                       <td className="px-3 py-2 font-mono text-xs">{formatDuration(row.durationMs)}</td>
                       <td className="px-3 py-2 font-mono text-xs">{dpt}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{ept}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{death === null ? "—" : death}</td>
                       <td className="px-3 py-2 font-mono text-xs">
                         {row.totalCardsPlayed}/{forgeCardCountOf(row)}
                       </td>
@@ -426,6 +496,11 @@ function MatchDetail({ recording }: { recording: MatchRecording }) {
         {String(pace.dragScore)} (overtime {String(pace.overtimeTurns)} + late idle {String(pace.lateIdleTurns)})
         {" · "}
         {String(recording.totalCardsPlayed)} played / {String(forgeCardCountOf(recording))} forged
+        {" · "}
+        first dmg T{firstDamageTurn(recording) ?? "—"} · atk T{firstAttackTurn(recording) ?? "—"} · death T
+        {firstDefeatTurn(recording) ?? "—"}
+        {" · "}
+        Energy {energySpentOf(recording) ?? "—"}
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -438,6 +513,14 @@ function MatchDetail({ recording }: { recording: MatchRecording }) {
         <div>
           <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">P1 HP remaining by turn</p>
           <SparkBars values={hpP1} />
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">Energy spent by turn</p>
+          <SparkBars values={recording.turns.map((turn) => energySpentOnTurn(turn) ?? 0)} />
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">Creature deaths by turn</p>
+          <SparkBars values={recording.turns.map((turn) => turn.creaturesDefeated)} />
         </div>
         <div className="lg:col-span-2">
           <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
@@ -466,6 +549,8 @@ function MatchDetail({ recording }: { recording: MatchRecording }) {
               <th className="py-1 pr-3">Seat</th>
               <th className="py-1 pr-3">Dmg</th>
               <th className="py-1 pr-3">Atk</th>
+              <th className="py-1 pr-3">Deaths</th>
+              <th className="py-1 pr-3">Energy</th>
               <th className="py-1 pr-3">Plays</th>
               <th className="py-1 pr-3">Forge cards/faces</th>
               <th className="py-1 pr-3">Pending</th>
@@ -488,6 +573,8 @@ function MatchDetail({ recording }: { recording: MatchRecording }) {
                 <td className="py-1 pr-3">{row.playerId}</td>
                 <td className="py-1 pr-3 font-mono">{row.damageDealt}</td>
                 <td className="py-1 pr-3 font-mono">{row.attacksDeclared}</td>
+                <td className="py-1 pr-3 font-mono">{row.creaturesDefeated}</td>
+                <td className="py-1 pr-3 font-mono">{energySpentOnTurn(row) ?? "—"}</td>
                 <td className="py-1 pr-3 font-mono">{row.cardsPlayed}</td>
                 <td className="py-1 pr-3 font-mono">
                   {row.cardsForged ?? 0}/{row.forges}

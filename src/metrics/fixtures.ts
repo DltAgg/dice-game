@@ -12,6 +12,10 @@ const turn = (over: Partial<TurnRecord>): TurnRecord => ({
   energyAtStart: 3,
   energyAtEnd: 0,
   energyPassCause: "voluntary-pass",
+  energySpent: 0,
+  energyGained: 0,
+  energyLost: 0,
+  energyPassedAmount: 0,
   damageDealt: 0,
   healAmount: 0,
   damagePrevented: 0,
@@ -62,6 +66,7 @@ export function fakeRecording(over: Partial<MatchRecording> = {}): MatchRecordin
     totalAttacksDeclared: 6,
     totalCardsPlayed: 10,
     totalCardsForged: 4,
+    totalEnergySpent: 0,
     eventCounts: {
       "damage-dealt": 6,
       "attack-declared": 6,

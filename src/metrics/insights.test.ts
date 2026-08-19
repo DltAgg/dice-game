@@ -111,4 +111,108 @@ describe("insights", () => {
       { turn: 2, meanEffect: 0, meanForge: 2, matchCount: 1 },
     ]);
   });
+
+  it("aggregates close timeline, Energy spend, and opening-seat wins", () => {
+    const agg = aggregateRecordings([
+      fakeRecording({
+        recordingId: "a",
+        matchId: "m-a",
+        totalTurns: 8,
+        totalDamageDealt: 20,
+        totalEnergySpent: 24,
+        winnerId: "p1",
+        firstPlayerId: "p1",
+        livingCreaturesAtEnd: { p1: 2, p2: 1 },
+        turns: [
+          {
+            ...fakeRecording().turns[0]!,
+            turn: 1,
+            damageDealt: 0,
+            attacksDeclared: 0,
+            creaturesDefeated: 0,
+            energySpent: 3,
+          },
+          {
+            ...fakeRecording().turns[0]!,
+            turn: 4,
+            damageDealt: 6,
+            attacksDeclared: 1,
+            creaturesDefeated: 1,
+            energySpent: 5,
+          },
+        ],
+      }),
+      fakeRecording({
+        recordingId: "b",
+        matchId: "m-b",
+        totalTurns: 9,
+        totalDamageDealt: 18,
+        totalEnergySpent: 18,
+        winnerId: "p2",
+        firstPlayerId: "p1",
+        p1DeckName: "Aggro",
+        p2DeckName: "Control",
+        livingCreaturesAtEnd: { p1: 0, p2: 2 },
+        turns: [
+          {
+            ...fakeRecording().turns[0]!,
+            turn: 1,
+            damageDealt: 4,
+            attacksDeclared: 1,
+            creaturesDefeated: 0,
+            energySpent: 2,
+          },
+          {
+            ...fakeRecording().turns[0]!,
+            turn: 6,
+            damageDealt: 8,
+            attacksDeclared: 1,
+            creaturesDefeated: 1,
+            energySpent: 4,
+          },
+        ],
+      }),
+    ]);
+    expect(agg.medianFirstDamageTurn).toBe(2.5);
+    expect(agg.medianFirstAttackTurn).toBe(2.5);
+    expect(agg.medianFirstDefeatTurn).toBe(5);
+    expect(agg.pctNeverDefeat).toBe(0);
+    expect(agg.meanEnergySpentPerTurn).toBeCloseTo(2.5);
+    expect(agg.firstPlayerWinRate).toBe(0.5);
+    expect(agg.p1WinRate).toBe(0.5);
+    expect(agg.deckPairs).toEqual([{ pair: "Aggro vs Control", matches: 2, p1Wins: 1, p2Wins: 1 }]);
+  });
+
+  it("flags early first deaths", () => {
+    const earlyTurn = {
+      ...fakeRecording().turns[0]!,
+      turn: 2,
+      damageDealt: 10,
+      attacksDeclared: 1,
+      creaturesDefeated: 1,
+    };
+    const insights = insightsFor([
+      fakeRecording({
+        recordingId: "a",
+        matchId: "early-a",
+        totalTurns: 8,
+        totalDamageDealt: 24,
+        stallTurnCount: 0,
+        winnerId: "p1",
+        livingCreaturesAtEnd: { p1: 2, p2: 1 },
+        turns: [earlyTurn],
+      }),
+      fakeRecording({
+        recordingId: "b",
+        matchId: "early-b",
+        totalTurns: 7,
+        totalDamageDealt: 20,
+        stallTurnCount: 0,
+        winnerId: "p2",
+        livingCreaturesAtEnd: { p1: 1, p2: 2 },
+        turns: [{ ...earlyTurn, turn: 3 }],
+      }),
+    ]);
+    expect(insights.map((insight) => insight.id)).toContain("early-first-death");
+  });
 });

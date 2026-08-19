@@ -44,6 +44,10 @@ const emptyTurn = (
   energyAtStart: energy,
   energyAtEnd: null,
   energyPassCause: null,
+  energySpent: 0,
+  energyGained: 0,
+  energyLost: 0,
+  energyPassedAmount: 0,
   damageDealt: 0,
   healAmount: 0,
   damagePrevented: 0,
@@ -70,6 +74,11 @@ function applyEventsToTurn(turn: TurnRecord, events: readonly GameEvent[], state
   return {
     ...turn,
     damageDealt,
+    energySpent: (turn.energySpent ?? 0) + sumField(events, "energy-spent", "amount"),
+    energyGained: (turn.energyGained ?? 0) + sumField(events, "energy-gained", "amount"),
+    energyLost: (turn.energyLost ?? 0) + sumField(events, "energy-lost", "amount"),
+    energyPassedAmount:
+      (turn.energyPassedAmount ?? 0) + sumField(events, "energy-passed", "amount"),
     healAmount: turn.healAmount + sumField(events, "creature-healed", "amount"),
     damagePrevented: turn.damagePrevented + sumField(events, "damage-prevented", "amount"),
     attacksDeclared,
@@ -154,6 +163,7 @@ export function blankRecording(state: GameState, ctx: ObservationContext): Match
     totalAttacksDeclared: 0,
     totalCardsPlayed: 0,
     totalCardsForged: 0,
+    totalEnergySpent: 0,
     eventCounts: {},
     cardPlayCounts: {},
     cardForgeCounts: {},
@@ -317,6 +327,9 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
       (accepted ? newEvents.filter((event) => event.type === "card-played").length : 0),
     totalCardsForged:
       recording.totalCardsForged + (accepted ? uniqueForgeCardInstanceIds(newEvents).length : 0),
+    totalEnergySpent:
+      (recording.totalEnergySpent ?? 0) +
+      (accepted ? sumField(newEvents, "energy-spent", "amount") : 0),
     eventCounts: accepted ? mergeCounts(recording.eventCounts, countByType(newEvents)) : recording.eventCounts,
     cardPlayCounts: accepted ? incrementCardPlays(recording.cardPlayCounts, newEvents) : recording.cardPlayCounts,
     cardForgeCounts: accepted

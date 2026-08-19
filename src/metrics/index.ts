@@ -14,6 +14,15 @@ export type {
 export { applyObservation, abandonRecording, blankRecording, isMetricsRecording } from "./observe.js";
 export { matchPace, isIdleTurn, isStallTurn, turnKind, type MatchPace, type PaceVerdict } from "./pace.js";
 export {
+  firstAttackTurn,
+  firstDamageTurn,
+  firstDefeatTurn,
+  energySpentOf,
+  energySpentOnTurn,
+  type CloseTurnPoint,
+  type DeckPairRecord,
+} from "./close.js";
+export {
   aggregateRecordings,
   dedupeRecordings,
   insightsFor,

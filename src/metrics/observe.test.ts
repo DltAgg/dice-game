@@ -232,4 +232,31 @@ describe("applyObservation", () => {
     expect(turn?.forges).toBe(2);
     expect(turn?.cardsPlayed).toBe(0);
   });
+
+  it("sums energy-spent amounts onto the turn and recording", () => {
+    const start = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    let { recording } = applyObservation(
+      null,
+      { prevState: null, state: start, action: null, accepted: true, error: null },
+      ctx(1_000),
+    );
+
+    const action: GameAction = {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(start, P1, 0),
+    };
+    const played = advance(start, action);
+    expect(played.ok).toBe(true);
+
+    recording = applyObservation(
+      recording,
+      { prevState: start, state: played.state, action, accepted: true, error: null },
+      ctx(2_000),
+    ).recording;
+
+    expect(recording.totalEnergySpent).toBe(3);
+    const spentTurn = recording.turns.find((turn) => (turn.energySpent ?? 0) > 0);
+    expect(spentTurn?.energySpent).toBe(3);
+  });
 });

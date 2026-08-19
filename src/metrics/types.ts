@@ -39,6 +39,12 @@ export interface TurnRecord {
   readonly energyAtStart: number | null;
   readonly energyAtEnd: number | null;
   readonly energyPassCause: "overshoot" | "voluntary-pass" | null;
+  /** Sum of `energy-spent.amount`. Missing on recordings from before this field. */
+  readonly energySpent?: number;
+  readonly energyGained?: number;
+  readonly energyLost?: number;
+  /** Sum of `energy-passed.amount` (overshoot leftover or clean-pass grant). */
+  readonly energyPassedAmount?: number;
   readonly damageDealt: number;
   readonly healAmount: number;
   readonly damagePrevented: number;
@@ -105,6 +111,8 @@ export interface MatchRecording {
   readonly totalAttacksDeclared: number;
   readonly totalCardsPlayed: number;
   readonly totalCardsForged: number;
+  /** Sum of Energy spent. Missing on recordings from before amount tracking. */
+  readonly totalEnergySpent?: number;
   readonly eventCounts: Readonly<Record<string, number>>;
   readonly cardPlayCounts: Readonly<Record<string, number>>;
   readonly cardForgeCounts: Readonly<Record<string, number>>;

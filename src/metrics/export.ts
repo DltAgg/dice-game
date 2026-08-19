@@ -1,5 +1,11 @@
 import { aggregateRecordings, insightsFor } from "./insights.js";
 import { matchPace } from "./pace.js";
+import {
+  energySpentOf,
+  firstAttackTurn,
+  firstDamageTurn,
+  firstDefeatTurn,
+} from "./close.js";
 import { forgeCardCountOf } from "./snapshot.js";
 import { BASELINE_TURNS, METRICS_SCHEMA_VERSION } from "./thresholds.js";
 import type { MatchRecording } from "./types.js";
@@ -10,11 +16,14 @@ Players report that matches feel slow. More than ${String(BASELINE_TURNS)} turns
 
 The JSON (or Markdown) that follows is a metrics export from the local collector. It is an observer sitting outside the pure reducer: it never changes GameState. Wall-clock think time is time between recorded observations. Guest recordings include network delay; prefer host/local recordings when both exist for the same matchId (the export already dedupes, keeping the richer sample).
 
+Close timeline (bible §45): median first damage / first attack / first creature death, deaths by turn, Energy spent per turn (amounts from energy-spent, not event counts), first-player win rate, and win rate by deck pair. A first death on turns 1–3 is too early for a three-creature skirmish; a first death after turn 10 (or never) with overtime is a close that is not arriving.
+
 Please:
 1. Per match, correlate overtime with idle vs setup vs combat. Do not treat “11–20 turns” as a default bucket.
 2. Say whether the sample is dragging (empty), grinding (cannot close), or long-active.
-3. Propose concrete rules or UX experiments — cite the numbers. Do not invent engine behavior that is not in the evidence.
-4. List what extra instrumentation would help if the picture is incomplete.
+3. Use first-death turn and Energy spent / turn to separate “cannot kill” from “not spending the clock.”
+4. Propose concrete rules or UX experiments — cite the numbers. Do not invent engine behavior that is not in the evidence.
+5. List what extra instrumentation would help if the picture is incomplete.
 
 Do not propose a second rules engine in the UI.`;
 
@@ -36,6 +45,7 @@ export interface CompactMatch {
   readonly durationMs: number;
   readonly totalTurns: number;
   readonly winnerId: string | null;
+  readonly firstPlayerId: string | null;
   readonly p1DeckName: string;
   readonly p2DeckName: string;
   readonly seed: number;
@@ -43,6 +53,11 @@ export interface CompactMatch {
   readonly rejectedActions: number;
   readonly totalDamageDealt: number;
   readonly damagePerTurn: number | null;
+  readonly firstDamageTurn: number | null;
+  readonly firstAttackTurn: number | null;
+  readonly firstDefeatTurn: number | null;
+  readonly totalEnergySpent: number | null;
+  readonly energyPerTurn: number | null;
   readonly stallTurnCount: number;
   readonly idleTurnCount: number;
   readonly overtimeTurns: number;
@@ -63,6 +78,7 @@ export interface CompactMatch {
 
 function compactMatch(recording: MatchRecording): CompactMatch {
   const pace = matchPace(recording);
+  const energySpent = energySpentOf(recording);
   return {
     recordingId: recording.recordingId,
     matchId: recording.matchId,
@@ -72,6 +88,7 @@ function compactMatch(recording: MatchRecording): CompactMatch {
     durationMs: recording.durationMs,
     totalTurns: recording.totalTurns,
     winnerId: recording.winnerId,
+    firstPlayerId: recording.firstPlayerId,
     p1DeckName: recording.p1DeckName,
     p2DeckName: recording.p2DeckName,
     seed: recording.seed,
@@ -80,6 +97,12 @@ function compactMatch(recording: MatchRecording): CompactMatch {
     totalDamageDealt: recording.totalDamageDealt,
     damagePerTurn:
       recording.totalTurns > 0 ? recording.totalDamageDealt / recording.totalTurns : null,
+    firstDamageTurn: firstDamageTurn(recording),
+    firstAttackTurn: firstAttackTurn(recording),
+    firstDefeatTurn: firstDefeatTurn(recording),
+    totalEnergySpent: energySpent,
+    energyPerTurn:
+      recording.totalTurns > 0 && energySpent !== null ? energySpent / recording.totalTurns : null,
     stallTurnCount: pace.stallTurns,
     idleTurnCount: pace.idleTurns,
     overtimeTurns: pace.overtimeTurns,
@@ -140,7 +163,9 @@ export function formatMetricsMarkdown(exported: MetricsExport): string {
   );
   const matchLines = exported.matches.map((match) => {
     const dpt = match.damagePerTurn === null ? "—" : match.damagePerTurn.toFixed(2);
-    return `| ${match.startedAt.slice(0, 19)} | ${match.status} | ${String(match.totalTurns)} | ${match.paceVerdict} | ${String(match.dragScore)} | ${String(match.overtimeTurns)} | ${String(match.idleTurnCount)}/${String(match.stallTurnCount)} | ${dpt} | ${match.p1DeckName} vs ${match.p2DeckName} | ${match.winnerId ?? "—"} |`;
+    const ept = match.energyPerTurn === null ? "—" : match.energyPerTurn.toFixed(2);
+    const death = match.firstDefeatTurn === null ? "—" : String(match.firstDefeatTurn);
+    return `| ${match.startedAt.slice(0, 19)} | ${match.status} | ${String(match.totalTurns)} | ${match.paceVerdict} | ${String(match.dragScore)} | ${String(match.overtimeTurns)} | ${String(match.idleTurnCount)}/${String(match.stallTurnCount)} | ${dpt} | ${ept} | ${death} | ${match.p1DeckName} vs ${match.p2DeckName} | ${match.winnerId ?? "—"} |`;
   });
 
   return `# Dice Skirmish metrics briefing
@@ -167,6 +192,11 @@ Exported at ${exported.exportedAt} (schema ${String(exported.schemaVersion)}).
   .join(", ") || "—"} |
 | Median match duration | ${fmtMs(s.medianDurationMs)} |
 | Mean HP damage / turn | ${s.meanDamagePerTurn?.toFixed(2) ?? "—"} |
+| Median first damage / attack / death | ${s.medianFirstDamageTurn?.toFixed(1) ?? "—"} / ${s.medianFirstAttackTurn?.toFixed(1) ?? "—"} / ${s.medianFirstDefeatTurn?.toFixed(1) ?? "—"} |
+| Finished matches with no defeat | ${fmtPct(s.pctNeverDefeat)} |
+| Mean Energy spent / turn | ${s.meanEnergySpentPerTurn?.toFixed(2) ?? "—"} |
+| First-player win rate | ${fmtPct(s.firstPlayerWinRate === null ? null : s.firstPlayerWinRate * 100)} (n=${String(s.firstPlayerDecided)}) |
+| P1 win rate | ${fmtPct(s.p1WinRate === null ? null : s.p1WinRate * 100)} |
 | Median / p90 think | ${fmtMs(s.medianThinkMs)} / ${fmtMs(s.p90ThinkMs)} |
 | Stall-turn rate | ${s.stallTurnRate === null ? "—" : `${(s.stallTurnRate * 100).toFixed(0)}%`} |
 | Reject rate | ${fmtPct(s.rejectRate === null ? null : s.rejectRate * 100)} |
@@ -194,6 +224,26 @@ ${mixTable(s.pendingMix)}
 ### Energy pass cause
 
 ${mixTable(s.energyPassMix)}
+
+### First creature death
+
+${mixTable(s.firstDefeatHistogram)}
+
+### Creature deaths by turn (mean)
+
+${mixTable(s.deathsByTurnMix)}
+
+### Energy spent by turn (mean)
+
+${mixTable(s.energyByTurnMix)}
+
+### First player vs second
+
+${mixTable(s.firstPlayerWinMix)}
+
+### Deck pairs (finished)
+
+${mixTable(s.deckPairMix)}
 
 ### Cards played (effect)
 
@@ -238,9 +288,9 @@ ${insightLines.join("\n") || "- (none)"}
 
 ## Matches
 
-| Started | Status | Turns | Verdict | Drag | Overtime | Idle/stall | Dmg/turn | Decks | Winner |
-|---|---|---|---|---|---|---|---|---|---|
-${matchLines.join("\n") || "| — | — | — | — | — | — | — | — | — | — |"}
+| Started | Status | Turns | Verdict | Drag | Overtime | Idle/stall | Dmg/turn | Energy/turn | First death | Decks | Winner |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+${matchLines.join("\n") || "| — | — | — | — | — | — | — | — | — | — | — | — |"}
 
 ## Per-match turn notes
 
@@ -264,7 +314,7 @@ ${exported.matches
           turn.damagePrevented === 0
             ? " IDLE"
             : "";
-        return `  - T${String(turn.turn)} ${turn.playerId}: dmg ${String(turn.damageDealt)}, atk ${String(turn.attacksDeclared)}, play ${String(turn.cardsPlayed)}, forge ${String(turn.cardsForged ?? 0)} cards/${String(turn.forges)} faces, pending ${String(turn.pendingDecisionOpens)}, rxn ${String(turn.reactionWindows)}, ${fmtMs(turn.durationMs)}${idle}${stall}`;
+        return `  - T${String(turn.turn)} ${turn.playerId}: dmg ${String(turn.damageDealt)}, atk ${String(turn.attacksDeclared)}, death ${String(turn.creaturesDefeated)}, energy ${String(turn.energySpent ?? "—")}, play ${String(turn.cardsPlayed)}, forge ${String(turn.cardsForged ?? 0)} cards/${String(turn.forges)} faces, pending ${String(turn.pendingDecisionOpens)}, rxn ${String(turn.reactionWindows)}, ${fmtMs(turn.durationMs)}${idle}${stall}`;
       })
       .join("\n");
     return `### ${match.matchId} (${match.status}, ${String(match.totalTurns)} turns)\n${turns || "  - (no turns)"}`;

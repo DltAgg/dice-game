@@ -44,12 +44,19 @@ Pace is **per match**, not a 11–20 band (`src/metrics/pace.ts`):
 2. **Why it ran long:** per-match `dragScore`, `paceVerdict`, `overtimeTurns`,
    `idleTurnCount` vs stall. Dragging = empty overtime. Grinding = setup/stall
    without a close. Long-active = combat happened, still too many turns.
-3. **Close:** `meanDamagePerTurn`, stall-turn rate, turn kinds, HP at end.
-4. **Clock vs rules:** `medianThinkMs` / `p90ThinkMs` vs idle. High think +
+3. **Close:** `meanDamagePerTurn`, stall-turn rate, turn kinds, HP at end,
+   `medianFirstDefeatTurn`, `medianFirstDamageTurn`, `medianFirstAttackTurn`,
+   deaths-by-turn, `pctNeverDefeat`. First death on turns 1–3 is too early for
+   a three-creature skirmish; after turn 10 (or never) the close is not arriving.
+4. **Energy clock:** `meanEnergySpentPerTurn` and Energy-by-turn (amounts from
+   `energy-spent`, not event counts). High spend + no deaths = conversion; low
+   spend + stall = unused clock. Older recordings may omit amounts.
+5. **Seat / lists:** `firstPlayerWinRate`, `p1WinRate`, deck-pair mix.
+6. **Clock vs rules:** `medianThinkMs` / `p90ThinkMs` vs idle. High think +
    low idle = UX / reading / reactions. Low think + high idle = the rules are
    not converting turns into play.
-5. **Friction:** `reaction-priority-opened`, pending mix, reject rate.
-6. **Hand spend:** `playVsForgeMix` / `totalCardsPlayed` vs `totalCardsForged`.
+7. **Friction:** `reaction-priority-opened`, pending mix, reject rate.
+8. **Hand spend:** `playVsForgeMix` / `totalCardsPlayed` vs `totalCardsForged`.
    Effect-region plays are not the same as tactics spent to install faces.
    `playForgeCorrelation` is Pearson r of effect/turn vs forge/turn across
    matches (negative = Energy split between playing and forging). The

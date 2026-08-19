@@ -92,15 +92,23 @@ Layer: `src/metrics/` (adapter, like `src/decks/`).
 - **Schema:** `METRICS_SCHEMA_VERSION = 1`. Unknown versions are ignored.
 
 A recording stores: identity (match/seed/mode/decks), wall-clock span, per-turn
-summaries (damage, attacks, cards, energy, HP, zones, pending/reaction counts),
-per-action samples (think time, action type when known, pending kind, chain
-depth, event types), event-type histograms from `state.log`, and **hand-card
-spend split**: `totalCardsPlayed` / `cardPlayCounts` from `card-played`
+summaries (damage, attacks, cards, energy start/end **and Energy spent/gained/lost
+amounts**, HP, zones, pending/reaction counts, creature deaths), per-action samples
+(think time, action type when known, pending kind, chain depth, event types),
+event-type histograms from `state.log`, and **hand-card spend split**:
+`totalCardsPlayed` / `cardPlayCounts` from `card-played`
 (`PLAY_CARD`, effect region) vs `totalCardsForged` / `cardForgeCounts` from
 unique `face-forged.cardInstanceId` (`FORGE_CARD`, one tactic even if it
 installs several faces). `forge-faces` effect installs leave
 `cardInstanceId` null and are not “cards played to forge.” Older recordings
 without forge fields fall back to counting accepted `FORGE_CARD` actions.
+Older recordings without `energySpent` omit those turns from Energy/turn means
+instead of treating missing amounts as zero.
+
+Derived (no extra engine events): **first damage / first attack / first creature
+death** from turn rows; finished matches with a wipe but no logged death count as
+“close, turn unknown,” not “never.” Win rate by **first player** and by **deck
+pair** uses `winnerId`, `firstPlayerId`, and deck names already on the recording.
 
 It does **not** persist full `GameState` (too large, duplicates the engine log).
 
@@ -113,11 +121,14 @@ Must provide:
 
 - KPI row: match count, mean/median turns, % past 10-turn baseline, median
   drag score, idle vs stall rates, median duration, think time, **hand cards
-  play / forge**
+  play / forge**, **median first death**, **Energy spent / turn**, **first-player
+  win rate**
 - Histograms: turns per match (marker at 10), pace verdict mix, wall-clock
-- Lethality: HP damage per turn; idle vs setup vs combat per turn
+- Lethality: HP damage per turn; idle vs setup vs combat per turn; **deaths by
+  turn**; first-death buckets (early / on-pace / overtime / never)
 - Mix charts: action types, event types, pending-decision kinds, energy-pass
-  cause (overshoot vs voluntary), **play vs forge** (effect region vs
+  cause (overshoot vs voluntary), **Energy spent by turn**, **opening seat**,
+  **deck pairs**, **play vs forge** (effect region vs
   `FORGE_CARD`), cards played (effect), cards played to forge, **stacked
   effect vs forge by turn** (mean cards that turn among matches that
   reached it; Pearson r of match rates still in the caption)

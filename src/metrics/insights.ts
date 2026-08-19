@@ -1,8 +1,24 @@
 import {
+  closeByTurn,
+  deckPairRecords,
+  defeatCloseKind,
+  energySpentOf,
+  firstAttackTurn,
+  firstDamageTurn,
+  firstDefeatTurn,
+  firstPlayerWon,
+  type CloseTurnPoint,
+  type DeckPairRecord,
+} from "./close.js";
+import {
   ARMING_TURN_WINDOW,
   BASELINE_TURNS,
   DRAG_SCORE_HIGH,
   DRAG_SCORE_WARN,
+  FIRST_DEATH_EARLY_TURN,
+  FIRST_DEATH_LATE_TURN,
+  FIRST_PLAYER_WIN_BIAS,
+  FIRST_PLAYER_WIN_MIN_N,
   LOW_LETHALITY_DAMAGE_PER_TURN,
 } from "./thresholds.js";
 import { matchPace, type MatchPace, type PaceVerdict } from "./pace.js";
@@ -132,6 +148,39 @@ function playForgeByTurn(recordings: readonly MatchRecording[]): PlayForgeTurnPo
     }));
 }
 
+function firstDefeatHistogram(recordings: readonly MatchRecording[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const recording of recordings) {
+    const kind = defeatCloseKind(recording);
+    const turn = firstDefeatTurn(recording);
+    const key =
+      kind === "never"
+        ? "never"
+        : kind === "unlogged"
+          ? "close, turn unknown"
+          : turn !== null && turn <= FIRST_DEATH_EARLY_TURN
+            ? `1–${String(FIRST_DEATH_EARLY_TURN)} early`
+            : turn !== null && turn <= FIRST_DEATH_LATE_TURN
+              ? `${String(FIRST_DEATH_EARLY_TURN + 1)}–${String(FIRST_DEATH_LATE_TURN)}`
+              : `${String(FIRST_DEATH_LATE_TURN + 1)}+ overtime`;
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
+}
+
+function mixFromCloseSeries(
+  series: readonly CloseTurnPoint[],
+  pick: (point: CloseTurnPoint) => number | null,
+): Record<string, number> {
+  const mix: Record<string, number> = {};
+  for (const point of series) {
+    const value = pick(point);
+    if (value === null) continue;
+    mix[`T${String(point.turn)}`] = Number(value.toFixed(2));
+  }
+  return mix;
+}
+
 function thinkTimesByAction(recordings: readonly MatchRecording[]): Record<string, number[]> {
   const byType: Record<string, number[]> = {};
   for (const recording of recordings) {
@@ -181,6 +230,21 @@ export interface MetricsAggregates {
   readonly meanForgePerTurn: number | null;
   readonly totalCardsPlayed: number;
   readonly totalCardsForged: number;
+  readonly medianFirstDamageTurn: number | null;
+  readonly medianFirstAttackTurn: number | null;
+  readonly medianFirstDefeatTurn: number | null;
+  readonly pctNeverDefeat: number | null;
+  readonly firstDefeatHistogram: Readonly<Record<string, number>>;
+  readonly closeByTurn: readonly CloseTurnPoint[];
+  readonly deathsByTurnMix: Readonly<Record<string, number>>;
+  readonly energyByTurnMix: Readonly<Record<string, number>>;
+  readonly meanEnergySpentPerTurn: number | null;
+  readonly firstPlayerWinRate: number | null;
+  readonly firstPlayerDecided: number;
+  readonly firstPlayerWinMix: Readonly<Record<string, number>>;
+  readonly p1WinRate: number | null;
+  readonly deckPairs: readonly DeckPairRecord[];
+  readonly deckPairMix: Readonly<Record<string, number>>;
   readonly thinkByAction: Readonly<
     Record<string, { readonly n: number; readonly p50: number | null; readonly p90: number | null }>
   >;
@@ -239,6 +303,30 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
 
   const playForgeRates = playForgeRatePoints(unique);
   const playForgeByTurnSeries = playForgeByTurn(unique);
+  const firstDamageTurns = finished
+    .map(firstDamageTurn)
+    .filter((turn): turn is number => turn !== null);
+  const firstAttackTurns = finished
+    .map(firstAttackTurn)
+    .filter((turn): turn is number => turn !== null);
+  const firstDefeatTurns = finished.map(firstDefeatTurn);
+  const defeatTurnsKnown = firstDefeatTurns.filter((turn): turn is number => turn !== null);
+  const neverDefeat = finished.filter((recording) => defeatCloseKind(recording) === "never").length;
+  const firstPlayerResults = finished
+    .map(firstPlayerWon)
+    .filter((won): won is boolean => won !== null);
+  const firstPlayerWins = firstPlayerResults.filter((won) => won).length;
+  const p1Wins = finished.filter((recording) => recording.winnerId === "p1").length;
+  const p2Wins = finished.filter((recording) => recording.winnerId === "p2").length;
+  const decidedWinners = p1Wins + p2Wins;
+  const energyPerTurn = finished.flatMap((recording) => {
+    const spent = energySpentOf(recording);
+    if (spent === null || recording.totalTurns <= 0) return [];
+    return [spent / recording.totalTurns];
+  });
+  const closeSeries = closeByTurn(unique);
+  const pairs = deckPairRecords(finished);
+  const firstPlayerDecided = firstPlayerResults.length;
 
   return {
     matchCount: unique.length,
@@ -292,6 +380,29 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
     meanForgePerTurn: mean(playForgeRates.map((point) => point.forgePerTurn)),
     totalCardsPlayed: unique.reduce((sum, recording) => sum + recording.totalCardsPlayed, 0),
     totalCardsForged: unique.reduce((sum, recording) => sum + forgeCardCountOf(recording), 0),
+    medianFirstDamageTurn: median(firstDamageTurns),
+    medianFirstAttackTurn: median(firstAttackTurns),
+    medianFirstDefeatTurn: median(defeatTurnsKnown),
+    pctNeverDefeat: finished.length === 0 ? null : (neverDefeat / finished.length) * 100,
+    firstDefeatHistogram: firstDefeatHistogram(finished),
+    closeByTurn: closeSeries,
+    deathsByTurnMix: mixFromCloseSeries(closeSeries, (point) => point.meanDeaths),
+    energyByTurnMix: mixFromCloseSeries(closeSeries, (point) => point.meanEnergySpent),
+    meanEnergySpentPerTurn: mean(energyPerTurn),
+    firstPlayerWinRate: firstPlayerDecided === 0 ? null : firstPlayerWins / firstPlayerDecided,
+    firstPlayerDecided,
+    firstPlayerWinMix: {
+      "First player won": firstPlayerWins,
+      "Second player won": firstPlayerDecided - firstPlayerWins,
+    },
+    p1WinRate: decidedWinners === 0 ? null : p1Wins / decidedWinners,
+    deckPairs: pairs,
+    deckPairMix: Object.fromEntries(
+      pairs.map((pair) => [
+        `${pair.pair} (p1 ${String(pair.p1Wins)}/${String(pair.matches)})`,
+        pair.matches,
+      ]),
+    ),
     thinkByAction,
     verdictMix,
     finishedTurns: turns,
@@ -370,6 +481,61 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       title: "Many turns deal no damage and declare no attacks",
       detail: `${(agg.stallTurnRate * 100).toFixed(0)}% of closed turns are stalls. Split stall into idle (roll/pass, no decisions) vs setup (absorb/play/forge without attacking). Setup on turns 1–2 is expected; idle after that is empty length.`,
       evidence: { stallTurnRate: Number((agg.stallTurnRate * 100).toFixed(1)) },
+    });
+  }
+
+  if (
+    agg.medianFirstDefeatTurn !== null &&
+    agg.medianFirstDefeatTurn <= FIRST_DEATH_EARLY_TURN &&
+    (agg.firstDefeatHistogram[`1–${String(FIRST_DEATH_EARLY_TURN)} early`] ?? 0) >= 2
+  ) {
+    insights.push({
+      id: "early-first-death",
+      severity: "warn",
+      title: "Creatures die in the opening",
+      detail: `Median first creature death is turn ${agg.medianFirstDefeatTurn.toFixed(1)} (flag on or before turn ${String(FIRST_DEATH_EARLY_TURN)}). Bible §45 cares about this: if squad members vanish before the dice engine comes online, the three-creature skirmish is not happening.`,
+      evidence: {
+        medianFirstDefeatTurn: Number(agg.medianFirstDefeatTurn.toFixed(1)),
+        medianFirstDamageTurn: agg.medianFirstDamageTurn,
+        medianFirstAttackTurn: agg.medianFirstAttackTurn,
+      },
+    });
+  }
+
+  if (
+    finished.length >= 2 &&
+    ((agg.medianFirstDefeatTurn !== null && agg.medianFirstDefeatTurn > FIRST_DEATH_LATE_TURN) ||
+      (agg.pctNeverDefeat !== null && agg.pctNeverDefeat >= 40))
+  ) {
+    insights.push({
+      id: "late-first-death",
+      severity: "warn",
+      title: "The board is slow to take a creature off",
+      detail: `Median first death is ${agg.medianFirstDefeatTurn?.toFixed(1) ?? "—"} (after turn ${String(FIRST_DEATH_LATE_TURN)} is late). ${agg.pctNeverDefeat?.toFixed(0) ?? "—"}% of finished matches never logged a defeat. Pair with Energy spent / turn: high spend + no deaths is conversion; low spend + no deaths is an unused clock.`,
+      evidence: {
+        medianFirstDefeatTurn: agg.medianFirstDefeatTurn,
+        pctNeverDefeat: agg.pctNeverDefeat === null ? null : Number(agg.pctNeverDefeat.toFixed(1)),
+        meanEnergySpentPerTurn: agg.meanEnergySpentPerTurn,
+      },
+    });
+  }
+
+  if (
+    agg.firstPlayerWinRate !== null &&
+    agg.firstPlayerDecided >= FIRST_PLAYER_WIN_MIN_N &&
+    (agg.firstPlayerWinRate >= FIRST_PLAYER_WIN_BIAS ||
+      agg.firstPlayerWinRate <= 1 - FIRST_PLAYER_WIN_BIAS)
+  ) {
+    insights.push({
+      id: "first-player-bias",
+      severity: "info",
+      title: "Opening seat is winning more than a coin flip",
+      detail: `First player won ${(agg.firstPlayerWinRate * 100).toFixed(0)}% of ${String(agg.firstPlayerDecided)} finished matches with a known opener. Seat win rate is not pace, but a 70/30 split will pollute every other balance read.`,
+      evidence: {
+        firstPlayerWinRate: Number((agg.firstPlayerWinRate * 100).toFixed(1)),
+        n: agg.firstPlayerDecided,
+        p1WinRate: agg.p1WinRate === null ? null : Number((agg.p1WinRate * 100).toFixed(1)),
+      },
     });
   }
 
