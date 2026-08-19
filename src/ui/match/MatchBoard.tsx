@@ -494,7 +494,7 @@ export function MatchBoard() {
   }
 
   return (
-    <div className="relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pb-96 pt-28 sm:px-6 sm:pb-[28rem]">
+    <div className="relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pb-96 pt-28 sm:px-6 sm:pb-[18rem]">
       <ErrorSnackbar error={lastError} onDismiss={clearError} />
 
       <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur">
