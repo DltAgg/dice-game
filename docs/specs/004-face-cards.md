@@ -33,7 +33,7 @@ pool.
 | Opening basics (naturals + Shield) that are not listed in `faceDeck` do not count toward the 12 | bible §12 + constructed start |
 | Named specials on `startingDice` consume `faceDeck` rows and start installed, not pooled | constructed start / XOR ledger |
 | Leftover `faceDeck` ids form `facePool` at `createMatch` | constructed start |
-| Arcane Echo, Forbidden Heritage, Pestilent Plague refused on `startingDice` (legal in pool) | OPEN_DESIGN default refuse |
+| Arcane Echo, Forbidden Heritage, Pestilent Plague refused on `startingDice` (legal in pool; print: “Cannot be included on opening dice.”) | OPEN_DESIGN default refuse |
 | A face card is in the pool XOR installed — never both | bible §12 |
 | Ownership is independent of which die the face sits on | bible §12 |
 | Forging may copy an already-installed face, or take one from the pool | bible §13 |
@@ -78,12 +78,12 @@ Named specials:
 
 | Name | Overloads | Playable today | Notes |
 |---|---|---|---|
-| Arcane Echo | 0 | On roll: re-fire other die onRoll (+ overloads) | Not a full face overlay |
+| Arcane Echo | 0 | Echo-card forge only; cannot open; On roll: re-fire other die onRoll (+ overloads) | Not a full face overlay |
 | Blade Rain | 3 | On roll: arm next-attack split | `split-damage` pending |
 | Rending Claw | 3 | On roll: remove 3 Shields from most-shielded enemy | |
 | Crush | 3 | On roll: next attack +1 damage | |
-| Forbidden Heritage | 1 | On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel | |
-| Pestilent Plague | 2 | On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` | |
+| Forbidden Heritage | 1 | Cannot open; On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel | |
+| Pestilent Plague | 2 | Cannot open; On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` | |
 | Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
 | Conversion Rune | 2 | On roll: convert; On absorb: +Energy | |
 | Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |

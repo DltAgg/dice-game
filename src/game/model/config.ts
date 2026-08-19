@@ -48,7 +48,10 @@ export interface GameRulesConfig {
    * ASSUMED. Named synthetics across both opening dice.
    */
   readonly startingMaxSyntheticsPerPlayer: number;
-  /** ASSUMED. Named synthetics on a single opening die. */
+  /**
+   * ASSUMED. Named synthetics on a single opening die (default 2). Player
+   * cap still blocks a third synthetic across both dice.
+   */
   readonly startingMaxSyntheticsPerDie: number;
   /**
    * ASSUMED. Opening slots whose face definition has a non-empty `onRoll`.
@@ -103,7 +106,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   maxFacesOfSameAttributePerDie: 4,
   startingMinShieldsPerDie: 1,
   startingMaxSyntheticsPerPlayer: 2,
-  startingMaxSyntheticsPerDie: 1,
+  startingMaxSyntheticsPerDie: 2,
   startingMaxOnRollFacesPerDie: 1,
   deckMinCards: 50,
   deckMaxCards: 60,

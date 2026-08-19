@@ -21,6 +21,7 @@ import {
   CRUSH,
   FORBIDDEN_HERITAGE,
   ARCANE_ECHO_FACE,
+  GREAT_SPARK,
   NEEDLE,
   PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
@@ -196,6 +197,18 @@ describe("validateStartingDice", () => {
     if (!result.ok) expect(result.reason).toMatch(/Shield/);
   });
 
+  it("allows two synthetics on one die under the default per-die cap", () => {
+    const result = validateStartingDice(
+      [
+        [CRUSH, GREAT_SPARK, wild, arcane, luminar, SHIELD_FACE_ID],
+        basics,
+      ],
+      [...PROTOTYPE_FACE_DECK, GREAT_SPARK],
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
   it("refuses three synthetics when the player cap is 2", () => {
     const result = validateStartingDice(
       [
@@ -203,7 +216,7 @@ describe("validateStartingDice", () => {
         [NEEDLE, martial, wild, arcane, luminar, SHIELD_FACE_ID],
       ],
       PROTOTYPE_FACE_DECK,
-      { ...DEFAULT_RULES_CONFIG, startingMaxSyntheticsPerDie: 2, startingMaxOnRollFacesPerDie: 2 },
+      { ...DEFAULT_RULES_CONFIG, startingMaxOnRollFacesPerDie: 2 },
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/synthetics/);

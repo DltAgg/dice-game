@@ -169,6 +169,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: "arcane",
     rulesText:
       '[Requirement: may only be forged by "Echo" cards]\n' +
+      "Cannot be included on opening dice.\n" +
       "On roll: copy the other die's face, applying its effects, attributes, and overloads.",
     onRoll: [{ type: "copy-other-die-face" }],
     onAbsorb: [],
@@ -239,6 +240,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
+      "Cannot be included on opening dice.\n" +
       "On roll: your opponent draws 1 card. Retain this die.\n" +
       "This face cannot be replaced by forging.\n" +
       "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
@@ -262,6 +264,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
+      "Cannot be included on opening dice.\n" +
       "On roll: put 1 pestilence counter on this face. At 2 pestilence counters: remove them and forge 1 Pestilent Plague onto an adjacent slot of this die.\n" +
       "Cannot be replaced by forging for 4 of this die's owner's turns. Whenever a Pestilent Plague is forged onto this die, reset the remaining lock to 4 on every Pestilent Plague on this die.\n" +
       "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",

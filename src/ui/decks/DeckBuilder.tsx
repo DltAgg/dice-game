@@ -292,7 +292,8 @@ export function DeckBuilder() {
           Hover any card to inspect it. Build a loadout (
           {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
           face deck ≤{cfg.faceDeckMaxCards}; opening dice ≤{cfg.startingMaxSyntheticsPerPlayer}{" "}
-          synthetics). Illegal drafts can be saved; Play refuses them until they are legal.
+          synthetics total, ≤{cfg.startingMaxSyntheticsPerDie} per die). Illegal drafts can be
+          saved; Play refuses them until they are legal.
         </p>
         </div>
         <label className="flex w-full max-w-xs flex-col gap-1 text-sm sm:w-56">
