@@ -321,7 +321,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText:
-      "Forge 3 Synthetic Corruption faces on one of the opponent's dice.",
+      "Forge 3 synthetic Corruption faces on one of the opponent's dice.",
     ritual: {
       activeWhen: { arcane: 1, corruption: 1 },
       effects: [
@@ -344,7 +344,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText:
-      "Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures.",
+      "Consume every synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures.",
     ritual: {
       activeWhen: { corruption: 3 },
       effects: [{ type: "extermination" }],
@@ -481,7 +481,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "Forge 1 Synthetic Corruption face on the opponent's die.",
+    rulesText: "Forge 1 synthetic Corruption face on the opponent's die.",
     effect: {
       requires: { corruption: 1 },
       effects: [

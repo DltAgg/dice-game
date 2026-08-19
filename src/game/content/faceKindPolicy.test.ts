@@ -9,7 +9,7 @@ import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { SHIELD } from "../model/symbols.js";
 import { isLegalForgeKindForAttribute, validateFaceDeck } from "../rules/faces.js";
 import { ALL_CARDS } from "./cards.js";
-import { ALL_FACE_CARDS, FACE_CARDS, SHIELD_FACE_ID, syntheticFaceId } from "./faces.js";
+import { ALL_FACE_CARDS, FACE_CARDS, SHIELD_FACE_ID, VENOM } from "./faces.js";
 
 describe("attribute face-kind policy", () => {
   it("allows natural faces only for Martial / Wild / Arcane / Luminar", () => {
@@ -35,13 +35,18 @@ describe("attribute face-kind policy", () => {
       ).toBe(true);
     }
     for (const attribute of SYNTHETIC_ONLY_ATTRIBUTES) {
-      expect(FACE_CARDS[syntheticFaceId(attribute)]).toBeDefined();
+      expect(
+        Object.values(FACE_CARDS).some(
+          (face) => face.kind === "synthetic" && face.symbol === attribute,
+        ),
+        `no named synthetic face for ${attribute}`,
+      ).toBe(true);
     }
   });
 
   it("refuses unknown natural synthetic-only face ids in a face deck", () => {
     const result = validateFaceDeck(
-      [syntheticFaceId("toxin"), "face-natural-toxin" as never],
+      [VENOM, "face-natural-toxin" as never],
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);

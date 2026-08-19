@@ -10,10 +10,14 @@ Example:
 
 ```csv
 Card text,Energy cost,Card name
-"Draw 2 cards and discard 1. Forge 1 Synthetic Darkness on your die.",3,Eclipse
+"Draw 2 cards and discard 1. Forge 1 synthetic Darkness face on your die.",3,Eclipse
 ```
 
 If headers or order differ, **stop and confirm** before mass-authoring.
+
+“Forge 1 Synthetic Darkness” (or Toxin / Mechanical / Corruption / …) is
+**kind + attribute**: install a **named special** of that symbol from the
+pool. It is not a card titled Synthetic Darkness.
 
 ## Process
 

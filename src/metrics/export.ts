@@ -207,19 +207,20 @@ ${mixTable(s.cardForgeMix)}
 
 ${mixTable(s.playVsForgeMix)}
 
-### Effect/turn vs forge/turn (correlation)
+### Effect vs forge by turn
 
-Pearson r = ${s.playForgeCorrelation === null ? "—" : s.playForgeCorrelation.toFixed(2)} (n=${String(s.playForgeRates.length)}). Mean effect/turn ${s.meanEffectPerTurn?.toFixed(2) ?? "—"}, mean forge/turn ${s.meanForgePerTurn?.toFixed(2) ?? "—"}. Negative r means matches that forge more play effects less.
+Mean cards that turn among matches that reached it. Effect is PLAY_CARD (effect region); forge is FORGE_CARD (one tactic even if it installs several faces).
 
 ${
-  s.playForgeRates
-    .slice(0, 12)
+  s.playForgeByTurn
     .map(
       (point) =>
-        `- ${point.matchId}: effect ${point.effectPerTurn.toFixed(2)}/turn, forge ${point.forgePerTurn.toFixed(2)}/turn (${String(point.totalTurns)} turns)`,
+        `- T${String(point.turn)}: effect ${point.meanEffect.toFixed(2)}, forge ${point.meanForge.toFixed(2)} (n=${String(point.matchCount)})`,
     )
     .join("\n") || "(none)"
 }
+
+Pearson r of match effect/turn vs forge/turn = ${s.playForgeCorrelation === null ? "—" : s.playForgeCorrelation.toFixed(2)} (n=${String(s.playForgeRates.length)}). Mean effect/turn ${s.meanEffectPerTurn?.toFixed(2) ?? "—"}, mean forge/turn ${s.meanForgePerTurn?.toFixed(2) ?? "—"}.
 
 ### Think time by action (p50 / p90)
 

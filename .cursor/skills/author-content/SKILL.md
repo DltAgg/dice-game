@@ -86,9 +86,12 @@ Card Progress:
 | Creature | `creature-<kebab>` | `creature-minotaur` |
 | Natural face | `face-natural-<attr>` | `face-natural-arcane` |
 | Untyped face | `face-untyped-shield` | `face-untyped-shield` |
-| Synthetic / named | `face-synthetic-<kebab>` | `face-synthetic-crush` |
+| Synthetic named special | `face-synthetic-<kebab>` | `face-synthetic-crush` |
 | Attack | `attack-<creature>-<kebab>` | `attack-minotaur-heavy-axe` |
 | Ability | `ability-<creature>-<kebab>` | `ability-warden-ward` |
+
+Never `face-synthetic-martial` / `face-synthetic-corruption` (no blank generic
+identity synthetics). Forging names a **named special** from the pool.
 
 Const exports: `SCREAMING_SNAKE`. Attributes: `martial`, `wild`, `toxin`,
 `arcane`, `luminar`, `mechanical`, `corruption`, `darkness`.

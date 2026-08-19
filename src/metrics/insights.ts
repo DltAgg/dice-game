@@ -6,7 +6,7 @@ import {
   LOW_LETHALITY_DAMAGE_PER_TURN,
 } from "./thresholds.js";
 import { matchPace, type MatchPace, type PaceVerdict } from "./pace.js";
-import { forgeCardCountOf, mean, median, pearsonCorrelation, percentile } from "./snapshot.js";
+import { forgeCardCountOf, forgeCardsOnTurn, mean, median, pearsonCorrelation, percentile } from "./snapshot.js";
 import type { MatchRecording } from "./types.js";
 
 export interface PlayForgeRatePoint {
@@ -15,6 +15,13 @@ export interface PlayForgeRatePoint {
   readonly effectPerTurn: number;
   readonly forgePerTurn: number;
   readonly totalTurns: number;
+}
+
+export interface PlayForgeTurnPoint {
+  readonly turn: number;
+  readonly meanEffect: number;
+  readonly meanForge: number;
+  readonly matchCount: number;
 }
 
 export type InsightSeverity = "info" | "warn" | "high";
@@ -104,6 +111,27 @@ function playForgeRatePoints(recordings: readonly MatchRecording[]): PlayForgeRa
   return points;
 }
 
+function playForgeByTurn(recordings: readonly MatchRecording[]): PlayForgeTurnPoint[] {
+  const byTurn = new Map<number, { effect: number; forge: number; n: number }>();
+  for (const recording of recordings) {
+    for (const row of recording.turns) {
+      const bucket = byTurn.get(row.turn) ?? { effect: 0, forge: 0, n: 0 };
+      bucket.effect += row.cardsPlayed;
+      bucket.forge += forgeCardsOnTurn(row, recording);
+      bucket.n += 1;
+      byTurn.set(row.turn, bucket);
+    }
+  }
+  return [...byTurn.entries()]
+    .sort((left, right) => left[0] - right[0])
+    .map(([turn, bucket]) => ({
+      turn,
+      meanEffect: bucket.effect / bucket.n,
+      meanForge: bucket.forge / bucket.n,
+      matchCount: bucket.n,
+    }));
+}
+
 function thinkTimesByAction(recordings: readonly MatchRecording[]): Record<string, number[]> {
   const byType: Record<string, number[]> = {};
   for (const recording of recordings) {
@@ -147,6 +175,7 @@ export interface MetricsAggregates {
   readonly cardForgeMix: Readonly<Record<string, number>>;
   readonly playVsForgeMix: Readonly<Record<string, number>>;
   readonly playForgeRates: readonly PlayForgeRatePoint[];
+  readonly playForgeByTurn: readonly PlayForgeTurnPoint[];
   readonly playForgeCorrelation: number | null;
   readonly meanEffectPerTurn: number | null;
   readonly meanForgePerTurn: number | null;
@@ -209,6 +238,7 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
   }
 
   const playForgeRates = playForgeRatePoints(unique);
+  const playForgeByTurnSeries = playForgeByTurn(unique);
 
   return {
     matchCount: unique.length,
@@ -253,6 +283,7 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
       "Played (forge)": unique.reduce((sum, recording) => sum + forgeCardCountOf(recording), 0),
     },
     playForgeRates,
+    playForgeByTurn: playForgeByTurnSeries,
     playForgeCorrelation: pearsonCorrelation(
       playForgeRates.map((point) => point.effectPerTurn),
       playForgeRates.map((point) => point.forgePerTurn),

@@ -70,7 +70,7 @@ per id; face deck ≤12, ≤3 per attribute.
 | Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → absorb Active-when → `ACTIVATE_RITUAL` → GY |
 | Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when symbols persist unless an effect discards them |
 | Face (natural) | Starting identity faces | Dual-kind attrs + Shield only |
-| Face (synthetic) | Forge targets and named specials | Pool → install; `onRoll` / `onAbsorb` |
+| Face (synthetic) | Named specials only | Pool → install; `onRoll` / `onAbsorb`. Never blank `face-synthetic-<attr>` |
 
 Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
 cumulative (`Arcane + Corruption + Corruption`), absorbed onto the ritual during
@@ -86,9 +86,13 @@ needs a true forge splash.
 ## Face-kind policy
 
 - Dual-kind (Martial, Wild, Arcane, Luminar): natural **and** synthetic forges.
+  Synthetics are **named specials** (Crush, Warhorn, …), not identity blanks.
 - Synthetic-only (Toxin, Mechanical, Corruption, Darkness): **never**
-  `kind: "natural"` faces or forge regions.
+  `kind: "natural"` faces or forge regions. Forge installs a named special
+  of that attribute from the pool.
 - Shield: `kind: "untyped"` only. Starting-die identity; never forged; not Natural.
+- Never author generic identity synthetics (`face-synthetic-martial`,
+  `face-synthetic-corruption`, Forged Martial, Synthetic Arcane, …).
 
 ## Cost and Energy
 
@@ -119,6 +123,7 @@ vocabulary exists.
 - Putting opponent-forge choice on the **opponent** (they receive the physical
   face; the activator picks from their pool).
 - Natural Corruption / Darkness / Toxin / Mechanical faces.
+- Blank/generic synthetics (attribute-named identity faces).
 - Every attribute doing everything.
 - Rules logic in React / Zustand / PeerJS.
 - Growing AST without a concrete card + resolver + tests in the same change.

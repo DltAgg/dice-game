@@ -52,7 +52,8 @@ Pace is **per match**, not a 11–20 band (`src/metrics/pace.ts`):
 6. **Hand spend:** `playVsForgeMix` / `totalCardsPlayed` vs `totalCardsForged`.
    Effect-region plays are not the same as tactics spent to install faces.
    `playForgeCorrelation` is Pearson r of effect/turn vs forge/turn across
-   matches (negative = Energy split between playing and forging).
+   matches (negative = Energy split between playing and forging). The
+   dashboard stacked chart is mean effect vs forge **by turn number**.
 
 ## Answer shape
 

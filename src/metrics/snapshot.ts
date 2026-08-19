@@ -144,6 +144,23 @@ export function incrementCardForges(
   return next;
 }
 
+export function forgeCardsOnTurn(
+  turn: { readonly turn: number; readonly cardsForged?: number },
+  recording: {
+    readonly actions: readonly {
+      readonly accepted: boolean;
+      readonly actionType: string | null;
+      readonly turn: number;
+    }[];
+  },
+): number {
+  const fromField = turn.cardsForged ?? 0;
+  const fromActions = recording.actions.filter(
+    (sample) => sample.accepted && sample.actionType === "FORGE_CARD" && sample.turn === turn.turn,
+  ).length;
+  return Math.max(fromField, fromActions);
+}
+
 export function forgeCardCountOf(recording: {
   readonly totalCardsForged?: number;
   readonly cardForgeCounts?: Readonly<Record<string, number>>;

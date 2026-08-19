@@ -15,8 +15,8 @@ import { SHIELD, type SymbolType } from "../model/symbols.js";
  *
  * Basics are starting-die identity faces: Natural Martial / Wild / Arcane /
  * Luminar, plus untyped Shield. Toxin / Mechanical / Corruption / Darkness are
- * synthetic-only attributes — forge those as effectful generics or named
- * specials. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
+ * synthetic-only attributes — forge those as named specials from the owner's
+ * pool. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
  * `onAbsorb` only for clauses the engine can resolve — leave the other array
  * empty and keep the deferred clause in `rulesText` (see DEFERRED_CATALOGUE).
  */
@@ -26,9 +26,10 @@ const face = (definition: FaceCardDefinition): FaceCardDefinition => definition;
 export const naturalFaceId = (attribute: DualKindAttribute): FaceCardId =>
   asFaceCardId(`face-natural-${attribute}`);
 
-export const syntheticFaceId = (attribute: Attribute): FaceCardId =>
-  asFaceCardId(`face-synthetic-${attribute}`);
-
+/**
+ * Starting-die identity only: naturals for dual-kind attributes. There is no
+ * canonical `face-synthetic-<attr>` — forging names a special from the pool.
+ */
 export const faceIdFor = (kind: ForgeableFaceKind, attribute: Attribute): FaceCardId => {
   if (kind === "natural") {
     if (!isDualKindAttribute(attribute)) {
@@ -38,7 +39,9 @@ export const faceIdFor = (kind: ForgeableFaceKind, attribute: Attribute): FaceCa
     }
     return naturalFaceId(attribute);
   }
-  return syntheticFaceId(attribute);
+  throw new Error(
+    `there is no canonical synthetic face for "${attribute}"; name a special from the owner's pool`,
+  );
 };
 
 /** Shield is the one untyped starting face (bible §10 / starting dice). */
@@ -47,7 +50,9 @@ export const SHIELD_FACE_ID: FaceCardId = asFaceCardId("face-untyped-shield");
 export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
   if (symbol === SHIELD) return SHIELD_FACE_ID;
   if (isDualKindAttribute(symbol)) return naturalFaceId(symbol);
-  return syntheticFaceId(symbol);
+  throw new Error(
+    `starting dice have no identity face for "${symbol}"; use a named synthetic from the face pool`,
+  );
 };
 
 /* ----------------------------------------------------------- Figma names --- */
@@ -57,16 +62,6 @@ const NATURAL_FACE_NAMES: Readonly<Record<DualKindAttribute, string>> = {
   wild: "Wild",
   arcane: "Arcane",
   luminar: "Luminar",
-};
-
-/** Blank forge-target synthetics (no inherent effect yet). */
-const BLANK_GENERIC_SYNTHETICS = ["martial", "wild", "luminar"] as const satisfies readonly Attribute[];
-
-/** Blank generics kept as forge targets when no named special is chosen. */
-const BLANK_SYNTHETIC_FACE_NAMES: Readonly<Record<(typeof BLANK_GENERIC_SYNTHETICS)[number], string>> = {
-  martial: "Forged Martial",
-  wild: "Forged Wild",
-  luminar: "Forged Luminar",
 };
 
 /* ----------------------------------------------------- named specials --- */
@@ -99,6 +94,9 @@ export const ADAPTIVE_TOXIN: FaceCardId = asFaceCardId("face-synthetic-adaptive-
 export const STAIN: FaceCardId = asFaceCardId("face-synthetic-stain");
 export const INFECTION: FaceCardId = asFaceCardId("face-synthetic-infection");
 export const DECAY: FaceCardId = asFaceCardId("face-synthetic-decay");
+export const BLIGHT: FaceCardId = asFaceCardId("face-synthetic-blight");
+export const HEXBRAND: FaceCardId = asFaceCardId("face-synthetic-hexbrand");
+export const CANKER: FaceCardId = asFaceCardId("face-synthetic-canker");
 export const GEAR: FaceCardId = asFaceCardId("face-synthetic-gear");
 export const CATALYST: FaceCardId = asFaceCardId("face-synthetic-catalyst");
 export const OVERCHARGE: FaceCardId = asFaceCardId("face-synthetic-overcharge");
@@ -151,78 +149,8 @@ const naturalFace = (attribute: DualKindAttribute): FaceCardDefinition =>
     forgeRestriction: null,
   });
 
-const blankGenericSynthetic = (
-  attribute: (typeof BLANK_GENERIC_SYNTHETICS)[number],
-): FaceCardDefinition =>
-  face({
-    id: syntheticFaceId(attribute),
-    name: BLANK_SYNTHETIC_FACE_NAMES[attribute],
-    kind: "synthetic",
-    symbol: attribute,
-    rulesText: "",
-    onRoll: [],
-    onAbsorb: [],
-    maxOverloads: 2,
-    forgeRestriction: null,
-  });
-
-/**
- * Effectful forge-target synthetics. Replaces removed natural Toxin /
- * Mechanical / Corruption / Darkness and the former blank Forged Arcane /
- * Forged Darkness entries — same `face-synthetic-*` ids so forge + decks keep
- * resolving; print is no longer identity-only.
- */
-const effectfulGenericSynthetic = (
-  attribute: Attribute,
-  name: string,
-  rulesText: string,
-  onRoll: readonly EffectDefinition[],
-): FaceCardDefinition =>
-  face({
-    id: syntheticFaceId(attribute),
-    name,
-    kind: "synthetic",
-    symbol: attribute,
-    rulesText,
-    onRoll,
-    onAbsorb: [],
-    maxOverloads: 2,
-    forgeRestriction: null,
-  });
-
 const DEFINITIONS: readonly FaceCardDefinition[] = [
   ...DUAL_KIND_ATTRIBUTES.map(naturalFace),
-  ...BLANK_GENERIC_SYNTHETICS.map(blankGenericSynthetic),
-  effectfulGenericSynthetic(
-    "arcane",
-    "Synthetic Arcane",
-    "On roll: draw 1 card.",
-    [{ type: "draw-cards", amount: 1 }],
-  ),
-  effectfulGenericSynthetic(
-    "toxin",
-    "Synthetic Toxin",
-    "On roll: all attacks this turn apply 1 Toxin marker.",
-    [{ type: "arm-attack-toxin", amount: 1 }],
-  ),
-  effectfulGenericSynthetic(
-    "mechanical",
-    "Synthetic Mechanical",
-    "On roll: generate 1 Shield.",
-    [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }],
-  ),
-  effectfulGenericSynthetic(
-    "corruption",
-    "Synthetic Corruption",
-    "On roll: the next attack this turn deals +1 damage.",
-    [{ type: "next-attack-bonus", amount: 1 }],
-  ),
-  effectfulGenericSynthetic(
-    "darkness",
-    "Synthetic Darkness",
-    "On roll: gain 1 Energy.",
-    [{ type: "gain-energy", amount: 1 }],
-  ),
   face({
     id: SHIELD_FACE_ID,
     name: "Shield",
@@ -601,6 +529,49 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     },
   ),
   namedSynthetic(
+    BLIGHT,
+    "Blight",
+    "corruption",
+    "On roll: generate 1 Corruption.\n" +
+      "On absorb: send 1 opposing Ritual to its owner's graveyard.",
+    {
+      onRoll: [{ type: "generate-symbol", symbol: "corruption", amount: 1 }],
+      onAbsorb: [{ type: "destroy-ritual", target: { kind: "choose-opponent-ritual" } }],
+    },
+  ),
+  namedSynthetic(
+    HEXBRAND,
+    "Hexbrand",
+    "corruption",
+    "On roll: a chosen enemy creature discards 1 attribute token.\n" +
+      "On absorb: destroy 1 Equipment on an opposing creature.",
+    {
+      onRoll: [
+        { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+      ],
+      onAbsorb: [{ type: "destroy-equipment", target: { kind: "choose-enemy" } }],
+    },
+  ),
+  namedSynthetic(
+    CANKER,
+    "Canker",
+    "corruption",
+    "On roll: put 1 Corruption marker on an opposing synthetic face.\n" +
+      "On absorb: forge 1 synthetic Corruption face on the opponent's die.",
+    {
+      onRoll: [{ type: "add-corruption-marker", amount: 1 }],
+      onAbsorb: [
+        {
+          type: "forge-faces",
+          faces: 1,
+          kind: "synthetic",
+          attribute: "corruption",
+          target: "opponent-die",
+        },
+      ],
+    },
+  ),
+  namedSynthetic(
     GEAR,
     "Gear",
     "mechanical",
@@ -804,6 +775,9 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[STAIN]!,
   FACE_CARDS[INFECTION]!,
   FACE_CARDS[DECAY]!,
+  FACE_CARDS[BLIGHT]!,
+  FACE_CARDS[HEXBRAND]!,
+  FACE_CARDS[CANKER]!,
   FACE_CARDS[GEAR]!,
   FACE_CARDS[CATALYST]!,
   FACE_CARDS[OVERCHARGE]!,
@@ -842,15 +816,15 @@ export const STARTING_DIE_SYMBOLS: readonly SymbolType[] = [
 
 /**
  * Scenario / forge-test face pool. Unique ids (ledger: pooled xor installed).
- * Effectful synthetics cover Eclipse / Library forge paths. The builtin hotseat
- * loadout uses `PROTOTYPE_FACE_DECK` instead.
+ * Named specials cover Eclipse / Library / Contamination forge paths. The
+ * builtin hotseat loadout uses `PROTOTYPE_FACE_DECK` instead.
  */
 export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
-  syntheticFaceId("darkness"),
-  syntheticFaceId("corruption"),
-  syntheticFaceId("toxin"),
-  syntheticFaceId("mechanical"),
-  syntheticFaceId("arcane"),
+  SHADOW_ECHO,
+  INFECTION,
+  VENOM,
+  GEAR,
+  INSIGHT_RUNE,
   ARCANE_ECHO_FACE,
   RENDING_CLAW,
   BLADE_RAIN,
@@ -861,12 +835,15 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
 ];
 
 /**
- * Builtin aggro face deck — twelve unique cards, at most three per attribute
- * (bible §12). Omits natural Martial / Wild / Arcane / Luminar because those
- * already sit on the starting die (same face id cannot be pooled and installed).
- * Densifies wired Martial / Wild / Toxin combat synthetics (Temper / Untamed /
- * Virulent Rite forge targets); Corruption synthetics remain for attack-bonus
- * pressure forges. Natural Martial/Wild forges copy the starting faces (§13).
+ * Builtin aggro face deck — at most twelve unique cards, at most three per
+ * attribute (bible §12). Omits natural Martial / Wild / Arcane / Luminar
+ * because those already sit on the starting die (same face id cannot be pooled
+ * and installed). Densifies wired Martial / Wild / Toxin combat synthetics
+ * (Temper / Untamed / Virulent Rite forge targets). No Corruption splash:
+ * Aggro’s tactics never forge Corruption, and Infection / Stain / Decay are
+ * marker/engine-hate rather than creature pressure. Natural Martial/Wild
+ * forges copy the starting faces (§13). Nine cards is legal (cap is 12); a
+ * fourth attribute would be unforgeable filler.
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   WARHORN,
@@ -878,31 +855,31 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   NEEDLE,
   SEEP,
   VENOM,
-  syntheticFaceId("corruption"),
-  STAIN,
-  DECAY,
 ];
 
 /**
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
  * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
  * Darkness / Corruption / Arcane for rituals and forges; Luminar synthetics
- * gate Archmage’s special (arcane + luminar) without Mechanical combo splash.
- * Corruption payloads are the stay specials (Forbidden Heritage, Pestilent
- * Plague) plus Stain — not the generic +1-attack synthetic (a miss on an
- * opponent die).
+ * (Revelation / Vital Spark / Aegis) splash for Archmage’s special
+ * (arcane + luminar) without Mechanical combo splash. Great Spark / Rekindle
+ * are empty-print stubs — not pooled. Corruption is the own-die trio Blight
+ * (fuel + ritual hate), Hexbrand (engine hate), and Canker (marker +
+ * absorb-forge onto the opponent) — not Stain. Forbidden Heritage / Pestilent
+ * Plague stay specials are legal constructed swaps but lose the
+ * 3-per-attribute race to this trio.
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
-  syntheticFaceId("darkness"),
+  SACRIFICE,
   SHADOW_ECHO,
   DRAIN,
-  STAIN,
-  FORBIDDEN_HERITAGE,
-  PESTILENT_PLAGUE,
-  syntheticFaceId("arcane"),
+  BLIGHT,
+  HEXBRAND,
+  CANKER,
+  RESONANCE_RUNE,
   INSIGHT_RUNE,
   CONVERSION_RUNE,
-  syntheticFaceId("luminar"),
+  REVELATION,
   VITAL_SPARK,
   AEGIS,
 ];

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { REFORGE, RATCHET } from "../content/cards.js";
-import { FLYWHEEL, PISTON, faceIdForSymbol, syntheticFaceId } from "../content/faces.js";
+import { FLYWHEEL, GEAR, PISTON, faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -176,7 +176,7 @@ describe("replace-synthetic-face (Reforge)", () => {
   });
 
   it("whiffs when the only pool mechanical synthetic would be the same face after return", () => {
-    // Only one Synthetic Mechanical available: installed Flywheel, nothing else in pool.
+    // Only one Mechanical special available: installed Flywheel, nothing else in pool.
     let ready = withSymbols(actionsReady([REFORGE]), P1, ["mechanical"]);
     ready = withPoolFaces(ready, [FLYWHEEL]);
     // Strip other mechanical synthetics from the pool.
@@ -190,7 +190,7 @@ describe("replace-synthetic-face (Reforge)", () => {
           ...player,
           facePool: player.facePool.filter((id) => {
             if (id === FLYWHEEL) return true;
-            if (id === syntheticFaceId("mechanical")) return false;
+            if (id === GEAR) return false;
             if (id === PISTON) return false;
             return true;
           }),

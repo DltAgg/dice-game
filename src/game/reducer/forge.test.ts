@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ECLIPSE, LIVING_LIBRARY, LUMINAR_PRISM } from "../content/cards.js";
-import { faceIdForSymbol, getFaceCard, naturalFaceId, syntheticFaceId } from "../content/faces.js";
+import { faceIdForSymbol, getFaceCard, naturalFaceId, SHADOW_ECHO, INSIGHT_RUNE } from "../content/faces.js";
 import { overloadsOnFace } from "../rules/cards.js";
 import { symbolCountsOn } from "../rules/dice.js";
 import {
@@ -53,7 +53,7 @@ describe("forging a face", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const slot = result.state.dice[dieId]?.slots[4];
-    expect(slot?.faceCardId).toBe(syntheticFaceId("darkness"));
+    expect(slot?.faceCardId).toBe(SHADOW_ECHO);
     expect(slot?.faceCardOwnerId).toBe(P1);
     expect(eventTypes(result.state)).toContain("face-forged");
   });
@@ -78,8 +78,8 @@ describe("forging a face", () => {
     const result = forge(state);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("arcane"));
-    expect(getFaceCard(syntheticFaceId("arcane"))?.kind).toBe("synthetic");
+    expect(result.state.dice[dieId]?.slots[4]?.faceCardId).toBe(INSIGHT_RUNE);
+    expect(getFaceCard(INSIGHT_RUNE)?.kind).toBe("synthetic");
   });
 
   it("spends the card's Energy cost and sends it to the graveyard", () => {

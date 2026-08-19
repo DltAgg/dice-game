@@ -16,7 +16,7 @@ import {
   STAMP,
   TRANSMISSION,
 } from "../content/cards.js";
-import { FLYWHEEL, PISTON, faceIdForSymbol, syntheticFaceId } from "../content/faces.js";
+import { FLYWHEEL, GEAR, PISTON, faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import { asAttackId, type CardId, type DieId, type FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -105,7 +105,7 @@ function placedReadyRitual(cardId: CardId, progress: AttributeTokens) {
 }
 
 describe("Ratchet", () => {
-  const mechanicalFace = syntheticFaceId("mechanical");
+  const mechanicalFace = GEAR;
 
   it("attaches to a Mechanical face and refuses any other attribute", () => {
     const ready = installFace(actionsReady([RATCHET, RATCHET]), mechanicalFace);
@@ -187,7 +187,7 @@ describe("Assembly Line", () => {
     });
 
     const dieId = dieIdOf(activated);
-    const faceCardId = syntheticFaceId("mechanical");
+    const faceCardId = GEAR;
     const resolved = expectOk(
       advance(activated, {
         type: "RESOLVE_FORGE_FACES",
@@ -223,7 +223,7 @@ describe("Assembly Line", () => {
       playerId: P1,
       dieId: opponentDieId,
       slotIndexes: [0, 1],
-      faceCardId: syntheticFaceId("mechanical"),
+      faceCardId: GEAR,
     });
     expect(refused.ok).toBe(false);
     if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
@@ -292,7 +292,7 @@ describe("Flywheel", () => {
 });
 
 describe("Governor", () => {
-  const mechanicalFace = syntheticFaceId("mechanical");
+  const mechanicalFace = GEAR;
 
   it("attaches to a Mechanical face and generates Mechanical on roll", () => {
     const ready = installFace(actionsReady([GOVERNOR]), mechanicalFace);
@@ -364,7 +364,7 @@ describe("Die Press", () => {
     });
 
     const dieId = dieIdOf(played);
-    const faceCardId = syntheticFaceId("mechanical");
+    const faceCardId = GEAR;
     const resolved = expectOk(
       advance(played, {
         type: "RESOLVE_FORGE_FACES",
@@ -395,7 +395,7 @@ describe("Die Press", () => {
 });
 
 describe("Foundry", () => {
-  const mechanicalFace = syntheticFaceId("mechanical");
+  const mechanicalFace = GEAR;
 
   it("gains Energy when a controller creature absorbs Mechanical", () => {
     const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
@@ -506,7 +506,7 @@ describe("Piston", () => {
 });
 
 describe("Mechanical combo wave 2", () => {
-  const mechanicalFace = syntheticFaceId("mechanical");
+  const mechanicalFace = GEAR;
 
   it("Blueprint generates Mechanical and arms a forge discount", () => {
     const ready = actionsReady([BLUEPRINT]);

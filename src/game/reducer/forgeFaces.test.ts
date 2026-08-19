@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GREAT_CONTAMINATION, RITUAL_OF_CONTAMINATION, ECLIPSE } from "../content/cards.js";
-import { getFaceCard, syntheticFaceId } from "../content/faces.js";
+import { getFaceCard, INFECTION } from "../content/faces.js";
 import { ritualsOf } from "../rules/cards.js";
 import { symbolCountsOn } from "../rules/dice.js";
 import type { AttributeTokens } from "../model/symbols.js";
@@ -111,7 +111,7 @@ describe("forge-faces (Great Contamination)", () => {
 
     const dieId = activated.state.players[P2]?.dieIds[0];
     if (dieId === undefined) throw new Error("test: no opponent die");
-    const faceCardId = syntheticFaceId("corruption");
+    const faceCardId = INFECTION;
 
     const resolved = advance(activated.state, {
       type: "RESOLVE_FORGE_FACES",
@@ -174,7 +174,7 @@ describe("forge-faces (Great Contamination)", () => {
       playerId: P1,
       dieId: ownDieId,
       slotIndexes: [0, 1, 2],
-      faceCardId: syntheticFaceId("corruption"),
+      faceCardId: INFECTION,
     });
     expect(refused.ok).toBe(false);
     if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
@@ -241,11 +241,11 @@ describe("forge-faces (Ritual of Contamination)", () => {
       playerId: P1,
       dieId,
       slotIndexes: [4],
-      faceCardId: syntheticFaceId("corruption"),
+      faceCardId: INFECTION,
     });
     expect(resolved.ok).toBe(true);
     if (!resolved.ok) return;
-    expect(resolved.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("corruption"));
+    expect(resolved.state.dice[dieId]?.slots[4]?.faceCardId).toBe(INFECTION);
     expect(resolved.state.dice[dieId]?.slots[4]?.faceCardOwnerId).toBe(P1);
   });
 });

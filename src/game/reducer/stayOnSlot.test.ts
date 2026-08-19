@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { ECLIPSE, LATENT_CORRUPTION, RITUAL_OF_CONTAMINATION } from "../content/cards.js";
 import {
   FORBIDDEN_HERITAGE,
+  INFECTION,
   PESTILENT_PLAGUE,
+  SHADOW_ECHO,
   SHIELD_FACE_ID,
-  syntheticFaceId,
 } from "../content/faces.js";
 import type { DieSlot, DieState } from "../model/dice.js";
 import type { FaceCardId, PlayerId } from "../model/ids.js";
@@ -135,7 +136,7 @@ describe("Forbidden Heritage stay (cannot-replace-by-forge)", () => {
       playerId: P1,
       dieId,
       slotIndexes: [4],
-      faceCardId: syntheticFaceId("corruption"),
+      faceCardId: INFECTION,
     });
     expect(refused.ok).toBe(false);
     if (refused.ok) return;
@@ -162,7 +163,7 @@ describe("Forbidden Heritage stay (cannot-replace-by-forge)", () => {
       playerId: P1,
       dieId: dieIdOf(pending),
       slotIndex: 2,
-      faceCardId: syntheticFaceId("corruption"),
+      faceCardId: INFECTION,
     });
     expect(refused.ok).toBe(false);
     if (refused.ok) return;
@@ -282,7 +283,7 @@ describe("Pestilent Plague forge-lock", () => {
     const forged = expectOk(
       advance(expired, forgeAction(expired, P1, handCardIdAt(expired, P1, 0), dieId, [4])),
     );
-    expect(forged.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("darkness"));
+    expect(forged.dice[dieId]?.slots[4]?.faceCardId).toBe(SHADOW_ECHO);
   });
 
   it("illegal vs legal snapshots: remaining lock vs expired", () => {
@@ -309,7 +310,7 @@ describe("Pestilent Plague forge-lock", () => {
     const allow = expectOk(
       advance(expired, forgeAction(expired, P1, handCardIdAt(expired, P1, 0), dieId, [4])),
     );
-    expect(allow.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("darkness"));
+    expect(allow.dice[dieId]?.slots[4]?.faceCardId).toBe(SHADOW_ECHO);
   });
 
   it("installing a new PP resets remaining lock to 4 on every PP slot of that die", () => {
@@ -344,7 +345,7 @@ describe("Pestilent Plague forge-lock", () => {
       advance(withPp, forgeAction(withPp, P1, handCardIdAt(withPp, P1, 0), dieId, [4])),
     );
     expect(after.dice[dieId]?.slots[0]?.forgeLockRemaining).toBe(2);
-    expect(after.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("darkness"));
+    expect(after.dice[dieId]?.slots[4]?.faceCardId).toBe(SHADOW_ECHO);
   });
 
   it("ACTIVATE_FACE still removes PP while lock > 0", () => {

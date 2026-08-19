@@ -10,16 +10,30 @@ Types: `src/game/model/dice.ts` (`FaceCardDefinition`)
 |---|---|---|
 | Natural attribute | Dual-kind only: Martial / Wild / Arcane / Luminar (`face-natural-*`) | 1 |
 | Untyped Shield | Untyped (`face-untyped-shield`) | 1 |
-| Effectful generic synthetic | Forge targets for Arcane / Toxin / Mechanical / Corruption / Darkness (`face-synthetic-<attr>`) | 2 |
-| Blank generic synthetic | Forge targets for Martial / Wild / Luminar (`face-synthetic-<attr>`, no inherent effect yet) | 2 |
-| Named special | Printed inherent effect (`face-synthetic-<name>`) | usually 2 |
+| Named special | Printed inherent effect (`face-synthetic-<name>`, e.g. Crush, Canker) | usually 2 |
+
+**Author only those three.** There are no blank or generic identity synthetics.
+Never author `face-synthetic-martial`, `face-synthetic-corruption`, or any
+`face-synthetic-<attr>` card whose name is just the attribute (Forged Martial,
+Synthetic Corruption, etc.). Forging a synthetic attribute **names a special
+from the owner's pool** that has that symbol.
 
 **Policy:** Toxin / Mechanical / Corruption / Darkness are synthetic-only
 (`SYNTHETIC_ONLY_ATTRIBUTES`). Never author `kind: "natural"` faces or forge
 regions for them. Martial / Wild / Arcane / Luminar are dual-kind
-(`DUAL_KIND_ATTRIBUTES`).
+(`DUAL_KIND_ATTRIBUTES`). Dual-kind **synthetic** forges still install a
+named special (Warhorn, Pack, Insight Rune, …), not a generic.
 
-Helpers: `naturalFaceId`, `syntheticFaceId`, `faceIdFor`, `faceIdForSymbol`.
+Helpers:
+
+| Helper | Use |
+|---|---|
+| `naturalFaceId(attr)` | Starting dual-kind identity (`face-natural-*`) |
+| `faceIdFor(kind, attr)` | Natural only; **throws** if `kind === "synthetic"` |
+| `faceIdForSymbol(symbol)` | Starting-die symbols only (naturals + Shield). Throws for synthetic-only attributes |
+
+There is no `syntheticFaceId`. Tests and setup that need a synthetic must import
+a named special (`CRUSH`, `CANKER`, `GEAR`, …).
 
 ## Shape (named special)
 

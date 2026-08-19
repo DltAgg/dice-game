@@ -249,7 +249,7 @@ export type EffectDefinition =
    */
   | { readonly type: "mind-control" }
   /**
-   * Pending: consume every Synthetic Corruption face on one die; deal
+   * Pending: consume every synthetic Corruption face on one die; deal
    * `2 * consumed` split across up to 2 creatures. No forge-draw.
    */
   | { readonly type: "extermination" }

@@ -25,9 +25,9 @@ import {
   NEEDLE,
   RENDING_CLAW,
   SEEP,
+  VENOM,
   WARHORN,
   faceIdForSymbol,
-  syntheticFaceId,
 } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import { asAttackId, type CardId, type DieId, type FaceCardId } from "../model/ids.js";
@@ -485,7 +485,7 @@ describe("Virulent Rite", () => {
       sourceFaceCardId: null,
     });
     const dieId = dieIdOf(activated);
-    const faceCardId = syntheticFaceId("toxin");
+    const faceCardId = VENOM;
     const resolved = expectOk(
       advance(activated, {
         type: "RESOLVE_FORGE_FACES",

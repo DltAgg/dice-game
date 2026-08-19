@@ -1,9 +1,9 @@
-import { linearRegression } from "@/metrics";
-
 const ACCENT = "#c4a574";
 const MUTED = "#a89f91";
 const STALL = "#b4533a";
 const OK = "#6b8f71";
+const EFFECT = "#6b8f71";
+const FORGE = "#c4a574";
 
 export function formatDuration(ms: number | null): string {
   if (ms === null) return "—";
@@ -190,13 +190,17 @@ function fmtAxis(value: number): string {
   return value.toFixed(2);
 }
 
-export function ScatterPlot({
+export function StackedLineChart({
   points,
+  aLabel,
+  bLabel,
   xLabel,
   yLabel,
   title,
 }: {
-  points: readonly { readonly x: number; readonly y: number; readonly label?: string }[];
+  points: readonly { readonly x: number; readonly a: number; readonly b: number }[];
+  aLabel: string;
+  bLabel: string;
   xLabel: string;
   yLabel: string;
   title: string;
@@ -210,28 +214,37 @@ export function ScatterPlot({
   const padL = 44;
   const padR = 14;
   const padT = 12;
-  const padB = 36;
+  const padB = 44;
   const plotW = width - padL - padR;
   const plotH = height - padT - padB;
-  const xMax = niceMax(Math.max(0, ...points.map((point) => point.x)));
-  const yMax = niceMax(Math.max(0, ...points.map((point) => point.y)));
-  const toX = (value: number) => padL + (value / xMax) * plotW;
+  const xMin = points[0]!.x;
+  const xMax = points[points.length - 1]!.x;
+  const yMax = niceMax(Math.max(0, ...points.map((point) => point.a + point.b)));
+  const toX = (value: number) =>
+    xMax === xMin ? padL + plotW / 2 : padL + ((value - xMin) / (xMax - xMin)) * plotW;
   const toY = (value: number) => padT + plotH - (value / yMax) * plotH;
-  const fit = linearRegression(
-    points.map((point) => point.x),
-    points.map((point) => point.y),
-  );
   const yTicks = [0, yMax / 2, yMax];
-  const xTicks = [0, xMax / 2, xMax];
+  const xTicks =
+    points.length <= 8
+      ? points.map((point) => point.x)
+      : [xMin, Math.round((xMin + xMax) / 2), xMax];
+
+  const stackedArea = (bottom: (point: (typeof points)[number]) => number, top: (point: (typeof points)[number]) => number) => {
+    const up = points.map((point) => `${String(toX(point.x))},${String(toY(top(point)))}`).join(" ");
+    const down = [...points]
+      .reverse()
+      .map((point) => `${String(toX(point.x))},${String(toY(bottom(point)))}`)
+      .join(" ");
+    return `${up} ${down}`;
+  };
+  const linePath = (valueOf: (point: (typeof points)[number]) => number) =>
+    points
+      .map((point, index) => `${index === 0 ? "M" : "L"} ${String(toX(point.x))} ${String(toY(valueOf(point)))}`)
+      .join(" ");
 
   return (
     <svg viewBox={`0 0 ${String(width)} ${String(height)}`} className="w-full" role="img">
       <title>{title}</title>
-      <defs>
-        <clipPath id="metrics-scatter-clip">
-          <rect x={padL} y={padT} width={plotW} height={plotH} />
-        </clipPath>
-      </defs>
       <rect x={padL} y={padT} width={plotW} height={plotH} fill="#0c0a09" opacity={0.35} />
       {yTicks.map((tick) => (
         <g key={`y-${String(tick)}`}>
@@ -249,38 +262,59 @@ export function ScatterPlot({
         </g>
       ))}
       {xTicks.map((tick) => (
-        <text key={`x-${String(tick)}`} x={toX(tick)} y={height - 18} textAnchor="middle" fill={MUTED} fontSize={10}>
-          {fmtAxis(tick)}
+        <text key={`x-${String(tick)}`} x={toX(tick)} y={height - 26} textAnchor="middle" fill={MUTED} fontSize={10}>
+          {String(tick)}
         </text>
       ))}
       <line x1={padL} y1={padT + plotH} x2={padL + plotW} y2={padT + plotH} stroke={MUTED} strokeOpacity={0.5} />
       <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke={MUTED} strokeOpacity={0.5} />
-      {fit !== null ? (
-        <line
-          clipPath="url(#metrics-scatter-clip)"
-          x1={toX(0)}
-          y1={toY(fit.intercept)}
-          x2={toX(xMax)}
-          y2={toY(fit.slope * xMax + fit.intercept)}
-          stroke={OK}
-          strokeDasharray="4 3"
-          strokeOpacity={0.85}
-        />
-      ) : null}
-      {points.map((point, index) => (
-        <circle
-          key={`${point.label ?? "p"}-${String(index)}`}
-          cx={toX(point.x)}
-          cy={toY(point.y)}
-          r={5}
-          fill={ACCENT}
-          stroke="#1c1917"
-          strokeWidth={1}
-        >
-          <title>
-            {point.label ?? "match"}: effect {point.x.toFixed(2)}/turn, forge {point.y.toFixed(2)}/turn
-          </title>
-        </circle>
+      {points.length === 1 ? (
+        <>
+          <rect
+            x={toX(points[0]!.x) - 8}
+            y={toY(points[0]!.a)}
+            width={16}
+            height={Math.max(0, toY(0) - toY(points[0]!.a))}
+            fill={EFFECT}
+            opacity={0.45}
+          />
+          <rect
+            x={toX(points[0]!.x) - 8}
+            y={toY(points[0]!.a + points[0]!.b)}
+            width={16}
+            height={Math.max(0, toY(points[0]!.a) - toY(points[0]!.a + points[0]!.b))}
+            fill={FORGE}
+            opacity={0.55}
+          />
+        </>
+      ) : (
+        <>
+          <polygon points={stackedArea(() => 0, (point) => point.a)} fill={EFFECT} opacity={0.4} />
+          <polygon points={stackedArea((point) => point.a, (point) => point.a + point.b)} fill={FORGE} opacity={0.5} />
+        </>
+      )}
+      <path d={linePath((point) => point.a)} fill="none" stroke={EFFECT} strokeWidth={2} />
+      <path d={linePath((point) => point.a + point.b)} fill="none" stroke={FORGE} strokeWidth={2} />
+      {points.map((point) => (
+        <g key={point.x}>
+          <circle cx={toX(point.x)} cy={toY(point.a)} r={3} fill={EFFECT} stroke="#1c1917" strokeWidth={1}>
+            <title>
+              Turn {String(point.x)}: {aLabel} {fmtAxis(point.a)}
+            </title>
+          </circle>
+          <circle
+            cx={toX(point.x)}
+            cy={toY(point.a + point.b)}
+            r={3}
+            fill={FORGE}
+            stroke="#1c1917"
+            strokeWidth={1}
+          >
+            <title>
+              Turn {String(point.x)}: {bLabel} {fmtAxis(point.b)} (stacked {fmtAxis(point.a + point.b)})
+            </title>
+          </circle>
+        </g>
       ))}
       <text x={padL + plotW / 2} y={height - 4} textAnchor="middle" fill={MUTED} fontSize={10}>
         {xLabel}
@@ -294,6 +328,12 @@ export function ScatterPlot({
         transform={`rotate(-90 12 ${String(padT + plotH / 2)})`}
       >
         {yLabel}
+      </text>
+      <text x={padL + 8} y={padT + 12} fill={EFFECT} fontSize={10}>
+        {aLabel}
+      </text>
+      <text x={padL + 8} y={padT + 24} fill={FORGE} fontSize={10}>
+        {bLabel}
       </text>
     </svg>
   );

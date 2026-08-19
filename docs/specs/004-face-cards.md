@@ -14,6 +14,12 @@ the definitions that back die faces. Forging installs a face from the owner's
 face pool (or copies one already installed). When the last copy leaves the
 dice, the card returns to its owner.
 
+The 12-card face deck is **named specials only**. Starting dice use natural
+identity faces (dual-kind) plus untyped Shield. There are no blank/generic
+attribute synthetics (`face-synthetic-<attr>`, Forged Martial, Synthetic
+Corruption, …). A forge of “synthetic Corruption” names a Corruption special
+from the pool.
+
 ## Rules
 
 | Rule | Source |
@@ -35,7 +41,8 @@ Identity faces on the starting die. Footer `+1 Attribute`. Overload capacity 1.
 No inherent effect.
 
 **Dual-kind attributes** (natural + synthetic allowed): Martial, Wild, Arcane,
-Luminar.
+Luminar. Synthetic installs of these attributes are still **named specials**,
+not extra identity faces.
 
 ### Basics (Untyped)
 
@@ -46,21 +53,18 @@ Shield is absorbed.
 
 ### Specials (Synthetic)
 
+**Authoring:** only **named specials**. Never add blank/generic identity
+synthetics (`face-synthetic-martial`, `face-synthetic-corruption`, Forged
+Martial, Synthetic Corruption, …).
+
 **Synthetic-only attributes** (no natural faces / natural forges): Toxin,
 Mechanical, Corruption, Darkness. Enforced by `DUAL_KIND_ATTRIBUTES` /
 `SYNTHETIC_ONLY_ATTRIBUTES` in `src/game/model/attributes.ts`, face-deck
-validation, forge eligibility, and catalogue consistency tests.
-
-Effectful forge-target generics (same `face-synthetic-<attr>` ids as the old
-blank “Forged …” cards for Arcane / Toxin / Mechanical / Corruption / Darkness):
-
-| Name | On roll (wired) |
-|---|---|
-| Synthetic Arcane | Draw 1 |
-| Synthetic Toxin | Arm attack-toxin 1 |
-| Synthetic Mechanical | Generate 1 Shield |
-| Synthetic Corruption | Next attack +1 damage |
-| Synthetic Darkness | Gain 1 Energy |
+validation, forge eligibility, and catalogue consistency tests. Forging always
+names a **named special** from the owner's pool — there is no identity-only
+`face-synthetic-<attr>` card. Dual-kind attributes may still be forged as
+synthetics; those installs are also named specials (Warhorn, Pack, Insight
+Rune, …), never a generic.
 
 Named specials:
 
@@ -90,6 +94,9 @@ Named specials:
 | Stain | 2 | Corruption marker; lock Corrupted as resource | Spec `013` |
 | Infection | 2 | On roll: spread marker; On absorb: opp loses Energy | Spec `013` |
 | Decay | 2 | Suppress Natural inherent; strip → unusable Corruption | Spec `013` |
+| Blight | 2 | On roll: generate Corruption; On absorb: destroy opposing ritual | Control own-die fuel + ritual hate |
+| Hexbrand | 2 | On roll: strip 1 token; On absorb: destroy opposing equipment | Control engine hate |
+| Canker | 2 | On roll: Corruption marker; On absorb: forge 1 named synthetic Corruption special on opponent die | Control contamination |
 | Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
 | Catalyst | 2 | Synthetic pool wildcard; copy appeared synthetic onRoll | Spec `013` |
 | Overcharge | 2 | Optional Energy + suppress; next face effect twice | Spec `013` |

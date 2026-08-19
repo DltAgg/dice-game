@@ -2,13 +2,23 @@ import { describe, expect, it } from "vitest";
 import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY } from "../content/cards.js";
 import {
   ARCANE_ECHO_FACE,
+  BLIGHT,
+  CANKER,
   COMBO_MECHANICAL_FACE_DECK,
   CONTROL_FACE_DECK,
   ENGINE_TEST_FACE_DECK,
+  GEAR,
+  GREAT_SPARK,
+  HEXBRAND,
+  INFECTION,
+  INSIGHT_RUNE,
   PROTOTYPE_FACE_DECK,
+  REKINDLE,
+  REVELATION,
   SPECIAL_FACE_CARDS,
+  SHADOW_ECHO,
+  STAIN,
   TEMPO_FACE_DECK,
-  syntheticFaceId,
 } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { DieId } from "../model/ids.js";
@@ -33,14 +43,25 @@ describe("face deck", () => {
 
   it("keeps the builtin aggro face deck legal under attribute caps", () => {
     expect(validateFaceDeck(PROTOTYPE_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    expect(PROTOTYPE_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(PROTOTYPE_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(PROTOTYPE_FACE_DECK).toHaveLength(9);
     expect(new Set(PROTOTYPE_FACE_DECK).size).toBe(PROTOTYPE_FACE_DECK.length);
+    expect(PROTOTYPE_FACE_DECK).not.toContain(INFECTION);
+    expect(PROTOTYPE_FACE_DECK).not.toContain(STAIN);
+    expect(PROTOTYPE_FACE_DECK).not.toContain(GREAT_SPARK);
+    expect(PROTOTYPE_FACE_DECK).not.toContain(REKINDLE);
   });
 
   it("keeps the builtin control face deck legal under attribute caps", () => {
     expect(validateFaceDeck(CONTROL_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
     expect(CONTROL_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
     expect(new Set(CONTROL_FACE_DECK).size).toBe(CONTROL_FACE_DECK.length);
+    expect(CONTROL_FACE_DECK).toEqual(
+      expect.arrayContaining([BLIGHT, HEXBRAND, CANKER, REVELATION]),
+    );
+    expect(CONTROL_FACE_DECK).not.toContain(STAIN);
+    expect(CONTROL_FACE_DECK).not.toContain(GREAT_SPARK);
+    expect(CONTROL_FACE_DECK).not.toContain(REKINDLE);
   });
 
   it("keeps the builtin tempo face deck legal under attribute caps", () => {
@@ -56,7 +77,7 @@ describe("face deck", () => {
   });
 
   it("refuses a face deck over the twelve-card cap", () => {
-    const oversized = [...PROTOTYPE_FACE_DECK, syntheticFaceId("mechanical")];
+    const oversized = [...CONTROL_FACE_DECK, GEAR];
     const result = validateFaceDeck(oversized, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/max 12/);
@@ -64,10 +85,10 @@ describe("face deck", () => {
 
   it("refuses more than three face cards of one attribute", () => {
     const tooMany = [
-      syntheticFaceId("corruption"),
-      syntheticFaceId("corruption"),
-      syntheticFaceId("corruption"),
-      syntheticFaceId("corruption"),
+      STAIN,
+      STAIN,
+      STAIN,
+      STAIN,
     ];
     const result = validateFaceDeck(tooMany, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
@@ -79,7 +100,7 @@ describe("face deck", () => {
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("test: no die");
 
-    expect(state.players[P1]?.facePool).toContain(syntheticFaceId("darkness"));
+    expect(state.players[P1]?.facePool).toContain(SHADOW_ECHO);
 
     const forged = advance(
       state,
@@ -88,11 +109,11 @@ describe("face deck", () => {
 
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    expect(forged.state.players[P1]?.facePool).not.toContain(syntheticFaceId("darkness"));
-    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("darkness"));
+    expect(forged.state.players[P1]?.facePool).not.toContain(SHADOW_ECHO);
+    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(SHADOW_ECHO);
   });
 
-  it("installs a generic synthetic when the card is not Echo-tagged", () => {
+  it("installs a named synthetic when the card is not Echo-tagged", () => {
     const state = withEnergy(
       withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]),
       P1,
@@ -108,7 +129,7 @@ describe("face deck", () => {
 
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("arcane"));
+    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(INSIGHT_RUNE);
   });
 
   it("returns a displaced starting face to the pool when its last copy is gone", () => {
@@ -166,6 +187,9 @@ describe("face deck", () => {
       "Stain",
       "Infection",
       "Decay",
+      "Blight",
+      "Hexbrand",
+      "Canker",
       "Gear",
       "Catalyst",
       "Overcharge",
@@ -198,7 +222,7 @@ describe("face deck", () => {
     );
     expect(library.ok).toBe(true);
     if (!library.ok) return;
-    expect(library.state.dice[dieId]?.slots[4]?.faceCardId).toBe(syntheticFaceId("arcane"));
+    expect(library.state.dice[dieId]?.slots[4]?.faceCardId).toBe(INSIGHT_RUNE);
 
     const echoReady = withEnergy(
       withHand(withPhase(library.state, "actions"), P1, [ARCANE_ECHO]),

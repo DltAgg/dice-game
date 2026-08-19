@@ -23,7 +23,7 @@ describe("metrics export", () => {
     expect(md).toContain("Cards played (effect)");
     expect(md).toContain("Cards played to forge");
     expect(md).toContain("Play vs forge (hand cards spent)");
-    expect(md).toContain("Effect/turn vs forge/turn");
+    expect(md).toContain("Effect vs forge by turn");
     expect(md).toContain("22");
 
     const prompt = formatAgentPrompt(exported);

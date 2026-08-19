@@ -30,6 +30,7 @@ import {
   CONVERSION_RUNE,
   ENGINE_TEST_FACE_DECK,
   faceIdForSymbol,
+  INFECTION,
   INSIGHT_RUNE,
   PRIMORDIAL_FURY,
   SPORES,
@@ -209,7 +210,7 @@ describe("on-roll-symbol equipment", () => {
       index === 0
         ? {
             ...slot,
-            faceCardId: faceIdForSymbol("corruption"),
+            faceCardId: INFECTION,
           }
         : slot,
     );

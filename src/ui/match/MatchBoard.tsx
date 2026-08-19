@@ -1353,6 +1353,9 @@ const btnClass =
 const btnPrimary =
   "rounded border border-[var(--accent)] bg-[var(--accent)]/15 px-3 py-1.5 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)]/25";
 
+const FIXED_INSPECT_TOOLTIP_CLASS =
+  "pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl";
+
 function NameInspectHover({
   name,
   negated = false,
@@ -1364,12 +1367,24 @@ function NameInspectHover({
   placement?: "above" | "below";
   children: ReactNode;
 }) {
-  const pos =
-    placement === "below"
-      ? "top-[calc(100%+0.5rem)] left-0"
-      : "bottom-[calc(100%+0.5rem)] left-0";
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const [hovered, setHovered] = useState(false);
+  const pos = useAnchoredTooltip(
+    hovered,
+    rootRef,
+    INSPECT_TOOLTIP_WIDTH_PX,
+    INSPECT_TOOLTIP_GAP_PX,
+    placement,
+    "start",
+  );
+
   return (
-    <span className="group relative inline-block">
+    <span
+      ref={rootRef}
+      className="inline-block"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <span
         className={
           negated
@@ -1379,12 +1394,17 @@ function NameInspectHover({
       >
         {name}
       </span>
-      <div
-        className={`pointer-events-none absolute z-50 hidden w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block ${pos}`}
-        role="tooltip"
-      >
-        {children}
-      </div>
+      {pos !== null &&
+        createPortal(
+          <div
+            className={FIXED_INSPECT_TOOLTIP_CLASS}
+            style={fixedTooltipStyle(pos)}
+            role="tooltip"
+          >
+            {children}
+          </div>,
+          document.body,
+        )}
     </span>
   );
 }
@@ -2242,6 +2262,17 @@ function RitualTile({
   onActivate: () => void;
   onAbsorb: () => void;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
+  const tooltipPos = useAnchoredTooltip(
+    hovered,
+    rootRef,
+    INSPECT_TOOLTIP_WIDTH_PX,
+    INSPECT_TOOLTIP_GAP_PX,
+    "above",
+    "center",
+  );
+
   const def = getCard(card.cardId);
   if (def === undefined) return null;
 
@@ -2272,51 +2303,59 @@ function RitualTile({
 
   return (
     <div
+      ref={rootRef}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={
         canReceive
-          ? "group relative w-44 rounded border border-[var(--accent)] bg-stone-900 p-2.5"
+          ? "w-44 rounded border border-[var(--accent)] bg-stone-900 p-2.5"
           : ready
-            ? "group relative w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
+            ? "w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
             : preparing
-              ? "group relative w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
-              : "group relative w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
+              ? "w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
+              : "w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
       }
     >
-      <div
-        className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-1/2 z-40 hidden w-64 -translate-x-1/2 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl group-hover:block"
-        role="tooltip"
-      >
-        <p className="text-sm font-medium text-stone-100">{def.name}</p>
-        <p className="mt-1 text-xs text-stone-400">
-          {formatEnergyCost(def)} Energy
-          {activateCost !== null ? ` · ${activateCost}` : ""}
-        </p>
-        <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-          {orientation}
-          {durationLabel !== null ? ` · ${durationLabel}` : ""}
-        </p>
-        {progressLine !== null && progressLine !== "" && (
-          <p className="mt-1 text-xs text-amber-200/80">Progress: {progressLine}</p>
-        )}
-        <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-          <p>{formatTypeLine(def)}</p>
-          <p className="mt-1 text-stone-500">{formatForgeLine(def.forge)}</p>
+      {tooltipPos !== null &&
+        createPortal(
           <div
-            className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
-            role="separator"
-            aria-hidden
-          />
-          {formatEffectRegion(def).map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-          {(def.ritual?.standingAbilities?.length ?? 0) > 0 && (
-            <p className="text-stone-500">
-              Standing: {String(def.ritual?.standingAbilities?.length)} trigger
-              {(def.ritual?.standingAbilities?.length ?? 0) === 1 ? "" : "s"} while ready
+            className={FIXED_INSPECT_TOOLTIP_CLASS}
+            style={fixedTooltipStyle(tooltipPos)}
+            role="tooltip"
+          >
+            <p className="text-sm font-medium text-stone-100">{def.name}</p>
+            <p className="mt-1 text-xs text-stone-400">
+              {formatEnergyCost(def)} Energy
+              {activateCost !== null ? ` · ${activateCost}` : ""}
             </p>
-          )}
-        </div>
-      </div>
+            <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
+              {orientation}
+              {durationLabel !== null ? ` · ${durationLabel}` : ""}
+            </p>
+            {progressLine !== null && progressLine !== "" && (
+              <p className="mt-1 text-xs text-amber-200/80">Progress: {progressLine}</p>
+            )}
+            <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+              <p>{formatTypeLine(def)}</p>
+              <p className="mt-1 text-stone-500">{formatForgeLine(def.forge)}</p>
+              <div
+                className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
+                role="separator"
+                aria-hidden
+              />
+              {formatEffectRegion(def).map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+              {(def.ritual?.standingAbilities?.length ?? 0) > 0 && (
+                <p className="text-stone-500">
+                  Standing: {String(def.ritual?.standingAbilities?.length)} trigger
+                  {(def.ritual?.standingAbilities?.length ?? 0) === 1 ? "" : "s"} while ready
+                </p>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
 
       <button
         type="button"
@@ -2565,11 +2604,97 @@ function creatureHasArmedAttack(state: GameState, creature: CreatureState): bool
 
 const CREATURE_TOOLTIP_WIDTH_PX = 256; // w-64
 const CREATURE_TOOLTIP_GAP_PX = 8;
+const INSPECT_TOOLTIP_WIDTH_PX = 256;
+const INSPECT_TOOLTIP_GAP_PX = 8;
 const TOOLTIP_VIEW_MARGIN_PX = 8;
+
+type AnchoredTooltipPos = {
+  readonly left: number;
+  readonly maxHeight: number;
+  readonly top?: number;
+  readonly bottom?: number;
+};
 
 function clampTooltipLeft(left: number, width: number): number {
   const max = window.innerWidth - TOOLTIP_VIEW_MARGIN_PX - width;
   return Math.min(Math.max(left, TOOLTIP_VIEW_MARGIN_PX), Math.max(TOOLTIP_VIEW_MARGIN_PX, max));
+}
+
+function fixedTooltipStyle(pos: AnchoredTooltipPos): {
+  readonly left: number;
+  readonly maxHeight: number;
+  readonly top?: number;
+  readonly bottom?: number;
+} {
+  if (pos.top !== undefined) {
+    return { left: pos.left, maxHeight: pos.maxHeight, top: pos.top };
+  }
+  return { left: pos.left, maxHeight: pos.maxHeight, bottom: pos.bottom ?? 0 };
+}
+
+/** Places a single tooltip above or below `anchor`, flipped/clamped to the viewport. */
+function placeTooltip(
+  anchor: DOMRect,
+  tooltipWidth: number,
+  gap: number,
+  placement: "above" | "below",
+  align: "start" | "center",
+): AnchoredTooltipPos {
+  const preferredLeft =
+    align === "center" ? anchor.left + anchor.width / 2 - tooltipWidth / 2 : anchor.left;
+  const left = clampTooltipLeft(preferredLeft, tooltipWidth);
+  const spaceAbove = Math.max(0, anchor.top - TOOLTIP_VIEW_MARGIN_PX - gap);
+  const spaceBelow = Math.max(0, window.innerHeight - anchor.bottom - TOOLTIP_VIEW_MARGIN_PX - gap);
+  const minComfort = 96;
+  const goAbove =
+    placement === "above"
+      ? spaceAbove >= minComfort || spaceAbove >= spaceBelow
+      : spaceBelow < minComfort && spaceAbove > spaceBelow;
+
+  if (goAbove) {
+    return {
+      left,
+      bottom: window.innerHeight - anchor.top + gap,
+      maxHeight: Math.max(spaceAbove, 48),
+    };
+  }
+  return {
+    left,
+    top: anchor.bottom + gap,
+    maxHeight: Math.max(spaceBelow, 48),
+  };
+}
+
+function useAnchoredTooltip(
+  hovered: boolean,
+  rootRef: RefObject<HTMLElement | null>,
+  tooltipWidth: number,
+  gap: number,
+  placement: "above" | "below",
+  align: "start" | "center",
+): AnchoredTooltipPos | null {
+  const [pos, setPos] = useState<AnchoredTooltipPos | null>(null);
+
+  useLayoutEffect(() => {
+    if (!hovered) {
+      setPos(null);
+      return;
+    }
+    const update = () => {
+      const node = rootRef.current;
+      if (node === null) return;
+      setPos(placeTooltip(node.getBoundingClientRect(), tooltipWidth, gap, placement, align));
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [hovered, rootRef, tooltipWidth, gap, placement, align]);
+
+  return pos;
 }
 
 /** Places a primary + aside tooltip pair above `anchor`, flipped/clamped so neither spills the viewport. */
@@ -3231,7 +3356,13 @@ function DieSlotPickModal({
                       if (!cannotReplace) onToggleSlot(slot.index);
                     }}
                   >
-                    <p className="text-sm font-medium text-stone-100">{face?.name ?? "?"}</p>
+                    <p className="text-sm font-medium text-stone-100">
+                      {face !== undefined ? (
+                        <FaceInspectHover face={face} placement="below" />
+                      ) : (
+                        "?"
+                      )}
+                    </p>
                     <p className="mt-1 text-[0.65rem] capitalize text-stone-500">
                       Slot {slot.index + 1} · {face?.kind ?? "?"} · {face?.symbol ?? "—"}
                     </p>
@@ -4593,7 +4724,11 @@ function ChooseDieSlotModal({
                   onClick={() => onPick(dieId, slotIndex)}
                 >
                   <p className="text-sm font-medium text-stone-100">
-                    {face?.name ?? "?"}
+                    {face !== undefined ? (
+                      <FaceInspectHover face={face} placement="below" />
+                    ) : (
+                      "?"
+                    )}
                   </p>
                   <p className="text-xs capitalize text-stone-500">
                     {labelForDie(dieId)} · slot {String(slotIndex + 1)}
@@ -4888,7 +5023,13 @@ function ChooseRitualModal({
                   className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
                   onClick={() => onPick(card.id)}
                 >
-                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                  <p className="text-sm font-medium text-stone-100">
+                    {def !== undefined ? (
+                      <TacticInspectHover def={def} placement="below" />
+                    ) : (
+                      card.cardId
+                    )}
+                  </p>
                   <p className="text-xs capitalize text-stone-500">
                     {orientation}
                     {def !== undefined ? ` · ${def.subtypes.join("/") || "ritual"}` : ""}
@@ -4957,7 +5098,13 @@ function DiscardModal({
                   disabled={!checked && pick.length >= amount}
                   onClick={() => onToggle(card.id)}
                 >
-                  <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
+                  <p className="text-sm font-medium text-stone-100">
+                    {def !== undefined ? (
+                      <TacticInspectHover def={def} placement="below" />
+                    ) : (
+                      card.cardId
+                    )}
+                  </p>
                   <p className="text-xs text-stone-500">
                     {def !== undefined
                       ? `${def.variableEnergy === true ? "?" : def.energyCost}E · ${def.subtypes.join("/")}`
@@ -5034,7 +5181,13 @@ function OverloadFacePickModal({
                   className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
                   onClick={() => onPick(faceCardId)}
                 >
-                  <p className="text-sm font-medium text-stone-100">{face?.name ?? faceCardId}</p>
+                  <p className="text-sm font-medium text-stone-100">
+                    {face !== undefined ? (
+                      <FaceInspectHover face={face} placement="below" />
+                    ) : (
+                      faceCardId
+                    )}
+                  </p>
                   <p className="text-xs capitalize text-stone-500">
                     {face?.kind} · {face?.symbol}
                     {copies > 1 ? ` · ×${String(copies)} die faces` : ""}
@@ -5105,7 +5258,13 @@ function FacePickModal({
                   className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
                   onClick={() => onPick(faceCardId)}
                 >
-                  <p className="text-sm font-medium text-stone-100">{face?.name ?? faceCardId}</p>
+                  <p className="text-sm font-medium text-stone-100">
+                    {face !== undefined ? (
+                      <FaceInspectHover face={face} placement="below" />
+                    ) : (
+                      faceCardId
+                    )}
+                  </p>
                   <p className="text-xs text-stone-500">
                     {face?.kind} · {face?.symbol}
                     {inPool ? " · from face pool" : ""}
@@ -5192,7 +5351,13 @@ function ReplaceSyntheticFacePrompt({
                     className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
                     onClick={() => onPickSlot({ dieId, slotIndex })}
                   >
-                    <p className="text-sm font-medium text-stone-100">{face?.name ?? "?"}</p>
+                    <p className="text-sm font-medium text-stone-100">
+                      {face !== undefined ? (
+                        <FaceInspectHover face={face} placement="below" />
+                      ) : (
+                        "?"
+                      )}
+                    </p>
                     <p className="text-xs capitalize text-stone-500">
                       {labelForDie(dieId)} · slot {String(slotIndex + 1)}
                       {face !== undefined ? ` · ${face.kind} · ${face.symbol}` : ""}

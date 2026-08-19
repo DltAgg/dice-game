@@ -80,5 +80,4 @@ export {
   faceIdForSymbol,
   getFaceCard,
   naturalFaceId,
-  syntheticFaceId,
 } from "./content/faces.js";

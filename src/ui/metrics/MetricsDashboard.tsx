@@ -7,13 +7,14 @@ import {
   formatMetricsMarkdown,
   insightsFor,
   forgeCardCountOf,
+  forgeCardsOnTurn,
   matchPace,
   turnKind,
   type Insight,
   type MatchRecording,
 } from "@/metrics";
 import { useMetricsStore } from "@/store/metricsStore";
-import { BarList, formatDuration, formatPct, ScatterPlot, SparkBars, StatCard, TurnHistogram } from "./charts";
+import { BarList, formatDuration, formatPct, SparkBars, StackedLineChart, StatCard, TurnHistogram } from "./charts";
 
 function downloadText(filename: string, text: string, mime: string): void {
   const blob = new Blob([text], { type: mime });
@@ -239,17 +240,19 @@ export function MetricsDashboard() {
           <BarList items={aggregates.playVsForgeMix} />
         </ChartPanel>
         <ChartPanel
-          title="Effect / turn vs forge / turn"
-          caption={`Each point is a match. Pearson r ${aggregates.playForgeCorrelation === null ? "needs two matches with variance" : `= ${aggregates.playForgeCorrelation.toFixed(2)}`} (n=${String(aggregates.playForgeRates.length)}). Positive = they rise together; negative = Energy is split between playing and forging.`}
+          title="Effect vs forge by turn"
+          caption={`Stacked mean cards that turn among matches that reached it. Green = effect (PLAY_CARD), gold = forge (FORGE_CARD). Pearson r of match rates ${aggregates.playForgeCorrelation === null ? "needs two matches with variance" : `= ${aggregates.playForgeCorrelation.toFixed(2)}`} (n=${String(aggregates.playForgeRates.length)}).`}
         >
-          <ScatterPlot
-            title="Effect plays per turn versus forge plays per turn"
-            xLabel="Played (effect) / turn"
-            yLabel="Played (forge) / turn"
-            points={aggregates.playForgeRates.map((point) => ({
-              x: point.effectPerTurn,
-              y: point.forgePerTurn,
-              label: point.matchId,
+          <StackedLineChart
+            title="Effect plays and forge plays stacked by turn"
+            aLabel="Effect"
+            bLabel="Forge"
+            xLabel="Turn"
+            yLabel="Mean cards"
+            points={aggregates.playForgeByTurn.map((point) => ({
+              x: point.turn,
+              a: point.meanEffect,
+              b: point.meanForge,
             }))}
           />
         </ChartPanel>
@@ -435,6 +438,23 @@ function MatchDetail({ recording }: { recording: MatchRecording }) {
         <div>
           <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">P1 HP remaining by turn</p>
           <SparkBars values={hpP1} />
+        </div>
+        <div className="lg:col-span-2">
+          <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
+            Effect vs forge by turn (stacked)
+          </p>
+          <StackedLineChart
+            title="Effect plays and forge plays stacked by turn"
+            aLabel="Effect"
+            bLabel="Forge"
+            xLabel="Turn"
+            yLabel="Cards"
+            points={recording.turns.map((row) => ({
+              x: row.turn,
+              a: row.cardsPlayed,
+              b: forgeCardsOnTurn(row, recording),
+            }))}
+          />
         </div>
       </div>
 

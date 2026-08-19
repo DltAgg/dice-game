@@ -65,7 +65,7 @@ export function formatTypeLine(card: CardDefinition): string {
   return `[${parts.join(" / ")}]`;
 }
 
-/** `[Forge] 1 Synthetic Arcane face on your die` */
+/** `[Forge] 1 face [Synthetic] [Arcane] on your die` */
 export function formatForgeLine(forge: ForgeRegion): string {
   const kind = formatFaceKind(forge.kind);
   const faces = forge.faces === 1 ? "1 face" : `${String(forge.faces)} faces`;

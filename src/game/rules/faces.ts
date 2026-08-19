@@ -195,7 +195,8 @@ export function eligibleFacesForForge(
  * one from the owner's face pool. Prefers an installed copy so pool stock is
  * not spent twice for the same printed face. Faces with a forge restriction
  * are skipped unless the forging card satisfies it. Echo-tagged cards prefer
- * Echo-restricted faces over generic synthetics of the same attribute.
+ * Echo-restricted faces (`forgeRestriction: "echo-cards"`) over other named
+ * specials of the same attribute.
  *
  * Used by autoplay / tests when no player choice is needed. Live play names
  * `faceCardId` on FORGE_CARD via `eligibleFacesForForge`.

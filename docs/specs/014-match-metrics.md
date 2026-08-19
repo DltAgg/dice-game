@@ -118,8 +118,9 @@ Must provide:
 - Lethality: HP damage per turn; idle vs setup vs combat per turn
 - Mix charts: action types, event types, pending-decision kinds, energy-pass
   cause (overshoot vs voluntary), **play vs forge** (effect region vs
-  `FORGE_CARD`), cards played (effect), cards played to forge, **scatter of
-  effect/turn vs forge/turn** with Pearson r
+  `FORGE_CARD`), cards played (effect), cards played to forge, **stacked
+  effect vs forge by turn** (mean cards that turn among matches that
+  reached it; Pearson r of match rates still in the caption)
 - Think-time by action type (p50 / p90)
 - Insights list derived from the same thresholds
 - Match table → detail (turn timeline, HP remaining, action samples)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { GameEvent } from "@/game";
-import { forgeCardCountOf, uniqueForgeCardInstanceIds, pearsonCorrelation } from "./snapshot.js";
+import { forgeCardCountOf, uniqueForgeCardInstanceIds, pearsonCorrelation, forgeCardsOnTurn } from "./snapshot.js";
 
 const faceForged = (cardInstanceId: string | null, slotIndex: number): GameEvent =>
   ({
@@ -28,6 +28,21 @@ describe("forge snapshots", () => {
         ],
       }),
     ).toBe(1);
+  });
+
+  it("counts FORGE_CARD actions on a turn when cardsForged is zero", () => {
+    expect(
+      forgeCardsOnTurn(
+        { turn: 2, cardsForged: 0 },
+        {
+          actions: [
+            { accepted: true, actionType: "FORGE_CARD", turn: 2 },
+            { accepted: true, actionType: "FORGE_CARD", turn: 2 },
+            { accepted: true, actionType: "FORGE_CARD", turn: 1 },
+          ],
+        },
+      ),
+    ).toBe(2);
   });
 });
 

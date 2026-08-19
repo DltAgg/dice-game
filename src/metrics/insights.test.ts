@@ -71,4 +71,44 @@ describe("insights", () => {
     expect(agg.meanEffectPerTurn).toBeCloseTo(1.5);
     expect(agg.meanForgePerTurn).toBeCloseTo(0.75);
   });
+
+  it("averages effect vs forge counts by turn number", () => {
+    const agg = aggregateRecordings([
+      fakeRecording({
+        recordingId: "a",
+        matchId: "m-a",
+        turns: [
+          {
+            ...fakeRecording().turns[0]!,
+            turn: 1,
+            cardsPlayed: 2,
+            cardsForged: 1,
+          },
+          {
+            ...fakeRecording().turns[0]!,
+            turn: 2,
+            playerId: "p2",
+            cardsPlayed: 0,
+            cardsForged: 2,
+          },
+        ],
+      }),
+      fakeRecording({
+        recordingId: "b",
+        matchId: "m-b",
+        turns: [
+          {
+            ...fakeRecording().turns[0]!,
+            turn: 1,
+            cardsPlayed: 0,
+            cardsForged: 1,
+          },
+        ],
+      }),
+    ]);
+    expect(agg.playForgeByTurn).toEqual([
+      { turn: 1, meanEffect: 1, meanForge: 1, matchCount: 2 },
+      { turn: 2, meanEffect: 0, meanForge: 2, matchCount: 1 },
+    ]);
+  });
 });

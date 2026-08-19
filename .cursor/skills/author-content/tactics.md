@@ -58,7 +58,8 @@ card({
   subtypes: ["instant"], // or "reaction" | "continuous"
   attribute: "corruption",
   forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-  rulesText: "Forge 3 Synthetic Corruption faces on one of the opponent's dice.",
+  // Print "Synthetic Corruption" = kind+attribute, not a card named Synthetic Corruption.
+  rulesText: "Forge 3 synthetic Corruption faces on one of the opponent's dice.",
   ritual: {
     activeWhen: { arcane: 1, corruption: 2 }, // omit if print has no Active when
     // additionalEnergy?: 3,
@@ -86,9 +87,16 @@ card({
 - Ready rituals may activate in any phase **except roll** (and in reaction
   windows if subtype includes `reaction`).
 
-`forge-faces`: the **controller** picks a matching face from **their** pool (or
-an owned installed copy) and the die/slots. Same install rules as `FORGE_CARD`
-(attribute cap, copy rule, draw 1 per face). No extra Energy; ritual already paid.
+`forge-faces`: the **controller** picks a matching **named special** from
+**their** pool (or an owned installed copy) and the die/slots. Same install
+rules as `FORGE_CARD` (attribute cap, copy rule, draw 1 per face). No extra
+Energy; ritual already paid.
+
+Print like “Forge 3 synthetic Corruption faces” means **any Corruption named
+special** in the pool (`kind: "synthetic"`, `symbol: "corruption"`: Canker,
+Blight, Hexbrand, …). There is no catalogue card named Synthetic Corruption /
+Forged Martial / etc. Same reading for Synthetic Toxin, Mechanical, Darkness,
+Martial, Wild, Arcane, Luminar.
 
 ## Existing effects (prefer these)
 

@@ -100,6 +100,15 @@ card and an effect may demand more.
 | Forge 2 faces, Synthetic, on your die | *Arcane Silence* |
 | Forge 1 face, Synthetic, **on the opponent's die** | *Black Plague* |
 
+The **Forge** column in the catalogue tables below is **kind + attribute**,
+not a face-card name. `1 Synthetic Corruption, your die` means forge **one
+synthetic Corruption named special** from the owner's pool onto that die
+(`forge.kind: "synthetic"`, `forge.attribute: "corruption"`). Same for
+Synthetic Arcane / Toxin / Mechanical / Darkness / Martial / Wild / Luminar.
+There is no catalogue card titled Synthetic Corruption, Forged Martial, etc.
+Play-region print such as “Forge 3 Synthetic Corruption faces” uses the same
+reading: any matching named special (Canker, Blight, Hexbrand, …).
+
 ## Design philosophy, from the file
 
 > All attributes can and should have some way to deal damage, but it should stay
@@ -243,9 +252,10 @@ takes a lighter cut. **Reforge** uses `replace-synthetic-face` (spec `012`).
 
 Playtest gap-fill for Aggro (Martial / Wild / Toxin). Fully wired on existing
 vocabulary. Catalogue-only — not added to builtin decks. Temper / Untamed exist
-so named synthetic Martial / Wild specials can be forged (existing Martial /
+so named synthetic Martial / Wild **named specials** can be forged (existing Martial /
 Wild tactics only forge Natural). Virulent Rite is a two-face Toxin burst;
-individual Toxin tactics already forge Synthetic Toxin.
+individual Toxin tactics already forge synthetic Toxin (named specials from the
+pool, not a card named Synthetic Toxin).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|

@@ -21,4 +21,6 @@ Rules:
 - Rituals use main `type: "ritual"` with ritual subtypes (`instant` / `continuous` / `reaction`) and must have a `ritual` region.
 - Update `docs/specs/002|003|004-*.md` and `docs/DEFERRED_CATALOGUE.md` when print coverage changes.
 - Dual-timing faces use `On roll:` / `On absorb:` print; see `.cursor/skills/standardize-card-effects/`.
+- Synthetic faces are **named specials only**. Never author blank generics
+  (`face-synthetic-martial`, `face-synthetic-corruption`, Forged Martial, …).
 - Follow `.cursor/skills/author-content/SKILL.md` for full workflows and templates.
