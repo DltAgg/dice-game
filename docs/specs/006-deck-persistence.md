@@ -29,7 +29,7 @@ Opening dice (`startingDice`, DECIDED 2026-08-19): two dice × six `FaceCardId`
 slots. Basics (dual-kind naturals + Shield) do not consume the face deck.
 Named specials on opening slots must be present in `faceDeck` (XOR ledger).
 Config caps: `startingMinShieldsPerDie` (1), `startingMaxSyntheticsPerPlayer`
-(2), `startingMaxSyntheticsPerDie` (2), `startingMaxOnRollFacesPerDie` (1),
+(2), `startingMaxSyntheticsPerDie` (2), `startingMaxOnRollFacesPerDie` (2),
 plus `maxFacesOfSameAttributePerDie`. Echo / Heritage / Plague refused on
 opening slots (legal in the face deck for mid-game forge).
 

@@ -54,7 +54,8 @@ export interface GameRulesConfig {
    */
   readonly startingMaxSyntheticsPerDie: number;
   /**
-   * ASSUMED. Opening slots whose face definition has a non-empty `onRoll`.
+   * ASSUMED. Opening slots whose face definition has a non-empty `onRoll`
+   * (default 2).
    */
   readonly startingMaxOnRollFacesPerDie: number;
   /**
@@ -107,7 +108,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   startingMinShieldsPerDie: 1,
   startingMaxSyntheticsPerPlayer: 2,
   startingMaxSyntheticsPerDie: 2,
-  startingMaxOnRollFacesPerDie: 1,
+  startingMaxOnRollFacesPerDie: 2,
   deckMinCards: 50,
   deckMaxCards: 60,
   deckMaxCopiesPerCard: 4,

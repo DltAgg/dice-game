@@ -209,6 +209,35 @@ describe("validateStartingDice", () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it("allows two on-roll faces on one die under the default per-die cap", () => {
+    const result = validateStartingDice(
+      [
+        [CRUSH, WARHORN, wild, arcane, luminar, SHIELD_FACE_ID],
+        basics,
+      ],
+      PROTOTYPE_FACE_DECK,
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("refuses three on-roll faces on one die", () => {
+    const result = validateStartingDice(
+      [
+        [CRUSH, WARHORN, NEEDLE, martial, wild, SHIELD_FACE_ID],
+        basics,
+      ],
+      PROTOTYPE_FACE_DECK,
+      {
+        ...DEFAULT_RULES_CONFIG,
+        startingMaxSyntheticsPerDie: 3,
+        startingMaxSyntheticsPerPlayer: 3,
+      },
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/on-roll/);
+  });
+
   it("refuses three synthetics when the player cap is 2", () => {
     const result = validateStartingDice(
       [
@@ -216,7 +245,7 @@ describe("validateStartingDice", () => {
         [NEEDLE, martial, wild, arcane, luminar, SHIELD_FACE_ID],
       ],
       PROTOTYPE_FACE_DECK,
-      { ...DEFAULT_RULES_CONFIG, startingMaxOnRollFacesPerDie: 2 },
+      DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/synthetics/);

@@ -762,7 +762,7 @@ Caps (bible silent on constructed layouts) live on `GameRulesConfig`:
 | `startingMinShieldsPerDie` | 1 | `ASSUMED` |
 | `startingMaxSyntheticsPerPlayer` | 2 | `ASSUMED` |
 | `startingMaxSyntheticsPerDie` | 2 | `ASSUMED` |
-| `startingMaxOnRollFacesPerDie` | 1 | `ASSUMED` (non-empty `onRoll`) |
+| `startingMaxOnRollFacesPerDie` | 2 | `ASSUMED` (non-empty `onRoll`) |
 | `maxFacesOfSameAttributePerDie` | 4 | `DEFINED` §9.1 |
 
 `validateLoadout` / `validateStartingDice` return reasons. `createMatch` does
