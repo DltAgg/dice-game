@@ -15,13 +15,26 @@ import {
 } from "../content/creatures.js";
 import {
   COMBO_MECHANICAL_FACE_DECK,
+  COMBO_MECHANICAL_STARTING_DICE,
   CONTROL_FACE_DECK,
+  CONTROL_STARTING_DICE,
+  CRUSH,
+  FORBIDDEN_HERITAGE,
+  ARCANE_ECHO_FACE,
+  GREAT_SPARK,
+  NEEDLE,
+  PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
+  PROTOTYPE_STARTING_DICE,
+  SHIELD_FACE_ID,
   TEMPO_FACE_DECK,
+  TEMPO_STARTING_DICE,
+  WARHORN,
+  naturalFaceId,
 } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { asCardId } from "../model/ids.js";
-import { validateLoadout, validateTacticsDeck } from "./loadout.js";
+import { leftoverFacePool, validateLoadout, validateStartingDice, validateTacticsDeck } from "./loadout.js";
 
 describe("validateTacticsDeck", () => {
   it("accepts the prototype aggro deck", () => {
@@ -93,6 +106,7 @@ describe("validateLoadout", () => {
           squad: PROTOTYPE_SQUAD,
           deck: PROTOTYPE_DECK,
           faceDeck: PROTOTYPE_FACE_DECK,
+          startingDice: PROTOTYPE_STARTING_DICE,
         },
         DEFAULT_RULES_CONFIG,
       ),
@@ -106,6 +120,7 @@ describe("validateLoadout", () => {
           squad: CONTROL_SQUAD,
           deck: CONTROL_DECK,
           faceDeck: CONTROL_FACE_DECK,
+          startingDice: CONTROL_STARTING_DICE,
         },
         DEFAULT_RULES_CONFIG,
       ),
@@ -119,6 +134,7 @@ describe("validateLoadout", () => {
           squad: TEMPO_SQUAD,
           deck: TEMPO_DECK,
           faceDeck: TEMPO_FACE_DECK,
+          startingDice: TEMPO_STARTING_DICE,
         },
         DEFAULT_RULES_CONFIG,
       ),
@@ -132,6 +148,7 @@ describe("validateLoadout", () => {
           squad: COMBO_MECHANICAL_SQUAD,
           deck: COMBO_MECHANICAL_DECK,
           faceDeck: COMBO_MECHANICAL_FACE_DECK,
+          startingDice: COMBO_MECHANICAL_STARTING_DICE,
         },
         DEFAULT_RULES_CONFIG,
       ),
@@ -144,10 +161,146 @@ describe("validateLoadout", () => {
         squad: PROTOTYPE_SQUAD.slice(0, 2),
         deck: PROTOTYPE_DECK,
         faceDeck: PROTOTYPE_FACE_DECK,
+        startingDice: PROTOTYPE_STARTING_DICE,
       },
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/squad/);
+  });
+});
+
+describe("validateStartingDice", () => {
+  const martial = naturalFaceId("martial");
+  const wild = naturalFaceId("wild");
+  const arcane = naturalFaceId("arcane");
+  const luminar = naturalFaceId("luminar");
+  const basics = [martial, wild, arcane, luminar, SHIELD_FACE_ID, SHIELD_FACE_ID] as const;
+
+  it("refuses five Martial faces on one die", () => {
+    const result = validateStartingDice(
+      [[martial, martial, martial, martial, martial, SHIELD_FACE_ID], basics],
+      PROTOTYPE_FACE_DECK,
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/martial/);
+  });
+
+  it("refuses a die with no Shield", () => {
+    const result = validateStartingDice(
+      [[martial, wild, arcane, luminar, martial, wild], basics],
+      PROTOTYPE_FACE_DECK,
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/Shield/);
+  });
+
+  it("allows two synthetics on one die under the default per-die cap", () => {
+    const result = validateStartingDice(
+      [
+        [CRUSH, GREAT_SPARK, wild, arcane, luminar, SHIELD_FACE_ID],
+        basics,
+      ],
+      [...PROTOTYPE_FACE_DECK, GREAT_SPARK],
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("allows two on-roll faces on one die under the default per-die cap", () => {
+    const result = validateStartingDice(
+      [
+        [CRUSH, WARHORN, wild, arcane, luminar, SHIELD_FACE_ID],
+        basics,
+      ],
+      PROTOTYPE_FACE_DECK,
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("refuses three on-roll faces on one die", () => {
+    const result = validateStartingDice(
+      [
+        [CRUSH, WARHORN, NEEDLE, martial, wild, SHIELD_FACE_ID],
+        basics,
+      ],
+      PROTOTYPE_FACE_DECK,
+      {
+        ...DEFAULT_RULES_CONFIG,
+        startingMaxSyntheticsPerDie: 3,
+        startingMaxSyntheticsPerPlayer: 3,
+      },
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/on-roll/);
+  });
+
+  it("refuses three synthetics when the player cap is 2", () => {
+    const result = validateStartingDice(
+      [
+        [CRUSH, WARHORN, wild, arcane, luminar, SHIELD_FACE_ID],
+        [NEEDLE, martial, wild, arcane, luminar, SHIELD_FACE_ID],
+      ],
+      PROTOTYPE_FACE_DECK,
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/synthetics/);
+  });
+
+  it("refuses Arcane Echo on an opening slot", () => {
+    const result = validateStartingDice(
+      [[ARCANE_ECHO_FACE, martial, wild, arcane, luminar, SHIELD_FACE_ID], basics],
+      [...PROTOTYPE_FACE_DECK, ARCANE_ECHO_FACE],
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/Echo/);
+  });
+
+  it("refuses Forbidden Heritage and Pestilent Plague on opening slots", () => {
+    const heritage = validateStartingDice(
+      [[FORBIDDEN_HERITAGE, martial, wild, arcane, luminar, SHIELD_FACE_ID], basics],
+      [...PROTOTYPE_FACE_DECK, FORBIDDEN_HERITAGE],
+      DEFAULT_RULES_CONFIG,
+    );
+    const plague = validateStartingDice(
+      [[PESTILENT_PLAGUE, martial, wild, arcane, luminar, SHIELD_FACE_ID], basics],
+      [...PROTOTYPE_FACE_DECK, PESTILENT_PLAGUE],
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(heritage.ok).toBe(false);
+    expect(plague.ok).toBe(false);
+    if (!heritage.ok) expect(heritage.reason).toMatch(/stay|lock/i);
+    if (!plague.ok) expect(plague.reason).toMatch(/stay|lock/i);
+  });
+
+  it("refuses a named special that is not in the face deck", () => {
+    const result = validateStartingDice(
+      PROTOTYPE_STARTING_DICE,
+      PROTOTYPE_FACE_DECK.filter((id) => id !== CRUSH),
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/crush/i);
+  });
+});
+
+describe("leftoverFacePool", () => {
+  it("removes an installed unique Crush from the pool and leaves unused specials", () => {
+    const pool = leftoverFacePool(PROTOTYPE_FACE_DECK, PROTOTYPE_STARTING_DICE);
+    expect(pool).not.toContain(CRUSH);
+    expect(pool).not.toContain(NEEDLE);
+    expect(pool).toContain(WARHORN);
+  });
+
+  it("does not consume opening basics even when they are also listed in the face deck", () => {
+    const martial = naturalFaceId("martial");
+    const deck = [...PROTOTYPE_FACE_DECK.slice(0, 11), martial];
+    const pool = leftoverFacePool(deck, PROTOTYPE_STARTING_DICE);
+    expect(pool).toContain(martial);
   });
 });

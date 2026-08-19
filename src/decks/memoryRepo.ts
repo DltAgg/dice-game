@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import type { StartingDiceLayout } from "@/game";
 import type { DeckRepository } from "./repository.js";
 import {
   isBuiltinDeckId,
@@ -31,6 +32,10 @@ export function createMemoryDeckRepository(
         squad: [...draft.squad],
         deck: [...draft.deck],
         faceDeck: [...draft.faceDeck],
+        startingDice: [
+          [...draft.startingDice[0]],
+          [...draft.startingDice[1]],
+        ] as StartingDiceLayout,
         updatedAt: new Date().toISOString(),
       };
       decks = withBuiltinDecks([

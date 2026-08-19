@@ -1,13 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { PROTOTYPE_SQUAD } from "../content/creatures.js";
-import { getFaceCard, STARTING_DIE_SYMBOLS } from "../content/faces.js";
+import {
+  CONTROL_FACE_DECK,
+  CONTROL_STARTING_DICE,
+  CRUSH,
+  DEFAULT_BASIC_LAYOUT,
+  NEEDLE,
+  PESTILENT_PLAGUE,
+  PROTOTYPE_FACE_DECK,
+  PROTOTYPE_STARTING_DICE,
+  getFaceCard,
+  legacyStartingLayout,
+} from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
 import { SHIELD } from "../model/symbols.js";
 import { hasSixPhysicalFaces, symbolCountsOn } from "../rules/dice.js";
-import { faceCardLocationIsConsistent, knownFaceCardOwnerships } from "../rules/faces.js";
+import { leftoverFacePool } from "../rules/loadout.js";
+import { faceCardLocationIsConsistent, knownFaceCardOwnerships, openingSlotFromFace } from "../rules/faces.js";
 import { newMatch, P1, P2 } from "../testing/scenario.js";
-import { createMatch, validateStartingLayout } from "./createMatch.js";
+import { createMatch } from "./createMatch.js";
 
 describe("match setup", () => {
   it("gives each player three creatures and two dice", () => {
@@ -87,8 +99,20 @@ describe("match setup", () => {
         matchId: "m",
         seed: 1,
         players: [
-          { id: P1, squad: PROTOTYPE_SQUAD.slice(0, 2), deck: [], faceDeck: [] },
-          { id: P2, squad: PROTOTYPE_SQUAD, deck: [], faceDeck: [] },
+          {
+            id: P1,
+            squad: PROTOTYPE_SQUAD.slice(0, 2),
+            deck: [],
+            faceDeck: [],
+            startingDice: legacyStartingLayout(),
+          },
+          {
+            id: P2,
+            squad: PROTOTYPE_SQUAD,
+            deck: [],
+            faceDeck: [],
+            startingDice: legacyStartingLayout(),
+          },
         ],
         config: { ...DEFAULT_RULES_CONFIG, deckMinCards: 0 },
       }),
@@ -97,27 +121,52 @@ describe("match setup", () => {
 });
 
 describe("starting face layout", () => {
-  it("opens with one face per natural attribute and two shields", () => {
-    expect(STARTING_DIE_SYMBOLS).toEqual(["martial", "wild", "arcane", "luminar", SHIELD, SHIELD]);
+  it("keeps DEFAULT_BASIC_LAYOUT as the test-only six-symbol helper", () => {
+    expect(DEFAULT_BASIC_LAYOUT).toEqual(["martial", "wild", "arcane", "luminar", SHIELD, SHIELD]);
+    expect(legacyStartingLayout()[0]?.map((id) => getFaceCard(id)?.symbol)).toEqual([
+      ...DEFAULT_BASIC_LAYOUT,
+    ]);
   });
 
-  it("gives both players identical dice, so only forging can diverge them", () => {
-    const state = newMatch();
-    const layouts = Object.values(state.dice).map((die) =>
-      die.slots.map((slot) => getFaceCard(slot.faceCardId)?.symbol),
+  it("lets two seats open with different layouts and different leftover pools", () => {
+    const state = createMatch({
+      matchId: "m",
+      seed: 1,
+      config: { ...DEFAULT_RULES_CONFIG, deckMinCards: 0 },
+      players: [
+        {
+          id: P1,
+          squad: PROTOTYPE_SQUAD,
+          deck: [],
+          faceDeck: PROTOTYPE_FACE_DECK,
+          startingDice: PROTOTYPE_STARTING_DICE,
+        },
+        {
+          id: P2,
+          squad: PROTOTYPE_SQUAD,
+          deck: [],
+          faceDeck: CONTROL_FACE_DECK,
+          startingDice: CONTROL_STARTING_DICE,
+        },
+      ],
+    });
+
+    const p1Die0 = state.dice[state.players[P1]!.dieIds[0]!]!;
+    const p2Die0 = state.dice[state.players[P2]!.dieIds[0]!]!;
+    expect(p1Die0.slots[0]?.faceCardId).toBe(CRUSH);
+    expect(p2Die0.slots[0]?.faceCardId).not.toBe(CRUSH);
+    expect(state.players[P1]?.facePool).toEqual(
+      leftoverFacePool(PROTOTYPE_FACE_DECK, PROTOTYPE_STARTING_DICE),
     );
-
-    for (const layout of layouts) {
-      expect(layout).toEqual([...STARTING_DIE_SYMBOLS]);
-    }
+    expect(state.players[P2]?.facePool).toEqual(
+      leftoverFacePool(CONTROL_FACE_DECK, CONTROL_STARTING_DICE),
+    );
+    expect(state.players[P1]?.facePool).not.toContain(CRUSH);
+    expect(state.players[P1]?.facePool).not.toContain(NEEDLE);
   });
 
-  it("refuses a layout that would break the attribute limit", () => {
-    const tooMany = Array.from({ length: FACE_SLOTS_PER_DIE }, () => "martial" as const);
-    expect(() => validateStartingLayout(tooMany, DEFAULT_RULES_CONFIG)).toThrow(/§9.1/);
-  });
-
-  it("refuses a layout that is not six faces", () => {
-    expect(() => validateStartingLayout(["martial"], DEFAULT_RULES_CONFIG)).toThrow(/§9/);
+  it("applies forge-lock remaining when a stay face is installed as if just forged", () => {
+    const slot = openingSlotFromFace(0, PESTILENT_PLAGUE, P1);
+    expect(slot.forgeLockRemaining).toBe(4);
   });
 });

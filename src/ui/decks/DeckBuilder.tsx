@@ -1,11 +1,14 @@
 import { useMemo, useState } from "react";
 import {
   ALL_CARDS,
+  BASIC_FACE_CARDS,
   CREATURES,
   DEFAULT_RULES_CONFIG,
+  leftoverFacePool,
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  PROTOTYPE_STARTING_DICE,
   SPECIAL_FACE_CARDS,
   getCard,
   getCreatureDefinition,
@@ -16,6 +19,7 @@ import {
   type CreatureDefinitionId,
   type FaceCardDefinition,
   type FaceCardId,
+  type StartingDiceLayout,
 } from "@/game";
 import {
   PROTOTYPE_SAVED_DECK_ID,
@@ -142,6 +146,10 @@ export function DeckBuilder() {
   const [faceDeck, setFaceDeck] = useState<FaceCardId[]>([
     ...(selected?.faceDeck ?? PROTOTYPE_FACE_DECK),
   ]);
+  const [startingDice, setStartingDice] = useState<StartingDiceLayout>(
+    selected?.startingDice ?? PROTOTYPE_STARTING_DICE,
+  );
+  const [paintTarget, setPaintTarget] = useState<{ die: 0 | 1; slot: number } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [catalogueFilter, setCatalogueFilter] = useState<CatalogueFilter>("all");
@@ -155,16 +163,31 @@ export function DeckBuilder() {
     setSquad([...saved.squad]);
     setDeck([...saved.deck]);
     setFaceDeck([...saved.faceDeck]);
+    setStartingDice(saved.startingDice);
+    setPaintTarget(null);
     setMessage(null);
     setPreview(null);
   };
 
   const draft = useMemo(
-    () => ({ name, squad, deck, faceDeck }),
-    [name, squad, deck, faceDeck],
+    () => ({ name, squad, deck, faceDeck, startingDice }),
+    [name, squad, deck, faceDeck, startingDice],
   );
   const legality = validateSavedDeck(draft);
   const cfg = DEFAULT_RULES_CONFIG;
+  const leftoverPool = useMemo(
+    () => leftoverFacePool(faceDeck, startingDice),
+    [faceDeck, startingDice],
+  );
+
+  const paintSlot = (id: FaceCardId) => {
+    if (paintTarget === null || readonly) return;
+    setStartingDice((prev) => {
+      const next: [FaceCardId[], FaceCardId[]] = [[...prev[0]], [...prev[1]]];
+      next[paintTarget.die][paintTarget.slot] = id;
+      return [next[0], next[1]] as unknown as StartingDiceLayout;
+    });
+  };
 
   const deckEntries = useMemo(
     () =>
@@ -193,7 +216,9 @@ export function DeckBuilder() {
 
   const filteredFaces = useMemo(() => {
     if (!showingFaces) return [];
-    return SPECIAL_FACE_CARDS.filter((face) => matchesFaceQuery(face, searchQuery));
+    return [...BASIC_FACE_CARDS, ...SPECIAL_FACE_CARDS].filter((face) =>
+      matchesFaceQuery(face, searchQuery),
+    );
   }, [searchQuery, showingFaces]);
 
   const catalogueEmpty =
@@ -266,8 +291,9 @@ export function DeckBuilder() {
         <p className="mt-1 max-w-xl text-sm text-[var(--ink-muted)]">
           Hover any card to inspect it. Build a loadout (
           {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
-          face deck ≤{cfg.faceDeckMaxCards}). Illegal drafts can be saved; Play refuses them until
-          they are legal.
+          face deck ≤{cfg.faceDeckMaxCards}; opening dice ≤{cfg.startingMaxSyntheticsPerPlayer}{" "}
+          synthetics total, ≤{cfg.startingMaxSyntheticsPerDie} per die). Illegal drafts can be
+          saved; Play refuses them until they are legal.
         </p>
         </div>
         <label className="flex w-full max-w-xs flex-col gap-1 text-sm sm:w-56">
@@ -322,6 +348,85 @@ export function DeckBuilder() {
             </select>
           ))}
         </div>
+      </section>
+
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+          Opening dice
+        </h2>
+        <p className="mt-1 text-xs text-stone-500">
+          Select a slot, then a basic or a face-deck special. Leftover pool is mid-game forge
+          inventory.
+        </p>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          {startingDice.map((die, dieIndex) => (
+            <div key={`die-${String(dieIndex)}`} className="rounded-xl border border-stone-800 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
+                Die {dieIndex + 1}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {die.map((id, slot) => {
+                  const face = getFaceCard(id);
+                  const selected =
+                    paintTarget?.die === dieIndex && paintTarget.slot === slot;
+                  return (
+                    <button
+                      key={`d${String(dieIndex)}-s${String(slot)}`}
+                      type="button"
+                      disabled={readonly}
+                      className={
+                        selected
+                          ? "rounded border border-[var(--accent)] bg-[var(--accent)]/15 px-2 py-2 text-left"
+                          : "rounded border border-stone-700 bg-stone-950 px-2 py-2 text-left hover:border-stone-500"
+                      }
+                      onClick={() => setPaintTarget({ die: dieIndex as 0 | 1, slot })}
+                      onMouseEnter={() => setPreview({ kind: "face", id })}
+                    >
+                      <p className="truncate text-sm text-stone-100">{face?.name ?? id}</p>
+                      <p className="truncate text-[10px] capitalize text-stone-500">
+                        {face?.kind} · {face?.symbol}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {BASIC_FACE_CARDS.map((face) => (
+            <button
+              key={face.id}
+              type="button"
+              disabled={readonly || paintTarget === null}
+              className="rounded border border-stone-700 px-2 py-1 text-xs text-stone-300 hover:border-stone-500 disabled:opacity-40"
+              onClick={() => paintSlot(face.id)}
+              onMouseEnter={() => setPreview({ kind: "face", id: face.id })}
+            >
+              {face.name}
+            </button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+          Leftover pool ({leftoverPool.length})
+        </p>
+        <ul className="mt-1 flex flex-wrap gap-2">
+          {leftoverPool.length === 0 && (
+            <li className="text-xs text-stone-600">Empty — every face-deck special is installed.</li>
+          )}
+          {leftoverPool.map((id, index) => {
+            const face = getFaceCard(id);
+            return (
+              <li
+                key={`${id}-${String(index)}`}
+                className="rounded border border-stone-800 px-2 py-1 text-xs text-stone-400"
+                onMouseEnter={() => setPreview({ kind: "face", id })}
+              >
+                {face?.name ?? id}
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       {/* Tactics (left) + preview/search (right): matched fixed height */}
@@ -439,6 +544,7 @@ export function DeckBuilder() {
                         readonly={readonly}
                         addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
                         onHover={() => setPreview({ kind: "face", id: face.id })}
+                        onAssign={() => paintSlot(face.id)}
                         onAdd={() =>
                           setFaceDeck(addCopy(faceDeck, face.id, cfg.faceDeckMaxCards))
                         }
@@ -489,6 +595,7 @@ export function DeckBuilder() {
                     readonly={readonly}
                     addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
                     onHover={() => setPreview({ kind: "face", id })}
+                    onAssign={() => paintSlot(id)}
                     onAdd={() =>
                       setFaceDeck(addCopy(faceDeck, id, cfg.faceDeckMaxCards))
                     }
@@ -569,6 +676,7 @@ function DeckRow({
   readonly,
   addDisabled = false,
   onHover,
+  onAssign,
   onAdd,
   onRemove,
 }: {
@@ -580,6 +688,7 @@ function DeckRow({
   readonly: boolean;
   addDisabled?: boolean;
   onHover: () => void;
+  onAssign?: () => void;
   onAdd: () => void;
   onRemove: () => void;
 }) {
@@ -592,6 +701,7 @@ function DeckRow({
       }
       onMouseEnter={onHover}
       onFocus={onHover}
+      onClick={onAssign}
     >
       <div className="min-w-0">
         <p className="truncate text-sm text-stone-100">{title}</p>
@@ -603,7 +713,10 @@ function DeckRow({
           className={btnTiny}
           disabled={readonly || copies === 0}
           aria-label={`Remove one ${title}`}
-          onClick={onRemove}
+          onClick={(event) => {
+            event.stopPropagation();
+            onRemove();
+          }}
         >
           −
         </button>
@@ -613,7 +726,10 @@ function DeckRow({
           className={btnTiny}
           disabled={readonly || copies >= maxCopies || addDisabled}
           aria-label={`Add one ${title}`}
-          onClick={onAdd}
+          onClick={(event) => {
+            event.stopPropagation();
+            onAdd();
+          }}
         >
           +
         </button>

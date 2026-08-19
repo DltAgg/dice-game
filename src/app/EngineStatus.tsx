@@ -4,7 +4,9 @@ import {
   CREATURES,
   FACE_CARDS,
   PROTOTYPE_DECK,
+  PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  PROTOTYPE_STARTING_DICE,
   advance,
   asPlayerId,
   createMatch,
@@ -28,8 +30,20 @@ function buildSampleTurn(): GameState {
     matchId: "browser-smoke",
     seed: Date.now() % 100_000,
     players: [
-      { id: P1, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK },
-      { id: P2, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK },
+      {
+        id: P1,
+        squad: PROTOTYPE_SQUAD,
+        deck: PROTOTYPE_DECK,
+        faceDeck: PROTOTYPE_FACE_DECK,
+        startingDice: PROTOTYPE_STARTING_DICE,
+      },
+      {
+        id: P2,
+        squad: PROTOTYPE_SQUAD,
+        deck: PROTOTYPE_DECK,
+        faceDeck: PROTOTYPE_FACE_DECK,
+        startingDice: PROTOTYPE_STARTING_DICE,
+      },
     ],
   });
 

@@ -28,6 +28,7 @@ describe("online host uses selected loadout", () => {
         squad: hostDeck.squad,
         deck: hostDeck.deck,
         faceDeck: hostDeck.faceDeck,
+        startingDice: hostDeck.startingDice,
       },
       seed: 1,
       onState: (state) => {
@@ -43,6 +44,7 @@ describe("online host uses selected loadout", () => {
         squad: guestDeck.squad,
         deck: guestDeck.deck,
         faceDeck: guestDeck.faceDeck,
+        startingDice: guestDeck.startingDice,
       },
       onState: () => undefined,
       onWelcome: () => undefined,

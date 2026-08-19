@@ -309,6 +309,28 @@ export function overwrittenSlot(
 }
 
 /**
+ * Physical slot at match start. Forge-lock stay faces get catalogue turns as
+ * if just installed (OPEN_DESIGN ASSUMED). Heritage/Plague are refused on
+ * `startingDice`; this is for future-legal stay faces and tests.
+ */
+export function openingSlotFromFace(
+  index: number,
+  faceCardId: FaceCardId,
+  ownerId: PlayerId,
+): DieSlot {
+  const face = getFaceCard(faceCardId);
+  const slot: DieSlot = {
+    index,
+    faceCardId,
+    faceCardOwnerId: ownerId,
+  };
+  if (face?.stayPolicy?.kind === "forge-lock") {
+    return { ...slot, forgeLockRemaining: face.stayPolicy.turns };
+  }
+  return slot;
+}
+
+/**
  * Slot indexes that keep a forge-from-effect inside the §9.1 cap, preferring
  * to overwrite existing faces of the incoming attribute. Slots that cannot be
  * replaced by forging are skipped.

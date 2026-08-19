@@ -1,5 +1,6 @@
-import type { GameAction, GameError, GameState, PlayerId } from "@/game";
+import type { GameAction, GameError, GameState, PlayerId, StartingDiceLayout } from "@/game";
 import type { CardId, CreatureDefinitionId, FaceCardId } from "@/game";
+import { isStartingDiceLayout } from "@/game";
 
 export const PROTOCOL_VERSION = 1 as const;
 
@@ -8,6 +9,7 @@ export interface WireLoadout {
   readonly squad: readonly CreatureDefinitionId[];
   readonly deck: readonly CardId[];
   readonly faceDeck: readonly FaceCardId[];
+  readonly startingDice: StartingDiceLayout;
 }
 
 export type ClientToHost =
@@ -55,7 +57,8 @@ function isLoadout(value: unknown): value is WireLoadout {
   return (
     Array.isArray(value.squad) &&
     Array.isArray(value.deck) &&
-    Array.isArray(value.faceDeck)
+    Array.isArray(value.faceDeck) &&
+    isStartingDiceLayout(value.startingDice)
   );
 }
 

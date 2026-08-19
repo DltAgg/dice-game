@@ -4,7 +4,7 @@ import {
   type Attribute,
   type DualKindAttribute,
 } from "../model/attributes.js";
-import type { FaceCardDefinition, ForgeableFaceKind } from "../model/dice.js";
+import type { DieFaceLayout, FaceCardDefinition, ForgeableFaceKind, StartingDiceLayout } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
 import { asFaceCardId, type FaceCardId } from "../model/ids.js";
 import { SHIELD, type SymbolType } from "../model/symbols.js";
@@ -169,6 +169,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     symbol: "arcane",
     rulesText:
       '[Requirement: may only be forged by "Echo" cards]\n' +
+      "Cannot be included on opening dice.\n" +
       "On roll: copy the other die's face, applying its effects, attributes, and overloads.",
     onRoll: [{ type: "copy-other-die-face" }],
     onAbsorb: [],
@@ -239,6 +240,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
+      "Cannot be included on opening dice.\n" +
       "On roll: your opponent draws 1 card. Retain this die.\n" +
       "This face cannot be replaced by forging.\n" +
       "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
@@ -262,6 +264,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
+      "Cannot be included on opening dice.\n" +
       "On roll: put 1 pestilence counter on this face. At 2 pestilence counters: remove them and forge 1 Pestilent Plague onto an adjacent slot of this die.\n" +
       "Cannot be replaced by forging for 4 of this die's owner's turns. Whenever a Pestilent Plague is forged onto this die, reset the remaining lock to 4 on every Pestilent Plague on this die.\n" +
       "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
@@ -801,17 +804,45 @@ export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.sl
 export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(5);
 
 /**
- * Opening die for both players (OPEN_DESIGN). Four Natural attributes plus two
- * untyped Shields. These installed starting faces sit outside the twelve-card
- * face-deck limit (bible §12).
+ * Default six-symbol opening die for **engine tests** (`legacyStartingLayout`).
+ * Live matches must pass per-loadout `startingDice` — do not fill this in
+ * createMatch / persistence.
  */
-export const STARTING_DIE_SYMBOLS: readonly SymbolType[] = [
+export const DEFAULT_BASIC_LAYOUT: readonly SymbolType[] = [
   "martial",
   "wild",
   "arcane",
   "luminar",
   SHIELD,
   SHIELD,
+];
+
+/** @deprecated Test alias for `DEFAULT_BASIC_LAYOUT`. */
+export const STARTING_DIE_SYMBOLS = DEFAULT_BASIC_LAYOUT;
+
+const basicDieLayout = (): DieFaceLayout => [
+  naturalFaceId("martial"),
+  naturalFaceId("wild"),
+  naturalFaceId("arcane"),
+  naturalFaceId("luminar"),
+  SHIELD_FACE_ID,
+  SHIELD_FACE_ID,
+];
+
+/** Expands `DEFAULT_BASIC_LAYOUT` into two identical dice (engine tests only). */
+export function legacyStartingLayout(): StartingDiceLayout {
+  const die = basicDieLayout();
+  return [die, die];
+}
+
+/** One named special + four dual-kind naturals + Shield. */
+const openingDieWithSpecial = (special: FaceCardId): DieFaceLayout => [
+  special,
+  naturalFaceId("martial"),
+  naturalFaceId("wild"),
+  naturalFaceId("arcane"),
+  naturalFaceId("luminar"),
+  SHIELD_FACE_ID,
 ];
 
 /**
@@ -836,19 +867,15 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
 
 /**
  * Builtin aggro face deck — at most twelve unique cards, at most three per
- * attribute (bible §12). Omits natural Martial / Wild / Arcane / Luminar
- * because those already sit on the starting die (same face id cannot be pooled
- * and installed). Densifies wired Martial / Wild / Toxin combat synthetics
- * (Temper / Untamed / Virulent Rite forge targets). No Corruption splash:
- * Aggro’s tactics never forge Corruption, and Infection / Stain / Decay are
- * marker/engine-hate rather than creature pressure. Natural Martial/Wild
- * forges copy the starting faces (§13). Nine cards is legal (cap is 12); a
- * fourth attribute would be unforgeable filler.
+ * attribute (bible §12). Crush and Needle start installed (`PROTOTYPE_STARTING_DICE`)
+ * and therefore leave the pool. Leftover Martial / Wild / Toxin specials remain
+ * forge targets. Naturals may be packed here for density swaps; opening basics
+ * that are not listed do not count toward the 12.
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
+  CRUSH,
   WARHORN,
   CLEAVING_STRIKE,
-  IMPACT,
   BLOODSCENT,
   GORE,
   PRIMORDIAL_FURY,
@@ -857,17 +884,16 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   VENOM,
 ];
 
+export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
+  openingDieWithSpecial(CRUSH),
+  openingDieWithSpecial(NEEDLE),
+];
+
 /**
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
- * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
- * Darkness / Corruption / Arcane for rituals and forges; Luminar synthetics
- * (Revelation / Vital Spark / Aegis) splash for Archmage’s special
- * (arcane + luminar) without Mechanical combo splash. Great Spark / Rekindle
- * are empty-print stubs — not pooled. Corruption is the own-die trio Blight
- * (fuel + ritual hate), Hexbrand (engine hate), and Canker (marker +
- * absorb-forge onto the opponent) — not Stain. Forbidden Heritage / Pestilent
- * Plague stay specials are legal constructed swaps but lose the
- * 3-per-attribute race to this trio.
+ * Blight and Resonance Rune open installed; leftover Darkness / Corruption /
+ * Arcane / Luminar specials stay in the mid-game pool. Great Spark / Rekindle
+ * are empty-print stubs — not pooled.
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
   SACRIFICE,
@@ -884,11 +910,15 @@ export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
   AEGIS,
 ];
 
+export const CONTROL_STARTING_DICE: StartingDiceLayout = [
+  openingDieWithSpecial(BLIGHT),
+  openingDieWithSpecial(RESONANCE_RUNE),
+];
+
 /**
  * Builtin Tempo face deck — twelve unique cards, ≤3 per attribute.
- * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
- * Mechanical absorb/discount faces and Luminar sustain; Wild / Toxin synthetics
- * cover Untamed / Dose forges and light conversion.
+ * Gear and Vital Spark open installed; leftover Mechanical / Luminar / Wild /
+ * Toxin specials remain forgeable.
  */
 export const TEMPO_FACE_DECK: readonly FaceCardId[] = [
   GEAR,
@@ -905,11 +935,15 @@ export const TEMPO_FACE_DECK: readonly FaceCardId[] = [
   VENOM,
 ];
 
+export const TEMPO_STARTING_DICE: StartingDiceLayout = [
+  openingDieWithSpecial(GEAR),
+  openingDieWithSpecial(VITAL_SPARK),
+];
+
 /**
  * Builtin Combo Mechanical face deck — twelve unique cards, ≤3 per attribute.
- * Omits natural Martial / Wild / Arcane / Luminar (starting die). Densifies
- * effectful Mechanical Reforge targets (Gear / Catalyst / Overcharge) plus
- * Luminar / Wild / Toxin synthetics for Lens Choir, Untamed, and Dose.
+ * Gear and Catalyst open installed; leftover Luminar / Wild / Toxin / Mech
+ * specials remain Reforge targets.
  */
 export const COMBO_MECHANICAL_FACE_DECK: readonly FaceCardId[] = [
   GEAR,
@@ -924,4 +958,9 @@ export const COMBO_MECHANICAL_FACE_DECK: readonly FaceCardId[] = [
   NEEDLE,
   SEEP,
   VENOM,
+];
+
+export const COMBO_MECHANICAL_STARTING_DICE: StartingDiceLayout = [
+  openingDieWithSpecial(GEAR),
+  openingDieWithSpecial(CATALYST),
 ];

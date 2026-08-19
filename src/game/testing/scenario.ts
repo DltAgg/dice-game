@@ -1,6 +1,6 @@
 import { getCard, PROTOTYPE_DECK } from "../content/cards.js";
 import { PROTOTYPE_SQUAD } from "../content/creatures.js";
-import { ENGINE_TEST_FACE_DECK, PROTOTYPE_FACE_DECK } from "../content/faces.js";
+import { ENGINE_TEST_FACE_DECK, PROTOTYPE_FACE_DECK, PROTOTYPE_STARTING_DICE, legacyStartingLayout } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
@@ -25,7 +25,7 @@ import type {
 import type { GameAction } from "../reducer/actions.js";
 import { advance } from "../reducer/reduce.js";
 import { resolveFaceForForge } from "../rules/faces.js";
-import { createMatch, type MatchSetup } from "../setup/createMatch.js";
+import { createMatch, type MatchSetup, type PlayerSetup } from "../setup/createMatch.js";
 
 /**
  * Arrangement helpers for scenario tests (SPDD §37). These write state
@@ -46,17 +46,42 @@ const TEST_SETUP_CONFIG = {
   deckMinCards: 0,
 };
 
-export function newMatch(overrides: Partial<MatchSetup> = {}): GameState {
+type ScenarioPlayer = Omit<PlayerSetup, "startingDice"> & {
+  readonly startingDice?: PlayerSetup["startingDice"];
+};
+
+export function newMatch(
+  overrides: Omit<Partial<MatchSetup>, "players"> & {
+    readonly players?: readonly [ScenarioPlayer, ScenarioPlayer];
+  } = {},
+): GameState {
+  const defaultPlayers: readonly [PlayerSetup, PlayerSetup] = [
+    {
+      id: P1,
+      squad: PROTOTYPE_SQUAD,
+      deck: [],
+      faceDeck: ENGINE_TEST_FACE_DECK,
+      startingDice: legacyStartingLayout(),
+    },
+    {
+      id: P2,
+      squad: PROTOTYPE_SQUAD,
+      deck: [],
+      faceDeck: ENGINE_TEST_FACE_DECK,
+      startingDice: legacyStartingLayout(),
+    },
+  ];
+  const raw = overrides.players ?? defaultPlayers;
+  const players: [PlayerSetup, PlayerSetup] = [
+    { startingDice: legacyStartingLayout(), ...raw[0] },
+    { startingDice: legacyStartingLayout(), ...raw[1] },
+  ];
   return createMatch({
     matchId: "match-test",
     seed: 1,
     config: TEST_SETUP_CONFIG,
-    players: [
-      // Builtin aggro squad + forge-coverage faces for Eclipse / Library tests.
-      { id: P1, squad: PROTOTYPE_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-      { id: P2, squad: PROTOTYPE_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-    ],
     ...overrides,
+    players,
   });
 }
 
@@ -69,8 +94,8 @@ export const newMatchWithDecks = (overrides: Partial<MatchSetup> = {}): GameStat
   newMatch({
     config: DEFAULT_RULES_CONFIG,
     players: [
-      { id: P1, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK },
-      { id: P2, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK },
+      { id: P1, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: PROTOTYPE_STARTING_DICE },
+      { id: P2, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: PROTOTYPE_STARTING_DICE },
     ],
     ...overrides,
   });

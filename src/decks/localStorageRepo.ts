@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { isStartingDiceLayout, type StartingDiceLayout } from "@/game";
 import type { DeckRepository } from "./repository.js";
 import { isBuiltinDeckId, withBuiltinDecks } from "./prototype.js";
 import { DECK_SCHEMA_VERSION, type SavedDeck } from "./types.js";
@@ -20,6 +21,7 @@ function isSavedDeck(value: unknown): value is SavedDeck {
     Array.isArray(deck.squad) &&
     Array.isArray(deck.deck) &&
     Array.isArray(deck.faceDeck) &&
+    isStartingDiceLayout(deck.startingDice) &&
     typeof deck.updatedAt === "string"
   );
 }
@@ -71,6 +73,10 @@ export function createLocalStorageDeckRepository(): DeckRepository {
         squad: [...draft.squad],
         deck: [...draft.deck],
         faceDeck: [...draft.faceDeck],
+        startingDice: [
+          [...draft.startingDice[0]],
+          [...draft.startingDice[1]],
+        ] as StartingDiceLayout,
         updatedAt: new Date().toISOString(),
       };
       writeStorage([...current.filter((deck) => deck.id !== saved.id), saved]);

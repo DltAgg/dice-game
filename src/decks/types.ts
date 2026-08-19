@@ -1,7 +1,7 @@
-import type { CardId, CreatureDefinitionId, FaceCardId } from "@/game";
+import type { CardId, CreatureDefinitionId, FaceCardId, StartingDiceLayout } from "@/game";
 
 /** Bump when the stored shape changes; unknown versions are refused. */
-export const DECK_SCHEMA_VERSION = 1;
+export const DECK_SCHEMA_VERSION = 2;
 
 export type SavedDeckId = string;
 
@@ -12,6 +12,7 @@ export interface SavedDeck {
   readonly squad: readonly CreatureDefinitionId[];
   readonly deck: readonly CardId[];
   readonly faceDeck: readonly FaceCardId[];
+  readonly startingDice: StartingDiceLayout;
   /** ISO timestamp; set by the repository, never by the engine. */
   readonly updatedAt: string;
   /** Built-in prototype cannot be deleted. */
@@ -23,4 +24,5 @@ export interface DeckDraft {
   readonly squad: readonly CreatureDefinitionId[];
   readonly deck: readonly CardId[];
   readonly faceDeck: readonly FaceCardId[];
+  readonly startingDice: StartingDiceLayout;
 }

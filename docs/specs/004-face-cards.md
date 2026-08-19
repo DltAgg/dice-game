@@ -9,16 +9,20 @@ Derived from the `Face card` page of the `Card layouts` Figma file
 
 ## Intent
 
-Players bring a **face deck** separate from their tactics deck. Face cards are
+Players bring a **face deck** separate from their tactics deck, plus
+**constructed opening dice** (`startingDice` on the loadout). Face cards are
 the definitions that back die faces. Forging installs a face from the owner's
-face pool (or copies one already installed). When the last copy leaves the
-dice, the card returns to its owner.
+**leftover** face pool (or copies one already installed). When the last copy
+leaves the dice, the card returns to its owner.
 
-The 12-card face deck is **named specials only**. Starting dice use natural
-identity faces (dual-kind) plus untyped Shield. There are no blank/generic
-attribute synthetics (`face-synthetic-<attr>`, Forged Martial, Synthetic
-Corruption, …). A forge of “synthetic Corruption” names a Corruption special
-from the pool.
+The 12-card face deck is the mid-game option pool (and the ledger for opening
+specials). Opening slots may use **basics** (dual-kind naturals + Shield)
+without listing them in the 12. Named specials on opening slots must be ids in
+`faceDeck` and start installed (XOR). Naturals **may** be packed in the 12 for
+density swaps; they then count toward the 12 and the 3-per-attribute cap.
+There are no blank/generic attribute synthetics (`face-synthetic-<attr>`). A
+forge of “synthetic Corruption” names a Corruption special from the leftover
+pool.
 
 ## Rules
 
@@ -26,7 +30,10 @@ from the pool.
 |---|---|
 | Face deck holds up to 12 cards | bible §12 |
 | At most 3 face cards of the same attribute | bible §12 |
-| Starting natural / untyped faces are separate from the 12-card limit | bible §12 |
+| Opening basics (naturals + Shield) that are not listed in `faceDeck` do not count toward the 12 | bible §12 + constructed start |
+| Named specials on `startingDice` consume `faceDeck` rows and start installed, not pooled | constructed start / XOR ledger |
+| Leftover `faceDeck` ids form `facePool` at `createMatch` | constructed start |
+| Arcane Echo, Forbidden Heritage, Pestilent Plague refused on `startingDice` (legal in pool; print: “Cannot be included on opening dice.”) | OPEN_DESIGN default refuse |
 | A face card is in the pool XOR installed — never both | bible §12 |
 | Ownership is independent of which die the face sits on | bible §12 |
 | Forging may copy an already-installed face, or take one from the pool | bible §13 |
@@ -37,8 +44,8 @@ from the pool.
 
 ### Basics (Natural)
 
-Identity faces on the starting die. Footer `+1 Attribute`. Overload capacity 1.
-No inherent effect.
+Identity faces available as **opening basics** (and optionally pooled for
+density swaps). Footer `+1 Attribute`. Overload capacity 1. No inherent effect.
 
 **Dual-kind attributes** (natural + synthetic allowed): Martial, Wild, Arcane,
 Luminar. Synthetic installs of these attributes are still **named specials**,
@@ -46,10 +53,11 @@ not extra identity faces.
 
 ### Basics (Untyped)
 
-**Shield** (`+1 Shield`, `kind: "untyped"`, id `face-untyped-shield`). Starting-die
-identity face: no inherent effect, overload capacity 1. Shield is not an attribute
-and is not Natural — `On absorb Natural` (Void Summoner) does not fire when a
-Shield is absorbed.
+**Shield** (`+1 Shield`, `kind: "untyped"`, id `face-untyped-shield`). Opening
+basic (setup only — still not forgeable mid-game). No inherent effect, overload
+capacity 1. Shield is not an attribute and is not Natural — `On absorb Natural`
+(Void Summoner) does not fire when a Shield is absorbed. `startingMinShieldsPerDie`
+(ASSUMED, default 1) applies to constructed layouts.
 
 ### Specials (Synthetic)
 
@@ -70,12 +78,12 @@ Named specials:
 
 | Name | Overloads | Playable today | Notes |
 |---|---|---|---|
-| Arcane Echo | 0 | On roll: re-fire other die onRoll (+ overloads) | Not a full face overlay |
+| Arcane Echo | 0 | Echo-card forge only; cannot open; On roll: re-fire other die onRoll (+ overloads) | Not a full face overlay |
 | Blade Rain | 3 | On roll: arm next-attack split | `split-damage` pending |
 | Rending Claw | 3 | On roll: remove 3 Shields from most-shielded enemy | |
 | Crush | 3 | On roll: next attack +1 damage | |
-| Forbidden Heritage | 1 | On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel | |
-| Pestilent Plague | 2 | On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` | |
+| Forbidden Heritage | 1 | Cannot open; On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel | |
+| Pestilent Plague | 2 | Cannot open; On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` | |
 | Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
 | Conversion Rune | 2 | On roll: convert; On absorb: +Energy | |
 | Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |
@@ -115,9 +123,16 @@ Named specials:
 Great Spark and Rekindle appear as art on the page but have no printed rules text yet.
 Portuguese *Sobrecarga* is catalogued as **Overcharge**.
 
+## Loadout
+
+`startingDice`: two tuples of six `FaceCardId`s. Saved decks / PeerJS
+`WireLoadout` carry the same field (`006`, `007`). Schema version 2; old saves
+without layouts are refused.
+
 ## State Changes
 
-`players[*].facePool`, `attackBonusThisTurn` (Crush), `DieSlot.pestilenceCounters`,
+`players[*].facePool` is the uninstalled remainder of `faceDeck`. Also
+`attackBonusThisTurn` (Crush), `DieSlot.pestilenceCounters`,
 `DieSlot.forgeLockRemaining`, `FaceCardDefinition.stayPolicy` / `pestilenceSpreadAt`,
 `DieSlot.corruptionMarkers` / `suppressInherentNextRoll` / `resourceLockedThisTurn`,
 `FaceCardDefinition.activated`, turn maps in `011`–`013`.
