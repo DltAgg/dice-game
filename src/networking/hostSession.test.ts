@@ -4,6 +4,7 @@ import {
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  PROTOTYPE_STARTING_DICE,
   advance,
   asPlayerId,
   type GameState,
@@ -27,6 +28,7 @@ const loadout: WireLoadout = {
   squad: PROTOTYPE_SQUAD,
   deck: PROTOTYPE_DECK,
   faceDeck: PROTOTYPE_FACE_DECK,
+  startingDice: PROTOTYPE_STARTING_DICE,
 };
 
 describe("parseWireMessage", () => {
@@ -44,6 +46,14 @@ describe("parseWireMessage", () => {
     expect(parseWireMessage(null)).toBeNull();
     expect(parseWireMessage({ v: 1, type: "hello" })).toBeNull();
     expect(parseWireMessage({ v: 2, type: "resync-request" })).toBeNull();
+    expect(
+      parseWireMessage({
+        v: 1,
+        type: "hello",
+        roomCode: "ABC123",
+        loadout: { squad: [], deck: [], faceDeck: [] },
+      }),
+    ).toBeNull();
   });
 });
 
@@ -188,6 +198,7 @@ const otherLoadout: WireLoadout = {
   squad: controlDeck.squad,
   deck: controlDeck.deck,
   faceDeck: controlDeck.faceDeck,
+  startingDice: controlDeck.startingDice,
 };
 
 describe("guest reconnection over fake transport", () => {

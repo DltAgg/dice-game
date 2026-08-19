@@ -40,6 +40,21 @@ export interface GameRulesConfig {
   /** DEFINED, bible §9.1. */
   readonly maxFacesOfSameAttributePerDie: number;
   /**
+   * ASSUMED (constructed opening dice). Minimum untyped Shield faces per
+   * opening die. See OPEN_DESIGN.
+   */
+  readonly startingMinShieldsPerDie: number;
+  /**
+   * ASSUMED. Named synthetics across both opening dice.
+   */
+  readonly startingMaxSyntheticsPerPlayer: number;
+  /** ASSUMED. Named synthetics on a single opening die. */
+  readonly startingMaxSyntheticsPerDie: number;
+  /**
+   * ASSUMED. Opening slots whose face definition has a non-empty `onRoll`.
+   */
+  readonly startingMaxOnRollFacesPerDie: number;
+  /**
    * DECIDED (M4). Tactics deck minimum size.
    */
   readonly deckMinCards: number;
@@ -86,6 +101,10 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   creaturesPerPlayer: 3,
   dicePerPlayer: 2,
   maxFacesOfSameAttributePerDie: 4,
+  startingMinShieldsPerDie: 1,
+  startingMaxSyntheticsPerPlayer: 2,
+  startingMaxSyntheticsPerDie: 1,
+  startingMaxOnRollFacesPerDie: 1,
   deckMinCards: 50,
   deckMaxCards: 60,
   deckMaxCopiesPerCard: 4,

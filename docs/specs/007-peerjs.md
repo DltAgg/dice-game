@@ -68,6 +68,25 @@ Requires host authority. Client is not a source of dice rolls, damage, or draws.
 Does not persist matches to a backend or `localStorage`. Deck loadouts still
 come from local `DeckRepository`.
 
+`hello.loadout` (`WireLoadout`) is structural JSON — the host runs
+`validateLoadout` / `createMatch`, not a second rules engine in the parser:
+
+```json
+{
+  "squad": ["creature-…"],
+  "deck": ["card-…"],
+  "faceDeck": ["face-synthetic-crush"],
+  "startingDice": [
+    ["face-synthetic-crush", "face-natural-martial", "face-natural-wild", "face-natural-arcane", "face-natural-luminar", "face-untyped-shield"],
+    ["face-natural-martial", "face-natural-wild", "face-natural-arcane", "face-natural-luminar", "face-untyped-shield", "face-untyped-shield"]
+  ]
+}
+```
+
+Messages without a two×six `startingDice` array fail `parseWireMessage`.
+Illegal layouts are rejected at match create (guest status), same as an
+illegal squad.
+
 Tab `sessionStorage` holds a reconnect **hint** (role, room code, deck id, and
 on the host the last `GameState` JSON) so a refresh of **that tab** can resume
 the same PeerJS room. A new tab, another device, or a dead PeerJS broker cannot

@@ -1,9 +1,9 @@
 import { getCreatureDefinition } from "../content/creatures.js";
-import { faceIdForSymbol, PROTOTYPE_FACE_DECK, STARTING_DIE_SYMBOLS } from "../content/faces.js";
+import { PROTOTYPE_FACE_DECK } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG, type GameRulesConfig } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
-import { FACE_SLOTS_PER_DIE, type DieSlot, type DieState } from "../model/dice.js";
+import type { DieState, StartingDiceLayout } from "../model/dice.js";
 import {
   asCardInstanceId,
   asCreatureId,
@@ -16,9 +16,9 @@ import {
   type PlayerId,
 } from "../model/ids.js";
 import type { GameState, PlayerState } from "../model/state.js";
-import type { SymbolType } from "../model/symbols.js";
 import { createRng, initialRngState, type RNG } from "../rng/rng.js";
-import { validateLoadout } from "../rules/loadout.js";
+import { leftoverFacePool, validateLoadout } from "../rules/loadout.js";
+import { openingSlotFromFace } from "../rules/faces.js";
 
 export interface PlayerSetup {
   readonly id: PlayerId;
@@ -29,10 +29,15 @@ export interface PlayerSetup {
    */
   readonly deck?: readonly CardId[];
   /**
-   * The face deck (bible §12). Defaults to `PROTOTYPE_FACE_DECK`. Starting
-   * natural faces on the dice are separate from this list.
+   * The face deck (bible §12). Defaults to `PROTOTYPE_FACE_DECK`. Opening
+   * basics do not consume this list; named specials on `startingDice` do.
    */
   readonly faceDeck?: readonly FaceCardId[];
+  /**
+   * Two constructed d6 layouts. Required for live matches. Engine tests use
+   * `legacyStartingLayout()` via `newMatch`.
+   */
+  readonly startingDice: StartingDiceLayout;
 }
 
 export interface MatchSetup {
@@ -53,50 +58,17 @@ const creatureInstanceId = (playerId: PlayerId, index: number) =>
 const dieInstanceId = (playerId: PlayerId, index: number) =>
   asDieId(`${playerId}-die-${String(index)}`);
 
-/**
- * Validates the opening die layout. Both dice of both players start identical
- * (`STARTING_DIE_SYMBOLS`), so this is a guard on content rather than a choice
- * made per match — but it is the one place a bad edit to that constant would
- * otherwise slip through into a live game.
- */
-export function validateStartingLayout(
-  symbols: readonly SymbolType[],
-  config: GameRulesConfig,
-): readonly SymbolType[] {
-  if (symbols.length !== FACE_SLOTS_PER_DIE) {
-    throw new Error(
-      `createMatch: starting layout has ${String(symbols.length)} faces, ` +
-        `expected ${String(FACE_SLOTS_PER_DIE)} (bible §9)`,
-    );
-  }
-
-  const counts = new Map<SymbolType, number>();
-  for (const symbol of symbols) {
-    counts.set(symbol, (counts.get(symbol) ?? 0) + 1);
-  }
-  for (const [symbol, count] of counts) {
-    if (count > config.maxFacesOfSameAttributePerDie) {
-      throw new Error(
-        `createMatch: starting layout would place ${String(count)} ${symbol} faces on one die, ` +
-          `over the limit of ${String(config.maxFacesOfSameAttributePerDie)} (bible §9.1)`,
-      );
-    }
-  }
-
-  return symbols;
-}
-
-function buildDie(playerId: PlayerId, index: number, symbols: readonly SymbolType[]): DieState {
-  const slots: DieSlot[] = symbols.map((symbol, slotIndex) => ({
-    index: slotIndex,
-    faceCardId: faceIdForSymbol(symbol),
-    faceCardOwnerId: playerId,
-  }));
-
+function buildDie(
+  playerId: PlayerId,
+  index: number,
+  faces: readonly FaceCardId[],
+): DieState {
   return {
     id: dieInstanceId(playerId, index),
     ownerId: playerId,
-    slots,
+    slots: faces.map((faceCardId, slotIndex) =>
+      openingSlotFromFace(slotIndex, faceCardId, playerId),
+    ),
     stunMarkers: 0,
     retained: false,
     rolledSlotIndex: null,
@@ -164,8 +136,6 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       id: creatureInstanceId(setup.id, index),
       definitionId,
       ownerId: setup.id,
-      // Bible §6's battlefield shows two forward slots plus a back row; the
-      // squad fills the frontline first. Tracked as an open question.
       position: index < config.frontlineSlots ? "frontline" : "back",
       damage: 0,
       defeated: false,
@@ -199,7 +169,12 @@ export function createMatch(setup: MatchSetup): GameState {
     const deck = playerSetup.deck ?? [];
     const faceDeck = playerSetup.faceDeck ?? PROTOTYPE_FACE_DECK;
     const loadoutCheck = validateLoadout(
-      { squad: playerSetup.squad, deck, faceDeck },
+      {
+        squad: playerSetup.squad,
+        deck,
+        faceDeck,
+        startingDice: playerSetup.startingDice,
+      },
       config,
     );
     if (!loadoutCheck.ok) {
@@ -209,11 +184,8 @@ export function createMatch(setup: MatchSetup): GameState {
     const squadCreatures = buildCreatures(playerSetup, config);
     for (const creature of squadCreatures) creatures[creature.id] = creature;
 
-    // Every die opens identical, for both players: the squad no longer shapes
-    // the starting faces. Divergence is meant to come from forging.
-    const layout = validateStartingLayout(STARTING_DIE_SYMBOLS, config);
-    const playerDice = Array.from({ length: config.dicePerPlayer }, (_unused, index) =>
-      buildDie(playerSetup.id, index, layout),
+    const playerDice = playerSetup.startingDice.map((faces, index) =>
+      buildDie(playerSetup.id, index, faces),
     );
     for (const die of playerDice) dice[die.id] = die;
 
@@ -224,9 +196,7 @@ export function createMatch(setup: MatchSetup): GameState {
       id: playerSetup.id,
       creatureIds: squadCreatures.map((creature) => creature.id),
       dieIds: playerDice.map((die) => die.id),
-      // Face deck enters the match as the available face pool. Starting naturals
-      // are already installed on the dice and sit outside this list (bible §12).
-      facePool: [...faceDeck],
+      facePool: leftoverFacePool(faceDeck, playerSetup.startingDice),
       deck: instances.filter((instance) => instance.zone === "deck").map((instance) => instance.id),
       hand,
       graveyard: [],
@@ -271,8 +241,6 @@ export function createMatch(setup: MatchSetup): GameState {
       { seq: 1, turn: 1, event: { type: "turn-started", turn: 1, playerId: first.id } },
       { seq: 2, turn: 1, event: { type: "phase-entered", phase: "roll" } },
     ],
-    // Carried forward past the shuffle, so the first roll does not replay the
-    // values the shuffle already consumed.
     rng: setupRng.snapshot(),
     config,
     nextInstanceSeq: 0,

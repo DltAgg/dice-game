@@ -25,39 +25,52 @@ Tactics deck (DECIDED, M4 — see `docs/OPEN_DESIGN.md`):
 Face deck (bible §12): up to 12 faces, at most 3 per attribute.
 Squad: exactly `creaturesPerPlayer` known creature definitions.
 
-## State Changes
+Opening dice (`startingDice`, DECIDED 2026-08-19): two dice × six `FaceCardId`
+slots. Basics (dual-kind naturals + Shield) do not consume the face deck.
+Named specials on opening slots must be present in `faceDeck` (XOR ledger).
+Config caps: `startingMinShieldsPerDie`, `startingMaxSyntheticsPerPlayer`,
+`startingMaxSyntheticsPerDie`, `startingMaxOnRollFacesPerDie`, plus
+`maxFacesOfSameAttributePerDie`. Echo / Heritage / Plague refused on opening
+slots.
 
-None in `GameState`. Persistence lives outside the engine as saved loadouts.
+## Persistence
 
-## Actions
+`DeckRepository` over `localStorage` with `schemaVersion` **2**. Ids via nanoid
+at the persistence boundary. Unknown schema versions are refused. Saves without
+`startingDice` are refused — do not silently fill `DEFAULT_BASIC_LAYOUT` for
+play. Engine tests may use `legacyStartingLayout()`.
 
-No new game actions. Match setup accepts loadouts already validated by
-`validateLoadout`.
+Saved loadout JSON:
+
+```json
+{
+  "schemaVersion": 2,
+  "id": "…",
+  "name": "Aggro",
+  "squad": ["creature-…"],
+  "deck": ["card-…"],
+  "faceDeck": ["face-synthetic-crush", "face-synthetic-needle"],
+  "startingDice": [
+    ["face-synthetic-crush", "face-natural-martial", "face-natural-wild", "face-natural-arcane", "face-natural-luminar", "face-untyped-shield"],
+    ["face-synthetic-needle", "face-natural-martial", "face-natural-wild", "face-natural-arcane", "face-natural-luminar", "face-untyped-shield"]
+  ]
+}
+```
 
 ## Validation
 
 `validateLoadout` refuses unknown ids, illegal squad size, tactics outside
-50–60, a fifth copy of any card, and illegal face decks.
-
-## Resolution
-
-N/A — setup-time only.
-
-## Networking
-
-Does not require host authority. PeerJS remains M5.
-
-## Persistence
-
-`DeckRepository` over `localStorage` with `schemaVersion`. Ids via nanoid at
-the persistence boundary. Unknown schema versions are refused.
+50–60, a fifth copy of any card, illegal face decks, and illegal
+`startingDice`. `createMatch` uses that check (throws only when the check
+fails, same as an illegal squad).
 
 ## UI
 
-- App shell **Decks** tab: name, squad, tactics list, face list, live legality;
-  illegal drafts may be saved for later editing
+- App shell **Decks** tab: name, squad, **two opening dice** (6 slots each),
+  tactics list, face list, leftover pool, live legality; illegal drafts may be
+  saved for later editing
 - **Play** refuses illegal loadouts (local / host / join / new match)
-- New match picks P1/P2 saved loadouts (default: Prototype)
+- New match picks P1/P2 saved loadouts (default: Aggro builtin)
 
 ## Acceptance Criteria
 
@@ -72,4 +85,5 @@ the persistence boundary. Unknown schema versions are refused.
 
 - [x] `validateLoadout` refusal paths
 - [x] Memory repository CRUD
-- [x] Prototype loadout validates and opens a match
+- [x] `validateLoadout` includes `startingDice`; leftover pool at `createMatch`
+- [x] Deck schema v2; old saves without layouts refused

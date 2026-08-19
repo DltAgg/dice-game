@@ -9,6 +9,7 @@ import {
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  PROTOTYPE_STARTING_DICE,
   TEMPO_DECK,
   TEMPO_FACE_DECK,
   TEMPO_SQUAD,
@@ -43,6 +44,7 @@ describe("memory DeckRepository", () => {
       squad: PROTOTYPE_SQUAD,
       deck: PROTOTYPE_DECK,
       faceDeck: PROTOTYPE_FACE_DECK,
+      startingDice: PROTOTYPE_STARTING_DICE,
     });
     expect(repo.get(saved.id)?.name).toBe("My deck");
     expect(repo.list()).toHaveLength(5);
@@ -55,6 +57,7 @@ describe("memory DeckRepository", () => {
       squad: PROTOTYPE_SQUAD,
       deck: PROTOTYPE_DECK.slice(0, 10),
       faceDeck: PROTOTYPE_FACE_DECK,
+      startingDice: PROTOTYPE_STARTING_DICE,
     });
     expect(repo.get(saved.id)?.deck).toHaveLength(10);
   });

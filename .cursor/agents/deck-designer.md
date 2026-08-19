@@ -48,12 +48,11 @@ treat unwired clauses as live constructed tools.
 |---|---|
 | Squad | Exactly `creaturesPerPlayer` (3) known definition ids |
 | Tactics | 50–60 cards, ≤4 copies per id, known `card-*` ids |
-| Face deck | ≤12 unique cards, ≤3 per attribute (Shield does not count) |
+| Face deck | ≤12 cards, ≤3 per attribute (Shield does not count). Naturals **may** be listed for mid-game density swaps; opening basics not in `faceDeck` do not count toward the 12. |
 | Face kind | Never natural Toxin / Mechanical / Corruption / Darkness |
+| Opening dice | Two d6 layouts (`startingDice`). Basics do not consume the face deck. Named specials on opening slots must be ids in `faceDeck`. Caps on `GameRulesConfig`. Echo / Heritage / Plague refused on start. |
 
-Starting natural Martial / Wild / Arcane / Luminar already sit on the opening
-dice. Those face **ids** cannot be pooled and installed — omit them from face
-decks (see comments on `PROTOTYPE_FACE_DECK`).
+Starting layouts are part of the loadout. Do not omit naturals from the face deck *because they sit on opening dice* — omit them only if you do not want them as mid-game pool options.
 
 Legality is `validateLoadout` — never invent a second copy of those numbers
 in UI or comments that disagree with `GameRulesConfig`.
@@ -112,7 +111,8 @@ Loadout Progress:
 - [ ] 1. Name archetype + splash (one sentence)
 - [ ] 2. Squad = strategic vocabulary
 - [ ] 3. Tactics counts (50–60, ≤4) with role notes
-- [ ] 4. Face deck (≤12, ≤3/attr, no pooled starting naturals)
+- [ ] 4. Face deck (≤12, ≤3/attr) + `startingDice` (opening specials consume the 12)
+- [ ] 5. Leftover pool still supplies the forges this list's tactics name
 - [ ] 5. validateLoadout + loadout.test.ts if builtins change
 - [ ] 6. DoD
 ```

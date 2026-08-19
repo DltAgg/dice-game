@@ -7,11 +7,16 @@ import {
 import type { DeckDraft, SavedDeck } from "./types.js";
 
 export function validateSavedDeck(
-  deck: Pick<SavedDeck, "squad" | "deck" | "faceDeck"> | DeckDraft,
+  deck: Pick<SavedDeck, "squad" | "deck" | "faceDeck" | "startingDice"> | DeckDraft,
   config: GameRulesConfig = DEFAULT_RULES_CONFIG,
 ): LoadoutValidation {
   return validateLoadout(
-    { squad: deck.squad, deck: deck.deck, faceDeck: deck.faceDeck },
+    {
+      squad: deck.squad,
+      deck: deck.deck,
+      faceDeck: deck.faceDeck,
+      startingDice: deck.startingDice,
+    },
     config,
   );
 }

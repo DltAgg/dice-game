@@ -161,25 +161,12 @@ metaphor of several dice resting on one creature.
 
 ### Composition of the starting dice
 
-**Status:** `DECIDED` · implemented as `STARTING_DIE_SYMBOLS`
+**Status:** `SUPERSEDED` · 2026-08-19 · see **Constructed opening dice**
 
-Both dice of both players start identical, with six faces:
-
-| Count | Face |
-|---|---|
-| 1 | Martial, no effect |
-| 1 | Wild, no effect |
-| 1 | Arcane, no effect |
-| 1 | Luminar, no effect |
-| 2 | Shield |
-
-This replaces the round-robin layout derived from the player's squad, which was
-a prototype assumption. Nothing about the opening dice varies any more, which
-fits bible §35's "both players start with relatively simple engines" and leaves
-forging as the only source of divergence.
-
-The four attributes here are the ones a player can reach without forging. The
-prototype squad's costs are written across all four so that no face is dead.
+~~Both dice of both players start identical (`STARTING_DIE_SYMBOLS`).~~ Opening
+layouts are per-loadout. The old six-symbol line (Martial, Wild, Arcane,
+Luminar, Shield, Shield) remains `DEFAULT_BASIC_LAYOUT` / `legacyStartingLayout()`
+for engine tests only — live matches must pass `startingDice`.
 
 ### Attribute naming
 
@@ -263,11 +250,13 @@ dice cannot be retained.
 
 ### Attributes reachable only by forging
 
-**Status:** `DECIDED`
+**Status:** `SUPERSEDED` · 2026-08-19 · see **Constructed opening dice**
 
-The starting dice carry Martial, Wild, Arcane, Luminar and Shield. Toxin,
-Mechanical, Corruption and Darkness are reached only by forging. That split is
-intentional, not a content gap.
+~~Toxin / Mechanical / Corruption / Darkness are reached only by forging.~~
+Those attributes may appear on **opening** dice when the loadout installs a
+legal named special there (paid from the face deck; XOR ledger). Naturals of
+synthetic-only attributes still do not exist. Forging remains the mid-game
+install path from the leftover pool (or copy, bible §13).
 
 ### What can cost Energy
 
@@ -525,18 +514,21 @@ same unabsorbed set for absorb and spend (`usableSymbols` / `planConsumption`).
 
 ### Face deck and tactics deck are separate
 
-**Status:** `DECIDED` · implemented
+**Status:** `DECIDED` · implemented · opening layouts 2026-08-19
 
 Bible §12's face deck is restored. Players bring:
 
-- a **tactics deck** (two-region cards; size and copies below), and
-- a **face deck** (up to 12 face cards, at most 3 per attribute).
+- a **tactics deck** (two-region cards; size and copies below),
+- a **face deck** (up to 12 face cards, at most 3 per attribute), and
+- **starting dice** (two d6 layouts of face ids).
 
-Starting natural faces on the opening dice sit outside the face-deck limit.
-Forging installs from the in-match face pool (or copies an already-installed
-matching face). This reverses the earlier "one deck" reading of §19–20: tactics
-still carry a forge region, but the face that region installs must come from
-the face deck.
+Basics (dual-kind naturals + Shield) on opening slots do **not** consume the
+face deck and do not count toward the 12. Named specials on opening slots
+**must** be ids in `faceDeck` and start **installed** (not in `facePool`).
+Leftover face-deck rows are the mid-game pool. Naturals **may** be listed in
+the 12 for density swaps (they then count toward the 12 and the 3-per-attribute
+cap). Forging still installs from that pool or copies an already-installed
+matching face (bible §13 — copy is kept).
 
 ### Tactics deck size and copies
 
@@ -737,16 +729,66 @@ Shields reduce damage to 0 the follow-up still runs under this assumption.
 
 ---
 
+## Resolved — constructed opening dice, 2026-08-19
+
+### Constructed opening dice
+
+**Status:** `DECIDED` · `LoadoutInput.startingDice` · leftover `facePool`
+
+Engine identity is a deckbuilding choice. Each loadout names two d6 layouts
+(`startingDice`) plus a face deck. At `createMatch`:
+
+- Dice are built from that seat’s `startingDice` (never a global identical
+  `STARTING_DIE_SYMBOLS` fill for live matches).
+- `facePool` = `faceDeck` minus each **non-basic** id installed on **that**
+  player’s opening dice (multiset / unique-id ledger). Opponent dice never
+  steal the pool at setup.
+- Basics (Natural Martial / Wild / Arcane / Luminar, and untyped Shield) may
+  occupy opening slots without being listed in `faceDeck`.
+- A named special on an opening slot must be an id in `faceDeck` and starts
+  installed (XOR: not also pooled unless the list contains another copy of
+  that id). No extra copies-per-face-id rule.
+- Copy-already-installed (bible §13) is **kept**, including copying an
+  opening synthetic.
+- If an opening face were legal and had `stayPolicy`, apply slot flags as if
+  just installed (forge-lock remaining = catalogue turns). Forbidden Heritage
+  and Pestilent Plague are refused on `startingDice` (legal in the face deck
+  for mid-game); tests install them with `FORGE_CARD`.
+
+Caps (bible silent on constructed layouts) live on `GameRulesConfig`:
+
+| Knob | Default | Status |
+|---|---|---|
+| `startingMinShieldsPerDie` | 1 | `ASSUMED` |
+| `startingMaxSyntheticsPerPlayer` | 2 | `ASSUMED` |
+| `startingMaxSyntheticsPerDie` | 1 | `ASSUMED` |
+| `startingMaxOnRollFacesPerDie` | 1 | `ASSUMED` (non-empty `onRoll`) |
+| `maxFacesOfSameAttributePerDie` | 4 | `DEFINED` §9.1 |
+
+`validateLoadout` / `validateStartingDice` return reasons. `createMatch` does
+not throw from a layout helper; it uses the same loadout check as tactics
+(and still throws if that check fails, as with an illegal squad).
+
+**OPEN (default refuse, implemented):** Arcane Echo on an opening slot
+(`forgeRestriction: "echo-cards"`). Echo may sit in `faceDeck` for mid-game.
+Forbidden Heritage / Pestilent Plague on `startingDice` (`stayPolicy`). Pool
+OK.
+
+**OPEN (keep §13):** copy from an opening synthetic. Soften via synth caps,
+not by deleting copy.
+
+---
+
 ### First-player advantage
 
 **Status:** `OPEN` — an observation, not yet a question anyone has to answer
 
 Across sixty simulated matches under a greedy identical-policy driver, the
-player who moves first wins about 65% of the time. Both squads and both sets of
-dice are identical, so this is turn order alone.
+player who moves first wins about 65% of the time. That sample used identical
+squads and identical dice; constructed opening dice (2026-08-19) change the
+second half. This task does **not** retune first-player win rate.
 
 Recorded here because it is worth watching, not because it needs fixing now.
-Worth re-measuring now that the card layer and forging are in.
 
 ---
 

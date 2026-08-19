@@ -2,15 +2,19 @@ import {
   COMBO_MECHANICAL_DECK,
   COMBO_MECHANICAL_FACE_DECK,
   COMBO_MECHANICAL_SQUAD,
+  COMBO_MECHANICAL_STARTING_DICE,
   CONTROL_DECK,
   CONTROL_FACE_DECK,
   CONTROL_SQUAD,
+  CONTROL_STARTING_DICE,
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  PROTOTYPE_STARTING_DICE,
   TEMPO_DECK,
   TEMPO_FACE_DECK,
   TEMPO_SQUAD,
+  TEMPO_STARTING_DICE,
 } from "@/game";
 import { DECK_SCHEMA_VERSION, type SavedDeck, type SavedDeckId } from "./types.js";
 
@@ -39,6 +43,7 @@ export function buildAggroSavedDeck(): SavedDeck {
     squad: PROTOTYPE_SQUAD,
     deck: PROTOTYPE_DECK,
     faceDeck: PROTOTYPE_FACE_DECK,
+    startingDice: PROTOTYPE_STARTING_DICE,
     updatedAt: "1970-01-01T00:00:00.000Z",
     builtin: true,
   };
@@ -55,6 +60,7 @@ export function buildControlSavedDeck(): SavedDeck {
     squad: CONTROL_SQUAD,
     deck: CONTROL_DECK,
     faceDeck: CONTROL_FACE_DECK,
+    startingDice: CONTROL_STARTING_DICE,
     updatedAt: "1970-01-01T00:00:00.000Z",
     builtin: true,
   };
@@ -68,6 +74,7 @@ export function buildTempoSavedDeck(): SavedDeck {
     squad: TEMPO_SQUAD,
     deck: TEMPO_DECK,
     faceDeck: TEMPO_FACE_DECK,
+    startingDice: TEMPO_STARTING_DICE,
     updatedAt: "1970-01-01T00:00:00.000Z",
     builtin: true,
   };
@@ -81,6 +88,7 @@ export function buildComboMechanicalSavedDeck(): SavedDeck {
     squad: COMBO_MECHANICAL_SQUAD,
     deck: COMBO_MECHANICAL_DECK,
     faceDeck: COMBO_MECHANICAL_FACE_DECK,
+    startingDice: COMBO_MECHANICAL_STARTING_DICE,
     updatedAt: "1970-01-01T00:00:00.000Z",
     builtin: true,
   };

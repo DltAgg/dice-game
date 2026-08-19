@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY } from "../content/cards.js";
+import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY, TOXIC_BLESSING } from "../content/cards.js";
 import {
   ARCANE_ECHO_FACE,
   BLIGHT,
@@ -15,6 +15,8 @@ import {
   PROTOTYPE_FACE_DECK,
   REKINDLE,
   REVELATION,
+  SEEP,
+  CRUSH,
   SPECIAL_FACE_CARDS,
   SHADOW_ECHO,
   STAIN,
@@ -28,11 +30,13 @@ import {
   forgeAction,
   handCardIdAt,
   newMatch,
+  newMatchWithDecks,
   P1,
   withEnergy,
   withHand,
   withPhase,
 } from "../testing/scenario.js";
+import { eventTypes } from "../testing/scenario.js";
 
 describe("face deck", () => {
   it("loads the engine-test face deck into each player's face pool at setup", () => {
@@ -111,6 +115,27 @@ describe("face deck", () => {
     if (!forged.ok) return;
     expect(forged.state.players[P1]?.facePool).not.toContain(SHADOW_ECHO);
     expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(SHADOW_ECHO);
+  });
+
+  it("forges a leftover builtin special and still draws", () => {
+    const state = withEnergy(
+      withHand(withPhase(newMatchWithDecks(), "actions"), P1, [TOXIC_BLESSING]),
+      P1,
+      10,
+    );
+    expect(state.players[P1]?.facePool).toContain(SEEP);
+    expect(state.players[P1]?.facePool).not.toContain(CRUSH);
+    const dieId = state.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("test: no die");
+    expect(state.players[P1]?.deck.length).toBeGreaterThan(0);
+    const forged = advance(
+      state,
+      forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [5]),
+    );
+    expect(forged.ok).toBe(true);
+    if (!forged.ok) return;
+    expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(SEEP);
+    expect(eventTypes(forged.state)).toContain("card-drawn");
   });
 
   it("installs a named synthetic when the card is not Echo-tagged", () => {

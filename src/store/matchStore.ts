@@ -64,7 +64,7 @@ function resolvePlayableLoadout(
 }
 
 function toWireLoadout(deck: SavedDeck): WireLoadout {
-  return { squad: deck.squad, deck: deck.deck, faceDeck: deck.faceDeck };
+  return { squad: deck.squad, deck: deck.deck, faceDeck: deck.faceDeck, startingDice: deck.startingDice };
 }
 
 /** Null when every id is a legal playable loadout. */
@@ -87,8 +87,8 @@ function newMatchState(
     matchId: `local-${String(seed)}`,
     seed,
     players: [
-      { id: P1, squad: p1.squad, deck: p1.deck, faceDeck: p1.faceDeck },
-      { id: P2, squad: p2.squad, deck: p2.deck, faceDeck: p2.faceDeck },
+      { id: P1, squad: p1.squad, deck: p1.deck, faceDeck: p1.faceDeck, startingDice: p1.startingDice },
+      { id: P2, squad: p2.squad, deck: p2.deck, faceDeck: p2.faceDeck, startingDice: p2.startingDice },
     ],
   });
 }

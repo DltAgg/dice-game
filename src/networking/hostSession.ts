@@ -198,12 +198,14 @@ export class HostSession {
               squad: this.hostLoadout.squad,
               deck: this.hostLoadout.deck,
               faceDeck: this.hostLoadout.faceDeck,
+              startingDice: this.hostLoadout.startingDice,
             },
             {
               id: P2,
               squad: guestLoadout.squad,
               deck: guestLoadout.deck,
               faceDeck: guestLoadout.faceDeck,
+              startingDice: guestLoadout.startingDice,
             },
           ],
         });

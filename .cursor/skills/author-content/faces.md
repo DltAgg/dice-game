@@ -63,7 +63,8 @@ face({
 - Leave arrays empty when print clauses are not fully modelled; keep `rulesText`.
 - Overloads attach to the **face card**, not the physical die slot.
 - Face deck legality: ≤12 faces, ≤3 per attribute (`validateFaceDeck` / loadout rules).
-- Forging always takes from the **forger’s** pool (or copies a face they already
+- Opening dice: basics (naturals + Shield) need not be in the 12. Named specials on `startingDice` must be in `faceDeck` and start installed. Naturals **may** be packed in the 12 for density swaps.
+- Forging always takes from the **forger’s leftover pool** (or copies a face they already
   own), even when `target: "opponent-die"`. `faceCardOwnerId` stays the forger;
   when the last copy leaves the dice, the card returns to them (bible §12).
 - Changing faces may require prototype face-deck / `ENGINE_TEST_FACE_DECK` updates.

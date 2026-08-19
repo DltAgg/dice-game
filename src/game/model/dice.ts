@@ -13,6 +13,19 @@ import type { SymbolType } from "./symbols.js";
  */
 export const FACE_SLOTS_PER_DIE = 6;
 
+/** One opening (or physical) d6 of face-card ids. */
+export type DieFaceLayout = readonly [
+  FaceCardId,
+  FaceCardId,
+  FaceCardId,
+  FaceCardId,
+  FaceCardId,
+  FaceCardId,
+];
+
+/** Two opening dice (`dicePerPlayer`). */
+export type StartingDiceLayout = readonly [DieFaceLayout, DieFaceLayout];
+
 /**
  * Natural and synthetic are bible §10. Untyped is Shield only: a starting-die
  * identity face that is not an attribute and is not Natural.

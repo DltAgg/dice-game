@@ -7,7 +7,7 @@ export * from "./model/index.js";
 export * from "./rng/rng.js";
 export * from "./reducer/actions.js";
 export { advance, reduce } from "./reducer/reduce.js";
-export { createMatch, validateStartingLayout } from "./setup/createMatch.js";
+export { createMatch } from "./setup/createMatch.js";
 export type { MatchSetup, PlayerSetup } from "./setup/createMatch.js";
 
 export * from "./rules/cards.js";
@@ -62,13 +62,17 @@ export {
   BASIC_FACE_CARDS,
   BLADE_RAIN,
   COMBO_MECHANICAL_FACE_DECK,
+  COMBO_MECHANICAL_STARTING_DICE,
   CONTROL_FACE_DECK,
+  CONTROL_STARTING_DICE,
   CRUSH,
+  DEFAULT_BASIC_LAYOUT,
   FACE_CARDS,
   FORBIDDEN_HERITAGE,
   GREAT_SPARK,
   PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
+  PROTOTYPE_STARTING_DICE,
   ENGINE_TEST_FACE_DECK,
   REKINDLE,
   RENDING_CLAW,
@@ -76,8 +80,10 @@ export {
   SHIELD_FACE_ID,
   STARTING_DIE_SYMBOLS,
   TEMPO_FACE_DECK,
+  TEMPO_STARTING_DICE,
   faceIdFor,
   faceIdForSymbol,
   getFaceCard,
+  legacyStartingLayout,
   naturalFaceId,
 } from "./content/faces.js";
