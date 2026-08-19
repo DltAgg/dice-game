@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import {
   ALL_CARDS,
-  ALL_FACE_CARDS,
   CREATURES,
   DEFAULT_RULES_CONFIG,
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
+  SPECIAL_FACE_CARDS,
   getCard,
   getCreatureDefinition,
   getFaceCard,
@@ -117,6 +117,12 @@ function matchesFaceQuery(face: FaceCardDefinition, query: string): boolean {
   return haystack.includes(query);
 }
 
+function catalogueSearchLabel(filter: CatalogueFilter): string {
+  if (filter === "all") return "Search all cards…";
+  if (filter === "faces") return "Search faces…";
+  return `Search ${filter}s…`;
+}
+
 export function DeckBuilder() {
   const decks = useDeckStore((s) => s.decks);
   const selectedId = useDeckStore((s) => s.selectedId);
@@ -174,28 +180,21 @@ export function DeckBuilder() {
 
   const searchQuery = normalizeQuery(search);
   const searchActive = searchQuery.length > 0;
-  /** Type tabs only scope the list when search is empty. */
-  const showingFaces = !searchActive && catalogueFilter === "faces";
-  const browseHandCards = !searchActive && catalogueFilter !== "faces";
+  const showingFaces = catalogueFilter === "faces";
+  const browseHandCards = catalogueFilter !== "faces";
 
   const filteredTactics = useMemo(() => {
-    if (searchActive) {
-      return ALL_CARDS.filter((card) => matchesCardQuery(card, searchQuery));
-    }
     if (!browseHandCards) return [];
     return ALL_CARDS.filter((card) => {
       if (catalogueFilter !== "all" && card.type !== catalogueFilter) return false;
-      return true;
+      return matchesCardQuery(card, searchQuery);
     });
-  }, [browseHandCards, catalogueFilter, searchActive, searchQuery]);
+  }, [browseHandCards, catalogueFilter, searchQuery]);
 
   const filteredFaces = useMemo(() => {
-    if (searchActive) {
-      return ALL_FACE_CARDS.filter((face) => matchesFaceQuery(face, searchQuery));
-    }
     if (!showingFaces) return [];
-    return ALL_FACE_CARDS;
-  }, [searchActive, searchQuery, showingFaces]);
+    return SPECIAL_FACE_CARDS.filter((face) => matchesFaceQuery(face, searchQuery));
+  }, [searchQuery, showingFaces]);
 
   const catalogueEmpty =
     filteredTactics.length === 0 && filteredFaces.length === 0;
@@ -209,13 +208,13 @@ export function DeckBuilder() {
       if (firstFaceHit !== undefined) return { kind: "face", id: firstFaceHit };
     }
     if (showingFaces) {
-      const firstFace = faceEntries[0]?.id ?? ALL_FACE_CARDS[0]?.id;
+      const firstFace = faceEntries[0]?.id ?? SPECIAL_FACE_CARDS[0]?.id;
       if (firstFace !== undefined) return { kind: "face", id: firstFace };
     }
     const firstFiltered = filteredTactics[0]?.id;
     const firstTactic = firstFiltered ?? deckEntries[0]?.id ?? ALL_CARDS[0]?.id;
     if (firstTactic !== undefined) return { kind: "tactic", id: firstTactic };
-    const fallbackFace = ALL_FACE_CARDS[0]?.id;
+    const fallbackFace = SPECIAL_FACE_CARDS[0]?.id;
     if (fallbackFace !== undefined) return { kind: "face", id: fallbackFace };
     return { kind: "tactic", id: ALL_CARDS[0]!.id };
   }, [
@@ -378,43 +377,29 @@ export function DeckBuilder() {
 
           <div className="flex h-1/2 min-h-0 flex-col px-3 pb-3 pt-2">
             <div className="mb-2 flex shrink-0 flex-wrap items-center gap-2">
-              <div
-                className={
-                  searchActive
-                    ? "flex max-w-full flex-wrap rounded border border-stone-700/60 p-0.5 opacity-50"
-                    : "flex max-w-full flex-wrap rounded border border-stone-700 p-0.5"
-                }
-                title={
-                  searchActive
-                    ? "Type filter paused while searching all cards"
-                    : undefined
-                }
-              >
+              <div className="flex max-w-full flex-wrap rounded border border-stone-700 p-0.5">
                 {CATALOGUE_FILTERS.map((entry) => (
                   <CatalogueTab
                     key={entry.id}
                     label={entry.label}
-                    active={!searchActive && catalogueFilter === entry.id}
-                    onClick={() => {
-                      setCatalogueFilter(entry.id);
-                      setSearch("");
-                    }}
+                    active={catalogueFilter === entry.id}
+                    onClick={() => setCatalogueFilter(entry.id)}
                   />
                 ))}
               </div>
               <label className="relative min-w-[10rem] flex-1">
-                <span className="sr-only">Search all cards</span>
+                <span className="sr-only">{catalogueSearchLabel(catalogueFilter)}</span>
                 <input
                   className="w-full rounded border border-stone-700 bg-stone-950 py-1.5 pl-3 pr-3 text-sm text-stone-100 placeholder:text-stone-600"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search all cards…"
+                  placeholder={catalogueSearchLabel(catalogueFilter)}
                 />
               </label>
             </div>
 
             <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
-              {(searchActive || browseHandCards) &&
+              {browseHandCards &&
                 filteredTactics.map((card) => {
                   const copies = countOf(deck, card.id);
                   const active =
@@ -438,7 +423,7 @@ export function DeckBuilder() {
                   );
                 })}
 
-              {(searchActive || showingFaces) &&
+              {showingFaces &&
                 filteredFaces.map((face) => {
                   const copies = countOf(faceDeck, face.id);
                   const active =
