@@ -566,9 +566,10 @@ still carry both regions; the face they forge is drawn from the face deck.
 
 ### Opening hand and draw rate
 
-**Status:** `DECIDED` · implemented (`openingHandSize: 5`, `cardsDrawnPerTurn: 1`)
+**Status:** `DECIDED` · implemented (`openingHandSize: 5`, `cardsDrawnPerTurn: 2`)
+· playtest 2026-08-20: now 2 (was 1)
 
-Open with 5 cards; draw 1 at the start of each of your own turns.
+Open with 5 cards; draw 2 at the start of each of your own turns.
 
 ### Running out of cards
 
@@ -579,7 +580,7 @@ still decided by eliminating creatures, so there is no deck-out loss and no
 reshuffle.
 
 Worth watching: matches currently run around eighteen turns, so a twelve-card
-deck drawn at one a turn empties well before a winner emerges. That makes the
+deck drawn at two a turn empties well before a winner emerges. That makes the
 back half of a match play out on board state alone, which is a legitimate shape
 but a deliberate one.
 

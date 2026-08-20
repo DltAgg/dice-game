@@ -348,7 +348,7 @@ already express.
 | In | Out, and why |
 |---|---|
 | Card model: name, cost (fixed or `?` / variable), type, subtypes, attribute, forge region, requirements, effect, equipment, English `rulesText` | — |
-| Deck, hand, graveyard, equipment, overload, ritual; opening 5; draw 1 per turn | — (no mulligan) |
+| Deck, hand, graveyard, equipment, overload, ritual; opening 5; draw 2 per turn | — (no mulligan) |
 | Forging a Natural or Synthetic face onto your own die **or an opponent's**; **draw 1 per face forged** | — |
 | Playing an Instant for its effect, paying Energy | Reaction chain `008`; discounts `012` |
 | Equipping a card onto a creature; attack-damage bonuses; destroy-equipment; cost discounts | — |

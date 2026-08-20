@@ -76,7 +76,10 @@ export interface GameRulesConfig {
   readonly faceDeckMaxPerAttribute: number;
   /** DECIDED. Cards dealt to each player before the first turn. */
   readonly openingHandSize: number;
-  /** DECIDED. Drawn at the start of each of your own turns. */
+  /**
+   * DECIDED (playtest 2026-08-20: 2). Drawn at the start of each of your
+   * own turns.
+   */
   readonly cardsDrawnPerTurn: number;
   /** DEFINED, bible §22. */
   readonly maxStunnedDicePerPlayer: number;
@@ -115,7 +118,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   faceDeckMaxCards: 12,
   faceDeckMaxPerAttribute: 3,
   openingHandSize: 5,
-  cardsDrawnPerTurn: 1,
+  cardsDrawnPerTurn: 2,
   maxStunnedDicePerPlayer: 1,
   attacksPerCreaturePerCombat: 1,
   frontlineSlots: 2,
