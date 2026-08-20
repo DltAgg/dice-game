@@ -24,6 +24,7 @@ are that union; creatures/rituals reuse it).
 | `on-take-damage` | Incoming damage | `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
 | `on-discard` | Cards discarded | Filter `discardingPlayer` |
 | `on-change-position` | Creature position changed | Filter `creatureRelation`; only via `setCreaturePosition` |
+| `on-turn-start` | Incoming player's turn begins | Filter `whoseTurn`; after toxin ticks; auto-target only |
 
 ## Proving cards (target wiring)
 
@@ -41,6 +42,10 @@ are that union; creatures/rituals reuse it).
 | Hunting Armour | `on-take-damage` reduceBy 1 oncePerTurn | Modifier path |
 | Abyssal Sacrifice | `on-discard` controller | generate Darkness |
 | Hunter's Collar | `on-change-position` self | generate Martial |
+| Slow Burn | `on-turn-start` opponent | apply-toxin most-damaged-enemy |
+| Smolder | `on-turn-start` opponent | damage most-damaged-enemy |
+| Cinder Hex | `on-turn-start` controller (bearer) | damage source-creature |
+| Fester | `on-toxin-damage` damagedOwner opponent | apply-toxin declared-target |
 | Predator's Claws | `on-absorb` Wild | `reposition-creature` → source-creature |
 | Mirrored Rune | `on-absorb` self | Need copy effect |
 | Void Summoner | `on-absorb` any + Natural | Natural face filter (not untyped Shield) |

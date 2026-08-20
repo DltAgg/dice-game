@@ -63,18 +63,19 @@ in UI or comments that disagree with `GameRulesConfig`.
 |---|---|---|
 | Aggro | Wild, Martial, Toxin | Converting dice into immediate creature pressure — not the best raw removal |
 | Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining — not large generic numbers |
-| Control | Arcane, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. |
+| Control | Arcane, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. Corruption is **not** Control’s future home. |
+| Burn | Toxin, Corruption | Continuous damage-over-time (markers, turn-start ticks, on-roll / on-absorb pings) that closes without cheap Aggro creature beatdown. Builtin `BURN_*` / `deck-burn`. |
 | Support | Arcane, Luminar, Wild, Mechanical | Splashable utility; printed costs still usually 2+ (1-Energy plays via discounts). Arcane control stays medium/high cost |
 
 | Attribute | Must still look like |
 |---|---|
 | Martial | Direct combat / efficient attacks |
 | Wild | Creature pressure / flexible aggression |
-| Toxin | Attrition / delayed or conditional damage |
+| Toxin | Attrition / delayed ticks / burn stacking |
 | Luminar | Synergy / support / combo value |
 | Mechanical | Engine construction / manipulation |
 | Arcane | Control / manipulation / support |
-| Corruption | Contaminate the opponent’s dice (expensive, meaningful, not generic creature text) |
+| Corruption | Continuous burn (damage over time); contaminate-dice only as spice that feeds burn |
 | Darkness | Delayed value / disruption |
 
 Do **not** let every attribute do damage + heal + draw + removal + disruption.

@@ -115,7 +115,7 @@ Read `src/game/model/effects.ts` as authority. Today:
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
-`most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
+`most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
 `declared-ritual`, `chain-attack-target`
 
 Standing triggers live on equipment / continuous rituals — see

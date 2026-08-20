@@ -387,6 +387,11 @@ export type TargetSelector =
    * most-shielded enemy, not a chosen one.
    */
   | { readonly kind: "most-shielded-enemy" }
+  /**
+   * An opposing living creature with the most damage (ties: earliest id).
+   * Used by turn-start burn pulses so END_TURN stays atomic (no choose pending).
+   */
+  | { readonly kind: "most-damaged-enemy" }
   /** Pause for the controller to name one of their living creatures. */
   | { readonly kind: "choose-ally" }
   /** Pause for the controller to name one opposing living creature. */

@@ -261,26 +261,50 @@ export function fireOnDealDamage(
 }
 
 /**
- * After a toxin tick deals HP damage to `damagedCreatureId`. Fires gear on
- * creatures owned by that creature's controller.
+ * After a toxin tick deals HP damage to `damagedCreatureId`. Shared event:
+ * equipment, creature passives, and ready continuous rituals. Filter whose
+ * creature ticked with `damagedOwner` (default `controller` — Toxic Heart).
+ * `declared-target` is the damaged creature.
  */
 export function fireOnToxinDamage(draft: Draft, damagedCreatureId: CreatureId): void {
   const damaged = draft.creatures[damagedCreatureId];
   if (damaged === undefined) return;
-  const owner = draft.players[damaged.ownerId];
-  if (owner === undefined) return;
 
-  for (const creatureId of owner.creatureIds) {
-    const creature = draft.creatures[creatureId];
-    if (creature === undefined || creature.defeated) continue;
-    for (const cardInstanceId of creature.equipmentIds) {
-      const instance = draft.cards[cardInstanceId];
-      if (instance === undefined) continue;
-      const abilities = getCard(instance.cardId)?.equipment?.abilities ?? [];
-      for (const ability of abilities) {
-        if (ability.type !== "on-toxin-damage") continue;
-        pushAbilityEffects(draft, instance.ownerId, creatureId, null, ability.effects, cardInstanceId);
-      }
+  for (const host of collectHosts(draft)) {
+    for (const ability of host.abilities) {
+      if (ability.type !== "on-toxin-damage") continue;
+      const relation = ability.damagedOwner ?? "controller";
+      if (!matchesPlayerRelation(relation, host.filterOwnerId, damaged.ownerId)) continue;
+      pushAbilityEffects(
+        draft,
+        host.effectControllerId,
+        host.hostCreatureId,
+        damagedCreatureId,
+        ability.effects,
+        host.hostCardInstanceId,
+      );
+    }
+  }
+}
+
+/**
+ * When `whoseTurnId`'s turn begins. Shared event + `whoseTurn` filter
+ * (default `controller` vs `filterOwnerId`). Spec `010`.
+ */
+export function fireOnTurnStart(draft: Draft, whoseTurnId: PlayerId): void {
+  for (const host of collectHosts(draft)) {
+    for (const ability of host.abilities) {
+      if (ability.type !== "on-turn-start") continue;
+      const relation = ability.whoseTurn ?? "controller";
+      if (!matchesPlayerRelation(relation, host.filterOwnerId, whoseTurnId)) continue;
+      pushAbilityEffects(
+        draft,
+        host.effectControllerId,
+        host.hostCreatureId,
+        host.hostCreatureId,
+        ability.effects,
+        host.hostCardInstanceId,
+      );
     }
   }
 }

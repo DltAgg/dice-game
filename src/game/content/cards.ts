@@ -120,6 +120,14 @@ export const RETHROW: CardId = asCardId("card-rethrow");
 export const SIFT: CardId = asCardId("card-sift");
 export const SECOND_WIND: CardId = asCardId("card-second-wind");
 export const WARDING_CHARM: CardId = asCardId("card-warding-charm");
+export const SLOW_BURN: CardId = asCardId("card-slow-burn");
+export const VENOM_FONT: CardId = asCardId("card-venom-font");
+export const CONCENTRATE: CardId = asCardId("card-concentrate");
+export const ICHOR_SHEATH: CardId = asCardId("card-ichor-sheath");
+export const FESTER: CardId = asCardId("card-fester");
+export const SMOLDER: CardId = asCardId("card-smolder");
+export const CINDER_HEX: CardId = asCardId("card-cinder-hex");
+export const EMBER_TIDE: CardId = asCardId("card-ember-tide");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -335,7 +343,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText:
       "Forge 3 synthetic Corruption faces on one of the opponent's dice.",
     ritual: {
-      activeWhen: { arcane: 1, corruption: 1 },
+      activeWhen: { corruption: 2 },
       effects: [
         {
           type: "forge-faces",
@@ -1732,6 +1740,163 @@ const DEFINITIONS: readonly CardDefinition[] = [
       ],
     },
   }),
+  // --- Toxin / Corruption continuous-burn package (builtin Burn list) ---
+  card({
+    id: SLOW_BURN,
+    name: "Slow Burn",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["continuous"],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText: "On start of opponent's turn: apply 1 Toxin marker to the enemy with the most damage.",
+    ritual: {
+      activeWhen: { toxin: 2 },
+      effects: [],
+      standingAbilities: [
+        {
+          type: "on-turn-start",
+          whoseTurn: "opponent",
+          effects: [{ type: "apply-toxin", amount: 1, target: { kind: "most-damaged-enemy" } }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: VENOM_FONT,
+    name: "Venom Font",
+    energyCost: 3,
+    type: "equipment",
+    subtypes: [],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText: "On absorb Toxin: apply 1 Toxin marker to a chosen enemy.",
+    equipment: {
+      mayTargetOpponent: false,
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["toxin"],
+          absorberRelation: "self",
+          effects: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: CONCENTRATE,
+    name: "Concentrate",
+    energyCost: 3,
+    type: "instant",
+    subtypes: [],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText: "Apply 2 Toxin markers to a chosen enemy that already has Toxin.",
+    effect: {
+      requires: { toxin: 1 },
+      effects: [
+        {
+          type: "conditional",
+          when: { type: "any-enemy-has-toxin" },
+          then: [{ type: "apply-toxin", amount: 2, target: { kind: "choose-enemy-with-toxin" } }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: ICHOR_SHEATH,
+    name: "Ichor Sheath",
+    energyCost: 2,
+    type: "overload",
+    subtypes: [],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText: "Can only overload a Toxin face.\nOn absorb: deal 1 damage to a chosen enemy.",
+    overload: {
+      faceSymbols: ["toxin"],
+      onRoll: [],
+      onAbsorb: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
+    },
+  }),
+  card({
+    id: FESTER,
+    name: "Fester",
+    energyCost: 3,
+    type: "equipment",
+    subtypes: [],
+    attribute: "toxin",
+    forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
+    rulesText:
+      "On toxin damage: apply 1 Toxin marker to the opposing creature that took that damage.",
+    equipment: {
+      mayTargetOpponent: false,
+      abilities: [
+        {
+          type: "on-toxin-damage",
+          damagedOwner: "opponent",
+          effects: [{ type: "apply-toxin", amount: 1, target: { kind: "declared-target" } }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: SMOLDER,
+    name: "Smolder",
+    energyCost: 3,
+    type: "ritual",
+    subtypes: ["continuous"],
+    attribute: "corruption",
+    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
+    rulesText: "On start of opponent's turn: deal 1 damage to the enemy with the most damage.",
+    ritual: {
+      activeWhen: { corruption: 2 },
+      effects: [],
+      standingAbilities: [
+        {
+          type: "on-turn-start",
+          whoseTurn: "opponent",
+          effects: [{ type: "damage", amount: 1, target: { kind: "most-damaged-enemy" } }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: CINDER_HEX,
+    name: "Cinder Hex",
+    energyCost: 3,
+    type: "equipment",
+    subtypes: [],
+    attribute: "corruption",
+    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "opponent-die" },
+    rulesText:
+      "May be equipped to an opposing creature.\nOn start of turn: this creature takes 1 damage.",
+    equipment: {
+      mayTargetOpponent: true,
+      abilities: [
+        {
+          type: "on-turn-start",
+          whoseTurn: "controller",
+          effects: [{ type: "damage", amount: 1, target: { kind: "source-creature" } }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: EMBER_TIDE,
+    name: "Ember Tide",
+    energyCost: 2,
+    type: "overload",
+    subtypes: [],
+    attribute: "corruption",
+    forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
+    rulesText:
+      "Can only overload a Corruption face.\nOn roll: deal 1 damage to a chosen enemy.\nOn absorb: apply 1 Toxin marker to a chosen enemy.",
+    overload: {
+      faceSymbols: ["corruption"],
+      onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
+      onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+    },
+  }),
 ];
 
 export const CARDS: Readonly<Record<string, CardDefinition>> = Object.fromEntries(
@@ -1910,4 +2075,40 @@ const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
 
 export const COMBO_MECHANICAL_DECK: readonly CardId[] = COMBO_MECHANICAL_DECK_COUNTS.flatMap(
   ([id, copies]) => Array.from({ length: copies }, () => id),
+);
+
+/**
+ * Builtin Burn tactics deck (spec 002): Toxin ticks + Corruption DoT, with a
+ * thin generic toolkit so the list can survive creature combat. Marker splash
+ * (Dose) densifies the engine; Aggro beatdown (Fangs, Blight Strike, Stinger)
+ * stays off the maindeck. Legal under M4: 50–60 cards, ≤4 copies per id.
+ */
+export const BURN_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  // Continuous DoT engine
+  [SLOW_BURN, 4],
+  [SMOLDER, 4],
+  [VENOM_FONT, 3],
+  [FESTER, 3],
+  [CINDER_HEX, 3],
+  [CONCENTRATE, 3],
+  [ICHOR_SHEATH, 3],
+  [EMBER_TIDE, 3],
+  // Marker / forge conversion (not Aggro attacks)
+  [DOSE, 3],
+  [VIRULENT_RITE, 3],
+  [RITUAL_OF_CONTAMINATION, 3],
+  [GREAT_CONTAMINATION, 2],
+  [PERSISTENT_INFECTION, 3],
+  [BLACK_PLAGUE, 2],
+  // Survive creature combat (generic toolkit splash)
+  [RAISE_GUARD, 3],
+  [SIDESTEP, 3],
+  [WARDING_CHARM, 2],
+  [RETHROW, 2],
+  [SIFT, 2],
+  [SECOND_WIND, 2],
+];
+
+export const BURN_DECK: readonly CardId[] = BURN_DECK_COUNTS.flatMap(([id, copies]) =>
+  Array.from({ length: copies }, () => id),
 );

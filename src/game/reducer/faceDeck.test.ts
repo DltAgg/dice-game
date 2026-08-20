@@ -5,6 +5,7 @@ import {
   BLIGHT,
   CANKER,
   COMBO_MECHANICAL_FACE_DECK,
+  BURN_FACE_DECK,
   CONTROL_FACE_DECK,
   ENGINE_TEST_FACE_DECK,
   GEAR,
@@ -12,6 +13,10 @@ import {
   HEXBRAND,
   INFECTION,
   INSIGHT_RUNE,
+  MARROW_ROT,
+  CINDER,
+  WASTING_BRAND,
+  SPORES,
   NIGHTWELL,
   PROTOTYPE_FACE_DECK,
   REKINDLE,
@@ -236,6 +241,9 @@ describe("face deck", () => {
       "Gore",
       "Needle",
       "Seep",
+      "Marrow Rot",
+      "Cinder",
+      "Wasting Brand",
     ]);
   });
 
@@ -269,4 +277,16 @@ describe("face deck", () => {
     if (!echo.ok) return;
     expect(echo.state.dice[dieId]?.slots[5]?.faceCardId).toBe(ARCANE_ECHO_FACE);
   });
+  it("keeps the builtin burn face deck legal under attribute caps", () => {
+    expect(validateFaceDeck(BURN_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
+    expect(BURN_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(new Set(BURN_FACE_DECK).size).toBe(BURN_FACE_DECK.length);
+    expect(BURN_FACE_DECK).toEqual(
+      expect.arrayContaining([SEEP, MARROW_ROT, SPORES, CINDER, WASTING_BRAND]),
+    );
+    expect(BURN_FACE_DECK).not.toContain(HEXBRAND);
+    expect(BURN_FACE_DECK).not.toContain(BLIGHT);
+    expect(BURN_FACE_DECK).not.toContain(CANKER);
+  });
+
 });

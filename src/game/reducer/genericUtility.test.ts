@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ADRENALINE,
   COMBO_MECHANICAL_DECK,
+  BURN_DECK,
   CONTROL_DECK,
   ECLIPSE,
   PROTOTYPE_DECK,
@@ -96,6 +97,13 @@ describe("generic utility toolkit", () => {
     expect(copies(SIFT)).toBe(2);
     expect(copies(SECOND_WIND)).toBe(2);
     expect(copies(WARDING_CHARM)).toBe(2);
+  });
+
+  it("splashes into builtin Burn for combat survival", () => {
+    const ids = new Set(BURN_DECK);
+    expect(ids.has(RAISE_GUARD)).toBe(true);
+    expect(ids.has(SIDESTEP)).toBe(true);
+    expect(ids.has(WARDING_CHARM)).toBe(true);
   });
 });
 

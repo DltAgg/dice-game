@@ -47,6 +47,8 @@ Companion skills: [develop-engine](../develop-engine/SKILL.md),
 | `on-take-damage` | `damagedCreatureId`, incoming amount (pre or post prevent — document which) |
 | `on-discard` | `discardingPlayerId` |
 | `on-change-position` | `creatureId` that moved (`from` / `to` available to `fire*` but unused by filters today) |
+| `on-turn-start` | `whoseTurnId` (incoming player); filter `whoseTurn` |
+| `on-toxin-damage` | `damagedCreatureId`; filter `damagedOwner` |
 
 ## Relation filters (canonical)
 
@@ -64,6 +66,8 @@ type PlayerRelation = "controller" | "opponent" | "any";
 | `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "self"` |
 | `On absorb <Symbol>, once per turn:` | `on-absorb` + `oncePerTurn` (Lens Choir) |
 | `On absorb Natural:` (any creature / ritual) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
+| `On start of turn:` | `on-turn-start` + `whoseTurn: "controller"` (default) |
+| `On start of opponent's turn:` | `on-turn-start` + `whoseTurn: "opponent"` |
 
 ## Workflow
 
@@ -88,6 +92,7 @@ Hook Progress:
 | Incoming damage modify | inside `dealDamage` **before** prevent/shield when `reduceBy` |
 | Discard | `discardSpecificCards` (and any other discard entry) |
 | Position change | `setCreaturePosition` in `zones.ts` only |
+| Turn begins | `finishTurn` in `reduce.ts` after `tickToxins` |
 
 ### once-per-turn
 

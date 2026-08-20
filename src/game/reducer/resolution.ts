@@ -155,6 +155,25 @@ function mostDamagedAlly(draft: Draft, controllerId: PlayerId): CreatureId | nul
   return bestId;
 }
 
+function mostDamagedEnemy(draft: Draft, controllerId: PlayerId): CreatureId | null {
+  const enemyId = Object.keys(draft.players).find((id) => id !== controllerId);
+  if (enemyId === undefined) return null;
+  const enemy = draft.players[enemyId];
+  if (enemy === undefined) return null;
+
+  let bestId: CreatureId | null = null;
+  let bestDamage = -1;
+  for (const creatureId of [...enemy.creatureIds].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))) {
+    const creature = draft.creatures[creatureId];
+    if (creature === undefined || creature.defeated) continue;
+    if (creature.damage > bestDamage) {
+      bestDamage = creature.damage;
+      bestId = creatureId;
+    }
+  }
+  return bestId;
+}
+
 /** Intentional silent pick: most Shield, ties by earliest creature id. */
 function mostShieldedEnemy(draft: Draft, controllerId: PlayerId): CreatureId | null {
   const enemyId = Object.keys(draft.players).find((id) => id !== controllerId);
@@ -187,6 +206,8 @@ function resolveTarget(
       return pending.declaredTargetCreatureId;
     case "most-damaged-ally":
       return mostDamagedAlly(draft, pending.controllerId);
+    case "most-damaged-enemy":
+      return mostDamagedEnemy(draft, pending.controllerId);
     case "most-shielded-enemy":
       return mostShieldedEnemy(draft, pending.controllerId);
     case "choose-ally":

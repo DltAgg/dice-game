@@ -14,8 +14,9 @@ import {
  * (no attack `effects[]` yet). Do not approximate missing riders.
  *
  * Plus authored Mechanical / Luminar creatures for Tempo and Combo Mechanical
- * constructed (not on builtin Aggro/Control squads), and Nightbound Adept for
- * two-color Control (Arcane / Darkness).
+ * constructed (not on builtin Aggro/Control squads), Nightbound Adept for
+ * two-color Control (Arcane / Darkness), and Toxin / Corruption bodies for
+ * the builtin Burn squad.
  */
 
 export const MINOTAUR: CreatureDefinitionId = asCreatureDefinitionId("creature-minotaur");
@@ -49,6 +50,16 @@ export const CLOCKWORK_DYNAMO: CreatureDefinitionId =
 export const NIGHTBOUND_ADEPT: CreatureDefinitionId = asCreatureDefinitionId(
   "creature-nightbound-adept",
 );
+
+/** Toxin — Burn tank: enemy toxin ticks spread extra markers. */
+export const MARROW_FIEND: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-marrow-fiend");
+/** Corruption — Burn pinger: opponent turn-start damage. */
+export const CINDER_WIGHT: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-cinder-wight");
+/** Toxin — Burn converter: Toxin discount + absorb → apply Toxin. */
+export const ICHOR_HYDRA: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-ichor-hydra");
 
 const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
@@ -689,10 +700,145 @@ const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
   },
 ];
 
+const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
+  {
+    id: MARROW_FIEND,
+    name: "Marrow Fiend",
+    life: 15,
+    attributes: ["toxin"],
+    passiveRulesText:
+      "On toxin damage: apply 1 Toxin marker to the opposing creature that took that damage.",
+    standingAbilities: [
+      {
+        type: "on-toxin-damage",
+        damagedOwner: "opponent",
+        effects: [{ type: "apply-toxin", amount: 1, target: { kind: "declared-target" } }],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-marrow-fiend-gnaw"),
+        name: "Gnaw",
+        kind: "basic",
+        requires: { toxin: 1 },
+        discards: { toxin: 1 },
+        range: false,
+        rulesText: "Deal 2 damage.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+      {
+        id: asAttackId("attack-marrow-fiend-spread-rot"),
+        name: "Spread Rot",
+        kind: "special",
+        requires: { toxin: 2 },
+        discards: { toxin: 1 },
+        range: false,
+        rulesText:
+          "Deal 1 damage. Every enemy on the frontline receives 1 [Toxin] marker.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "apply-toxin", amount: 1, target: { kind: "enemy-frontline" } },
+        ],
+      },
+    ],
+  },
+  {
+    id: CINDER_WIGHT,
+    name: "Cinder Wight",
+    life: 14,
+    attributes: ["corruption"],
+    passiveRulesText:
+      "On start of opponent's turn: deal 1 damage to the enemy with the most damage.",
+    standingAbilities: [
+      {
+        type: "on-turn-start",
+        whoseTurn: "opponent",
+        effects: [{ type: "damage", amount: 1, target: { kind: "most-damaged-enemy" } }],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-cinder-wight-cinder-touch"),
+        name: "Cinder Touch",
+        kind: "basic",
+        requires: { corruption: 1 },
+        discards: { corruption: 1 },
+        range: false,
+        rulesText: "Deal 2 damage.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+      {
+        id: asAttackId("attack-cinder-wight-brand"),
+        name: "Brand",
+        kind: "special",
+        requires: { corruption: 1, toxin: 1 },
+        discards: { corruption: 1 },
+        range: false,
+        rulesText: "Deal 1 damage. Apply 1 Toxin marker.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
+        ],
+      },
+    ],
+  },
+  {
+    id: ICHOR_HYDRA,
+    name: "Ichor Hydra",
+    life: 12,
+    attributes: ["toxin"],
+    passiveRulesText:
+      "The first [Toxin] card used each turn costs 1 Energy less.\n" +
+      "On absorb Toxin: apply 1 Toxin marker to a chosen enemy.",
+    standingAbilities: [
+      {
+        type: "energy-cost-discount",
+        amount: 1,
+        oncePerTurn: true,
+        attributes: ["toxin"],
+      },
+      {
+        type: "on-absorb",
+        symbols: ["toxin"],
+        effects: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-ichor-hydra-fang"),
+        name: "Fang",
+        kind: "basic",
+        requires: { toxin: 1 },
+        discards: { toxin: 1 },
+        range: false,
+        rulesText: "Deal 1 damage. Apply 1 Toxin marker.",
+        effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
+        ],
+      },
+      {
+        id: asAttackId("attack-ichor-hydra-molt-venom"),
+        name: "Molt Venom",
+        kind: "special",
+        requires: { toxin: 1, corruption: 1 },
+        discards: { toxin: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Apply 1 Toxin marker.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+        followUpEffects: [
+          { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
+        ],
+      },
+    ],
+  },
+];
+
 const ALL_DEFINITIONS: readonly CreatureDefinition[] = [
   ...FIGMA_DEFINITIONS,
   ...TEMPO_COMBO_DEFINITIONS,
   ...CONTROL_REWORK_DEFINITIONS,
+  ...BURN_DEFINITIONS,
 ];
 
 export const CREATURES: Readonly<Record<string, CreatureDefinition>> = Object.fromEntries(
@@ -742,4 +888,14 @@ export const COMBO_MECHANICAL_SQUAD: readonly CreatureDefinitionId[] = [
   SERVO_ASSEMBLY,
   CLOCKWORK_DYNAMO,
   LENS_CHOIR,
+];
+
+/**
+ * Builtin Burn squad: Toxin / Corruption DoT vocabulary (bible §27).
+ * Deployment order: Marrow Fiend front, Cinder Wight mid, Ichor Hydra back.
+ */
+export const BURN_SQUAD: readonly CreatureDefinitionId[] = [
+  MARROW_FIEND,
+  CINDER_WIGHT,
+  ICHOR_HYDRA,
 ];

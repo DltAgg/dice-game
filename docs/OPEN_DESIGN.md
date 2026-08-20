@@ -691,7 +691,7 @@ Assumption: **install is affordable; stay and peel are the expense.** Stick come
 | Card | Old | Tempo retune |
 |---|---|---|
 | Ritual of Contamination | Energy 2, Requires Arcane+Corruption, 1 opponent-die face | Energy **1**, Requires **Corruption** (cheaper Instant; still not an ungated copy of own-die forge instants) |
-| Great Contamination | Energy 5, Active when Arcane+Corruption+Corruption, 3 faces | Energy 3, Active when Arcane+Corruption, still 3 faces |
+| Great Contamination | Energy 5, Active when Arcane+Corruption+Corruption, 3 faces | Energy 3, Active when **Corruption+Corruption** (no Arcane; Burn identity 2026-08-20), still 3 faces |
 | Black Plague | Energy 4, forge opponent-die **or** equip | Energy 2 |
 | Persistent Infection | Energy 4, own-die overload | Energy 2 |
 | Latent Corruption | Energy 4, Arcane-face overload | Energy **2** (On-roll refund/engine band) |
