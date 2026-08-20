@@ -119,10 +119,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["reaction"],
     attribute: "arcane",
     forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
-    rulesText: "Pay 3 [Energy], negate the effect of 1 Instant card.",
+    rulesText: "Pay 2 [Energy], negate the effect of 1 Instant card.",
     ritual: {
       activeWhen: { arcane: 2 },
-      additionalEnergy: 3,
+      additionalEnergy: 2,
       effects: [{ type: "negate-card", cardTypes: ["instant"] }],
     },
   }),
@@ -463,7 +463,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: ARCANE_SILENCE,
     name: "Arcane Silence",
-    energyCost: 5,
+    energyCost: 4,
     type: "reaction",
     subtypes: [],
     attribute: "arcane",
