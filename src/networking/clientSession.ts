@@ -1,5 +1,13 @@
-import type { GameAction, GameError, GameState, PlayerId } from "@/game";
-import { parseWireMessage, type ClientToHost, type WireLoadout } from "./protocol.js";
+import type { GameAction, GameState, PlayerId } from "@/game";
+import { asPlayerId } from "@/game";
+import {
+  parseWireMessage,
+  type ClientToHost,
+  type ProtocolError,
+  type RoomSnapshot,
+  type SeatId,
+  type WireLoadout,
+} from "./protocol.js";
 import type { NetTransport } from "./transport.js";
 
 export interface ClientSessionOptions {
@@ -7,10 +15,13 @@ export interface ClientSessionOptions {
   readonly transport: NetTransport;
   /** Peer id of the host (same as room code when hosting with Peer id = room). */
   readonly hostPeerId: string;
-  readonly loadout: WireLoadout;
+  /** Stable identity used to rebind a seat after refresh. */
+  readonly clientId: string;
   readonly onState: (state: GameState) => void;
-  readonly onWelcome: (playerId: PlayerId, roomCode: string) => void;
-  readonly onError?: (error: GameError) => void;
+  readonly onWelcome: (playerId: PlayerId | null, roomCode: string, room: RoomSnapshot) => void;
+  readonly onRoom?: (room: RoomSnapshot) => void;
+  readonly onError?: (error: ProtocolError) => void;
+  readonly onSeatRejected?: (reason: string) => void;
   readonly onStatus?: (status: string) => void;
   readonly onRoomClosed?: () => void;
   /** Live tab: host DataConnection dropped (guest page still mounted). */
@@ -18,16 +29,19 @@ export interface ClientSessionOptions {
 }
 
 /**
- * Guest client: sends intents, applies host state only.
+ * Remote client: sends lobby intents and match actions; applies host state only.
+ * Spectators never stamp a `playerId` or submit `GameAction`s.
  */
 export class ClientSession {
   readonly roomCode: string;
+  readonly clientId: string;
   private readonly transport: NetTransport;
   private readonly hostPeerId: string;
-  private readonly loadout: WireLoadout;
   private readonly onState: (state: GameState) => void;
-  private readonly onWelcome: (playerId: PlayerId, roomCode: string) => void;
-  private readonly onError: ((error: GameError) => void) | undefined;
+  private readonly onWelcome: (playerId: PlayerId | null, roomCode: string, room: RoomSnapshot) => void;
+  private readonly onRoomCb: ((room: RoomSnapshot) => void) | undefined;
+  private readonly onError: ((error: ProtocolError) => void) | undefined;
+  private readonly onSeatRejected: ((reason: string) => void) | undefined;
   private readonly onStatus: ((status: string) => void) | undefined;
   private readonly onRoomClosed: (() => void) | undefined;
   private readonly onHostDropped: (() => void) | undefined;
@@ -35,15 +49,18 @@ export class ClientSession {
   private playerId: PlayerId | null = null;
   private clientSeq = 0;
   private state: GameState | null = null;
+  private room: RoomSnapshot | null = null;
 
   constructor(options: ClientSessionOptions) {
     this.roomCode = options.roomCode;
+    this.clientId = options.clientId;
     this.transport = options.transport;
     this.hostPeerId = options.hostPeerId;
-    this.loadout = options.loadout;
     this.onState = options.onState;
     this.onWelcome = options.onWelcome;
+    this.onRoomCb = options.onRoom;
     this.onError = options.onError;
+    this.onSeatRejected = options.onSeatRejected;
     this.onStatus = options.onStatus;
     this.onRoomClosed = options.onRoomClosed;
     this.onHostDropped = options.onHostDropped;
@@ -68,21 +85,39 @@ export class ClientSession {
     return this.state;
   }
 
+  get currentRoom(): RoomSnapshot | null {
+    return this.room;
+  }
+
   /** Call after the transport is connected to the host. */
   greet(): void {
     const message: ClientToHost = {
       v: 1,
       type: "hello",
       roomCode: this.roomCode,
-      loadout: this.loadout,
+      clientId: this.clientId,
     };
     this.transport.send(this.hostPeerId, message);
     this.onStatus?.("joining");
   }
 
+  claimSeat(seat: SeatId, loadout: WireLoadout): void {
+    const message: ClientToHost = {
+      v: 1,
+      type: "claim-seat",
+      seat,
+      loadout,
+    };
+    this.transport.send(this.hostPeerId, message);
+  }
+
+  releaseSeat(): void {
+    this.transport.send(this.hostPeerId, { v: 1, type: "release-seat" });
+  }
+
   submitAction(action: GameAction): boolean {
     if (this.playerId === null) {
-      this.onError?.("NOT_ACTIVE_PLAYER");
+      this.onError?.("NOT_SEATED");
       return false;
     }
     this.clientSeq += 1;
@@ -111,20 +146,36 @@ export class ClientSession {
     switch (message.type) {
       case "welcome":
         this.playerId = message.playerId;
-        this.state = message.state;
-        this.onWelcome(message.playerId, message.roomCode);
-        this.onState(message.state);
+        this.room = message.room;
+        if (message.state !== undefined) {
+          this.state = message.state;
+          this.onState(message.state);
+        }
+        this.onWelcome(message.playerId, message.roomCode, message.room);
+        this.onRoomCb?.(message.room);
         this.onStatus?.("connected");
-        this.requestResync();
+        if (message.state !== undefined) {
+          this.requestResync();
+        }
+        break;
+      case "room":
+        this.room = message.room;
+        this.syncSeatFromRoom(message.room);
+        this.onRoomCb?.(message.room);
         break;
       case "state":
         this.state = message.state;
         this.onState(message.state);
         break;
       case "action-rejected":
-        this.state = message.state;
-        this.onState(message.state);
+        if (message.state !== null) {
+          this.state = message.state;
+          this.onState(message.state);
+        }
         this.onError?.(message.error);
+        break;
+      case "seat-rejected":
+        this.onSeatRejected?.(message.reason);
         break;
       case "room-closed":
         this.onStatus?.("room closed");
@@ -133,5 +184,17 @@ export class ClientSession {
       default:
         break;
     }
+  }
+
+  private syncSeatFromRoom(room: RoomSnapshot): void {
+    if (room.seats.p1?.clientId === this.clientId) {
+      this.playerId = asPlayerId("p1");
+      return;
+    }
+    if (room.seats.p2?.clientId === this.clientId) {
+      this.playerId = asPlayerId("p2");
+      return;
+    }
+    this.playerId = null;
   }
 }

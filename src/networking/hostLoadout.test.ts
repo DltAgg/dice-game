@@ -21,34 +21,38 @@ describe("online host uses selected loadout", () => {
     const { host, guest } = openFakeLink(roomCode, "g1");
     let hostState: GameState | null = null;
 
-    new HostSession({
+    const hostSession = new HostSession({
       roomCode,
       transport: host,
-      hostLoadout: {
-        squad: hostDeck.squad,
-        deck: hostDeck.deck,
-        faceDeck: hostDeck.faceDeck,
-        startingDice: hostDeck.startingDice,
-      },
+      hostClientId: "host-client",
       seed: 1,
       onState: (state) => {
         hostState = state;
       },
     });
+    hostSession.claimLocalSeat("p1", {
+      squad: hostDeck.squad,
+      deck: hostDeck.deck,
+      faceDeck: hostDeck.faceDeck,
+      startingDice: hostDeck.startingDice,
+    });
 
-    new ClientSession({
+    const guestSession = new ClientSession({
       roomCode,
       transport: guest,
       hostPeerId: roomCode,
-      loadout: {
-        squad: guestDeck.squad,
-        deck: guestDeck.deck,
-        faceDeck: guestDeck.faceDeck,
-        startingDice: guestDeck.startingDice,
-      },
+      clientId: "p2-client",
       onState: () => undefined,
       onWelcome: () => undefined,
-    }).greet();
+    });
+    guestSession.greet();
+    guestSession.claimSeat("p2", {
+      squad: guestDeck.squad,
+      deck: guestDeck.deck,
+      faceDeck: guestDeck.faceDeck,
+      startingDice: guestDeck.startingDice,
+    });
+    hostSession.startMatch();
 
     expect(hostState).not.toBeNull();
     const p1 = hostState!.players[asPlayerId("p1")]!;

@@ -39,8 +39,8 @@ src/
 └── architecture/          the purity guard
 ```
 
-`networking/` wraps `advance()` on the host and ships JSON state to the guest.
-None of it holds rules.
+`networking/` wraps `advance()` on the host and ships JSON state to every
+peer (seated players and spectators). None of it holds rules.
 
 ## Why the engine is pure
 

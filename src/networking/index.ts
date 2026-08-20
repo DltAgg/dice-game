@@ -2,13 +2,31 @@ import { customAlphabet } from "nanoid";
 
 /** Short room codes (not matchId). PeerJS host peer id equals this string. */
 const roomAlphabet = customAlphabet("23456789ABCDEFGHJKLMNPQRSTUVWXYZ", 6);
+const clientAlphabet = customAlphabet("23456789ABCDEFGHJKLMNPQRSTUVWXYZ", 12);
 
 export function generateRoomCode(): string {
   return roomAlphabet();
 }
 
-export type { ClientToHost, HostToClient, WireLoadout, WireMessage } from "./protocol.js";
-export { parseWireMessage, PROTOCOL_VERSION } from "./protocol.js";
+/** Tab-stable client identity for seat rebinding (not a PeerJS id). */
+export function generateClientId(): string {
+  return clientAlphabet();
+}
+
+export type {
+  ClientToHost,
+  HostToClient,
+  PersistedRoom,
+  PersistedSeat,
+  ProtocolError,
+  RoomMember,
+  RoomSeat,
+  RoomSnapshot,
+  SeatId,
+  WireLoadout,
+  WireMessage,
+} from "./protocol.js";
+export { isRoomSnapshot, isSeatId, parseWireMessage, PROTOCOL_VERSION } from "./protocol.js";
 export type { NetTransport } from "./transport.js";
 export { openFakeLink, attachFakeGuest } from "./memoryTransport.js";
 export { PeerTransport } from "./peerTransport.js";
