@@ -14,7 +14,8 @@ import {
  * (no attack `effects[]` yet). Do not approximate missing riders.
  *
  * Plus authored Mechanical / Luminar creatures for Tempo and Combo Mechanical
- * constructed (not on builtin Aggro/Control squads).
+ * constructed (not on builtin Aggro/Control squads), and Nightbound Adept for
+ * two-color Control (Arcane / Darkness).
  */
 
 export const MINOTAUR: CreatureDefinitionId = asCreatureDefinitionId("creature-minotaur");
@@ -44,6 +45,10 @@ export const SERVO_ASSEMBLY: CreatureDefinitionId =
 /** Mechanical — Combo: roll Mechanical → attack bonus; forge-discount special. */
 export const CLOCKWORK_DYNAMO: CreatureDefinitionId =
   asCreatureDefinitionId("creature-clockwork-dynamo");
+/** Darkness — Control closer/disruption: absorb hate + Darkness fuel. */
+export const NIGHTBOUND_ADEPT: CreatureDefinitionId = asCreatureDefinitionId(
+  "creature-nightbound-adept",
+);
 
 const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
   {
@@ -215,7 +220,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-archmage-mystic-overload"),
         name: "Mystic Overload",
         kind: "special",
-        requires: { arcane: 1, luminar: 1 },
+        requires: { arcane: 1, darkness: 1 },
         discards: { arcane: 1 },
         range: false,
         rulesText: "Deal 2 damage. Gain 1 Energy. Generate 1 Arcane.",
@@ -627,9 +632,67 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
   },
 ];
 
+/**
+ * Darkness catalogue creature for two-color Control (Arcane / Darkness).
+ * Fully wired with existing `010` / `011` vocabulary — no deferred clauses.
+ */
+const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
+  {
+    id: NIGHTBOUND_ADEPT,
+    name: "Nightbound Adept",
+    life: 14,
+    attributes: ["darkness"],
+    passiveRulesText:
+      "On absorb Darkness, once per turn: a chosen enemy creature discards 1 attribute token.",
+    standingAbilities: [
+      {
+        type: "on-absorb",
+        symbols: ["darkness"],
+        oncePerTurn: true,
+        effects: [
+          { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+        ],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["basic"],
+        effects: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
+      },
+      {
+        type: "on-attack",
+        attackKinds: ["special"],
+        effects: [{ type: "lose-energy", amount: 1, player: "opponent" }],
+      },
+    ],
+    attacks: [
+      {
+        id: asAttackId("attack-nightbound-adept-umbral-touch"),
+        name: "Umbral Touch",
+        kind: "basic",
+        requires: { darkness: 1 },
+        discards: { darkness: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Generate 1 Darkness.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+      {
+        id: asAttackId("attack-nightbound-adept-eclipse-pulse"),
+        name: "Eclipse Pulse",
+        kind: "special",
+        requires: { arcane: 1, darkness: 1 },
+        discards: { darkness: 1 },
+        range: false,
+        rulesText: "Deal 2 damage. Opponent loses 1 Energy.",
+        effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
+      },
+    ],
+  },
+];
+
 const ALL_DEFINITIONS: readonly CreatureDefinition[] = [
   ...FIGMA_DEFINITIONS,
   ...TEMPO_COMBO_DEFINITIONS,
+  ...CONTROL_REWORK_DEFINITIONS,
 ];
 
 export const CREATURES: Readonly<Record<string, CreatureDefinition>> = Object.fromEntries(
@@ -650,12 +713,14 @@ export const ALL_CREATURES: readonly CreatureDefinition[] = ALL_DEFINITIONS;
 export const PROTOTYPE_SQUAD: readonly CreatureDefinitionId[] = [MINOTAUR, VARCOLAC, GARUDA];
 
 /**
- * Builtin Control loadout squad: Arcane engine (bible §27).
- * Deployment order: Archmage, Corrupting Elder, Void Summoner.
+ * Builtin Control loadout squad: Arcane + Darkness engine (bible §27).
+ * Deployment order: Archmage, Nightbound Adept, Void Summoner.
+ * Attacks and passives spend Arcane and/or Darkness only — no Corruption or
+ * Luminar attack costs. Corrupting Elder stays in the catalogue for other lists.
  */
 export const CONTROL_SQUAD: readonly CreatureDefinitionId[] = [
   ARCHMAGE,
-  CORRUPTING_ELDER,
+  NIGHTBOUND_ADEPT,
   VOID_SUMMONER,
 ];
 

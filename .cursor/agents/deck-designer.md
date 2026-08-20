@@ -63,7 +63,7 @@ in UI or comments that disagree with `GameRulesConfig`.
 |---|---|---|
 | Aggro | Wild, Martial, Toxin | Converting dice into immediate creature pressure — not the best raw removal |
 | Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining — not large generic numbers |
-| Control | Arcane, Corruption, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. |
+| Control | Arcane, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. |
 | Support | Arcane, Luminar, Wild, Mechanical | Splashable utility; printed costs still usually 2+ (1-Energy plays via discounts). Arcane control stays medium/high cost |
 
 | Attribute | Must still look like |
