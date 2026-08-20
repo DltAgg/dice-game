@@ -153,10 +153,11 @@ export function MatchBoard() {
   const pending = state.pendingDecision;
   const phase = state.phase;
   const isOnline = mode !== "local";
+  const isSpectator = isOnline && localPlayerId === null;
   const actingId = actingPlayerIdOf(state);
   const canAct = localSeatCanAct(isOnline, localPlayerId, state);
   const isPendingChooser = localSeatIsPendingChooser(isOnline, localPlayerId, state);
-  /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. */
+  /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. Spectators see both. */
   const dockPlayerId =
     isOnline && localPlayerId !== null ? localPlayerId : actingId;
 
@@ -204,7 +205,7 @@ export function MatchBoard() {
   useEffect(() => {
     if (finished || pending !== null || phase !== "roll" || !canAct) return;
     if (isOnline && !onlineReady) return;
-    if (isOnline && localPlayerId !== null && activeId !== localPlayerId) return;
+    if (isOnline && localPlayerId !== activeId) return;
     const key = `${state.matchId}:${String(state.turn)}`;
     if (autoRolledKey.current === key) return;
     autoRolledKey.current = key;
@@ -242,7 +243,7 @@ export function MatchBoard() {
     if (finished) return;
 
     if (pending?.type === "choose-creature") {
-      if (isOnline && localPlayerId !== null && pending.controllerId !== localPlayerId) return;
+      if (isOnline && localPlayerId !== pending.controllerId) return;
       const legal = legalCreaturesForFilter(
         state,
         pending.controllerId,
@@ -259,7 +260,7 @@ export function MatchBoard() {
     }
 
     if (pending?.type === "optional-bonus-attack") {
-      if (isOnline && localPlayerId !== null && pending.controllerId !== localPlayerId) return;
+      if (isOnline && localPlayerId !== pending.controllerId) return;
       const attacker = state.creatures[pending.creatureId];
       if (attacker === undefined) return;
       const def = getCreatureDefinition(attacker.definitionId);
@@ -475,8 +476,8 @@ export function MatchBoard() {
         <div className="rounded border border-stone-700 bg-stone-950/60 p-6">
           <p className="text-sm text-stone-300">
             {mode === "host"
-              ? "Share the room code with your opponent. The match board opens when they join — your selected loadout is locked in as P1."
-              : "Connecting to the host. The match board opens when the room accepts your loadout."}
+              ? "Share the room code from Play. Claim seats there — hosting does not put you in P1. The board opens when the room owner starts the match."
+              : "Connecting to the host. You join as a spectator; claim P1 or P2 from Play if a seat is open."}
           </p>
           {localDeckName !== null && (
             <p className="mt-4 text-sm text-stone-100">
@@ -494,14 +495,22 @@ export function MatchBoard() {
   }
 
   return (
-    <div className="relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pb-96 pt-28 sm:px-6 sm:pb-[18rem]">
+    <div className={`relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pt-28 sm:px-6 ${isSpectator ? "pb-[28rem] sm:pb-[32rem]" : "pb-96 sm:pb-[18rem]"}`}>
       <ErrorSnackbar error={lastError} onDismiss={clearError} />
 
       <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur">
         <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-3 px-4 py-2.5 sm:px-6">
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-2xl leading-none text-[var(--ink)] sm:text-3xl">
-              {isOnline ? (mode === "host" ? "Host match" : "Online match") : "Local match"}
+              {isOnline
+                ? isSpectator
+                  ? mode === "host"
+                    ? "Observing (host)"
+                    : "Observing"
+                  : mode === "host"
+                    ? "Host match"
+                    : "Online match"
+                : "Local match"}
             </h1>
             <p className="mt-1 text-xs text-[var(--ink-muted)] sm:text-sm">
               {isOnline ? (
@@ -510,7 +519,9 @@ export function MatchBoard() {
                   {" · "}
                   {connectionStatus}
                   {" · you "}
-                  <span className="text-[var(--accent)]">{localPlayerId ?? "?"}</span>
+                  <span className="text-[var(--accent)]">
+                    {isSpectator ? "spectator" : localPlayerId}
+                  </span>
                 </>
               ) : (
                 <>Hotseat</>
@@ -525,7 +536,7 @@ export function MatchBoard() {
                   <span className="text-[var(--accent)]">{pending.priorityPlayerId}</span>
                 </>
               ) : null}
-              {!canAct && isOnline ? " · waiting for opponent" : null}
+              {isSpectator ? " · observing" : !canAct && isOnline ? " · waiting for opponent" : null}
             </p>
           </div>
           <div className="flex flex-wrap items-end gap-2">
@@ -1286,6 +1297,44 @@ export function MatchBoard() {
               />
             </svg>
           </button>
+          {isSpectator ? (
+            <>
+              {pending?.type === "reaction-priority" && (
+                <div className="flex flex-wrap items-center gap-3 rounded border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-1">
+                    Chain ({String(state.chainStack.length)} link
+                    {state.chainStack.length === 1 ? "" : "s"}) — priority:{" "}
+                    <strong>{pending.priorityPlayerId}</strong>
+                    {state.chainStack.length > 0 && (
+                      <>
+                        {" · "}
+                        <ChainLinkHover state={state} link={state.chainStack.at(-1)} />
+                      </>
+                    )}
+                  </span>
+                  <span className="text-xs text-amber-200/70">Observing — cannot pass</span>
+                </div>
+              )}
+              <div
+                id="match-hand-dock"
+                className={handCollapsed ? "hidden" : "flex flex-col gap-3"}
+              >
+                <SpectatorSeatDock
+                  state={state}
+                  playerId={MATCH_P2}
+                  phase={phase}
+                  pendingReaction={pending?.type === "reaction-priority"}
+                />
+                <SpectatorSeatDock
+                  state={state}
+                  playerId={MATCH_P1}
+                  phase={phase}
+                  pendingReaction={pending?.type === "reaction-priority"}
+                />
+              </div>
+            </>
+          ) : (
+            <>
           <SymbolPool
             state={state}
             playerId={dockPlayerId}
@@ -1342,6 +1391,8 @@ export function MatchBoard() {
             </div>
             <ZoneDocks state={state} playerId={dockPlayerId} />
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -3697,6 +3748,47 @@ function ZoneDocks({
   );
 }
 
+function SpectatorSeatDock({
+  state,
+  playerId,
+  phase,
+  pendingReaction,
+}: {
+  state: GameState;
+  playerId: PlayerId;
+  phase: GameState["phase"];
+  pendingReaction: boolean;
+}) {
+  return (
+    <div className="space-y-2 rounded border border-stone-800/80 bg-black/20 p-2">
+      <SymbolPool
+        state={state}
+        playerId={playerId}
+        phase={phase}
+        selected={null}
+        onSelect={() => undefined}
+      />
+      <div className="flex items-end gap-3">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <HandStrip
+            state={state}
+            playerId={playerId}
+            phase={phase}
+            canAct={false}
+            reactionWindow={pendingReaction}
+            selected={null}
+            onPlay={() => undefined}
+            onForge={() => undefined}
+            onCancel={() => undefined}
+            idleLabel="observing"
+          />
+        </div>
+        <ZoneDocks state={state} playerId={playerId} />
+      </div>
+    </div>
+  );
+}
+
 function HandStrip({
   state,
   playerId,
@@ -3707,6 +3799,7 @@ function HandStrip({
   onPlay,
   onForge,
   onCancel,
+  idleLabel,
 }: {
   state: GameState;
   playerId: PlayerId;
@@ -3717,6 +3810,7 @@ function HandStrip({
   onPlay: (card: CardInstance) => void;
   onForge: (card: CardInstance) => void;
   onCancel: () => void;
+  idleLabel?: string;
 }) {
   const hand = handOf(state, playerId);
   const actionsPhase = phase === "actions";
@@ -3783,7 +3877,7 @@ function HandStrip({
     hoveredCard !== undefined ? getCard(hoveredCard.cardId) : undefined;
 
   const statusHint = !canAct
-    ? " · opponent's turn"
+    ? ` · ${idleLabel ?? "opponent's turn"}`
     : reactionWindow
       ? " · respond or pass"
       : !actionsPhase

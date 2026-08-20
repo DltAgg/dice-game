@@ -20,10 +20,14 @@ import {
   HostSession,
   PeerTransport,
   generateRoomCode,
+  type ProtocolError,
+  type RoomSnapshot,
+  type SeatId,
   type WireLoadout,
 } from "@/networking";
 import {
   clearOnlineSessionHint,
+  getOrCreateClientId,
   readOnlineSessionHint,
   writeOnlineSessionHint,
 } from "./onlineSessionHint.js";
@@ -53,7 +57,7 @@ function resolvePlayableLoadout(
   if (deck === undefined) {
     return {
       ok: false,
-      reason: `Deck “${id}” was not found. Pick a loadout in Play before hosting or joining.`,
+      reason: `Deck “${id}” was not found. Pick a loadout in Play before claiming a seat.`,
     };
   }
   const check = validateSavedDeck(deck);
@@ -97,6 +101,12 @@ function deckName(id: SavedDeckId): string {
   return deckRepo.get(id)?.name ?? id;
 }
 
+function playerIdFromRoom(room: RoomSnapshot, clientId: string): PlayerId | null {
+  if (room.seats.p1?.clientId === clientId) return P1;
+  if (room.seats.p2?.clientId === clientId) return P2;
+  return null;
+}
+
 function observeMatch(
   prevState: GameState | null,
   state: GameState,
@@ -121,23 +131,34 @@ function observeMatch(
   });
 }
 
-function persistHostHint(roomCode: string, deckId: SavedDeckId, seed: number, state: GameState | null): void {
+function persistHostHint(
+  roomCode: string,
+  deckId: SavedDeckId | undefined,
+  seed: number,
+  state: GameState | null,
+  seat: SeatId | null,
+): void {
   writeOnlineSessionHint({
     v: 1,
     role: "host",
     roomCode,
-    deckId,
+    clientId: getOrCreateClientId(),
+    seat,
     seed,
+    ...(deckId !== undefined ? { deckId } : {}),
     ...(state !== null ? { state } : {}),
+    ...(hostSession !== null ? { room: hostSession.persistedRoom() } : {}),
   });
 }
 
-function persistGuestHint(roomCode: string, deckId: SavedDeckId): void {
+function persistClientHint(roomCode: string, deckId: SavedDeckId | undefined, seat: SeatId | null): void {
   writeOnlineSessionHint({
     v: 1,
-    role: "guest",
+    role: "client",
     roomCode,
-    deckId,
+    clientId: getOrCreateClientId(),
+    seat,
+    ...(deckId !== undefined ? { deckId } : {}),
   });
 }
 
@@ -145,6 +166,16 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+function asSeatId(playerId: PlayerId | null): SeatId | null {
+  if (playerId === P1) return "p1";
+  if (playerId === P2) return "p2";
+  return null;
+}
+
+function isGameError(error: ProtocolError): error is GameError {
+  return error !== "NOT_SEATED";
 }
 
 export interface MatchStore {
@@ -155,9 +186,14 @@ export interface MatchStore {
   readonly p1DeckId: SavedDeckId;
   readonly p2DeckId: SavedDeckId;
   readonly mode: MatchMode;
-  /** Bound seat in online play; null means hotseat (both seats). */
+  /**
+   * Bound seat in online play; null means hotseat (both seats) locally, or
+   * spectator online.
+   */
   readonly localPlayerId: PlayerId | null;
   readonly roomCode: string | null;
+  readonly roomSnapshot: RoomSnapshot | null;
+  readonly clientId: string;
   readonly connectionStatus: string;
   readonly onlineReady: boolean;
   /** Why the last play/host/join/new-match attempt was refused (illegal loadout). */
@@ -173,9 +209,12 @@ export interface MatchStore {
   startLocal: (p1DeckId?: SavedDeckId, p2DeckId?: SavedDeckId) => void;
   hostRoom: (deckId?: SavedDeckId, options?: { readonly resume?: boolean }) => Promise<void>;
   joinRoom: (roomCode: string, deckId?: SavedDeckId) => Promise<void>;
+  claimSeat: (seat: SeatId, deckId?: SavedDeckId) => void;
+  releaseSeat: () => void;
+  startOnlineMatch: () => void;
   leaveOnline: () => void;
   requestResync: () => void;
-  /** After a full page reload, resume host Peer id or re-join as guest. */
+  /** After a full page reload, resume host Peer id or re-join as client. */
   tryResumeOnlineSession: () => Promise<void>;
 }
 
@@ -199,7 +238,7 @@ function bindPageHideRelease(): void {
   if (pageHideBound || typeof window === "undefined") return;
   pageHideBound = true;
   window.addEventListener("pagehide", () => {
-    // Free the PeerJS room-code id; do not send room-closed (guest should retry).
+    // Free the PeerJS room-code id; do not send room-closed (clients should retry).
     tearDownSessions(false);
   });
 }
@@ -216,6 +255,8 @@ export const useMatchStore = create<MatchStore>((set, get) => {
     mode: "local",
     localPlayerId: null,
     roomCode: null,
+    roomSnapshot: null,
+    clientId: getOrCreateClientId(),
     connectionStatus: "local",
     onlineReady: false,
     playBlockReason: null,
@@ -266,6 +307,7 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         mode: "local",
         localPlayerId: null,
         roomCode: null,
+        roomSnapshot: null,
         connectionStatus: "local",
         onlineReady: true,
         view: "match",
@@ -282,35 +324,27 @@ export const useMatchStore = create<MatchStore>((set, get) => {
     hostRoom: async (deckId, options) => {
       const resume = options?.resume === true;
       const hint = resume ? readOnlineSessionHint() : null;
-      const chosen = deckId ?? (hint?.role === "host" ? hint.deckId : get().p1DeckId);
-      const resolved = resolvePlayableLoadout(chosen);
-      if (!resolved.ok) {
-        set({
-          playBlockReason: resolved.reason,
-          connectionStatus: "local",
-          onlineReady: false,
-          mode: "local",
-          localPlayerId: null,
-          roomCode: null,
-        });
-        return;
-      }
+      const chosen = deckId ?? (hint?.role === "host" ? hint.deckId : undefined) ?? get().p1DeckId;
       tearDownSessions();
-      const loadout = toWireLoadout(resolved.deck);
       const roomCode =
         resume && hint?.role === "host" ? hint.roomCode : generateRoomCode();
       const restoredState = resume && hint?.role === "host" ? hint.state : undefined;
+      const restoredRoom = resume && hint?.role === "host" ? hint.room : undefined;
       const matchSeed =
         restoredState?.rng.seed ??
         (resume && hint?.role === "host" ? hint.seed : undefined) ??
         Date.now() % 100_000;
+      const clientId = getOrCreateClientId();
+      const matchAlreadyOn = restoredState !== undefined;
       set({
         mode: "host",
-        localPlayerId: P1,
+        localPlayerId: null,
         roomCode,
-        connectionStatus: restoredState !== undefined ? "resuming host…" : "starting host…",
-        onlineReady: restoredState !== undefined,
-        view: "match",
+        roomSnapshot: null,
+        clientId,
+        connectionStatus: matchAlreadyOn ? "resuming host…" : "starting host…",
+        onlineReady: matchAlreadyOn,
+        view: matchAlreadyOn ? "match" : "lobby",
         p1DeckId: chosen,
         lastError: null,
         playBlockReason: null,
@@ -320,43 +354,54 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       try {
         bindPageHideRelease();
         const transport = await PeerTransport.create(roomCode);
-        persistHostHint(roomCode, chosen, matchSeed, restoredState ?? null);
         hostSession = new HostSession({
           roomCode,
           transport,
-          hostLoadout: loadout,
+          hostClientId: clientId,
           seed: matchSeed,
           ...(restoredState !== undefined ? { restoredState } : {}),
+          ...(restoredRoom !== undefined ? { restoredRoom } : {}),
           onState: (state) => {
-            persistHostHint(roomCode, chosen, state.rng.seed, state);
+            persistHostHint(roomCode, chosen, state.rng.seed, state, asSeatId(get().localPlayerId));
             const prev = get().state;
             set({
               state,
               seed: state.rng.seed,
               onlineReady: true,
               lastError: null,
+              view: "match",
             });
             if (prev.matchId !== state.matchId) {
               observeMatch(null, state, null, true, null);
             }
           },
+          onRoom: (room) => {
+            const localPlayerId = playerIdFromRoom(room, clientId);
+            persistHostHint(roomCode, chosen, get().seed, room.started ? get().state : null, asSeatId(localPlayerId));
+            set({
+              roomSnapshot: room,
+              localPlayerId,
+              onlineReady: room.started,
+              ...(room.started ? { view: "match" as const } : {}),
+            });
+          },
           onAdvance: ({ prev, next, action, ok, error }) => {
             observeMatch(prev, ok ? next : prev, action, ok, error);
           },
-          onError: (error) => set({ lastError: error }),
+          onError: (error) => {
+            if (isGameError(error)) set({ lastError: error });
+          },
           onStatus: (connectionStatus) => set({ connectionStatus }),
-          onGuestLeft: () =>
-            set({ connectionStatus: "guest disconnected — they can rejoin with this room code" }),
+          onPeerLeft: () => undefined,
         });
-        if (restoredState === undefined) {
-          set({ connectionStatus: "waiting for guest", roomCode });
-        }
+        persistHostHint(roomCode, chosen, matchSeed, restoredState ?? null, asSeatId(get().localPlayerId));
       } catch (error) {
         tearDownSessions();
         set({
           mode: "local",
           localPlayerId: null,
           roomCode: null,
+          roomSnapshot: null,
           view: "lobby",
           connectionStatus: "local",
           onlineReady: false,
@@ -369,26 +414,16 @@ export const useMatchStore = create<MatchStore>((set, get) => {
       tearDownSessions();
       const code = roomCode.trim().toUpperCase();
       const chosen = deckId ?? get().p2DeckId;
-      const resolved = resolvePlayableLoadout(chosen);
-      if (!resolved.ok) {
-        set({
-          playBlockReason: resolved.reason,
-          connectionStatus: "local",
-          onlineReady: false,
-          mode: "local",
-          localPlayerId: null,
-          roomCode: null,
-        });
-        return;
-      }
-      const loadout = toWireLoadout(resolved.deck);
+      const clientId = getOrCreateClientId();
       set({
         mode: "client",
-        localPlayerId: P2,
+        localPlayerId: null,
         roomCode: code,
+        roomSnapshot: null,
+        clientId,
         connectionStatus: "connecting…",
         onlineReady: false,
-        view: "match",
+        view: "lobby",
         p2DeckId: chosen,
         lastError: null,
         playBlockReason: null,
@@ -443,7 +478,7 @@ export const useMatchStore = create<MatchStore>((set, get) => {
           roomCode: code,
           transport,
           hostPeerId: code,
-          loadout,
+          clientId,
           onState: (state) => {
             const prev = get().state;
             set({
@@ -451,18 +486,34 @@ export const useMatchStore = create<MatchStore>((set, get) => {
               seed: state.rng.seed,
               onlineReady: true,
               lastError: null,
+              view: "match",
             });
             observeMatch(prev, state, null, true, null);
           },
-          onWelcome: (playerId) => {
-            persistGuestHint(code, chosen);
+          onWelcome: (playerId, _roomCode, room) => {
+            persistClientHint(code, chosen, asSeatId(playerId));
             set({
               localPlayerId: playerId,
+              roomSnapshot: room,
               connectionStatus: "connected",
-              onlineReady: true,
+              onlineReady: room.started,
+              view: room.started ? "match" : "lobby",
             });
           },
-          onError: (error) => set({ lastError: error }),
+          onRoom: (room) => {
+            const localPlayerId = playerIdFromRoom(room, clientId);
+            persistClientHint(code, chosen, asSeatId(localPlayerId));
+            set({
+              roomSnapshot: room,
+              localPlayerId,
+              onlineReady: room.started ? true : get().onlineReady,
+              ...(room.started ? { view: "match" as const } : {}),
+            });
+          },
+          onError: (error) => {
+            if (isGameError(error)) set({ lastError: error });
+          },
+          onSeatRejected: (reason) => set({ playBlockReason: reason }),
           onStatus: (connectionStatus) => set({ connectionStatus }),
           onRoomClosed: () => {
             clearOnlineSessionHint();
@@ -475,6 +526,7 @@ export const useMatchStore = create<MatchStore>((set, get) => {
             void retryConnect(current, session);
           },
         });
+        persistClientHint(code, chosen, null);
         clientSession.greet();
       } catch (error) {
         tearDownSessions();
@@ -482,11 +534,66 @@ export const useMatchStore = create<MatchStore>((set, get) => {
           mode: "local",
           localPlayerId: null,
           roomCode: null,
+          roomSnapshot: null,
           view: "lobby",
           connectionStatus: "local",
           onlineReady: false,
           playBlockReason: error instanceof Error ? error.message : "join failed",
         });
+      }
+    },
+
+    claimSeat: (seat, deckId) => {
+      const chosen = deckId ?? (seat === "p1" ? get().p1DeckId : get().p2DeckId);
+      const resolved = resolvePlayableLoadout(chosen);
+      if (!resolved.ok) {
+        set({ playBlockReason: resolved.reason });
+        return;
+      }
+      const loadout = toWireLoadout(resolved.deck);
+      if (seat === "p1") set({ p1DeckId: chosen, playBlockReason: null });
+      else set({ p2DeckId: chosen, playBlockReason: null });
+
+      const { mode } = get();
+      if (mode === "host") {
+        if (hostSession === null) return;
+        const ok = hostSession.claimLocalSeat(seat, loadout);
+        if (!ok) return;
+        set({ localPlayerId: seat === "p1" ? P1 : P2 });
+        persistHostHint(
+          get().roomCode ?? "",
+          chosen,
+          get().seed,
+          get().roomSnapshot?.started === true ? get().state : null,
+          seat,
+        );
+        return;
+      }
+      if (mode === "client") {
+        clientSession?.claimSeat(seat, loadout);
+      }
+    },
+
+    releaseSeat: () => {
+      const { mode } = get();
+      if (mode === "host") {
+        hostSession?.releaseLocalSeat();
+        set({ localPlayerId: null });
+        if (get().roomCode !== null) {
+          persistHostHint(get().roomCode!, get().p1DeckId, get().seed, null, null);
+        }
+        return;
+      }
+      if (mode === "client") {
+        clientSession?.releaseSeat();
+      }
+    },
+
+    startOnlineMatch: () => {
+      if (get().mode !== "host" || hostSession === null) return;
+      const ok = hostSession.startMatch();
+      if (!ok) {
+        set({ playBlockReason: "Both P1 and P2 need a seated player with a legal loadout." });
       }
     },
 
@@ -498,6 +605,7 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         mode: "local",
         localPlayerId: null,
         roomCode: null,
+        roomSnapshot: null,
         connectionStatus: "local",
         onlineReady: false,
         view: "lobby",
@@ -540,11 +648,12 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         return false;
       }
 
+      if (localPlayerId === null) return false;
+
       // Stamp the bound seat. Do not refuse P2 reactions with NOT_ACTIVE_PLAYER
       // just because the UI named the turn player — host/client sessions also
       // override playerId, and the reducer decides priority vs turn player.
-      const seated: GameAction =
-        localPlayerId !== null ? { ...action, playerId: localPlayerId } : action;
+      const seated: GameAction = { ...action, playerId: localPlayerId };
 
       if (mode === "host") {
         if (hostSession === null) return false;

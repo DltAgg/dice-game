@@ -1,6 +1,10 @@
 /**
  * Bidirectional messaging used by host/client sessions. PeerJS implements this;
  * tests use an in-memory pair so CI never needs a live broker.
+ *
+ * The host transport accepts many concurrent peers (two seats plus spectators).
+ * Sessions address each peer by id; `disconnectPeer` drops one without tearing
+ * down the room.
  */
 export interface NetTransport {
   readonly localId: string;

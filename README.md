@@ -24,7 +24,7 @@ The design lives in [`competitive_dice_game_agent_bible.md`](./competitive_dice_
 | Content | Faces, Figma creatures + prototype squad, tactic subset + English printings |
 | UI | **M3** hotseat + **M4** deck builder + Figma catalogues |
 | Persistence | **M4** — `DeckRepository` over localStorage; tactics 50–60 / ≤4 copies |
-| Networking | **M5** — PeerJS host authority (room create/join) |
+| Networking | **M5** — PeerJS host authority (room seats, spectators, host-observe) |
 
 Unfinished catalogue effects are parked in
 [`docs/DEFERRED_CATALOGUE.md`](./docs/DEFERRED_CATALOGUE.md) for end-of-loop revisit.
