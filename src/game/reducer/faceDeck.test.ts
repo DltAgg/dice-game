@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY, TOXIC_BLESSING } from "../content/cards.js";
+import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY, TEMPER } from "../content/cards.js";
 import {
   ARCANE_ECHO_FACE,
   BLIGHT,
+  BLOODSCENT,
   CANKER,
+  CLEAVING_STRIKE,
   COMBO_MECHANICAL_FACE_DECK,
   BURN_FACE_DECK,
   CONTROL_FACE_DECK,
   ENGINE_TEST_FACE_DECK,
   GEAR,
+  GORE,
   GREAT_SPARK,
   HEXBRAND,
   INFECTION,
@@ -17,7 +20,9 @@ import {
   CINDER,
   WASTING_BRAND,
   SPORES,
+  NEEDLE,
   NIGHTWELL,
+  PRIMORDIAL_FURY,
   PROTOTYPE_FACE_DECK,
   REKINDLE,
   RESONANCE_RUNE,
@@ -28,6 +33,9 @@ import {
   SHADOW_ECHO,
   STAIN,
   TEMPO_FACE_DECK,
+  VENOM,
+  WARHORN,
+  naturalFaceId,
 } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { DieId } from "../model/ids.js";
@@ -55,8 +63,14 @@ describe("face deck", () => {
   it("keeps the builtin aggro face deck legal under attribute caps", () => {
     expect(validateFaceDeck(PROTOTYPE_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
     expect(PROTOTYPE_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
-    expect(PROTOTYPE_FACE_DECK).toHaveLength(9);
+    expect(PROTOTYPE_FACE_DECK).toHaveLength(6);
     expect(new Set(PROTOTYPE_FACE_DECK).size).toBe(PROTOTYPE_FACE_DECK.length);
+    expect(PROTOTYPE_FACE_DECK).toEqual(
+      expect.arrayContaining([CRUSH, WARHORN, CLEAVING_STRIKE, BLOODSCENT, GORE, PRIMORDIAL_FURY]),
+    );
+    expect(PROTOTYPE_FACE_DECK).not.toContain(NEEDLE);
+    expect(PROTOTYPE_FACE_DECK).not.toContain(SEEP);
+    expect(PROTOTYPE_FACE_DECK).not.toContain(VENOM);
     expect(PROTOTYPE_FACE_DECK).not.toContain(INFECTION);
     expect(PROTOTYPE_FACE_DECK).not.toContain(STAIN);
     expect(PROTOTYPE_FACE_DECK).not.toContain(GREAT_SPARK);
@@ -127,14 +141,15 @@ describe("face deck", () => {
     expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(SHADOW_ECHO);
   });
 
-  it("forges a leftover builtin special and still draws", () => {
+  it("forges a leftover builtin natural via Temper and still draws", () => {
     const state = withEnergy(
-      withHand(withPhase(newMatchWithDecks(), "actions"), P1, [TOXIC_BLESSING]),
+      withHand(withPhase(newMatchWithDecks(), "actions"), P1, [TEMPER]),
       P1,
       10,
     );
-    expect(state.players[P1]?.facePool).toContain(SEEP);
+    expect(state.players[P1]?.facePool).toContain(WARHORN);
     expect(state.players[P1]?.facePool).not.toContain(CRUSH);
+    expect(state.players[P1]?.facePool).not.toContain(BLOODSCENT);
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("test: no die");
     expect(state.players[P1]?.deck.length).toBeGreaterThan(0);
@@ -144,7 +159,9 @@ describe("face deck", () => {
     );
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(SEEP);
+    // Temper's forge region is Natural Martial (play effect installs specials).
+    expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(naturalFaceId("martial"));
+    expect(forged.state.players[P1]?.facePool).toContain(WARHORN);
     expect(eventTypes(forged.state)).toContain("card-drawn");
   });
 

@@ -4,8 +4,8 @@ import {
   CONTROL_FACE_DECK,
   CONTROL_STARTING_DICE,
   CRUSH,
+  BLOODSCENT,
   DEFAULT_BASIC_LAYOUT,
-  NEEDLE,
   PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_STARTING_DICE,
@@ -162,7 +162,7 @@ describe("starting face layout", () => {
       leftoverFacePool(CONTROL_FACE_DECK, CONTROL_STARTING_DICE),
     );
     expect(state.players[P1]?.facePool).not.toContain(CRUSH);
-    expect(state.players[P1]?.facePool).not.toContain(NEEDLE);
+    expect(state.players[P1]?.facePool).not.toContain(BLOODSCENT);
   });
 
   it("applies forge-lock remaining when a stay face is installed as if just forged", () => {

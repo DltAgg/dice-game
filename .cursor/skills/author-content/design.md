@@ -50,7 +50,7 @@ The **or** between forge and effect is load-bearing: one use, one region.
 |---|---|---|
 | Martial | Direct combat / efficient attacks | Aggro |
 | Wild | Creature pressure / flexible aggression | Aggro, Combo, Support |
-| Toxin | Attrition / delayed damage / **burn ticks** | Aggro, Combo, Burn |
+| Toxin | Attrition / delayed damage / **burn ticks** | Burn, Combo |
 | Luminar | Synergy / support / combo value | Combo, Support |
 | Mechanical | Engine construction / manipulation | Combo, Support |
 | Arcane | Control / manipulation / support | Control, Support |
@@ -63,13 +63,14 @@ become efficient **aggro** (cheap fast creature attacks). Control **should**
 deal meaningful damage through its engine (rituals, consume, delayed/conditional
 hits). That is not the same as becoming Aggro.
 
-Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
+Archetypes (002): Aggro = Martial/Wild; Combo = Luminar/Wild/Mechanical/Toxin;
 Control = Arcane/Darkness; **Burn** (builtin `BURN_DECK`) =
 Toxin/Corruption; Support = Arcane/Luminar/Wild/Mechanical
 (utility may splash; printed Energy 1 remains exceptional — splash via
-discounts, not 1-drops). Toxin remains legal in Aggro for creature-pressure
-ticks; Corruption is **not** Control’s future home and must not require an
-Arcane/Darkness manabase. Do not turn Corruption into generic Arcane negate.
+discounts, not 1-drops). Toxin is **not** builtin Aggro — it lives on Burn
+(and Combo splash). Corruption is **not** Control’s future home and must not
+require an Arcane/Darkness manabase. Do not turn Corruption into generic
+Arcane negate.
 
 Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`,
 `COMBO_MECHANICAL_DECK`, and `BURN_DECK` in `cards.ts` (snapshots in
@@ -170,8 +171,9 @@ Great Contamination (opponent-die install; pair with Wasting Brand). Faces:
 Venom, Spores, Needle, Seep, Marrow Rot, Cinder (own-die ticks), Wasting Brand
 (opponent-die self-damage; holder voice).
 
-**Leave on Aggro:** existing Toxin pressure (Fangs, Blessing, Dose, Blight
-Strike, Needle, Seep). Those cards still work; they are not Burn-exclusive.
+**Leave off Aggro:** Toxin pressure (Fangs, Blessing, Dose, Blight Strike,
+Needle, Seep, Virulent Rite) belongs on Burn / Combo splash — not builtin
+Martial/Wild Aggro.
 
 **Fights Burn — cut from Control, do not maindeck in Burn:**
 - Latent Corruption (`card-latent-corruption`) — Arcane-face overload that

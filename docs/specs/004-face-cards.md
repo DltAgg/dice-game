@@ -134,6 +134,22 @@ Portuguese *Sobrecarga* is catalogued as **Overcharge**.
 `WireLoadout` carry the same field (`006`, `007`). Schema version 2; old saves
 without layouts are refused.
 
+### Builtin paint philosophy
+
+Opening layouts should densify each list’s **engine colors**, not a shared
+Martial/Wild/Arcane/Luminar paint:
+
+| Builtin | Opening / face-deck engine colors |
+|---|---|
+| Aggro (`PROTOTYPE_*`) | **Martial + Wild only** — pressure specials (Crush, Warhorn, Cleaving Strike, Bloodscent, Gore, Primordial Fury). Max 6 faces under ≤3/attr. No Toxin. |
+| Control | Arcane + Darkness (+ utility splash) |
+| Tempo / Combo Mechanical | Mechanical + Luminar (+ Wild/Toxin splash) |
+| Burn | Toxin + Corruption |
+
+Aggro openings use `openingDieMartialWild` (special + Martial/Wild naturals +
+Shield). Other builtins may still use the older four-color `openingDieWithSpecial`
+helper until densified separately.
+
 ## State Changes
 
 `players[*].facePool` is the uninstalled remainder of `faceDeck`. Also

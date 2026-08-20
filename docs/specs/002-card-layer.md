@@ -132,7 +132,7 @@ reading: any matching named special (Canker, Blight, Hexbrand, …).
 
 | Archetype | Attributes |
 |---|---|
-| Aggro | Wild, Martial, Toxin |
+| Aggro | Martial, Wild |
 | Combo | Luminar, Wild, Mechanical, Toxin |
 | Control | Arcane, Darkness |
 | Burn | Toxin, Corruption |
@@ -155,6 +155,11 @@ content). Where the frame name and the printed name disagree, the printed name
 is used.
 
 ### Aggro deck
+
+Builtin **Aggro** (`PROTOTYPE_*`) is **Martial / Wild only** — same two-color
+engine paradigm as Control = Arcane / Darkness. Catalogue rows below still
+include historical Toxin / splash print for reference; those Toxin cards are
+**not** on the Aggro builtin (they live on Burn / Combo).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -271,14 +276,15 @@ takes a lighter cut. **Reforge** uses `replace-synthetic-face` (spec `012`).
 | 3 | Recalibrate | Reaction / Mechanical | 1 Synthetic Mechanical, your die | Return a card that costs 2 or less from your GY to hand. |
 | 3 | Reforge | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* Replace one Synthetic Mechanical face on your die with a different pool face (no forge-draw). |
 
-### Martial / Wild / Toxin aggro package (authored)
+### Martial / Wild aggro package (authored)
 
-Playtest gap-fill for Aggro (Martial / Wild / Toxin). Fully wired on existing
-vocabulary. Catalogue-only — not added to builtin decks. Temper / Untamed exist
-so named synthetic Martial / Wild **named specials** can be forged (existing Martial /
-Wild tactics only forge Natural). Virulent Rite is a two-face Toxin burst;
-individual Toxin tactics already forge synthetic Toxin (named specials from the
-pool, not a card named Synthetic Toxin).
+Playtest gap-fill for Aggro (Martial / Wild). Fully wired on existing
+vocabulary. Martial / Wild rows live on builtin Aggro (`PROTOTYPE_*`); Toxin
+rows (Dose, Blight Strike, Virulent Rite) are Burn / Combo splash, not Aggro.
+Temper / Untamed exist so named synthetic Martial / Wild **named specials** can
+be forged (existing Martial / Wild tactics only forge Natural). Individual
+Toxin tactics forge synthetic Toxin (named specials from the pool, not a card
+named Synthetic Toxin).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|

@@ -19,6 +19,8 @@ import {
 import {
   BURN_FACE_DECK,
   BURN_STARTING_DICE,
+  BLOODSCENT,
+  CLEAVING_STRIKE,
   COMBO_MECHANICAL_FACE_DECK,
   COMBO_MECHANICAL_STARTING_DICE,
   CONTROL_FACE_DECK,
@@ -26,9 +28,10 @@ import {
   CRUSH,
   FORBIDDEN_HERITAGE,
   ARCANE_ECHO_FACE,
+  GORE,
   GREAT_SPARK,
-  NEEDLE,
   PESTILENT_PLAGUE,
+  PRIMORDIAL_FURY,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_STARTING_DICE,
   SEEP,
@@ -260,7 +263,7 @@ describe("validateStartingDice", () => {
   it("refuses three on-roll faces on one die", () => {
     const result = validateStartingDice(
       [
-        [CRUSH, WARHORN, NEEDLE, martial, wild, SHIELD_FACE_ID],
+        [CRUSH, WARHORN, GORE, martial, wild, SHIELD_FACE_ID],
         basics,
       ],
       PROTOTYPE_FACE_DECK,
@@ -278,7 +281,7 @@ describe("validateStartingDice", () => {
     const result = validateStartingDice(
       [
         [CRUSH, WARHORN, wild, arcane, luminar, SHIELD_FACE_ID],
-        [NEEDLE, martial, wild, arcane, luminar, SHIELD_FACE_ID],
+        [GORE, martial, wild, arcane, luminar, SHIELD_FACE_ID],
       ],
       PROTOTYPE_FACE_DECK,
       DEFAULT_RULES_CONFIG,
@@ -326,16 +329,19 @@ describe("validateStartingDice", () => {
 });
 
 describe("leftoverFacePool", () => {
-  it("removes an installed unique Crush from the pool and leaves unused specials", () => {
+  it("removes installed Crush and Bloodscent from the pool and leaves unused specials", () => {
     const pool = leftoverFacePool(PROTOTYPE_FACE_DECK, PROTOTYPE_STARTING_DICE);
     expect(pool).not.toContain(CRUSH);
-    expect(pool).not.toContain(NEEDLE);
+    expect(pool).not.toContain(BLOODSCENT);
     expect(pool).toContain(WARHORN);
+    expect(pool).toContain(CLEAVING_STRIKE);
+    expect(pool).toContain(GORE);
+    expect(pool).toContain(PRIMORDIAL_FURY);
   });
 
   it("does not consume opening basics even when they are also listed in the face deck", () => {
     const martial = naturalFaceId("martial");
-    const deck = [...PROTOTYPE_FACE_DECK.slice(0, 11), martial];
+    const deck = [...PROTOTYPE_FACE_DECK.slice(0, 5), martial];
     const pool = leftoverFacePool(deck, PROTOTYPE_STARTING_DICE);
     expect(pool).toContain(martial);
   });

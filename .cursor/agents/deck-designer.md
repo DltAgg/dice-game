@@ -61,7 +61,7 @@ in UI or comments that disagree with `GameRulesConfig`.
 
 | Archetype | Attributes | Wins by |
 |---|---|---|
-| Aggro | Wild, Martial, Toxin | Converting dice into immediate creature pressure — not the best raw removal |
+| Aggro | Martial, Wild | Converting dice into immediate creature pressure — not the best raw removal |
 | Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining — not large generic numbers |
 | Control | Arcane, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. Corruption is **not** Control’s future home. |
 | Burn | Toxin, Corruption | Continuous damage-over-time (markers, turn-start ticks, on-roll / on-absorb pings) that closes without cheap Aggro creature beatdown. Builtin `BURN_*` / `deck-burn`. |

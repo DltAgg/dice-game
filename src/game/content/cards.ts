@@ -1910,45 +1910,43 @@ export const getCard = (id: CardId): CardDefinition | undefined => CARDS[id];
 export const ALL_CARDS: readonly CardDefinition[] = DEFINITIONS;
 
 /**
- * Builtin aggro tactics deck (spec 002 “Aggro deck” identity: Martial / Wild /
- * Toxin pressure). Tuned for the +4 creature HP band: densifies live reach /
- * conversion (Opening Cut, Dose, Temper…) and drops deferred equipment plus
- * Control/Support splash. Legal under M4: 50–60 cards, ≤4 copies per id.
+ * Builtin Aggro tactics deck (spec 002: Martial / Wild only). Converts dice
+ * into creature pressure — no Toxin (that is Burn / Combo splash). Densifies
+ * Martial/Wild equipment, overloads, reach, and Temper/Untamed special forges.
+ * Legal under M4: 50–60 cards, ≤4 copies per id.
  */
 const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
-  // Pressure equipment / continuous
+  // Martial / Wild pressure equipment
   [WAR_AXE, 4],
-  [VENOMOUS_FANGS, 3],
+  [TWIN_BLADES, 3],
+  [WHETSTONE, 3],
   [HUNTING_ARMOUR, 2],
-  [SERRATED_STINGER, 2],
   [HUNTERS_COLLAR, 2],
-  [WHETSTONE, 2],
-  [TOXIC_HEART, 2],
   [WILD_CARAPACE, 2],
+  [PREDATORS_CLAWS, 2],
+  [WAR_BANNER, 2],
+  [ALPHAS_HIDE, 2],
   // Overloads
-  [MARTIAL_BLESSING, 2],
+  [MARTIAL_BLESSING, 3],
   [BLESSING_OF_THE_HUNT, 2],
-  [TOXIC_BLESSING, 2],
-  [WILD_ECHO, 2],
-  [MUTANT_SPORES, 2],
+  [WILD_ECHO, 3],
   [SNARL, 2],
-  // Reach / tempo (tankier boards)
-  [OPENING_CUT, 2],
-  [PRESS_THE_ATTACK, 2],
-  [DOSE, 3],
-  [BLIGHT_STRIKE, 2],
+  [RUST, 2],
+  [ADRENALINE, 2],
+  // Reach / conversion
+  [OPENING_CUT, 3],
+  [PRESS_THE_ATTACK, 3],
   [POUNCE, 2],
   [PACK_SURGE, 2],
   [RENDING_MARK, 2],
+  [TEMPER, 2],
+  [UNTAMED, 2],
+  [RIPOSTE, 2],
+  // Ritual engines
   [CALL_TO_ARMS, 2],
   [BATTLE_HYMN, 2],
   [PACK_LAW, 2],
-  [VIRULENT_RITE, 2],
-  [RIPOSTE, 2],
-  [TEMPER, 2],
-  [UNTAMED, 2],
 ];
-
 export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
   ([id, copies]) => Array.from({ length: copies }, () => id),
 );

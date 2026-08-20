@@ -7,6 +7,7 @@ import type {
   PlayerId,
   SymbolInstanceId,
 } from "../model/ids.js";
+import type { Attribute } from "../model/attributes.js";
 import type { SymbolRequirement, SymbolType } from "../model/symbols.js";
 
 /**
@@ -177,7 +178,7 @@ export type GameAction =
       readonly playerId: PlayerId;
       readonly replacements: readonly {
         readonly symbolId: SymbolInstanceId;
-        readonly into: "martial" | "wild" | "arcane" | "luminar";
+        readonly into: Attribute;
       }[];
     }
   | {

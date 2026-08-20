@@ -867,11 +867,16 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[WASTING_BRAND]!,
 ];
 
-/** Starting naturals only — Martial, Wild, Arcane, Luminar, plus Shield. */
-export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(0, 5);
+/** Starting naturals for all eight attributes, plus untyped Shield. */
+export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
+  0,
+  DUAL_KIND_ATTRIBUTES.length + 1,
+);
 
 /** Named synthetic specials that have printed rules text. */
-export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(5);
+export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
+  DUAL_KIND_ATTRIBUTES.length + 1,
+);
 
 /**
  * Default six-symbol opening die for **engine tests** (`legacyStartingLayout`).
@@ -905,13 +910,31 @@ export function legacyStartingLayout(): StartingDiceLayout {
   return [die, die];
 }
 
-/** One named special + dual-kind naturals (Martial/Wild/Arcane/Luminar) + Shield. */
+/**
+ * Generic helper for non-Aggro builtins / tests: one named special + the old
+ * four-color natural paint (Martial/Wild/Arcane/Luminar) + Shield. Aggro uses
+ * `openingDieMartialWild` instead — do not reuse this for Martial/Wild Aggro.
+ */
 const openingDieWithSpecial = (special: FaceCardId): DieFaceLayout => [
   special,
   naturalFaceId("martial"),
   naturalFaceId("wild"),
   naturalFaceId("arcane"),
   naturalFaceId("luminar"),
+  SHIELD_FACE_ID,
+];
+
+/**
+ * Aggro opening die: one Martial or Wild pressure special + Martial/Wild
+ * naturals densified + Shield. Obeys starting caps (1 Shield, ≤2 synthetics /
+ * on-roll per die, ≤4 same attribute).
+ */
+const openingDieMartialWild = (special: FaceCardId): DieFaceLayout => [
+  special,
+  naturalFaceId("martial"),
+  naturalFaceId("martial"),
+  naturalFaceId("wild"),
+  naturalFaceId("wild"),
   SHIELD_FACE_ID,
 ];
 
@@ -936,11 +959,11 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
 ];
 
 /**
- * Builtin aggro face deck — at most twelve unique cards, at most three per
- * attribute (bible §12). Crush and Needle start installed (`PROTOTYPE_STARTING_DICE`)
- * and therefore leave the pool. Leftover Martial / Wild / Toxin specials remain
- * forge targets. Naturals may be packed here for density swaps; opening basics
- * that are not listed do not count toward the 12.
+ * Builtin Aggro face deck — Martial + Wild only (≤3 per attribute → max 6).
+ * Crush and Bloodscent open installed (`PROTOTYPE_STARTING_DICE`). Leftover
+ * Martial / Wild pressure specials remain Temper / Untamed forge targets.
+ * No Toxin faces (Needle / Seep / Venom / toxin naturals). Opening Martial /
+ * Wild naturals are not listed here — they do not consume the 12.
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   CRUSH,
@@ -949,23 +972,13 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   BLOODSCENT,
   GORE,
   PRIMORDIAL_FURY,
-  NEEDLE,
-  SEEP,
-  VENOM,
 ];
 
 export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
-  openingDieWithSpecial(CRUSH),
-  openingDieWithSpecial(NEEDLE),
+  openingDieMartialWild(CRUSH),
+  openingDieMartialWild(BLOODSCENT),
 ];
 
-/**
- * Builtin control face deck — twelve unique cards, ≤3 per attribute.
- * Nightwell and Resonance Rune open installed. Engine colors are Arcane and
- * Darkness only; Martial / Wild / Luminar specials are utility (shield hate,
- * peek, redirect), not a third manabase. Great Spark / Rekindle are empty-print
- * stubs — not pooled. Corruption specials are not pooled.
- */
 /**
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
  * Nightwell and Resonance Rune open installed. Engine colors are Arcane and
