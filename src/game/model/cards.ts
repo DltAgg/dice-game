@@ -252,10 +252,11 @@ export interface OverloadRegion {
 export interface RitualRegion {
   /**
    * Attribute gate that flips the ritual to ready. Progress is cumulative:
-   * printed as `Arcane + Arcane` (not `2× Arcane`). At most one pip per
-   * attribute is banked each turn while matching symbols are available.
-   * Absent when the print has no `[Active when: …]` (e.g. Paradox) — the
-   * ritual is ready as soon as it leaves preparing.
+   * printed as `Arcane + Arcane` (not `2× Arcane`). Multiple matching pool
+   * symbols may be assigned in the same turn (including two+ of the same
+   * attribute) until this requirement is filled. Absent when the print has
+   * no `[Active when: …]` (e.g. Paradox) — the ritual is ready as soon as
+   * it leaves preparing.
    */
   readonly activeWhen?: SymbolRequirement;
   /**
@@ -346,13 +347,16 @@ export interface CardInstance {
    * Cumulative Active-when progress while `zone === "ritual"`. Credited
    * immediately when the owner assigns a matching unabsorbed pool symbol onto
    * the ritual during actions (same window and `on-absorb` event as creature
-   * absorb; unlike creature tokens this is not delayed to end of turn). At
-   * most one pip per attribute per turn. Null outside the ritual zone.
+   * absorb; unlike creature tokens this is not delayed to end of turn). The
+   * owner may assign multiple pips in one turn, including the same attribute
+   * more than once, until `activeWhen` is filled. Null outside the ritual zone.
    */
   readonly ritualProgress: AttributeTokens | null;
   /**
-   * Attributes already credited toward `ritualProgress` this turn. Cleared at
-   * the start of the owner's turn. Null outside the ritual zone.
+   * Attributes credited toward `ritualProgress` this turn (telemetry; may
+   * repeat). Not a legality cap — a second matching pip is legal until the
+   * gate is filled. Cleared at the start of the owner's turn. Null outside
+   * the ritual zone.
    */
   readonly ritualProgressCreditedThisTurn: readonly Attribute[] | null;
 }

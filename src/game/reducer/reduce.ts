@@ -1497,8 +1497,10 @@ function absorbSymbol(
 /**
  * Spend an unabsorbed attribute symbol on a field ritual's Active-when gate.
  * Same actions-window and standing `on-absorb` hooks as creature absorb;
- * progress is credited immediately (not banked until END_TURN). The symbol is
- * consumed (not placed on a creature) and never remains in the engine pool.
+ * progress is credited immediately (not banked until END_TURN). Multiple pips
+ * may be assigned in one turn, including the same attribute, until the gate
+ * is filled. The symbol is consumed (not placed on a creature) and never
+ * remains in the engine pool.
  */
 function absorbSymbolToRitual(
   draft: Draft,
@@ -1537,8 +1539,6 @@ function absorbSymbolToRitual(
   }
 
   const progress = card.ritualProgress ?? {};
-  const credited = card.ritualProgressCreditedThisTurn ?? [];
-  if (credited.includes(creditAs)) return "SYMBOL_UNAVAILABLE";
   if ((progress[creditAs] ?? 0) >= (region.activeWhen[creditAs] ?? 0)) return "INVALID_TARGET";
 
   consumeSymbols(draft, [symbolId], "ritual-progress");
@@ -1550,7 +1550,7 @@ function absorbSymbolToRitual(
   draft.cards[cardInstanceId] = {
     ...card,
     ritualProgress: nextProgress,
-    ritualProgressCreditedThisTurn: [...credited, creditAs],
+    ritualProgressCreditedThisTurn: [...(card.ritualProgressCreditedThisTurn ?? []), creditAs],
   };
 
   refreshRitualOrientations(draft, playerId);
@@ -2149,7 +2149,7 @@ function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
       continue;
     }
 
-    // New turn: allow another cumulative pip per attribute.
+    // New turn: clear this-turn absorb telemetry (not a legality cap).
     if ((card.ritualProgressCreditedThisTurn?.length ?? 0) > 0) {
       draft.cards[cardInstanceId] = {
         ...card,

@@ -291,40 +291,122 @@ describe("rituals on the field", () => {
     expect(ritualsOf(first.state, P1)[0]?.ritualProgress).toEqual({ arcane: 1 });
     expect(first.state.symbols[firstArcane.id]?.status).toBe("consumed");
 
-    // Second Arcane the same turn is refused (one pip per attribute per turn).
     const sameTurn = advance(first.state, {
       type: "ABSORB_SYMBOL_TO_RITUAL",
       playerId: P1,
       cardInstanceId: ritualId,
       symbolId: secondArcane.id,
     });
-    expect(sameTurn.ok).toBe(false);
+    expect(sameTurn.ok).toBe(true);
+    if (!sameTurn.ok) return;
+    expect(ritualsOf(sameTurn.state, P1)[0]?.ritualOrientation).toBe("ready");
+    expect(ritualsOf(sameTurn.state, P1)[0]?.ritualProgress).toEqual({ arcane: 2 });
+    expect(sameTurn.state.symbols[secondArcane.id]?.status).toBe("consumed");
+    expect(eventTypes(sameTurn.state)).toContain("ritual-orientation-changed");
+  });
 
-    // Next owner turn clears the per-turn credit; a second Arcane finishes the gate.
-    const afterP1End = advance(first.state, { type: "END_TURN", playerId: P1 });
-    expect(afterP1End.ok).toBe(true);
-    if (!afterP1End.ok) return;
-    const afterP2End = advance(afterP1End.state, { type: "END_TURN", playerId: P2 });
-    expect(afterP2End.ok).toBe(true);
-    if (!afterP2End.ok) return;
+  it("credits two different attributes onto a ritual in the same turn", () => {
+    const placed = advance(actionsReady([ABYSSAL_SACRIFICE]), {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(actionsReady([ABYSSAL_SACRIFICE]), P1, 0),
+    });
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const ritualId = ritualsOf(placed.state, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("test: no ritual");
 
-    const nextAbsorb = withSymbols(withPhase(afterP2End.state, "actions"), P1, ["arcane"], "rolled");
-    const nextArcane = Object.values(nextAbsorb.symbols).find(
+    const absorbing = withSymbols(
+      withPhase(placed.state, "actions"),
+      P1,
+      ["arcane", "darkness"],
+      "rolled",
+    );
+    const arcane = Object.values(absorbing.symbols).find(
       (symbol) => symbol.status === "rolled" && symbol.symbol === "arcane",
     );
-    if (nextArcane === undefined) throw new Error("test: missing next arcane");
+    const darkness = Object.values(absorbing.symbols).find(
+      (symbol) => symbol.status === "rolled" && symbol.symbol === "darkness",
+    );
+    if (arcane === undefined || darkness === undefined) {
+      throw new Error("test: missing mixed symbols");
+    }
 
-    const second = advance(nextAbsorb, {
+    const first = advance(absorbing, {
       type: "ABSORB_SYMBOL_TO_RITUAL",
       playerId: P1,
       cardInstanceId: ritualId,
-      symbolId: nextArcane.id,
+      symbolId: arcane.id,
+    });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(ritualsOf(first.state, P1)[0]?.ritualProgress).toEqual({ arcane: 1 });
+    expect(ritualsOf(first.state, P1)[0]?.ritualOrientation).toBe("preparing");
+
+    const second = advance(first.state, {
+      type: "ABSORB_SYMBOL_TO_RITUAL",
+      playerId: P1,
+      cardInstanceId: ritualId,
+      symbolId: darkness.id,
     });
     expect(second.ok).toBe(true);
     if (!second.ok) return;
+    expect(ritualsOf(second.state, P1)[0]?.ritualProgress).toEqual({ arcane: 1, darkness: 1 });
     expect(ritualsOf(second.state, P1)[0]?.ritualOrientation).toBe("ready");
+  });
+
+  it("refuses to over-fill an Active-when requirement", () => {
+    const placed = advance(actionsReady([LIVING_LIBRARY]), {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(actionsReady([LIVING_LIBRARY]), P1, 0),
+    });
+    expect(placed.ok).toBe(true);
+    if (!placed.ok) return;
+    const ritualId = ritualsOf(placed.state, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("test: no ritual");
+
+    const absorbing = withSymbols(
+      withPhase(placed.state, "actions"),
+      P1,
+      ["arcane", "arcane", "arcane"],
+      "rolled",
+    );
+    const arcanes = Object.values(absorbing.symbols).filter(
+      (symbol) => symbol.status === "rolled" && symbol.symbol === "arcane",
+    );
+    const [firstArcane, secondArcane, thirdArcane] = arcanes;
+    if (firstArcane === undefined || secondArcane === undefined || thirdArcane === undefined) {
+      throw new Error("test: missing arcane symbols");
+    }
+
+    const first = advance(absorbing, {
+      type: "ABSORB_SYMBOL_TO_RITUAL",
+      playerId: P1,
+      cardInstanceId: ritualId,
+      symbolId: firstArcane.id,
+    });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    const second = advance(first.state, {
+      type: "ABSORB_SYMBOL_TO_RITUAL",
+      playerId: P1,
+      cardInstanceId: ritualId,
+      symbolId: secondArcane.id,
+    });
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
     expect(ritualsOf(second.state, P1)[0]?.ritualProgress).toEqual({ arcane: 2 });
-    expect(eventTypes(second.state)).toContain("ritual-orientation-changed");
+
+    const overflow = advance(second.state, {
+      type: "ABSORB_SYMBOL_TO_RITUAL",
+      playerId: P1,
+      cardInstanceId: ritualId,
+      symbolId: thirdArcane.id,
+    });
+    expect(overflow.ok).toBe(false);
+    if (!overflow.ok) expect(overflow.error).toBe("INVALID_TARGET");
+    expect(overflow.state).toBe(second.state);
   });
 
   it("activates a ready Instant ritual and opens a deck search", () => {

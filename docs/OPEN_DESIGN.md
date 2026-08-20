@@ -349,6 +349,7 @@ Retention that keeps a showing face also re-fires on that roll step.
 
 **Status:** `DECIDED` · implemented for place / prepare / activate
 · corrected 2026-08-16: Active-when symbols persist unless an effect discards them
+· corrected 2026-08-20: Active-when may receive multiple pips of the same attribute in one turn (same as creature absorb)
 
 A Ritual is played onto the engine area, not resolved from hand like an Instant:
 
@@ -359,10 +360,11 @@ A Ritual is played onto the engine area, not resolved from hand like an Instant:
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
 Rituals are placed empty. During actions the owner may assign unabsorbed
-attribute symbols to a ritual (same window as creature absorb); each attribute
-may receive at most one pip per turn toward printed `Attr + Attr` gates. Symbols
-spent this way are consumed and never reach the engine pool. Rituals with no
-`[Active when: …]` become ready as soon as they hit the field.
+attribute symbols to a ritual (same window as creature absorb), including
+multiple pips of the same attribute in one turn, until the printed
+`Attr + Attr` gate is filled. Over-filling a requirement is illegal.
+Symbols spent this way are consumed and never reach the engine pool. Rituals
+with no `[Active when: …]` become ready as soon as they hit the field.
 
 At the start of your turn, exhausted rituals come off diagonal. Banked
 Active-when symbols stay on the card unless an effect explicitly discards or

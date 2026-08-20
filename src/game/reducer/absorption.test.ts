@@ -330,6 +330,15 @@ describe("what absorb pays out", () => {
     expect(creature?.shields).toBe(1);
   });
 
+  it("lets one creature absorb two of the same attribute in a turn", () => {
+    const { creatureId, absorbed } = absorbAll(["martial", "martial"]);
+
+    expect(absorbed.creatures[creatureId]?.attributeTokens).toEqual({});
+
+    const nextTurn = expectOk(advance(absorbed, { type: "END_TURN", playerId: P1 }));
+    expect(nextTurn.creatures[creatureId]?.attributeTokens).toEqual({ martial: 2 });
+  });
+
   it("accumulates tokens across turns, so fuel is never lost", () => {
     const afterFirst = expectOk(
       advance(absorbAll(["martial"]).absorbed, { type: "END_TURN", playerId: P1 }),
