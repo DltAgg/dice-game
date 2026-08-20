@@ -294,7 +294,8 @@ printed header cost.
 - `energy-cost-discount` / `ignore-shield` standing abilities (Archmage, Tome,
   War Minotaur) — spec `012`.
 - `destroy-equipment` removes one piece of gear from a creature (Calculated
-  Sacrifice).
+  Sacrifice). After the creature is known, 2+ attached pieces open
+  `choose-equipment`; a single piece destroys without a second prompt.
 - Forging may name an opposing die when the card's forge region says so
   (Black Plague).
 
@@ -733,14 +734,16 @@ creature that survives long enough can still accumulate without a hard cap.
 
 **The question.** Is there a cap per creature, or per attribute?
 
-**DECIDED (playtest, 2026-08-14).** Effects may strip tokens. Siphon Sigil
-proves `discard-attribute-tokens`: strip in `ATTRIBUTES` array order without a
-player attribute pick; fewer tokens than `amount` discards all remaining
-(whiff-legal at zero). Bible §20 / §25.
+**DECIDED (playtest, 2026-08-20).** Effects may strip tokens. Siphon Sigil
+proves `discard-attribute-tokens`: after `choose-enemy`, a mixed pile with
+more tokens than `amount` opens `choose-attribute-tokens` (controller names
+which pips). Homogeneous leftover piles and “take all remaining” are
+deterministic (no real choice). Bible §20 / §25.
 
-**ASSUMED (label for the strip path).** Attribute order is fixed engine order
-(`martial` → … → `darkness`); controller does not choose which attributes.
-Token **cap** remains OPEN.
+**ASSUMED (label for the no-choice path).** When there is no mix leftover,
+strip uses `ATTRIBUTES` array order (`martial` → … → `darkness`) — equivalent
+to taking from the only pile / taking everything that remains. Token **cap**
+remains OPEN.
 
 **Decision (cap).** TBD.
 

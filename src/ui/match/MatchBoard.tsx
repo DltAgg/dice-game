@@ -52,9 +52,12 @@ import {
   usableSymbols,
   holdsTokens,
   overloadsOnFace,
+  requirementTotal,
+  ATTRIBUTES,
   SHIELD,
   type AttackDefinition,
   type AttackId,
+  type Attribute,
   type CardInstance,
   type CardInstanceId,
   type CardType,
@@ -72,6 +75,7 @@ import {
   type ChainLink,
   type PlayerId,
   type SymbolInstanceId,
+  type SymbolRequirement,
   type SymbolType,
   type TurnPhase,
   TURN_PHASE_ORDER,
@@ -727,6 +731,40 @@ export function MatchBoard() {
         <WaitingBanner>Opponent is choosing a ritual.</WaitingBanner>
       )}
 
+      {pending?.type === "choose-equipment" && isPendingChooser && (
+        <ChooseEquipmentModal
+          state={state}
+          creatureId={pending.creatureId}
+          onPick={(cardInstanceId) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_EQUIPMENT",
+              playerId: pending.controllerId,
+              cardInstanceId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-equipment" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing equipment to destroy.</WaitingBanner>
+      )}
+
+      {pending?.type === "choose-attribute-tokens" && isPendingChooser && (
+        <ChooseAttributeTokensModal
+          state={state}
+          pending={pending}
+          onConfirm={(discarded) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
+              playerId: pending.controllerId,
+              discarded,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-attribute-tokens" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing attribute tokens to discard.</WaitingBanner>
+      )}
+
       {pending?.type === "forge-faces" && isPendingChooser && (
         <ForgeFacesPrompt
           state={state}
@@ -927,12 +965,13 @@ export function MatchBoard() {
         <MindControlModal
           state={state}
           controllerId={pending.controllerId}
-          onConfirm={(mode, faceCardIds) =>
+          onConfirm={(mode, faceCardIds, overloadInstanceIds) =>
             tryDispatch({
               type: "RESOLVE_MIND_CONTROL",
               playerId: pending.controllerId,
               mode,
               faceCardIds,
+              ...(overloadInstanceIds !== undefined ? { overloadInstanceIds } : {}),
             })
           }
         />
@@ -1511,6 +1550,8 @@ function pendingSourceOf(
     case "dark-pact":
     case "mind-control":
     case "copy-pool-symbol":
+    case "choose-equipment":
+    case "choose-attribute-tokens":
       return {
         cardInstanceId: pending.sourceCardInstanceId,
         faceCardId: pending.sourceFaceCardId,
@@ -1831,15 +1872,20 @@ function maxEnergyCostPhrase(maxEnergyCost: number): string {
 function opposingOverloadedFaces(
   state: GameState,
   controllerId: PlayerId,
-): readonly { readonly faceCardId: FaceCardId; readonly overloads: number }[] {
+): readonly {
+  readonly faceCardId: FaceCardId;
+  readonly overloads: readonly CardInstance[];
+}[] {
   const opponentId = opponentOf(state, controllerId);
   const seen = new Set<FaceCardId>();
-  const result: { faceCardId: FaceCardId; overloads: number }[] = [];
+  const result: { faceCardId: FaceCardId; overloads: readonly CardInstance[] }[] = [];
   for (const die of diceOf(state, opponentId)) {
     for (const slot of die.slots) {
       if (seen.has(slot.faceCardId)) continue;
-      const overloads = overloadsOnFace(state, opponentId, slot.faceCardId).length;
-      if (overloads <= 0) continue;
+      const overloads = Object.values(state.cards).filter(
+        (card) => card.zone === "overload" && card.attachedToFaceCardId === slot.faceCardId,
+      );
+      if (overloads.length <= 0) continue;
       seen.add(slot.faceCardId);
       result.push({ faceCardId: slot.faceCardId, overloads });
     }
@@ -1898,6 +1944,16 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   if (state.pendingDecision?.type === "choose-ritual") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a ritual.";
     return "Choose an opposing ritual on the field to destroy.";
+  }
+  if (state.pendingDecision?.type === "choose-equipment") {
+    return isPendingChooser
+      ? "Choose 1 Equipment on that creature to destroy."
+      : "Waiting for the opponent to choose equipment to destroy.";
+  }
+  if (state.pendingDecision?.type === "choose-attribute-tokens") {
+    return isPendingChooser
+      ? `Choose ${String(state.pendingDecision.amount)} attribute token pip(s) to discard.`
+      : "Waiting for the opponent to choose attribute tokens.";
   }
   if (state.pendingDecision?.type === "forge-faces") {
     if (!isPendingChooser) {
@@ -4433,20 +4489,45 @@ function MindControlModal({
   onConfirm: (
     mode: "strip-one-face" | "strip-one-each",
     faceCardIds: readonly FaceCardId[],
+    overloadInstanceIds?: readonly CardInstanceId[],
   ) => void;
 }) {
   const [mode, setMode] = useState<"strip-one-face" | "strip-one-each">("strip-one-face");
   const [pick, setPick] = useState<readonly FaceCardId[]>([]);
+  const [overloadPick, setOverloadPick] = useState<Readonly<Partial<Record<string, CardInstanceId>>>>(
+    {},
+  );
   const faces = opposingOverloadedFaces(state, controllerId);
   const maxPick = mode === "strip-one-face" ? 1 : 2;
 
-  const toggle = (faceCardId: FaceCardId) => {
+  const toggle = (faceCardId: FaceCardId, overloads: readonly CardInstance[]) => {
     setPick((prev) => {
-      if (prev.includes(faceCardId)) return prev.filter((id) => id !== faceCardId);
+      if (prev.includes(faceCardId)) {
+        setOverloadPick((current) => {
+          const next = { ...current };
+          delete next[faceCardId];
+          return next;
+        });
+        return prev.filter((id) => id !== faceCardId);
+      }
       if (prev.length >= maxPick) return prev;
+      if (overloads.length === 1 && overloads[0] !== undefined) {
+        setOverloadPick((current) => ({ ...current, [faceCardId]: overloads[0]!.id }));
+      }
       return [...prev, faceCardId];
     });
   };
+
+  const stripEachReady =
+    pick.length >= 1 &&
+    pick.length <= 2 &&
+    pick.every((faceCardId) => {
+      const row = faces.find((entry) => entry.faceCardId === faceCardId);
+      if (row === undefined) return false;
+      if (row.overloads.length === 1) return true;
+      const chosen = overloadPick[faceCardId];
+      return chosen !== undefined && row.overloads.some((card) => card.id === chosen);
+    });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -4490,7 +4571,7 @@ function MindControlModal({
             const face = getFaceCard(faceCardId);
             const checked = pick.includes(faceCardId);
             return (
-              <li key={faceCardId}>
+              <li key={faceCardId} className="rounded border border-stone-800 p-2">
                 <button
                   type="button"
                   className={
@@ -4499,13 +4580,38 @@ function MindControlModal({
                       : "w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-stone-500"
                   }
                   disabled={!checked && pick.length >= maxPick}
-                  onClick={() => toggle(faceCardId)}
+                  onClick={() => toggle(faceCardId, overloads)}
                 >
                   <p className="text-sm font-medium text-stone-100">{face?.name ?? faceCardId}</p>
                   <p className="text-xs text-stone-500">
-                    {String(overloads)} overload{overloads === 1 ? "" : "s"}
+                    {String(overloads.length)} overload{overloads.length === 1 ? "" : "s"}
                   </p>
                 </button>
+                {mode === "strip-one-each" && checked && overloads.length > 1 && (
+                  <ul className="mt-2 space-y-1 pl-2">
+                    {overloads.map((card) => {
+                      const def = getCard(card.cardId);
+                      const selected = overloadPick[faceCardId] === card.id;
+                      return (
+                        <li key={card.id}>
+                          <button
+                            type="button"
+                            className={
+                              selected
+                                ? "w-full rounded border border-[var(--accent)] px-2 py-1 text-left text-xs text-[var(--accent)]"
+                                : "w-full rounded border border-stone-700 px-2 py-1 text-left text-xs text-stone-300 hover:border-stone-500"
+                            }
+                            onClick={() =>
+                              setOverloadPick((current) => ({ ...current, [faceCardId]: card.id }))
+                            }
+                          >
+                            {def?.name ?? card.cardId}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </li>
             );
           })}
@@ -4516,10 +4622,22 @@ function MindControlModal({
         <button
           type="button"
           className={`${btnPrimary} mt-4`}
-          disabled={
-            mode === "strip-one-face" ? pick.length !== 1 : pick.length < 1 || pick.length > 2
-          }
-          onClick={() => onConfirm(mode, pick)}
+          disabled={mode === "strip-one-face" ? pick.length !== 1 : !stripEachReady}
+          onClick={() => {
+            if (mode === "strip-one-face") {
+              onConfirm(mode, pick);
+              return;
+            }
+            const ids = pick.flatMap((faceCardId) => {
+              const row = faces.find((entry) => entry.faceCardId === faceCardId);
+              if (row === undefined) return [];
+              const named = overloadPick[faceCardId];
+              if (named !== undefined) return [named];
+              const [only] = row.overloads;
+              return only === undefined ? [] : [only.id];
+            });
+            onConfirm(mode, pick, ids);
+          }}
         >
           Confirm Mind Control
         </button>
@@ -5042,6 +5160,145 @@ function ChooseRitualModal({
             <li className="text-sm text-red-300">No opposing rituals on the field.</li>
           )}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+function ChooseEquipmentModal({
+  state,
+  creatureId,
+  onPick,
+}: {
+  state: GameState;
+  creatureId: CreatureId;
+  onPick: (cardInstanceId: CardInstanceId) => void;
+}) {
+  const creature = state.creatures[creatureId];
+  const equipmentIds = creature?.equipmentIds ?? [];
+  const hostDef =
+    creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Choose equipment to destroy
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Pick 1 Equipment on {hostDef?.name ?? "the chosen creature"}.
+        </p>
+        <CausedByLine state={state} />
+        <ul className="mt-4 space-y-2">
+          {equipmentIds.map((id) => {
+            const card = state.cards[id];
+            const def = card !== undefined ? getCard(card.cardId) : undefined;
+            return (
+              <li key={id}>
+                <button
+                  type="button"
+                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                  onClick={() => onPick(id)}
+                >
+                  <p className="text-sm font-medium text-stone-100">
+                    {def !== undefined ? (
+                      <TacticInspectHover def={def} placement="below" />
+                    ) : (
+                      (card?.cardId ?? id)
+                    )}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+          {equipmentIds.length === 0 && (
+            <li className="text-sm text-red-300">No equipment on that creature.</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function ChooseAttributeTokensModal({
+  state,
+  pending,
+  onConfirm,
+}: {
+  state: GameState;
+  pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "choose-attribute-tokens" }>;
+  onConfirm: (discarded: SymbolRequirement) => void;
+}) {
+  const tokens = state.creatures[pending.creatureId]?.attributeTokens ?? {};
+  const [pick, setPick] = useState<Readonly<Partial<Record<Attribute, number>>>>({});
+  const assigned = requirementTotal(pick);
+  const ready = assigned === pending.amount;
+
+  const setAmount = (attribute: Attribute, next: number) => {
+    const max = tokens[attribute] ?? 0;
+    const clamped = Math.max(0, Math.min(max, Math.floor(next)));
+    setPick((prev) => {
+      const copy: Partial<Record<Attribute, number>> = { ...prev };
+      if (clamped <= 0) delete copy[attribute];
+      else copy[attribute] = clamped;
+      return copy;
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+          Choose tokens to discard
+        </h2>
+        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+          Name {String(pending.amount)} attribute token pip(s). Assigned: {String(assigned)}/
+          {String(pending.amount)}.
+        </p>
+        <CausedByLine state={state} />
+        <ul className="mt-4 space-y-2">
+          {ATTRIBUTES.filter((attribute) => (tokens[attribute] ?? 0) > 0).map((attribute) => {
+            const held = tokens[attribute] ?? 0;
+            const value = pick[attribute] ?? 0;
+            return (
+              <li
+                key={attribute}
+                className="flex items-center justify-between rounded border border-stone-700 bg-stone-900 px-3 py-2"
+              >
+                <p className="text-sm text-stone-100">
+                  {attributeLabel(attribute)}{" "}
+                  <span className="text-xs text-stone-500">({String(held)} held)</span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="rounded border border-stone-600 px-2 py-0.5 text-sm text-stone-200"
+                    onClick={() => setAmount(attribute, value - 1)}
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-sm text-stone-100">{String(value)}</span>
+                  <button
+                    type="button"
+                    className="rounded border border-stone-600 px-2 py-0.5 text-sm text-stone-200"
+                    disabled={value >= held || assigned >= pending.amount}
+                    onClick={() => setAmount(attribute, value + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <button
+          type="button"
+          className={`${btnPrimary} mt-4 w-full`}
+          disabled={!ready}
+          onClick={() => onConfirm(pick)}
+        >
+          Confirm discard
+        </button>
       </div>
     </div>
   );

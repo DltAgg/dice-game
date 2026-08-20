@@ -136,7 +136,7 @@ Standing triggers live on equipment / continuous rituals — see
 | War Axe | Equipment `attack-damage-bonus` |
 | Black Plague | Equipment `mayTargetOpponent` + `on-roll-symbol`; forge `opponent-die` |
 | Abyssal Sacrifice | Continuous ritual `standingAbilities` on discard |
-| Siphon Sigil | Instant `discard-attribute-tokens` + choose-enemy |
+| Siphon Sigil | Instant `discard-attribute-tokens` + choose-enemy; mixed leftovers open `choose-attribute-tokens` |
 | Dispel Circle | Instant `destroy-ritual` + choose-opponent-ritual |
 | Seal the Rite | Reaction `negate-ritual` |
 | Fade | Reaction `negate-card` (`"any"`) (cheaper Darkness Silence) |

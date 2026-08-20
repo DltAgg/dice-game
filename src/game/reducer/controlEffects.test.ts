@@ -4,12 +4,18 @@ import {
   ECLIPSE,
   FADE,
   LIVING_LIBRARY,
+  LUMINAR_PRISM,
+  MARTIAL_BLESSING,
+  MIND_CONTROL,
   SEAL_THE_RITE,
   SIPHON_SIGIL,
 } from "../content/cards.js";
-import type { CardId } from "../model/ids.js";
+import { CRUSH, HEXBRAND } from "../content/faces.js";
+import type { DieState } from "../model/dice.js";
+import type { CardId, DieId, FaceCardId } from "../model/ids.js";
 import { asCardInstanceId } from "../model/ids.js";
-import { graveyardOf, ritualsOf } from "../rules/cards.js";
+import type { GameState } from "../model/state.js";
+import { graveyardOf, overloadsOnFace, ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
 import {
   creatureIdAt,
@@ -20,6 +26,7 @@ import {
   P1,
   P2,
   resolveOpenChain,
+  withActivePlayer,
   withEnergy,
   withHand,
   withPhase,
@@ -65,7 +72,7 @@ function withOpponentRitual(
 }
 
 describe("Siphon Sigil (discard-attribute-tokens)", () => {
-  it("strips tokens in ATTRIBUTES order after choose-enemy", () => {
+  it("prompts which tokens to strip when the enemy has a mix", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, {
       darkness: 1,
@@ -82,15 +89,39 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
     const afterChain = resolveOpenChain(opened);
     expect(afterChain.pendingDecision?.type).toBe("choose-creature");
 
-    const after = expectOk(
+    const afterCreature = expectOk(
       advance(afterChain, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: targetId,
       }),
     );
-    // martial then wild taken; darkness remains.
-    expect(after.creatures[targetId]?.attributeTokens).toEqual({ darkness: 1 });
+    expect(afterCreature.pendingDecision).toMatchObject({
+      type: "choose-attribute-tokens",
+      controllerId: P1,
+      creatureId: targetId,
+      amount: 2,
+    });
+
+    const refused = advance(afterCreature, {
+      type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
+      playerId: P1,
+      discarded: { martial: 1, wild: 1, darkness: 1 },
+    });
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) {
+      expect(refused.error).toBe("INVALID_CHOICE");
+      expect(refused.state).toBe(afterCreature);
+    }
+
+    const after = expectOk(
+      advance(afterCreature, {
+        type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
+        playerId: P1,
+        discarded: { darkness: 1, wild: 1 },
+      }),
+    );
+    expect(after.creatures[targetId]?.attributeTokens).toEqual({ martial: 1 });
     expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 
@@ -135,6 +166,26 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
       }),
     );
     expect(after.creatures[targetId]?.attributeTokens).toEqual({});
+  });
+
+  it("strips a homogeneous pile without a token prompt", () => {
+    const targetId = creatureIdAt(newMatch(), P2, 0);
+    const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, { martial: 3 });
+    const after = expectOk(
+      advance(resolveOpenChain(expectOk(
+        advance(ready, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(ready, P1, 0),
+        }),
+      )), {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: targetId,
+      }),
+    );
+    expect(after.pendingDecision).toBeNull();
+    expect(after.creatures[targetId]?.attributeTokens).toEqual({ martial: 1 });
   });
 });
 
@@ -313,5 +364,143 @@ describe("Fade (negate-card any)", () => {
     expect(faded.chainStack).toHaveLength(2);
     const resolved = resolveOpenChain(faded);
     expect(eventTypes(resolved)).toContain("chain-link-negated");
+  });
+});
+
+function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
+  const id = state.players[playerId]?.dieIds[index];
+  if (id === undefined) throw new Error("die");
+  return id;
+}
+
+function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): GameState {
+  const die = state.dice[dieId];
+  if (die === undefined) throw new Error("die");
+  return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
+}
+
+function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameState {
+  const dieId = dieIdOf(state);
+  const die = state.dice[dieId];
+  if (die === undefined) throw new Error("die");
+  const slots = die.slots.map((s, index) =>
+    index === slot ? { ...s, faceCardId, faceCardOwnerId: P1 } : s,
+  );
+  return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
+}
+
+function rollShowingSlot(state: GameState, slot: number): GameState {
+  let rolled = withPhase(state, "roll");
+  rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
+  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+  return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+}
+
+describe("Hexbrand (discard-attribute-tokens)", () => {
+  it("prompts which token to strip on roll when the enemy has a mix", () => {
+    const targetId = creatureIdAt(newMatch(), P2, 0);
+    const seeded = withTokens(installFace(newMatch(), HEXBRAND), targetId, {
+      martial: 1,
+      wild: 1,
+    });
+    const afterRoll = rollShowingSlot(seeded, 0);
+    expect(afterRoll.pendingDecision?.type).toBe("choose-creature");
+
+    const afterCreature = expectOk(
+      advance(afterRoll, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: targetId,
+      }),
+    );
+    expect(afterCreature.pendingDecision).toMatchObject({
+      type: "choose-attribute-tokens",
+      amount: 1,
+      creatureId: targetId,
+    });
+
+    const after = expectOk(
+      advance(afterCreature, {
+        type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
+        playerId: P1,
+        discarded: { wild: 1 },
+      }),
+    );
+    expect(after.creatures[targetId]?.attributeTokens).toEqual({ martial: 1 });
+  });
+});
+
+describe("Mind Control (choose among attached overloads)", () => {
+  it("requires naming which overload to strip when a face has two", () => {
+    let state = installFace(newMatch(), CRUSH);
+    state = withEnergy(
+      withHand(withPhase(state, "actions"), P1, [LUMINAR_PRISM, MARTIAL_BLESSING]),
+      P1,
+      10,
+    );
+    state = resolveOpenChain(
+      expectOk(
+        advance(state, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(state, P1, 0),
+          declaredFaceCardId: CRUSH,
+        }),
+      ),
+    );
+    state = resolveOpenChain(
+      expectOk(
+        advance(state, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(state, P1, 0),
+          declaredFaceCardId: CRUSH,
+        }),
+      ),
+    );
+    const attached = overloadsOnFace(state, P1, CRUSH).map((card) => card.id);
+    expect(attached).toHaveLength(2);
+    const keepId = attached[0]!;
+    const stripId = attached[1]!;
+
+    const p2Turn = withEnergy(
+      withHand(withPhase(withActivePlayer(state, P2), "actions"), P2, [MIND_CONTROL]),
+      P2,
+      10,
+    );
+    const pending = resolveOpenChain(
+      expectOk(
+        advance(p2Turn, {
+          type: "PLAY_CARD",
+          playerId: P2,
+          cardInstanceId: handCardIdAt(p2Turn, P2, 0),
+        }),
+      ),
+    );
+    expect(pending.pendingDecision?.type).toBe("mind-control");
+
+    const silent = advance(pending, {
+      type: "RESOLVE_MIND_CONTROL",
+      playerId: P2,
+      mode: "strip-one-each",
+      faceCardIds: [CRUSH],
+    });
+    expect(silent.ok).toBe(false);
+    if (!silent.ok) {
+      expect(silent.error).toBe("INVALID_CHOICE");
+      expect(silent.state).toBe(pending);
+    }
+
+    const after = expectOk(
+      advance(pending, {
+        type: "RESOLVE_MIND_CONTROL",
+        playerId: P2,
+        mode: "strip-one-each",
+        faceCardIds: [CRUSH],
+        overloadInstanceIds: [stripId],
+      }),
+    );
+    expect(overloadsOnFace(after, P1, CRUSH).map((card) => card.id)).toEqual([keepId]);
+    expect(graveyardOf(after, P1).some((card) => card.id === stripId)).toBe(true);
   });
 });

@@ -39,7 +39,7 @@ import {
   withForgeLockResetOnInstall,
 } from "../rules/faces.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, choiceFilterForSelector } from "../rules/targets.js";
-import { discardTokensInAttributeOrder, totalTokens } from "../rules/tokens.js";
+import { discardTokensInAttributeOrder, tokenChoiceNeeded, totalTokens } from "../rules/tokens.js";
 import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
@@ -137,6 +137,7 @@ export function applyDeferredEffect(draft: Draft, pending: PendingEffect): void 
   applyEffect(draft, pending);
 }
 
+/** Intentional silent pick: most damage, ties by earliest creature id. */
 function mostDamagedAlly(draft: Draft, controllerId: PlayerId): CreatureId | null {
   const player = draft.players[controllerId];
   if (player === undefined) return null;
@@ -154,6 +155,7 @@ function mostDamagedAlly(draft: Draft, controllerId: PlayerId): CreatureId | nul
   return bestId;
 }
 
+/** Intentional silent pick: most Shield, ties by earliest creature id. */
 function mostShieldedEnemy(draft: Draft, controllerId: PlayerId): CreatureId | null {
   const enemyId = Object.keys(draft.players).find((id) => id !== controllerId);
   if (enemyId === undefined) return null;
@@ -597,12 +599,26 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       const targetId = resolveTarget(draft, pending, effect.target);
       if (targetId === null) return false;
       const creature = draft.creatures[targetId];
-      // Deterministic: the earliest-attached piece of gear, by instance id order.
-      const [first] = [...(creature?.equipmentIds ?? [])].sort((a, b) =>
-        a < b ? -1 : a > b ? 1 : 0,
-      );
-      if (first !== undefined) destroyEquipment(draft, first);
-      return false;
+      const equipmentIds = creature?.equipmentIds ?? [];
+      if (equipmentIds.length === 0) return false;
+      // One piece: no real choice. Two or more: controller names which instance.
+      if (equipmentIds.length === 1) {
+        const [only] = equipmentIds;
+        if (only !== undefined) destroyEquipment(draft, only);
+        return false;
+      }
+      draft.pendingDecision = {
+        type: "choose-equipment",
+        controllerId: pending.controllerId,
+        creatureId: targetId,
+        ...effectChoiceSource(draft, pending),
+      };
+      emit(draft, {
+        type: "choose-equipment-started",
+        playerId: pending.controllerId,
+        creatureId: targetId,
+      });
+      return true;
     }
     case "apply-toxin": {
       applyToTargets(draft, pending, effect.target, (targetId) => {
@@ -663,10 +679,29 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       return false;
     }
     case "discard-attribute-tokens": {
+      let paused = false;
       applyToTargets(draft, pending, effect.target, (targetId) => {
+        if (paused) return;
         const creature = draft.creatures[targetId];
         if (creature === undefined || creature.defeated || effect.amount <= 0) return;
         if (totalTokens(creature.attributeTokens) <= 0) return;
+        if (tokenChoiceNeeded(creature.attributeTokens, effect.amount)) {
+          draft.pendingDecision = {
+            type: "choose-attribute-tokens",
+            controllerId: pending.controllerId,
+            creatureId: targetId,
+            amount: effect.amount,
+            ...effectChoiceSource(draft, pending),
+          };
+          emit(draft, {
+            type: "choose-attribute-tokens-started",
+            playerId: pending.controllerId,
+            creatureId: targetId,
+            amount: effect.amount,
+          });
+          paused = true;
+          return;
+        }
         const { next, discarded } = discardTokensInAttributeOrder(
           creature.attributeTokens,
           effect.amount,
@@ -679,9 +714,10 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
           discarded,
         });
       });
-      return false;
+      return paused;
     }
     case "destroy-ritual": {
+      // Always a choose-ritual pending when ≥1 opposing ritual exists (including one).
       const ritualId = resolveRitualTarget(pending, effect.target);
       if (ritualId === null) return false;
       destroyRitual(draft, ritualId);

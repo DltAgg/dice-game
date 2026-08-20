@@ -26,7 +26,7 @@ who may act; the inactive side is read-only until the turn passes.
 | Board: creatures, dice faces, symbols, energy, phase, hand | Fancy card art on the board (catalogue remains separate) |
 | Actions: roll, then **actions** for absorb / attack / play / forge / activate ritual (any order), retain, resolve search, skip to actions from roll, end turn | Reaction chain UI |
 | Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
-| Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge) | Second legality engine in React |
+| Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge), `choose-equipment`, and `choose-attribute-tokens` | Second legality engine in React |
 | Sticky error snackbar | |
 | Catalogue still reachable from the app shell | Persistence / resume |
 

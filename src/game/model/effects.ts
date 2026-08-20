@@ -61,7 +61,11 @@ export type EffectDefinition =
    * one effect that buys a longer turn rather than spending one.
    */
   | { readonly type: "gain-energy"; readonly amount: number }
-  /** Sends one equipment on the target creature to its owner's graveyard. */
+  /**
+   * Sends one equipment on the target creature to its owner's graveyard.
+   * After the creature is known, 2+ attached pieces open `choose-equipment`
+   * (one piece destroys without a second prompt; none is a legal whiff).
+   */
   | { readonly type: "destroy-equipment"; readonly target: TargetSelector }
   /** Places Toxin counters on a creature. Each counter deals 1 damage per owner turn. */
   | { readonly type: "apply-toxin"; readonly amount: number; readonly target: TargetSelector }
@@ -102,8 +106,10 @@ export type EffectDefinition =
    */
   | { readonly type: "negate-ritual" }
   /**
-   * Strip up to `amount` attribute tokens from the target in `ATTRIBUTES`
-   * order (martial → … → darkness). Whiffs legally if none remain. Spec `011`.
+   * Strip up to `amount` attribute tokens from the target. When the creature
+   * holds a mix and more tokens than `amount`, opens `choose-attribute-tokens`.
+   * Otherwise discards remaining / the only attribute pile (no real choice).
+   * Whiffs legally if none remain. Spec `011`.
    */
   | {
       readonly type: "discard-attribute-tokens";
@@ -363,12 +369,14 @@ export type TargetSelector =
   | { readonly kind: "declared-target" }
   /**
    * The controller's living creature with the most damage (ties: earliest id).
-   * Used when an overload fires on roll and there is no declared target yet.
+   * Intentional silent pick for on-roll heals with no declared target — print
+   * does not ask the player to name an ally.
    */
   | { readonly kind: "most-damaged-ally" }
   /**
    * An opposing living creature with the most Shield (ties: earliest id).
-   * Used by on-roll face effects that strip shields without a declared target.
+   * Intentional silent pick for on-roll shield-strip faces; print names the
+   * most-shielded enemy, not a chosen one.
    */
   | { readonly kind: "most-shielded-enemy" }
   /** Pause for the controller to name one of their living creatures. */
