@@ -108,6 +108,11 @@ export const SIPHON_SIGIL: CardId = asCardId("card-siphon-sigil");
 export const DISPEL_CIRCLE: CardId = asCardId("card-dispel-circle");
 export const SEAL_THE_RITE: CardId = asCardId("card-seal-the-rite");
 export const FADE: CardId = asCardId("card-fade");
+export const UMBRAL_BOLT: CardId = asCardId("card-umbral-bolt");
+export const RIFT_COLLAPSE: CardId = asCardId("card-rift-collapse");
+export const UNMAKE: CardId = asCardId("card-unmake");
+export const GLOOM_RESONANCE: CardId = asCardId("card-gloom-resonance");
+export const UMBRAL_BRAND: CardId = asCardId("card-umbral-brand");
 export const RAISE_GUARD: CardId = asCardId("card-raise-guard");
 export const SIDESTEP: CardId = asCardId("card-sidestep");
 export const RETHROW: CardId = asCardId("card-rethrow");
@@ -1551,7 +1556,87 @@ const DEFINITIONS: readonly CardDefinition[] = [
       effects: [{ type: "negate-card", cardTypes: "any" }],
     },
   }),
-  // --- Generic utility toolkit (catalogue-only; deck-designer picks copies) ---
+  // --- Control two-color (Arcane / Darkness) closers + Darkness engine ---
+  card({
+    id: UMBRAL_BOLT,
+    name: "Umbral Bolt",
+    energyCost: 3,
+    type: "instant",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText: "Deal 3 damage to a chosen enemy.",
+    effect: {
+      requires: { darkness: 1 },
+      effects: [{ type: "damage", amount: 3, target: { kind: "choose-enemy" } }],
+    },
+  }),
+  card({
+    id: RIFT_COLLAPSE,
+    name: "Rift Collapse",
+    energyCost: 4,
+    type: "ritual",
+    subtypes: ["instant"],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText: "Deal 4 damage to a chosen enemy.",
+    ritual: {
+      activeWhen: { arcane: 1, darkness: 1 },
+      effects: [{ type: "damage", amount: 4, target: { kind: "choose-enemy" } }],
+    },
+  }),
+  card({
+    id: UNMAKE,
+    name: "Unmake",
+    energyCost: 3,
+    type: "instant",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText: "Destroy 1 Equipment on a chosen opposing creature.",
+    effect: {
+      effects: [{ type: "destroy-equipment", target: { kind: "choose-enemy" } }],
+    },
+  }),
+  card({
+    id: GLOOM_RESONANCE,
+    name: "Gloom Resonance",
+    energyCost: 2,
+    type: "overload",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText: "Can only overload a Darkness face.\nOn roll: generate 1 Darkness.",
+    overload: {
+      faceSymbols: ["darkness"],
+      onRoll: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
+    },
+  }),
+  card({
+    id: UMBRAL_BRAND,
+    name: "Umbral Brand",
+    energyCost: 2,
+    type: "equipment",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText:
+      "Can only equip an Arcane or Darkness creature.\n" +
+      "On absorb Darkness, once per turn: deal 1 damage to a chosen enemy.",
+    equipment: {
+      mayTargetOpponent: false,
+      creatureAttributes: ["arcane", "darkness"],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["darkness"],
+          oncePerTurn: true,
+          effects: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
+        },
+      ],
+    },
+  }),
+  // --- Generic utility toolkit (Control builtin splashes copies; other lists stay clear) ---
   // Splashable 2-cost Support tools across dual-kind forges so no single
   // attribute owns shield / prevent / reroll / filter. Ids: card-raise-guard,
   // card-sidestep, card-rethrow, card-sift, card-second-wind, card-warding-charm.
@@ -1700,34 +1785,40 @@ export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
 );
 
 /**
- * Builtin control tactics deck (spec 002 “Control deck” identity: Arcane /
- * Corruption / Darkness). Engine + disruption for resource-generating control
- * creatures; live interaction (Fade / Siphon / Dispel / Seal) replaces deferred
- * dead weight (Paradox, Tome, Mirrored Rune, Extermination, Mind Control,
- * Collapse). Legal under M4: 50–60 cards, ≤4 copies per id.
+ * Builtin control tactics deck (spec 002: Arcane / Darkness only). Long-term
+ * engine + disruption, converting that engine into lethal damage — not
+ * Corruption contaminate, not Toxin burn, not cheap Aggro combat. Legal under
+ * M4: 50–60 cards, ≤4 copies per id.
  */
 const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Engine / filter
-  [LIVING_LIBRARY, 4],
-  [ECLIPSE, 4],
-  [ARCANE_AMPLIFIER, 4],
+  [LIVING_LIBRARY, 3],
+  [ECLIPSE, 3],
+  [ARCANE_AMPLIFIER, 3],
   [ARCANE_RESONANCE, 3],
   [ARCHMAGES_GRIMOIRE, 3],
-  [ABYSSAL_SACRIFICE, 3],
-  [PERSISTENT_INFECTION, 3],
-  [LATENT_CORRUPTION, 3],
-  // Interaction (new + deepen)
-  [FADE, 4],
-  [SIPHON_SIGIL, 4],
-  [DISPEL_CIRCLE, 3],
+  [ABYSSAL_SACRIFICE, 2],
+  [GLOOM_RESONANCE, 3],
+  [ETERNAL_DARKNESS, 3],
+  // Interaction
+  [FADE, 3],
+  [SIPHON_SIGIL, 3],
+  [DISPEL_CIRCLE, 2],
   [SEAL_THE_RITE, 3],
   [ARCANE_SILENCE, 2],
   [RUNIC_NULLIFICATION, 2],
-  [CALCULATED_SACRIFICE, 3],
-  [BLACK_PLAGUE, 3],
-  [GREAT_CONTAMINATION, 3],
-  [ETERNAL_DARKNESS, 3],
-  [RITUAL_OF_CONTAMINATION, 3],
+  [UNMAKE, 2],
+  // Engine-converted damage
+  [UMBRAL_BOLT, 3],
+  [RIFT_COLLAPSE, 2],
+  [UMBRAL_BRAND, 2],
+  // Generic toolkit splash (utility, not a third engine color)
+  [RETHROW, 3],
+  [RAISE_GUARD, 2],
+  [SIDESTEP, 2],
+  [SIFT, 2],
+  [SECOND_WIND, 2],
+  [WARDING_CHARM, 2],
 ];
 
 export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id, copies]) =>

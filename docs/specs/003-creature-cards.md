@@ -48,9 +48,22 @@ damage still belongs mainly on the Control card / ritual / face / status layer
 | War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
 | Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg + next attack +1 |
 | Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
-| Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 2 dmg + draw | Mystic Overload (Arcane+Luminar; discard Arcane 1) 2 dmg + Energy + generate Arcane |
+| Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 2 dmg + draw | Mystic Overload (Arcane+Darkness; discard Arcane 1) 2 dmg + Energy + generate Arcane |
 | Corrupting Elder | Arcane | 14 | Touch of Decay (Arcane; discard Arcane 1) 2 dmg + strip shield | Contamination (Arcane+Corruption; discard Corruption 1) 2 dmg + generate Corruption |
 | Void Summoner | Arcane | 13 | Rupture (Arcane; discard Arcane 1) 2 dmg + generate Arcane | Dimensional Rift (Arcane+Darkness; discard Darkness 1) 2 dmg + Energy + draw |
+
+Archmage’s special is **Arcane + Darkness** (was Luminar) so builtin Control
+does not need a third attack color. Corrupting Elder remains in the catalogue
+but is **not** on `CONTROL_SQUAD`.
+
+## Catalogue (Control two-color — authored)
+
+| Creature | Attr | HP | Passive | Basic | Special |
+|---|---|---|---|---|---|
+| Nightbound Adept | Darkness | 14 | On absorb Darkness, once per turn: chosen enemy discards 1 token | Umbral Touch (D; disc D) 2 dmg + generate Darkness | Eclipse Pulse (A+D; disc D) 2 dmg + opponent loses 1 Energy |
+
+On builtin Control (`CONTROL_SQUAD`: Archmage / Nightbound Adept / Void
+Summoner). Attacks stay in the 2-damage + resource-rider band.
 
 ## Catalogue (Mechanical / Luminar — Tempo & Combo)
 
@@ -78,14 +91,17 @@ encoded yet.
 |---|---|
 | Six Figma creatures as content + English `CreatureCard` UI | Fast-game HP/cost variants |
 | Mechanical / Luminar Tempo–Combo creatures (fully wired) | Stun |
+| Nightbound Adept (Darkness Control, fully wired) | — |
 | Basic/Special costs, damage, `followUpEffects` / `on-attack` riders | — |
 | Passives: Minotaur pierce, Archmage Arcane discount, Varcolac / Elder / Void / Garuda Range; Luminar absorb/discount/ally heal; Mechanical absorb/roll payoffs | — |
 
 War Minotaur ignore-1-Shield, Poisoned Charge toxin + back-row swap, Garuda Dive
 optional swap, Bombardment frontline toxin, Archmage Burst draw / Overload
 Energy+Arcane (`on-attack`), Elder Touch strip / Contamination generate Corruption,
-Void Rupture generate Arcane / Rift Energy+draw — all wired (`010` / `012`).
+Void Rupture generate Arcane / Rift Energy+draw, Nightbound Umbral Touch generate
+Darkness / Eclipse Pulse opponent Energy loss — all wired (`010` / `012`).
 Control print is the 2-damage + resource-rider band (was 1; playtest bump).
+Builtin Control squad is Archmage + Nightbound Adept + Void Summoner.
 
 Prism Herald / Lens Choir / Aegis Link and Cogwork Driver / Servo Assembly /
 Clockwork Dynamo convert Luminar and Mechanical engine value into Tempo pressure

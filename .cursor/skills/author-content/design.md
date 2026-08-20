@@ -54,7 +54,7 @@ The **or** between forge and effect is load-bearing: one use, one region.
 | Luminar | Synergy / support / combo value | Combo, Support |
 | Mechanical | Engine construction / manipulation | Combo, Support |
 | Arcane | Control / manipulation / support | Control, Support |
-| Corruption | Contaminate the opponent’s dice | Control |
+| Corruption | Contaminate the opponent’s dice | — (not Control; burn package is a sibling set) |
 | Darkness | Delayed value / disruption | Control |
 
 Do **not** give every attribute large damage, healing, draw, removal, and
@@ -64,7 +64,7 @@ deal meaningful damage through its engine (rituals, consume, delayed/conditional
 hits). That is not the same as becoming Aggro.
 
 Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
-Control = Arcane/Corruption/Darkness; Support = Arcane/Luminar/Wild/Mechanical
+Control = Arcane/Darkness; Support = Arcane/Luminar/Wild/Mechanical
 (utility may splash; printed Energy 1 remains exceptional — splash via
 discounts, not 1-drops).
 

@@ -124,7 +124,7 @@ reading: any matching named special (Canker, Blight, Hexbrand, …).
 > at the same time.
 >
 > Damage is **not** reserved for creature attacks (bible §§4, 24, 27; OPEN_DESIGN
-> 2026-08-20). Control attributes (Arcane, Corruption, Darkness) must convert
+> 2026-08-20). Control attributes (Arcane, Darkness) must convert
 > their engine into enough damage to eliminate creatures — expensive, delayed,
 > or consume-based is in-identity; hoping 1-damage creature attacks close is not.
 
@@ -132,7 +132,7 @@ reading: any matching named special (Canker, Blight, Hexbrand, …).
 |---|---|
 | Aggro | Wild, Martial, Toxin |
 | Combo | Luminar, Wild, Mechanical, Toxin |
-| Control | Arcane, Corruption, Darkness |
+| Control | Arcane, Darkness |
 | Support | Arcane, Luminar, Wild, Mechanical |
 
 Builtin constructed lists (content + `src/decks/prototype.ts`): **Aggro**
@@ -181,10 +181,12 @@ is used.
 
 ### Control deck
 
-Control’s printed list is mostly disruption and engine pieces; **Extermination**
-is the explicit consume-to-damage closer. Per bible §27 / OPEN_DESIGN 2026-08-20,
-that shape is incomplete if Control has no reliable engine damage path — do not
-treat the current table as proof that Control should not deal damage.
+Figma print mixed Arcane / Corruption / Darkness. **Builtin Control** is now
+**Arcane / Darkness only** (no Corruption contaminate, no Luminar attack costs).
+Per bible §27 / OPEN_DESIGN 2026-08-20, Control must convert its engine into
+lethal damage — **Umbral Bolt**, **Rift Collapse**, **Umbral Brand**, and
+**Runeflare** / **Sacrifice** are that path. Corruption rows below remain
+catalogue identity for other strategies (burn sibling), not the Control builtin.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -295,9 +297,9 @@ pool, not a card named Synthetic Toxin).
 
 ### Control interaction (authored)
 
-Playtest gap-fill for Control (Arcane / Corruption / Darkness): token strip,
-ritual destroy, cheaper tactic negate, ritual-only negate. Fully wired.
-Catalogue-only until deck-designer adds copies to builtin control lists.
+Playtest gap-fill for Control (Arcane / Darkness): token strip, ritual destroy,
+cheaper tactic negate, ritual-only negate. Fully wired. Copies live in builtin
+Control.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -306,6 +308,20 @@ Catalogue-only until deck-designer adds copies to builtin control lists.
 | 3 | Seal the Rite | Reaction / Arcane | 1 Synthetic Arcane, your die | Negate 1 Ritual. |
 | 3 | Fade | Reaction / Darkness | 1 Synthetic Darkness, your die | Negate the effect of 1 card. |
 
+### Control two-color rework (authored)
+
+Builtin Control manabase is **exactly Arcane + Darkness**. These cards close
+and generate Darkness without Corruption installs or Toxin ticks. Fully wired.
+Printed Energy 3–4 on damage / peel; Gloom Resonance / Umbral Brand at 2.
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 3 | Umbral Bolt | Instant / Darkness | 1 Synthetic Darkness, your die | *Requires: Darkness.* Deal 3 damage to a chosen enemy. |
+| 4 | Rift Collapse | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | *Active when: Arcane + Darkness.* Deal 4 damage to a chosen enemy. |
+| 3 | Unmake | Instant / Darkness | 1 Synthetic Darkness, your die | Destroy 1 Equipment on a chosen opposing creature. |
+| 2 | Gloom Resonance | Overload / Darkness | 1 Synthetic Darkness, your die | *Darkness faces only.* On roll: generate 1 Darkness. |
+| 2 | Umbral Brand | Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Darkness, once per turn: deal 1 damage to a chosen enemy. |
+
 ### Generic utility (authored)
 
 Playtest gap-fill: splashable 2-cost tools any constructed archetype can run
@@ -313,7 +329,7 @@ Playtest gap-fill: splashable 2-cost tools any constructed archetype can run
 Mechanical absorb-loops, no Arcane hard negate at Support prices). Dual-kind
 forges only (Martial / Wild / Arcane / Luminar) so one attribute does not own
 the package. Printed Energy 2 — 1-Energy plays come from discounts (§34.5).
-Fully wired. Catalogue-only until deck-designer adds copies.
+Fully wired. Builtin **Control** splashes 2–3 copies; other builtins stay clear.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|

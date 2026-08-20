@@ -1143,24 +1143,26 @@ describe("control creature attack riders", () => {
     expect(after.players[P1]?.hand).toContain(deckCardId);
   });
 
-  it("Corrupting Elder Touch of Decay strips 1 Shield then deals 2", () => {
+  it("Nightbound Adept Umbral Touch deals 2 and generates Darkness", () => {
     let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 1);
     const targetId = creatureIdAt(state, P2, 0);
-    state = withShields(withTokens(state, attackerId, { arcane: 1 }), targetId, 1);
+    state = withTokens(state, attackerId, { darkness: 1 });
 
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: asAttackId("attack-elder-decay-touch"),
+        attackId: asAttackId("attack-nightbound-adept-umbral-touch"),
         targetId,
       }),
     );
 
-    expect(after.creatures[targetId]?.shields).toBe(0);
     expect(after.creatures[targetId]?.damage).toBe(2);
+    expect(after.creatures[attackerId]?.attributeTokens.darkness).toBeUndefined();
+    const darkness = usableSymbols(after, P1).filter((s) => s.symbol === "darkness");
+    expect(darkness.length).toBeGreaterThanOrEqual(1);
   });
 
   it("Void Summoner Rupture deals 2 and generates Arcane", () => {

@@ -12,9 +12,11 @@ import {
   HEXBRAND,
   INFECTION,
   INSIGHT_RUNE,
+  NIGHTWELL,
   PROTOTYPE_FACE_DECK,
   REKINDLE,
-  REVELATION,
+  RESONANCE_RUNE,
+  RUNEFLARE,
   SEEP,
   CRUSH,
   SPECIAL_FACE_CARDS,
@@ -61,8 +63,11 @@ describe("face deck", () => {
     expect(CONTROL_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
     expect(new Set(CONTROL_FACE_DECK).size).toBe(CONTROL_FACE_DECK.length);
     expect(CONTROL_FACE_DECK).toEqual(
-      expect.arrayContaining([BLIGHT, HEXBRAND, CANKER, REVELATION]),
+      expect.arrayContaining([NIGHTWELL, RUNEFLARE, RESONANCE_RUNE, SHADOW_ECHO]),
     );
+    expect(CONTROL_FACE_DECK).not.toContain(BLIGHT);
+    expect(CONTROL_FACE_DECK).not.toContain(HEXBRAND);
+    expect(CONTROL_FACE_DECK).not.toContain(CANKER);
     expect(CONTROL_FACE_DECK).not.toContain(STAIN);
     expect(CONTROL_FACE_DECK).not.toContain(GREAT_SPARK);
     expect(CONTROL_FACE_DECK).not.toContain(REKINDLE);
@@ -223,6 +228,8 @@ describe("face deck", () => {
       "Shadow Echo",
       "Drain",
       "Sacrifice",
+      "Nightwell",
+      "Runeflare",
       "Warhorn",
       "Cleaving Strike",
       "Bloodscent",

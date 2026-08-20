@@ -81,16 +81,21 @@ function seedDeck(state: GameState, fromHandIndexes: readonly number[]): GameSta
 }
 
 describe("generic utility toolkit", () => {
-  it("is catalogue-only — not in builtin decks", () => {
-    const ids = new Set([
-      ...PROTOTYPE_DECK,
-      ...CONTROL_DECK,
-      ...TEMPO_DECK,
-      ...COMBO_MECHANICAL_DECK,
-    ]);
+  it("is not in Aggro, Tempo, or Combo Mechanical builtins", () => {
+    const ids = new Set([...PROTOTYPE_DECK, ...TEMPO_DECK, ...COMBO_MECHANICAL_DECK]);
     for (const id of [RAISE_GUARD, SIDESTEP, RETHROW, SIFT, SECOND_WIND, WARDING_CHARM]) {
-      expect(ids.has(id), `${id} should not be in a builtin deck`).toBe(false);
+      expect(ids.has(id), `${id} should not be in Aggro/Tempo/Combo`).toBe(false);
     }
+  });
+
+  it("Control splashes the toolkit as utility, not a third engine color", () => {
+    const copies = (id: (typeof RAISE_GUARD)) => CONTROL_DECK.filter((card) => card === id).length;
+    expect(copies(RETHROW)).toBe(3);
+    expect(copies(RAISE_GUARD)).toBe(2);
+    expect(copies(SIDESTEP)).toBe(2);
+    expect(copies(SIFT)).toBe(2);
+    expect(copies(SECOND_WIND)).toBe(2);
+    expect(copies(WARDING_CHARM)).toBe(2);
   });
 });
 

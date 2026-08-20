@@ -111,6 +111,8 @@ export const BLOODSCENT: FaceCardId = asFaceCardId("face-synthetic-bloodscent");
 export const GORE: FaceCardId = asFaceCardId("face-synthetic-gore");
 export const NEEDLE: FaceCardId = asFaceCardId("face-synthetic-needle");
 export const SEEP: FaceCardId = asFaceCardId("face-synthetic-seep");
+export const NIGHTWELL: FaceCardId = asFaceCardId("face-synthetic-nightwell");
+export const RUNEFLARE: FaceCardId = asFaceCardId("face-synthetic-runeflare");
 
 /** Named synthetic with accurate English; wire hooks only for modellable clauses. */
 const namedSynthetic = (
@@ -677,6 +679,29 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     },
   ),
   namedSynthetic(
+    NIGHTWELL,
+    "Nightwell",
+    "darkness",
+    "On roll: generate 1 Darkness.\n" +
+      "On absorb: a chosen enemy creature discards 1 attribute token.",
+    {
+      onRoll: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
+      onAbsorb: [
+        { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+      ],
+    },
+  ),
+  namedSynthetic(
+    RUNEFLARE,
+    "Runeflare",
+    "arcane",
+    "On roll: deal 1 damage to a chosen enemy.\n" + "On absorb: draw 1 card.",
+    {
+      onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
+      onAbsorb: [{ type: "draw-cards", amount: 1 }],
+    },
+  ),
+  namedSynthetic(
     WARHORN,
     "Warhorn",
     "martial",
@@ -789,6 +814,8 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[SHADOW_ECHO]!,
   FACE_CARDS[DRAIN]!,
   FACE_CARDS[SACRIFICE]!,
+  FACE_CARDS[NIGHTWELL]!,
+  FACE_CARDS[RUNEFLARE]!,
   FACE_CARDS[WARHORN]!,
   FACE_CARDS[CLEAVING_STRIKE]!,
   FACE_CARDS[BLOODSCENT]!,
@@ -891,27 +918,35 @@ export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
 
 /**
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
- * Blight and Resonance Rune open installed; leftover Darkness / Corruption /
- * Arcane / Luminar specials stay in the mid-game pool. Great Spark / Rekindle
- * are empty-print stubs — not pooled.
+ * Nightwell and Resonance Rune open installed. Engine colors are Arcane and
+ * Darkness only; Martial / Wild / Luminar specials are utility (shield hate,
+ * peek, redirect), not a third manabase. Great Spark / Rekindle are empty-print
+ * stubs — not pooled. Corruption specials are not pooled.
+ */
+/**
+ * Builtin control face deck — twelve unique cards, ≤3 per attribute.
+ * Nightwell and Resonance Rune open installed. Engine colors are Arcane and
+ * Darkness only; Martial / Wild / Luminar specials are utility (shield hate,
+ * peek, redirect), not a third manabase. Great Spark / Rekindle are empty-print
+ * stubs — not pooled. Corruption specials are not pooled.
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
+  NIGHTWELL,
   SACRIFICE,
   SHADOW_ECHO,
-  DRAIN,
-  BLIGHT,
-  HEXBRAND,
-  CANKER,
   RESONANCE_RUNE,
   INSIGHT_RUNE,
-  CONVERSION_RUNE,
+  RUNEFLARE,
+  CLEAVING_STRIKE,
+  COMMAND,
+  RENDING_CLAW,
+  AEGIS,
   REVELATION,
   VITAL_SPARK,
-  AEGIS,
 ];
 
 export const CONTROL_STARTING_DICE: StartingDiceLayout = [
-  openingDieWithSpecial(BLIGHT),
+  openingDieWithSpecial(NIGHTWELL),
   openingDieWithSpecial(RESONANCE_RUNE),
 ];
 

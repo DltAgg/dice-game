@@ -102,9 +102,9 @@ Named specials:
 | Stain | 2 | Corruption marker; lock Corrupted as resource | Spec `013` |
 | Infection | 2 | On roll: spread marker; On absorb: opp loses Energy | Spec `013` |
 | Decay | 2 | Suppress Natural inherent; strip → unusable Corruption | Spec `013` |
-| Blight | 2 | On roll: generate Corruption; On absorb: destroy opposing ritual | Control own-die fuel + ritual hate |
-| Hexbrand | 2 | On roll: strip 1 token; On absorb: destroy opposing equipment | Control engine hate |
-| Canker | 2 | On roll: Corruption marker; On absorb: forge 1 named synthetic Corruption special on opponent die | Control contamination |
+| Blight | 2 | On roll: generate Corruption; On absorb: destroy opposing ritual | Catalogue (not builtin Control) |
+| Hexbrand | 2 | On roll: strip 1 token; On absorb: destroy opposing equipment | Catalogue (not builtin Control) |
+| Canker | 2 | On roll: Corruption marker; On absorb: forge 1 named synthetic Corruption special on opponent die | Catalogue (not builtin Control) |
 | Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
 | Catalyst | 2 | Synthetic pool wildcard; copy appeared synthetic onRoll | Spec `013` |
 | Overcharge | 2 | Optional Energy + suppress; next face effect twice | Spec `013` |
@@ -113,6 +113,8 @@ Named specials:
 | Shadow Echo | 2 | On roll: optional discard→draw; On absorb: GY ≤2 | |
 | Drain | 2 | On roll: opp loses Energy; On absorb: transfer | |
 | Sacrifice | 2 | On roll: discard→2 Energy; On absorb: discard→2 damage | |
+| Nightwell | 2 | On roll: generate Darkness; On absorb: chosen enemy discards 1 token | Control Darkness fuel |
+| Runeflare | 2 | On roll: 1 damage; On absorb: draw 1 | Control Arcane chip + filter |
 | Warhorn | 2 | On roll: generate Martial; On absorb: next attack +1 | |
 | Cleaving Strike | 2 | On roll: remove 2 Shield; On absorb: next attack +1 | |
 | Bloodscent | 2 | On roll: next attack +1; On absorb: generate Wild | |

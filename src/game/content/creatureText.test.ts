@@ -11,6 +11,7 @@ import {
   GARUDA,
   LENS_CHOIR,
   MINOTAUR,
+  NIGHTBOUND_ADEPT,
   PRISM_HERALD,
   SERVO_ASSEMBLY,
   VARCOLAC,
@@ -49,6 +50,10 @@ describe("creature catalogue", () => {
     for (const id of TEMPO_COMBO_IDS) {
       expect(ids.has(id)).toBe(true);
     }
+  });
+
+  it("includes Nightbound Adept for two-color Control", () => {
+    expect(ALL_CREATURES.some((creature) => creature.id === NIGHTBOUND_ADEPT)).toBe(true);
   });
 
   it("gives every catalogue creature a passive, a basic and a special", () => {

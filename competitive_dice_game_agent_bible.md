@@ -936,7 +936,6 @@ Primary focus:
 Important attributes include:
 
 - Arcane
-- Corruption
 - Darkness
 
 Control should win by creating a superior long-term engine, disrupting opposing plans, **and converting that engine into enough damage to eliminate creatures**. Disruption without a damage plan is not a win path: the victory condition is still eliminating creatures (§4).
@@ -999,7 +998,7 @@ For example:
 | Luminar | Synergy / support / combo value | Combo, Support |
 | Mechanical | Engine manipulation / construction | Combo, Support |
 | Arcane | Control / manipulation / support | Control, Support |
-| Corruption | Opponent dice disruption | Control |
+| Corruption | Opponent dice disruption | — |
 | Darkness | Control / delayed value / disruption | Control |
 
 These identities are directional rather than immutable numerical rules.

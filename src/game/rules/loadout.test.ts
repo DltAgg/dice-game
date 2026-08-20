@@ -6,6 +6,7 @@ import {
   ECLIPSE,
   PROTOTYPE_DECK,
   TEMPO_DECK,
+  getCard,
 } from "../content/cards.js";
 import {
   COMBO_MECHANICAL_SQUAD,
@@ -47,6 +48,12 @@ describe("validateTacticsDeck", () => {
     expect(validateTacticsDeck(CONTROL_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
     expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+  });
+
+  it("keeps builtin Control free of Corruption cards", () => {
+    for (const id of CONTROL_DECK) {
+      expect(getCard(id)?.attribute, id).not.toBe("corruption");
+    }
   });
 
   it("accepts the tempo deck", () => {

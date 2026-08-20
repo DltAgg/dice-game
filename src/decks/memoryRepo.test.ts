@@ -79,10 +79,10 @@ describe("builtin loadouts", () => {
     }
   });
 
-  it("fields the control Arcane trio and a legal tactics/face pool", () => {
+  it("fields the control Arcane/Darkness trio and a legal tactics/face pool", () => {
     expect(CONTROL_SQUAD).toEqual([
       "creature-archmage",
-      "creature-corrupting-elder",
+      "creature-nightbound-adept",
       "creature-void-summoner",
     ]);
     expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(50);
