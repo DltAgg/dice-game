@@ -44,6 +44,8 @@ export default tseslint.config(
           paths: [
             { name: "react", message: "The game engine must not depend on React." },
             { name: "react-dom", message: "The game engine must not depend on React." },
+            { name: "react-router", message: "The game engine must not depend on the match UI router." },
+            { name: "react-router-dom", message: "The game engine must not depend on the match UI router." },
             { name: "zustand", message: "The game engine must not depend on Zustand." },
             { name: "peerjs", message: "The game engine must not depend on PeerJS." },
             { name: "nanoid", message: "Ids entering the engine are supplied by the caller." },
