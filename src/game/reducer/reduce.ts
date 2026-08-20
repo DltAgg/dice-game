@@ -21,6 +21,7 @@ import {
   type ChainLink,
   type EnergyTrack,
   type GameState,
+  type PendingDecision,
   type TurnPhase,
 } from "../model/state.js";
 import {
@@ -138,109 +139,27 @@ import {
 export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceResult {
   if (state.status === "finished") return fail(state, "GAME_FINISHED");
 
-  const reactionWindow =
-    state.pendingDecision?.type === "reaction-priority" ? state.pendingDecision : null;
+  const pending = state.pendingDecision;
+  const reactionWindow = pending?.type === "reaction-priority" ? pending : null;
 
-  // During a reaction window the priority seat may act even if they are not the
-  // turn player. Outside a window, only the active player may act.
+  // Gate order: reaction priority → pending chooser (even if not the turn
+  // player) → otherwise only the active player. A non-reaction pending locks
+  // every other seat, including the turn player, with PENDING_DECISION.
   if (reactionWindow !== null) {
     if (action.playerId !== reactionWindow.priorityPlayerId) {
       return fail(state, "NOT_PRIORITY_PLAYER");
     }
+    const allowed =
+      action.type === "PASS_PRIORITY" ||
+      action.type === "PLAY_CARD" ||
+      action.type === "ACTIVATE_RITUAL";
+    if (!allowed) return fail(state, "PENDING_DECISION");
+  } else if (pending !== null && pending.type !== "reaction-priority") {
+    if (!isMatchingPendingResolve(pending, action)) {
+      return fail(state, "PENDING_DECISION");
+    }
   } else if (state.activePlayerId !== action.playerId) {
     return fail(state, "NOT_ACTIVE_PLAYER");
-  }
-
-  // A pending choice blocks every action except completing that choice.
-  if (state.pendingDecision !== null) {
-    const pending = state.pendingDecision;
-    let allowed = false;
-    if (pending.type === "reaction-priority") {
-      allowed =
-        action.type === "PASS_PRIORITY" ||
-        action.type === "PLAY_CARD" ||
-        action.type === "ACTIVATE_RITUAL";
-    } else if (
-      (pending.type === "search-deck" || pending.type === "search-graveyard") &&
-      action.type === "RESOLVE_SEARCH"
-    ) {
-      allowed = true;
-    } else if (pending.type === "discard-cards" && action.type === "RESOLVE_DISCARD") {
-      allowed = true;
-    } else if (
-      pending.type === "choose-creature" &&
-      action.type === "RESOLVE_CHOOSE_CREATURE"
-    ) {
-      allowed = true;
-    } else if (
-      pending.type === "choose-ritual" &&
-      action.type === "RESOLVE_CHOOSE_RITUAL"
-    ) {
-      allowed = true;
-    } else if (
-      pending.type === "choose-equipment" &&
-      action.type === "RESOLVE_CHOOSE_EQUIPMENT"
-    ) {
-      allowed = true;
-    } else if (
-      pending.type === "choose-attribute-tokens" &&
-      action.type === "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS"
-    ) {
-      allowed = true;
-    } else if (pending.type === "forge-faces" && action.type === "RESOLVE_FORGE_FACES") {
-      allowed = true;
-    } else if (
-      pending.type === "replace-synthetic-face" &&
-      action.type === "RESOLVE_REPLACE_SYNTHETIC_FACE"
-    ) {
-      allowed = true;
-    } else if (pending.type === "choose-die" && action.type === "RESOLVE_CHOOSE_DIE") {
-      allowed = true;
-    } else if (pending.type === "convert-symbols" && action.type === "RESOLVE_CONVERT_SYMBOLS") {
-      allowed = true;
-    } else if (pending.type === "copy-pool-symbol" && action.type === "RESOLVE_COPY_POOL_SYMBOL") {
-      allowed = true;
-    } else if (
-      pending.type === "replay-graveyard-tactic" &&
-      action.type === "RESOLVE_REPLAY_GRAVEYARD"
-    ) {
-      allowed = true;
-    } else if (pending.type === "look-top-deck" && action.type === "RESOLVE_LOOK_TOP_DECK") {
-      allowed = true;
-    } else if (pending.type === "peek-deck" && action.type === "RESOLVE_PEEK_DECK") {
-      allowed = true;
-    } else if (pending.type === "dark-pact" && action.type === "RESOLVE_DARK_PACT") {
-      allowed = true;
-    } else if (pending.type === "mind-control" && action.type === "RESOLVE_MIND_CONTROL") {
-      allowed = true;
-    } else if (pending.type === "split-damage" && action.type === "RESOLVE_SPLIT_DAMAGE") {
-      allowed = true;
-    } else if (pending.type === "optional-reroll" && action.type === "RESOLVE_OPTIONAL_REROLL") {
-      allowed = true;
-    } else if (pending.type === "choose-die-slot" && action.type === "RESOLVE_CHOOSE_DIE_SLOT") {
-      allowed = true;
-    } else if (
-      pending.type === "choose-pool-symbol" &&
-      action.type === "RESOLVE_CHOOSE_POOL_SYMBOL"
-    ) {
-      allowed = true;
-    } else if (
-      pending.type === "remove-toxin-amount" &&
-      action.type === "RESOLVE_REMOVE_TOXIN_AMOUNT"
-    ) {
-      allowed = true;
-    } else if (
-      pending.type === "optional-overcharge" &&
-      action.type === "RESOLVE_OPTIONAL_OVERCHARGE"
-    ) {
-      allowed = true;
-    } else if (
-      pending.type === "optional-bonus-attack" &&
-      action.type === "RESOLVE_OPTIONAL_BONUS_ATTACK"
-    ) {
-      allowed = true;
-    }
-    if (!allowed) return fail(state, "PENDING_DECISION");
   }
 
   const draft = createDraft(state);
@@ -258,6 +177,65 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
  */
 export const advance = (state: GameState, action: GameAction): ReduceResult =>
   reduce(state, action, createRng(state.rng));
+
+type ChoicePending = Exclude<PendingDecision, { type: "reaction-priority" }>;
+
+/**
+ * Only the pending controller may complete a non-reaction choice, and only with
+ * the matching resolve (including that type's existing skip / decline payload).
+ */
+function isMatchingPendingResolve(pending: ChoicePending, action: GameAction): boolean {
+  if (action.playerId !== pending.controllerId) return false;
+  switch (pending.type) {
+    case "search-deck":
+    case "search-graveyard":
+      return action.type === "RESOLVE_SEARCH";
+    case "discard-cards":
+      return action.type === "RESOLVE_DISCARD";
+    case "choose-creature":
+      return action.type === "RESOLVE_CHOOSE_CREATURE";
+    case "choose-ritual":
+      return action.type === "RESOLVE_CHOOSE_RITUAL";
+    case "choose-equipment":
+      return action.type === "RESOLVE_CHOOSE_EQUIPMENT";
+    case "choose-attribute-tokens":
+      return action.type === "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS";
+    case "forge-faces":
+      return action.type === "RESOLVE_FORGE_FACES";
+    case "replace-synthetic-face":
+      return action.type === "RESOLVE_REPLACE_SYNTHETIC_FACE";
+    case "choose-die":
+      return action.type === "RESOLVE_CHOOSE_DIE";
+    case "convert-symbols":
+      return action.type === "RESOLVE_CONVERT_SYMBOLS";
+    case "copy-pool-symbol":
+      return action.type === "RESOLVE_COPY_POOL_SYMBOL";
+    case "replay-graveyard-tactic":
+      return action.type === "RESOLVE_REPLAY_GRAVEYARD";
+    case "look-top-deck":
+      return action.type === "RESOLVE_LOOK_TOP_DECK";
+    case "peek-deck":
+      return action.type === "RESOLVE_PEEK_DECK";
+    case "dark-pact":
+      return action.type === "RESOLVE_DARK_PACT";
+    case "mind-control":
+      return action.type === "RESOLVE_MIND_CONTROL";
+    case "split-damage":
+      return action.type === "RESOLVE_SPLIT_DAMAGE";
+    case "optional-reroll":
+      return action.type === "RESOLVE_OPTIONAL_REROLL";
+    case "choose-die-slot":
+      return action.type === "RESOLVE_CHOOSE_DIE_SLOT";
+    case "choose-pool-symbol":
+      return action.type === "RESOLVE_CHOOSE_POOL_SYMBOL";
+    case "remove-toxin-amount":
+      return action.type === "RESOLVE_REMOVE_TOXIN_AMOUNT";
+    case "optional-overcharge":
+      return action.type === "RESOLVE_OPTIONAL_OVERCHARGE";
+    case "optional-bonus-attack":
+      return action.type === "RESOLVE_OPTIONAL_BONUS_ATTACK";
+  }
+}
 
 function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | null {
   switch (action.type) {
@@ -591,7 +569,7 @@ function resolveSearch(
   if (pending.type !== "search-deck" && pending.type !== "search-graveyard") {
     return "INVALID_PHASE";
   }
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const unique = new Set(cardInstanceIds);
   if (unique.size !== cardInstanceIds.length) return "INVALID_SEARCH";
@@ -648,7 +626,7 @@ function resolveDiscard(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "discard-cards") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const unique = new Set(cardInstanceIds);
   if (unique.size !== cardInstanceIds.length) return "INVALID_DISCARD";
@@ -702,7 +680,7 @@ function resolveChooseCreature(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-creature") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   if (creatureId === null) {
     if (pending.optional !== true) return "INVALID_CHOICE";
@@ -748,7 +726,7 @@ function resolveChooseRitual(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-ritual") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const card = draft.cards[cardInstanceId];
   if (card === undefined || card.zone !== "ritual") return "INVALID_CHOICE";
@@ -775,7 +753,7 @@ function resolveChooseEquipment(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-equipment") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const creature = draft.creatures[pending.creatureId];
   if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
@@ -798,7 +776,7 @@ function resolveChooseAttributeTokens(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-attribute-tokens") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const creature = draft.creatures[pending.creatureId];
   if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
@@ -836,7 +814,7 @@ function resolveForgeFaces(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "forge-faces") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const unique = new Set(slotIndexes);
   if (unique.size !== slotIndexes.length || slotIndexes.length !== pending.faces) {
@@ -899,7 +877,7 @@ function resolveReplaceSyntheticFace(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "replace-synthetic-face") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const die = draft.dice[dieId];
   if (die === undefined) return "UNKNOWN_ENTITY";
@@ -968,7 +946,7 @@ function resolveChooseDie(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-die") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   if (dieId === null) {
     if (pending.optional !== true) return "INVALID_CHOICE";
@@ -995,7 +973,7 @@ function resolveConvertSymbols(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "convert-symbols") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
   if (replacements.length > pending.amount) return "INVALID_CHOICE";
 
   const unique = new Set(replacements.map((entry) => entry.symbolId));
@@ -1023,7 +1001,7 @@ function resolveCopyPoolSymbol(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "copy-pool-symbol") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const inPool = Object.values(draft.symbols).some(
     (candidate) =>
@@ -1045,7 +1023,7 @@ function resolveReplayGraveyard(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "replay-graveyard-tactic") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
   if (!replayableGraveyardTactics(draft, playerId).includes(cardInstanceId)) {
     return "INVALID_CHOICE";
   }
@@ -1072,7 +1050,7 @@ function resolveLookTopDeck(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "look-top-deck") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
   if (!pending.cardInstanceIds.includes(keepId)) return "INVALID_CHOICE";
 
   const rest = pending.cardInstanceIds.filter((id) => id !== keepId);
@@ -1093,7 +1071,7 @@ function resolvePeekDeck(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "peek-deck") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const player = draft.players[playerId];
   draft.pendingDecision = null;
@@ -1113,7 +1091,7 @@ function resolveDarkPact(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "dark-pact") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
   if (cardInstanceIds[0] === cardInstanceIds[1]) return "INVALID_CHOICE";
 
   const deck = new Set(draft.players[playerId]?.deck ?? []);
@@ -1144,7 +1122,7 @@ function resolveMindControl(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "mind-control") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const unique = [...new Set(faceCardIds)];
   const legal = opposingOverloadedFaceIds(draft, playerId);
@@ -1222,7 +1200,7 @@ function resolveSplitDamage(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "split-damage") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const unique = new Set(assignments.map((entry) => entry.creatureId));
   if (unique.size !== assignments.length) return "INVALID_CHOICE";
@@ -1282,7 +1260,7 @@ function resolveOptionalReroll(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "optional-reroll") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   const dieId = pending.dieId;
   const originalFace = pending.faceCardId;
@@ -1324,7 +1302,7 @@ function resolveChooseDieSlot(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-die-slot") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   if (dieId === null || slotIndex === null) {
     if (pending.optional !== true) return "INVALID_CHOICE";
@@ -1356,7 +1334,7 @@ function resolveChoosePoolSymbol(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "choose-pool-symbol") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
   if (!pending.eligibleSymbolIds.includes(symbolId)) return "INVALID_CHOICE";
 
   draft.pendingDecision = null;
@@ -1371,7 +1349,7 @@ function resolveRemoveToxinAmount(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "remove-toxin-amount") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
   if (!Number.isInteger(amount) || amount < 0 || amount > pending.maxAmount) {
     return "INVALID_CHOICE";
   }
@@ -1388,7 +1366,7 @@ function resolveOptionalOvercharge(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "optional-overcharge") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   draft.pendingDecision = null;
   if (accept) {
@@ -1412,7 +1390,7 @@ function resolveOptionalBonusAttack(
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "optional-bonus-attack") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
   draft.pendingDecision = null;
   if (!accept) return resumeAfterEffectPause(draft);

@@ -26,7 +26,7 @@ export type GameError =
   | "WRONG_FACE_COUNT"
   /** Forging would put a fifth face of one attribute on a die (bible §9.1). */
   | "ATTRIBUTE_LIMIT_REACHED"
-  /** An effect is waiting on a player choice; only the resolve action is legal. */
+  /** An effect is waiting on a player choice; only that controller's matching resolve is legal. */
   | "PENDING_DECISION"
   /** The search picks do not match the pending search (count, zone, or filter). */
   | "INVALID_SEARCH"

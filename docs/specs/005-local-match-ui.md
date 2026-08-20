@@ -33,7 +33,9 @@ who may act; the inactive side is read-only until the turn passes.
 ## Pending decisions
 
 `MatchBoard` renders `state.pendingDecision` with a seat-gated chooser for the
-controller and a waiting banner for everyone else. Resolve via
+controller and a waiting banner for everyone else. The chooser may complete the
+pending even when they are not the turn player (`actingPlayerIdOf` follows
+`pendingChooserId`). Resolve via
 `useMatchStore.dispatch` only — query `src/game` helpers for legal options
 (e.g. `legalSlotsForReplaceSyntheticFace` / `eligiblePoolFacesForReplace` for
 Reforge). Do not special-case catalogue card ids.
