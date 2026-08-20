@@ -1103,13 +1103,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "On absorb Mechanical: generate Mechanical.",
+    rulesText: "On absorb Mechanical, once per turn: generate 1 Mechanical.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
           symbols: ["mechanical"],
+          oncePerTurn: true,
           effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
         },
       ],

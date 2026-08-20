@@ -262,7 +262,7 @@ takes a lighter cut. **Reforge** uses `replace-synthetic-face` (spec `012`).
 |---|---|---|---|---|
 | 2 | Transmission | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: copy another symbol onto it. |
 | 1 | Camshaft | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: next forge costs 1 less Energy. Niche 1-cost: gated discount enabler, not a generator. |
-| 2 | Servomotor | Equipment / Mechanical | 1 Synthetic Mechanical, your die | On absorb Mechanical: generate Mechanical. |
+| 2 | Servomotor | Equipment / Mechanical | 1 Synthetic Mechanical, your die | On absorb Mechanical, once per turn: generate 1 Mechanical. |
 | 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | Prevent 1 damage. Generate 1 Mechanical. |
 | 2 | Blueprint | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. Next forge costs 1 less Energy. |
 | 3 | Stamp | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* Reapply one of your dice's face modifiers. |

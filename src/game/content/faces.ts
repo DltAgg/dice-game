@@ -433,7 +433,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "Formation",
     "martial",
     "On roll: if this creature is on the frontline, gain 1 Energy.\n" +
-      "On absorb: another allied frontline creature gains +1 Defense this turn.",
+      "On absorb: another allied frontline creature gains 1 Shield.",
     {
       onRoll: [
         {
@@ -444,7 +444,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       ],
       onAbsorb: [
         {
-          type: "grant-damage-prevent",
+          type: "grant-shield",
           amount: 1,
           target: { kind: "choose-allied-frontline-other" },
         },
@@ -541,7 +541,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "Blight",
     "corruption",
     "On roll: generate 1 Corruption.\n" +
-      "On absorb: send 1 opposing Ritual to its owner's graveyard.",
+      "On absorb: you choose 1 Ritual your opponent controls and destroy it.",
     {
       onRoll: [{ type: "generate-symbol", symbol: "corruption", amount: 1 }],
       onAbsorb: [{ type: "destroy-ritual", target: { kind: "choose-opponent-ritual" } }],
@@ -551,8 +551,8 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     HEXBRAND,
     "Hexbrand",
     "corruption",
-    "On roll: a chosen enemy creature discards 1 attribute token.\n" +
-      "On absorb: destroy 1 Equipment on an opposing creature.",
+    "On roll: you choose an enemy creature; that creature discards 1 attribute token.\n" +
+      "On absorb: you choose an enemy creature and destroy 1 Equipment on it.",
     {
       onRoll: [
         { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
