@@ -116,7 +116,7 @@ engine can resolve the clause honestly. Movers always go through
 | `RESOLVE_DARK_PACT` | Two different-attribute Rituals from deck → GY |
 | `RESOLVE_MIND_CONTROL` | Strip overloads (one face all, or one each of up to two) |
 | `RESOLVE_SPLIT_DAMAGE` | Blade Rain / Extermination |
-| `RESOLVE_OPTIONAL_REROLL` | Adrenaline |
+| `RESOLVE_OPTIONAL_REROLL` | Adrenaline (same-face ally damage); Rethrow (choose a rolled die, no punishment) |
 | `RESOLVE_REPLACE_SYNTHETIC_FACE` | Reforge (`replace-synthetic-face`) |
 | `ACTIVATE_FACE` | Heritage / Plague activated ability |
 
@@ -169,7 +169,7 @@ Match-ui must render these pendings (hotseat + online):
 | `dark-pact` | Pick 2 different-attribute Rituals from deck |
 | `mind-control` | Mode + 1 or 2 opposing face cards |
 | `split-damage` | Assign integer damage that sums to `amount` |
-| `optional-reroll` | Accept or decline reroll of that die |
+| `optional-reroll` | Accept or decline reroll of that die (Adrenaline may then deal same-face ally damage; Rethrow does not) |
 | `replace-synthetic-face` | Pick owned Synthetic Mechanical slot + different matching pool face |
 
 Also: **Activate** control on a showing Forbidden Heritage / Pestilent Plague

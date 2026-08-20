@@ -273,6 +273,8 @@ export type PendingDecision =
       readonly controllerId: PlayerId;
       readonly dieId: DieId;
       readonly faceCardId: FaceCardId;
+      /** Adrenaline: deal this much to up to 2 allies if the reroll shows the same face. */
+      readonly sameFaceAllyDamage?: number;
     }
   | {
       readonly type: "choose-die-slot";

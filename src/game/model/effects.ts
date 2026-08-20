@@ -263,8 +263,16 @@ export type EffectDefinition =
    * overloads (Arcane Echo face).
    */
   | { readonly type: "copy-other-die-face" }
-  /** Pending optional reroll of the source die (Adrenaline). */
-  | { readonly type: "optional-reroll-die" }
+  /**
+   * Optional reroll of a rolled die. With `sourceDieId` (Adrenaline on-roll),
+   * that die; otherwise opens `owned-rolled` (Rethrow). `oncePerTurn` spends a
+   * player key. `sameFaceAllyDamage` is Adrenaline’s same-face self-hit.
+   */
+  | {
+      readonly type: "optional-reroll-die";
+      readonly oncePerTurn?: boolean;
+      readonly sameFaceAllyDamage?: number;
+    }
   /**
    * Add 1 pestilence counter on the source slot; at the showing face's
    * `pestilenceSpreadAt`, reset and try an adjacent forge of that face from

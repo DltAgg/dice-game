@@ -1204,10 +1204,10 @@ function resolveOptionalReroll(
     }
   }
 
-  if (slot?.faceCardId === originalFace) {
+  if (slot?.faceCardId === originalFace && pending.sameFaceAllyDamage !== undefined) {
     const allies = livingCreaturesOf(draft, playerId);
     for (const ally of allies.slice(0, 2)) {
-      dealDamage(draft, ally.id, 1);
+      dealDamage(draft, ally.id, pending.sameFaceAllyDamage);
     }
   }
 

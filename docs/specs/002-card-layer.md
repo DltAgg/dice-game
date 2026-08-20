@@ -306,6 +306,24 @@ Catalogue-only until deck-designer adds copies to builtin control lists.
 | 3 | Seal the Rite | Reaction / Arcane | 1 Synthetic Arcane, your die | Negate 1 Ritual. |
 | 3 | Fade | Reaction / Darkness | 1 Synthetic Darkness, your die | Negate the effect of 1 card. |
 
+### Generic utility (authored)
+
+Playtest gap-fill: splashable 2-cost tools any constructed archetype can run
+2–4 of without stealing bible §28–29 identities (no Corruption contaminate, no
+Mechanical absorb-loops, no Arcane hard negate at Support prices). Dual-kind
+forges only (Martial / Wild / Arcane / Luminar) so one attribute does not own
+the package. Printed Energy 2 — 1-Energy plays come from discounts (§34.5).
+Fully wired. Catalogue-only until deck-designer adds copies.
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 2 | Raise Guard | Instant / Martial | 1 Natural Martial, your die | A chosen allied creature gains 2 Shield. |
+| 2 | Sidestep | Reaction / Wild | 1 Natural Wild, your die | Prevent 2 damage. |
+| 2 | Rethrow | Instant / Arcane | 1 Natural Arcane, your die | Choose one of your rolled dice. You may reroll it. |
+| 2 | Sift | Instant / Luminar | 1 Natural Luminar, your die | Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom. |
+| 2 | Second Wind | Instant / Martial | 1 Natural Martial, your die | Gain 1 Energy. Look at the top card of your deck; you may put it on the bottom. |
+| 2 | Warding Charm | Equipment / Arcane | 1 Natural Arcane, your die | On absorb, once per turn: this creature gains 1 Shield. |
+
 ## What this slice implements
 
 The grammar in full, and the subset of the effect vocabulary the engine can
@@ -318,7 +336,7 @@ already express.
 | Forging a Natural or Synthetic face onto your own die **or an opponent's**; **draw 1 per face forged** | — |
 | Playing an Instant for its effect, paying Energy | Reaction chain `008`; discounts `012` |
 | Equipping a card onto a creature; attack-damage bonuses; destroy-equipment; cost discounts | — |
-| Overload attachment to a die face; on-roll effects; cleared on forge | Adrenaline reroll `012`; Overcharge skip-next still deferred |
+| Overload attachment to a die face; on-roll effects; cleared on forge | Adrenaline / Rethrow reroll `012`; Overcharge skip-next still deferred |
 | Ritual place → preparing / ready / exhausted; ACTIVATE_RITUAL | Paradox replay `012` |
 | Toxin counters; 1 damage per counter at owner's turn start | Adaptive Toxin strip→damage still deferred |
 | `[Requires: …]` gates on an effect; `[Active when: …]` on rituals | Resonance wildcard `012` |

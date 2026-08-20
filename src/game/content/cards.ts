@@ -108,6 +108,12 @@ export const SIPHON_SIGIL: CardId = asCardId("card-siphon-sigil");
 export const DISPEL_CIRCLE: CardId = asCardId("card-dispel-circle");
 export const SEAL_THE_RITE: CardId = asCardId("card-seal-the-rite");
 export const FADE: CardId = asCardId("card-fade");
+export const RAISE_GUARD: CardId = asCardId("card-raise-guard");
+export const SIDESTEP: CardId = asCardId("card-sidestep");
+export const RETHROW: CardId = asCardId("card-rethrow");
+export const SIFT: CardId = asCardId("card-sift");
+export const SECOND_WIND: CardId = asCardId("card-second-wind");
+export const WARDING_CHARM: CardId = asCardId("card-warding-charm");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -690,7 +696,9 @@ const DEFINITIONS: readonly CardDefinition[] = [
     overload: {
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
-      onRoll: [{ type: "optional-reroll-die" }],
+      onRoll: [
+        { type: "optional-reroll-die", oncePerTurn: true, sameFaceAllyDamage: 1 },
+      ],
     },
   }),
   card({
@@ -1541,6 +1549,99 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "Negate the effect of 1 card.",
     effect: {
       effects: [{ type: "negate-card", cardTypes: "any" }],
+    },
+  }),
+  // --- Generic utility toolkit (catalogue-only; deck-designer picks copies) ---
+  // Splashable 2-cost Support tools across dual-kind forges so no single
+  // attribute owns shield / prevent / reroll / filter. Ids: card-raise-guard,
+  // card-sidestep, card-rethrow, card-sift, card-second-wind, card-warding-charm.
+  card({
+    id: RAISE_GUARD,
+    name: "Raise Guard",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "A chosen allied creature gains 2 Shield.",
+    effect: {
+      effects: [{ type: "grant-shield", amount: 2, target: { kind: "choose-ally" } }],
+    },
+  }),
+  card({
+    id: SIDESTEP,
+    name: "Sidestep",
+    energyCost: 2,
+    type: "reaction",
+    subtypes: [],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText: "Prevent 2 damage.",
+    effect: {
+      effects: [
+        { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
+      ],
+    },
+  }),
+  card({
+    id: RETHROW,
+    name: "Rethrow",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    rulesText: "Choose one of your rolled dice. You may reroll it.",
+    effect: {
+      effects: [{ type: "optional-reroll-die" }],
+    },
+  }),
+  card({
+    id: SIFT,
+    name: "Sift",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "luminar",
+    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
+    rulesText:
+      "Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom.",
+    effect: {
+      effects: [{ type: "look-top-deck", amount: 2 }],
+    },
+  }),
+  card({
+    id: SECOND_WIND,
+    name: "Second Wind",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText:
+      "Gain 1 Energy.\nLook at the top card of your deck; you may put it on the bottom.",
+    effect: {
+      effects: [{ type: "gain-energy", amount: 1 }, { type: "peek-deck-optional-bottom" }],
+    },
+  }),
+  card({
+    id: WARDING_CHARM,
+    name: "Warding Charm",
+    energyCost: 2,
+    type: "equipment",
+    subtypes: [],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    rulesText: "On absorb, once per turn: this creature gains 1 Shield.",
+    equipment: {
+      mayTargetOpponent: false,
+      abilities: [
+        {
+          type: "on-absorb",
+          oncePerTurn: true,
+          effects: [{ type: "grant-shield", amount: 1, target: { kind: "source-creature" } }],
+        },
+      ],
     },
   }),
 ];

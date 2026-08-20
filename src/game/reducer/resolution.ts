@@ -990,23 +990,30 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       return false;
     }
     case "optional-reroll-die": {
-      if (pending.sourceDieId === null) return false;
+      if (pending.sourceDieId === null) {
+        return openDieChoice(draft, pending, "owned-rolled", false);
+      }
       const die = draft.dice[pending.sourceDieId];
       if (die === undefined || die.rolledSlotIndex === null) return false;
-      const key = `optional-reroll`;
       const player = draft.players[pending.controllerId];
       if (player === undefined) return false;
-      if (player.spentOncePerTurnKeys.includes(key)) return false;
+      if (effect.oncePerTurn === true) {
+        const key = `optional-reroll`;
+        if (player.spentOncePerTurnKeys.includes(key)) return false;
+        patchPlayer(draft, pending.controllerId, {
+          spentOncePerTurnKeys: [...player.spentOncePerTurnKeys, key],
+        });
+      }
       const faceCardId = die.slots[die.rolledSlotIndex]?.faceCardId;
       if (faceCardId === undefined) return false;
-      patchPlayer(draft, pending.controllerId, {
-        spentOncePerTurnKeys: [...player.spentOncePerTurnKeys, key],
-      });
       draft.pendingDecision = {
         type: "optional-reroll",
         controllerId: pending.controllerId,
         dieId: die.id,
         faceCardId,
+        ...(effect.sameFaceAllyDamage !== undefined
+          ? { sameFaceAllyDamage: effect.sameFaceAllyDamage }
+          : {}),
       };
       return true;
     }
