@@ -55,7 +55,9 @@ face({
 ## Rules of thumb
 
 - Design: [design.md](design.md). Faces are the engine; named specials should
-  change how a die plays, not duplicate a creature attack.
+  change how a die plays, not merely copy a creature’s basic attack. Face
+  damage that converts a rolled or absorbed symbol is valid (and expected for
+  Control closers).
 - `onRoll` fires when the face is showing after `ROLL_DICE` (and related keep paths).
 - `onAbsorb` fires when a symbol from this face is absorbed (`010-trigger-hooks`).
 - New dual-region faces: standardize print as `On roll:` / `On absorb:` — see

@@ -82,7 +82,7 @@ Cards should generally:
 - exploit dice results;
 - manipulate symbols;
 - create opportunities around dice;
-- convert dice outcomes into creature actions.
+- convert dice outcomes into creature actions **or** into card, ritual, face, and status effects (including damage).
 
 A card that could function identically without dice should be scrutinized.
 
@@ -169,6 +169,8 @@ The primary victory condition is:
 Each player normally begins with **3 creatures**.
 
 Because the creature count is intentionally low, creature removal is strategically significant.
+
+Eliminating a creature means reducing its Life to zero (or otherwise defeating it). **Creature attacks are not the only, or even the primary, way to deal that damage.** Tactics, rituals, faces, equipment, statuses, and other engine conversion may deal as much or more of the damage that ends the match as creature combat does. Archetypes with weak attacks (especially Control) must still have a clear damage plan.
 
 ### Secondary victory conditions
 
@@ -784,7 +786,7 @@ Interaction should usually create a **decision problem**, not simply invalidate 
 
 # 24. Combat Philosophy
 
-Combat is deliberately not the primary source of complexity.
+Combat is deliberately not the primary source of complexity **or of damage**.
 
 The game should avoid becoming:
 
@@ -801,6 +803,8 @@ Instead, combat should answer:
 - How does equipment change the attack?
 - What can the opponent react with?
 
+Creature attacks remain one damage path (Aggro's usual closer). They are not a gate on lethality. Cards, rituals, faces, and statuses may deal the damage that wins, especially when an archetype's attacks are intentionally weak.
+
 ---
 
 # 25. Creature Removal Philosophy
@@ -815,7 +819,9 @@ Therefore:
 - unconditional cheap removal is dangerous;
 - repeated removal should be rare;
 - early-game creature destruction should generally be difficult;
-- control should preferably interact through tempo, positioning, resource denial, disabling, and engine manipulation before resorting to direct destruction.
+- control should preferably interact through tempo, positioning, resource denial, disabling, and engine manipulation before resorting to **permanent destruction** (“destroy this creature”).
+
+That last point is about **state deletion**, not about withholding damage. Ordinary damage from the engine is progress (§34.3) and is a valid Control closer. Preferring disruption over cheap *destroy* effects must not be read as “Control does not deal damage” or “only creatures deal damage.”
 
 A useful rule of thumb:
 
@@ -911,7 +917,8 @@ Primary focus:
 - disruption;
 - delayed value;
 - resource denial;
-- reactive play.
+- reactive play;
+- converting that engine into lethal damage.
 
 Important attributes include:
 
@@ -919,7 +926,11 @@ Important attributes include:
 - Corruption
 - Darkness
 
-Control should generally win by creating a superior long-term engine and disrupting opposing plans.
+Control should win by creating a superior long-term engine, disrupting opposing plans, **and converting that engine into enough damage to eliminate creatures**. Disruption without a damage plan is not a win path: the victory condition is still eliminating creatures (§4).
+
+Control creature attacks may stay weak. **Damage is not reserved for creature combat.** Tactics, rituals, faces, equipment, and statuses may deal the damage that closes the match. That damage should still read as the attribute (setup, consume, delayed, conditional, expensive) rather than as efficient Aggro attacks.
+
+Do not treat “engine hate / disruption” as a substitute for lethality.
 
 ### Corruption
 
@@ -1056,14 +1067,16 @@ A symbol can often be used in two broad ways:
           ↓                     ↓
    Creature absorbs        Engine resolves
           |                     |
-    Creature power        Card/effect value
+    Creature power        Card / ritual / face / status
           |                     |
-    Combat advantage      Engine advantage
+    Combat damage         Engine value, including damage
 ```
 
 Therefore, the player is constantly choosing between:
 
-**immediate creature power** and **engine efficiency**.
+**immediate creature combat** and **engine conversion**.
+
+Engine conversion includes lethality. Control and other non-Aggro lists often spend symbols on cards and rituals that deal damage rather than on powering weak attacks. That is the intended tension, not a failure to “play creatures.”
 
 This tension should appear frequently.
 
@@ -1114,7 +1127,7 @@ The distinction matters.
 
 ## 34.4 Engine Disruption Is Preferable to Constant Creature Destruction
 
-Especially for Control.
+Especially for Control **interaction** — not as Control’s only way to win.
 
 Control can interact through:
 
@@ -1127,6 +1140,8 @@ Control can interact through:
 - forcing inefficient sequencing.
 
 This creates interaction without making creatures disposable.
+
+Control must still **close**. Closing is damage (and other defeat) sufficient to eliminate the opposing squad. That damage may come from cards, rituals, faces, statuses, and the rest of the engine; it need not come from Control’s creature attacks. Cheap “destroy target creature” remains the thing to tax, not ordinary engine damage.
 
 ---
 
@@ -1142,7 +1157,7 @@ The intended match should feel like:
 6. Equipment and rituals establish engines.
 7. Opponents interfere with one another.
 8. Engines become increasingly distinct.
-9. Combat becomes decisive because the accumulated engine advantages matter.
+9. Engines become decisive: accumulated advantages convert into damage the opponent cannot ignore — via attacks, cards, rituals, faces, or statuses, not combat alone.
 10. The final creature losses feel earned and consequential.
 
 ---
@@ -1177,7 +1192,7 @@ If absorbing symbols is always optimal, engine resolution becomes irrelevant.
 
 ### G. Make engine resolution strictly better
 
-If players never want to energize creatures, combat becomes disconnected from the core dice mechanic.
+If Aggro and midrange players never want to energize creatures, **their** combat becomes disconnected from the dice. This does not forbid Control from spending symbols on engine damage instead of weak attacks.
 
 ### H. Create solitaire engines
 
@@ -1186,6 +1201,10 @@ A combo should still expose the opponent to interaction.
 ### I. Overload early-game natural faces
 
 Natural faces should establish the game, not create an explosive deterministic opening.
+
+### J. Give Control no damage plan
+
+A Control list that only disrupts, stalls, or chips with 1-damage attacks cannot satisfy §4. Engine hate is interaction, not a win condition.
 
 ---
 

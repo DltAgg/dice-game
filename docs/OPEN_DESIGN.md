@@ -85,6 +85,7 @@ This makes the central tension of bible §33 real for the first time:
 ```text
 absorb  → attribute sits on the creature → enables that creature's attacks
 resolve → symbol stays in the pool       → feeds card `[Requires: …]` spends
+                                           (including engine damage)
 ```
 
 Creatures therefore have two distinct cost surfaces, and both already exist in
@@ -568,6 +569,29 @@ Worth watching: matches currently run around eighteen turns, so a twelve-card
 deck drawn at one a turn empties well before a winner emerges. That makes the
 back half of a match play out on board state alone, which is a legitimate shape
 but a deliberate one.
+
+### Damage is not reserved for creature attacks
+
+**Status:** `DECIDED` · 2026-08-20 · user-directed
+· bible §§3.1, 4, 24–25, 27 (Control), 33, 34.3–34.4, 35
+
+Playtests showed Control lists with no clock: their creature attacks were
+retuned to 1 damage plus riders (`003`), while design text told Control to win
+by engine + disruption and treated combat as the closer. Disruption without
+lethality cannot satisfy §4 (eliminate opposing creatures).
+
+**Decision:** Creature attacks are **one** damage path, not the primary or
+required one. Tactics, rituals, faces, equipment, and statuses may deal the
+damage that ends the match. Control (and other non-Aggro archetypes) **must**
+have a damage plan that does not depend on their creature attacks remaining
+strong. Cheap permanent *destruction* stays expensive (§25, §34.3); ordinary
+engine damage is progress and a valid closer.
+
+Do not author or critique as if “only creatures deal real damage” or as if
+Control’s win condition is stalling until weak attacks add up.
+
+This does **not** retune Control attack numbers in this decision. Weak Control
+attacks can stay; the closer moves to the engine.
 
 ### Stun
 

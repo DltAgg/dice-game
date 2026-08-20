@@ -16,6 +16,13 @@ A card that only deals damage and never touches the engine is usually a miss.
 A card that only forges with empty `rulesText` (`""`) is legal (forge-only /
 “None”) but should be rare and intentional.
 
+**Lethality is not reserved for creature attacks** (bible §§4, 24, 27, 33;
+`OPEN_DESIGN.md`). Engine-converted damage — consume, delayed, conditional,
+expensive setup — is a valid play-region payoff, and Control **must** have
+enough of it to eliminate creatures. A Control list that can only chip with
+1-damage attacks is a miss even if its disruption is excellent. Do not avoid
+authoring Control damage because “combat is supposed to close.”
+
 The **or** between forge and effect is load-bearing: one use, one region.
 
 ## What “good” looks like
@@ -47,7 +54,9 @@ The **or** between forge and effect is load-bearing: one use, one region.
 
 Do **not** give every attribute large damage, healing, draw, removal, and
 disruption. Sustain attributes must not become the best burst; control must not
-become efficient aggro.
+become efficient **aggro** (cheap fast creature attacks). Control **should**
+deal meaningful damage through its engine (rituals, consume, delayed/conditional
+hits). That is not the same as becoming Aggro.
 
 Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
 Control = Arcane/Corruption/Darkness; Support = Arcane/Luminar/Wild/Mechanical

@@ -39,6 +39,10 @@ HP is a **uniform +4** over the original Figma Slow print (playtest 2026-08-14:
 skirmishes ended before control could interact). Relative identity is unchanged
 (Garuda still glassiest, Minotaur still tankiest). Control attacks were retuned
 to 1 damage plus wired resource riders; those attacks now discard fuel on use.
+That weakness is **intentional**: Control is not expected to close with creature
+combat. Finishing damage belongs on the Control card / ritual / face / status
+layer (bible §27; OPEN_DESIGN 2026-08-20). Do not “fix” Control by buffing these
+attacks back to Aggro numbers.
 
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|

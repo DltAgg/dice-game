@@ -63,7 +63,7 @@ in UI or comments that disagree with `GameRulesConfig`.
 |---|---|---|
 | Aggro | Wild, Martial, Toxin | Converting dice into immediate creature pressure — not the best raw removal |
 | Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining — not large generic numbers |
-| Control | Arcane, Corruption, Darkness | Long-term engine + disruption — engine hate over cheap creature deletion |
+| Control | Arcane, Corruption, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. |
 | Support | Arcane, Luminar, Wild, Mechanical | Low-cost cards that splash; Arcane control stays medium/high cost |
 
 | Attribute | Must still look like |
@@ -78,7 +78,10 @@ in UI or comments that disagree with `GameRulesConfig`.
 | Darkness | Delayed value / disruption |
 
 Do **not** let every attribute do damage + heal + draw + removal + disruption.
-Sustain must not become the best burst; control must not become efficient aggro.
+Sustain must not become the best burst; control must not become efficient aggro
+(cheap creature combat). Control still needs a damage plan that does not depend
+on its attacks (bible §27, `OPEN_DESIGN.md` “Damage is not reserved for creature
+attacks”).
 
 ## Critique workflow
 
@@ -88,7 +91,7 @@ When reviewing a card or the catalogue, answer:
 2. **Orphan** — if no list wants it at 2+ copies *or* as a 1–2 of tech, say so. Forge-only (`rulesText: ""`) is allowed but must be intentional and rare.
 3. **Identity** — does the effect still read as that attribute when played outside its main archetype?
 4. **Cost / opportunity** (bible §34) — Energy, symbols, setup, deck commitment vs payoff. Removal should cost more than damage.
-5. **Engine-builder test** — damage-only with no forge/engine touch is usually a miss (`design.md`).
+5. **Engine-builder test** — unflavored burn with no forge/engine touch is usually a miss (`design.md`). Engine-converted Control damage is **not** a miss.
 6. **Loadout fit** — do builtin (or proposed) face decks actually supply the forges this card’s forge region needs? Do rituals have absorbable attributes on the squad/dice plan?
 
 Do not silently rewrite the card. Write a **brief for `card-designer`**:

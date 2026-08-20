@@ -115,6 +115,11 @@ reading: any matching named special (Canker, Blight, Hexbrand, …).
 > within their main characteristic. If an attribute's main characteristic is
 > sustain, it does not make sense for it to deal massive damage and have sustain
 > at the same time.
+>
+> Damage is **not** reserved for creature attacks (bible §§4, 24, 27; OPEN_DESIGN
+> 2026-08-20). Control attributes (Arcane, Corruption, Darkness) must convert
+> their engine into enough damage to eliminate creatures — expensive, delayed,
+> or consume-based is in-identity; hoping 1-damage creature attacks close is not.
 
 | Archetype | Attributes |
 |---|---|
@@ -168,6 +173,11 @@ is used.
 | 3 | Wild Carapace | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: heal 1. |
 
 ### Control deck
+
+Control’s printed list is mostly disruption and engine pieces; **Extermination**
+is the explicit consume-to-damage closer. Per bible §27 / OPEN_DESIGN 2026-08-20,
+that shape is incomplete if Control has no reliable engine damage path — do not
+treat the current table as proof that Control should not deal damage.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|

@@ -15,7 +15,9 @@ print English, and typed content data. You do **not** grow the rules engine.
 
 This game is a competitive skirmish **engine-builder**. Every card should serve
 forge-and/or-play; a damage-only card that never touches the engine is usually
-a miss. Design canon: `competitive_dice_game_agent_bible.md`.
+a miss. Engine-converted damage (especially for Control) is **not** a miss —
+creature attacks are not the primary damage source. Design canon:
+`competitive_dice_game_agent_bible.md` §§4, 24, 27, 33.
 
 ## Read first (every invocation)
 
