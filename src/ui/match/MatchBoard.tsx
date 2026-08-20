@@ -1211,102 +1211,103 @@ export function MatchBoard() {
         />
       )}
 
-      {/* Opponent (top): shared face cards, then back, then frontline */}
-      <FaceCardsInPlay
-        state={state}
-        playerId={MATCH_P2}
-        label="P2 face cards"
-        actingPlayerId={actingId}
-        canAct={canAct}
-        onActivateFace={(dieId, slotIndex) =>
-          tryDispatch({
-            type: "ACTIVATE_FACE",
-            playerId: actingId,
-            dieId,
-            slotIndex,
-          })
-        }
-      />
+      {/* Field (≥70%) + faces (≤30%). Energy bar spans full width between seats. */}
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,30%)] items-stretch gap-x-3 gap-y-4">
+        <Battlefield
+          state={state}
+          playerId={MATCH_P2}
+          label="Player 2"
+          facing="down"
+          intent={intent}
+          absorbArmed={intent.kind === "absorb"}
+          onCreatureClick={onCreatureClick}
+          onAttackChoose={(attackerId, attackId) =>
+            setIntent({ kind: "attack", attackerId, attackId })
+          }
+          onCancelAttack={clearIntent}
+          actingPlayerId={actingId}
+          canAct={canAct}
+          onRitualActivate={(id) =>
+            tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
+          }
+          onRitualAbsorb={(id) => {
+            if (intent.kind !== "absorb") return;
+            tryDispatch({
+              type: "ABSORB_SYMBOL_TO_RITUAL",
+              playerId: activeId,
+              cardInstanceId: id,
+              symbolId: intent.symbolId,
+            });
+          }}
+        />
+        <FaceCardsInPlay
+          state={state}
+          playerId={MATCH_P2}
+          label="P2 face cards"
+          actingPlayerId={actingId}
+          canAct={canAct}
+          onActivateFace={(dieId, slotIndex) =>
+            tryDispatch({
+              type: "ACTIVATE_FACE",
+              playerId: actingId,
+              dieId,
+              slotIndex,
+            })
+          }
+        />
 
-      <Battlefield
-        state={state}
-        playerId={MATCH_P2}
-        label="Player 2"
-        facing="down"
-        intent={intent}
-        absorbArmed={intent.kind === "absorb"}
-        onCreatureClick={onCreatureClick}
-        onAttackChoose={(attackerId, attackId) =>
-          setIntent({ kind: "attack", attackerId, attackId })
-        }
-        onCancelAttack={clearIntent}
-        actingPlayerId={actingId}
-        canAct={canAct}
-        onRitualActivate={(id) =>
-          tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
-        }
-        onRitualAbsorb={(id) => {
-          if (intent.kind !== "absorb") return;
-          tryDispatch({
-            type: "ABSORB_SYMBOL_TO_RITUAL",
-            playerId: activeId,
-            cardInstanceId: id,
-            symbolId: intent.symbolId,
-          });
-        }}
-      />
+        <div className="col-span-2 min-w-0">
+          <EnergyBar
+            state={state}
+            canAct={canAct}
+            onGoToPhase={goToPhase}
+            onEndTurn={endTurn}
+          />
+        </div>
 
-      <EnergyBar
-        state={state}
-        canAct={canAct}
-        onGoToPhase={goToPhase}
-        onEndTurn={endTurn}
-      />
-
-      <Battlefield
-        state={state}
-        playerId={MATCH_P1}
-        label="Player 1"
-        facing="up"
-        intent={intent}
-        absorbArmed={intent.kind === "absorb"}
-        onCreatureClick={onCreatureClick}
-        onAttackChoose={(attackerId, attackId) =>
-          setIntent({ kind: "attack", attackerId, attackId })
-        }
-        onCancelAttack={clearIntent}
-        actingPlayerId={actingId}
-        canAct={canAct}
-        onRitualActivate={(id) =>
-          tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
-        }
-        onRitualAbsorb={(id) => {
-          if (intent.kind !== "absorb") return;
-          tryDispatch({
-            type: "ABSORB_SYMBOL_TO_RITUAL",
-            playerId: activeId,
-            cardInstanceId: id,
-            symbolId: intent.symbolId,
-          });
-        }}
-      />
-
-      <FaceCardsInPlay
-        state={state}
-        playerId={MATCH_P1}
-        label="P1 face cards"
-        actingPlayerId={actingId}
-        canAct={canAct}
-        onActivateFace={(dieId, slotIndex) =>
-          tryDispatch({
-            type: "ACTIVATE_FACE",
-            playerId: actingId,
-            dieId,
-            slotIndex,
-          })
-        }
-      />
-
+        <Battlefield
+          state={state}
+          playerId={MATCH_P1}
+          label="Player 1"
+          facing="up"
+          intent={intent}
+          absorbArmed={intent.kind === "absorb"}
+          onCreatureClick={onCreatureClick}
+          onAttackChoose={(attackerId, attackId) =>
+            setIntent({ kind: "attack", attackerId, attackId })
+          }
+          onCancelAttack={clearIntent}
+          actingPlayerId={actingId}
+          canAct={canAct}
+          onRitualActivate={(id) =>
+            tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
+          }
+          onRitualAbsorb={(id) => {
+            if (intent.kind !== "absorb") return;
+            tryDispatch({
+              type: "ABSORB_SYMBOL_TO_RITUAL",
+              playerId: activeId,
+              cardInstanceId: id,
+              symbolId: intent.symbolId,
+            });
+          }}
+        />
+        <FaceCardsInPlay
+          state={state}
+          playerId={MATCH_P1}
+          label="P1 face cards"
+          actingPlayerId={actingId}
+          canAct={canAct}
+          onActivateFace={(dieId, slotIndex) =>
+            tryDispatch({
+              type: "ACTIVATE_FACE",
+              playerId: actingId,
+              dieId,
+              slotIndex,
+            })
+          }
+        />
+      </div>
       <div className="fixed inset-x-0 bottom-0 z-30 overflow-visible border-t border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] backdrop-blur">
         <div className="mx-auto flex max-w-5xl flex-col gap-2 overflow-visible px-4 py-2 sm:px-6">
           <button
@@ -3194,10 +3195,10 @@ function FaceCardTile({
       onMouseLeave={() => setHovered(false)}
       className={
         entry.showing
-          ? "relative w-40 rounded border border-[var(--accent)] bg-[var(--accent)]/15 p-3"
+          ? "relative w-full min-w-0 rounded border border-[var(--accent)] bg-[var(--accent)]/15 p-2"
           : hasRolled
-            ? "relative w-40 rounded border border-stone-800 bg-stone-950/70 p-3 opacity-55"
-            : "relative w-40 rounded border border-stone-700 bg-stone-950 p-3"
+            ? "relative w-full min-w-0 rounded border border-stone-800 bg-stone-950/70 p-2 opacity-55"
+            : "relative w-full min-w-0 rounded border border-stone-700 bg-stone-950 p-2"
       }
     >
       {pairPos !== null &&
@@ -3329,24 +3330,28 @@ function FaceCardsInPlay({
     playerId === actingPlayerId;
 
   return (
-    <section className="rounded-lg border border-stone-800 bg-black/25 p-4">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+    <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-stone-800 bg-black/25 p-3">
+      <h2 className="mb-2 shrink-0 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
         {label}
         {hasRolled ? " · showing after roll" : " · shared across dice"}
       </h2>
-      <div className="flex flex-wrap gap-3">
-        {faces.map((entry) => (
-          <FaceCardTile
-            key={entry.faceCardId}
-            state={state}
-            playerId={playerId}
-            entry={entry}
-            hasRolled={hasRolled}
-            canActivateShowing={canActivateShowing}
-            onActivateFace={onActivateFace}
-          />
-        ))}
-        {faces.length === 0 && <p className="text-sm text-stone-600">No faces installed</p>}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="grid grid-cols-2 gap-2">
+          {faces.map((entry) => (
+            <FaceCardTile
+              key={entry.faceCardId}
+              state={state}
+              playerId={playerId}
+              entry={entry}
+              hasRolled={hasRolled}
+              canActivateShowing={canActivateShowing}
+              onActivateFace={onActivateFace}
+            />
+          ))}
+        </div>
+        {faces.length === 0 && (
+          <p className="text-sm text-stone-600">No faces installed</p>
+        )}
       </div>
     </section>
   );
