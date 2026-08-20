@@ -24,9 +24,9 @@ export function pendingChooserId(state: GameState): PlayerId | null {
   return null;
 }
 
-/** Turn player, or reaction-priority holder while a window is open. */
+/** Turn player, reaction-priority holder, or pending choice controller. */
 export function actingPlayerIdOf(state: GameState): PlayerId {
-  return reactionPriorityOf(state) ?? state.activePlayerId;
+  return pendingChooserId(state) ?? state.activePlayerId;
 }
 
 /** Online: only the bound seat that currently may take a turn/reaction action. */

@@ -107,6 +107,8 @@ crosses.
 - `negate-ritual`: top link exists, kind is `ritual-place` or
   `ritual-activate`, not already negated.
 - No respond/pass while a non-reaction `pendingDecision` is set.
+- While a reaction window is open, a non-priority seat is refused with
+  `NOT_PRIORITY_PLAYER` (not `PENDING_DECISION` / `NOT_ACTIVE_PLAYER`).
 - `FORGE_CARD` never opens a reaction window.
 
 ## Resolution

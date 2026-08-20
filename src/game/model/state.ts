@@ -116,8 +116,11 @@ export interface PendingEffect {
 }
 
 /**
- * A player decision that pauses resolution. While set, only the matching
- * resolve action from the controller may advance the match.
+ * A player decision that pauses resolution. While a non-reaction pending is
+ * set, only the matching resolve action from `controllerId` may advance —
+ * even if that player is not `activePlayerId`. Everyone else, including the
+ * turn player, is refused with `PENDING_DECISION`. Reaction windows use
+ * `priorityPlayerId` / `NOT_PRIORITY_PLAYER` instead (`008`).
  */
 export type PendingDecision =
   | {

@@ -65,3 +65,31 @@ describe("seatGate — reaction-priority vs missing controllerId", () => {
     expect(claimedTurnPlayer.playerId).toBe(P2);
   });
 });
+
+describe("seatGate — non-reaction pending chooser vs turn player", () => {
+  const p2TurnP1Chooses = stateOf({
+    activePlayerId: P2,
+    pending: {
+      type: "choose-creature",
+      controllerId: P1,
+      filter: "enemy",
+      deferred: {} as never,
+    },
+  });
+
+  it("treats the pending controller as the acting seat, not the turn player", () => {
+    expect(reactionPriorityOf(p2TurnP1Chooses)).toBeNull();
+    expect(pendingChooserId(p2TurnP1Chooses)).toBe(P1);
+    expect(actingPlayerIdOf(p2TurnP1Chooses)).toBe(P1);
+  });
+
+  it("lets the online chooser act even when they are not the turn player", () => {
+    expect(localSeatCanAct(true, P1, p2TurnP1Chooses)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P1, p2TurnP1Chooses)).toBe(true);
+  });
+
+  it("locks the online turn player while the opponent owns the pending choice", () => {
+    expect(localSeatCanAct(true, P2, p2TurnP1Chooses)).toBe(false);
+    expect(localSeatIsPendingChooser(true, P2, p2TurnP1Chooses)).toBe(false);
+  });
+});

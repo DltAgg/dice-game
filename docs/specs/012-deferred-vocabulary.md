@@ -125,7 +125,11 @@ Illegal moves return `GameError` + original state.
 ## Validation
 
 - Pending resolve actions: only the matching `controllerId`, matching pending
-  type, while `status === "in-progress"`.
+  type, while `status === "in-progress"`. The controller may resolve even when
+  they are not `activePlayerId`. Every other player — including the turn
+  player — is refused with `PENDING_DECISION` (not `NOT_ACTIVE_PLAYER`).
+  Reaction windows still use `NOT_PRIORITY_PLAYER` / the priority allow-list
+  (`008`).
 - `ACTIVATE_FACE`: actions phase, owned die, showing slot, face has
   `activated`, holder has Energy for the computed cost.
 - Convert replacements: eligible ids, Natural attributes, count ≤ pending
