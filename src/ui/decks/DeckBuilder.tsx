@@ -5,6 +5,7 @@ import {
   CREATURES,
   DEFAULT_RULES_CONFIG,
   leftoverFacePool,
+  isOpeningBasicFace,
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
@@ -127,6 +128,18 @@ function catalogueSearchLabel(filter: CatalogueFilter): string {
   return `Search ${filter}s…`;
 }
 
+/** Unique named specials already in the face deck (not basics). */
+function uniqueFaceDeckSpecials(faceDeck: readonly FaceCardId[]): FaceCardId[] {
+  const seen = new Set<FaceCardId>();
+  const ids: FaceCardId[] = [];
+  for (const id of faceDeck) {
+    if (isOpeningBasicFace(id) || seen.has(id)) continue;
+    seen.add(id);
+    ids.push(id);
+  }
+  return ids;
+}
+
 export function DeckBuilder() {
   const decks = useDeckStore((s) => s.decks);
   const selectedId = useDeckStore((s) => s.selectedId);
@@ -179,14 +192,34 @@ export function DeckBuilder() {
     () => leftoverFacePool(faceDeck, startingDice),
     [faceDeck, startingDice],
   );
+  const faceDeckSpecials = useMemo(
+    () => uniqueFaceDeckSpecials(faceDeck),
+    [faceDeck],
+  );
 
   const paintSlot = (id: FaceCardId) => {
-    if (paintTarget === null || readonly) return;
+    if (readonly) return;
+    if (paintTarget === null) {
+      setMessage("Select an opening-die slot, then a face to place.");
+      return;
+    }
+    const needsFaceDeckRow = !isOpeningBasicFace(id) && !faceDeck.includes(id);
+    if (needsFaceDeckRow) {
+      if (faceDeck.length >= cfg.faceDeckMaxCards) {
+        const faceName = getFaceCard(id)?.name ?? id;
+        setMessage(
+          `Add ${faceName} to the face deck first (max ${String(cfg.faceDeckMaxCards)}).`,
+        );
+        return;
+      }
+      setFaceDeck((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    }
     setStartingDice((prev) => {
       const next: [FaceCardId[], FaceCardId[]] = [[...prev[0]], [...prev[1]]];
       next[paintTarget.die][paintTarget.slot] = id;
       return [next[0], next[1]] as unknown as StartingDiceLayout;
     });
+    setMessage(null);
   };
 
   const deckEntries = useMemo(
@@ -355,8 +388,9 @@ export function DeckBuilder() {
           Opening dice
         </h2>
         <p className="mt-1 text-xs text-stone-500">
-          Select a slot, then a basic or a face-deck special. Leftover pool is mid-game forge
-          inventory.
+          Select a slot, then a basic or a face-deck special below (or Place on a face row).
+          Leftover pool is mid-game forge inventory — click a leftover special to install it.
+          {readonly ? " Builtin decks are read-only; Save as new to edit opening dice." : ""}
         </p>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           {startingDice.map((die, dieIndex) => (
@@ -367,7 +401,7 @@ export function DeckBuilder() {
               <div className="grid grid-cols-3 gap-2">
                 {die.map((id, slot) => {
                   const face = getFaceCard(id);
-                  const selected =
+                  const selectedSlot =
                     paintTarget?.die === dieIndex && paintTarget.slot === slot;
                   return (
                     <button
@@ -375,7 +409,7 @@ export function DeckBuilder() {
                       type="button"
                       disabled={readonly}
                       className={
-                        selected
+                        selectedSlot
                           ? "rounded border border-[var(--accent)] bg-[var(--accent)]/15 px-2 py-2 text-left"
                           : "rounded border border-stone-700 bg-stone-950 px-2 py-2 text-left hover:border-stone-500"
                       }
@@ -393,19 +427,42 @@ export function DeckBuilder() {
             </div>
           ))}
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+          Basics
+        </p>
+        <div className="mt-1 flex flex-wrap gap-2">
           {BASIC_FACE_CARDS.map((face) => (
-            <button
+            <FacePaintChip
               key={face.id}
-              type="button"
+              name={face.name}
               disabled={readonly || paintTarget === null}
-              className="rounded border border-stone-700 px-2 py-1 text-xs text-stone-300 hover:border-stone-500 disabled:opacity-40"
-              onClick={() => paintSlot(face.id)}
-              onMouseEnter={() => setPreview({ kind: "face", id: face.id })}
-            >
-              {face.name}
-            </button>
+              onPaint={() => paintSlot(face.id)}
+              onPreview={() => setPreview({ kind: "face", id: face.id })}
+            />
           ))}
+        </div>
+        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+          Face-deck specials
+        </p>
+        <div className="mt-1 flex flex-wrap gap-2">
+          {faceDeckSpecials.length === 0 && (
+            <p className="text-xs text-stone-600">
+              No named specials in the face deck yet — add some from the Faces catalogue, then
+              place them here.
+            </p>
+          )}
+          {faceDeckSpecials.map((id) => {
+            const face = getFaceCard(id);
+            return (
+              <FacePaintChip
+                key={id}
+                name={face?.name ?? id}
+                disabled={readonly || paintTarget === null}
+                onPaint={() => paintSlot(id)}
+                onPreview={() => setPreview({ kind: "face", id })}
+              />
+            );
+          })}
         </div>
         <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
           Leftover pool ({leftoverPool.length})
@@ -417,12 +474,13 @@ export function DeckBuilder() {
           {leftoverPool.map((id, index) => {
             const face = getFaceCard(id);
             return (
-              <li
-                key={`${id}-${String(index)}`}
-                className="rounded border border-stone-800 px-2 py-1 text-xs text-stone-400"
-                onMouseEnter={() => setPreview({ kind: "face", id })}
-              >
-                {face?.name ?? id}
+              <li key={`${id}-${String(index)}`}>
+                <FacePaintChip
+                  name={face?.name ?? id}
+                  disabled={readonly || paintTarget === null}
+                  onPaint={() => paintSlot(id)}
+                  onPreview={() => setPreview({ kind: "face", id })}
+                />
               </li>
             );
           })}
@@ -545,6 +603,7 @@ export function DeckBuilder() {
                         addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
                         onHover={() => setPreview({ kind: "face", id: face.id })}
                         onAssign={() => paintSlot(face.id)}
+                        canAssign={paintTarget !== null}
                         onAdd={() =>
                           setFaceDeck(addCopy(faceDeck, face.id, cfg.faceDeckMaxCards))
                         }
@@ -596,6 +655,7 @@ export function DeckBuilder() {
                     addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
                     onHover={() => setPreview({ kind: "face", id })}
                     onAssign={() => paintSlot(id)}
+                    canAssign={paintTarget !== null}
                     onAdd={() =>
                       setFaceDeck(addCopy(faceDeck, id, cfg.faceDeckMaxCards))
                     }
@@ -643,6 +703,30 @@ export function DeckBuilder() {
   );
 }
 
+function FacePaintChip({
+  name,
+  disabled,
+  onPaint,
+  onPreview,
+}: {
+  name: string;
+  disabled: boolean;
+  onPaint: () => void;
+  onPreview: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      className="rounded border border-stone-700 px-2 py-1 text-xs text-stone-300 hover:border-stone-500 disabled:opacity-40"
+      onClick={onPaint}
+      onMouseEnter={onPreview}
+    >
+      {name}
+    </button>
+  );
+}
+
 function CatalogueTab({
   label,
   active,
@@ -677,6 +761,7 @@ function DeckRow({
   addDisabled = false,
   onHover,
   onAssign,
+  canAssign = false,
   onAdd,
   onRemove,
 }: {
@@ -689,6 +774,7 @@ function DeckRow({
   addDisabled?: boolean;
   onHover: () => void;
   onAssign?: () => void;
+  canAssign?: boolean;
   onAdd: () => void;
   onRemove: () => void;
 }) {
@@ -701,13 +787,26 @@ function DeckRow({
       }
       onMouseEnter={onHover}
       onFocus={onHover}
-      onClick={onAssign}
     >
       <div className="min-w-0">
         <p className="truncate text-sm text-stone-100">{title}</p>
         <p className="truncate text-xs capitalize text-stone-500">{subtitle}</p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {onAssign !== undefined && (
+          <button
+            type="button"
+            className={btnTiny}
+            disabled={readonly || !canAssign}
+            aria-label={`Place ${title} on the selected opening slot`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onAssign();
+            }}
+          >
+            Place
+          </button>
+        )}
         <button
           type="button"
           className={btnTiny}
