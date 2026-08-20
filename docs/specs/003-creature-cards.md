@@ -2,13 +2,15 @@
 
 Status: **IMPLEMENTED DEPTH** — Figma catalogue + English UI; passives and
 attack riders wired in `011`–`012` (Hunt push rewritten to next-attack bonus).
-Mechanical / Luminar Tempo–Combo creatures authored (fully wired). Fast-game
-HP/cost variants are not encoded.
+Mechanical / Luminar Tempo–Combo creatures authored (fully wired). Toxin /
+Corruption Burn squad authored (fully wired). Fast-game HP/cost variants are
+not encoded.
 
 Derived from the `Creature card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, page `0:1`). The Slow game test section is the
 authority for the six playable Figma creature designs. Additional Mechanical /
 Luminar entries support constructed Tempo and Combo Mechanical loadouts.
+Toxin / Corruption bodies support builtin Burn (`BURN_SQUAD`).
 
 ## Card grammar
 
@@ -82,6 +84,19 @@ vocabulary.
 | Servo Assembly | Mechanical | 13 | On absorb Mechanical: generate Mechanical | Ratchet (Mech; disc Mech) 1 dmg + generate Mechanical | Stamp Pulse (Mech 2; disc Mech 1) 2 dmg + reapply die modifiers |
 | Clockwork Dynamo | Mechanical | 12 | On roll Mechanical: next attack +1 | Spark (Mech; disc Mech) 2 dmg | Recalibrate (Mech+L; disc Mech) 2 dmg + next forge −1 Energy |
 
+## Catalogue (Toxin / Corruption — Burn)
+
+Authored for builtin Burn (`BURN_SQUAD`: Marrow Fiend / Cinder Wight /
+Ichor Hydra). Not on Aggro / Control / Tempo / Combo squads. HP stays in the
+playtest band (~11–17). Attacks are modest (1–2 damage); lethality is the DoT
+engine. All printed clauses wired with existing `010` / `012` vocabulary.
+
+| Creature | Attr | HP | Passive | Basic | Special |
+|---|---|---|---|---|---|
+| Marrow Fiend | Toxin | 15 | On toxin damage (enemy ticks): +1 Toxin on that creature | Gnaw (T; disc T) 2 dmg | Spread Rot (T 2; disc T) 1 dmg + frontline toxin |
+| Cinder Wight | Corruption | 14 | On start of opponent's turn: 1 dmg to most-damaged enemy | Cinder Touch (C; disc C) 2 dmg | Brand (C+T; disc C) 1 dmg + toxin |
+| Ichor Hydra | Toxin | 12 | First Toxin card −1 Energy / On absorb Toxin: apply 1 Toxin to a chosen enemy | Fang (T; disc T) 1 dmg + toxin | Molt Venom (T+C; disc T) 2 dmg + toxin |
+
 A separate Fast game test section in Figma adjusts some HP and costs; it is not
 encoded yet.
 
@@ -92,8 +107,9 @@ encoded yet.
 | Six Figma creatures as content + English `CreatureCard` UI | Fast-game HP/cost variants |
 | Mechanical / Luminar Tempo–Combo creatures (fully wired) | Stun |
 | Nightbound Adept (Darkness Control, fully wired) | — |
+| Toxin / Corruption Burn creatures (fully wired) | — |
 | Basic/Special costs, damage, `followUpEffects` / `on-attack` riders | — |
-| Passives: Minotaur pierce, Archmage Arcane discount, Varcolac / Elder / Void / Garuda Range; Luminar absorb/discount/ally heal; Mechanical absorb/roll payoffs | — |
+| Passives: Minotaur pierce, Archmage Arcane discount, Varcolac / Elder / Void / Garuda Range; Luminar absorb/discount/ally heal; Mechanical absorb/roll payoffs; Burn toxin-spread / turn-start ping / absorb-toxin | — |
 
 War Minotaur ignore-1-Shield, Poisoned Charge toxin + back-row swap, Garuda Dive
 optional swap, Bombardment frontline toxin, Archmage Burst draw / Overload
@@ -107,8 +123,11 @@ Prism Herald / Lens Choir / Aegis Link and Cogwork Driver / Servo Assembly /
 Clockwork Dynamo convert Luminar and Mechanical engine value into Tempo pressure
 or Combo loops without Martial beatstick ceilings.
 
+Marrow Fiend / Cinder Wight / Ichor Hydra convert Toxin and Corruption engine
+value into continuous burn without Martial beatstick ceilings.
+
 The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder) has
 been removed; hotseat defaults remain Aggro, with Control / Tempo / Combo
-Mechanical available as builtin loadouts.
+Mechanical / Burn available as builtin loadouts.
 
 Run `npm run dev` to see the catalogue.

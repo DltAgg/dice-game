@@ -1044,3 +1044,22 @@ export const COMBO_MECHANICAL_STARTING_DICE: StartingDiceLayout = [
   openingDieWithSpecial(GEAR),
   openingDieWithSpecial(CATALYST),
 ];
+
+/**
+ * Builtin Burn face deck — Toxin stackers + Corruption DoT specials (≤3 per
+ * attribute). Seep and Cinder open installed; leftover Marrow Rot / Spores
+ * feed Virulent Rite, leftover Wasting Brand is the opponent-die install.
+ * Hexbrand / Blight / Canker stay off this list (engine-hate, not ticks).
+ */
+export const BURN_FACE_DECK: readonly FaceCardId[] = [
+  SEEP,
+  MARROW_ROT,
+  SPORES,
+  CINDER,
+  WASTING_BRAND,
+];
+
+export const BURN_STARTING_DICE: StartingDiceLayout = [
+  openingDieWithSpecial(SEEP),
+  openingDieWithSpecial(CINDER),
+];

@@ -64,15 +64,16 @@ deal meaningful damage through its engine (rituals, consume, delayed/conditional
 hits). That is not the same as becoming Aggro.
 
 Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
-Control = Arcane/Darkness; **Burn** (constructed, no builtin list yet) =
+Control = Arcane/Darkness; **Burn** (builtin `BURN_DECK`) =
 Toxin/Corruption; Support = Arcane/Luminar/Wild/Mechanical
 (utility may splash; printed Energy 1 remains exceptional — splash via
 discounts, not 1-drops). Toxin remains legal in Aggro for creature-pressure
 ticks; Corruption is **not** Control’s future home and must not require an
 Arcane/Darkness manabase. Do not turn Corruption into generic Arcane negate.
 
-Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`, and
-`COMBO_MECHANICAL_DECK` in `cards.ts` (snapshots in `src/decks/prototype.ts`).
+Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`,
+`COMBO_MECHANICAL_DECK`, and `BURN_DECK` in `cards.ts` (snapshots in
+`src/decks/prototype.ts`).
 Do not dump a new card into Aggro and Control without an identity reason; Mech
 homes are Tempo / Combo Mechanical. Legal constructed: 50–60 tactics, ≤4 copies
 per id; face deck ≤12, ≤3 per attribute.
@@ -160,8 +161,8 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
 
 ## Deck-designer brief — Burn identity (2026-08-20)
 
-No builtin Burn list yet. When assembling one later (and when cutting
-Corruption from Control):
+Builtin Burn (`BURN_*` / `deck-burn`) is the Toxin + Corruption DoT list.
+When cutting Corruption from Control:
 
 **Keep / densify for Burn:** Dose, Blight Strike, Venomous Fangs, Serrated
 Stinger, Toxic Blessing, Virulent Rite, Slow Burn, Venom Font, Concentrate,

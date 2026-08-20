@@ -5,11 +5,14 @@ import {
   AEGIS_LINK,
   ALL_CREATURES,
   ARCHMAGE,
+  CINDER_WIGHT,
   CLOCKWORK_DYNAMO,
   COGWORK_DRIVER,
   CORRUPTING_ELDER,
   GARUDA,
+  ICHOR_HYDRA,
   LENS_CHOIR,
+  MARROW_FIEND,
   MINOTAUR,
   NIGHTBOUND_ADEPT,
   PRISM_HERALD,
@@ -37,6 +40,8 @@ const TEMPO_COMBO_IDS = [
   SERVO_ASSEMBLY,
 ] as const;
 
+const BURN_IDS = [CINDER_WIGHT, ICHOR_HYDRA, MARROW_FIEND] as const;
+
 describe("creature catalogue", () => {
   it("includes the six Slow-game-test creatures", () => {
     const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
@@ -54,6 +59,13 @@ describe("creature catalogue", () => {
 
   it("includes Nightbound Adept for two-color Control", () => {
     expect(ALL_CREATURES.some((creature) => creature.id === NIGHTBOUND_ADEPT)).toBe(true);
+  });
+
+  it("includes Toxin / Corruption Burn creatures", () => {
+    const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
+    for (const id of BURN_IDS) {
+      expect(ids.has(id)).toBe(true);
+    }
   });
 
   it("gives every catalogue creature a passive, a basic and a special", () => {

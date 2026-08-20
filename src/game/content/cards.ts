@@ -1740,7 +1740,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       ],
     },
   }),
-  // --- Toxin / Corruption continuous-burn package (catalogue-only; no builtin list) ---
+  // --- Toxin / Corruption continuous-burn package (builtin Burn list) ---
   card({
     id: SLOW_BURN,
     name: "Slow Burn",
@@ -2075,4 +2075,40 @@ const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
 
 export const COMBO_MECHANICAL_DECK: readonly CardId[] = COMBO_MECHANICAL_DECK_COUNTS.flatMap(
   ([id, copies]) => Array.from({ length: copies }, () => id),
+);
+
+/**
+ * Builtin Burn tactics deck (spec 002): Toxin ticks + Corruption DoT, with a
+ * thin generic toolkit so the list can survive creature combat. Marker splash
+ * (Dose) densifies the engine; Aggro beatdown (Fangs, Blight Strike, Stinger)
+ * stays off the maindeck. Legal under M4: 50–60 cards, ≤4 copies per id.
+ */
+export const BURN_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
+  // Continuous DoT engine
+  [SLOW_BURN, 4],
+  [SMOLDER, 4],
+  [VENOM_FONT, 3],
+  [FESTER, 3],
+  [CINDER_HEX, 3],
+  [CONCENTRATE, 3],
+  [ICHOR_SHEATH, 3],
+  [EMBER_TIDE, 3],
+  // Marker / forge conversion (not Aggro attacks)
+  [DOSE, 3],
+  [VIRULENT_RITE, 3],
+  [RITUAL_OF_CONTAMINATION, 3],
+  [GREAT_CONTAMINATION, 2],
+  [PERSISTENT_INFECTION, 3],
+  [BLACK_PLAGUE, 2],
+  // Survive creature combat (generic toolkit splash)
+  [RAISE_GUARD, 3],
+  [SIDESTEP, 3],
+  [WARDING_CHARM, 2],
+  [RETHROW, 2],
+  [SIFT, 2],
+  [SECOND_WIND, 2],
+];
+
+export const BURN_DECK: readonly CardId[] = BURN_DECK_COUNTS.flatMap(([id, copies]) =>
+  Array.from({ length: copies }, () => id),
 );

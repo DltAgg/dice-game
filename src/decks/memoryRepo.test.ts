@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  BURN_DECK,
+  BURN_FACE_DECK,
+  BURN_SQUAD,
   COMBO_MECHANICAL_DECK,
   COMBO_MECHANICAL_FACE_DECK,
   COMBO_MECHANICAL_SQUAD,
@@ -17,6 +20,7 @@ import {
 import { createMemoryDeckRepository } from "./memoryRepo.js";
 import {
   buildBuiltinDecks,
+  BURN_SAVED_DECK_ID,
   COMBO_MECHANICAL_SAVED_DECK_ID,
   CONTROL_SAVED_DECK_ID,
   PROTOTYPE_SAVED_DECK_ID,
@@ -25,7 +29,7 @@ import {
 import { validateSavedDeck } from "./validate.js";
 
 describe("memory DeckRepository", () => {
-  it("always lists builtin Aggro, Control, Tempo, and Combo Mechanical", () => {
+  it("always lists builtin Aggro, Control, Tempo, Combo Mechanical, and Burn", () => {
     const repo = createMemoryDeckRepository();
     const listed = repo.list();
     expect(listed.map((deck) => deck.id)).toEqual([
@@ -33,6 +37,7 @@ describe("memory DeckRepository", () => {
       CONTROL_SAVED_DECK_ID,
       TEMPO_SAVED_DECK_ID,
       COMBO_MECHANICAL_SAVED_DECK_ID,
+      BURN_SAVED_DECK_ID,
     ]);
     expect(listed.every((deck) => deck.builtin === true)).toBe(true);
   });
@@ -47,7 +52,7 @@ describe("memory DeckRepository", () => {
       startingDice: PROTOTYPE_STARTING_DICE,
     });
     expect(repo.get(saved.id)?.name).toBe("My deck");
-    expect(repo.list()).toHaveLength(5);
+    expect(repo.list()).toHaveLength(6);
   });
 
   it("persists an illegal draft for later editing", () => {
@@ -68,7 +73,8 @@ describe("memory DeckRepository", () => {
     expect(repo.remove(CONTROL_SAVED_DECK_ID)).toBe(false);
     expect(repo.remove(TEMPO_SAVED_DECK_ID)).toBe(false);
     expect(repo.remove(COMBO_MECHANICAL_SAVED_DECK_ID)).toBe(false);
-    expect(repo.list()).toHaveLength(4);
+    expect(repo.remove(BURN_SAVED_DECK_ID)).toBe(false);
+    expect(repo.list()).toHaveLength(5);
   });
 });
 
@@ -113,5 +119,17 @@ describe("builtin loadouts", () => {
     expect(COMBO_MECHANICAL_DECK.length).toBeLessThanOrEqual(60);
     expect(COMBO_MECHANICAL_FACE_DECK).toHaveLength(12);
     expect(new Set(COMBO_MECHANICAL_FACE_DECK).size).toBe(12);
+  });
+
+  it("fields the burn Toxin/Corruption trio and a legal tactics/face pool", () => {
+    expect(BURN_SQUAD).toEqual([
+      "creature-marrow-fiend",
+      "creature-cinder-wight",
+      "creature-ichor-hydra",
+    ]);
+    expect(BURN_DECK.length).toBeGreaterThanOrEqual(50);
+    expect(BURN_DECK.length).toBeLessThanOrEqual(60);
+    expect(BURN_FACE_DECK.length).toBeLessThanOrEqual(12);
+    expect(new Set(BURN_FACE_DECK).size).toBe(BURN_FACE_DECK.length);
   });
 });

@@ -1,4 +1,8 @@
 import {
+  BURN_DECK,
+  BURN_FACE_DECK,
+  BURN_SQUAD,
+  BURN_STARTING_DICE,
   COMBO_MECHANICAL_DECK,
   COMBO_MECHANICAL_FACE_DECK,
   COMBO_MECHANICAL_SQUAD,
@@ -25,12 +29,14 @@ export const AGGRO_SAVED_DECK_ID = PROTOTYPE_SAVED_DECK_ID;
 export const CONTROL_SAVED_DECK_ID: SavedDeckId = "deck-control";
 export const TEMPO_SAVED_DECK_ID: SavedDeckId = "deck-tempo";
 export const COMBO_MECHANICAL_SAVED_DECK_ID: SavedDeckId = "deck-combo-mechanical";
+export const BURN_SAVED_DECK_ID: SavedDeckId = "deck-burn";
 
 const BUILTIN_IDS: ReadonlySet<string> = new Set([
   PROTOTYPE_SAVED_DECK_ID,
   CONTROL_SAVED_DECK_ID,
   TEMPO_SAVED_DECK_ID,
   COMBO_MECHANICAL_SAVED_DECK_ID,
+  BURN_SAVED_DECK_ID,
 ]);
 
 export const isBuiltinDeckId = (id: string): boolean => BUILTIN_IDS.has(id);
@@ -94,13 +100,28 @@ export function buildComboMechanicalSavedDeck(): SavedDeck {
   };
 }
 
-/** Builtin loadouts in list order (Aggro, Control, Tempo, Combo Mechanical). */
+export function buildBurnSavedDeck(): SavedDeck {
+  return {
+    schemaVersion: DECK_SCHEMA_VERSION,
+    id: BURN_SAVED_DECK_ID,
+    name: "Burn",
+    squad: BURN_SQUAD,
+    deck: BURN_DECK,
+    faceDeck: BURN_FACE_DECK,
+    startingDice: BURN_STARTING_DICE,
+    updatedAt: "1970-01-01T00:00:00.000Z",
+    builtin: true,
+  };
+}
+
+/** Builtin loadouts in list order (Aggro, Control, Tempo, Combo Mechanical, Burn). */
 export function buildBuiltinDecks(): readonly SavedDeck[] {
   return [
     buildAggroSavedDeck(),
     buildControlSavedDeck(),
     buildTempoSavedDeck(),
     buildComboMechanicalSavedDeck(),
+    buildBurnSavedDeck(),
   ];
 }
 

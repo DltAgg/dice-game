@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ALL_CARDS,
+  BURN_DECK,
   COMBO_MECHANICAL_DECK,
   CONTROL_DECK,
   ECLIPSE,
@@ -9,12 +10,15 @@ import {
   getCard,
 } from "../content/cards.js";
 import {
+  BURN_SQUAD,
   COMBO_MECHANICAL_SQUAD,
   CONTROL_SQUAD,
   PROTOTYPE_SQUAD,
   TEMPO_SQUAD,
 } from "../content/creatures.js";
 import {
+  BURN_FACE_DECK,
+  BURN_STARTING_DICE,
   COMBO_MECHANICAL_FACE_DECK,
   COMBO_MECHANICAL_STARTING_DICE,
   CONTROL_FACE_DECK,
@@ -27,7 +31,12 @@ import {
   PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_STARTING_DICE,
+  SEEP,
   SHIELD_FACE_ID,
+  MARROW_ROT,
+  SPORES,
+  CINDER,
+  WASTING_BRAND,
   TEMPO_FACE_DECK,
   TEMPO_STARTING_DICE,
   WARHORN,
@@ -68,6 +77,12 @@ describe("validateTacticsDeck", () => {
     });
     expect(COMBO_MECHANICAL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(COMBO_MECHANICAL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+  });
+
+  it("accepts the burn deck", () => {
+    expect(validateTacticsDeck(BURN_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
+    expect(BURN_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(BURN_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
   });
 
   it("refuses a deck below the minimum", () => {
@@ -156,6 +171,20 @@ describe("validateLoadout", () => {
           deck: COMBO_MECHANICAL_DECK,
           faceDeck: COMBO_MECHANICAL_FACE_DECK,
           startingDice: COMBO_MECHANICAL_STARTING_DICE,
+        },
+        DEFAULT_RULES_CONFIG,
+      ),
+    ).toEqual({ ok: true });
+  });
+
+  it("accepts the burn loadout", () => {
+    expect(
+      validateLoadout(
+        {
+          squad: BURN_SQUAD,
+          deck: BURN_DECK,
+          faceDeck: BURN_FACE_DECK,
+          startingDice: BURN_STARTING_DICE,
         },
         DEFAULT_RULES_CONFIG,
       ),
@@ -309,5 +338,14 @@ describe("leftoverFacePool", () => {
     const deck = [...PROTOTYPE_FACE_DECK.slice(0, 11), martial];
     const pool = leftoverFacePool(deck, PROTOTYPE_STARTING_DICE);
     expect(pool).toContain(martial);
+  });
+
+  it("burn leftover pool keeps Marrow Rot, Spores, and Wasting Brand", () => {
+    const pool = leftoverFacePool(BURN_FACE_DECK, BURN_STARTING_DICE);
+    expect(pool).not.toContain(SEEP);
+    expect(pool).not.toContain(CINDER);
+    expect(pool).toContain(MARROW_ROT);
+    expect(pool).toContain(SPORES);
+    expect(pool).toContain(WASTING_BRAND);
   });
 });

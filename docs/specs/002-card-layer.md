@@ -135,14 +135,15 @@ reading: any matching named special (Canker, Blight, Hexbrand, …).
 | Aggro | Wild, Martial, Toxin |
 | Combo | Luminar, Wild, Mechanical, Toxin |
 | Control | Arcane, Darkness |
-| Burn | Toxin, Corruption (constructed; no builtin list yet) |
+| Burn | Toxin, Corruption |
 | Support | Arcane, Luminar, Wild, Mechanical |
 
 Builtin constructed lists (content + `src/decks/prototype.ts`): **Aggro**
 (`PROTOTYPE_*` / `deck-prototype`), **Control** (`CONTROL_*` /
 `deck-control`), **Tempo** (`TEMPO_*` / `deck-tempo` — Mech+Luminar sequencing),
 **Combo Mechanical** (`COMBO_MECHANICAL_*` / `deck-combo-mechanical` — Mech
-engine chaining). Do not dump Mech into Aggro/Control without an identity reason.
+engine chaining), **Burn** (`BURN_*` / `deck-burn` — Toxin ticks + Corruption
+DoT). Do not dump Mech into Aggro/Control without an identity reason.
 
 > Support faces are not limited to only this, but should have low-cost cards
 > that contribute to other builds.
@@ -332,7 +333,9 @@ Playtest gap-fill: splashable 2-cost tools any constructed archetype can run
 Mechanical absorb-loops, no Arcane hard negate at Support prices). Dual-kind
 forges only (Martial / Wild / Arcane / Luminar) so one attribute does not own
 the package. Printed Energy 2 — 1-Energy plays come from discounts (§34.5).
-Fully wired. Builtin **Control** splashes 2–3 copies; other builtins stay clear.
+Fully wired. Builtin **Control** and **Burn** each splash 2–3 copies for
+utility (Control for filter/shield; Burn Raise Guard / Sidestep / Warding Charm
+to survive combat). Not on Aggro / Tempo / Combo Mechanical.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -345,11 +348,11 @@ Fully wired. Builtin **Control** splashes 2–3 copies; other builtins stay clea
 
 ### Toxin / Corruption continuous burn (authored)
 
-Catalogue-only constructed Burn vocabulary (Toxin ticks + Corruption DoT).
-Fully wired. **Not** added to builtin Aggro / Control / Tempo / Combo lists —
-parent will fire deck-designer after rebase. Great Contamination’s Active-when
-dropped Arcane so Burn does not need a Control manabase. Latent Corruption is
-left as an Arcane-engine leftover (deck-designer brief in `design.md`).
+Builtin **Burn** (`BURN_DECK` / `deck-burn`): Toxin ticks + Corruption DoT.
+Fully wired. Not on Aggro / Control / Tempo / Combo lists. Great Contamination’s
+Active-when is Corruption+Corruption (no Arcane) so Burn does not need a Control
+manabase. Latent Corruption is left as an Arcane-engine leftover (deck-designer
+brief in `design.md`). Hexbrand / Blight / Canker stay off the Burn face deck.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
