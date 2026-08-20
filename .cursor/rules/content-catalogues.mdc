@@ -24,3 +24,5 @@ Rules:
 - Synthetic faces are **named specials only**. Never author blank generics
   (`face-synthetic-martial`, `face-synthetic-corruption`, Forged Martial, …).
 - Follow `.cursor/skills/author-content/SKILL.md` for full workflows and templates.
+- Print voice is the **holder**: `you` is the player whose field the card sits on; `opponent` is that player’s opponent (including after a hand-off / opponent-die forge / opponent equip).
+- Printed `energyCost: 1` is exceptional and niche. Prefer 2+; the primary 1-Energy play pattern is cost reduction, not 1-drops.

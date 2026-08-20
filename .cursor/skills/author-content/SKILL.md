@@ -41,6 +41,20 @@ Types: `src/game/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    `kind: "natural"`. Keep splash in overload/equip gates or generated
    symbols, not in a mismatched forge, unless a future card explicitly
    needs a forge splash.
+6. **Print voice is the holder.** Write `rulesText` from the player who
+   currently has the card on their field (their die, creature, ritual row,
+   or equipment). **you** / **your** = that holder. **opponent** /
+   **opposing** / **enemy** = *their* opponent. If you forge, equip, or
+   hand the card onto the other side of the table, do not keep writing from
+   the original owner’s view — the new holder is now “you.” When both
+   players must act, name the actors in print (“you choose…”, “that
+   creature’s controller discards…”) instead of relying on owner/controller
+   jargon.
+7. **Printed Energy 1 is exceptional.** Do not author `energyCost: 1` as
+   cheap cycle. 1-cost cards must be narrow and niche so 2+ cards stay
+   appealing. The primary way to play something for 1 Energy is **cost
+   reduction** (discounts, next-forge, creature passives), not a roster of
+   natural 1-drops. Prefer printed 2+.
 
 ## Workflow
 

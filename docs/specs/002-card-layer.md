@@ -35,6 +35,15 @@ Every card in the file is one template, `Tactics card layout`:
 └──────────────────────────────────────────┘
 ```
 
+**Print voice (holder).** Effect text is written for the player who currently
+has the card on their field. `you` is that holder; `opponent` is their
+opponent. A card handed, forged, or equipped onto the other side keeps this
+voice — it does not stay in the sender’s second person.
+
+**Printed Energy 1 is exceptional.** Catalogue cards should generally cost 2+.
+The intended 1-Energy play pattern is cost reduction on a heavier card, not a
+band of 1-drops. Niche 1-costs need a design reason beyond “cheap support.”
+
 Six fields, in the order the layout presents them:
 
 | Field | Where | Notes |
@@ -42,8 +51,6 @@ Six fields, in the order the layout presents them:
 | Name | header, left | |
 | Energy cost | header, right | Integer, or `?` = variable pay-at-least-1 (see OPEN_DESIGN) |
 | Type line | text box, first line | `[Instant\|Reaction\|Equipment\|Overload / <attribute>]` or `[Ritual / <subtype…> / <attribute>]` — Ritual subtypes are Instant, Continuous, Reaction |
-
-
 | Forge region | text box | how many faces, of which kind and attribute, on which die |
 | Requirements | text box, bracketed | optional, and specific to the type / ritual subtype |
 | Effect | text box | the alternative to forging |

@@ -37,7 +37,9 @@ export const EXAMPLE: CreatureDefinitionId =
 ## Rules of thumb
 
 - Attacks spend **absorbed attribute tokens on the creature**, not the shared pool.
-- Always keep full English in `rulesText` / `passiveRulesText`.
+- Always keep full English in `rulesText` / `passiveRulesText`. Passives and
+  attack text use holder voice: **you** is this creature’s controller;
+  **opponent** is their opponent.
 - Attribute identity: [design.md](design.md). Aggro/midrange creatures convert
   the engine into board pressure. Control creatures may keep weak attacks;
   lethality for those lists lives on cards / rituals / faces (bible §27). They

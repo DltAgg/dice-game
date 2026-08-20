@@ -30,11 +30,16 @@ The **or** between forge and effect is load-bearing: one use, one region.
 - The player is making a **tradeoff** (forge now vs play now; absorb vs leave
   the symbol in the pool; contaminate their die vs build yours).
 - The attribute’s **primary identity** is still recognizable (bible §28–29).
-- Costs match role: cheap support / combat tricks; Arcane control generally
-  medium/high. Corruption **install** is on the cheap Instant band (Ritual of
-  Contamination: Energy 1 + Requires Corruption; Great Contamination 3). The
-  expense is **stay** (cannot-overwrite / forge-lock) plus a paid peel. See
-  `OPEN_DESIGN.md` Corruption install tempo.
+- Costs match role: support and combat tricks still want a real Energy
+  number (usually 2+); Arcane control generally medium/high. **Printed
+  Energy 1 is exceptional** — niche only, so heavier cards stay appealing.
+  The primary way to spend 1 Energy on a card is **cost reduction**, not a
+  1-cost card. Corruption **install** remains a rare 1-cost exception
+  (Ritual of Contamination: Energy 1 + Requires Corruption; Great
+  Contamination 3) because the expense is **stay** (cannot-overwrite /
+  forge-lock) plus a paid peel, not the header. See `OPEN_DESIGN.md`
+  Corruption install tempo. Do not treat that exception as a band for new
+  generic 1-drops.
 - Opponent-die forges (Corruption, Black Plague, Great Contamination): the
   **controller** names the face from **their** pool and installs it. Ownership
   stays with the forger; the physical face sits on the target die (§12).
@@ -60,7 +65,8 @@ hits). That is not the same as becoming Aggro.
 
 Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
 Control = Arcane/Corruption/Darkness; Support = Arcane/Luminar/Wild/Mechanical
-(low-cost cards may splash).
+(utility may splash; printed Energy 1 remains exceptional — splash via
+discounts, not 1-drops).
 
 Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`, and
 `COMBO_MECHANICAL_DECK` in `cards.ts` (snapshots in `src/decks/prototype.ts`).
@@ -110,13 +116,25 @@ Rituals pay the header on **place**; `ritual.additionalEnergy` is extra on
 activate (Runic Nullification). Instants may use `effect.requires` (symbol gate)
 and `effect.additionalEnergy`.
 
+**Default printed cost is 2 or more.** `energyCost: 1` is a last-resort niche
+tool, not the cheap-support band. Players should reach a 1-Energy play mainly
+through discounts (next-forge, standing cost reduction, on-roll reduction),
+which makes medium/high cards worth holding. A 1-cost that is just “the same
+effect, cheaper” makes the 3–5s feel unplayable.
+
 Printed `?` is `variableEnergy: true` with minimum `energyCost` — currently many
 catalogue `?` cards are temporarily authored as fixed 2 (see `cards.ts` header
 comment / OPEN_DESIGN). Do not invent scaling-off-spend effects until that
-vocabulary exists.
+vocabulary exists. A `?` card’s *minimum* should still follow the 1-cost
+caution (prefer minimum 2 unless the card is the rare niche exception).
 
 ## Print English
 
+- **Holder perspective.** The reader is the player who currently has this
+  card on their field. **you** = that player. **opponent** / **enemy** =
+  their opponent. If the card is forged, equipped, or handed onto the other
+  side, the new holder is “you”; do not keep the sender’s voice. When two
+  players must choose or act, spell out who does each action.
 - Instant / ritual activate: imperative clauses, no “Whenever…”.
 - Faces / overloads: `On roll:` / `On absorb:` lines.
 - Equipment / continuous rituals: `On deal damage:` / `On absorb:` / … matching

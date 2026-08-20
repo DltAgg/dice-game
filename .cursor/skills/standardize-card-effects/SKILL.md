@@ -21,6 +21,16 @@ Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape)
 
 ## Gold-standard print shape
 
+### Voice (holder, not original owner)
+
+Write every clause as if the player **holding this card on their field** is
+reading it. **you** / **your** = that holder. **opponent** / **opposing** /
+**enemy** = the holder’s opponent. If the card is handed, forged, or equipped
+onto the other side of the table, the new holder is now “you”; do not keep the
+sender’s perspective. When one player chooses a target and another must
+discard, strip, or pay, name both actors in the English — never leave “who
+selects / who acts” ambiguous.
+
 ### Faces / overloads
 
 ```text

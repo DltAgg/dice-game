@@ -582,6 +582,8 @@ Energy can be spent on:
 
 The Energy track creates tempo.
 
+Printed tactic costs should generally start at 2. Energy 1 on a card is an exceptional niche tool. Players should more often reach a 1-Energy play by reducing a heavier card than by drawing a printed 1-drop (see §34.5).
+
 When a player spends beyond the relevant threshold, control passes / the turn ends according to the finalized memory-track rules.
 
 **Implementation note:** The exact numerical threshold and turn-transition rules are **OPEN** and should not be hard-coded until finalized.
@@ -621,6 +623,17 @@ The concept is that one card can participate in both:
 2. **moment-to-moment gameplay**.
 
 This reduces dead cards and makes deckbuilding more strategically dense.
+
+## 19.1 Print voice — holder perspective
+
+Card text is written for the player who **currently holds the card on their field** (the die, creature, ritual row, or equipment zone where it sits).
+
+- **you** / **your** means that holder.
+- **opponent** / **opposing** / **enemy** means the holder’s opponent.
+
+If a card is handed, forged, or equipped onto the other side of the table, the new holder is now “you.” Do not keep writing from the original owner’s or forger’s point of view. “Opponent” on a card sitting on the opponent’s die means *their* opponent (the player who sent it), not “the player who currently owns the physical face.”
+
+When one player must choose a target and another must discard, strip, or pay, name both actors in the print. Ambiguous owner/controller jargon is a design bug.
 
 ---
 
@@ -1004,7 +1017,7 @@ Support may use:
 - Wild;
 - Mechanical.
 
-Low-cost cards may contribute to multiple archetypes.
+Utility cards may contribute to multiple archetypes. That does **not** mean they should be printed at Energy 1. Prefer 2+ printed costs; let discounts create 1-Energy plays (§34.5).
 
 Arcane effects should generally have medium/high costs when they provide strong control.
 
@@ -1145,6 +1158,16 @@ Control must still **close**. Closing is damage (and other defeat) sufficient to
 
 ---
 
+## 34.5 Printed Energy 1 is exceptional
+
+Do not fill the catalogue with 1-cost cards. A printed Energy 1 card must be **narrow and niche** so that 2+ cards remain appealing to hold and sequence.
+
+The **primary** way a player should play a card for 1 Energy is **cost reduction** (next-forge discounts, standing cost reduction, on-roll reduction) applied to a higher printed cost — not a roster of natural 1-drops.
+
+Cheap cycle at 1 Energy flattens tempo and makes medium/high cards feel unplayable. Existing 1-cost cards are not a license to add more. A rare exception (for example a Corruption install whose real tax is stay/peel rather than the header) must be justified in design notes.
+
+---
+
 # 35. Desired Game Feel
 
 The intended match should feel like:
@@ -1201,6 +1224,10 @@ A combo should still expose the opponent to interaction.
 ### I. Overload early-game natural faces
 
 Natural faces should establish the game, not create an explosive deterministic opening.
+
+### J. Flood the catalogue with printed 1-cost cards
+
+A 1-Energy card that is just an efficient version of a heavier card makes the heavier card unplayable. 1-Energy turns should come from cost reduction.
 
 ### J. Give Control no damage plan
 

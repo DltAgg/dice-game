@@ -56,6 +56,7 @@ Implement engine requirements so content can stay data-driven:
 - Illegal player moves return `GameError` plus the **original** state object. Do not throw for normal illegality.
 - Grow the AST only when a **concrete** card / creature / face needs it. Implement type + resolver + tests + proving wire together. No unreachable stubs “for later.”
 - Incomplete printed clauses: keep accurate English, leave structured fields empty or omit, row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently.
+- Proving-card print follows holder voice (`you` = the player whose field the card sits on). Do not invent a 1-cost proving card when a 2+ cost expresses the mechanic.
 - Hooks are **shared events** + catalogue filters. Never coupled types (`on-ally-attack`, `on-opponent-roll-symbol`). Identity is instance id, not definition id or printed name.
 - Filters live on ability data (`self` | `ally` | `ally-other` | `any`, `controller` | `opponent` | `any`), not in reducer branch names.
 - Hosts share one trigger union: equipment, creature standing passives, ready continuous rituals. Walk all hosts the same way.

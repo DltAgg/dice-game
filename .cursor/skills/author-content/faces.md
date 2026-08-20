@@ -35,6 +35,11 @@ Helpers:
 There is no `syntheticFaceId`. Tests and setup that need a synthetic must import
 a named special (`CRUSH`, `CANKER`, `GEAR`, …).
 
+Print (`rulesText` / on-roll / on-absorb) uses the **holder** of the die that
+shows the face: **you** is that die’s controller; **opponent** is their
+opponent. A face forged onto the opponent’s die is read by them. Name both
+actors when one player chooses and the other discards or pays.
+
 ## Shape (named special)
 
 ```ts

@@ -41,6 +41,18 @@ different turn-end mechanisms. The decision:
   capped at `trackMax`;
 - the starting player opens the match with 3 (not the clean-pass amount).
 
+### Printed Energy 1 is exceptional
+
+**Status:** `DECIDED` · 2026-08-20 · bible §34.5 · `author-content` / card-designer
+
+Do not author `energyCost: 1` as the default cheap band. 1-cost cards must be
+narrow and niche so 2+ cards stay appealing. The primary way to play a card for
+1 Energy is **cost reduction** (next-forge, standing discounts, on-roll
+reduction) applied to a higher printed cost. Existing 1-costs (Camshaft,
+Governor, Ritual of Contamination, blessing overloads, …) are not a license to
+add more generic 1-drops. Ritual of Contamination remains a documented install
+exception: the real tax is stay/peel, not the header.
+
 ### Variable (`?`) tactic Energy costs
 
 **Status:** `DECIDED` · 2026-08-12 · `CardDefinition.variableEnergy` + `energyPaid` on
@@ -52,8 +64,9 @@ much more as you want**. Engine support: `energyCost` minimum +
 
 **TEMP authoring (2026-08-13):** catalogue cards that print `?` currently use
 fixed integer `energyCost` (no `variableEnergy`) until spend UX / scaling
-effects are ready — see comment in `src/game/content/cards.ts`. On-roll primary
-cards use the cheap support band (1, or 2 for ungated / refund engines).
+effects are ready — see comment in `src/game/content/cards.ts`. Do not use that
+gap as a reason to print Energy 1; on-roll support still prefers 2+ with
+discounts as the 1-Energy path (see “Printed Energy 1 is exceptional”).
 
 Effects that scale off the amount spent (e.g. "spent 3: draw 1") are not yet in
 `EffectDefinition`; park those clauses in `DEFERRED_CATALOGUE.md` until a

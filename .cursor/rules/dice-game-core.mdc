@@ -12,6 +12,8 @@ alwaysApply: true
 - Incomplete printed clauses → `docs/DEFERRED_CATALOGUE.md`, not approximate silent effects.
 - DoD: `npm run typecheck && npm test && npm run lint`.
 - Commit / push only when the user asks.
+- Print voice is the holder (`you` = the player whose field the card sits on; `opponent` = their opponent, including after a hand-off).
+- Printed Energy 1 is exceptional; prefer cost reduction over 1-cost cards.
 - Content authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content`). New mechanics → `engine-developer`, not the parent.
 - Engine/reducer/hooks/resolution → subagent `.cursor/agents/engine-developer.md` (skills `develop-engine`, `implement-hooks`).
 - Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.

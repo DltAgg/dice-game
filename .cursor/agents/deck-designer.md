@@ -64,7 +64,7 @@ in UI or comments that disagree with `GameRulesConfig`.
 | Aggro | Wild, Martial, Toxin | Converting dice into immediate creature pressure — not the best raw removal |
 | Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining — not large generic numbers |
 | Control | Arcane, Corruption, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. |
-| Support | Arcane, Luminar, Wild, Mechanical | Low-cost cards that splash; Arcane control stays medium/high cost |
+| Support | Arcane, Luminar, Wild, Mechanical | Splashable utility; printed costs still usually 2+ (1-Energy plays via discounts). Arcane control stays medium/high cost |
 
 | Attribute | Must still look like |
 |---|---|
@@ -90,7 +90,7 @@ When reviewing a card or the catalogue, answer:
 1. **Home** — which archetype(s) want this, and why (role: pressure, conversion, gate, disruption, engine piece, splash)?
 2. **Orphan** — if no list wants it at 2+ copies *or* as a 1–2 of tech, say so. Forge-only (`rulesText: ""`) is allowed but must be intentional and rare.
 3. **Identity** — does the effect still read as that attribute when played outside its main archetype?
-4. **Cost / opportunity** (bible §34) — Energy, symbols, setup, deck commitment vs payoff. Removal should cost more than damage.
+4. **Cost / opportunity** (bible §34) — Energy, symbols, setup, deck commitment vs payoff. Removal should cost more than damage. Treat printed Energy 1 as a smell unless the card is a documented niche exception; 1-Energy turns should come from **cost reduction** on 2+ cards so heavier cards stay appealing.
 5. **Engine-builder test** — unflavored burn with no forge/engine touch is usually a miss (`design.md`). Engine-converted Control damage is **not** a miss.
 6. **Loadout fit** — do builtin (or proposed) face decks actually supply the forges this card’s forge region needs? Do rituals have absorbable attributes on the squad/dice plan?
 

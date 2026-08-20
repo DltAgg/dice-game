@@ -16,6 +16,7 @@ description: >-
 3. **Effects are data** — extend `src/game/model/effects.ts`, never attach functions.
 4. **Intent actions** — players declare choices (`PLAY_CARD`, `ATTACK`, …); amounts and legality are derived by the host/engine.
 5. **Failures** — return `GameError` + original state; do not throw for illegal moves.
+6. **Proving cards** — print uses holder voice; do not default new proving cards to Energy 1 when 2+ is enough (bible §34.5).
 
 ## Typical change: new effect kind
 

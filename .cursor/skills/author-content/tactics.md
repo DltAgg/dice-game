@@ -31,6 +31,11 @@ card({
 }),
 ```
 
+Print is the **holder’s** voice: `you` is the player whose field this card
+is on; `opponent` is *their* opponent. A card given, forged, or equipped to
+the other player does not keep the sender’s pronouns. Header `energyCost: 1`
+is exceptional — prefer 2+ and let discounts create 1-Energy plays.
+
 ## Region mapping
 
 | Print | Structured field |

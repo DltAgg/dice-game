@@ -81,3 +81,5 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Content ids: `card-*`, `creature-*`, `face-*`, `attack-*`, `ability-*` (kebab after prefix).
 - Attachment types (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region and ritual subtypes.
 - Grow effect AST only when a concrete card needs it; implement resolver + tests in the same change.
+- Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
+- Printed `energyCost: 1` is exceptional and niche. Players should reach 1-Energy plays mainly via **cost reduction**, not a catalogue of 1-drops.
