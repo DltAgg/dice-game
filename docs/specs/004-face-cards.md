@@ -95,15 +95,15 @@ Named specials:
 | Pack | 2 | On roll: adjacent → Wild; On absorb: optional reposition | |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
 | Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | |
-| Formation | 2 | On roll: Energy if controller has FL; On absorb: prevent on other FL | |
+| Formation | 2 | On roll: Energy if controller has FL; On absorb: 1 Shield on another allied FL | |
 | Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 | |
 | Spores | 2 | On roll: extra toxin if already toxined; On absorb: heal toxined ally | |
 | Adaptive Toxin | 2 | Cap toxin receive; strip markers → damage | Spec `013` |
 | Stain | 2 | Corruption marker; lock Corrupted as resource | Spec `013` |
 | Infection | 2 | On roll: spread marker; On absorb: opp loses Energy | Spec `013` |
 | Decay | 2 | Suppress Natural inherent; strip → unusable Corruption | Spec `013` |
-| Blight | 2 | On roll: generate Corruption; On absorb: destroy opposing ritual | Catalogue (not builtin Control) |
-| Hexbrand | 2 | On roll: strip 1 token; On absorb: destroy opposing equipment | Catalogue (not builtin Control) |
+| Blight | 2 | On roll: generate Corruption; On absorb: you destroy 1 Ritual your opponent controls | Catalogue (not builtin Control) |
+| Hexbrand | 2 | On roll: you strip 1 token from an enemy creature; On absorb: you destroy 1 Equipment on an enemy creature | Catalogue (not builtin Control) |
 | Canker | 2 | On roll: Corruption marker; On absorb: forge 1 named synthetic Corruption special on opponent die | Catalogue (not builtin Control) |
 | Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
 | Catalyst | 2 | Synthetic pool wildcard; copy appeared synthetic onRoll | Spec `013` |

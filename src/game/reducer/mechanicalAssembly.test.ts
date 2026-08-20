@@ -594,6 +594,52 @@ describe("Mechanical combo wave 2", () => {
     expect(generated).toHaveLength(1);
   });
 
+  it("Servomotor generates Mechanical only once per turn (no absorb loop)", () => {
+    const ready = actionsReady([SERVOMOTOR]);
+    const equipped = expectOk(
+      advance(ready, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+        declaredTargetCreatureId: creatureIdAt(ready, P1, 0),
+      }),
+    );
+    const seeded = installFace(equipped, mechanicalFace);
+    const afterRoll = rollShowingSlot(seeded, 0);
+    const mechanical = Object.values(afterRoll.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
+    );
+    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
+
+    const bearer = creatureIdAt(afterRoll, P1, 0);
+    const afterFirst = expectOk(
+      advance(afterRoll, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: bearer,
+        symbolId: mechanical.id,
+      }),
+    );
+    const generated = usableSymbols(afterFirst, P1).filter(
+      (s) => s.symbol === "mechanical" && s.sourceDieId === null,
+    );
+    expect(generated).toHaveLength(1);
+    const offspring = generated[0];
+    if (offspring === undefined) throw new Error("generated");
+
+    const afterSecond = expectOk(
+      advance(afterFirst, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId: bearer,
+        symbolId: offspring.id,
+      }),
+    );
+    expect(
+      usableSymbols(afterSecond, P1).filter((s) => s.symbol === "mechanical"),
+    ).toHaveLength(0);
+  });
+
   it("Clockwork generates Mechanical when the controller rolls Mechanical", () => {
     const { state } = placedReadyRitual(CLOCKWORK, { mechanical: 2 });
     const seeded = installFace(state, mechanicalFace);
