@@ -48,6 +48,8 @@ const FORBIDDEN_TOKENS: ReadonlyArray<{ pattern: RegExp; reason: string }> = [
 const FORBIDDEN_IMPORTS: ReadonlyArray<{ specifier: string; reason: string }> = [
   { specifier: "react", reason: "the engine must not depend on React" },
   { specifier: "react-dom", reason: "the engine must not depend on React" },
+  { specifier: "react-router", reason: "the engine must not depend on the match UI router" },
+  { specifier: "react-router-dom", reason: "the engine must not depend on the match UI router" },
   { specifier: "zustand", reason: "the engine must not depend on Zustand" },
   { specifier: "peerjs", reason: "the engine must not depend on PeerJS" },
   { specifier: "nanoid", reason: "ids are supplied by the caller, not generated in the engine" },

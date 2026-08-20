@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 import "@/ui/styles.css";
 import { App } from "./App.js";
 
@@ -8,6 +9,8 @@ if (container === null) throw new Error("missing #root");
 
 createRoot(container).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 );
