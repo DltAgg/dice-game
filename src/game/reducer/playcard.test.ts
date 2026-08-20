@@ -813,17 +813,17 @@ describe("drawing", () => {
     expect(first).not.toEqual(second);
   });
 
-  it("draws one on entering your own turn", () => {
+  it("draws two on entering your own turn", () => {
     const state = newMatchWithDecks();
 
     const result = advance(state, { type: "END_TURN", playerId: P1 });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.players[P2]?.hand).toHaveLength(6);
+    expect(result.state.players[P2]?.hand).toHaveLength(7);
     // The outgoing player is not topped up.
     expect(result.state.players[P1]?.hand).toHaveLength(5);
-    expect(eventTypes(result.state)).toContain("card-drawn");
+    expect(eventTypes(result.state).filter((type) => type === "card-drawn")).toHaveLength(2);
   });
 
   it("stops quietly once the deck is empty", () => {
