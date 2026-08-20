@@ -48,10 +48,11 @@ different turn-end mechanisms. The decision:
 Do not author `energyCost: 1` as the default cheap band. 1-cost cards must be
 narrow and niche so 2+ cards stay appealing. The primary way to play a card for
 1 Energy is **cost reduction** (next-forge, standing discounts, on-roll
-reduction) applied to a higher printed cost. Existing 1-costs (Camshaft,
-Governor, Ritual of Contamination, blessing overloads, …) are not a license to
-add more generic 1-drops. Ritual of Contamination remains a documented install
-exception: the real tax is stay/peel, not the header.
+reduction) applied to a higher printed cost. Remaining 1-costs (Camshaft as a
+Mechanical-face-gated forge-discount enabler, Ritual of Contamination, blessing
+overloads, …) are not a license to add more generic 1-drops. Ritual of
+Contamination remains a documented install exception: the real tax is stay/peel,
+not the header.
 
 ### Variable (`?`) tactic Energy costs
 
