@@ -1,0 +1,1 @@
+git worktree list | tail -n +2 | awk '{print $1}' | xargs -I {} git worktree remove {}
