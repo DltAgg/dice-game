@@ -1097,7 +1097,7 @@ describe("control creature attack riders", () => {
       ],
     });
 
-  it("Archmage Arcane Burst deals 1, draws 1, and burns the Arcane token", () => {
+  it("Archmage Arcane Burst deals 2, draws 1, and burns the Arcane token", () => {
     let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
@@ -1137,13 +1137,13 @@ describe("control creature attack riders", () => {
       }),
     );
 
-    expect(after.creatures[targetId]?.damage).toBe(1);
+    expect(after.creatures[targetId]?.damage).toBe(2);
     expect(after.creatures[attackerId]?.attributeTokens.arcane).toBeUndefined();
     expect(eventTypes(after)).toContain("card-drawn");
     expect(after.players[P1]?.hand).toContain(deckCardId);
   });
 
-  it("Corrupting Elder Touch of Decay strips 1 Shield then deals 1", () => {
+  it("Corrupting Elder Touch of Decay strips 1 Shield then deals 2", () => {
     let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 1);
     const targetId = creatureIdAt(state, P2, 0);
@@ -1160,10 +1160,10 @@ describe("control creature attack riders", () => {
     );
 
     expect(after.creatures[targetId]?.shields).toBe(0);
-    expect(after.creatures[targetId]?.damage).toBe(1);
+    expect(after.creatures[targetId]?.damage).toBe(2);
   });
 
-  it("Void Summoner Rupture deals 1 and generates Arcane", () => {
+  it("Void Summoner Rupture deals 2 and generates Arcane", () => {
     let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 2);
     const targetId = creatureIdAt(state, P2, 0);
@@ -1179,7 +1179,7 @@ describe("control creature attack riders", () => {
       }),
     );
 
-    expect(after.creatures[targetId]?.damage).toBe(1);
+    expect(after.creatures[targetId]?.damage).toBe(2);
     const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
     expect(arcane.length).toBeGreaterThanOrEqual(1);
   });

@@ -72,9 +72,9 @@ describe("reaction chain (008)", () => {
       }),
     );
     expect(silenced.chainStack).toHaveLength(2);
-    // Non-holder Silence (5) adds 5 to holder: 10−3+5 = 12 capped at trackMax.
+    // Non-holder Silence (4) adds 4 to holder: 10−3+4 = 11 capped at trackMax.
     expect(silenced.energy.holderId).toBe(P1);
-    expect(silenced.energy.value).toBe(Math.min(7 + 5, silenced.config.energy.trackMax));
+    expect(silenced.energy.value).toBe(Math.min(7 + 4, silenced.config.energy.trackMax));
 
     const resolved = resolveOpenChain(silenced);
     expect(resolved.chainStack).toHaveLength(0);
@@ -84,7 +84,7 @@ describe("reaction chain (008)", () => {
 
   it("non-holder reaction cost adds Energy to the holder (opposing +/-)", () => {
     // P2 places Nullification earlier; P1 holds 5, plays Eclipse (3) → 2;
-    // P2 activates Nullification (+3) → holder gains 3 → 5.
+    // P2 activates Nullification (+2) → holder gains 2 → 4.
     const p2Place = withEnergy(
       withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
         RUNIC_NULLIFICATION,
@@ -142,12 +142,12 @@ describe("reaction chain (008)", () => {
         cardInstanceId: ritualId,
       }),
     );
-    expect(afterNegate.energy).toEqual({ holderId: P1, value: 5 });
+    expect(afterNegate.energy).toEqual({ holderId: P1, value: 4 });
     expect(afterNegate.deferredTurnEndPlayerId).toBeNull();
   });
 
   it("overshoot then reaction restore: turn ends only after chain, and may not end", () => {
-    // A holds 2, plays Eclipse (3) → marker flips to B; B Nullifies (+3 holder spend
+    // A holds 2, plays Eclipse (3) → marker flips to B; B Nullifies (+2 holder spend
     // toward A) → marker returns to A; after Pass×2 A’s turn continues.
     const p2Place = withEnergy(
       withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
@@ -209,8 +209,8 @@ describe("reaction chain (008)", () => {
         cardInstanceId: ritualId,
       }),
     );
-    // B holds and pays +3 toward A: 1−3 → A gets 2.
-    expect(afterNegate.energy).toEqual({ holderId: P1, value: 2 });
+    // B holds and pays +2 toward A: 1−2 → A gets 1.
+    expect(afterNegate.energy).toEqual({ holderId: P1, value: 1 });
 
     const resolved = resolveOpenChain(afterNegate);
     expect(resolved.activePlayerId).toBe(P1);

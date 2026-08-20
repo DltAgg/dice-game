@@ -95,8 +95,8 @@ overload an Arcane face).
 | `Pay 3 Energy` | An extra cost inside the effect, on top of the header cost | Instant |
 
 That last one matters: *Runic Nullification* costs 2 in its header and then asks
-for 3 more Energy in its effect, so the header cost is what it costs to use the
-card and an effect may demand more.
+for 2 more Energy in its effect (4 Energy to actually negate), so the header
+cost is what it costs to place the card and an effect may demand more.
 
 ### Forge region forms
 
@@ -154,7 +154,7 @@ is used.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 3 Energy, negate the effect of 1 Instant card. |
+| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 2 Energy, negate the effect of 1 Instant card. |
 | 5 | Arcane Echo | Instant / Arcane | 1 Synthetic Arcane, your die | Apply the modifiers of one of the dice again. |
 | 1 | Blessing of the Hunt | Overload / Martial | 1 Natural Martial, your die | On roll: generate Martial. |
 | 1 | Martial Blessing | Overload / Martial | 1 Natural Martial, your die | On roll: the next attack this turn deals +1 damage. |
@@ -202,7 +202,7 @@ treat the current table as proof that Control should not deal damage.
 | 4 | Collapse of Reality | Instant / Arcane | 1 Natural Arcane, your die | Convert up to two symbols into any other 2 Natural symbols. |
 | 4 | Dark Pact | Instant / Darkness | 1 Synthetic Darkness, your die | Send 2 Ritual cards of different attributes from your deck to the graveyard. |
 | 6 | Mind Control | Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |
-| 5 | Arcane Silence | Reaction / Arcane | 2 Synthetic Arcane, your die | Negate the effect of 1 card. |
+| 4 | Arcane Silence | Reaction / Arcane | 2 Synthetic Arcane, your die | Negate the effect of 1 card. |
 | 2 | Persistent Infection | Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: gain 1 Energy. |
 | 2 | Blade of Serene Light | Equipment / Luminar | 1 Natural Luminar, your die | On deal damage: heal 1 on an allied creature. |
 | 2 | Black Plague | Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: this creature takes 1 damage. |

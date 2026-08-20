@@ -424,7 +424,7 @@ Legal response **kind** depends on the top link:
 - Negate targets the **top** chain link only, and only when that link is a
   negatable tactic-card link (not an attack).
 - Runic Nullification: header cost paid on place; activation pays an **extra
-  3 Energy**, then negates the top tactic link.
+  2 Energy**, then negates the top tactic link.
 
 **Once an effect is conducting**
 

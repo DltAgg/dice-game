@@ -37,21 +37,20 @@ Luminar entries support constructed Tempo and Combo Mechanical loadouts.
 
 HP is a **uniform +4** over the original Figma Slow print (playtest 2026-08-14:
 skirmishes ended before control could interact). Relative identity is unchanged
-(Garuda still glassiest, Minotaur still tankiest). Control attacks were retuned
-to 1 damage plus wired resource riders; those attacks now discard fuel on use.
-That weakness is **intentional**: Control is not expected to close with creature
-combat. Finishing damage belongs on the Control card / ritual / face / status
-layer (bible §27; OPEN_DESIGN 2026-08-20). Do not “fix” Control by buffing these
-attacks back to Aggro numbers.
+(Garuda still glassiest, Minotaur still tankiest). Control attacks discard fuel
+on use and keep resource riders; playtests found 1 damage too soft, so the
+squad’s attacks are **2 damage** (still below Aggro beatstick numbers). Finishing
+damage still belongs mainly on the Control card / ritual / face / status layer
+(bible §27; OPEN_DESIGN 2026-08-20). Do not push these attacks to Aggro ceilings.
 
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
 | War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
 | Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg + next attack +1 |
 | Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
-| Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 1 dmg + draw | Mystic Overload (Arcane+Luminar; discard Arcane 1) 1 dmg + Energy + generate Arcane |
-| Corrupting Elder | Arcane | 14 | Touch of Decay (Arcane; discard Arcane 1) 1 dmg + strip shield | Contamination (Arcane+Corruption; discard Corruption 1) 1 dmg + generate Corruption |
-| Void Summoner | Arcane | 13 | Rupture (Arcane; discard Arcane 1) 1 dmg + generate Arcane | Dimensional Rift (Arcane+Darkness; discard Darkness 1) 1 dmg + Energy + draw |
+| Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 2 dmg + draw | Mystic Overload (Arcane+Luminar; discard Arcane 1) 2 dmg + Energy + generate Arcane |
+| Corrupting Elder | Arcane | 14 | Touch of Decay (Arcane; discard Arcane 1) 2 dmg + strip shield | Contamination (Arcane+Corruption; discard Corruption 1) 2 dmg + generate Corruption |
+| Void Summoner | Arcane | 13 | Rupture (Arcane; discard Arcane 1) 2 dmg + generate Arcane | Dimensional Rift (Arcane+Darkness; discard Darkness 1) 2 dmg + Energy + draw |
 
 ## Catalogue (Mechanical / Luminar — Tempo & Combo)
 
@@ -86,7 +85,7 @@ War Minotaur ignore-1-Shield, Poisoned Charge toxin + back-row swap, Garuda Dive
 optional swap, Bombardment frontline toxin, Archmage Burst draw / Overload
 Energy+Arcane (`on-attack`), Elder Touch strip / Contamination generate Corruption,
 Void Rupture generate Arcane / Rift Energy+draw — all wired (`010` / `012`).
-Control print is the retuned 1-damage + resource-rider band.
+Control print is the 2-damage + resource-rider band (was 1; playtest bump).
 
 Prism Herald / Lens Choir / Aegis Link and Cogwork Driver / Servo Assembly /
 Clockwork Dynamo convert Luminar and Mechanical engine value into Tempo pressure
