@@ -67,8 +67,9 @@ fails, same as an illegal squad).
 ## UI
 
 - App shell **Decks** tab: name, squad, **two opening dice** (6 slots each),
-  tactics list, face list, leftover pool, live legality; illegal drafts may be
-  saved for later editing
+  basics + **face-deck special** paint chips, tactics list, face list, leftover
+  pool (click to install on the selected slot), live legality; illegal drafts
+  may be saved for later editing
 - **Play** refuses illegal loadouts (local / host / join / new match)
 - New match picks P1/P2 saved loadouts (default: Aggro builtin)
 
