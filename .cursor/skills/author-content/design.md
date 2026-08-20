@@ -88,27 +88,26 @@ per id; face deck ≤12, ≤3 per attribute.
 | Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
 | Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → absorb Active-when → `ACTIVATE_RITUAL` → GY |
 | Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when symbols persist unless an effect discards them |
-| Face (natural) | Starting identity faces | Dual-kind attrs + Shield only |
+| Face (natural) | Starting identity faces | All eight attrs + Shield |
 | Face (synthetic) | Named specials only | Pool → install; `onRoll` / `onAbsorb`. Never blank `face-synthetic-<attr>` |
 
 Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
 cumulative (`Arcane + Corruption + Corruption`), absorbed onto the ritual during
 actions — not auto-from the pool.
 
-Current catalogue cards **forge their own attribute**. Dual-kind → typically
-`kind: "natural"`; synthetic-only (Toxin, Mechanical, Corruption, Darkness) →
-always `kind: "synthetic"`. Overload/equip gates and generated symbols may
+Current catalogue cards **forge their own attribute**. Dual-kind cards may forge
+Natural or Synthetic of that attribute; many Toxin / Mechanical / Corruption /
+Darkness cards still forge `kind: "synthetic"` (named specials) even though
+natural identity faces now exist. Overload/equip gates and generated symbols may
 still splash (Latent Corruption overloads Arcane; Hunter's Collar generates
 Martial). The two fields remain independent in the model if a future card
 needs a true forge splash.
 
 ## Face-kind policy
 
-- Dual-kind (Martial, Wild, Arcane, Luminar): natural **and** synthetic forges.
-  Synthetics are **named specials** (Crush, Warhorn, …), not identity blanks.
-- Synthetic-only (Toxin, Mechanical, Corruption, Darkness): **never**
-  `kind: "natural"` faces or forge regions. Forge installs a named special
-  of that attribute from the pool.
+- All eight attributes are dual-kind: natural **and** synthetic forges.
+  Naturals are identity basics (`face-natural-<attr>`). Synthetics are
+  **named specials** (Crush, Warhorn, Venom, …), not identity blanks.
 - Shield: `kind: "untyped"` only. Starting-die identity; never forged; not Natural.
 - Never author generic identity synthetics (`face-synthetic-martial`,
   `face-synthetic-corruption`, Forged Martial, Synthetic Arcane, …).
@@ -153,7 +152,6 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
 - Unreachable `EffectDefinition` members “for later”.
 - Putting opponent-forge choice on the **opponent** (they receive the physical
   face; the activator picks from their pool).
-- Natural Corruption / Darkness / Toxin / Mechanical faces.
 - Blank/generic synthetics (attribute-named identity faces).
 - Every attribute doing everything.
 - Rules logic in React / Zustand / PeerJS.

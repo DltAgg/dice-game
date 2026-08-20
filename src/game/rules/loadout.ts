@@ -91,7 +91,7 @@ function validateOneDie(
     ) {
       return {
         ok: false,
-        reason: `natural faces are not allowed for synthetic-only attribute "${definition.symbol}"`,
+        reason: `natural faces are not allowed for attribute "${definition.symbol}"`,
       };
     }
     if (definition.forgeRestriction === "echo-cards") {

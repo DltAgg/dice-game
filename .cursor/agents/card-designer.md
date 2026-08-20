@@ -51,7 +51,9 @@ the user explicitly asks for tooling.
 - **Forge or play, never both** on the same use. Every hand card still has a forge region.
 - Rituals are main `type: "ritual"` with a `ritual` region — not a subtype.
 - Attachment types (`equipment` / `overload`) must match their regions.
-- Forge the card’s own attribute. Synthetic-only attributes (Toxin, Mechanical, Corruption, Darkness) never use `kind: "natural"`.
+- Forge the card’s own attribute. Natural forges are legal for every attribute;
+  synthetic forges still install **named specials** only (never blank
+  `face-synthetic-<attr>`).
 - Effects are **data**. Never attach functions. Never put rules in UI / store / networking.
 - Incomplete print: keep accurate English; leave `effect` / `abilities` / `onRoll` empty or omit; row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently (no Barrier→shields, no dropped absorb lines).
 - Do not grow `EffectDefinition`, `StandingTrigger`, `GameAction`, `reduce()`, `resolution.ts`, or `triggers.ts` yourself.

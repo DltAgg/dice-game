@@ -49,7 +49,7 @@ treat unwired clauses as live constructed tools.
 | Squad | Exactly `creaturesPerPlayer` (3) known definition ids |
 | Tactics | 50–60 cards, ≤4 copies per id, known `card-*` ids |
 | Face deck | ≤12 cards, ≤3 per attribute (Shield does not count). Naturals **may** be listed for mid-game density swaps; opening basics not in `faceDeck` do not count toward the 12. |
-| Face kind | Never natural Toxin / Mechanical / Corruption / Darkness |
+| Face kind | Naturals legal for all eight attrs; synthetics are named specials only |
 | Opening dice | Two d6 layouts (`startingDice`). Basics do not consume the face deck. Named specials on opening slots must be ids in `faceDeck`. Caps on `GameRulesConfig`. Echo / Heritage / Plague refused on start. |
 
 Starting layouts are part of the loadout. Do not omit naturals from the face deck *because they sit on opening dice* — omit them only if you do not want them as mid-game pool options.

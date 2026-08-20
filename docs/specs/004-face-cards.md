@@ -16,7 +16,7 @@ the definitions that back die faces. Forging installs a face from the owner's
 leaves the dice, the card returns to its owner.
 
 The 12-card face deck is the mid-game option pool (and the ledger for opening
-specials). Opening slots may use **basics** (dual-kind naturals + Shield)
+specials). Opening slots may use **basics** (all-attribute naturals + Shield)
 without listing them in the 12. Named specials on opening slots must be ids in
 `faceDeck` and start installed (XOR). Naturals **may** be packed in the 12 for
 density swaps; they then count toward the 12 and the 3-per-attribute cap.
@@ -47,9 +47,11 @@ pool.
 Identity faces available as **opening basics** (and optionally pooled for
 density swaps). Footer `+1 Attribute`. Overload capacity 1. No inherent effect.
 
-**Dual-kind attributes** (natural + synthetic allowed): Martial, Wild, Arcane,
-Luminar. Synthetic installs of these attributes are still **named specials**,
-not extra identity faces.
+**Dual-kind attributes** (natural + synthetic allowed): all eight — Martial,
+Wild, Toxin, Arcane, Luminar, Mechanical, Corruption, Darkness. Natural
+identity faces exist for each (`face-natural-<attr>`, overload capacity 1, no
+inherent effect). Synthetic installs are still **named specials**, not blank
+`face-synthetic-<attr>` generics.
 
 ### Basics (Untyped)
 
@@ -65,14 +67,12 @@ capacity 1. Shield is not an attribute and is not Natural — `On absorb Natural
 synthetics (`face-synthetic-martial`, `face-synthetic-corruption`, Forged
 Martial, Synthetic Corruption, …).
 
-**Synthetic-only attributes** (no natural faces / natural forges): Toxin,
-Mechanical, Corruption, Darkness. Enforced by `DUAL_KIND_ATTRIBUTES` /
-`SYNTHETIC_ONLY_ATTRIBUTES` in `src/game/model/attributes.ts`, face-deck
-validation, forge eligibility, and catalogue consistency tests. Forging always
-names a **named special** from the owner's pool — there is no identity-only
-`face-synthetic-<attr>` card. Dual-kind attributes may still be forged as
-synthetics; those installs are also named specials (Warhorn, Pack, Insight
-Rune, …), never a generic.
+Every attribute may also be forged as a synthetic; those installs are always
+named specials from the owner's pool (Venom, Gear, Canker, Drain, Warhorn,
+Pack, Insight Rune, …). Enforced by `DUAL_KIND_ATTRIBUTES` (= all attributes)
+and an empty `SYNTHETIC_ONLY_ATTRIBUTES` in `src/game/model/attributes.ts`,
+plus face-deck validation, forge eligibility, and catalogue consistency tests.
+There is no identity-only `face-synthetic-<attr>` card.
 
 Named specials:
 

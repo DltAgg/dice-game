@@ -76,8 +76,8 @@ export const knownFaceCardOwnerships = (
  * Face deck legality (bible §12): at most `faceDeckMaxCards` total, at most
  * `faceDeckMaxPerAttribute` sharing one attribute. Shield is not an attribute
  * and does not count toward the per-attribute cap. Unknown ids are refused.
- * Natural faces of synthetic-only attributes (Toxin / Mechanical / Corruption /
- * Darkness) are refused.
+ * Natural faces are legal for every attribute (dual-kind policy). Unknown
+ * catalogue ids are still refused.
  */
 export function validateFaceDeck(
   faceDeck: readonly FaceCardId[],
@@ -103,7 +103,7 @@ export function validateFaceDeck(
     ) {
       return {
         ok: false,
-        reason: `natural faces are not allowed for synthetic-only attribute "${definition.symbol}"`,
+        reason: `natural faces are not allowed for attribute "${definition.symbol}"`,
       };
     }
     if (!isAttributeSymbol(definition.symbol)) continue;

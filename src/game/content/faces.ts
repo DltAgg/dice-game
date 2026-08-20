@@ -1,8 +1,7 @@
 import {
   DUAL_KIND_ATTRIBUTES,
-  isDualKindAttribute,
+  isAttribute,
   type Attribute,
-  type DualKindAttribute,
 } from "../model/attributes.js";
 import type { DieFaceLayout, FaceCardDefinition, ForgeableFaceKind, StartingDiceLayout } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
@@ -13,30 +12,25 @@ import { SHIELD, type SymbolType } from "../model/symbols.js";
  * Face cards from the Figma `Face card` page (`2:13`), plus named synthetics
  * staged from `synthetic_faces.csv`. Translated to English.
  *
- * Basics are starting-die identity faces: Natural Martial / Wild / Arcane /
- * Luminar, plus untyped Shield. Toxin / Mechanical / Corruption / Darkness are
- * synthetic-only attributes — forge those as named specials from the owner's
- * pool. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
- * `onAbsorb` only for clauses the engine can resolve — leave the other array
- * empty and keep the deferred clause in `rulesText` (see DEFERRED_CATALOGUE).
+ * Basics are starting-die identity faces: natural faces for all eight
+ * attributes, plus untyped Shield. Synthetics remain **named specials only**
+ * — never blank `face-synthetic-<attr>` generics. Dual-timing print uses
+ * `On roll:` / `On absorb:`; fill `onRoll` / `onAbsorb` only for clauses the
+ * engine can resolve — leave the other array empty and keep the deferred
+ * clause in `rulesText` (see DEFERRED_CATALOGUE).
  */
 
 const face = (definition: FaceCardDefinition): FaceCardDefinition => definition;
 
-export const naturalFaceId = (attribute: DualKindAttribute): FaceCardId =>
+export const naturalFaceId = (attribute: Attribute): FaceCardId =>
   asFaceCardId(`face-natural-${attribute}`);
 
 /**
- * Starting-die identity only: naturals for dual-kind attributes. There is no
+ * Starting-die identity only: naturals for every attribute. There is no
  * canonical `face-synthetic-<attr>` — forging names a special from the pool.
  */
 export const faceIdFor = (kind: ForgeableFaceKind, attribute: Attribute): FaceCardId => {
   if (kind === "natural") {
-    if (!isDualKindAttribute(attribute)) {
-      throw new Error(
-        `attribute "${attribute}" is synthetic-only; natural faces are not allowed`,
-      );
-    }
     return naturalFaceId(attribute);
   }
   throw new Error(
@@ -49,19 +43,23 @@ export const SHIELD_FACE_ID: FaceCardId = asFaceCardId("face-untyped-shield");
 
 export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
   if (symbol === SHIELD) return SHIELD_FACE_ID;
-  if (isDualKindAttribute(symbol)) return naturalFaceId(symbol);
+  if (isAttribute(symbol)) return naturalFaceId(symbol);
   throw new Error(
-    `starting dice have no identity face for "${symbol}"; use a named synthetic from the face pool`,
+    `starting dice have no identity face for "${symbol}"; Shield and attribute naturals are the only basics`,
   );
 };
 
 /* ----------------------------------------------------------- Figma names --- */
 
-const NATURAL_FACE_NAMES: Readonly<Record<DualKindAttribute, string>> = {
+const NATURAL_FACE_NAMES: Readonly<Record<Attribute, string>> = {
   martial: "Martial",
   wild: "Wild",
+  toxin: "Toxin",
   arcane: "Arcane",
   luminar: "Luminar",
+  mechanical: "Mechanical",
+  corruption: "Corruption",
+  darkness: "Darkness",
 };
 
 /* ----------------------------------------------------- named specials --- */
@@ -141,7 +139,7 @@ const namedSynthetic = (
     forgeRestriction: null,
   });
 
-const naturalFace = (attribute: DualKindAttribute): FaceCardDefinition =>
+const naturalFace = (attribute: Attribute): FaceCardDefinition =>
   face({
     id: naturalFaceId(attribute),
     name: NATURAL_FACE_NAMES[attribute],
@@ -907,7 +905,7 @@ export function legacyStartingLayout(): StartingDiceLayout {
   return [die, die];
 }
 
-/** One named special + four dual-kind naturals + Shield. */
+/** One named special + dual-kind naturals (Martial/Wild/Arcane/Luminar) + Shield. */
 const openingDieWithSpecial = (special: FaceCardId): DieFaceLayout => [
   special,
   naturalFaceId("martial"),
