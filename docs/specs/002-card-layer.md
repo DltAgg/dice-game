@@ -194,7 +194,7 @@ treat the current table as proof that Control should not deal damage.
 | 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements. |
 | 5 | Eternal Darkness | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | *Active when: Darkness + Darkness.* Choose up to 3 cards in your graveyard and return them to your hand. |
 | 2 | Latent Corruption | Overload / Corruption | 1 Synthetic Corruption, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
-| 1 | Luminar Prism | Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
+| 2 | Luminar Prism | Overload / Luminar | 1 Natural Luminar, your die | On roll: heal 1. |
 | 1 | Arcane Amplifier | Overload / Arcane | 1 Natural Arcane, your die | *Arcane faces only.* On roll: generate 1 additional Arcane. |
 | 2 | Arcane Resonance | Overload / Arcane | 1 Natural Arcane, your die | On roll: generate 1 Arcane. |
 | 3 | Calculated Sacrifice | Instant / Corruption | 1 Synthetic Corruption, your die | Destroy 1 Equipment on an opposing creature. |
@@ -239,8 +239,8 @@ Aggro / Control; featured in builtin **Tempo** and **Combo Mechanical** lists.
 |---|---|---|---|---|
 | 2 | Ratchet | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: generate Mechanical. |
 | 3 | Assembly Line | Ritual / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
-| 1 | Governor | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: generate Mechanical. |
-| 2 | Spare Cog | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. |
+| 2 | Governor | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: generate Mechanical. |
+| 3 | Spare Cog | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. |
 | 3 | Die Press | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Forge 2 Synthetic Mechanical faces on your die. |
 | 3 | Foundry | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On absorb Mechanical: gain 1 Energy. |
 
@@ -255,7 +255,7 @@ takes a lighter cut. **Reforge** uses `replace-synthetic-face` (spec `012`).
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Transmission | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: copy another symbol onto it. |
-| 1 | Camshaft | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: next forge costs 1 less Energy. |
+| 1 | Camshaft | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: next forge costs 1 less Energy. Niche 1-cost: gated discount enabler, not a generator. |
 | 2 | Servomotor | Equipment / Mechanical | 1 Synthetic Mechanical, your die | On absorb Mechanical: generate Mechanical. |
 | 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | Prevent 1 damage. Generate 1 Mechanical. |
 | 2 | Blueprint | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. Next forge costs 1 less Energy. |

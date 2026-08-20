@@ -67,7 +67,7 @@ describe("overload attachment", () => {
     expect(overload?.attachedToFaceCardId).toBe(luminarFace);
     expect(overloadsOnFace(result.state, P1, luminarFace)).toHaveLength(1);
     expect(eventTypes(result.state)).toContain("overload-attached");
-    expect(result.state.energy).toEqual({ holderId: P1, value: 9 });
+    expect(result.state.energy).toEqual({ holderId: P1, value: 8 });
   });
 
   it("refuses a face that does not match the printed restriction", () => {

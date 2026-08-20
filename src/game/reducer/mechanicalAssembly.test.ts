@@ -665,20 +665,20 @@ describe("Mechanical combo wave 2", () => {
   });
 
   it("Recalibrate returns a cheap card from the graveyard", () => {
-    let ready = actionsReady([RECALIBRATE, SPARE_COG]);
-    const spareId = handCardIdAt(ready, P1, 1);
+    let ready = actionsReady([RECALIBRATE, RATCHET]);
+    const cheapId = handCardIdAt(ready, P1, 1);
     ready = {
       ...ready,
       cards: {
         ...ready.cards,
-        [spareId]: { ...ready.cards[spareId]!, zone: "graveyard" },
+        [cheapId]: { ...ready.cards[cheapId]!, zone: "graveyard" },
       },
       players: {
         ...ready.players,
         [P1]: {
           ...ready.players[P1]!,
-          hand: ready.players[P1]!.hand.filter((id) => id !== spareId),
-          graveyard: [...ready.players[P1]!.graveyard, spareId],
+          hand: ready.players[P1]!.hand.filter((id) => id !== cheapId),
+          graveyard: [...ready.players[P1]!.graveyard, cheapId],
         },
       },
     };

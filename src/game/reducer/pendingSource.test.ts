@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   ECLIPSE,
   LIVING_LIBRARY,
+  RATCHET,
   RECALIBRATE,
-  SPARE_COG,
   WAR_AXE,
   getCard,
 } from "../content/cards.js";
@@ -85,11 +85,11 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
 
 describe("pending source + GY search filter", () => {
   it("Recalibrate GY search lists only cost ≤ maxEnergyCost and attributes the Recalibrate instance", () => {
-    let ready = actionsReady([RECALIBRATE, SPARE_COG, ECLIPSE]);
+    let ready = actionsReady([RECALIBRATE, RATCHET, ECLIPSE]);
     const recalibrateId = handCardIdAt(ready, P1, 0);
-    const spareId = handCardIdAt(ready, P1, 1);
+    const cheapId = handCardIdAt(ready, P1, 1);
     const eclipseId = handCardIdAt(ready, P1, 2);
-    ready = moveHandCardsToGraveyard(ready, [spareId, eclipseId]);
+    ready = moveHandCardsToGraveyard(ready, [cheapId, eclipseId]);
 
     const after = expectOk(
       advance(ready, { type: "PLAY_CARD", playerId: P1, cardInstanceId: recalibrateId }),
@@ -109,7 +109,7 @@ describe("pending source + GY search filter", () => {
     const pending = after.pendingDecision;
     if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
     const eligible = searchableInGraveyard(after, P1, pending.maxEnergyCost);
-    expect(eligible).toEqual([spareId]);
+    expect(eligible).toEqual([cheapId]);
     expect(eligible).not.toContain(eclipseId);
     expect(eligible).not.toContain(recalibrateId);
 
@@ -125,11 +125,11 @@ describe("pending source + GY search filter", () => {
       advance(after, {
         type: "RESOLVE_SEARCH",
         playerId: P1,
-        cardInstanceIds: [spareId],
+        cardInstanceIds: [cheapId],
       }),
     );
     expect(resolved.pendingDecision).toBeNull();
-    expect(resolved.players[P1]?.hand).toContain(spareId);
+    expect(resolved.players[P1]?.hand).toContain(cheapId);
   });
 
   it("Living Library deck search attributes the ritual instance and keeps the Instant/Ritual filter", () => {
@@ -185,10 +185,10 @@ describe("pending source + GY search filter", () => {
   });
 
   it("Shadow Echo on-absorb GY search attributes the face, not a card", () => {
-    let state = actionsReady([SPARE_COG, ECLIPSE]);
-    const spareId = handCardIdAt(state, P1, 0);
+    let state = actionsReady([RATCHET, ECLIPSE]);
+    const cheapId = handCardIdAt(state, P1, 0);
     const eclipseId = handCardIdAt(state, P1, 1);
-    state = moveHandCardsToGraveyard(state, [spareId, eclipseId]);
+    state = moveHandCardsToGraveyard(state, [cheapId, eclipseId]);
     state = installFace(state, SHADOW_ECHO);
     state = rollShowingSlot(state, 0);
 
@@ -216,7 +216,7 @@ describe("pending source + GY search filter", () => {
     });
     const pending = after.pendingDecision;
     if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
-    expect(searchableInGraveyard(after, P1, pending.maxEnergyCost)).toEqual([spareId]);
+    expect(searchableInGraveyard(after, P1, pending.maxEnergyCost)).toEqual([cheapId]);
   });
 
   it("replayableGraveyardTactics lists only instant/ritual cards with modelled effects", () => {

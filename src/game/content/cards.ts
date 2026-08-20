@@ -18,9 +18,10 @@ import { asCardId, type CardId } from "../model/ids.js";
  * (no `variableEnergy`) until variable spend UX / scaling effects are wired.
  * Restore `variableEnergy: true` with minimum 1 when that lands — see
  * docs/OPEN_DESIGN.md and resolveEnergyPayment.
- * On-roll primary cards sit in the cheap support band (usually 1; 2 for ungated
- * or refund engines) so they can share a turn with another action on starting
- * Energy 3.
+ * Default printed cost is 2+. `energyCost: 1` is niche (keyed discount enabler,
+ * tightly gated overload) — not a cheap-support band. Starting Energy 3 should
+ * sequence a 2-cost with leftover 1 via Camshaft / Aegis Link / similar, not
+ * dump three 1-drops.
  */
 
 const card = (definition: CardDefinition): CardDefinition => definition;
@@ -145,7 +146,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: LUMINAR_PRISM,
     name: "Luminar Prism",
-    energyCost: 1,
+    energyCost: 2,
     type: "overload",
     subtypes: [],
     attribute: "luminar",
@@ -970,7 +971,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: GOVERNOR,
     name: "Governor",
-    energyCost: 1,
+    energyCost: 2,
     type: "overload",
     subtypes: [],
     attribute: "mechanical",
@@ -984,7 +985,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: SPARE_COG,
     name: "Spare Cog",
-    energyCost: 2,
+    energyCost: 3,
     type: "instant",
     subtypes: [],
     attribute: "mechanical",
@@ -1058,6 +1059,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
   card({
     id: CAMSHAFT,
     name: "Camshaft",
+    // Niche Energy 1: Mechanical-face-gated forge-discount enabler, not a
+    // generator. The 1-Energy play pattern is this discount on a 2+ forge.
     energyCost: 1,
     type: "overload",
     subtypes: [],
