@@ -1,7 +1,9 @@
-import type { CreatureState } from "../model/creatures.js";
+import type { Attribute } from "../model/attributes.js";
 import { ATTRIBUTES } from "../model/attributes.js";
+import type { CreatureState } from "../model/creatures.js";
 import {
   requirementEntries,
+  requirementTotal,
   type AttributeTokens,
   type SymbolRequirement,
 } from "../model/symbols.js";
@@ -42,8 +44,9 @@ export function removeTokens(
 
 /**
  * Strip up to `amount` tokens in `ATTRIBUTES` order (martial → … → darkness).
- * Controller does not choose attributes. Returns fewer than `amount` when the
- * creature has less fuel (including empty). Spec `011`.
+ * Used only when there is no player choice: empty / fewer-than-amount remaining,
+ * or a single attribute pile. Mixed piles with leftover tokens open
+ * `choose-attribute-tokens` instead (spec `011`).
  */
 export function discardTokensInAttributeOrder(
   tokens: AttributeTokens,
@@ -64,3 +67,36 @@ export function discardTokensInAttributeOrder(
 
 export const totalTokens = (tokens: AttributeTokens): number =>
   Object.values(tokens).reduce((sum, count) => sum + count, 0);
+
+/** Attributes that currently hold at least one pip. */
+export const tokenAttributesHeld = (tokens: AttributeTokens): readonly Attribute[] =>
+  ATTRIBUTES.filter((attribute) => (tokens[attribute] ?? 0) > 0);
+
+/**
+ * True when the controller must name which pips to strip: more than `amount`
+ * remain and they sit in more than one attribute. Homogeneous piles and
+ * "take all remaining" strips are deterministic (no real choice).
+ */
+export function tokenChoiceNeeded(tokens: AttributeTokens, amount: number): boolean {
+  if (amount <= 0) return false;
+  if (totalTokens(tokens) <= amount) return false;
+  return tokenAttributesHeld(tokens).length >= 2;
+}
+
+/**
+ * A legal strip pick: totals `min(amount, held)` and is a subset of `tokens`.
+ */
+export function isLegalTokenDiscardPick(
+  tokens: AttributeTokens,
+  discarded: SymbolRequirement,
+  amount: number,
+): boolean {
+  const take = Math.min(amount, totalTokens(tokens));
+  if (take <= 0) return false;
+  if (requirementTotal(discarded) !== take) return false;
+  for (const [attribute, count] of requirementEntries(discarded)) {
+    if (count <= 0) return false;
+    if ((tokens[attribute] ?? 0) < count) return false;
+  }
+  return true;
+}

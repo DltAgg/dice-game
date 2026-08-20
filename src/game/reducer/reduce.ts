@@ -72,7 +72,7 @@ import {
 } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
 import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
-import { addToken, holdsTokens, removeTokens } from "../rules/tokens.js";
+import { addToken, holdsTokens, isLegalTokenDiscardPick, removeTokens } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
 import {
   buildAttackLink,
@@ -118,6 +118,7 @@ import {
   clearOverloadsOnFace,
   destroyOverload,
   discardSpecificCards,
+  destroyEquipment,
   drawCards,
   moveCard,
   overloadFitsFace,
@@ -174,6 +175,16 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
     } else if (
       pending.type === "choose-ritual" &&
       action.type === "RESOLVE_CHOOSE_RITUAL"
+    ) {
+      allowed = true;
+    } else if (
+      pending.type === "choose-equipment" &&
+      action.type === "RESOLVE_CHOOSE_EQUIPMENT"
+    ) {
+      allowed = true;
+    } else if (
+      pending.type === "choose-attribute-tokens" &&
+      action.type === "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS"
     ) {
       allowed = true;
     } else if (pending.type === "forge-faces" && action.type === "RESOLVE_FORGE_FACES") {
@@ -294,6 +305,10 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return resolveChooseCreature(draft, action.playerId, action.creatureId);
     case "RESOLVE_CHOOSE_RITUAL":
       return resolveChooseRitual(draft, action.playerId, action.cardInstanceId);
+    case "RESOLVE_CHOOSE_EQUIPMENT":
+      return resolveChooseEquipment(draft, action.playerId, action.cardInstanceId);
+    case "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS":
+      return resolveChooseAttributeTokens(draft, action.playerId, action.discarded);
     case "RESOLVE_FORGE_FACES":
       return resolveForgeFaces(
         draft,
@@ -325,7 +340,13 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
     case "RESOLVE_DARK_PACT":
       return resolveDarkPact(draft, action.playerId, action.cardInstanceIds, rng);
     case "RESOLVE_MIND_CONTROL":
-      return resolveMindControl(draft, action.playerId, action.mode, action.faceCardIds);
+      return resolveMindControl(
+        draft,
+        action.playerId,
+        action.mode,
+        action.faceCardIds,
+        action.overloadInstanceIds,
+      );
     case "RESOLVE_SPLIT_DAMAGE":
       return resolveSplitDamage(draft, action.playerId, action.assignments);
     case "RESOLVE_OPTIONAL_REROLL":
@@ -745,6 +766,64 @@ function resolveChooseRitual(
 }
 
 /**
+ * Completes a pending equipment choice (`destroy-equipment` with 2+ pieces).
+ */
+function resolveChooseEquipment(
+  draft: Draft,
+  playerId: PlayerId,
+  cardInstanceId: CardInstanceId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "choose-equipment") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const creature = draft.creatures[pending.creatureId];
+  if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
+  if (!creature.equipmentIds.includes(cardInstanceId)) return "INVALID_CHOICE";
+
+  draft.pendingDecision = null;
+  emit(draft, { type: "choose-equipment-resolved", playerId, cardInstanceId });
+  destroyEquipment(draft, cardInstanceId);
+  return resumeAfterEffectPause(draft);
+}
+
+/**
+ * Completes a pending token-strip choice. The named pips must total the pending
+ * amount and be a subset of the creature's current tokens.
+ */
+function resolveChooseAttributeTokens(
+  draft: Draft,
+  playerId: PlayerId,
+  discarded: SymbolRequirement,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "choose-attribute-tokens") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "NOT_ACTIVE_PLAYER";
+
+  const creature = draft.creatures[pending.creatureId];
+  if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
+  if (!isLegalTokenDiscardPick(creature.attributeTokens, discarded, pending.amount)) {
+    return "INVALID_CHOICE";
+  }
+
+  const next = removeTokens(creature.attributeTokens, discarded);
+  patchCreature(draft, pending.creatureId, { attributeTokens: next });
+  draft.pendingDecision = null;
+  emit(draft, {
+    type: "choose-attribute-tokens-resolved",
+    playerId,
+    creatureId: pending.creatureId,
+    discarded,
+  });
+  emit(draft, {
+    type: "attribute-tokens-discarded",
+    creatureId: pending.creatureId,
+    discarded,
+  });
+  return resumeAfterEffectPause(draft);
+}
+
+/**
  * Completes a pending forge-from-effect. The controller names one legal die,
  * the pending number of slots, and one eligible face card.
  */
@@ -1061,6 +1140,7 @@ function resolveMindControl(
   playerId: PlayerId,
   mode: "strip-one-face" | "strip-one-each",
   faceCardIds: readonly FaceCardId[],
+  overloadInstanceIds: readonly CardInstanceId[] | undefined,
 ): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "mind-control") return "INVALID_PHASE";
@@ -1073,6 +1153,7 @@ function resolveMindControl(
   }
 
   if (mode === "strip-one-face") {
+    // Print: remove every Overload from 1 opposing face — no extra pick.
     if (unique.length !== 1) return "INVALID_CHOICE";
     const faceCardId = unique[0];
     if (faceCardId === undefined) return "INVALID_CHOICE";
@@ -1081,10 +1162,35 @@ function resolveMindControl(
     }
   } else {
     if (unique.length < 1 || unique.length > 2) return "INVALID_CHOICE";
+    const named = overloadInstanceIds;
+    if (named !== undefined) {
+      if (named.length !== unique.length) return "INVALID_CHOICE";
+      if (new Set(named).size !== named.length) return "INVALID_CHOICE";
+    }
+    const chosen: CardInstanceId[] = [];
     for (const faceCardId of unique) {
-      const overload = earliestOverloadOnFace(draft, faceCardId);
-      if (overload === undefined) return "INVALID_CHOICE";
-      destroyOverload(draft, overload);
+      const attached = overloadsAttachedToFace(draft, faceCardId);
+      if (attached.length === 0) return "INVALID_CHOICE";
+      let pick: CardInstanceId | undefined;
+      if (named !== undefined) {
+        pick = named.find((id) => attached.includes(id));
+        if (pick === undefined) return "INVALID_CHOICE";
+      } else if (attached.length === 1) {
+        pick = attached[0];
+      } else {
+        // Face has 2+ overloads: controller must name which instance.
+        return "INVALID_CHOICE";
+      }
+      if (pick === undefined) return "INVALID_CHOICE";
+      chosen.push(pick);
+    }
+    if (named !== undefined) {
+      for (const id of named) {
+        if (!chosen.includes(id)) return "INVALID_CHOICE";
+      }
+    }
+    for (const overloadId of chosen) {
+      destroyOverload(draft, overloadId);
     }
   }
 
@@ -1107,10 +1213,6 @@ function overloadsAttachedToFace(draft: Draft, faceCardId: FaceCardId): readonly
   return Object.values(draft.cards)
     .filter((card) => card.zone === "overload" && card.attachedToFaceCardId === faceCardId)
     .map((card) => card.id);
-}
-
-function earliestOverloadOnFace(draft: Draft, faceCardId: FaceCardId): CardInstanceId | undefined {
-  return [...overloadsAttachedToFace(draft, faceCardId)].sort((a, b) => (a < b ? -1 : 1))[0];
 }
 
 function resolveSplitDamage(

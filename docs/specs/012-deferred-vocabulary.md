@@ -133,7 +133,11 @@ Illegal moves return `GameError` + original state.
 - Split-damage assignments: living legal targets, sum equals `amount`.
 - Dark Pact: exactly two Rituals from the controller’s deck with **different**
   attributes.
-- Mind Control: opposing faces that actually have overloads.
+- Mind Control: opposing faces that actually have overloads. `strip-one-face`
+  removes every overload on that face (print: “every Overload”).
+  `strip-one-each` names one attached instance per chosen face; when a face
+  has 2+ overloads the controller must send `overloadInstanceIds` (no
+  earliest-id silent pick).
 
 ## Resolution
 
@@ -167,7 +171,7 @@ Match-ui must render these pendings (hotseat + online):
 | `look-top-deck` | Show top 2; pick 1 to hand (other to bottom) |
 | `peek-deck` | Show top; keep or put on bottom |
 | `dark-pact` | Pick 2 different-attribute Rituals from deck |
-| `mind-control` | Mode + 1 or 2 opposing face cards |
+| `mind-control` | Mode + 1 or 2 opposing face cards; `strip-one-each` also names the overload instance when a face has 2+ |
 | `split-damage` | Assign integer damage that sums to `amount` |
 | `optional-reroll` | Accept or decline reroll of that die (Adrenaline may then deal same-face ally damage; Rethrow does not) |
 | `replace-synthetic-face` | Pick owned Synthetic Mechanical slot + different matching pool face |

@@ -7,7 +7,7 @@ import type {
   PlayerId,
   SymbolInstanceId,
 } from "../model/ids.js";
-import type { SymbolType } from "../model/symbols.js";
+import type { SymbolRequirement, SymbolType } from "../model/symbols.js";
 
 /**
  * Actions describe intent, never outcome (SPDD §34). There is no DEAL_DAMAGE
@@ -127,6 +127,24 @@ export type GameAction =
       readonly cardInstanceId: CardInstanceId;
     }
   /**
+   * Completes a pending equipment choice (`destroy-equipment` with 2+ pieces).
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_EQUIPMENT";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  /**
+   * Completes a pending token-strip choice (Siphon Sigil / Hexbrand mix).
+   * `discarded` must total the pending `amount` and be a subset of the
+   * creature's current tokens.
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS";
+      readonly playerId: PlayerId;
+      readonly discarded: SymbolRequirement;
+    }
+  /**
    * Completes a pending forge-from-effect: install `faces` copies of one face
    * card onto the named die slots.
    */
@@ -192,6 +210,12 @@ export type GameAction =
       readonly playerId: PlayerId;
       readonly mode: "strip-one-face" | "strip-one-each";
       readonly faceCardIds: readonly FaceCardId[];
+      /**
+       * Required for `strip-one-each` when a chosen face has 2+ overloads:
+       * one attached instance per chosen face. Omit only when every chosen
+       * face has exactly one overload.
+       */
+      readonly overloadInstanceIds?: readonly CardInstanceId[];
     }
   | {
       readonly type: "RESOLVE_SPLIT_DAMAGE";

@@ -185,18 +185,102 @@ describe("equipment", () => {
       10,
     );
 
-    const after = expectOk(
+    const opened = expectOk(
       advance(p2Turn, {
         type: "PLAY_CARD",
         playerId: P2,
         cardInstanceId: handCardIdAt(p2Turn, P2, 0),
-        declaredTargetCreatureId: hostId,
+      }),
+    );
+    expect(opened.pendingDecision?.type).toBe("choose-creature");
+
+    const after = expectOk(
+      advance(opened, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P2,
+        creatureId: hostId,
       }),
     );
 
     expect(after.creatures[hostId]?.equipmentIds).toEqual([]);
     expect(equipmentOf(after, P1)).toEqual([]);
     expect(graveyardOf(after, P1).some((card) => card.cardId === WAR_AXE)).toBe(true);
+    expect(eventTypes(after)).toContain("equipment-destroyed");
+  });
+
+  it("prompts which equipment to destroy when the target has two pieces", () => {
+    const base = actionsReady([WAR_AXE, VENOMOUS_FANGS]);
+    const hostId = creatureIdAt(base, P1, 0);
+
+    const withAxe = expectOk(
+      advance(base, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+        declaredTargetCreatureId: hostId,
+      }),
+    );
+    const equipped = expectOk(
+      advance(withAxe, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(withAxe, P1, 0),
+        declaredTargetCreatureId: hostId,
+      }),
+    );
+    const gear = [...(equipped.creatures[hostId]?.equipmentIds ?? [])];
+    expect(gear).toHaveLength(2);
+    const keepId = gear[0]!;
+    const destroyId = gear[1]!;
+
+    const p2Turn = withEnergy(
+      withHand(withPhase(withActivePlayer(equipped, P2), "actions"), P2, [CALCULATED_SACRIFICE]),
+      P2,
+      10,
+    );
+    const afterCreature = expectOk(
+      advance(
+        expectOk(
+          advance(p2Turn, {
+            type: "PLAY_CARD",
+            playerId: P2,
+            cardInstanceId: handCardIdAt(p2Turn, P2, 0),
+          }),
+        ),
+        { type: "RESOLVE_CHOOSE_CREATURE", playerId: P2, creatureId: hostId },
+      ),
+    );
+    expect(afterCreature.pendingDecision).toMatchObject({
+      type: "choose-equipment",
+      controllerId: P2,
+      creatureId: hostId,
+    });
+
+    const sacrificeId = graveyardOf(afterCreature, P2).find(
+      (card) => card.cardId === CALCULATED_SACRIFICE,
+    )?.id;
+    expect(sacrificeId).toBeDefined();
+    const refused = advance(afterCreature, {
+      type: "RESOLVE_CHOOSE_EQUIPMENT",
+      playerId: P2,
+      cardInstanceId: sacrificeId!,
+    });
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) {
+      expect(refused.error).toBe("INVALID_CHOICE");
+      expect(refused.state).toBe(afterCreature);
+    }
+
+    const after = expectOk(
+      advance(afterCreature, {
+        type: "RESOLVE_CHOOSE_EQUIPMENT",
+        playerId: P2,
+        cardInstanceId: destroyId,
+      }),
+    );
+    expect(after.creatures[hostId]?.equipmentIds).toEqual([keepId]);
+    expect(graveyardOf(after, P1).some((card) => card.id === destroyId)).toBe(true);
+    expect(graveyardOf(after, P1).some((card) => card.id === keepId)).toBe(false);
     expect(eventTypes(after)).toContain("equipment-destroyed");
   });
 

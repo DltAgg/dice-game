@@ -182,6 +182,23 @@ export type PendingDecision =
       readonly deferred: PendingEffect;
     }
   | {
+      readonly type: "choose-equipment";
+      readonly controllerId: PlayerId;
+      /** Creature whose attached equipment is being chosen. */
+      readonly creatureId: CreatureId;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
+    }
+  | {
+      readonly type: "choose-attribute-tokens";
+      readonly controllerId: PlayerId;
+      readonly creatureId: CreatureId;
+      /** How many token pips must be named (already less than the creature's total). */
+      readonly amount: number;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
+    }
+  | {
       readonly type: "reaction-priority";
       readonly priorityPlayerId: PlayerId;
       /** Consecutive Passes; chain drains when this reaches 2. */

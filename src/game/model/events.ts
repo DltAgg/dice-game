@@ -220,6 +220,28 @@ export type GameEvent =
       readonly cardInstanceId: CardInstanceId;
     }
   | {
+      readonly type: "choose-equipment-started";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+    }
+  | {
+      readonly type: "choose-equipment-resolved";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  | {
+      readonly type: "choose-attribute-tokens-started";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+      readonly amount: number;
+    }
+  | {
+      readonly type: "choose-attribute-tokens-resolved";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+      readonly discarded: SymbolRequirement;
+    }
+  | {
       readonly type: "ritual-destroyed";
       readonly cardInstanceId: CardInstanceId;
       readonly playerId: PlayerId;

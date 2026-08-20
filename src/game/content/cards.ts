@@ -250,7 +250,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText: "Destroy 1 Equipment on an opposing creature.",
     effect: {
-      effects: [{ type: "destroy-equipment", target: { kind: "declared-target" } }],
+      effects: [{ type: "destroy-equipment", target: { kind: "choose-enemy" } }],
     },
   }),
   card({

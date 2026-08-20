@@ -23,6 +23,7 @@ import { diceOf } from "../rules/dice.js";
 import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
 import { legalTargetsFor } from "../rules/targeting.js";
 import { legalCreaturesForFilter, legalDiceForFilter } from "../rules/targets.js";
+import { discardTokensInAttributeOrder } from "../rules/tokens.js";
 import { advance } from "../reducer/reduce.js";
 
 /**
@@ -387,6 +388,36 @@ function resolvePending(state: GameState): GameState {
     });
     if (!result.ok) {
       throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_RITUAL`);
+    }
+    return resolvePending(result.state);
+  }
+
+  if (pending.type === "choose-equipment") {
+    const [cardInstanceId] = state.creatures[pending.creatureId]?.equipmentIds ?? [];
+    if (cardInstanceId === undefined) {
+      throw new Error("autoplay: no equipment for choose-equipment");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_CHOOSE_EQUIPMENT",
+      playerId: pending.controllerId,
+      cardInstanceId,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_EQUIPMENT`);
+    }
+    return resolvePending(result.state);
+  }
+
+  if (pending.type === "choose-attribute-tokens") {
+    const tokens = state.creatures[pending.creatureId]?.attributeTokens ?? {};
+    const { discarded } = discardTokensInAttributeOrder(tokens, pending.amount);
+    const result = advance(state, {
+      type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
+      playerId: pending.controllerId,
+      discarded,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_ATTRIBUTE_TOKENS`);
     }
     return resolvePending(result.state);
   }
