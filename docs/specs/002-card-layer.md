@@ -127,12 +127,15 @@ reading: any matching named special (Canker, Blight, Hexbrand, …).
 > 2026-08-20). Control attributes (Arcane, Darkness) must convert
 > their engine into enough damage to eliminate creatures — expensive, delayed,
 > or consume-based is in-identity; hoping 1-damage creature attacks close is not.
+> Toxin + Corruption are the **Burn** plan (continuous DoT), not Control’s
+> contaminate-the-die manabase.
 
 | Archetype | Attributes |
 |---|---|
 | Aggro | Wild, Martial, Toxin |
 | Combo | Luminar, Wild, Mechanical, Toxin |
 | Control | Arcane, Darkness |
+| Burn | Toxin, Corruption (constructed; no builtin list yet) |
 | Support | Arcane, Luminar, Wild, Mechanical |
 
 Builtin constructed lists (content + `src/decks/prototype.ts`): **Aggro**
@@ -190,7 +193,7 @@ catalogue identity for other strategies (burn sibling), not the Control builtin.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 3 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Arcane + Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
+| 3 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption.* Forge 3 Synthetic Corruption faces on one of the opponent's dice. |
 | 6 | Extermination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption + Corruption.* Consume every Synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures. |
 | 2 | Living Library | Ritual / Instant / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Add 2 Instant or Ritual cards from your deck to your hand. |
 | 3 | Paradox | Ritual / Instant / Darkness | 1 Synthetic Darkness, your die | Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements. |
@@ -339,6 +342,25 @@ Fully wired. Builtin **Control** splashes 2–3 copies; other builtins stay clea
 | 2 | Sift | Instant / Luminar | 1 Natural Luminar, your die | Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom. |
 | 2 | Second Wind | Instant / Martial | 1 Natural Martial, your die | Gain 1 Energy. Look at the top card of your deck; you may put it on the bottom. |
 | 2 | Warding Charm | Equipment / Arcane | 1 Natural Arcane, your die | On absorb, once per turn: this creature gains 1 Shield. |
+
+### Toxin / Corruption continuous burn (authored)
+
+Catalogue-only constructed Burn vocabulary (Toxin ticks + Corruption DoT).
+Fully wired. **Not** added to builtin Aggro / Control / Tempo / Combo lists —
+parent will fire deck-designer after rebase. Great Contamination’s Active-when
+dropped Arcane so Burn does not need a Control manabase. Latent Corruption is
+left as an Arcane-engine leftover (deck-designer brief in `design.md`).
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 3 | Slow Burn | Ritual / Continuous / Toxin | 1 Synthetic Toxin, your die | *Active when: Toxin + Toxin.* On start of opponent's turn: apply 1 Toxin marker to the enemy with the most damage. |
+| 3 | Venom Font | Equipment / Toxin | 1 Synthetic Toxin, your die | On absorb Toxin: apply 1 Toxin marker to a chosen enemy. |
+| 3 | Concentrate | Instant / Toxin | 1 Synthetic Toxin, your die | *Requires: Toxin.* Apply 2 Toxin markers to a chosen enemy that already has Toxin. |
+| 2 | Ichor Sheath | Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On absorb: deal 1 damage to a chosen enemy. |
+| 3 | Fester | Equipment / Toxin | 1 Synthetic Toxin, your die | On toxin damage: apply 1 Toxin marker to the opposing creature that took that damage. |
+| 3 | Smolder | Ritual / Continuous / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption.* On start of opponent's turn: deal 1 damage to the enemy with the most damage. |
+| 3 | Cinder Hex | Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On start of turn: this creature takes 1 damage. |
+| 2 | Ember Tide | Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: deal 1 damage to a chosen enemy. On absorb: apply 1 Toxin marker to a chosen enemy. |
 
 ## What this slice implements
 

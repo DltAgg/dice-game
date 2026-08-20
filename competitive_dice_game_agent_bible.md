@@ -944,20 +944,39 @@ Control creature attacks may stay weak. **Damage is not reserved for creature co
 
 Do not treat “engine hate / disruption” as a substitute for lethality.
 
+Control’s important attributes are **Arcane** and **Darkness**. Corruption is no longer a Control splash — see Burn below.
+
+## Burn
+
+Primary focus:
+
+- stacking delayed damage;
+- turn-start / on-roll / on-absorb ticks;
+- markers that close the match without cheap creature beatdown.
+
+Important attributes include:
+
+- Toxin
+- Corruption
+
+Burn should win by ongoing attrition that the opponent cannot out-tempo with a single attack. It must still touch the engine (forge + standing rituals / overloaded faces). Unflavored “deal 1” with no forge is a miss.
+
 ### Corruption
 
 Corruption is primarily a **synthetic** mechanic.
 
-Its central concept is installing Corruption faces onto an opponent's die.
+Its central concept is **continuous burn**: damage over time from standing rituals, opponent-equip hexes, and named faces that ping on roll or absorb. Installing a face onto an opponent's die may remain as **minor spice** when that face ticks damage (holder voice: they hurt themselves). Contaminate-the-die is not the primary plan and must not require Arcane, Darkness, or a four-resource Control manabase.
 
 Corruption effects should:
 
-- be expensive;
-- be meaningful;
-- primarily exist on tactical/control cards;
-- not become generic creature effects.
+- be setup-taxed (Energy 2+, Active-when / Requires), not cheap Aggro;
+- stack or persist (each turn, on roll, on absorb);
+- not become generic Arcane negate;
+- not become generic creature-attack text.
 
-Corruption should feel like contaminating the opponent's engine.
+### Toxin
+
+Toxin’s primary identity is **burn ticks**: markers that deal damage at the start of the creature’s owner’s turn. Aggro may still use Toxin as creature-pressure (apply on attack). Burn leans harder into stacking, spreading, and amplifying those ticks without needing to attack.
 
 ---
 
@@ -994,11 +1013,11 @@ For example:
 |---|---|---|
 | Martial | Direct combat / efficient attacks | Aggro |
 | Wild | Creature pressure / flexible aggression | Aggro, Combo |
-| Toxin | Attrition / conditional damage | Aggro, Combo |
+| Toxin | Attrition / delayed ticks / burn stacking | Aggro, Combo, Burn |
 | Luminar | Synergy / support / combo value | Combo, Support |
 | Mechanical | Engine manipulation / construction | Combo, Support |
 | Arcane | Control / manipulation / support | Control, Support |
-| Corruption | Opponent dice disruption | — |
+| Corruption | Continuous burn (DoT); contaminate-dice is spice | Burn |
 | Darkness | Control / delayed value / disruption | Control |
 
 These identities are directional rather than immutable numerical rules.

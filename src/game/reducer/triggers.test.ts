@@ -6,12 +6,16 @@ import {
   BLACK_PLAGUE,
   BLADE_OF_SERENE_LIGHT,
   CALL_TO_ARMS,
+  CINDER_HEX,
   ECLIPSE,
+  FESTER,
   FOUNDRY,
   HUNTERS_COLLAR,
   HUNTING_ARMOUR,
   MUTANT_SPORES,
   SERVOMOTOR,
+  SLOW_BURN,
+  SMOLDER,
   TOXIC_BLESSING,
   TOXIC_HEART,
   VENOMOUS_FANGS,
@@ -1184,5 +1188,111 @@ describe("control creature attack riders", () => {
     expect(after.creatures[targetId]?.damage).toBe(2);
     const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
     expect(arcane.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+function placedReadyRitual(
+  cardId: CardId,
+  progress: { readonly toxin?: number; readonly corruption?: number },
+) {
+  const base = actionsReady([cardId]);
+  const placed = expectOk(
+    advance(base, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(base, P1, 0),
+    }),
+  );
+  const ritualId = ritualsOf(placed, P1)[0]?.id;
+  if (ritualId === undefined) throw new Error("test: no ritual");
+  return {
+    ritualId,
+    state: {
+      ...placed,
+      cards: {
+        ...placed.cards,
+        [ritualId]: {
+          ...placed.cards[ritualId]!,
+          ritualOrientation: "ready" as const,
+          ritualProgress: progress,
+        },
+      },
+    },
+  };
+}
+
+describe("on-turn-start standing triggers", () => {
+  it("Slow Burn applies toxin to the most-damaged enemy when their turn starts", () => {
+    const { state } = placedReadyRitual(SLOW_BURN, { toxin: 2 });
+    const focusId = creatureIdAt(state, P2, 1);
+    const otherId = creatureIdAt(state, P2, 0);
+    const primed = withDamage(state, focusId, 2);
+
+    const after = expectOk(advance(primed, { type: "END_TURN", playerId: P1 }));
+
+    expect(after.creatures[focusId]?.toxinMarkers).toBe(1);
+    expect(after.creatures[otherId]?.toxinMarkers).toBe(0);
+  });
+
+  it("Smolder deals 1 to the most-damaged enemy when their turn starts", () => {
+    const { state } = placedReadyRitual(SMOLDER, { corruption: 2 });
+    const focusId = creatureIdAt(state, P2, 1);
+    const primed = withDamage(state, focusId, 2);
+
+    const after = expectOk(advance(primed, { type: "END_TURN", playerId: P1 }));
+
+    expect(after.creatures[focusId]?.damage).toBe(3);
+    expect(eventTypes(after)).toContain("damage-dealt");
+  });
+
+  it("Cinder Hex damages the opposing bearer at the start of their turn", () => {
+    const base = actionsReady([CINDER_HEX]);
+    const hostId = creatureIdAt(base, P2, 0);
+    const equipped = expectOk(
+      advance(base, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+        declaredTargetCreatureId: hostId,
+      }),
+    );
+
+    const after = expectOk(advance(equipped, { type: "END_TURN", playerId: P1 }));
+
+    expect(after.creatures[hostId]?.damage).toBe(1);
+    expect(eventTypes(after)).toContain("damage-dealt");
+  });
+});
+
+describe("on-toxin-damage opponent filter", () => {
+  it("Fester stacks a Toxin marker on the enemy that just ticked", () => {
+    const base = actionsReady([FESTER]);
+    const bearerId = creatureIdAt(base, P1, 0);
+    const enemyId = creatureIdAt(base, P2, 0);
+    const equipped = equip(base, bearerId);
+    const poisoned = withToxin(equipped, enemyId, 2);
+
+    const after = expectOk(advance(poisoned, { type: "END_TURN", playerId: P1 }));
+
+    expect(after.creatures[enemyId]?.damage).toBe(2);
+    expect(after.creatures[enemyId]?.toxinMarkers).toBe(3);
+    expect(eventTypes(after)).toContain("toxin-applied");
+  });
+
+  it("does not stack Fester when an allied creature ticks", () => {
+    const base = actionsReady([FESTER]);
+    const bearerId = creatureIdAt(base, P1, 0);
+    const equipped = equip(base, bearerId);
+    const poisoned = withToxin(equipped, bearerId, 2);
+    const asP2 = {
+      ...poisoned,
+      activePlayerId: P2,
+      energy: { holderId: P2, value: 3 },
+      phase: "actions" as const,
+    };
+
+    const after = expectOk(advance(asP2, { type: "END_TURN", playerId: P2 }));
+
+    expect(after.creatures[bearerId]?.toxinMarkers).toBe(2);
   });
 });

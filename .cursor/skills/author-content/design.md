@@ -28,7 +28,7 @@ The **or** between forge and effect is load-bearing: one use, one region.
 ## What “good” looks like
 
 - The player is making a **tradeoff** (forge now vs play now; absorb vs leave
-  the symbol in the pool; contaminate their die vs build yours).
+  the symbol in the pool; stack another burn tick vs build your die).
 - The attribute’s **primary identity** is still recognizable (bible §28–29).
 - Costs match role: support and combat tricks still want a real Energy
   number (usually 2+); Arcane control generally medium/high. **Printed
@@ -50,11 +50,11 @@ The **or** between forge and effect is load-bearing: one use, one region.
 |---|---|---|
 | Martial | Direct combat / efficient attacks | Aggro |
 | Wild | Creature pressure / flexible aggression | Aggro, Combo, Support |
-| Toxin | Attrition / delayed damage | Aggro, Combo |
+| Toxin | Attrition / delayed damage / **burn ticks** | Aggro, Combo, Burn |
 | Luminar | Synergy / support / combo value | Combo, Support |
 | Mechanical | Engine construction / manipulation | Combo, Support |
 | Arcane | Control / manipulation / support | Control, Support |
-| Corruption | Contaminate the opponent’s dice | — (not Control; burn package is a sibling set) |
+| Corruption | **Continuous burn** (damage over time); contaminate-dice is minor spice that feeds burn | Burn |
 | Darkness | Delayed value / disruption | Control |
 
 Do **not** give every attribute large damage, healing, draw, removal, and
@@ -64,9 +64,12 @@ deal meaningful damage through its engine (rituals, consume, delayed/conditional
 hits). That is not the same as becoming Aggro.
 
 Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
-Control = Arcane/Darkness; Support = Arcane/Luminar/Wild/Mechanical
+Control = Arcane/Darkness; **Burn** (constructed, no builtin list yet) =
+Toxin/Corruption; Support = Arcane/Luminar/Wild/Mechanical
 (utility may splash; printed Energy 1 remains exceptional — splash via
-discounts, not 1-drops).
+discounts, not 1-drops). Toxin remains legal in Aggro for creature-pressure
+ticks; Corruption is **not** Control’s future home and must not require an
+Arcane/Darkness manabase. Do not turn Corruption into generic Arcane negate.
 
 Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`, and
 `COMBO_MECHANICAL_DECK` in `cards.ts` (snapshots in `src/decks/prototype.ts`).
@@ -154,3 +157,30 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
 - Every attribute doing everything.
 - Rules logic in React / Zustand / PeerJS.
 - Growing AST without a concrete card + resolver + tests in the same change.
+
+## Deck-designer brief — Burn identity (2026-08-20)
+
+No builtin Burn list yet. When assembling one later (and when cutting
+Corruption from Control):
+
+**Keep / densify for Burn:** Dose, Blight Strike, Venomous Fangs, Serrated
+Stinger, Toxic Blessing, Virulent Rite, Slow Burn, Venom Font, Concentrate,
+Ichor Sheath, Fester, Black Plague, Persistent Infection, Ritual of
+Contamination, Smolder, Cinder Hex, Ember Tide, Extermination (consume closer),
+Great Contamination (opponent-die install; pair with Wasting Brand). Faces:
+Venom, Spores, Needle, Seep, Marrow Rot, Cinder (own-die ticks), Wasting Brand
+(opponent-die self-damage; holder voice).
+
+**Leave on Aggro:** existing Toxin pressure (Fangs, Blessing, Dose, Blight
+Strike, Needle, Seep). Those cards still work; they are not Burn-exclusive.
+
+**Fights Burn — cut from Control, do not maindeck in Burn:**
+- Latent Corruption (`card-latent-corruption`) — Arcane-face overload that
+  generates Arcane. Control engine leftover; not continuous burn.
+- Hexbrand / Blight / Canker / Calculated Sacrifice / Mind Control — disruption
+  and contaminate-without-ticks. Optional 1–2 ofs as spice, not the plan.
+
+**Control remaining home:** Arcane + Darkness. Do not splash Corruption as a
+fourth resource. Great Contamination’s Active-when is now Corruption+Corruption
+(no Arcane) so Burn can install without a Control manabase.
+

@@ -142,9 +142,26 @@ export type StandingTrigger =
       readonly type: "on-deal-damage";
       readonly effects: readonly EffectDefinition[];
     }
-  /** After a toxin tick deals HP damage to an ally of the bearer (Toxic Heart). */
+  /**
+   * After a toxin tick deals HP damage. Default `damagedOwner: "controller"`
+   * (Toxic Heart — an ally of the filter owner took the tick). Burn listeners
+   * use `"opponent"` so enemy ticks apply extra markers / damage.
+   * `declared-target` is the damaged creature.
+   */
   | {
       readonly type: "on-toxin-damage";
+      readonly damagedOwner?: PlayerRelation;
+      readonly effects: readonly EffectDefinition[];
+    }
+  /**
+   * When a player's turn begins (`finishTurn` after the incoming holder is
+   * set, after toxin ticks). Filter whose turn with `whoseTurn` (default
+   * `controller`). Do not queue `choose-*` effects — the incoming player is
+   * already active; auto selectors only (`most-damaged-enemy`, `source-creature`).
+   */
+  | {
+      readonly type: "on-turn-start";
+      readonly whoseTurn?: PlayerRelation;
       readonly effects: readonly EffectDefinition[];
     }
   /**

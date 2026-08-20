@@ -43,7 +43,7 @@ export const EXAMPLE: CreatureDefinitionId =
 - Attribute identity: [design.md](design.md). Aggro/midrange creatures convert
   the engine into board pressure. Control creatures may keep weak attacks;
   lethality for those lists lives on cards / rituals / faces (bible §27). They
-  should not steal Corruption’s “contaminate their dice” job.
+  should not steal Toxin/Corruption’s continuous-burn job.
 - Omit `effect` on an attack when only a subset is modellable — document the gap
   in `docs/DEFERRED_CATALOGUE.md` (passives, pierce, multi-target riders, etc.).
 - Squad size for matches comes from setup / loadout (typically 3 creatures), not

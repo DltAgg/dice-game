@@ -121,6 +121,9 @@ Named specials:
 | Gore | 2 | On roll: 1 damage; On absorb: next attack +1 | |
 | Needle | 2 | On roll: next attack +1; On absorb: apply toxin | |
 | Seep | 2 | On roll: generate Toxin; On absorb: arm attack-toxin 1 | |
+| Marrow Rot | 2 | On roll: apply toxin; On absorb: extra toxin on an enemy that already has Toxin | Burn own-die |
+| Cinder | 2 | On roll: 1 damage to chosen enemy; On absorb: apply toxin | Burn own-die ticks |
+| Wasting Brand | 2 | On roll / absorb: damage or toxin your most-damaged creature | Opponent-die burn spice (holder voice) |
 
 Great Spark and Rekindle appear as art on the page but have no printed rules text yet.
 Portuguese *Sobrecarga* is catalogued as **Overcharge**.

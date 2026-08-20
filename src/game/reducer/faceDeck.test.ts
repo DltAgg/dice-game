@@ -236,6 +236,9 @@ describe("face deck", () => {
       "Gore",
       "Needle",
       "Seep",
+      "Marrow Rot",
+      "Cinder",
+      "Wasting Brand",
     ]);
   });
 

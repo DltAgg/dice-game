@@ -113,6 +113,9 @@ export const NEEDLE: FaceCardId = asFaceCardId("face-synthetic-needle");
 export const SEEP: FaceCardId = asFaceCardId("face-synthetic-seep");
 export const NIGHTWELL: FaceCardId = asFaceCardId("face-synthetic-nightwell");
 export const RUNEFLARE: FaceCardId = asFaceCardId("face-synthetic-runeflare");
+export const MARROW_ROT: FaceCardId = asFaceCardId("face-synthetic-marrow-rot");
+export const CINDER: FaceCardId = asFaceCardId("face-synthetic-cinder");
+export const WASTING_BRAND: FaceCardId = asFaceCardId("face-synthetic-wasting-brand");
 
 /** Named synthetic with accurate English; wire hooks only for modellable clauses. */
 const namedSynthetic = (
@@ -767,6 +770,45 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       onAbsorb: [{ type: "arm-attack-toxin", amount: 1 }],
     },
   ),
+  namedSynthetic(
+    MARROW_ROT,
+    "Marrow Rot",
+    "toxin",
+    "On roll: apply 1 Toxin marker to a chosen enemy.\n" +
+      "On absorb: apply 1 Toxin marker to a chosen enemy that already has Toxin.",
+    {
+      onRoll: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+      onAbsorb: [
+        {
+          type: "conditional",
+          when: { type: "any-enemy-has-toxin" },
+          then: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy-with-toxin" } }],
+        },
+      ],
+    },
+  ),
+  namedSynthetic(
+    CINDER,
+    "Cinder",
+    "corruption",
+    "On roll: deal 1 damage to a chosen enemy.\n" +
+      "On absorb: apply 1 Toxin marker to a chosen enemy.",
+    {
+      onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
+      onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
+    },
+  ),
+  namedSynthetic(
+    WASTING_BRAND,
+    "Wasting Brand",
+    "corruption",
+    "On roll: deal 1 damage to your creature with the most damage.\n" +
+      "On absorb: apply 1 Toxin marker to your creature with the most damage.",
+    {
+      onRoll: [{ type: "damage", amount: 1, target: { kind: "most-damaged-ally" } }],
+      onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "most-damaged-ally" } }],
+    },
+  ),
 ];
 
 export const FACE_CARDS: Readonly<Record<string, FaceCardDefinition>> = Object.fromEntries(
@@ -822,6 +864,9 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[GORE]!,
   FACE_CARDS[NEEDLE]!,
   FACE_CARDS[SEEP]!,
+  FACE_CARDS[MARROW_ROT]!,
+  FACE_CARDS[CINDER]!,
+  FACE_CARDS[WASTING_BRAND]!,
 ];
 
 /** Starting naturals only — Martial, Wild, Arcane, Luminar, plus Shield. */

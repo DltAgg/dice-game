@@ -110,6 +110,7 @@ import {
   clearTurnTriggerState,
   fireEquipmentOnRollSymbol,
   fireOnAttack,
+  fireOnTurnStart,
   queueAbsorbTriggers,
 } from "./triggers.js";
 import {
@@ -2626,6 +2627,9 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   clearToxinReceiveCapsForOwner(draft, track.holderId);
   // Toxin counters tick at the start of the creature's owner's turn.
   tickToxins(draft, track.holderId);
+  // Standing burn pulses after toxin ticks (auto-target only — no choose pending).
+  fireOnTurnStart(draft, track.holderId);
+  drainResolution(draft);
   // Exhausted once-per-turn rituals come off diagonal; banked Active-when
   // symbols persist unless an effect discarded them.
   resetExhaustedRituals(draft, track.holderId);

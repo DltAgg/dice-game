@@ -16,7 +16,7 @@ regions in `OPEN_DESIGN`; deferred catalogue §1 / §5.
 ## Intent
 
 When the game performs a natural rules event (attack declared, HP damage,
-die shows a symbol, symbol absorbed, discard, position change), eligible hosts
+die shows a symbol, symbol absorbed, discard, position change, turn start), eligible hosts
 may queue data-driven effects. Print clauses stay as catalogue data; the
 reducer only knows the hook kinds and passes instance ids for filtering.
 
@@ -34,8 +34,10 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 1. **On-deal-damage (equipment).** After a creature **deals HP damage**, fire
    each `on-deal-damage` on that creature's gear. `sourceCreatureId` = bearer;
    `declaredTargetCreatureId` = damaged creature.
-2. **On-toxin-damage (equipment).** Toxin tick HP → gear on controller's
-   creatures; bearer is source.
+2. **On-toxin-damage.** Toxin tick HP → standing hosts whose `damagedOwner`
+   filter matches (`controller` = filter owner's creatures, default for Toxic
+   Heart; `opponent` / `any` likewise). `declared-target` is the damaged
+   creature. Walks equipment, creature passives, and ready continuous rituals.
 3. **On-roll-symbol.** During `ROLL_DICE`, for each showing symbol `S`, fire
    matching `on-roll-symbol` abilities whose `rollingPlayer` filter matches
    (`controller` = **bearer's** owner for equipment, creature owner for
@@ -65,9 +67,15 @@ reducer only knows the hook kinds and passes instance ids for filtering.
    `on-discard` with `discardingPlayer` filter (default `controller`).
 8. **On-change-position.** When a creature's position changes (shared mover
    must call this), fire `on-change-position` with `creatureRelation` filter.
-9. **Order.** Hooks push onto the resolution stack (reverse push). Call sites
+9. **On-turn-start.** When a player's turn begins (`finishTurn` after the
+   incoming holder is set, **after** toxin ticks). Filter `whoseTurn`
+   (`controller` / `opponent` / `any` vs filter owner; default `controller`).
+   Print: `On start of turn:` / `On start of opponent's turn:`. Do **not**
+   queue `choose-*` effects here — auto selectors only (`most-damaged-enemy`,
+   `source-creature`) so `END_TURN` stays atomic.
+10. **Order.** Hooks push onto the resolution stack (reverse push). Call sites
    `drainResolution` so choices pause correctly.
-10. **No new player actions.** Hooks are system-side only.
+11. **No new player actions.** Hooks are system-side only.
 
 ## Relation filters
 
@@ -109,6 +117,8 @@ reducer only knows the hook kinds and passes instance ids for filtering.
       (creature **or** allied ritual assignment).
 - [x] `energy-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
 - [x] Movers fire `on-change-position` (Hunter’s Collar) via `setCreaturePosition`.
+- [x] `on-turn-start` (Slow Burn / Smolder / Cinder Hex) after toxin ticks.
+- [x] `on-toxin-damage` `damagedOwner: "opponent"` (Fester); Toxic Heart default controller still heals.
 
 ## Tests
 
