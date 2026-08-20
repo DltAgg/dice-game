@@ -50,7 +50,7 @@ The **or** between forge and effect is load-bearing: one use, one region.
 |---|---|---|
 | Martial | Direct combat / efficient attacks | Aggro |
 | Wild | Creature pressure / flexible aggression | Aggro, Combo, Support |
-| Toxin | Attrition / delayed damage / **burn ticks** | Aggro, Combo, Burn |
+| Toxin | Attrition / delayed damage / **burn ticks** | Burn, Combo |
 | Luminar | Synergy / support / combo value | Combo, Support |
 | Mechanical | Engine construction / manipulation | Combo, Support |
 | Arcane | Control / manipulation / support | Control, Support |
@@ -63,13 +63,14 @@ become efficient **aggro** (cheap fast creature attacks). Control **should**
 deal meaningful damage through its engine (rituals, consume, delayed/conditional
 hits). That is not the same as becoming Aggro.
 
-Archetypes (002): Aggro = Wild/Martial/Toxin; Combo = Luminar/Wild/Mechanical/Toxin;
+Archetypes (002): Aggro = Martial/Wild; Combo = Luminar/Wild/Mechanical/Toxin;
 Control = Arcane/Darkness; **Burn** (builtin `BURN_DECK`) =
 Toxin/Corruption; Support = Arcane/Luminar/Wild/Mechanical
 (utility may splash; printed Energy 1 remains exceptional — splash via
-discounts, not 1-drops). Toxin remains legal in Aggro for creature-pressure
-ticks; Corruption is **not** Control’s future home and must not require an
-Arcane/Darkness manabase. Do not turn Corruption into generic Arcane negate.
+discounts, not 1-drops). Toxin is **not** builtin Aggro — it lives on Burn
+(and Combo splash). Corruption is **not** Control’s future home and must not
+require an Arcane/Darkness manabase. Do not turn Corruption into generic
+Arcane negate.
 
 Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`,
 `COMBO_MECHANICAL_DECK`, and `BURN_DECK` in `cards.ts` (snapshots in
@@ -88,27 +89,26 @@ per id; face deck ≤12, ≤3 per attribute.
 | Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
 | Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → absorb Active-when → `ACTIVATE_RITUAL` → GY |
 | Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when symbols persist unless an effect discards them |
-| Face (natural) | Starting identity faces | Dual-kind attrs + Shield only |
+| Face (natural) | Starting identity faces | All eight attrs + Shield |
 | Face (synthetic) | Named specials only | Pool → install; `onRoll` / `onAbsorb`. Never blank `face-synthetic-<attr>` |
 
 Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
 cumulative (`Arcane + Corruption + Corruption`), absorbed onto the ritual during
 actions — not auto-from the pool.
 
-Current catalogue cards **forge their own attribute**. Dual-kind → typically
-`kind: "natural"`; synthetic-only (Toxin, Mechanical, Corruption, Darkness) →
-always `kind: "synthetic"`. Overload/equip gates and generated symbols may
+Current catalogue cards **forge their own attribute**. Dual-kind cards may forge
+Natural or Synthetic of that attribute; many Toxin / Mechanical / Corruption /
+Darkness cards still forge `kind: "synthetic"` (named specials) even though
+natural identity faces now exist. Overload/equip gates and generated symbols may
 still splash (Latent Corruption overloads Arcane; Hunter's Collar generates
 Martial). The two fields remain independent in the model if a future card
 needs a true forge splash.
 
 ## Face-kind policy
 
-- Dual-kind (Martial, Wild, Arcane, Luminar): natural **and** synthetic forges.
-  Synthetics are **named specials** (Crush, Warhorn, …), not identity blanks.
-- Synthetic-only (Toxin, Mechanical, Corruption, Darkness): **never**
-  `kind: "natural"` faces or forge regions. Forge installs a named special
-  of that attribute from the pool.
+- All eight attributes are dual-kind: natural **and** synthetic forges.
+  Naturals are identity basics (`face-natural-<attr>`). Synthetics are
+  **named specials** (Crush, Warhorn, Venom, …), not identity blanks.
 - Shield: `kind: "untyped"` only. Starting-die identity; never forged; not Natural.
 - Never author generic identity synthetics (`face-synthetic-martial`,
   `face-synthetic-corruption`, Forged Martial, Synthetic Arcane, …).
@@ -153,7 +153,6 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
 - Unreachable `EffectDefinition` members “for later”.
 - Putting opponent-forge choice on the **opponent** (they receive the physical
   face; the activator picks from their pool).
-- Natural Corruption / Darkness / Toxin / Mechanical faces.
 - Blank/generic synthetics (attribute-named identity faces).
 - Every attribute doing everything.
 - Rules logic in React / Zustand / PeerJS.
@@ -172,8 +171,9 @@ Great Contamination (opponent-die install; pair with Wasting Brand). Faces:
 Venom, Spores, Needle, Seep, Marrow Rot, Cinder (own-die ticks), Wasting Brand
 (opponent-die self-damage; holder voice).
 
-**Leave on Aggro:** existing Toxin pressure (Fangs, Blessing, Dose, Blight
-Strike, Needle, Seep). Those cards still work; they are not Burn-exclusive.
+**Leave off Aggro:** Toxin pressure (Fangs, Blessing, Dose, Blight Strike,
+Needle, Seep, Virulent Rite) belongs on Burn / Combo splash — not builtin
+Martial/Wild Aggro.
 
 **Fights Burn — cut from Control, do not maindeck in Burn:**
 - Latent Corruption (`card-latent-corruption`) — Arcane-face overload that

@@ -1,8 +1,7 @@
 import {
   DUAL_KIND_ATTRIBUTES,
-  isDualKindAttribute,
+  isAttribute,
   type Attribute,
-  type DualKindAttribute,
 } from "../model/attributes.js";
 import type { DieFaceLayout, FaceCardDefinition, ForgeableFaceKind, StartingDiceLayout } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
@@ -13,30 +12,25 @@ import { SHIELD, type SymbolType } from "../model/symbols.js";
  * Face cards from the Figma `Face card` page (`2:13`), plus named synthetics
  * staged from `synthetic_faces.csv`. Translated to English.
  *
- * Basics are starting-die identity faces: Natural Martial / Wild / Arcane /
- * Luminar, plus untyped Shield. Toxin / Mechanical / Corruption / Darkness are
- * synthetic-only attributes — forge those as named specials from the owner's
- * pool. Dual-timing print uses `On roll:` / `On absorb:`; fill `onRoll` /
- * `onAbsorb` only for clauses the engine can resolve — leave the other array
- * empty and keep the deferred clause in `rulesText` (see DEFERRED_CATALOGUE).
+ * Basics are starting-die identity faces: natural faces for all eight
+ * attributes, plus untyped Shield. Synthetics remain **named specials only**
+ * — never blank `face-synthetic-<attr>` generics. Dual-timing print uses
+ * `On roll:` / `On absorb:`; fill `onRoll` / `onAbsorb` only for clauses the
+ * engine can resolve — leave the other array empty and keep the deferred
+ * clause in `rulesText` (see DEFERRED_CATALOGUE).
  */
 
 const face = (definition: FaceCardDefinition): FaceCardDefinition => definition;
 
-export const naturalFaceId = (attribute: DualKindAttribute): FaceCardId =>
+export const naturalFaceId = (attribute: Attribute): FaceCardId =>
   asFaceCardId(`face-natural-${attribute}`);
 
 /**
- * Starting-die identity only: naturals for dual-kind attributes. There is no
+ * Starting-die identity only: naturals for every attribute. There is no
  * canonical `face-synthetic-<attr>` — forging names a special from the pool.
  */
 export const faceIdFor = (kind: ForgeableFaceKind, attribute: Attribute): FaceCardId => {
   if (kind === "natural") {
-    if (!isDualKindAttribute(attribute)) {
-      throw new Error(
-        `attribute "${attribute}" is synthetic-only; natural faces are not allowed`,
-      );
-    }
     return naturalFaceId(attribute);
   }
   throw new Error(
@@ -49,19 +43,23 @@ export const SHIELD_FACE_ID: FaceCardId = asFaceCardId("face-untyped-shield");
 
 export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
   if (symbol === SHIELD) return SHIELD_FACE_ID;
-  if (isDualKindAttribute(symbol)) return naturalFaceId(symbol);
+  if (isAttribute(symbol)) return naturalFaceId(symbol);
   throw new Error(
-    `starting dice have no identity face for "${symbol}"; use a named synthetic from the face pool`,
+    `starting dice have no identity face for "${symbol}"; Shield and attribute naturals are the only basics`,
   );
 };
 
 /* ----------------------------------------------------------- Figma names --- */
 
-const NATURAL_FACE_NAMES: Readonly<Record<DualKindAttribute, string>> = {
+const NATURAL_FACE_NAMES: Readonly<Record<Attribute, string>> = {
   martial: "Martial",
   wild: "Wild",
+  toxin: "Toxin",
   arcane: "Arcane",
   luminar: "Luminar",
+  mechanical: "Mechanical",
+  corruption: "Corruption",
+  darkness: "Darkness",
 };
 
 /* ----------------------------------------------------- named specials --- */
@@ -141,7 +139,7 @@ const namedSynthetic = (
     forgeRestriction: null,
   });
 
-const naturalFace = (attribute: DualKindAttribute): FaceCardDefinition =>
+const naturalFace = (attribute: Attribute): FaceCardDefinition =>
   face({
     id: naturalFaceId(attribute),
     name: NATURAL_FACE_NAMES[attribute],
@@ -869,11 +867,16 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[WASTING_BRAND]!,
 ];
 
-/** Starting naturals only — Martial, Wild, Arcane, Luminar, plus Shield. */
-export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(0, 5);
+/** Starting naturals for all eight attributes, plus untyped Shield. */
+export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
+  0,
+  DUAL_KIND_ATTRIBUTES.length + 1,
+);
 
 /** Named synthetic specials that have printed rules text. */
-export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(5);
+export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
+  DUAL_KIND_ATTRIBUTES.length + 1,
+);
 
 /**
  * Default six-symbol opening die for **engine tests** (`legacyStartingLayout`).
@@ -907,13 +910,31 @@ export function legacyStartingLayout(): StartingDiceLayout {
   return [die, die];
 }
 
-/** One named special + four dual-kind naturals + Shield. */
+/**
+ * Generic helper for non-Aggro builtins / tests: one named special + the old
+ * four-color natural paint (Martial/Wild/Arcane/Luminar) + Shield. Aggro uses
+ * `openingDieMartialWild` instead — do not reuse this for Martial/Wild Aggro.
+ */
 const openingDieWithSpecial = (special: FaceCardId): DieFaceLayout => [
   special,
   naturalFaceId("martial"),
   naturalFaceId("wild"),
   naturalFaceId("arcane"),
   naturalFaceId("luminar"),
+  SHIELD_FACE_ID,
+];
+
+/**
+ * Aggro opening die: one Martial or Wild pressure special + Martial/Wild
+ * naturals densified + Shield. Obeys starting caps (1 Shield, ≤2 synthetics /
+ * on-roll per die, ≤4 same attribute).
+ */
+const openingDieMartialWild = (special: FaceCardId): DieFaceLayout => [
+  special,
+  naturalFaceId("martial"),
+  naturalFaceId("martial"),
+  naturalFaceId("wild"),
+  naturalFaceId("wild"),
   SHIELD_FACE_ID,
 ];
 
@@ -938,11 +959,11 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
 ];
 
 /**
- * Builtin aggro face deck — at most twelve unique cards, at most three per
- * attribute (bible §12). Crush and Needle start installed (`PROTOTYPE_STARTING_DICE`)
- * and therefore leave the pool. Leftover Martial / Wild / Toxin specials remain
- * forge targets. Naturals may be packed here for density swaps; opening basics
- * that are not listed do not count toward the 12.
+ * Builtin Aggro face deck — Martial + Wild only (≤3 per attribute → max 6).
+ * Crush and Bloodscent open installed (`PROTOTYPE_STARTING_DICE`). Leftover
+ * Martial / Wild pressure specials remain Temper / Untamed forge targets.
+ * No Toxin faces (Needle / Seep / Venom / toxin naturals). Opening Martial /
+ * Wild naturals are not listed here — they do not consume the 12.
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   CRUSH,
@@ -951,23 +972,13 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   BLOODSCENT,
   GORE,
   PRIMORDIAL_FURY,
-  NEEDLE,
-  SEEP,
-  VENOM,
 ];
 
 export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
-  openingDieWithSpecial(CRUSH),
-  openingDieWithSpecial(NEEDLE),
+  openingDieMartialWild(CRUSH),
+  openingDieMartialWild(BLOODSCENT),
 ];
 
-/**
- * Builtin control face deck — twelve unique cards, ≤3 per attribute.
- * Nightwell and Resonance Rune open installed. Engine colors are Arcane and
- * Darkness only; Martial / Wild / Luminar specials are utility (shield hate,
- * peek, redirect), not a third manabase. Great Spark / Rekindle are empty-print
- * stubs — not pooled. Corruption specials are not pooled.
- */
 /**
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
  * Nightwell and Resonance Rune open installed. Engine colors are Arcane and

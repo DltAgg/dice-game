@@ -47,9 +47,9 @@ damage still belongs mainly on the Control card / ritual / face / status layer
 
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
-| War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | Poisoned Charge (req Martial+Toxin; discard Martial 1) 4 dmg + toxin / swap |
+| War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | War Charge (req Martial+Wild; discard Martial 1) 4 dmg + back-row swap |
 | Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg + next attack +1 |
-| Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Toxin; discard Wild 1) 3 dmg + frontline toxin |
+| Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg / swap | Bombardment (req Wild+Martial; discard Wild 1) 3 dmg + frontline strip Shield |
 | Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 2 dmg + draw | Mystic Overload (Arcane+Darkness; discard Arcane 1) 2 dmg + Energy + generate Arcane |
 | Corrupting Elder | Arcane | 14 | Touch of Decay (Arcane; discard Arcane 1) 2 dmg + strip shield | Contamination (Arcane+Corruption; discard Corruption 1) 2 dmg + generate Corruption |
 | Void Summoner | Arcane | 13 | Rupture (Arcane; discard Arcane 1) 2 dmg + generate Arcane | Dimensional Rift (Arcane+Darkness; discard Darkness 1) 2 dmg + Energy + draw |
@@ -111,8 +111,8 @@ encoded yet.
 | Basic/Special costs, damage, `followUpEffects` / `on-attack` riders | — |
 | Passives: Minotaur pierce, Archmage Arcane discount, Varcolac / Elder / Void / Garuda Range; Luminar absorb/discount/ally heal; Mechanical absorb/roll payoffs; Burn toxin-spread / turn-start ping / absorb-toxin | — |
 
-War Minotaur ignore-1-Shield, Poisoned Charge toxin + back-row swap, Garuda Dive
-optional swap, Bombardment frontline toxin, Archmage Burst draw / Overload
+War Minotaur ignore-1-Shield, War Charge back-row swap, Garuda Dive
+optional swap, Bombardment frontline strip Shield, Archmage Burst draw / Overload
 Energy+Arcane (`on-attack`), Elder Touch strip / Contamination generate Corruption,
 Void Rupture generate Arcane / Rift Energy+draw, Nightbound Umbral Touch generate
 Darkness / Eclipse Pulse opponent Energy loss — all wired (`010` / `012`).

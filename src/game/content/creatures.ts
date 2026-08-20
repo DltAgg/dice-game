@@ -80,17 +80,16 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
       },
       {
-        id: asAttackId("attack-minotaur-poisoned-charge"),
-        name: "Poisoned Charge",
+        id: asAttackId("attack-minotaur-war-charge"),
+        name: "War Charge",
         kind: "special",
-        requires: { martial: 1, toxin: 1 },
+        requires: { martial: 1, wild: 1 },
         discards: { martial: 1 },
         range: false,
         rulesText:
-          "Deal 4 damage and 1 [Toxin] marker. If War Minotaur is in the back row, swap it with a frontline creature.",
+          "Deal 4 damage. If War Minotaur is in the back row, swap it with a frontline creature.",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
         followUpEffects: [
-          { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
           {
             type: "conditional",
             when: { type: "source-position", position: "back" },
@@ -176,14 +175,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-garuda-bombardment"),
         name: "Bombardment",
         kind: "special",
-        requires: { wild: 1, toxin: 1 },
+        requires: { wild: 1, martial: 1 },
         discards: { wild: 1 },
         range: true,
         rulesText:
-          "Deal 3 damage. Every enemy on the frontline receives 1 [Toxin] marker.",
+          "Deal 3 damage. Every enemy on the frontline loses 1 [Shield].",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
         followUpEffects: [
-          { type: "apply-toxin", amount: 1, target: { kind: "enemy-frontline" } },
+          { type: "remove-shield", amount: 1, target: { kind: "enemy-frontline" } },
         ],
       },
     ],
@@ -852,12 +851,12 @@ export const getCreatureDefinition = (id: CreatureDefinitionId): CreatureDefinit
 export const ALL_CREATURES: readonly CreatureDefinition[] = ALL_DEFINITIONS;
 
 /**
- * Builtin Aggro loadout squad: Martial / Wild pressure (bible §27).
- * Deployment order: Minotaur front, Varcolac mid, Garuda back.
- * Also the default scenario squad for combat / engine tests.
+ * Builtin Aggro loadout squad: Martial + Wild only (bible §27). Attack costs
+ * spend Martial and/or Wild — no Toxin gates. Deployment order: Minotaur
+ * front, Varcolac mid, Garuda back. Also the default scenario squad for
+ * combat / engine tests.
  */
 export const PROTOTYPE_SQUAD: readonly CreatureDefinitionId[] = [MINOTAUR, VARCOLAC, GARUDA];
-
 /**
  * Builtin Control loadout squad: Arcane + Darkness engine (bible §27).
  * Deployment order: Archmage, Nightbound Adept, Void Summoner.

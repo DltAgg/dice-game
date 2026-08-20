@@ -37,10 +37,11 @@ Types: `src/game/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    members; grow the union only with [develop-engine](../develop-engine/SKILL.md)
    in the same change as the card that needs it.
 4. `src/game` stays pure. Do not put rules in UI / store / networking.
-5. Forge the card’s own attribute. Synthetic-only attributes never use
-   `kind: "natural"`. Keep splash in overload/equip gates or generated
-   symbols, not in a mismatched forge, unless a future card explicitly
-   needs a forge splash.
+5. Forge the card’s own attribute. Natural forges are legal for every
+   attribute; synthetic forges still name a special from the pool (never
+   blank `face-synthetic-<attr>`). Keep splash in overload/equip gates or
+   generated symbols, not in a mismatched forge, unless a future card
+   explicitly needs a forge splash.
 6. **Print voice is the holder.** Write `rulesText` from the player who
    currently has the card on their field (their die, creature, ritual row,
    or equipment). **you** / **your** = that holder. **opponent** /

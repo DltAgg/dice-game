@@ -18,7 +18,7 @@ import {
 } from "../testing/scenario.js";
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
-const POISONED_CHARGE = asAttackId("attack-minotaur-poisoned-charge");
+const WAR_CHARGE = asAttackId("attack-minotaur-war-charge");
 const DIVE = asAttackId("attack-garuda-dive");
 const CHARGE = asAttackId("attack-varcolac-charge");
 const COORDINATED_HUNT = asAttackId("attack-varcolac-coordinated-hunt");
@@ -81,7 +81,7 @@ describe("attacking", () => {
   });
 
   it("burns discarded tokens when the attack lists discards", () => {
-    const state = combatState(0, { martial: 1, toxin: 1 });
+    const state = combatState(0, { martial: 1, wild: 1 });
     const attackerId = creatureIdAt(state, P1, 0);
 
     const after = expectOk(
@@ -89,12 +89,12 @@ describe("attacking", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: POISONED_CHARGE,
+        attackId: WAR_CHARGE,
         targetId: creatureIdAt(state, P2, 0),
       }),
     );
 
-    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ toxin: 1 });
+    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ wild: 1 });
     expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 

@@ -66,9 +66,8 @@ export type ForgeTarget = "own-die" | "opponent-die";
  * The forge region. Bible §13: forging replaces the face card backing a
  * physical slot, so the count, kind and attribute together say what goes in.
  *
- * Natural forges are legal only for dual-kind attributes (Martial, Wild,
- * Arcane, Luminar). Toxin / Mechanical / Corruption / Darkness must forge
- * `kind: "synthetic"` — see `attributeAllowsNaturalFaces`.
+ * Natural and synthetic forges are legal for every attribute. Synthetics are
+ * always named specials from the pool — see `attributeAllowsNaturalFaces`.
  */
 export interface ForgeRegion {
   readonly faces: number;

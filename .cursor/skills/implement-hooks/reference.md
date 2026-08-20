@@ -51,7 +51,7 @@ are that union; creatures/rituals reuse it).
 | Void Summoner | `on-absorb` any + Natural | Natural face filter (not untyped Shield) |
 | Lens Choir | `on-absorb` Luminar + oncePerTurn | Generate Luminar; no self-loop |
 | Garuda Dive | attack `followUpEffects` | `swap-positions` + `choose-allied-frontline` |
-| War Minotaur Poisoned Charge | attack `followUpEffects` + conditional | back-row ally swap |
+| War Minotaur War Charge | attack `followUpEffects` + conditional | back-row ally swap |
 
 ## Files
 

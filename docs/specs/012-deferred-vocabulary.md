@@ -186,7 +186,7 @@ face during actions (`ACTIVATE_FACE`). Display Energy cost
 forge-lock** on Plague slots. Surface **cannot-replace-by-forge** on Heritage
 and on Plague while lock > 0 (forbid targeting those slots for
 `FORGE_CARD` / `forge-faces` / Reforge). Peel stays available.
-Show optional reposition / swap prompts after Dive / Poisoned Charge /
+Show optional reposition / swap prompts after Dive / War Charge /
 Instinct.
 
 `choose-creature` already has a Decline path for optional filters.
@@ -201,7 +201,7 @@ UI dispatches the matching resolve.
 - [x] Archmage / Tome discount first matching play; forge not discounted; stack
 - [x] Paradox replays a GY Instant/Ritual without paying Requires/Energy; card stays GY
 - [x] Minotaur pierce ignores 1 Shield without spending it
-- [x] Attack follow-ups (Burst draw, Overload shields, Bombardment toxin, …)
+- [x] Attack follow-ups (Burst draw, Overload shields, Bombardment strip Shield, …)
 - [x] Push clauses remain unwired with accurate print
 - [x] Stay-on-slot: Heritage cannot-replace; Plague lock / reset / spread at 2; corrupter-owned copy
 
