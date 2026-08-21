@@ -42,6 +42,7 @@ npm run typecheck && npm test && npm run lint
 | Effect resolution | `src/game/reducer/resolution.ts` |
 | Loadout legality | `src/game/rules/loadout.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
+| Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
 | Match store | `src/store/matchStore.ts` |
 | Deck store / localStorage | `src/store/deckStore.ts`, `src/decks/` |
 | Match metrics / IndexedDB | `src/metrics/`, `src/ui/metrics/`, `src/store/metricsStore.ts` |

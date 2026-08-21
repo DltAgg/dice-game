@@ -83,7 +83,10 @@ Card Progress:
 6. If vocabulary is missing → develop-engine **with** resolver + tests, then wire.
 7. Update deferred catalogue / spec tables. Add copies to a builtin deck only
    when that is requested and the 50–60 / ≤4-copies rules still hold.
-8. DoD: `npm run typecheck && npm test && npm run lint` ([`TOOLS.md`](../../../TOOLS.md)).
+8. New cards that only use existing effects do **not** belong in
+   `docs/RULEBOOK.md`. If this change needed a new mechanic, engine-developer
+   updates the rulebook in the same engine change.
+9. DoD: `npm run typecheck && npm test && npm run lint` ([`TOOLS.md`](../../../TOOLS.md)).
 
 ## Progressive references
 

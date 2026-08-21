@@ -78,7 +78,8 @@ Hook Progress:
 - [ ] 3. Implement fire* in triggers.ts; call from the single event site
 - [ ] 4. Walk equipment + creature standing + ready continuous rituals
 - [ ] 5. Wire proving cards; defer incomplete print honestly
-- [ ] 6. Tests + DoD
+- [ ] 6. Update `docs/RULEBOOK.md` if the new hook changes player-facing timing
+- [ ] 7. Tests + DoD
 ```
 
 ### Call sites

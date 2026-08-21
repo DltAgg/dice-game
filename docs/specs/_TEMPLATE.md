@@ -10,6 +10,9 @@ Exact game rules, each one cited back to the bible section it comes from. If a
 rule is not in the bible and was not decided in a design discussion, it does
 not belong here — open an entry in `OPEN_DESIGN.md` instead.
 
+When this spec ships in the engine, fold the player-facing wording into
+`docs/RULEBOOK.md` in the same change.
+
 ## State Changes
 
 Which GameState fields can change?

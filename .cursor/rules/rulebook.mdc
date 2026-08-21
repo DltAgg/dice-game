@@ -1,0 +1,31 @@
+---
+description: Keep docs/RULEBOOK.md current whenever a gameplay rule changes
+alwaysApply: true
+---
+
+# Living rulebook (every session)
+
+[`docs/RULEBOOK.md`](docs/RULEBOOK.md) is how the game **currently plays**.
+It is not the bible (design canon) and not `OPEN_DESIGN.md` (unsettled questions).
+
+## Must update in the same change
+
+If you change `src/game` (or `GameRulesConfig` defaults) so a player would
+notice different timing, legality, costs, phases, zones, victory, or loadout
+constraints, **edit `docs/RULEBOOK.md` in that same change**. Specs and
+`OPEN_DESIGN.md` do not replace this.
+
+Examples that **require** a rulebook edit: new/changed phase, Energy pass,
+absorb vs spend, attack fuel, chain windows, prevent order, draw rate,
+loadout caps, win condition.
+
+Examples that **do not**: a new card using existing effects; UI/store/PeerJS;
+metrics; parked print in `DEFERRED_CATALOGUE.md` with no engine behavior.
+
+If the rule is still `OPEN` / `DEFERRED`, do not write it as fact. Point at
+`OPEN_DESIGN.md`. After implementing a `DECIDED` rule, the rulebook is the
+player-facing wording.
+
+Engine work: this is part of DoD for `engine-developer` / `develop-engine` /
+`implement-hooks`. Catalogue-only work hands the rulebook to engine-developer
+when a new mechanic ships.

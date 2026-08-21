@@ -25,7 +25,9 @@ description: >-
 3. Add focused tests under `src/game/reducer/*.test.ts`.
 4. Wire the concrete card/creature/face that needed it in `src/game/content/*`.
 5. Remove or shrink the matching row in `docs/DEFERRED_CATALOGUE.md`.
-6. Run DoD: `npm run typecheck && npm test && npm run lint`.
+6. Update `docs/RULEBOOK.md` if players would notice different timing,
+   legality, costs, phases, zones, victory, or loadout constraints.
+7. Run DoD: `npm run typecheck && npm test && npm run lint`.
 
 Do **not** add unreachable effect kinds “for later.”
 

@@ -24,8 +24,8 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
 ## Read first (every invocation)
 
 1. `AGENTS.md` and `TOOLS.md`
-2. `docs/ARCHITECTURE.md`
-3. `.cursor/rules/engine-purity.mdc`
+2. `docs/ARCHITECTURE.md` and `docs/RULEBOOK.md` (how play currently works)
+3. `.cursor/rules/engine-purity.mdc` and `.cursor/rules/rulebook.mdc`
 4. The matching skill — **read it immediately**; do not improvise workflow:
    - Standing hooks / `StandingTrigger` / spec `010` → `.cursor/skills/implement-hooks/SKILL.md` (then `reference.md` / `examples.md` as needed). Spec: `docs/specs/010-trigger-hooks.md`.
    - Effect AST, actions, phases, RNG, resolution, statuses → `.cursor/skills/develop-engine/SKILL.md`.
@@ -125,8 +125,9 @@ npm run typecheck && npm test && npm run lint
 ## When done
 
 Report: files changed; hook / effect / action / status added; proving card;
-`DEFERRED_CATALOGUE` / spec updates; DoD result; remaining UI or catalogue work
-for other specialists.
+`docs/RULEBOOK.md` / `DEFERRED_CATALOGUE` / spec updates; DoD result; remaining
+UI or catalogue work for other specialists. If play changed, the rulebook
+edit is required — not optional documentation.
 
 Ask rather than assume: bible vs `OPEN` vs `DEFERRED`, hook vs effect vs
 action, pre- vs post-prevent timing, incomplete print.

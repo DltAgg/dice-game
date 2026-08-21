@@ -31,6 +31,7 @@ creature attacks are not the primary damage source. Design canon:
 4. Specs `docs/specs/002-card-layer.md`, `003-creature-cards.md`, `004-face-cards.md` as relevant
 5. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
 6. `.cursor/rules/content-catalogues.mdc`
+7. `docs/RULEBOOK.md` for how systems currently play — do not list individual cards there. New mechanics → engine-developer updates the rulebook.
 
 Check existing members in `src/game/model/effects.ts` and `StandingTrigger` in
 `src/game/model/cards.ts` before declaring a mechanic “new.”
