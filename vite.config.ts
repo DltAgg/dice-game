@@ -4,7 +4,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  // Refresh on /decks (etc.) must serve index.html, not a 404.
+  // Dev/preview: refresh on /play, /match, /decks must serve index.html.
+  // Production (Vercel): same fallback lives in vercel.json rewrites.
   appType: "spa",
   plugins: [react(), tailwindcss()],
   resolve: {
