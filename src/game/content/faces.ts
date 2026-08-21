@@ -83,6 +83,7 @@ export const REVELATION: FaceCardId = asFaceCardId("face-synthetic-revelation");
 export const INSTINCT: FaceCardId = asFaceCardId("face-synthetic-instinct");
 export const PRIMORDIAL_FURY: FaceCardId = asFaceCardId("face-synthetic-primordial-fury");
 export const PACK: FaceCardId = asFaceCardId("face-synthetic-pack");
+export const PACK_SHARE: FaceCardId = asFaceCardId("face-synthetic-pack-share");
 export const COMMAND: FaceCardId = asFaceCardId("face-synthetic-command");
 export const IMPACT: FaceCardId = asFaceCardId("face-synthetic-impact");
 export const FORMATION: FaceCardId = asFaceCardId("face-synthetic-formation");
@@ -399,6 +400,22 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       ],
       onAbsorb: [
         { type: "reposition-creature", target: { kind: "choose-ally-other" }, optional: true },
+      ],
+    },
+  ),
+  namedSynthetic(
+    PACK_SHARE,
+    "Pack Share",
+    "wild",
+    "On absorb: copy 1 attribute token from this creature onto an adjacent allied creature.",
+    {
+      onAbsorb: [
+        {
+          type: "copy-attribute-tokens",
+          amount: 1,
+          from: { kind: "source-creature" },
+          to: { kind: "choose-adjacent-ally" },
+        },
       ],
     },
   ),
@@ -834,6 +851,7 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[INSTINCT]!,
   FACE_CARDS[PRIMORDIAL_FURY]!,
   FACE_CARDS[PACK]!,
+  FACE_CARDS[PACK_SHARE]!,
   FACE_CARDS[COMMAND]!,
   FACE_CARDS[IMPACT]!,
   FACE_CARDS[FORMATION]!,
@@ -962,8 +980,9 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
  * Builtin Aggro face deck — Martial + Wild only (≤3 per attribute → max 6).
  * Crush and Bloodscent open installed (`PROTOTYPE_STARTING_DICE`). Leftover
  * Martial / Wild pressure specials remain Temper / Untamed forge targets.
- * No Toxin faces (Needle / Seep / Venom / toxin naturals). Opening Martial /
- * Wild naturals are not listed here — they do not consume the 12.
+ * Pack Share is the Wild pack-feeding special. No Toxin faces (Needle / Seep /
+ * Venom / toxin naturals). Opening Martial / Wild naturals are not listed here
+ * — they do not consume the 12.
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   CRUSH,
@@ -971,7 +990,7 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   CLEAVING_STRIKE,
   BLOODSCENT,
   GORE,
-  PRIMORDIAL_FURY,
+  PACK_SHARE,
 ];
 
 export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [

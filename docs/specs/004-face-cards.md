@@ -93,6 +93,7 @@ Named specials:
 | Instinct | 2 | On roll: optional ally reposition; On absorb: optional actions-window basic | Spec `013` |
 | Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: optional reposition | |
+| Pack Share | 2 | On absorb: copy 1 token onto an adjacent allied creature | Spec `015` |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
 | Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | |
 | Formation | 2 | On roll: Energy if controller has FL; On absorb: 1 Shield on another allied FL | |
@@ -141,7 +142,7 @@ Martial/Wild/Arcane/Luminar paint:
 
 | Builtin | Opening / face-deck engine colors |
 |---|---|
-| Aggro (`PROTOTYPE_*`) | **Martial + Wild only** — pressure specials (Crush, Warhorn, Cleaving Strike, Bloodscent, Gore, Primordial Fury). Max 6 faces under ≤3/attr. No Toxin. |
+| Aggro (`PROTOTYPE_*`) | **Martial + Wild only** — pressure specials (Crush, Warhorn, Cleaving Strike, Bloodscent, Gore, Pack Share). Max 6 faces under ≤3/attr. No Toxin. |
 | Control | Arcane + Darkness (+ utility splash) |
 | Tempo / Combo Mechanical | Mechanical + Luminar (+ Wild/Toxin splash) |
 | Burn | Toxin + Corruption |

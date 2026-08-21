@@ -5,6 +5,7 @@ import type { GameState } from "../model/state.js";
 import { getFaceCard } from "../content/faces.js";
 import { livingCreaturesOf, opponentOf } from "./creatures.js";
 import { isDieStunned } from "./dice.js";
+import { totalTokens } from "./tokens.js";
 
 type QueryState = Pick<
   GameState,
@@ -50,7 +51,31 @@ export function legalCreaturesForFilter(
       return enemyIds.filter(hasToxin);
     case "ally-damage-over-half":
       return allyIds.filter(damageOverHalf);
+    case "ally-with-tokens":
+      return allyIds.filter((id) => totalTokens(state.creatures[id]?.attributeTokens ?? {}) > 0);
+    case "adjacent-ally":
+      return adjacentAllyIds(state, sourceCreatureId);
   }
+}
+
+/** Living `creatureIds` neighbors (±1) of `sourceCreatureId` (spec `015`). */
+export function adjacentAllyIds(
+  state: QueryState,
+  sourceCreatureId: CreatureId | null,
+): readonly CreatureId[] {
+  if (sourceCreatureId === null) return [];
+  const ownerId = state.creatures[sourceCreatureId]?.ownerId;
+  if (ownerId === undefined) return [];
+  const ids = state.players[ownerId]?.creatureIds ?? [];
+  const index = ids.indexOf(sourceCreatureId);
+  if (index < 0) return [];
+  const neighbors: CreatureId[] = [];
+  for (const candidate of [ids[index - 1], ids[index + 1]]) {
+    if (candidate === undefined) continue;
+    const creature = state.creatures[candidate];
+    if (creature !== undefined && !creature.defeated) neighbors.push(candidate);
+  }
+  return neighbors;
 }
 
 export function creatureMatchesFilter(
@@ -207,6 +232,10 @@ export function choiceFilterForSelector(
       return "enemy-with-toxin";
     case "choose-ally-damage-over-half":
       return "ally-damage-over-half";
+    case "choose-ally-with-tokens":
+      return "ally-with-tokens";
+    case "choose-adjacent-ally":
+      return "adjacent-ally";
     case "allied-frontline":
     case "enemy-frontline":
       return "multi";

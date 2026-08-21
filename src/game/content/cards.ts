@@ -128,6 +128,12 @@ export const FESTER: CardId = asCardId("card-fester");
 export const SMOLDER: CardId = asCardId("card-smolder");
 export const CINDER_HEX: CardId = asCardId("card-cinder-hex");
 export const EMBER_TIDE: CardId = asCardId("card-ember-tide");
+export const CONSULT: CardId = asCardId("card-consult");
+export const BURY_THE_NAME: CardId = asCardId("card-bury-the-name");
+export const GRAVE_WHISPER: CardId = asCardId("card-grave-whisper");
+export const DRESS_RANKS: CardId = asCardId("card-dress-ranks");
+export const SHARE_THE_KILL: CardId = asCardId("card-share-the-kill");
+export const DEN_SHARE: CardId = asCardId("card-den-share");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -1898,6 +1904,122 @@ const DEFINITIONS: readonly CardDefinition[] = [
       onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
     },
   }),
+  // --- Attribute exclusive proving cards (2026-08-21 signatures) ---
+  card({
+    id: CONSULT,
+    name: "Consult",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    rulesText:
+      "Look at the top 3 cards of your deck. Put 1 into your hand and the rest on the bottom.",
+    effect: {
+      effects: [{ type: "look-top-deck", amount: 3 }],
+    },
+  }),
+  card({
+    id: BURY_THE_NAME,
+    name: "Bury the Name",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText: "The opponent mills 3 cards.",
+    effect: {
+      effects: [{ type: "mill-cards", amount: 3, player: "opponent" }],
+    },
+  }),
+  card({
+    id: GRAVE_WHISPER,
+    name: "Grave Whisper",
+    energyCost: 2,
+    type: "equipment",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText:
+      "Can only equip an Arcane or Darkness creature.\n" +
+      "On absorb Darkness, once per turn: the opponent mills 1 card.",
+    equipment: {
+      mayTargetOpponent: false,
+      creatureAttributes: ["arcane", "darkness"],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["darkness"],
+          oncePerTurn: true,
+          effects: [{ type: "mill-cards", amount: 1, player: "opponent" }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: DRESS_RANKS,
+    name: "Dress Ranks",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "Reposition an allied creature 1 space.",
+    effect: {
+      effects: [{ type: "reposition-creature", target: { kind: "choose-ally" } }],
+    },
+  }),
+  card({
+    id: SHARE_THE_KILL,
+    name: "Share the Kill",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText:
+      "Move 1 absorbed attribute token from one allied creature to another allied creature.",
+    effect: {
+      effects: [
+        {
+          type: "transfer-attribute-tokens",
+          amount: 1,
+          from: { kind: "choose-ally-with-tokens" },
+          to: { kind: "choose-ally-other" },
+        },
+      ],
+    },
+  }),
+  card({
+    id: DEN_SHARE,
+    name: "Den Share",
+    energyCost: 2,
+    type: "equipment",
+    subtypes: [],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText:
+      "On absorb Wild, once per turn: copy 1 attribute token from this creature onto another allied creature.",
+    equipment: {
+      mayTargetOpponent: false,
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["wild"],
+          absorberRelation: "self",
+          oncePerTurn: true,
+          effects: [
+            {
+              type: "copy-attribute-tokens",
+              amount: 1,
+              from: { kind: "source-creature" },
+              to: { kind: "choose-ally-other" },
+            },
+          ],
+        },
+      ],
+    },
+  }),
 ];
 
 export const CARDS: Readonly<Record<string, CardDefinition>> = Object.fromEntries(
@@ -1937,11 +2059,11 @@ const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [OPENING_CUT, 3],
   [PRESS_THE_ATTACK, 3],
   [POUNCE, 2],
-  [PACK_SURGE, 2],
-  [RENDING_MARK, 2],
+  [SHARE_THE_KILL, 2],
+  [DEN_SHARE, 2],
+  [DRESS_RANKS, 2],
   [TEMPER, 2],
   [UNTAMED, 2],
-  [RIPOSTE, 2],
   // Ritual engines
   [CALL_TO_ARMS, 2],
   [BATTLE_HYMN, 2],
@@ -1979,12 +2101,12 @@ const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [UMBRAL_BOLT, 3],
   [RIFT_COLLAPSE, 2],
   [UMBRAL_BRAND, 2],
+  [CONSULT, 2],
+  [BURY_THE_NAME, 2],
+  [GRAVE_WHISPER, 2],
   // Generic toolkit splash (utility, not a third engine color)
   [RETHROW, 3],
-  [RAISE_GUARD, 2],
   [SIDESTEP, 2],
-  [SIFT, 2],
-  [SECOND_WIND, 2],
   [WARDING_CHARM, 2],
 ];
 
@@ -2066,10 +2188,10 @@ const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [BLADE_OF_SERENE_LIGHT, 2],
   [GLIMMER, 2],
   [BARRIER_OF_LIGHT, 2],
-  // Wild / Toxin — Lens Choir Cascade + Combo attrition splash
+  // Wild splash — pack feeding (Lens Choir token share) + Untamed specials
   [WILD_ECHO, 2],
   [UNTAMED, 2],
-  [DOSE, 2],
+  [SHARE_THE_KILL, 2],
 ];
 
 export const COMBO_MECHANICAL_DECK: readonly CardId[] = COMBO_MECHANICAL_DECK_COUNTS.flatMap(

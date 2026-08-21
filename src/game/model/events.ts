@@ -97,6 +97,18 @@ export type GameEvent =
       readonly creatureId: CreatureId;
       readonly discarded: SymbolRequirement;
     }
+  | {
+      readonly type: "attribute-tokens-moved";
+      readonly fromCreatureId: CreatureId;
+      readonly toCreatureId: CreatureId;
+      readonly tokens: SymbolRequirement;
+      readonly copy: boolean;
+    }
+  | {
+      readonly type: "cards-milled";
+      readonly playerId: PlayerId;
+      readonly cardInstanceIds: readonly CardInstanceId[];
+    }
   | { readonly type: "shield-gained"; readonly creatureId: CreatureId; readonly amount: number }
   | {
       readonly type: "shield-removed";

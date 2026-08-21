@@ -198,6 +198,12 @@ export type PendingDecision =
       readonly creatureId: CreatureId;
       /** How many token pips must be named (already less than the creature's total). */
       readonly amount: number;
+      /**
+       * `discard` (default, Siphon) strips the pips. `transfer` / `copy` move
+       * or duplicate them onto `destinationCreatureId` (spec `015`).
+       */
+      readonly mode?: "discard" | "transfer" | "copy";
+      readonly destinationCreatureId?: CreatureId;
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
     }

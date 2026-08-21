@@ -304,6 +304,20 @@ named Synthetic Toxin).
 | 3 | Battle Hymn | Ritual / Continuous / Martial | 1 Natural Martial, your die | *Active when: Martial + Martial.* On attack: the next attack this turn deals +1 damage. |
 | 3 | Pack Law | Ritual / Continuous / Wild | 1 Natural Wild, your die | *Active when: Wild + Wild.* On absorb Wild: the next attack this turn deals +1 damage. |
 | 3 | Virulent Rite | Ritual / Instant / Toxin | 1 Synthetic Toxin, your die | *Active when: Toxin + Toxin.* Forge 2 Synthetic Toxin faces on your die. |
+| 2 | Dress Ranks | Instant / Martial | 1 Natural Martial, your die | Reposition an allied creature 1 space. |
+| 2 | Share the Kill | Instant / Wild | 1 Natural Wild, your die | Move 1 absorbed attribute token from one allied creature to another allied creature. |
+| 2 | Den Share | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild, once per turn: copy 1 attribute token from this creature onto another allied creature. |
+
+### Attribute exclusive signatures (authored)
+
+On-pie proving cards for exclusive verbs (spec `015` mill / pack feeding).
+Leaks (Sift, Riposte, …) are not counted and were not rewritten here.
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 2 | Consult | Instant / Arcane | 1 Natural Arcane, your die | Look at the top 3 cards of your deck. Put 1 into your hand and the rest on the bottom. |
+| 2 | Bury the Name | Instant / Darkness | 1 Synthetic Darkness, your die | The opponent mills 3 cards. |
+| 2 | Grave Whisper | Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Darkness, once per turn: the opponent mills 1 card. |
 
 ### Control interaction (authored)
 
@@ -388,6 +402,8 @@ already express.
 | Toxin counters; 1 damage per counter at owner's turn start | Adaptive Toxin strip→damage still deferred |
 | `[Requires: …]` gates on an effect; `[Active when: …]` on rituals | Resonance wildcard `012` |
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
+| Mill (`mill-cards`); Bury the Name / Grave Whisper | Spec `015` |
+| Pack feeding (`transfer-attribute-tokens` / `copy-attribute-tokens`) | Spec `015` |
 | Damage, heal, shield, symbol generation, draw, discard, Energy gain, destroy equipment, apply-toxin, convert, retain-from-effect, GY replay, movers | Stun / empty print — see DEFERRED_CATALOGUE |
 
 Equipment, Overload and Ritual are wired as board regions (main types for

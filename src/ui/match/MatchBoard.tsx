@@ -1881,6 +1881,10 @@ function chooseCreatureFilterHint(filter: CreatureChoiceFilter): string {
       return "Choose an enemy creature with toxin.";
     case "ally-damage-over-half":
       return "Choose an allied creature with more than half damage.";
+    case "ally-with-tokens":
+      return "Choose an allied creature that holds an attribute token.";
+    case "adjacent-ally":
+      return "Choose an adjacent allied creature.";
   }
 }
 
@@ -2122,8 +2126,11 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       : "Waiting for the opponent to choose equipment to destroy.";
   }
   if (state.pendingDecision?.type === "choose-attribute-tokens") {
+    const mode = state.pendingDecision.mode ?? "discard";
+    const verb =
+      mode === "copy" ? "copy" : mode === "transfer" ? "move" : "discard";
     return isPendingChooser
-      ? `Choose ${String(state.pendingDecision.amount)} attribute token pip(s) to discard.`
+      ? `Choose ${String(state.pendingDecision.amount)} attribute token pip(s) to ${verb}.`
       : "Waiting for the opponent to choose attribute tokens.";
   }
   if (state.pendingDecision?.type === "forge-faces") {
@@ -5567,7 +5574,11 @@ function ChooseAttributeTokensModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Choose tokens to discard
+          {pending.mode === "copy"
+            ? "Choose tokens to copy"
+            : pending.mode === "transfer"
+              ? "Choose tokens to move"
+              : "Choose tokens to discard"}
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
           Name {String(pending.amount)} attribute token pip(s). Assigned: {String(assigned)}/

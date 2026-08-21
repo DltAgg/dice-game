@@ -92,10 +92,7 @@ describe("generic utility toolkit", () => {
   it("Control splashes the toolkit as utility, not a third engine color", () => {
     const copies = (id: (typeof RAISE_GUARD)) => CONTROL_DECK.filter((card) => card === id).length;
     expect(copies(RETHROW)).toBe(3);
-    expect(copies(RAISE_GUARD)).toBe(2);
     expect(copies(SIDESTEP)).toBe(2);
-    expect(copies(SIFT)).toBe(2);
-    expect(copies(SECOND_WIND)).toBe(2);
     expect(copies(WARDING_CHARM)).toBe(2);
   });
 

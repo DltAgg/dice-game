@@ -846,8 +846,8 @@ a single attack bonus, cost reduction, forge of your own attribute) stay legal.
 | Wild | Pack feeding (move or copy absorbed tokens between allied creatures) |
 
 Existing off-pie cards (Sift, Sidestep, Predator’s Claws, …) are leaks — do
-not copy them as precedent. Wild pack feeding has no engine vocabulary yet;
-the first proving card needs `engine-developer`.
+not copy them as precedent. Wild pack feeding is `transfer-attribute-tokens`
+/ `copy-attribute-tokens` (spec `015`). Darkness mill is `mill-cards`.
 
 ---
 

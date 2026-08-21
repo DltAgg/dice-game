@@ -24,6 +24,19 @@ export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeToke
   [attribute]: (tokens[attribute] ?? 0) + 1,
 });
 
+/** Adds a requirement-shaped pile (pack feeding copy / transfer dest). */
+export function addTokens(
+  tokens: AttributeTokens,
+  added: SymbolRequirement,
+): AttributeTokens {
+  const next: Partial<Record<keyof AttributeTokens, number>> = { ...tokens };
+  for (const [attribute, count] of requirementEntries(added)) {
+    if (count <= 0) continue;
+    next[attribute] = (next[attribute] ?? 0) + count;
+  }
+  return next;
+}
+
 /**
  * Removes a requirement's worth of tokens. Zeroed attributes are dropped rather
  * than left as `0`, so two creatures holding the same fuel always serialize

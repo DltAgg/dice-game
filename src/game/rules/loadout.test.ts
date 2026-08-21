@@ -31,7 +31,7 @@ import {
   GORE,
   GREAT_SPARK,
   PESTILENT_PLAGUE,
-  PRIMORDIAL_FURY,
+  PACK_SHARE,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_STARTING_DICE,
   SEEP,
@@ -336,7 +336,7 @@ describe("leftoverFacePool", () => {
     expect(pool).toContain(WARHORN);
     expect(pool).toContain(CLEAVING_STRIKE);
     expect(pool).toContain(GORE);
-    expect(pool).toContain(PRIMORDIAL_FURY);
+    expect(pool).toContain(PACK_SHARE);
   });
 
   it("does not consume opening basics even when they are also listed in the face deck", () => {

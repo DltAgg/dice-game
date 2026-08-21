@@ -112,7 +112,8 @@ Read `src/game/model/effects.ts` as authority. Today:
 `apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
 `arm-attack-toxin`, `negate-card`, `negate-ritual`, `discard-attribute-tokens`,
 `destroy-ritual`, `grant-damage-prevent`,
-`prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`
+`prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`,
+`mill-cards`, `transfer-attribute-tokens`, `copy-attribute-tokens`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
 `most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
