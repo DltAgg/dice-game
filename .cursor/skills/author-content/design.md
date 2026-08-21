@@ -46,16 +46,18 @@ The **or** between forge and effect is load-bearing: one use, one region.
 
 ## Attribute identities (directional)
 
-| Attribute | Primary identity | Typical home |
-|---|---|---|
-| Martial | Direct combat / efficient attacks | Aggro |
-| Wild | Creature pressure / flexible aggression | Aggro, Combo, Support |
-| Toxin | Attrition / delayed damage / **burn ticks** | Burn, Combo |
-| Luminar | Synergy / support / combo value | Combo, Support |
-| Mechanical | Engine construction / manipulation | Combo, Support |
-| Arcane | Control / manipulation / support | Control, Support |
-| Corruption | **Continuous burn** (damage over time); contaminate-dice is minor spice that feeds burn | Burn |
-| Darkness | Delayed value / disruption | Control |
+| Attribute | Primary identity | Exclusive mechanic | Typical home |
+|---|---|---|---|
+| Martial | Direct combat / efficient attacks | Ally creature movement (swap / reposition) | Aggro |
+| Wild | Creature pressure / flexible aggression | Pack feeding (share absorbed tokens) | Aggro, Combo, Support |
+| Toxin | Attrition / delayed damage / **burn ticks** | Toxin counter placement | Burn, Combo |
+| Luminar | Synergy / support / combo value | Damage prevention | Combo, Support |
+| Mechanical | Engine construction / manipulation | Own-die reconstruction | Combo, Support |
+| Arcane | Control / manipulation / support | See and rearrange top of deck | Control, Support |
+| Corruption | **Continuous burn** (damage over time); contaminate-dice is minor spice that feeds burn | Opponent-die manipulation | Burn |
+| Darkness | Delayed value / disruption | Mill | Control |
+
+**Exclusive mechanic** is the one verb no other attribute may print. Identity is broader (Martial still hits hard; Mechanical still generates Mechanical). See [Attribute exclusive mechanics](#attribute-exclusive-mechanics-decided) before authoring.
 
 Do **not** give every attribute large damage, healing, draw, removal, and
 disruption. Sustain attributes must not become the best burst; control must not
@@ -78,6 +80,43 @@ Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`,
 Do not dump a new card into Aggro and Control without an identity reason; Mech
 homes are Tempo / Combo Mechanical. Legal constructed: 50–60 tactics, ≤4 copies
 per id; face deck ≤12, ≤3 per attribute.
+
+## Attribute exclusive mechanics (`DECIDED`)
+
+Canon pointer: bible §29 · `OPEN_DESIGN.md` (2026-08-21). Card-designer
+**must** check this section before choosing an attribute for a new card.
+
+Each attribute owns **one signature verb**. Do not print that verb on any
+other attribute, even as a splash, a rider, or a “small version.” Identity
+(efficient attacks, own-attribute generate, tiny heal, a single
+`next-attack-bonus`, cost reduction, forge of your own attribute) is **not**
+exclusive — those stay shared secondary tools.
+
+Pairings that keep the pie readable:
+
+- **Deck** (Arcane) vs **graveyard from deck** (Darkness).
+- **Your die** (Mechanical) vs **their die** (Corruption).
+- **Where the body stands** (Martial) vs **which body holds the fuel** (Wild).
+- **Stop damage** (Luminar) vs **stack delayed damage** (Toxin).
+
+| Attribute | Exclusive verb | Counts as (print this only here) | Does not count as |
+|---|---|---|---|
+| **Arcane** | See and rearrange the top of your deck | Look at top N; reorder; put some to hand / bottom / top; deck search (`search-deck`) as the heavy form | Draw without looking; mill; GY search |
+| **Darkness** | Mill | Put cards from a deck into a graveyard (yours or the opponent’s), including named-from-deck piles that land in GY | Discard from hand; return from GY; look at top without GY |
+| **Luminar** | Damage prevention | Prevent N, prevent-and-reflect, “when you prevent → …”, standing prevent buffers | Shield counters; heal; redirect (Aegis-style) unless the print is actually prevent |
+| **Corruption** | Opponent-die manipulation | Forge / markers / lock / suppress / strip / steal overloads on **their** faces; opponent-die named specials | Own-die forge; own overloads; Toxin markers on creatures |
+| **Toxin** | Toxin counter placement | Apply / spread / arm-attack Toxin markers; payoffs that *require* those markers | Corruption face ticks; generic delayed damage with no Toxin marker |
+| **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Dive-style swaps) | Enemy push (banned); extra attacks; sharing tokens |
+| **Mechanical** | Own-die reconstruction | Extra forge on **your** die; replace your faces without a forge-draw (Reforge); reapply / copy / double **your** face and overload modifiers (Stamp, Coupling); move your overloads between **your** faces | Opponent-die (Corruption); deck order (Arcane); generating symbols; Energy; GY recursion |
+| **Wild** | Pack feeding | Move or copy absorbed **attribute tokens** from one allied creature to another; spend an adjacent ally’s tokens to attack; on-absorb share a token onto another ally | Absorbing onto yourself (universal); generating pool symbols; extra attack; ally reposition (Martial) |
+
+### Authoring notes
+
+- **One verb, many cards.** Vary cost, timing (`On roll` / `On absorb` / instant / standing), amount, and gate — do not invent a second exclusive for the same attribute.
+- **Proving cards (already in catalogue):** Arcane — Insight Rune, look-top instants. Darkness — Dark Pact (self-mill). Luminar — Glimmer and prevent package (spec `009`). Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling. Wild — **no proving card yet**; first pack-feeding card needs `engine-developer` (no token-transfer effect today).
+- **Off-pie leaks — do not copy, do not treat as precedent.** Rewrite only when asked: Sift (Luminar look-top), Second Wind (Martial peek), Sidestep / Hunting Armour (Wild prevent), Safety Latch (Mechanical prevent), Predator’s Claws / Insignia of Command / Hunter’s Collar (Wild movement), Garuda Dive swap (Wild creature). Adrenaline / Rethrow (own-die reroll) are not anyone’s exclusive.
+- **Wild vs Martial:** Martial moves the **body**. Wild moves the **fuel**. A Wild card that swaps positions is in the wrong attribute; a Martial card that donates tokens is in the wrong attribute.
+- **Mechanical vs Corruption:** Mechanical rebuilds **your** engine. Corruption contaminates **theirs**. An opponent-die forge on a Mechanical card is in the wrong attribute.
 
 ## Card kinds — when to use which
 
@@ -155,6 +194,8 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
   face; the activator picks from their pool).
 - Blank/generic synthetics (attribute-named identity faces).
 - Every attribute doing everything.
+- Printing another attribute’s **exclusive verb** (see exclusive mechanics
+  above) as a splash or rider.
 - Rules logic in React / Zustand / PeerJS.
 - Growing AST without a concrete card + resolver + tests in the same change.
 

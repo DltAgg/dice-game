@@ -63,7 +63,7 @@ Copy and track:
 
 ```text
 Card Progress:
-- [ ] 1. Kind + attribute identity (design.md)
+- [ ] 1. Kind + attribute identity + exclusive mechanic (design.md)
 - [ ] 2. Print / rulesText in standard timing English
 - [ ] 3. Map clauses → existing effects / hooks OR defer
 - [ ] 4. Author catalogue entry (ids, forge, play region)
@@ -75,7 +75,8 @@ Card Progress:
 1. Identify kind: **instant** / **reaction** / **equipment** / **overload**,
    **ritual** (subtypes instant / reaction / continuous), or **face**
    (natural / synthetic / untyped).
-2. Check [design.md](design.md) — identity, cost band, what the card is *for*.
+2. Check [design.md](design.md) — identity, **exclusive mechanic**, cost band,
+   what the card is *for*. Do not print another attribute’s exclusive verb.
 3. Align names and attributes with English specs (`002` / `003` / `004`).
 4. Timing print → [standardize-card-effects](../standardize-card-effects/SKILL.md).
    Standing hooks → [implement-hooks](../implement-hooks/SKILL.md).

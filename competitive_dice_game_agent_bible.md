@@ -1009,18 +1009,23 @@ For example:
 
 # 29. Current Attribute Direction
 
-| Attribute | Primary identity | Typical archetypes |
-|---|---|---|
-| Martial | Direct combat / efficient attacks | Aggro |
-| Wild | Creature pressure / flexible aggression | Aggro, Combo |
-| Toxin | Attrition / delayed ticks / burn stacking | Aggro, Combo, Burn |
-| Luminar | Synergy / support / combo value | Combo, Support |
-| Mechanical | Engine manipulation / construction | Combo, Support |
-| Arcane | Control / manipulation / support | Control, Support |
-| Corruption | Continuous burn (DoT); contaminate-dice is spice | Burn |
-| Darkness | Control / delayed value / disruption | Control |
+| Attribute | Primary identity | Exclusive mechanic | Typical archetypes |
+|---|---|---|---|
+| Martial | Direct combat / efficient attacks | Ally creature movement (swap / reposition) | Aggro |
+| Wild | Creature pressure / flexible aggression | Pack feeding (share absorbed tokens) | Aggro, Combo |
+| Toxin | Attrition / delayed ticks / burn stacking | Toxin counter placement | Aggro, Combo, Burn |
+| Luminar | Synergy / support / combo value | Damage prevention | Combo, Support |
+| Mechanical | Engine manipulation / construction | Own-die reconstruction | Combo, Support |
+| Arcane | Control / manipulation / support | See and rearrange top of deck | Control, Support |
+| Corruption | Continuous burn (DoT); contaminate-dice is spice | Opponent-die manipulation | Burn |
+| Darkness | Control / delayed value / disruption | Mill | Control |
 
 These identities are directional rather than immutable numerical rules.
+
+**Exclusive mechanic** (DECIDED 2026-08-21): the one verb no other attribute
+may print. Authoring detail, off-pie leaks, and proving cards live in
+`.cursor/skills/author-content/design.md`. Do not treat identity (damage,
+own-attribute generate, small combat tricks) as exclusive.
 
 ---
 

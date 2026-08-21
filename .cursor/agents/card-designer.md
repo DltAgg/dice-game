@@ -24,6 +24,7 @@ creature attacks are not the primary damage source. Design canon:
 1. `AGENTS.md` and `TOOLS.md`
 2. `.cursor/skills/author-content/SKILL.md` — then the matching reference:
    - Tactics / rituals / equipment / overload → `tactics.md` + `design.md`
+     (including **attribute exclusive mechanics**)
    - Faces → `faces.md` + `design.md`
    - Creatures → `creatures.md`
    - CSV column order (worksheet only) → `csv-tactics.md`
@@ -38,7 +39,9 @@ Check existing members in `src/game/model/effects.ts` and `StandingTrigger` in
 
 ## Mission
 
-- Design kind, attribute, cost, and role against `design.md` and bible §§19–20, 26–30.
+- Design kind, attribute, cost, and role against `design.md` (identity **and**
+  exclusive mechanic) and bible §§19–20, 26–30. Never print another
+  attribute’s exclusive verb.
 - Write timing-prefixed print (`On roll:` / `On absorb:` / `On …:` — never “Whenever…”).
 - Author TypeScript in `src/game/content/{cards,faces,creatures}.ts`.
 - Wire structured regions **only** for clauses the engine already models.
@@ -105,7 +108,7 @@ Existing effects/hooks: wire them yourself via `author-content` +
 
 ```text
 Card Progress:
-- [ ] 1. Kind + attribute identity (design.md)
+- [ ] 1. Kind + attribute identity + exclusive mechanic (design.md)
 - [ ] 2. Print / rulesText in standard timing English
 - [ ] 3. Map clauses → existing effects / hooks OR defer OR engine brief
 - [ ] 4. If new mechanic: engine-developer, then resume

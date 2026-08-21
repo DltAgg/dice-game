@@ -823,6 +823,34 @@ not by deleting copy.
 
 ---
 
+## Resolved — attribute exclusive mechanics, 2026-08-21
+
+### Each attribute owns one exclusive verb
+
+**Status:** `DECIDED` · authoring canon in `.cursor/skills/author-content/design.md`
+· bible §29
+
+Not a rules-engine change. Card-designer must not print another attribute’s
+signature verb. Shared secondaries (damage, own-attribute generate, tiny heal,
+a single attack bonus, cost reduction, forge of your own attribute) stay legal.
+
+| Attribute | Exclusive verb |
+|---|---|
+| Arcane | See and rearrange the top of your deck |
+| Darkness | Mill |
+| Luminar | Damage prevention |
+| Corruption | Opponent-die manipulation |
+| Toxin | Toxin counter placement |
+| Martial | Ally creature movement (swap / reposition) |
+| Mechanical | Own-die reconstruction (extra/replace/re-fire **your** faces and overloads) |
+| Wild | Pack feeding (move or copy absorbed tokens between allied creatures) |
+
+Existing off-pie cards (Sift, Sidestep, Predator’s Claws, …) are leaks — do
+not copy them as precedent. Wild pack feeding has no engine vocabulary yet;
+the first proving card needs `engine-developer`.
+
+---
+
 ### First-player advantage
 
 **Status:** `OPEN` — an observation, not yet a question anyone has to answer
