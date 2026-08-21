@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { APP_NAV, APP_PATHS, pathFromView, viewFromPath } from "./routes.js";
 
-const VIEWS = ["lobby", "match", "decks", "catalogue", "metrics"] as const;
+const VIEWS = ["lobby", "match", "decks", "catalogue", "rules", "metrics"] as const;
 
 describe("app view routes", () => {
   it("maps each shell view to a path and back", () => {
@@ -18,6 +18,7 @@ describe("app view routes", () => {
   it("ignores trailing slashes", () => {
     expect(viewFromPath("/decks/")).toBe("decks");
     expect(viewFromPath("/catalogue/")).toBe("catalogue");
+    expect(viewFromPath("/rules/")).toBe("rules");
   });
 
   it("falls unknown paths back to lobby", () => {

@@ -1,15 +1,15 @@
 # Dice Skirmish — living rulebook
 
-How the game **plays today**, as implemented by `reduce()` / `advance()`.
-Knobs live in `DEFAULT_RULES_CONFIG` (`src/game/model/config.ts`).
+How the game **plays today**. Open this in the app under **Rules**.
 
-This is not the design bible and not a card catalogue. Individual cards stay
-in specs `002` / `003` / `004` and `src/game/content`. Unsettled questions stay
-in [`OPEN_DESIGN.md`](./OPEN_DESIGN.md). Print the engine cannot yet run stays
-in [`DEFERRED_CATALOGUE.md`](./DEFERRED_CATALOGUE.md).
-
-**Keep this file in the same change as any rules edit that changes play.**
-See `.cursor/rules/rulebook.mdc`.
+<!--
+Agents: this file is the player-facing how-it-plays. Update it in the same
+change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
+It is not the design bible and not a card catalogue. Individual cards stay
+in specs 002 / 003 / 004. Unsettled questions stay in OPEN_DESIGN.md.
+Unmodelled print stays in DEFERRED_CATALOGUE.md. Numeric knobs live in
+src/game/model/config.ts (DEFAULT_RULES_CONFIG).
+-->
 
 ---
 
@@ -355,13 +355,12 @@ Do not treat the following as current play:
 
 ---
 
-## Related docs
-
-| Doc | Role |
-|---|---|
-| `competitive_dice_game_agent_bible.md` | Design canon and identity |
-| `docs/OPEN_DESIGN.md` | `OPEN` / `ASSUMED` / `DECIDED` register |
-| `docs/DEFERRED_CATALOGUE.md` | Unmodelled print clauses |
-| `docs/ARCHITECTURE.md` | Software advance path |
-| `src/game/model/config.ts` | Numeric knobs |
-| Specs `008`–`013` | Chain, prevent, hooks, strip/destroy, vocabulary, markers |
+<!--
+Related docs (agents):
+- competitive_dice_game_agent_bible.md — design canon
+- docs/OPEN_DESIGN.md — OPEN / ASSUMED / DECIDED
+- docs/DEFERRED_CATALOGUE.md — unmodelled print
+- docs/ARCHITECTURE.md — software advance path
+- src/game/model/config.ts — numeric knobs
+- specs 008–013 — chain, prevent, hooks, strip/destroy, vocabulary, markers
+-->

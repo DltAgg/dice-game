@@ -5,6 +5,7 @@ import { DeckBuilder } from "@/ui/decks/DeckBuilder";
 import { Lobby } from "@/ui/match/Lobby";
 import { MatchBoard } from "@/ui/match/MatchBoard";
 import { MetricsDashboard } from "@/ui/metrics/MetricsDashboard";
+import { RulebookPage } from "@/ui/rulebook/RulebookPage";
 import { useMatchStore, type MatchView } from "@/store/matchStore";
 import { APP_NAV, pathFromView, viewFromPath } from "./routes.js";
 
@@ -16,7 +17,7 @@ export function App() {
   return (
     <div className="min-h-screen text-[var(--ink)]">
       <RouterViewBridge />
-      <nav className="sticky top-0 z-10 flex items-center gap-2 border-b border-stone-800/80 bg-[var(--felt-deep)]/90 px-4 py-3 backdrop-blur sm:px-6">
+      <nav className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-stone-800/80 bg-[var(--felt-deep)]/90 px-4 py-3 backdrop-blur sm:px-6">
         <p className="mr-4 font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">
           Dice Skirmish
         </p>
@@ -38,6 +39,7 @@ export function App() {
             </main>
           }
         />
+        <Route path="/rules" element={<RulebookPage />} />
         <Route path="/metrics" element={<MetricsDashboard />} />
         <Route path="*" element={<Navigate to="/play" replace />} />
       </Routes>

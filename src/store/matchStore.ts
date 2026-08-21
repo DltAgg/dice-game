@@ -38,7 +38,7 @@ const P2 = asPlayerId("p2");
 
 const deckRepo = createLocalStorageDeckRepository();
 
-export type MatchView = "lobby" | "match" | "catalogue" | "decks" | "metrics";
+export type MatchView = "lobby" | "match" | "catalogue" | "decks" | "rules" | "metrics";
 export type MatchMode = "local" | "host" | "client";
 
 function requireDeck(id: SavedDeckId): SavedDeck {
