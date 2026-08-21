@@ -73,9 +73,6 @@ import {
   advanceResolvingChain as advance,
   newMatchWithDecks,
 } from "../testing/scenario.js";
-import { createDraft } from "./draft.js";
-import { drainResolution } from "./resolution.js";
-import { setCreaturePosition } from "./zones.js";
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
@@ -1076,18 +1073,33 @@ describe("Toxic Blessing arm-attack-toxin", () => {
   });
 });
 
-describe("Hunter's Collar on-change-position", () => {
-  it("generates Martial when the bearer changes position", () => {
+describe("Hunter's Collar on-absorb Wild", () => {
+  it("generates Martial when the bearer absorbs Wild", () => {
     const base = actionsReady([HUNTERS_COLLAR]);
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = equip(base, bearerId);
-    expect(equipped.creatures[bearerId]?.position).toBe("frontline");
-
-    const draft = createDraft(equipped);
-    setCreaturePosition(draft, bearerId, "back");
-    drainResolution(draft);
-    expect(draft.creatures[bearerId]?.position).toBe("back");
-    const martial = usableSymbols(draft, P1).filter((s) => s.symbol === "martial");
+    const symbolId = asSymbolInstanceId("sym-collar-wild");
+    const primed = withPhase(
+      {
+        ...equipped,
+        symbols: {
+          ...equipped.symbols,
+          [symbolId]: {
+            id: symbolId,
+            ownerId: P1,
+            symbol: "wild",
+            status: "rolled",
+            sourceDieId: null,
+            absorbedByCreatureId: null,
+          },
+        },
+      },
+      "actions",
+    );
+    const after = expectOk(
+      advance(primed, { type: "ABSORB_SYMBOL", playerId: P1, creatureId: bearerId, symbolId }),
+    );
+    const martial = usableSymbols(after, P1).filter((s) => s.symbol === "martial");
     expect(martial.length).toBeGreaterThanOrEqual(1);
   });
 });

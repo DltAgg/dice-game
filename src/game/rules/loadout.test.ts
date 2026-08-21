@@ -62,6 +62,13 @@ describe("validateTacticsDeck", () => {
     expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
   });
 
+  it("keeps builtin Aggro to Martial and Wild", () => {
+    for (const id of PROTOTYPE_DECK) {
+      const attribute = getCard(id)?.attribute;
+      expect(["martial", "wild"], id).toContain(attribute);
+    }
+  });
+
   it("keeps builtin Control free of Corruption cards", () => {
     for (const id of CONTROL_DECK) {
       expect(getCard(id)?.attribute, id).not.toBe("corruption");

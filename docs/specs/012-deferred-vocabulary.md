@@ -16,7 +16,7 @@ swap/reposition modelled. Stun stays `DEFERRED`.
 
 Catalogue cards keep English `rulesText`. Structured fields fill only when the
 engine can resolve the clause honestly. Movers always go through
-`setCreaturePosition` so Hunter’s Collar (`on-change-position`) fires.
+`setCreaturePosition` so `on-change-position` listeners fire.
 
 ## Rules
 
@@ -197,7 +197,7 @@ UI dispatches the matching resolve.
 
 ## Acceptance Criteria
 
-- [x] Reposition/swap uses `setCreaturePosition`; Hunter’s Collar still fires
+- [x] Reposition/swap uses `setCreaturePosition` (`on-change-position` fires)
 - [x] Archmage / Tome discount first matching play; forge not discounted; stack
 - [x] Paradox replays a GY Instant/Ritual without paying Requires/Energy; card stays GY
 - [x] Minotaur pierce ignores 1 Shield without spending it

@@ -78,7 +78,7 @@ Named specials:
 
 | Name | Overloads | Playable today | Notes |
 |---|---|---|---|
-| Arcane Echo | 0 | Echo-card forge only; cannot open; On roll: re-fire other die onRoll (+ overloads) | Not a full face overlay |
+| Arcane Echo | 0 | Echo-card forge only; cannot open; Mechanical; On roll: re-fire other die onRoll (+ overloads) | Not a full face overlay |
 | Blade Rain | 3 | On roll: arm next-attack split | `split-damage` pending |
 | Rending Claw | 3 | On roll: remove 3 Shields from most-shielded enemy | |
 | Crush | 3 | On roll: next attack +1 damage | |
@@ -89,10 +89,10 @@ Named specials:
 | Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |
 | Vital Spark | 2 | On roll: heal; On absorb: prevent 1 | |
 | Aegis | 2 | On roll: generate Shield; On absorb: redirect | |
-| Revelation | 2 | On roll: peek/bottom; On absorb: heal if damage >½ life | |
-| Instinct | 2 | On roll: optional ally reposition; On absorb: optional actions-window basic | Spec `013` |
+| Revelation | 2 | On roll: generate Luminar; On absorb: heal if damage >½ life | |
+| Instinct | 2 | On roll: ally next-attack +1; On absorb: optional actions-window basic | Spec `013` |
 | Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | |
-| Pack | 2 | On roll: adjacent → Wild; On absorb: optional reposition | |
+| Pack | 2 | On roll: adjacent → Wild; On absorb: other ally next-attack +1 | |
 | Pack Share | 2 | On absorb: copy 1 token onto an adjacent allied creature | Spec `015` |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
 | Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | |

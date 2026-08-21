@@ -6,12 +6,12 @@ These are the house style for roll+absorb faces (even when still print-only):
 
 ```ts
 // Revelation
-"On roll: reveal the top card of your deck; you may put it on the bottom.\n" +
+"On roll: generate 1 Luminar.\n" +
   "On absorb: heal 2 on a creature that has less than half its Life remaining."
 
 // Instinct
-"On roll: an allied creature may reposition 1 space.\n" +
-  "On absorb: it may perform a Basic Attack if it has not attacked this turn."
+"On roll: an allied creature's next attack deals +1 damage.\n" +
+  "On absorb: this creature may perform a Basic Attack if it has not attacked this turn."
 
 // Primordial Fury
 "On roll: if an allied creature has attacked this turn, gain 1 Energy.\n" +
@@ -23,7 +23,7 @@ honest partial wiring:
 
 | Clause | If vocabulary exists | If not |
 |---|---|---|
-| On roll: ally may reposition | `onRoll: [{ type: "reposition-creature", target: { kind: "choose-ally" } }]` | Keep text; `onRoll: []` |
+| On roll: ally next-attack +1 | `onRoll: [{ type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } }]` | Keep text; `onRoll: []` |
 | On absorb: Basic if not attacked | Needs extra-attack effect | Keep text; `onAbsorb: []` |
 | On absorb: next Basic +1 | `onAbsorb: [{ type: "next-attack-bonus", amount: 1 }]` | Keep text; `onAbsorb: []` |
 | On roll: gain 1 Energy if attacked | Needs conditional roll effect | Keep text; `onRoll: []` |

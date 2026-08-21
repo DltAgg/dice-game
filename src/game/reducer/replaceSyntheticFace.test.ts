@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { REFORGE, RATCHET } from "../content/cards.js";
-import { FLYWHEEL, GEAR, PISTON, faceIdForSymbol } from "../content/faces.js";
+import { ARCANE_ECHO_FACE, FLYWHEEL, GEAR, PISTON, faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -192,6 +192,7 @@ describe("replace-synthetic-face (Reforge)", () => {
             if (id === FLYWHEEL) return true;
             if (id === GEAR) return false;
             if (id === PISTON) return false;
+            if (id === ARCANE_ECHO_FACE) return false;
             return true;
           }),
         },

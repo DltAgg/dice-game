@@ -211,7 +211,7 @@ describe("Press the Attack", () => {
 });
 
 describe("Riposte", () => {
-  it("prevents 1 from an attack and arms the defender's next attack +1", () => {
+  it("generates Martial and arms the defender's next attack +1", () => {
     const combat = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(combat, P1, 0);
     const target = creatureIdAt(combat, P2, 0);
@@ -233,8 +233,9 @@ describe("Riposte", () => {
       }),
     );
     const resolved = resolveOpenChain(riposted);
-    expect(resolved.creatures[target]?.damage).toBe(2);
+    expect(resolved.creatures[target]?.damage).toBe(3);
     expect(resolved.attackBonusThisTurn).toEqual({ [P2]: 1 });
+    expect(usableSymbols(resolved, P2).some((symbol) => symbol.symbol === "martial")).toBe(true);
   });
 });
 
