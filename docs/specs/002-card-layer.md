@@ -164,7 +164,7 @@ include historical Toxin / splash print for reference; those Toxin cards are
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 2 Energy, negate the effect of 1 Instant card. |
-| 5 | Arcane Echo | Instant / Arcane | 1 Synthetic Arcane, your die | Apply the modifiers of one of the dice again. |
+| 5 | Arcane Echo | Instant / Mechanical | 1 Synthetic Mechanical, your die | Apply the modifiers of one of the dice again. |
 | 1 | Blessing of the Hunt | Overload / Martial | 1 Natural Martial, your die | On roll: generate Martial. |
 | 1 | Martial Blessing | Overload / Martial | 1 Natural Martial, your die | On roll: the next attack this turn deals +1 damage. |
 | 1 | Toxic Blessing | Overload / Toxin | 1 Synthetic Toxin, your die | *Toxin faces only.* On roll: all attacks this turn apply 1 Toxin marker. |
@@ -175,16 +175,16 @@ include historical Toxin / splash print for reference; those Toxin cards are
 | 1 | Ritual of Contamination | Instant / Corruption | 1 Synthetic Corruption, your die | *Requires: Corruption.* Forge 1 Synthetic Corruption face on the opponent's die. |
 | 4 | Luminar Judgement | Reaction / Luminar | 1 Natural Luminar, your die | On ally would take damage: prevent it; if you do, deal that much to the attacking creature. |
 | 2 | Glimmer | Reaction / Luminar | 1 Synthetic Luminar, your die | On prevent damage: draw 2 cards. |
-| 2 | Predator's Claws | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: this creature may move 1 position. |
+| 2 | Predator's Claws | Equipment / Martial | 1 Natural Martial, your die | On absorb Martial: this creature may move 1 position. |
 | 3 | Venomous Fangs | Equipment / Toxin | 1 Synthetic Toxin, your die | On deal damage: apply 1 Toxin marker. |
 | 4 | Serrated Stinger | Ritual / Continuous / Toxin | 1 Synthetic Toxin, your die | *Active when: Wild + Toxin.* On special attack: apply 1 Toxin marker. |
 | 4 | War Banner | Equipment / Wild | 1 Natural Wild, your die | On basic attack, allied creature to the left: deal +1 damage. |
 | 4 | Alpha's Hide | Equipment / Wild | 1 Natural Wild, your die | On special attack: generate Wild on another card. |
 | 5 | Toxic Heart | Equipment / Toxin | 1 Synthetic Toxin, your die | On toxin damage: heal 1 on this creature. |
-| 3 | Hunter's Collar | Equipment / Wild | 1 Natural Wild, your die | On change position: generate 1 Martial. |
-| 5 | Insignia of Command | Equipment / Wild | 1 Natural Wild, your die | *Martial creatures only.* On attack, once per turn: another ally may reposition. |
+| 3 | Hunter's Collar | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: generate 1 Martial. |
+| 5 | Insignia of Command | Equipment / Martial | 1 Natural Martial, your die | *Martial creatures only.* On attack, once per turn: another ally may reposition. |
 | 2 | War Axe | Equipment / Martial | 1 Natural Martial, your die | On basic attack: deal +1 damage. |
-| 2 | Hunting Armour | Equipment / Wild | 1 Natural Wild, your die | On take damage, once per turn: reduce it by 1. |
+| 2 | Hunting Armour | Equipment / Luminar | 1 Natural Luminar, your die | On take damage, once per turn: reduce it by 1. |
 | 3 | Twin Blades | Equipment / Martial | 1 Natural Martial, your die | On basic attack: remove 1 Shield from the target. |
 | 3 | Wild Carapace | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: heal 1. |
 
@@ -262,13 +262,14 @@ Servomotor / Foundry lean absorb; Camshaft / Clockwork / Blueprint / Stamp lean
 roll-pool; Coupling spends a stacked pool; Safety Latch / Recalibrate protect or
 reset without Arcane negate. Densified in builtin **Combo Mechanical**; Tempo
 takes a lighter cut. **Reforge** uses `replace-synthetic-face` (spec `012`).
+Safety Latch is a Mechanical reaction (generate + next-forge discount), not prevent.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Transmission | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: copy another symbol onto it. |
 | 1 | Camshaft | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: next forge costs 1 less Energy. Niche 1-cost: gated discount enabler, not a generator. |
 | 2 | Servomotor | Equipment / Mechanical | 1 Synthetic Mechanical, your die | On absorb Mechanical, once per turn: generate 1 Mechanical. |
-| 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | Prevent 1 damage. Generate 1 Mechanical. |
+| 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. Next forge costs 1 less Energy. |
 | 2 | Blueprint | Instant / Mechanical | 1 Synthetic Mechanical, your die | Generate 1 Mechanical. Next forge costs 1 less Energy. |
 | 3 | Stamp | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* Reapply one of your dice's face modifiers. |
 | 3 | Coupling | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* Next face effect this turn resolves twice. |
@@ -291,7 +292,7 @@ named Synthetic Toxin).
 | 2 | Temper | Instant / Martial | 1 Natural Martial, your die | Forge 1 Synthetic Martial face on your die. |
 | 2 | Opening Cut | Instant / Martial | 1 Natural Martial, your die | *Requires: Martial.* Deal 2 damage to a chosen enemy. |
 | 2 | Press the Attack | Instant / Martial | 1 Natural Martial, your die | The next attack this turn deals +2 damage. |
-| 2 | Riposte | Reaction / Martial | 1 Natural Martial, your die | Prevent 1 damage. The next attack this turn deals +1 damage. |
+| 2 | Riposte | Reaction / Martial | 1 Natural Martial, your die | Generate 1 Martial. The next attack this turn deals +1 damage. |
 | 2 | Whetstone | Equipment / Martial | 1 Natural Martial, your die | On attack: generate 1 Martial. |
 | 2 | Untamed | Instant / Wild | 1 Natural Wild, your die | Forge 1 Synthetic Wild face on your die. |
 | 2 | Pounce | Instant / Wild | 1 Natural Wild, your die | *Requires: Wild.* Choose an allied creature. Its next attack deals +2 damage. |
@@ -304,6 +305,22 @@ named Synthetic Toxin).
 | 3 | Battle Hymn | Ritual / Continuous / Martial | 1 Natural Martial, your die | *Active when: Martial + Martial.* On attack: the next attack this turn deals +1 damage. |
 | 3 | Pack Law | Ritual / Continuous / Wild | 1 Natural Wild, your die | *Active when: Wild + Wild.* On absorb Wild: the next attack this turn deals +1 damage. |
 | 3 | Virulent Rite | Ritual / Instant / Toxin | 1 Synthetic Toxin, your die | *Active when: Toxin + Toxin.* Forge 2 Synthetic Toxin faces on your die. |
+| 2 | Dress Ranks | Instant / Martial | 1 Natural Martial, your die | Reposition an allied creature 1 space. |
+| 2 | Share the Kill | Instant / Wild | 1 Natural Wild, your die | Move 1 absorbed attribute token from one allied creature to another allied creature. |
+| 2 | Den Share | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild, once per turn: copy 1 attribute token from this creature onto another allied creature. |
+
+### Attribute exclusive signatures (authored)
+
+On-pie proving cards for exclusive verbs (spec `015` mill / pack feeding).
+Former leaks (Sift, Riposte, …) were moved or rewritten onto the owning
+attribute; they are not counted as signature pieces unless they now print
+that verb.
+
+| Cost | Name | Type line | Forge | Effect |
+|---|---|---|---|---|
+| 2 | Consult | Instant / Arcane | 1 Natural Arcane, your die | Look at the top 3 cards of your deck. Put 1 into your hand and the rest on the bottom. |
+| 2 | Bury the Name | Instant / Darkness | 1 Synthetic Darkness, your die | The opponent mills 3 cards. |
+| 2 | Grave Whisper | Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Darkness, once per turn: the opponent mills 1 card. |
 
 ### Control interaction (authored)
 
@@ -334,22 +351,21 @@ Printed Energy 3–4 on damage / peel; Gloom Resonance / Umbral Brand at 2.
 
 ### Generic utility (authored)
 
-Playtest gap-fill: splashable 2-cost tools any constructed archetype can run
-2–4 of without stealing bible §28–29 identities (no Corruption contaminate, no
-Mechanical absorb-loops, no Arcane hard negate at Support prices). Dual-kind
-forges only (Martial / Wild / Arcane / Luminar) so one attribute does not own
-the package. Printed Energy 2 — 1-Energy plays come from discounts (§34.5).
-Fully wired. Builtin **Control** and **Burn** each splash 2–3 copies for
-utility (Control for filter/shield; Burn Raise Guard / Sidestep / Warding Charm
-to survive combat). Not on Aggro / Tempo / Combo Mechanical.
+Playtest gap-fill: splashable 2-cost tools. Look-top (Sift / Second Wind) is
+Arcane’s exclusive; prevent (Sidestep) is Luminar’s. Shield and own-die reroll
+stay shared secondaries. Printed Energy 2 — 1-Energy plays come from discounts
+(§34.5). Fully wired. Builtin **Control** runs Consult / Bury the Name /
+Grave Whisper for scry+mill and splashes Rethrow / Sidestep / Warding Charm;
+**Burn** splashes the survive package. Sift / Second Wind stay Arcane catalogue.
+Not on Aggro / Tempo / Combo Mechanical (Hunting Armour is Tempo Luminar).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Raise Guard | Instant / Martial | 1 Natural Martial, your die | A chosen allied creature gains 2 Shield. |
-| 2 | Sidestep | Reaction / Wild | 1 Natural Wild, your die | Prevent 2 damage. |
+| 2 | Sidestep | Reaction / Luminar | 1 Natural Luminar, your die | Prevent 2 damage. |
 | 2 | Rethrow | Instant / Arcane | 1 Natural Arcane, your die | Choose one of your rolled dice. You may reroll it. |
-| 2 | Sift | Instant / Luminar | 1 Natural Luminar, your die | Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom. |
-| 2 | Second Wind | Instant / Martial | 1 Natural Martial, your die | Gain 1 Energy. Look at the top card of your deck; you may put it on the bottom. |
+| 2 | Sift | Instant / Arcane | 1 Natural Arcane, your die | Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom. |
+| 2 | Second Wind | Instant / Arcane | 1 Natural Arcane, your die | Gain 1 Energy. Look at the top card of your deck; you may put it on the bottom. |
 | 2 | Warding Charm | Equipment / Arcane | 1 Natural Arcane, your die | On absorb, once per turn: this creature gains 1 Shield. |
 
 ### Toxin / Corruption continuous burn (authored)
@@ -388,6 +404,8 @@ already express.
 | Toxin counters; 1 damage per counter at owner's turn start | Adaptive Toxin strip→damage still deferred |
 | `[Requires: …]` gates on an effect; `[Active when: …]` on rituals | Resonance wildcard `012` |
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
+| Mill (`mill-cards`); Bury the Name / Grave Whisper | Spec `015` |
+| Pack feeding (`transfer-attribute-tokens` / `copy-attribute-tokens`) | Spec `015` |
 | Damage, heal, shield, symbol generation, draw, discard, Energy gain, destroy equipment, apply-toxin, convert, retain-from-effect, GY replay, movers | Stun / empty print — see DEFERRED_CATALOGUE |
 
 Equipment, Overload and Ritual are wired as board regions (main types for

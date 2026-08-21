@@ -96,6 +96,7 @@ import {
   applyOptionalOverchargeAccept,
   applyPoolSymbolWildcard,
   applyRemoveToxinForDamage,
+  applyTokenMove,
   checkVictory,
   clearResourceLocks,
   clearToxinReceiveCapsForOwner,
@@ -786,6 +787,24 @@ function resolveChooseAttributeTokens(
   }
 
   const next = removeTokens(creature.attributeTokens, discarded);
+  const mode = pending.mode ?? "discard";
+  const destinationId = pending.destinationCreatureId;
+  if (mode === "transfer" || mode === "copy") {
+    if (destinationId === undefined) return "INVALID_CHOICE";
+    const dest = draft.creatures[destinationId];
+    if (dest === undefined || dest.defeated || dest.ownerId !== playerId) return "INVALID_CHOICE";
+    if (destinationId === pending.creatureId) return "INVALID_CHOICE";
+    draft.pendingDecision = null;
+    emit(draft, {
+      type: "choose-attribute-tokens-resolved",
+      playerId,
+      creatureId: pending.creatureId,
+      discarded,
+    });
+    applyTokenMove(draft, pending.creatureId, destinationId, discarded, mode === "copy");
+    return resumeAfterEffectPause(draft);
+  }
+
   patchCreature(draft, pending.creatureId, { attributeTokens: next });
   draft.pendingDecision = null;
   emit(draft, {

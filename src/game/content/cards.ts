@@ -128,6 +128,12 @@ export const FESTER: CardId = asCardId("card-fester");
 export const SMOLDER: CardId = asCardId("card-smolder");
 export const CINDER_HEX: CardId = asCardId("card-cinder-hex");
 export const EMBER_TIDE: CardId = asCardId("card-ember-tide");
+export const CONSULT: CardId = asCardId("card-consult");
+export const BURY_THE_NAME: CardId = asCardId("card-bury-the-name");
+export const GRAVE_WHISPER: CardId = asCardId("card-grave-whisper");
+export const DRESS_RANKS: CardId = asCardId("card-dress-ranks");
+export const SHARE_THE_KILL: CardId = asCardId("card-share-the-kill");
+export const DEN_SHARE: CardId = asCardId("card-den-share");
 
 const DEFINITIONS: readonly CardDefinition[] = [
   // --- Early wired / partial entries (some also appear in PROTOTYPE_DECK) ---
@@ -240,8 +246,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 5,
     type: "instant",
     subtypes: [],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     forgeTags: ["echo"],
     rulesText: "Apply the modifiers of one of the dice again.",
     effect: {
@@ -738,15 +744,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "equipment",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On absorb Wild: this creature may move 1 position.",
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "On absorb Martial: this creature may move 1 position.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
-          symbols: ["wild"],
+          symbols: ["martial"],
           effects: [
             { type: "reposition-creature", target: { kind: "source-creature" }, optional: true },
           ],
@@ -847,13 +853,13 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On change position: generate Martial.",
+    rulesText: "On absorb Wild: generate 1 Martial.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
-          type: "on-change-position",
-          creatureRelation: "self",
+          type: "on-absorb",
+          symbols: ["wild"],
           effects: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
         },
       ],
@@ -865,8 +871,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 5,
     type: "equipment",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
     rulesText:
       "Can only equip a Martial creature.\nOn attack, once per turn: another ally may reposition.",
     equipment: {
@@ -894,8 +900,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "equipment",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "luminar",
+    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     rulesText: "On take damage, once per turn: reduce it by 1.",
     equipment: {
       mayTargetOpponent: false,
@@ -1124,11 +1130,12 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Prevent 1 damage. Generate 1 Mechanical.",
+    rulesText:
+      "Generate 1 Mechanical.\nThe next face you install this turn costs 1 Energy less.",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 1, target: { kind: "chain-attack-target" } },
         { type: "generate-symbol", symbol: "mechanical", amount: 1 },
+        { type: "arm-forge-discount", amount: 1 },
       ],
     },
   }),
@@ -1293,10 +1300,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Prevent 1 damage. The next attack this turn deals +1 damage.",
+    rulesText: "Generate 1 Martial. The next attack this turn deals +1 damage.",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+        { type: "generate-symbol", symbol: "martial", amount: 1 },
         { type: "next-attack-bonus", amount: 1 },
       ],
     },
@@ -1648,10 +1655,11 @@ const DEFINITIONS: readonly CardDefinition[] = [
       ],
     },
   }),
-  // --- Generic utility toolkit (Control builtin splashes copies; other lists stay clear) ---
-  // Splashable 2-cost Support tools across dual-kind forges so no single
-  // attribute owns shield / prevent / reroll / filter. Ids: card-raise-guard,
-  // card-sidestep, card-rethrow, card-sift, card-second-wind, card-warding-charm.
+  // --- Generic utility toolkit (Control / Burn splash copies; other lists stay clear) ---
+  // Splashable 2-cost Support tools. Look-top (Sift / Second Wind) is Arcane;
+  // prevent (Sidestep) is Luminar; shield / own-die reroll stay shared secondaries.
+  // Ids: card-raise-guard, card-sidestep, card-rethrow, card-sift,
+  // card-second-wind, card-warding-charm.
   card({
     id: RAISE_GUARD,
     name: "Raise Guard",
@@ -1671,8 +1679,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "reaction",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "luminar",
+    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     rulesText: "Prevent 2 damage.",
     effect: {
       effects: [
@@ -1699,8 +1707,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "instant",
     subtypes: [],
-    attribute: "luminar",
-    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText:
       "Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom.",
     effect: {
@@ -1713,8 +1721,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "instant",
     subtypes: [],
-    attribute: "martial",
-    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText:
       "Gain 1 Energy.\nLook at the top card of your deck; you may put it on the bottom.",
     effect: {
@@ -1898,6 +1906,122 @@ const DEFINITIONS: readonly CardDefinition[] = [
       onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
     },
   }),
+  // --- Attribute exclusive proving cards (2026-08-21 signatures) ---
+  card({
+    id: CONSULT,
+    name: "Consult",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    rulesText:
+      "Look at the top 3 cards of your deck. Put 1 into your hand and the rest on the bottom.",
+    effect: {
+      effects: [{ type: "look-top-deck", amount: 3 }],
+    },
+  }),
+  card({
+    id: BURY_THE_NAME,
+    name: "Bury the Name",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText: "The opponent mills 3 cards.",
+    effect: {
+      effects: [{ type: "mill-cards", amount: 3, player: "opponent" }],
+    },
+  }),
+  card({
+    id: GRAVE_WHISPER,
+    name: "Grave Whisper",
+    energyCost: 2,
+    type: "equipment",
+    subtypes: [],
+    attribute: "darkness",
+    forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
+    rulesText:
+      "Can only equip an Arcane or Darkness creature.\n" +
+      "On absorb Darkness, once per turn: the opponent mills 1 card.",
+    equipment: {
+      mayTargetOpponent: false,
+      creatureAttributes: ["arcane", "darkness"],
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["darkness"],
+          oncePerTurn: true,
+          effects: [{ type: "mill-cards", amount: 1, player: "opponent" }],
+        },
+      ],
+    },
+  }),
+  card({
+    id: DRESS_RANKS,
+    name: "Dress Ranks",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "Reposition an allied creature 1 space.",
+    effect: {
+      effects: [{ type: "reposition-creature", target: { kind: "choose-ally" } }],
+    },
+  }),
+  card({
+    id: SHARE_THE_KILL,
+    name: "Share the Kill",
+    energyCost: 2,
+    type: "instant",
+    subtypes: [],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText:
+      "Move 1 absorbed attribute token from one allied creature to another allied creature.",
+    effect: {
+      effects: [
+        {
+          type: "transfer-attribute-tokens",
+          amount: 1,
+          from: { kind: "choose-ally-with-tokens" },
+          to: { kind: "choose-ally-other" },
+        },
+      ],
+    },
+  }),
+  card({
+    id: DEN_SHARE,
+    name: "Den Share",
+    energyCost: 2,
+    type: "equipment",
+    subtypes: [],
+    attribute: "wild",
+    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    rulesText:
+      "On absorb Wild, once per turn: copy 1 attribute token from this creature onto another allied creature.",
+    equipment: {
+      mayTargetOpponent: false,
+      abilities: [
+        {
+          type: "on-absorb",
+          symbols: ["wild"],
+          absorberRelation: "self",
+          oncePerTurn: true,
+          effects: [
+            {
+              type: "copy-attribute-tokens",
+              amount: 1,
+              from: { kind: "source-creature" },
+              to: { kind: "choose-ally-other" },
+            },
+          ],
+        },
+      ],
+    },
+  }),
 ];
 
 export const CARDS: Readonly<Record<string, CardDefinition>> = Object.fromEntries(
@@ -1920,7 +2044,7 @@ const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [WAR_AXE, 4],
   [TWIN_BLADES, 3],
   [WHETSTONE, 3],
-  [HUNTING_ARMOUR, 2],
+  [INSIGNIA_OF_COMMAND, 2],
   [HUNTERS_COLLAR, 2],
   [WILD_CARAPACE, 2],
   [PREDATORS_CLAWS, 2],
@@ -1937,11 +2061,11 @@ const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [OPENING_CUT, 3],
   [PRESS_THE_ATTACK, 3],
   [POUNCE, 2],
-  [PACK_SURGE, 2],
-  [RENDING_MARK, 2],
+  [SHARE_THE_KILL, 2],
+  [DEN_SHARE, 2],
+  [DRESS_RANKS, 2],
   [TEMPER, 2],
   [UNTAMED, 2],
-  [RIPOSTE, 2],
   // Ritual engines
   [CALL_TO_ARMS, 2],
   [BATTLE_HYMN, 2],
@@ -1979,12 +2103,12 @@ const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [UMBRAL_BOLT, 3],
   [RIFT_COLLAPSE, 2],
   [UMBRAL_BRAND, 2],
+  [CONSULT, 2],
+  [BURY_THE_NAME, 2],
+  [GRAVE_WHISPER, 2],
   // Generic toolkit splash (utility, not a third engine color)
   [RETHROW, 3],
-  [RAISE_GUARD, 2],
   [SIDESTEP, 2],
-  [SIFT, 2],
-  [SECOND_WIND, 2],
   [WARDING_CHARM, 2],
 ];
 
@@ -2023,6 +2147,7 @@ const TEMPO_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [BARRIER_OF_LIGHT, 3],
   [GLIMMER, 3],
   [LUMINAR_JUDGEMENT, 2],
+  [HUNTING_ARMOUR, 2],
   // Wild / Toxin splash — conversion, not Aggro beatdown
   [WILD_ECHO, 2],
   [UNTAMED, 2],
@@ -2066,10 +2191,10 @@ const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [BLADE_OF_SERENE_LIGHT, 2],
   [GLIMMER, 2],
   [BARRIER_OF_LIGHT, 2],
-  // Wild / Toxin — Lens Choir Cascade + Combo attrition splash
+  // Wild splash — pack feeding (Lens Choir token share) + Untamed specials
   [WILD_ECHO, 2],
   [UNTAMED, 2],
-  [DOSE, 2],
+  [SHARE_THE_KILL, 2],
 ];
 
 export const COMBO_MECHANICAL_DECK: readonly CardId[] = COMBO_MECHANICAL_DECK_COUNTS.flatMap(

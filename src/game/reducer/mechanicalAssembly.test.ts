@@ -18,14 +18,13 @@ import {
 } from "../content/cards.js";
 import { FLYWHEEL, GEAR, PISTON, faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
-import { asAttackId, type CardId, type DieId, type FaceCardId } from "../model/ids.js";
+import type { CardId, DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import type { AttributeTokens } from "../model/symbols.js";
 import { SHIELD } from "../model/symbols.js";
 import { ritualsOf } from "../rules/cards.js";
 import { symbolCountsOn } from "../rules/dice.js";
 import { usableSymbols } from "../rules/symbols.js";
-import { advance as reduceAdvance } from "./reduce.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -34,16 +33,12 @@ import {
   newMatch,
   P1,
   P2,
-  resolveOpenChain,
   withEnergy,
   withHand,
   withPhase,
   withSymbols,
-  withTokens,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-
-const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
@@ -680,34 +675,17 @@ describe("Mechanical combo wave 2", () => {
     expect(after.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Safety Latch prevents 1 from an attack and generates Mechanical", () => {
-    const combat = withPhase(newMatch(), "actions");
-    const attacker = creatureIdAt(combat, P1, 0);
-    const target = creatureIdAt(combat, P2, 0);
-    const armed = withHand(
-      withTokens(withEnergy(combat, P2, 5), attacker, { martial: 2 }),
-      P2,
-      [SAFETY_LATCH],
-    );
-    const opened = expectOk(
-      reduceAdvance(armed, {
-        type: "ATTACK",
-        playerId: P1,
-        attackerId: attacker,
-        attackId: HEAVY_AXE,
-        targetId: target,
-      }),
-    );
-    const latched = expectOk(
-      reduceAdvance(opened, {
+  it("Safety Latch generates Mechanical and arms a 1-Energy forge discount", () => {
+    const ready = actionsReady([SAFETY_LATCH]);
+    const after = expectOk(
+      advance(ready, {
         type: "PLAY_CARD",
-        playerId: P2,
-        cardInstanceId: handCardIdAt(opened, P2, 0),
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    const resolved = resolveOpenChain(latched);
-    expect(eventTypes(resolved)).toContain("symbol-generated");
-    expect(resolved.creatures[target]?.damage).toBe(2);
+    expect(eventTypes(after)).toContain("symbol-generated");
+    expect(after.forgeDiscountThisTurn[P1]).toBe(1);
   });
 
   it("Recalibrate returns a cheap card from the graveyard", () => {

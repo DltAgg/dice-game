@@ -409,13 +409,12 @@ describe("face markers / suppress / lock (013)", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     let state = withTokens(installFace(newMatch(), INSTINCT), attackerId, { martial: 2 });
     state = rollShowingSlot(state, 0);
-    // Optional reposition
     if (state.pendingDecision?.type === "choose-creature") {
       state = expectOk(
         advance(state, {
           type: "RESOLVE_CHOOSE_CREATURE",
           playerId: P1,
-          creatureId: null,
+          creatureId: attackerId,
         }),
       );
     }
@@ -441,7 +440,7 @@ describe("face markers / suppress / lock (013)", () => {
     state = rollShowingSlot(state, 0);
     if (state.pendingDecision?.type === "choose-creature") {
       state = expectOk(
-        advance(state, { type: "RESOLVE_CHOOSE_CREATURE", playerId: P1, creatureId: null }),
+        advance(state, { type: "RESOLVE_CHOOSE_CREATURE", playerId: P1, creatureId: attackerId }),
       );
     }
     state = absorbShowing(state, "wild", attackerId);

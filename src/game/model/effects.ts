@@ -349,7 +349,39 @@ export type EffectDefinition =
    * Pending optional: the absorbing creature may declare a basic attack now
    * during the actions window if it has not attacked this turn. Spec `013`.
    */
-  | { readonly type: "optional-bonus-basic-attack" };
+  | { readonly type: "optional-bonus-basic-attack" }
+  /**
+   * Put the top `amount` cards of `player`'s deck into that player's graveyard
+   * (Darkness mill). Fewer remaining mills those; an empty deck is a legal
+   * whiff. Not discard-from-hand and does not fire `on-discard`. Spec `015`.
+   */
+  | {
+      readonly type: "mill-cards";
+      readonly amount: number;
+      readonly player: "controller" | "opponent";
+    }
+  /**
+   * Move `amount` absorbed attribute tokens from one allied creature to another.
+   * Mixed leftover piles open `choose-attribute-tokens` (mode transfer).
+   * Ally-only; 0 tokens or same-creature dest is a legal whiff. Spec `015`.
+   */
+  | {
+      readonly type: "transfer-attribute-tokens";
+      readonly amount: number;
+      readonly from: TargetSelector;
+      readonly to: TargetSelector;
+    }
+  /**
+   * Copy `amount` absorbed attribute tokens from one allied creature onto
+   * another (source keeps them). Same choice / ally-only / whiff rules as
+   * transfer. Spec `015`.
+   */
+  | {
+      readonly type: "copy-attribute-tokens";
+      readonly amount: number;
+      readonly from: TargetSelector;
+      readonly to: TargetSelector;
+    };
 
 export type EffectCondition =
   | { readonly type: "source-position"; readonly position: "frontline" | "back" }
@@ -420,7 +452,14 @@ export type TargetSelector =
   | { readonly kind: "choose-allied-frontline-other" }
   | { readonly kind: "choose-ally-with-toxin" }
   | { readonly kind: "choose-enemy-with-toxin" }
-  | { readonly kind: "choose-ally-damage-over-half" };
+  | { readonly kind: "choose-ally-damage-over-half" }
+  /** Pause: living ally that currently holds at least one attribute token. */
+  | { readonly kind: "choose-ally-with-tokens" }
+  /**
+   * Pause: living `creatureIds` neighbor (±1) of the source creature.
+   * Spec `015` pack feeding.
+   */
+  | { readonly kind: "choose-adjacent-ally" };
 
 /** Filters for a `choose-creature` pending (specs `011` / `012`). */
 export type CreatureChoiceFilter =
@@ -432,7 +471,9 @@ export type CreatureChoiceFilter =
   | "allied-frontline-other"
   | "ally-with-toxin"
   | "enemy-with-toxin"
-  | "ally-damage-over-half";
+  | "ally-damage-over-half"
+  | "ally-with-tokens"
+  | "adjacent-ally";
 
 /** Filters for a `choose-die` pending (spec `012`). */
 export type DieChoiceFilter = "owned-retainable" | "owned-rolled" | "any-synthetic-corruption";

@@ -39,7 +39,13 @@ import {
   withForgeLockResetOnInstall,
 } from "../rules/faces.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, choiceFilterForSelector } from "../rules/targets.js";
-import { discardTokensInAttributeOrder, tokenChoiceNeeded, totalTokens } from "../rules/tokens.js";
+import {
+  addTokens,
+  discardTokensInAttributeOrder,
+  removeTokens,
+  tokenChoiceNeeded,
+  totalTokens,
+} from "../rules/tokens.js";
 import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
@@ -47,6 +53,7 @@ import {
   destroyEquipment,
   destroyRitual,
   drawCards,
+  millCards,
   releaseEquipmentOn,
   searchableDeckCards,
   setCreaturePosition,
@@ -218,6 +225,8 @@ function resolveTarget(
     case "choose-ally-with-toxin":
     case "choose-enemy-with-toxin":
     case "choose-ally-damage-over-half":
+    case "choose-ally-with-tokens":
+    case "choose-adjacent-ally":
     case "choose-opponent-ritual":
     case "declared-ritual":
       // Creature/ritual choose-* open pending decisions; ritual uses resolveRitualTarget.
@@ -1166,7 +1175,119 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       };
       return true;
     }
+    case "mill-cards": {
+      const playerId =
+        effect.player === "opponent"
+          ? opponentOf(draft, pending.controllerId)
+          : pending.controllerId;
+      millCards(draft, playerId, effect.amount);
+      return false;
+    }
+    case "transfer-attribute-tokens":
+      return applyTokenShare(draft, pending, effect, false);
+    case "copy-attribute-tokens":
+      return applyTokenShare(draft, pending, effect, true);
   }
+}
+
+type TokenShareEffect = Extract<
+  EffectDefinition,
+  { type: "transfer-attribute-tokens" } | { type: "copy-attribute-tokens" }
+>;
+
+/**
+ * Wild pack feeding: move or copy absorbed tokens between allied creatures.
+ * Sequential choose-creature (from, then to), then mixed-pile token pick.
+ */
+function applyTokenShare(
+  draft: Draft,
+  pending: PendingEffect,
+  effect: TokenShareEffect,
+  copy: boolean,
+): boolean {
+  const fromId = resolveTarget(draft, pending, effect.from);
+  if (fromId === null) {
+    const filter = choiceFilterFor(effect.from);
+    if (filter === null) return false;
+    return openCreatureChoice(draft, pending, filter, false, {
+      ...effect,
+      from: { kind: "declared-target" },
+    });
+  }
+
+  const from = draft.creatures[fromId];
+  if (from === undefined || from.defeated || from.ownerId !== pending.controllerId) return false;
+  if (totalTokens(from.attributeTokens) <= 0) return false;
+
+  const toId = resolveTarget(draft, pending, effect.to);
+  if (toId === null) {
+    const filter = choiceFilterFor(effect.to);
+    if (filter === null) return false;
+    return openCreatureChoice(
+      draft,
+      { ...pending, sourceCreatureId: fromId },
+      filter,
+      false,
+      {
+        ...effect,
+        from: { kind: "source-creature" },
+        to: { kind: "declared-target" },
+      },
+    );
+  }
+
+  const dest = draft.creatures[toId];
+  if (dest === undefined || dest.defeated || dest.ownerId !== pending.controllerId) return false;
+  if (fromId === toId) return false;
+
+  if (tokenChoiceNeeded(from.attributeTokens, effect.amount)) {
+    draft.pendingDecision = {
+      type: "choose-attribute-tokens",
+      controllerId: pending.controllerId,
+      creatureId: fromId,
+      amount: effect.amount,
+      mode: copy ? "copy" : "transfer",
+      destinationCreatureId: toId,
+      ...effectChoiceSource(draft, pending),
+    };
+    emit(draft, {
+      type: "choose-attribute-tokens-started",
+      playerId: pending.controllerId,
+      creatureId: fromId,
+      amount: effect.amount,
+    });
+    return true;
+  }
+
+  const { discarded } = discardTokensInAttributeOrder(from.attributeTokens, effect.amount);
+  if (totalTokens(discarded) <= 0) return false;
+  applyTokenMove(draft, fromId, toId, discarded, copy);
+  return false;
+}
+
+export function applyTokenMove(
+  draft: Draft,
+  fromId: CreatureId,
+  toId: CreatureId,
+  tokens: import("../model/symbols.js").SymbolRequirement,
+  copy: boolean,
+): void {
+  const from = draft.creatures[fromId];
+  const dest = draft.creatures[toId];
+  if (from === undefined || dest === undefined) return;
+  if (!copy) {
+    patchCreature(draft, fromId, { attributeTokens: removeTokens(from.attributeTokens, tokens) });
+  }
+  const destAfter = draft.creatures[toId];
+  if (destAfter === undefined) return;
+  patchCreature(draft, toId, { attributeTokens: addTokens(destAfter.attributeTokens, tokens) });
+  emit(draft, {
+    type: "attribute-tokens-moved",
+    fromCreatureId: fromId,
+    toCreatureId: toId,
+    tokens,
+    copy,
+  });
 }
 
 function openDieSlotChoice(

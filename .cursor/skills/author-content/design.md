@@ -106,15 +106,15 @@ Pairings that keep the pie readable:
 | **Luminar** | Damage prevention | Prevent N, prevent-and-reflect, “when you prevent → …”, standing prevent buffers | Shield counters; heal; redirect (Aegis-style) unless the print is actually prevent |
 | **Corruption** | Opponent-die manipulation | Forge / markers / lock / suppress / strip / steal overloads on **their** faces; opponent-die named specials | Own-die forge; own overloads; Toxin markers on creatures |
 | **Toxin** | Toxin counter placement | Apply / spread / arm-attack Toxin markers; payoffs that *require* those markers | Corruption face ticks; generic delayed damage with no Toxin marker |
-| **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Dive-style swaps) | Enemy push (banned); extra attacks; sharing tokens |
+| **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Command) | Enemy push (banned); extra attacks; sharing tokens |
 | **Mechanical** | Own-die reconstruction | Extra forge on **your** die; replace your faces without a forge-draw (Reforge); reapply / copy / double **your** face and overload modifiers (Stamp, Coupling); move your overloads between **your** faces | Opponent-die (Corruption); deck order (Arcane); generating symbols; Energy; GY recursion |
 | **Wild** | Pack feeding | Move or copy absorbed **attribute tokens** from one allied creature to another; spend an adjacent ally’s tokens to attack; on-absorb share a token onto another ally | Absorbing onto yourself (universal); generating pool symbols; extra attack; ally reposition (Martial) |
 
 ### Authoring notes
 
 - **One verb, many cards.** Vary cost, timing (`On roll` / `On absorb` / instant / standing), amount, and gate — do not invent a second exclusive for the same attribute.
-- **Proving cards (already in catalogue):** Arcane — Insight Rune, look-top instants. Darkness — Dark Pact (self-mill). Luminar — Glimmer and prevent package (spec `009`). Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling. Wild — **no proving card yet**; first pack-feeding card needs `engine-developer` (no token-transfer effect today).
-- **Off-pie leaks — do not copy, do not treat as precedent.** Rewrite only when asked: Sift (Luminar look-top), Second Wind (Martial peek), Sidestep / Hunting Armour (Wild prevent), Safety Latch (Mechanical prevent), Predator’s Claws / Insignia of Command / Hunter’s Collar (Wild movement), Garuda Dive swap (Wild creature). Adrenaline / Rethrow (own-die reroll) are not anyone’s exclusive.
+- **Proving cards (already in catalogue):** Arcane — Insight Rune, Living Library, Consult, Sift, Second Wind. Darkness — Dark Pact, Bury the Name, Grave Whisper. Luminar — Glimmer and prevent package (spec `009`), Sidestep, Hunting Armour. Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap, Command, Dress Ranks, Predator’s Claws, Insignia of Command. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling, Arcane Echo (re-fire). Wild — Share the Kill, Den Share, Pack Share (spec `015`). Do not treat Hunter’s Collar / Pack / Instinct as pack feeding — they are absorb/attack/generate, not token-share.
+- **Off-pie leaks** on Sift, Second Wind, Sidestep, Hunting Armour, Safety Latch, Predator’s Claws, Insignia of Command, Hunter’s Collar, Riposte, Revelation, Instinct, Pack absorb, Garuda Dive, and Arcane Echo were **fixed** (moved onto the verb’s owner or rewritten off the stolen verb). Do not reintroduce them. Adrenaline / Rethrow (own-die reroll) are not anyone’s exclusive.
 - **Wild vs Martial:** Martial moves the **body**. Wild moves the **fuel**. A Wild card that swaps positions is in the wrong attribute; a Martial card that donates tokens is in the wrong attribute.
 - **Mechanical vs Corruption:** Mechanical rebuilds **your** engine. Corruption contaminates **theirs**. An opponent-die forge on a Mechanical card is in the wrong attribute.
 
@@ -140,7 +140,7 @@ Natural or Synthetic of that attribute; many Toxin / Mechanical / Corruption /
 Darkness cards still forge `kind: "synthetic"` (named specials) even though
 natural identity faces now exist. Overload/equip gates and generated symbols may
 still splash (Latent Corruption overloads Arcane; Hunter's Collar generates
-Martial). The two fields remain independent in the model if a future card
+Martial on Wild absorb). The two fields remain independent in the model if a future card
 needs a true forge splash.
 
 ## Face-kind policy

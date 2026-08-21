@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { HUNTERS_COLLAR, PREDATORS_CLAWS } from "../content/cards.js";
+import { PREDATORS_CLAWS } from "../content/cards.js";
 import { asSymbolInstanceId, type CreatureId } from "../model/ids.js";
-import { usableSymbols } from "../rules/symbols.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -30,14 +29,13 @@ function equip(state: ReturnType<typeof newMatch>, creatureId: CreatureId, handI
 }
 
 describe("reposition via setCreaturePosition", () => {
-  it("moves the Claws bearer and fires Hunter's Collar", () => {
-    const base = actionsReady([PREDATORS_CLAWS, HUNTERS_COLLAR]);
+  it("moves the Claws bearer on Martial absorb", () => {
+    const base = actionsReady([PREDATORS_CLAWS]);
     const bearerId = creatureIdAt(base, P1, 0);
-    let state = equip(base, bearerId, 0);
-    state = equip(withHand(withPhase(state, "actions"), P1, [HUNTERS_COLLAR]), bearerId, 0);
+    let state = equip(base, bearerId);
     expect(state.creatures[bearerId]?.position).toBe("frontline");
 
-    const symbolId = asSymbolInstanceId("sym-wild-move");
+    const symbolId = asSymbolInstanceId("sym-martial-move");
     state = withPhase(
       {
         ...state,
@@ -46,7 +44,7 @@ describe("reposition via setCreaturePosition", () => {
           [symbolId]: {
             id: symbolId,
             ownerId: P1,
-            symbol: "wild",
+            symbol: "martial",
             status: "rolled",
             sourceDieId: null,
             absorbedByCreatureId: null,
@@ -70,7 +68,6 @@ describe("reposition via setCreaturePosition", () => {
     );
 
     expect(moved.creatures[bearerId]?.position).toBe("back");
-    expect(usableSymbols(moved, P1).some((symbol) => symbol.symbol === "martial")).toBe(true);
     expect(eventTypes(moved)).toContain("choose-creature-resolved");
   });
 
@@ -87,7 +84,7 @@ describe("reposition via setCreaturePosition", () => {
           [symbolId]: {
             id: symbolId,
             ownerId: P1,
-            symbol: "wild",
+            symbol: "martial",
             status: "rolled",
             sourceDieId: null,
             absorbedByCreatureId: null,

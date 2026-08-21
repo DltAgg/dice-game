@@ -113,7 +113,7 @@ describe("structural invariants across played matches", () => {
     }
   });
 
-  it.each(SAMPLE_SEEDS)("seed %i: attack fuel is only ever what a creature absorbed", (seed) => {
+  it.each(SAMPLE_SEEDS)("seed %i: attack fuel is absorb, spend, and pack feeding", (seed) => {
     for (const state of everyStateOf(seed)) {
       const net = new Map<string, number>();
       for (const { event } of state.log) {
@@ -123,6 +123,13 @@ describe("structural invariants across played matches", () => {
         if (event.type === "attribute-tokens-discarded") {
           const spent = requirementTotal(event.discarded);
           net.set(event.creatureId, (net.get(event.creatureId) ?? 0) - spent);
+        }
+        if (event.type === "attribute-tokens-moved") {
+          const moved = requirementTotal(event.tokens);
+          if (!event.copy) {
+            net.set(event.fromCreatureId, (net.get(event.fromCreatureId) ?? 0) - moved);
+          }
+          net.set(event.toCreatureId, (net.get(event.toCreatureId) ?? 0) + moved);
         }
       }
 

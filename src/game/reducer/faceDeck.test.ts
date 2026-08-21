@@ -22,7 +22,7 @@ import {
   SPORES,
   NEEDLE,
   NIGHTWELL,
-  PRIMORDIAL_FURY,
+  PACK_SHARE,
   PROTOTYPE_FACE_DECK,
   REKINDLE,
   RESONANCE_RUNE,
@@ -66,7 +66,7 @@ describe("face deck", () => {
     expect(PROTOTYPE_FACE_DECK).toHaveLength(6);
     expect(new Set(PROTOTYPE_FACE_DECK).size).toBe(PROTOTYPE_FACE_DECK.length);
     expect(PROTOTYPE_FACE_DECK).toEqual(
-      expect.arrayContaining([CRUSH, WARHORN, CLEAVING_STRIKE, BLOODSCENT, GORE, PRIMORDIAL_FURY]),
+      expect.arrayContaining([CRUSH, WARHORN, CLEAVING_STRIKE, BLOODSCENT, GORE, PACK_SHARE]),
     );
     expect(PROTOTYPE_FACE_DECK).not.toContain(NEEDLE);
     expect(PROTOTYPE_FACE_DECK).not.toContain(SEEP);
@@ -230,6 +230,7 @@ describe("face deck", () => {
       "Instinct",
       "Primordial Fury",
       "Pack",
+      "Pack Share",
       "Command",
       "Impact",
       "Formation",

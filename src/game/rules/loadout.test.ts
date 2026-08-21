@@ -31,7 +31,7 @@ import {
   GORE,
   GREAT_SPARK,
   PESTILENT_PLAGUE,
-  PRIMORDIAL_FURY,
+  PACK_SHARE,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_STARTING_DICE,
   SEEP,
@@ -60,6 +60,13 @@ describe("validateTacticsDeck", () => {
     expect(validateTacticsDeck(CONTROL_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
     expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+  });
+
+  it("keeps builtin Aggro to Martial and Wild", () => {
+    for (const id of PROTOTYPE_DECK) {
+      const attribute = getCard(id)?.attribute;
+      expect(["martial", "wild"], id).toContain(attribute);
+    }
   });
 
   it("keeps builtin Control free of Corruption cards", () => {
@@ -336,7 +343,7 @@ describe("leftoverFacePool", () => {
     expect(pool).toContain(WARHORN);
     expect(pool).toContain(CLEAVING_STRIKE);
     expect(pool).toContain(GORE);
-    expect(pool).toContain(PRIMORDIAL_FURY);
+    expect(pool).toContain(PACK_SHARE);
   });
 
   it("does not consume opening basics even when they are also listed in the face deck", () => {

@@ -83,6 +83,7 @@ export const REVELATION: FaceCardId = asFaceCardId("face-synthetic-revelation");
 export const INSTINCT: FaceCardId = asFaceCardId("face-synthetic-instinct");
 export const PRIMORDIAL_FURY: FaceCardId = asFaceCardId("face-synthetic-primordial-fury");
 export const PACK: FaceCardId = asFaceCardId("face-synthetic-pack");
+export const PACK_SHARE: FaceCardId = asFaceCardId("face-synthetic-pack-share");
 export const COMMAND: FaceCardId = asFaceCardId("face-synthetic-command");
 export const IMPACT: FaceCardId = asFaceCardId("face-synthetic-impact");
 export const FORMATION: FaceCardId = asFaceCardId("face-synthetic-formation");
@@ -169,7 +170,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     id: ARCANE_ECHO_FACE,
     name: "Arcane Echo",
     kind: "synthetic",
-    symbol: "arcane",
+    symbol: "mechanical",
     rulesText:
       '[Requirement: may only be forged by "Echo" cards]\n' +
       "Cannot be included on opening dice.\n" +
@@ -346,10 +347,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     REVELATION,
     "Revelation",
     "luminar",
-    "On roll: reveal the top card of your deck; you may put it on the bottom.\n" +
+    "On roll: generate 1 Luminar.\n" +
       "On absorb: heal 2 on a creature that has less than half its Life remaining.",
     {
-      onRoll: [{ type: "peek-deck-optional-bottom" }],
+      onRoll: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
       onAbsorb: [{ type: "heal", amount: 2, target: { kind: "choose-ally-damage-over-half" } }],
     },
   ),
@@ -357,11 +358,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     INSTINCT,
     "Instinct",
     "wild",
-    "On roll: an allied creature may reposition 1 space.\n" +
-      "On absorb: it may perform a Basic Attack if it has not attacked this turn.",
+    "On roll: an allied creature's next attack deals +1 damage.\n" +
+      "On absorb: this creature may perform a Basic Attack if it has not attacked this turn.",
     {
       onRoll: [
-        { type: "reposition-creature", target: { kind: "choose-ally" }, optional: true },
+        { type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } },
       ],
       onAbsorb: [{ type: "optional-bonus-basic-attack" }],
     },
@@ -388,7 +389,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "Pack",
     "wild",
     "On roll: if you control another adjacent creature, generate 1 additional Wild symbol in the Pool.\n" +
-      "On absorb: another allied creature may reposition 1 space.",
+      "On absorb: another allied creature's next attack deals +1 damage.",
     {
       onRoll: [
         {
@@ -398,7 +399,23 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
         },
       ],
       onAbsorb: [
-        { type: "reposition-creature", target: { kind: "choose-ally-other" }, optional: true },
+        { type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally-other" } },
+      ],
+    },
+  ),
+  namedSynthetic(
+    PACK_SHARE,
+    "Pack Share",
+    "wild",
+    "On absorb: copy 1 attribute token from this creature onto an adjacent allied creature.",
+    {
+      onAbsorb: [
+        {
+          type: "copy-attribute-tokens",
+          amount: 1,
+          from: { kind: "source-creature" },
+          to: { kind: "choose-adjacent-ally" },
+        },
       ],
     },
   ),
@@ -834,6 +851,7 @@ export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = [
   FACE_CARDS[INSTINCT]!,
   FACE_CARDS[PRIMORDIAL_FURY]!,
   FACE_CARDS[PACK]!,
+  FACE_CARDS[PACK_SHARE]!,
   FACE_CARDS[COMMAND]!,
   FACE_CARDS[IMPACT]!,
   FACE_CARDS[FORMATION]!,
@@ -962,8 +980,9 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
  * Builtin Aggro face deck — Martial + Wild only (≤3 per attribute → max 6).
  * Crush and Bloodscent open installed (`PROTOTYPE_STARTING_DICE`). Leftover
  * Martial / Wild pressure specials remain Temper / Untamed forge targets.
- * No Toxin faces (Needle / Seep / Venom / toxin naturals). Opening Martial /
- * Wild naturals are not listed here — they do not consume the 12.
+ * Pack Share is the Wild pack-feeding special. No Toxin faces (Needle / Seep /
+ * Venom / toxin naturals). Opening Martial / Wild naturals are not listed here
+ * — they do not consume the 12.
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   CRUSH,
@@ -971,7 +990,7 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   CLEAVING_STRIKE,
   BLOODSCENT,
   GORE,
-  PRIMORDIAL_FURY,
+  PACK_SHARE,
 ];
 
 export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
@@ -983,7 +1002,7 @@ export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
  * Nightwell and Resonance Rune open installed. Engine colors are Arcane and
  * Darkness only; Martial / Wild / Luminar specials are utility (shield hate,
- * peek, redirect), not a third manabase. Great Spark / Rekindle are empty-print
+ * redirect), not a third manabase. Great Spark / Rekindle are empty-print
  * stubs — not pooled. Corruption specials are not pooled.
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [

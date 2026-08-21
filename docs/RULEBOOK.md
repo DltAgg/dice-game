@@ -146,6 +146,9 @@ ritual’s Active-when gate is illegal.
   does not fire.
 - Ritual Active-when progress is credited **immediately** (not banked until
   end of turn), including multiple pips of the same attribute in one turn.
+- **Pack feeding** (Wild): some effects **move** or **copy** absorbed
+  attribute tokens from one of your creatures to another of yours. That
+  does not steal from the opponent. A source with no tokens does nothing.
 
 An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
@@ -203,6 +206,10 @@ absorbed.
 
 Discard-from-hand effects **draw first**, then the player **names** which
 cards to discard. The engine never auto-discards the front of the hand.
+
+**Mill** puts cards from the **top of a tactics deck** into that deck’s
+owner’s graveyard. It is not discard-from-hand. An empty or short deck
+mills what remains (including nothing). There is no deck-out loss.
 
 Empty deck: draws quietly do nothing. No loss, no reshuffle.
 
@@ -362,5 +369,5 @@ Related docs (agents):
 - docs/DEFERRED_CATALOGUE.md — unmodelled print
 - docs/ARCHITECTURE.md — software advance path
 - src/game/model/config.ts — numeric knobs
-- specs 008–013 — chain, prevent, hooks, strip/destroy, vocabulary, markers
+- specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill / pack feeding
 -->

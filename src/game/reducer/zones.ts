@@ -82,6 +82,24 @@ export function drawCards(draft: Draft, playerId: PlayerId, amount: number): voi
 }
 
 /**
+ * Darkness mill: top of deck → that player's graveyard. Not hand discard and
+ * does not fire `on-discard`. Empty / short decks mill what remains (spec `015`).
+ */
+export function millCards(draft: Draft, playerId: PlayerId, amount: number): void {
+  const milled: CardInstanceId[] = [];
+  for (let i = 0; i < amount; i += 1) {
+    const player = draft.players[playerId];
+    const cardInstanceId = player?.deck[0];
+    if (cardInstanceId === undefined) break;
+    moveCard(draft, cardInstanceId, "graveyard");
+    milled.push(cardInstanceId);
+  }
+  if (milled.length > 0) {
+    emit(draft, { type: "cards-milled", playerId, cardInstanceIds: milled });
+  }
+}
+
+/**
  * Discards the named hand cards. Used after the player resolves a pending
  * discard choice (Eclipse and similar).
  */
