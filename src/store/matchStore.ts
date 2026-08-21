@@ -32,6 +32,7 @@ import {
   writeOnlineSessionHint,
 } from "./onlineSessionHint.js";
 import { trackMetrics } from "./trackMetrics.js";
+import { autoPassPriorityAction } from "./autoPassPriority.js";
 
 const P1 = asPlayerId("p1");
 const P2 = asPlayerId("p2");
@@ -639,8 +640,22 @@ export const useMatchStore = create<MatchStore>((set, get) => {
         const prev = get().state;
         const result = advance(prev, action);
         if (result.ok) {
-          set({ state: result.state, lastError: null });
-          observeMatch(prev, result.state, action, true, null);
+          let current = result.state;
+          observeMatch(prev, current, action, true, null);
+          for (let i = 0; i < 16; i += 1) {
+            const pass = autoPassPriorityAction({
+              state: current,
+              mode: "local",
+              localPlayerId: null,
+              canAct: true,
+            });
+            if (pass === null) break;
+            const next = advance(current, pass);
+            if (!next.ok) break;
+            observeMatch(current, next.state, pass, true, null);
+            current = next.state;
+          }
+          set({ state: current, lastError: null });
           return true;
         }
         set({ lastError: result.error });
