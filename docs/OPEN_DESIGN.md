@@ -637,7 +637,7 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Paradox GY replay** | Choose 1 Instant or Ritual in the controller’s GY; resolve that card’s play effects (`effect.effects` or `ritual.effects`) immediately; ignore `[Requires: …]` / Active-when; do not pay that card’s Energy; the card **stays in the GY**. Creature-target effects open the usual choose pending. Cards without a playable effect body cannot be chosen. |
 | **Ignore N Shield / pierce** | When the attacker deals attack damage: prevent buffers first (`009`), then skip up to N Shield (those shields are **not** spent), then remaining shields, then HP. War Minotaur: `ignore-shield` 1 standing. Rust: arm `ignoreShieldThisTurn` 2, clear `END_TURN`. |
 | **Attack follow-ups** | `AttackDefinition.followUpEffects` queues extra `EffectDefinition`s after the damage link. Existing cards omit the field. |
-| **Garuda Dive optional swap** | After Dive HP, controller may choose a living frontline creature (self or ally, including Garuda if already frontline = no-op) and swap; they may decline. |
+| **Garuda Dive** | Range 2-damage basic. The optional swap rider was removed (Wild must not print Martial movement). |
 | **War Charge swap** | If Minotaur is in `back` after declaring, swap with a chosen living frontline ally (required if one exists; skip if none). |
 | **War Banner left ally** | Owner’s `creatureIds` order is left-to-right. “Allied creature to the left” = previous **living** creature in that list. Static `attack-damage-bonus` with `bearerRelation: "left-ally"` on that ally’s **basic** attacks. No living left neighbor → no bonus. |
 | **Alpha's Hide** | On special attack by the bearer: generate 1 Wild into the **controller’s pool** (not attached to the bearer). |
@@ -765,9 +765,9 @@ decline action for creature choices today.
 exist, the effect whiffs. Do not invent `creatureId: null` decline unless
 design reopens optional choices.
 
-Garuda Dive swap is queued as attack `followUpEffects` (after the damage
-effect resolves on the chain). Print may still say “On deal damage”; if
-Shields reduce damage to 0 the follow-up still runs under this assumption.
+War Charge swap is queued as attack `followUpEffects` (after the damage
+effect resolves on the chain). Optional `swap-positions` still supports a
+decline. Garuda Dive no longer swaps.
 
 **Banned forever:** any effect that moves an **enemy** creature (push).
 
@@ -845,9 +845,10 @@ a single attack bonus, cost reduction, forge of your own attribute) stay legal.
 | Mechanical | Own-die reconstruction (extra/replace/re-fire **your** faces and overloads) |
 | Wild | Pack feeding (move or copy absorbed tokens between allied creatures) |
 
-Existing off-pie cards (Sift, Sidestep, Predator’s Claws, …) are leaks — do
-not copy them as precedent. Wild pack feeding has no engine vocabulary yet;
-the first proving card needs `engine-developer`.
+Catalogue off-pie leaks (Sift, Sidestep, Predator’s Claws, …) were moved or
+rewritten on `fix/attribute-exclusive-leaks` — do not copy the old print.
+Wild pack feeding has no engine vocabulary yet; the first proving card needs
+`engine-developer`.
 
 ---
 

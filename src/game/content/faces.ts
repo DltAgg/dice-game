@@ -169,7 +169,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     id: ARCANE_ECHO_FACE,
     name: "Arcane Echo",
     kind: "synthetic",
-    symbol: "arcane",
+    symbol: "mechanical",
     rulesText:
       '[Requirement: may only be forged by "Echo" cards]\n' +
       "Cannot be included on opening dice.\n" +
@@ -346,10 +346,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     REVELATION,
     "Revelation",
     "luminar",
-    "On roll: reveal the top card of your deck; you may put it on the bottom.\n" +
+    "On roll: generate 1 Luminar.\n" +
       "On absorb: heal 2 on a creature that has less than half its Life remaining.",
     {
-      onRoll: [{ type: "peek-deck-optional-bottom" }],
+      onRoll: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
       onAbsorb: [{ type: "heal", amount: 2, target: { kind: "choose-ally-damage-over-half" } }],
     },
   ),
@@ -357,11 +357,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     INSTINCT,
     "Instinct",
     "wild",
-    "On roll: an allied creature may reposition 1 space.\n" +
-      "On absorb: it may perform a Basic Attack if it has not attacked this turn.",
+    "On roll: an allied creature's next attack deals +1 damage.\n" +
+      "On absorb: this creature may perform a Basic Attack if it has not attacked this turn.",
     {
       onRoll: [
-        { type: "reposition-creature", target: { kind: "choose-ally" }, optional: true },
+        { type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } },
       ],
       onAbsorb: [{ type: "optional-bonus-basic-attack" }],
     },
@@ -388,7 +388,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "Pack",
     "wild",
     "On roll: if you control another adjacent creature, generate 1 additional Wild symbol in the Pool.\n" +
-      "On absorb: another allied creature may reposition 1 space.",
+      "On absorb: another allied creature's next attack deals +1 damage.",
     {
       onRoll: [
         {
@@ -398,7 +398,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
         },
       ],
       onAbsorb: [
-        { type: "reposition-creature", target: { kind: "choose-ally-other" }, optional: true },
+        { type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally-other" } },
       ],
     },
   ),
@@ -983,7 +983,7 @@ export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
  * Builtin control face deck — twelve unique cards, ≤3 per attribute.
  * Nightwell and Resonance Rune open installed. Engine colors are Arcane and
  * Darkness only; Martial / Wild / Luminar specials are utility (shield hate,
- * peek, redirect), not a third manabase. Great Spark / Rekindle are empty-print
+ * redirect), not a third manabase. Great Spark / Rekindle are empty-print
  * stubs — not pooled. Corruption specials are not pooled.
  */
 export const CONTROL_FACE_DECK: readonly FaceCardId[] = [

@@ -240,8 +240,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 5,
     type: "instant",
     subtypes: [],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     forgeTags: ["echo"],
     rulesText: "Apply the modifiers of one of the dice again.",
     effect: {
@@ -738,15 +738,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "equipment",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On absorb Wild: this creature may move 1 position.",
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    rulesText: "On absorb Martial: this creature may move 1 position.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
-          symbols: ["wild"],
+          symbols: ["martial"],
           effects: [
             { type: "reposition-creature", target: { kind: "source-creature" }, optional: true },
           ],
@@ -847,13 +847,13 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On change position: generate Martial.",
+    rulesText: "On absorb Wild: generate 1 Martial.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
-          type: "on-change-position",
-          creatureRelation: "self",
+          type: "on-absorb",
+          symbols: ["wild"],
           effects: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
         },
       ],
@@ -865,8 +865,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 5,
     type: "equipment",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "martial",
+    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
     rulesText:
       "Can only equip a Martial creature.\nOn attack, once per turn: another ally may reposition.",
     equipment: {
@@ -894,8 +894,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "equipment",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "luminar",
+    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     rulesText: "On take damage, once per turn: reduce it by 1.",
     equipment: {
       mayTargetOpponent: false,
@@ -1124,11 +1124,12 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Prevent 1 damage. Generate 1 Mechanical.",
+    rulesText:
+      "Generate 1 Mechanical.\nThe next face you install this turn costs 1 Energy less.",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 1, target: { kind: "chain-attack-target" } },
         { type: "generate-symbol", symbol: "mechanical", amount: 1 },
+        { type: "arm-forge-discount", amount: 1 },
       ],
     },
   }),
@@ -1293,10 +1294,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Prevent 1 damage. The next attack this turn deals +1 damage.",
+    rulesText: "Generate 1 Martial. The next attack this turn deals +1 damage.",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+        { type: "generate-symbol", symbol: "martial", amount: 1 },
         { type: "next-attack-bonus", amount: 1 },
       ],
     },
@@ -1648,10 +1649,11 @@ const DEFINITIONS: readonly CardDefinition[] = [
       ],
     },
   }),
-  // --- Generic utility toolkit (Control builtin splashes copies; other lists stay clear) ---
-  // Splashable 2-cost Support tools across dual-kind forges so no single
-  // attribute owns shield / prevent / reroll / filter. Ids: card-raise-guard,
-  // card-sidestep, card-rethrow, card-sift, card-second-wind, card-warding-charm.
+  // --- Generic utility toolkit (Control / Burn splash copies; other lists stay clear) ---
+  // Splashable 2-cost Support tools. Look-top (Sift / Second Wind) is Arcane;
+  // prevent (Sidestep) is Luminar; shield / own-die reroll stay shared secondaries.
+  // Ids: card-raise-guard, card-sidestep, card-rethrow, card-sift,
+  // card-second-wind, card-warding-charm.
   card({
     id: RAISE_GUARD,
     name: "Raise Guard",
@@ -1671,8 +1673,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "reaction",
     subtypes: [],
-    attribute: "wild",
-    forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
+    attribute: "luminar",
+    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     rulesText: "Prevent 2 damage.",
     effect: {
       effects: [
@@ -1699,8 +1701,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "instant",
     subtypes: [],
-    attribute: "luminar",
-    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText:
       "Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom.",
     effect: {
@@ -1713,8 +1715,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
     energyCost: 2,
     type: "instant",
     subtypes: [],
-    attribute: "martial",
-    forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
+    attribute: "arcane",
+    forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText:
       "Gain 1 Energy.\nLook at the top card of your deck; you may put it on the bottom.",
     effect: {
@@ -1920,7 +1922,7 @@ const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [WAR_AXE, 4],
   [TWIN_BLADES, 3],
   [WHETSTONE, 3],
-  [HUNTING_ARMOUR, 2],
+  [INSIGNIA_OF_COMMAND, 2],
   [HUNTERS_COLLAR, 2],
   [WILD_CARAPACE, 2],
   [PREDATORS_CLAWS, 2],
@@ -1979,7 +1981,7 @@ const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [UMBRAL_BOLT, 3],
   [RIFT_COLLAPSE, 2],
   [UMBRAL_BRAND, 2],
-  // Generic toolkit splash (utility, not a third engine color)
+  // Arcane look-top (Sift / Second Wind) plus shared-secondary splash
   [RETHROW, 3],
   [RAISE_GUARD, 2],
   [SIDESTEP, 2],
@@ -2023,6 +2025,7 @@ const TEMPO_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [BARRIER_OF_LIGHT, 3],
   [GLIMMER, 3],
   [LUMINAR_JUDGEMENT, 2],
+  [HUNTING_ARMOUR, 2],
   // Wild / Toxin splash — conversion, not Aggro beatdown
   [WILD_ECHO, 2],
   [UNTAMED, 2],

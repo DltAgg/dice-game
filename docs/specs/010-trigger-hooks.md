@@ -108,7 +108,7 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 - [x] Corrupting Elder / Serrated Stinger wired in catalogue (opponent roll /
   ally special → toxin).
 - [x] Toxic Blessing: roll → `arm-attack-toxin`; attacks apply toxin.
-- [x] Hunter's Collar: position change → Martial.
+- [x] Hunter's Collar: absorb Wild → Martial.
 - [x] Void Summoner: any Natural absorb → generate Arcane (creature or ritual).
       Untyped Shield absorb does not count.
 - [x] Lens Choir: On absorb Luminar, once per turn → generate Luminar (no self-loop).
@@ -116,11 +116,11 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 - [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy
       (creature **or** allied ritual assignment).
 - [x] `energy-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
-- [x] Movers fire `on-change-position` (Hunter’s Collar) via `setCreaturePosition`.
+- [x] Movers fire `on-change-position` via `setCreaturePosition` (Command / War Charge / Claws).
 - [x] `on-turn-start` (Slow Burn / Smolder / Cinder Hex) after toxin ticks.
 - [x] `on-toxin-damage` `damagedOwner: "opponent"` (Fester); Toxic Heart default controller still heals.
 
 ## Tests
 
 - [x] `src/game/reducer/triggers.test.ts`
-- [x] `src/game/reducer/movers.test.ts` (Collar + reposition)
+- [x] `src/game/reducer/movers.test.ts` (Claws reposition)

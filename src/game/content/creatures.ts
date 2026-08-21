@@ -160,16 +160,8 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1 },
         discards: { wild: 1 },
         range: true,
-        rulesText:
-          "Deal 2 damage. On deal damage: you may swap Garuda with a frontline creature.",
+        rulesText: "Deal 2 damage.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
-        followUpEffects: [
-          {
-            type: "swap-positions",
-            with: { kind: "choose-allied-frontline" },
-            optional: true,
-          },
-        ],
       },
       {
         id: asAttackId("attack-garuda-bombardment"),
