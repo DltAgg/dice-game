@@ -10,6 +10,7 @@ export { advance, reduce } from "./reducer/reduce.js";
 export { createMatch } from "./setup/createMatch.js";
 export type { MatchSetup, PlayerSetup } from "./setup/createMatch.js";
 
+export * from "./rules/absorb.js";
 export * from "./rules/cards.js";
 export * from "./rules/creatures.js";
 export * from "./rules/dice.js";

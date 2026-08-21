@@ -33,8 +33,13 @@ import {
   handOf,
   hasPlayableEffect,
   isFaceCardInPool,
-  isLegalHandReaction,
+  absorbRitualBlockHint,
+  canAbsorbSymbolToCreature,
+  canAbsorbSymbolToRitual,
+  forgeExceedsAttributeLimit,
+  isEnabledHandReaction,
   isLegalRitualReaction,
+  isUnabsorbedPoolSymbol,
   legalDiceForFilter,
   legalDieSlotsForFilter,
   legalCreaturesForFilter,
@@ -81,6 +86,7 @@ import {
   TURN_PHASE_ORDER,
 } from "@/game";
 import { MATCH_P1, MATCH_P2, useMatchStore } from "@/store/matchStore";
+import { autoPassPriorityAction } from "@/store/autoPassPriority";
 import { useDeckStore } from "@/store/deckStore";
 import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@/decks";
 import {
@@ -151,6 +157,7 @@ export function MatchBoard() {
     { readonly dieId: DieId; readonly slotIndex: number } | undefined
   >();
   const [handCollapsed, setHandCollapsed] = useState(false);
+  const [autoPassHint, setAutoPassHint] = useState<string | null>(null);
 
   const activeId = state.activePlayerId;
   const finished = state.status === "finished";
@@ -228,6 +235,50 @@ export function MatchBoard() {
     dispatch,
   ]);
 
+  /** Auto-pass empty reaction windows for the local acting seat. */
+  const autoPassedKey = useRef<string | null>(null);
+  useEffect(() => {
+    if (finished) return;
+    if (isOnline && !onlineReady) return;
+    if (pending?.type !== "reaction-priority") return;
+    const action = autoPassPriorityAction({
+      state,
+      mode,
+      localPlayerId,
+      canAct,
+    });
+    if (action === null) return;
+    const key = `${state.matchId}:${action.playerId}:${state.chainStack.map((link) => link.id).join(",")}:${String(pending.consecutivePasses)}`;
+    if (autoPassedKey.current === key) return;
+    autoPassedKey.current = key;
+    dispatch(action);
+    setAutoPassHint("No legal response — passed");
+  }, [
+    finished,
+    isOnline,
+    onlineReady,
+    pending,
+    state,
+    mode,
+    localPlayerId,
+    canAct,
+    dispatch,
+  ]);
+
+  useEffect(() => {
+    if (autoPassHint === null) return;
+    const id = window.setTimeout(() => setAutoPassHint(null), 2500);
+    return () => window.clearTimeout(id);
+  }, [autoPassHint]);
+
+  useEffect(() => {
+    if (intent.kind !== "absorb") return;
+    const symbol = state.symbols[intent.symbolId];
+    if (symbol === undefined || !isUnabsorbedPoolSymbol(symbol)) {
+      setIntent({ kind: "idle" });
+    }
+  }, [intent, state.symbols]);
+
   const goToPhase = (target: TurnPhase) => {
     if (!canAct || finished || pending !== null || phase === "roll") return;
     const from = TURN_PHASE_ORDER.indexOf(phase);
@@ -286,6 +337,7 @@ export function MatchBoard() {
     if (!canAct) return;
 
     if (intent.kind === "absorb" && phase === "actions" && creature.ownerId === activeId) {
+      if (!canAbsorbSymbolToCreature(state, activeId, creature.id, intent.symbolId)) return;
       tryDispatch({
         type: "ABSORB_SYMBOL",
         playerId: activeId,
@@ -341,7 +393,7 @@ export function MatchBoard() {
       if (card.ownerId !== actingId) return;
       if (isOnline && localPlayerId !== pending.priorityPlayerId) return;
       const def = getCard(card.cardId);
-      if (def === undefined || !isLegalHandReaction(state, def)) return;
+      if (def === undefined || !isEnabledHandReaction(state, actingId, def)) return;
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
       return;
     }
@@ -416,6 +468,36 @@ export function MatchBoard() {
 
   const forgeFacesNeeded = forgeDef?.forge.faces ?? 1;
   const forgeTarget = forgeDef?.forge.target ?? null;
+
+  useEffect(() => {
+    if (intent.kind !== "forge" || intent.dieId !== undefined || forgeDef === undefined) return;
+    const ownerId =
+      forgeDef.forge.target === "own-die" ? activeId : opponentOf(state, activeId);
+    const needed = forgeDef.forge.faces;
+    const legal = diceOf(state, ownerId).filter((die) => {
+      const replaceable = die.slots.filter((slot) => !slotCannotBeReplacedByForge(slot));
+      return replaceable.length >= needed;
+    });
+    if (legal.length !== 1) return;
+    const die = legal[0];
+    if (die === undefined) return;
+    const replaceable = die.slots.filter((slot) => !slotCannotBeReplacedByForge(slot));
+    if (needed === 1 && replaceable.length === 1 && replaceable[0] !== undefined) {
+      setIntent({
+        kind: "forge",
+        cardInstanceId: intent.cardInstanceId,
+        dieId: die.id,
+        slotIndexes: [replaceable[0].index],
+      });
+      return;
+    }
+    setIntent({
+      kind: "forge",
+      cardInstanceId: intent.cardInstanceId,
+      dieId: die.id,
+      slotIndexes: [],
+    });
+  }, [intent, forgeDef, activeId, state]);
 
   const forgeNeedsDieOrSlots =
     intent.kind === "forge" &&
@@ -626,6 +708,9 @@ export function MatchBoard() {
       )}
 
       <p className="text-sm text-[var(--ink-muted)]">{hint}</p>
+      {autoPassHint !== null && (
+        <p className="text-xs text-amber-200/80">{autoPassHint}</p>
+      )}
 
       {pending?.type === "search-deck" && isPendingChooser && (
         <SearchPanel
@@ -816,6 +901,16 @@ export function MatchBoard() {
                 faceCardId: forgeFacesFaceId,
               });
             }
+          }}
+          onPickSingleSlot={(dieId, slotIndex) => {
+            if (forgeFacesFaceId === undefined) return;
+            tryDispatch({
+              type: "RESOLVE_FORGE_FACES",
+              playerId: pending.controllerId,
+              dieId,
+              slotIndexes: [slotIndex],
+              faceCardId: forgeFacesFaceId,
+            });
           }}
         />
       )}
@@ -1141,10 +1236,24 @@ export function MatchBoard() {
       {forgeNeedsDieOrSlots && intent.kind === "forge" && forgeTarget !== null && (
         <DieSlotPickModal
           state={state}
-          title="Forge — choose die face"
-          subtitle={`${forgeDef?.name ?? "Card"} replaces ${String(forgeFacesNeeded)} face(s) on one die. Shared face cards stay as one card; pick the physical die and which of its faces to overwrite.`}
-          dieOwnerId={forgeTarget === "own-die" ? activeId : activeId === MATCH_P1 ? MATCH_P2 : MATCH_P1}
+          title={
+            forgeFacesNeeded === 1
+              ? "Forge — pick one face to overwrite"
+              : `Forge — pick ${String(forgeFacesNeeded)} faces on one die`
+          }
+          subtitle={
+            forgeDef !== undefined
+              ? `${forgeDef.name} forges ${formatForgeLine(forgeDef.forge)}. ${
+                  forgeFacesNeeded === 1
+                    ? "Click a legal face; then choose what it becomes from your pool."
+                    : `Choose a die, then exactly ${String(forgeFacesNeeded)} faces to overwrite.`
+                }`
+              : "Pick which physical die and faces to overwrite."
+          }
+          dieOwnerId={forgeTarget === "own-die" ? activeId : opponentOf(state, activeId)}
           facesNeeded={forgeFacesNeeded}
+          forgeAttribute={forgeDef?.forge.attribute}
+          pickMode={forgeFacesNeeded === 1 ? "single-slot" : "die-then-slots"}
           selectedDieId={intent.dieId}
           selectedSlots={intent.slotIndexes ?? []}
           onSelectDie={(dieId) =>
@@ -1153,6 +1262,14 @@ export function MatchBoard() {
               cardInstanceId: intent.cardInstanceId,
               dieId,
               slotIndexes: [],
+            })
+          }
+          onPickSingleSlot={(dieId, slotIndex) =>
+            setIntent({
+              kind: "forge",
+              cardInstanceId: intent.cardInstanceId,
+              dieId,
+              slotIndexes: [slotIndex],
             })
           }
           onClearDie={() =>
@@ -1232,6 +1349,7 @@ export function MatchBoard() {
           }
           onRitualAbsorb={(id) => {
             if (intent.kind !== "absorb") return;
+            if (!canAbsorbSymbolToRitual(state, activeId, id, intent.symbolId)) return;
             tryDispatch({
               type: "ABSORB_SYMBOL_TO_RITUAL",
               playerId: activeId,
@@ -1284,6 +1402,7 @@ export function MatchBoard() {
           }
           onRitualAbsorb={(id) => {
             if (intent.kind !== "absorb") return;
+            if (!canAbsorbSymbolToRitual(state, activeId, id, intent.symbolId)) return;
             tryDispatch({
               type: "ABSORB_SYMBOL_TO_RITUAL",
               playerId: activeId,
@@ -2108,8 +2227,11 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   if (state.status === "finished") return "Start a new match to play again.";
 
   switch (intent.kind) {
-    case "absorb":
-      return "Click one of your creatures or rituals to absorb that symbol.";
+    case "absorb": {
+      const pip = state.symbols[intent.symbolId];
+      const name = pip?.symbol ?? "symbol";
+      return `Absorb ${name}: click a highlighted creature, or a ritual that still needs ${name}. Illegal targets stay dim.`;
+    }
     case "attack":
       return intent.attackId === undefined
         ? "Choose an attack on the selected creature."
@@ -2121,12 +2243,16 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       return "Click a legal creature (equipment / targeted effect).";
     case "forge":
       if (intent.dieId === undefined) {
-        return "Forge: choose which die to modify.";
+        return forgeFacesNeededFor(state, intent.cardInstanceId) === 1
+          ? "Forge: click the die face to overwrite."
+          : "Forge: choose which die to modify.";
       }
       if ((intent.slotIndexes?.length ?? 0) < forgeFacesNeededFor(state, intent.cardInstanceId)) {
-        return "Forge: choose which face(s) on that die to replace.";
+        const left =
+          forgeFacesNeededFor(state, intent.cardInstanceId) - (intent.slotIndexes?.length ?? 0);
+        return `Forge: pick ${String(left)} more face${left === 1 ? "" : "s"} on that die (highlighted).`;
       }
-      return "Choose which face card from your pool represents the forged face.";
+      return "Forge: choose which face card from your pool represents the new face.";
     default:
       break;
   }
@@ -2259,7 +2385,6 @@ function Battlefield({
           state={state}
           creature={creature}
           intent={intent}
-          absorbArmed={absorbArmed && isActive}
           onCreatureClick={onCreatureClick}
           onAttackChoose={onAttackChoose}
           onCancelAttack={onCancelAttack}
@@ -2276,7 +2401,6 @@ function Battlefield({
           state={state}
           creature={creature}
           intent={intent}
-          absorbArmed={absorbArmed && isActive}
           onCreatureClick={onCreatureClick}
           onAttackChoose={onAttackChoose}
           onCancelAttack={onCancelAttack}
@@ -2310,11 +2434,14 @@ function Battlefield({
               }
               return isActive && playerId === actingPlayerId && state.phase !== "roll";
             })();
+            const absorbSymbolId =
+              absorbArmed && isActive && intent.kind === "absorb" ? intent.symbolId : null;
             return (
               <RitualTile
                 key={card.id}
                 card={card}
-                absorbArmed={absorbArmed && isActive}
+                state={state}
+                absorbSymbolId={absorbSymbolId}
                 canActivate={canActivate}
                 onActivate={() => onRitualActivate(card.id)}
                 onAbsorb={() => onRitualAbsorb(card.id)}
@@ -2359,13 +2486,15 @@ function Battlefield({
 
 function RitualTile({
   card,
-  absorbArmed,
+  state,
+  absorbSymbolId,
   canActivate,
   onActivate,
   onAbsorb,
 }: {
   card: CardInstance;
-  absorbArmed: boolean;
+  state: GameState;
+  absorbSymbolId: SymbolInstanceId | null;
   canActivate: boolean;
   onActivate: () => void;
   onAbsorb: () => void;
@@ -2399,7 +2528,13 @@ function RitualTile({
   const ready = card.ritualOrientation === "ready";
   const preparing = card.ritualOrientation === "preparing";
   const exhausted = card.ritualOrientation === "exhausted";
-  const canReceive = absorbArmed && !exhausted && def.ritual?.activeWhen !== undefined;
+  const canReceive =
+    absorbSymbolId !== null &&
+    canAbsorbSymbolToRitual(state, card.ownerId, card.id, absorbSymbolId);
+  const absorbBlock =
+    absorbSymbolId !== null && !canReceive
+      ? absorbRitualBlockHint(state, card.ownerId, card.id, absorbSymbolId)
+      : null;
   const progress = card.ritualProgress ?? {};
   const progressLine =
     def.ritual?.activeWhen !== undefined
@@ -2416,8 +2551,10 @@ function RitualTile({
       onMouseLeave={() => setHovered(false)}
       className={
         canReceive
-          ? "w-44 rounded border border-[var(--accent)] bg-stone-900 p-2.5"
-          : ready
+          ? "w-44 rounded border-2 border-[var(--accent)] bg-stone-900 p-2.5 shadow-[0_0_12px_rgba(212,168,75,0.25)]"
+          : absorbBlock !== null
+            ? "w-44 rounded border border-stone-800 bg-stone-950 p-2.5 opacity-60"
+            : ready
             ? "w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
             : preparing
               ? "w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
@@ -2499,6 +2636,9 @@ function RitualTile({
         )}
         {canReceive && (
           <p className="mt-1 text-[0.65rem] text-[var(--accent)]">Assign symbol</p>
+        )}
+        {absorbBlock !== null && (
+          <p className="mt-1 text-[0.65rem] leading-snug text-stone-500">{absorbBlock}</p>
         )}
       </button>
       {hasActivateEffects ? (
@@ -2870,7 +3010,6 @@ function CreatureTile({
   state,
   creature,
   intent,
-  absorbArmed,
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
@@ -2878,7 +3017,6 @@ function CreatureTile({
   state: GameState;
   creature: CreatureState;
   intent: Intent;
-  absorbArmed: boolean;
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
@@ -2896,6 +3034,13 @@ function CreatureTile({
   if (def === undefined) return null;
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
+  const absorbHere =
+    intent.kind === "absorb" &&
+    canAbsorbSymbolToCreature(state, creature.ownerId, creature.id, intent.symbolId);
+  const absorbBlocked =
+    intent.kind === "absorb" &&
+    !absorbHere &&
+    creature.ownerId === state.activePlayerId;
   const equipment = creature.equipmentIds.flatMap((id) => {
     const instance = state.cards[id];
     if (instance === undefined) return [];
@@ -2911,9 +3056,11 @@ function CreatureTile({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={
-        selectedAttacker || absorbArmed
-          ? "relative w-52 rounded border border-[var(--accent)] bg-stone-900 p-3"
-          : "relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
+        selectedAttacker || absorbHere
+          ? "relative w-52 rounded border-2 border-[var(--accent)] bg-stone-900 p-3 shadow-[0_0_12px_rgba(212,168,75,0.25)]"
+          : absorbBlocked
+            ? "relative w-52 rounded border border-stone-800 bg-stone-950 p-3 opacity-60"
+            : "relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
       }
     >
       {pairPos !== null &&
@@ -3030,6 +3177,9 @@ function CreatureTile({
           <p className="mt-1 text-[0.65rem] text-amber-200/80">
             +{equipment.length} equipment
           </p>
+        )}
+        {absorbHere && (
+          <p className="mt-1 text-[0.65rem] font-medium text-[var(--accent)]">Absorb here</p>
         )}
         <PendingAbsorbLine state={state} creatureId={creature.id} />
       </button>
@@ -3363,9 +3513,12 @@ function DieSlotPickModal({
   subtitle,
   dieOwnerId,
   facesNeeded,
+  forgeAttribute,
+  pickMode = "die-then-slots",
   selectedDieId,
   selectedSlots,
   onSelectDie,
+  onPickSingleSlot,
   onClearDie,
   onToggleSlot,
   onCancel,
@@ -3377,132 +3530,172 @@ function DieSlotPickModal({
   subtitle: string;
   dieOwnerId: PlayerId;
   facesNeeded: number;
+  forgeAttribute?: Attribute | undefined;
+  pickMode?: "single-slot" | "die-then-slots" | undefined;
   selectedDieId: DieId | undefined;
   selectedSlots: readonly number[];
   onSelectDie: (dieId: DieId) => void;
+  onPickSingleSlot?: ((dieId: DieId, slotIndex: number) => void) | undefined;
   onClearDie: () => void;
   onToggleSlot: (slotIndex: number) => void;
-  onCancel?: () => void;
-  onBack?: () => void;
-  backLabel?: string;
+  onCancel?: (() => void) | undefined;
+  onBack?: (() => void) | undefined;
+  backLabel?: string | undefined;
 }) {
   const dice = diceOf(state, dieOwnerId);
   const selectedDie = selectedDieId !== undefined ? state.dice[selectedDieId] : undefined;
+  const flatSlots = pickMode === "single-slot" && onPickSingleSlot !== undefined;
+
+  const slotDisabled = (die: (typeof dice)[number], slot: (typeof die.slots)[number]): string | null => {
+    if (slotCannotBeReplacedByForge(slot)) return slotStatusLine(slot) ?? "Cannot replace";
+    if (
+      forgeAttribute !== undefined &&
+      forgeExceedsAttributeLimit(die, [slot.index], forgeAttribute, 1, state.config)
+    ) {
+      return "Would exceed attribute cap";
+    }
+    return null;
+  };
+
+  const slotButton = (
+    die: (typeof dice)[number],
+    slot: (typeof die.slots)[number],
+    onPick: () => void,
+    picked: boolean,
+  ) => {
+    const face = getFaceCard(slot.faceCardId);
+    const blocked = slotDisabled(die, slot);
+    return (
+      <button
+        key={`${die.id}:${String(slot.index)}`}
+        type="button"
+        disabled={blocked !== null}
+        className={
+          blocked !== null
+            ? "cursor-not-allowed rounded border border-stone-800 bg-stone-950 px-3 py-3 text-left opacity-50"
+            : picked
+              ? "rounded border-2 border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-3 text-left"
+              : "rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-[var(--accent)]"
+        }
+        onClick={() => {
+          if (blocked === null) onPick();
+        }}
+      >
+        <p className="text-sm font-medium text-stone-100">
+          {face !== undefined ? <FaceInspectHover face={face} placement="below" /> : "?"}
+        </p>
+        <p className="mt-1 text-[0.65rem] capitalize text-stone-500">
+          Slot {slot.index + 1} · {face?.kind ?? "?"} · {face?.symbol ?? "—"}
+        </p>
+        {blocked !== null && (
+          <p className="mt-1 text-[0.65rem] text-rose-300/90">{blocked}</p>
+        )}
+        {picked && blocked === null && (
+          <p className="mt-1 text-[0.65rem] font-medium text-[var(--accent)]">Selected</p>
+        )}
+      </button>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="max-h-[80vh] w-full max-w-lg overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">{title}</h2>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">{subtitle}</p>
-        <CausedByLine state={state} />
+    <BoardModal title={title} subtitle={subtitle} causedBy={<CausedByLine state={state} />} onDismiss={onCancel} wide>
+      {flatSlots && (
+        <div className="mt-4 space-y-4">
+          {dice.map((die, index) => {
+            const replaceable = die.slots.filter((slot) => slotDisabled(die, slot) === null).length;
+            return (
+              <div key={die.id}>
+                <p className="mb-2 text-xs uppercase tracking-[0.18em] text-stone-500">
+                  Die {index + 1}
+                  {replaceable === 0 ? " · no legal faces" : ""}
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {die.slots.map((slot) =>
+                    slotButton(
+                      die,
+                      slot,
+                      () => onPickSingleSlot(die.id, slot.index),
+                      selectedDieId === die.id && selectedSlots.includes(slot.index),
+                    ),
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-        {selectedDieId === undefined && (
-          <ul className="mt-4 space-y-2">
-            {dice.map((die, index) => {
-              const replaceable = die.slots.filter(
-                (slot) => !slotCannotBeReplacedByForge(slot),
-              ).length;
-              const canPickDie = replaceable >= facesNeeded;
-              return (
-                <li key={die.id}>
-                  <button
-                    type="button"
-                    disabled={!canPickDie}
-                    className={
-                      canPickDie
-                        ? "w-full rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-[var(--accent)]"
-                        : "w-full cursor-not-allowed rounded border border-stone-800 bg-stone-950 px-3 py-3 text-left opacity-50"
-                    }
-                    onClick={() => {
-                      if (canPickDie) onSelectDie(die.id);
-                    }}
-                  >
-                    <p className="text-sm font-medium text-stone-100">
-                      Die {index + 1}
-                      <span className="ml-2 text-xs font-normal text-stone-500">{die.id}</span>
+      {!flatSlots && selectedDieId === undefined && (
+        <ul className="mt-4 space-y-2">
+          {dice.map((die, index) => {
+            const replaceable = die.slots.filter((slot) => slotDisabled(die, slot) === null).length;
+            const canPickDie = replaceable >= facesNeeded;
+            return (
+              <li key={die.id}>
+                <button
+                  type="button"
+                  disabled={!canPickDie}
+                  className={
+                    canPickDie
+                      ? "w-full rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-[var(--accent)]"
+                      : "w-full cursor-not-allowed rounded border border-stone-800 bg-stone-950 px-3 py-3 text-left opacity-50"
+                  }
+                  onClick={() => {
+                    if (canPickDie) onSelectDie(die.id);
+                  }}
+                >
+                  <p className="text-sm font-medium text-stone-100">
+                    Die {index + 1}
+                    <span className="ml-2 text-xs font-normal text-stone-500">{die.id}</span>
+                  </p>
+                  <p className="mt-1 text-xs capitalize text-stone-500">
+                    {die.slots.map((slot) => getFaceCard(slot.faceCardId)?.name ?? "?").join(" · ")}
+                  </p>
+                  <p className="mt-1 text-[0.65rem] text-stone-400">
+                    {String(replaceable)} legal face{replaceable === 1 ? "" : "s"}
+                  </p>
+                  {!canPickDie && (
+                    <p className="mt-1 text-[0.65rem] text-rose-300/90">
+                      Not enough replaceable faces
                     </p>
-                    <p className="mt-1 text-xs capitalize text-stone-500">
-                      {die.slots
-                        .map((slot) => getFaceCard(slot.faceCardId)?.name ?? "?")
-                        .join(" · ")}
-                    </p>
-                    {!canPickDie && (
-                      <p className="mt-1 text-[0.65rem] text-rose-300/90">
-                        Not enough replaceable faces
-                      </p>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
-        {selectedDie !== undefined && (
-          <div className="mt-4">
-            <p className="mb-2 text-xs uppercase tracking-[0.18em] text-stone-500">
-              Faces on this die · pick {facesNeeded}
-              {selectedSlots.length > 0
-                ? ` (${String(selectedSlots.length)}/${String(facesNeeded)})`
-                : ""}
-            </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {selectedDie.slots.map((slot) => {
-                const face = getFaceCard(slot.faceCardId);
-                const picked = selectedSlots.includes(slot.index);
-                const cannotReplace = slotCannotBeReplacedByForge(slot);
-                const status = slotStatusLine(slot);
-                return (
-                  <button
-                    key={slot.index}
-                    type="button"
-                    disabled={cannotReplace}
-                    className={
-                      cannotReplace
-                        ? "cursor-not-allowed rounded border border-stone-800 bg-stone-950 px-3 py-3 text-left opacity-50"
-                        : picked
-                          ? "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-3 text-left"
-                          : "rounded border border-stone-700 bg-stone-900 px-3 py-3 text-left hover:border-stone-500"
-                    }
-                    onClick={() => {
-                      if (!cannotReplace) onToggleSlot(slot.index);
-                    }}
-                  >
-                    <p className="text-sm font-medium text-stone-100">
-                      {face !== undefined ? (
-                        <FaceInspectHover face={face} placement="below" />
-                      ) : (
-                        "?"
-                      )}
-                    </p>
-                    <p className="mt-1 text-[0.65rem] capitalize text-stone-500">
-                      Slot {slot.index + 1} · {face?.kind ?? "?"} · {face?.symbol ?? "—"}
-                    </p>
-                    {status !== null && (
-                      <p className="mt-1 text-[0.65rem] text-rose-300/90">{status}</p>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            <button type="button" className={`${btnClass} mt-3`} onClick={onClearDie}>
-              Change die
-            </button>
+      {!flatSlots && selectedDie !== undefined && (
+        <div className="mt-4">
+          <p className="mb-2 text-xs uppercase tracking-[0.18em] text-stone-500">
+            Faces on this die · pick {facesNeeded}
+            {selectedSlots.length > 0
+              ? ` (${String(selectedSlots.length)}/${String(facesNeeded)} selected)`
+              : ""}
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {selectedDie.slots.map((slot) =>
+              slotButton(selectedDie, slot, () => onToggleSlot(slot.index), selectedSlots.includes(slot.index)),
+            )}
           </div>
-        )}
+          <button type="button" className={`${btnClass} mt-3`} onClick={onClearDie}>
+            Change die
+          </button>
+        </div>
+      )}
 
-        {onBack !== undefined && (
-          <button type="button" className={`${btnClass} mt-4`} onClick={onBack}>
-            {backLabel ?? "Back"}
-          </button>
-        )}
-        {onCancel !== undefined && (
-          <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
-            Cancel
-          </button>
-        )}
-      </div>
-    </div>
+      {onBack !== undefined && (
+        <button type="button" className={`${btnClass} mt-4`} onClick={onBack}>
+          {backLabel ?? "Back"}
+        </button>
+      )}
+      {onCancel !== undefined && (
+        <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
+          Cancel
+        </button>
+      )}
+    </BoardModal>
   );
 }
 
@@ -3587,23 +3780,44 @@ function BoardModal({
   causedBy,
   children,
   onDismiss,
+  onConfirm,
+  wide = false,
 }: {
   title: string;
   subtitle?: string;
   causedBy?: ReactNode;
   children: ReactNode;
-  onDismiss?: () => void;
+  onDismiss?: (() => void) | undefined;
+  onConfirm?: (() => void) | undefined;
+  wide?: boolean | undefined;
 }) {
   const titleId = useId();
 
   useEffect(() => {
-    if (onDismiss === undefined) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onDismiss();
+      if (event.key === "Escape" && onDismiss !== undefined) {
+        event.preventDefault();
+        onDismiss();
+      }
+      if (event.key === "Enter" && onConfirm !== undefined) {
+        const target = event.target;
+        if (
+          target instanceof HTMLElement &&
+          (target.tagName === "BUTTON" ||
+            target.tagName === "SELECT" ||
+            target.tagName === "TEXTAREA" ||
+            target.tagName === "INPUT" ||
+            target.tagName === "A")
+        ) {
+          return;
+        }
+        event.preventDefault();
+        onConfirm();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onDismiss]);
+  }, [onDismiss, onConfirm]);
 
   return createPortal(
     <div
@@ -3614,7 +3828,11 @@ function BoardModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl"
+        className={
+          wide
+            ? "max-h-[80vh] w-full max-w-2xl overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl"
+            : "max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl"
+        }
         onClick={(event) => event.stopPropagation()}
       >
         <h2
@@ -3967,7 +4185,8 @@ function HandStrip({
           if (def === undefined) return null;
           const isSelected = selected === card.id;
           const canPlay = actionsLive && hasPlayableEffect(def);
-          const canRespond = reactionsLive && isLegalHandReaction(state, def);
+          const canRespond =
+            reactionsLive && isEnabledHandReaction(state, playerId, def);
 
           return (
             <div
@@ -5595,14 +5814,13 @@ function FacePickModal({
     eligibleIds ?? eligibleFacesForForge(state, playerId, kind, attribute, forgingCard);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Choose face card
-        </h2>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">{subtitle}</p>
-        <CausedByLine state={state} />
-        <ul className="mt-4 space-y-2">
+    <BoardModal
+      title="Choose face card"
+      subtitle={subtitle}
+      causedBy={<CausedByLine state={state} />}
+      onDismiss={onCancel}
+    >
+      <ul className="mt-4 space-y-2">
           {eligible.map((faceCardId) => {
             const face = getFaceCard(faceCardId);
             const inPool = isFaceCardInPool(state, faceCardId, playerId);
@@ -5647,8 +5865,7 @@ function FacePickModal({
             Cancel
           </button>
         )}
-      </div>
-    </div>
+    </BoardModal>
   );
 }
 
@@ -5775,6 +5992,7 @@ function ForgeFacesPrompt({
   onSelectDie,
   onClearDie,
   onToggleSlot,
+  onPickSingleSlot,
 }: {
   state: GameState;
   pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "forge-faces" }>;
@@ -5786,6 +6004,7 @@ function ForgeFacesPrompt({
   onSelectDie: (dieId: DieId) => void;
   onClearDie: () => void;
   onToggleSlot: (slotIndex: number) => void;
+  onPickSingleSlot?: (dieId: DieId, slotIndex: number) => void;
 }) {
   const dieOwnerId =
     pending.target === "own-die"
@@ -5816,9 +6035,12 @@ function ForgeFacesPrompt({
       subtitle={`Install ${chosenFace?.name ?? selectedFaceCardId} from your pool (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}) onto ${where}. Choose which of their faces to replace.`}
       dieOwnerId={dieOwnerId}
       facesNeeded={pending.faces}
+      forgeAttribute={pending.attribute}
+      pickMode={pending.faces === 1 ? "single-slot" : "die-then-slots"}
       selectedDieId={selectedDieId}
       selectedSlots={selectedSlots}
       onSelectDie={onSelectDie}
+      onPickSingleSlot={onPickSingleSlot}
       onClearDie={onClearDie}
       onToggleSlot={onToggleSlot}
       onBack={onClearFace}
@@ -5842,21 +6064,73 @@ function SearchPanel({
   onToggle: (id: CardInstanceId) => void;
   onConfirm: () => void;
 }) {
-  const pending = state.pendingDecision;
-  if (pending === null) return null;
-  if (mode === "deck" && pending.type !== "search-deck") return null;
-  if (mode === "graveyard" && pending.type !== "search-graveyard") return null;
-  if (pending.type !== "search-deck" && pending.type !== "search-graveyard") return null;
+  const [sort, setSort] = useState<"name" | "energy" | "type">("energy");
+  const [typeFilter, setTypeFilter] = useState<CardType | "all">("all");
 
-  const options =
-    pending.type === "search-deck"
-      ? searchableInDeck(state, pending.controllerId, pending.filter)
-      : searchableInGraveyard(state, pending.controllerId, pending.maxEnergyCost);
+  const pending = state.pendingDecision;
+  const isDeck = pending?.type === "search-deck";
+  const isGy = pending?.type === "search-graveyard";
+  const matches = (mode === "deck" && isDeck) || (mode === "graveyard" && isGy);
+
+  const options = useMemo(() => {
+    if (!matches || pending === null) return [];
+    if (pending.type === "search-deck") {
+      return searchableInDeck(state, pending.controllerId, pending.filter);
+    }
+    if (pending.type === "search-graveyard") {
+      return searchableInGraveyard(state, pending.controllerId, pending.maxEnergyCost);
+    }
+    return [];
+  }, [matches, pending, state]);
+
+  const defsById = useMemo(() => {
+    const map = new Map<CardInstanceId, ReturnType<typeof getCard>>();
+    for (const instanceId of options) {
+      const instance = state.cards[instanceId];
+      map.set(instanceId, instance !== undefined ? getCard(instance.cardId) : undefined);
+    }
+    return map;
+  }, [options, state.cards]);
+
+  const presentTypes = useMemo(() => {
+    const types = new Set<CardType>();
+    for (const def of defsById.values()) {
+      if (def !== undefined) types.add(def.type);
+    }
+    return [...types];
+  }, [defsById]);
+
+  const visible = useMemo(() => {
+    const filtered = options.filter((id) => {
+      if (typeFilter === "all") return true;
+      return defsById.get(id)?.type === typeFilter;
+    });
+    const ranked = [...filtered];
+    ranked.sort((a, b) => {
+      const da = defsById.get(a);
+      const db = defsById.get(b);
+      if (sort === "energy") {
+        return (da?.energyCost ?? 99) - (db?.energyCost ?? 99);
+      }
+      if (sort === "type") {
+        const ta = da?.type ?? "";
+        const tb = db?.type ?? "";
+        if (ta !== tb) return ta.localeCompare(tb);
+      }
+      return (da?.name ?? a).localeCompare(db?.name ?? b);
+    });
+    return ranked;
+  }, [options, defsById, sort, typeFilter]);
+
+  if (!matches || pending === null) return null;
+  if (pending.type !== "search-deck" && pending.type !== "search-graveyard") return null;
 
   const exact = mode === "deck";
   const canConfirm = exact
     ? pick.length === Math.min(amount, options.length)
     : pick.length <= amount;
+  const emptyOptions = options.length === 0;
+  const confirmEmpty = !exact && pick.length === 0;
 
   const subtitle =
     pending.type === "search-deck"
@@ -5865,16 +6139,67 @@ function SearchPanel({
         ? `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} that ${maxEnergyCostPhrase(pending.maxEnergyCost)} from your graveyard to return to hand.`
         : `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} from your graveyard to return to hand.`;
 
+  const confirmLabel = emptyOptions
+    ? "Confirm — none"
+    : confirmEmpty
+      ? `Confirm none (0/${String(amount)})`
+      : `Confirm (${String(pick.length)}/${String(amount)})`;
+
   return (
     <BoardModal
       title={mode === "deck" ? "Search deck" : "Search graveyard"}
       subtitle={subtitle}
       causedBy={<CausedByLine state={state} />}
+      wide={options.length > 4}
+      onConfirm={canConfirm ? onConfirm : undefined}
+      onDismiss={emptyOptions && canConfirm ? onConfirm : undefined}
     >
-      <ul className="mt-4 space-y-2">
-        {options.map((instanceId) => {
-          const instance = state.cards[instanceId];
-          const def = instance !== undefined ? getCard(instance.cardId) : undefined;
+      {options.length > 6 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <label className="text-[0.65rem] uppercase tracking-wide text-stone-500">
+            Sort
+            <select
+              className="ml-2 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-xs text-stone-200"
+              value={sort}
+              onChange={(event) =>
+                setSort(event.target.value as "name" | "energy" | "type")
+              }
+            >
+              <option value="energy">Energy</option>
+              <option value="type">Type</option>
+              <option value="name">Name</option>
+            </select>
+          </label>
+          {presentTypes.length > 1 && (
+            <label className="text-[0.65rem] uppercase tracking-wide text-stone-500">
+              Type
+              <select
+                className="ml-2 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-xs text-stone-200"
+                value={typeFilter}
+                onChange={(event) =>
+                  setTypeFilter(event.target.value === "all" ? "all" : (event.target.value as CardType))
+                }
+              >
+                <option value="all">All</option>
+                {presentTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
+      <ul
+        className={
+          visible.length > 4
+            ? "mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2"
+            : "mt-4 space-y-2"
+        }
+      >
+        {visible.map((instanceId) => {
+          const def = defsById.get(instanceId);
           const checked = pick.includes(instanceId);
           return (
             <li key={instanceId}>
@@ -5893,18 +6218,25 @@ function SearchPanel({
             </li>
           );
         })}
-        {options.length === 0 && (
-          <li className="text-sm text-red-300">No eligible cards.</li>
+        {emptyOptions && (
+          <li className="rounded border border-amber-800/60 bg-amber-950/40 px-3 py-3 text-sm text-amber-100">
+            No eligible cards. Confirm to continue with none.
+          </li>
         )}
       </ul>
       <button
         type="button"
-        className={`${btnPrimary} mt-4`}
+        className={`${btnPrimary} mt-4 w-full`}
         disabled={!canConfirm}
         onClick={onConfirm}
       >
-        Confirm ({String(pick.length)}/{String(amount)})
+        {confirmLabel}
       </button>
+      <p className="mt-2 text-[0.65rem] text-stone-500">
+        Enter confirms when legal
+        {emptyOptions ? " · Escape also confirms none" : ""}.
+      </p>
     </BoardModal>
   );
 }
+

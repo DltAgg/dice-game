@@ -1,12 +1,14 @@
+import { getCard } from "../content/cards.js";
 import type { CardDefinition } from "../model/cards.js";
 import type { EffectDefinition } from "../model/effects.js";
+import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { ChainLink, GameState } from "../model/state.js";
 import {
   isRitualNegatableLinkKind,
   linkMatchesNegateCard,
 } from "../reducer/chain.js";
 import type { Draft } from "../reducer/draft.js";
-import { isReactionCard } from "./cards.js";
+import { handOf, isReactionCard, ritualsOf } from "./cards.js";
 
 /** Top of the reaction chain (LILO), or `undefined` when empty. */
 export function topChainLinkOf(state: GameState): ChainLink | undefined {
@@ -53,4 +55,93 @@ export function isLegalRitualReaction(state: GameState, definition: CardDefiniti
     return false;
   }
   return negateEffectsLegalAgainstTop(state, definition.ritual.effects);
+}
+
+/**
+ * Prevent reactions (Barrier / Judgement / Glimmer) need an attack targeting
+ * this seat's creature. Mirrors PLAY_CARD chain-target checks (spec `009`).
+ * Cards with no prevent effects are vacuously legal here.
+ */
+export function preventEffectsLegalAgainstChain(
+  state: GameState,
+  playerId: PlayerId,
+  effects: readonly EffectDefinition[],
+): boolean {
+  const needsTopAttackPrevent = effects.some(
+    (effect) =>
+      effect.type === "grant-damage-prevent" || effect.type === "prevent-attack-reflect",
+  );
+  if (needsTopAttackPrevent) {
+    const top = topChainLinkOf(state);
+    if (top === undefined || top.kind !== "attack" || top.attackTargetId === null) {
+      return false;
+    }
+    const attackTarget = state.creatures[top.attackTargetId];
+    if (attackTarget === undefined || attackTarget.ownerId !== playerId) {
+      return false;
+    }
+  }
+
+  const needsArmedPreventDraw = effects.some((effect) => effect.type === "arm-prevent-draw");
+  if (needsArmedPreventDraw) {
+    let attackTargetId: CreatureId | null = null;
+    for (let i = state.chainStack.length - 1; i >= 0; i -= 1) {
+      const link = state.chainStack[i];
+      if (link?.kind === "attack" && link.attackTargetId !== null) {
+        attackTargetId = link.attackTargetId;
+        break;
+      }
+    }
+    if (attackTargetId === null) return false;
+    const attackTarget = state.creatures[attackTargetId];
+    if (attackTarget === undefined || attackTarget.ownerId !== playerId) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Same gate as MatchBoard `canRespond`: chain-legal hand Reaction, including
+ * prevent vs the current chain (not Energy — reactions may pay without the
+ * marker).
+ */
+export function isEnabledHandReaction(
+  state: GameState,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): boolean {
+  if (!isLegalHandReaction(state, definition)) return false;
+  return preventEffectsLegalAgainstChain(state, playerId, definition.effect?.effects ?? []);
+}
+
+/**
+ * Same gate as MatchBoard ritual `canActivate` in a reaction window: ready is
+ * the caller's job; this is chain-legal ritual-reaction with an activate body.
+ */
+export function isEnabledRitualReaction(state: GameState, definition: CardDefinition): boolean {
+  if ((definition.ritual?.effects.length ?? 0) === 0) return false;
+  return isLegalRitualReaction(state, definition);
+}
+
+/**
+ * Whether the priority seat has any Respond / ritual-activate offer the board
+ * would enable. Query only — does not pass, spend, or mutate.
+ */
+export function hasLegalReactionOffer(state: GameState, playerId: PlayerId): boolean {
+  for (const card of handOf(state, playerId)) {
+    const definition = getCard(card.cardId);
+    if (definition !== undefined && isEnabledHandReaction(state, playerId, definition)) {
+      return true;
+    }
+  }
+  for (const card of ritualsOf(state, playerId)) {
+    if (card.ritualOrientation !== "ready") continue;
+    const definition = getCard(card.cardId);
+    if (definition !== undefined && isEnabledRitualReaction(state, definition)) {
+      return true;
+    }
+  }
+  return false;
 }
