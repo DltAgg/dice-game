@@ -28,6 +28,8 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
    — never fake silent behavior.
 6. If a rules change changes how the game plays, update
    [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
+7. Print, tokens, hooks, and new mechanics use
+   [`docs/KEYWORDS.md`](./docs/KEYWORDS.md) — prefer `[Mark N X]` over a new verb.
 
 ## Content vs engine
 
@@ -66,6 +68,7 @@ than doing their job in the parent thread.
 | `docs/specs/007-peerjs.md` | Online host authority |
 | `docs/specs/014-match-metrics.md` | Observer telemetry, dashboard, agent export |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
+| `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
 | `docs/DEFERRED_CATALOGUE.md` | Print clauses not fully modelled |
 
@@ -87,3 +90,4 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
 - Printed `energyCost: 1` is exceptional and niche. Players should reach 1-Energy plays mainly via **cost reduction**, not a catalogue of 1-drops.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
+- New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).

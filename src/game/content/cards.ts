@@ -145,7 +145,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["reaction"],
     attribute: "arcane",
     forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
-    rulesText: "Pay 2 [Energy], negate the effect of 1 Instant card.",
+    rulesText: "Pay 2 Energy. [Negate Instant].",
     ritual: {
       activeWhen: { arcane: 2 },
       additionalEnergy: 2,
@@ -160,7 +160,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Draw 2 cards and discard 1.",
+    rulesText: "[Draw 2]. [Discard 1].",
     effect: {
       effects: [
         { type: "draw-cards", amount: 2 },
@@ -176,7 +176,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "On roll: heal 1.",
+    rulesText: "On roll: [Heal 1].",
     overload: {
       // Most-damaged ally: fires on roll with no extra prompt. Choose-ally is
       // available for effects that need a free pick among damaged creatures.
@@ -191,7 +191,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "On roll: generate 1 Arcane.",
+    rulesText: "On roll: [Generate 1 Arcane].",
     overload: {
       onRoll: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
     },
@@ -204,7 +204,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "Can only overload a Corruption face.\nOn roll: gain 1 Energy.",
+    rulesText: "Can only overload a Corruption face.\nOn roll: [Gain 1 Energy].",
     overload: {
       faceSymbols: ["corruption"],
       onRoll: [{ type: "gain-energy", amount: 1 }],
@@ -218,7 +218,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "Prevent 2 damage.",
+    rulesText: "[Prevent 2].",
     effect: {
       effects: [
         { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
@@ -233,7 +233,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["instant"],
     attribute: "arcane",
     forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
-    rulesText: "Add 2 Instant or Ritual cards from your deck to your hand.",
+    rulesText: "[Search 2] Instant or Ritual cards.",
     ritual: {
       activeWhen: { arcane: 2 },
       // Living Library: Instant or Ritual from deck.
@@ -249,7 +249,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     forgeTags: ["echo"],
-    rulesText: "Apply the modifiers of one of the dice again.",
+    rulesText: "[Stamp].",
     effect: {
       effects: [{ type: "reapply-die-modifiers" }],
     },
@@ -262,7 +262,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "Destroy 1 Equipment on an opposing creature.",
+    rulesText: "[Destroy Equipment].",
     effect: {
       effects: [{ type: "destroy-equipment", target: { kind: "choose-enemy" } }],
     },
@@ -275,7 +275,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On basic attack: deal +1 damage.",
+    rulesText: "On basic attack: +1 damage.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [{ type: "attack-damage-bonus", amount: 1, attackKinds: ["basic"] }],
@@ -289,7 +289,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "On deal damage: apply 1 Toxin marker.",
+    rulesText: "On deal damage: [Mark 1 Toxin].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -308,7 +308,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["instant"],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Choose up to 3 cards in your graveyard and return them to your hand.",
+    rulesText: "[Recall 3].",
     ritual: {
       activeWhen: { darkness: 2 },
       effects: [{ type: "search-graveyard", amount: 3 }],
@@ -323,7 +323,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "opponent-die" },
     rulesText:
-      "May be equipped to an opposing creature.\nOn roll Corruption: this creature takes 1 damage.",
+      "May be equipped to an opposing creature.\nOn roll Corruption: [Strike 1] this creature.",
     equipment: {
       mayTargetOpponent: true,
       abilities: [
@@ -347,7 +347,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText:
-      "Forge 3 synthetic Corruption faces on one of the opponent's dice.",
+      "[Forge 3 Synthetic Corruption] on one of the opponent's dice.",
     ritual: {
       activeWhen: { corruption: 2 },
       effects: [
@@ -399,7 +399,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "Can only overload an Arcane face.\nOn roll: generate 1 additional Arcane.",
+    rulesText: "Can only overload an Arcane face.\nOn roll: [Generate 1 Arcane].",
     overload: {
       faceSymbols: ["arcane"],
       onRoll: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
@@ -413,7 +413,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Can only overload an Arcane face.\nOn roll: generate 1 additional Arcane.",
+    rulesText: "Can only overload an Arcane face.\nOn roll: [Generate 1 Arcane].",
     overload: {
       faceSymbols: ["arcane"],
       onRoll: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
@@ -441,7 +441,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
-    rulesText: "On prevent damage: draw 2 cards.",
+    rulesText: "On prevent damage: [Draw 2].",
     effect: {
       effects: [{ type: "arm-prevent-draw", amount: 2 }],
     },
@@ -454,7 +454,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Convert up to two symbols into any other 2 Natural symbols.",
+    rulesText: "[Convert 2].",
     effect: {
       effects: [{ type: "convert-symbols", amount: 2 }],
     },
@@ -467,7 +467,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Send 2 Ritual cards of different attributes from your deck to the graveyard.",
+    rulesText: "[Mill 2] Rituals of different attributes.",
     effect: {
       effects: [{ type: "dark-pact" }],
     },
@@ -494,7 +494,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 2, kind: "synthetic", attribute: "arcane", target: "own-die" },
-    rulesText: "Negate the effect of 1 card.",
+    rulesText: "[Negate].",
     effect: {
       effects: [{ type: "negate-card", cardTypes: "any" }],
     },
@@ -507,7 +507,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "Forge 1 synthetic Corruption face on the opponent's die.",
+    rulesText: "[Forge 1 Synthetic Corruption] on the opponent's die.",
     effect: {
       requires: { corruption: 1 },
       effects: [
@@ -529,7 +529,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "On deal damage: heal 1 on an allied creature.",
+    rulesText: "On deal damage: [Heal 1] on an allied creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -549,8 +549,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
-      "Can only equip an Arcane or Darkness creature.\n" +
-      "On absorb Arcane or Darkness: draw 1 card and discard 1.",
+      "Can only equip an Arcane or Darkness creature.\nOn absorb Arcane or Darkness: [Draw 1]. [Discard 1].",
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["arcane", "darkness"],
@@ -596,7 +595,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "On discard: generate 1 Darkness. (You may choose how to use it.)",
+    rulesText: "On discard: [Generate 1 Darkness].",
     ritual: {
       activeWhen: { arcane: 1, darkness: 1 },
       effects: [],
@@ -639,7 +638,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On roll: generate Martial.",
+    rulesText: "On roll: [Generate 1 Martial].",
     overload: {
       onRoll: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
     },
@@ -652,7 +651,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On roll: the next attack this turn deals +1 damage.",
+    rulesText: "On roll: [Empower 1].",
     overload: {
       onRoll: [{ type: "next-attack-bonus", amount: 1 }],
     },
@@ -665,7 +664,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "Can only overload a Toxin face.\nOn roll: all attacks this turn apply 1 Toxin marker.",
+    rulesText: "Can only overload a Toxin face.\nOn roll: [Mark 1 Toxin on attacks].",
     overload: {
       faceSymbols: ["toxin"],
       onRoll: [{ type: "arm-attack-toxin", amount: 1 }],
@@ -679,7 +678,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "Can only overload a Toxin face.\nOn absorb: heal 1.",
+    rulesText: "Can only overload a Toxin face.\nOn absorb: [Heal 1].",
     overload: {
       faceSymbols: ["toxin"],
       onRoll: [],
@@ -694,7 +693,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Can only overload a Natural Wild face.\nOn absorb: generate Wild.",
+    rulesText: "Can only overload a Natural Wild face.\nOn absorb: [Generate 1 Wild].",
     overload: {
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
@@ -711,8 +710,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
     rulesText:
-      "Can only overload a Natural Wild face.\n" +
-      "On roll: once per turn you may reroll this face. If it lands on this face again, deal 1 damage to 2 of your creatures.",
+      "Can only overload a Natural Wild face.\nOn roll: once per turn you may [Reroll] this face. If it lands on this face again, [Strike 1] 2 of your creatures.",
     overload: {
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
@@ -730,7 +728,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
     rulesText:
-      "Can only overload a Natural Martial face.\nOn absorb: your attacks this turn ignore 2 Shield.",
+      "Can only overload a Natural Martial face.\nOn absorb: [Pierce 2].",
     overload: {
       faceSymbols: ["martial"],
       faceKinds: ["natural"],
@@ -746,7 +744,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On absorb Martial: this creature may move 1 position.",
+    rulesText: "On absorb Martial: this creature may [Reposition].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -768,7 +766,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "On special attack: apply 1 Toxin marker.",
+    rulesText: "On special attack: [Mark 1 Toxin].",
     ritual: {
       activeWhen: { wild: 1, toxin: 1 },
       effects: [],
@@ -792,7 +790,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On basic attack, allied creature to the left: deal +1 damage.",
+    rulesText: "On basic attack, allied creature to the left: +1 damage.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -813,7 +811,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On special attack: generate Wild on another card.",
+    rulesText: "On special attack: [Generate 1 Wild] on another card.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -834,7 +832,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "On toxin damage: heal 1 on this creature.",
+    rulesText: "On toxin damage: [Heal 1] this creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -853,7 +851,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On absorb Wild: generate 1 Martial.",
+    rulesText: "On absorb Wild: [Generate 1 Martial].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -874,7 +872,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
     rulesText:
-      "Can only equip a Martial creature.\nOn attack, once per turn: another ally may reposition.",
+      "Can only equip a Martial creature.\nOn attack, once per turn: another ally may [Reposition].",
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["martial"],
@@ -922,7 +920,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On basic attack: remove 1 Shield from the target.",
+    rulesText: "On basic attack: [Strip 1 Shield].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -944,7 +942,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On absorb Wild: heal 1.",
+    rulesText: "On absorb Wild: [Heal 1].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -966,7 +964,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Can only overload a Mechanical face.\nOn absorb: generate Mechanical.",
+    rulesText: "Can only overload a Mechanical face.\nOn absorb: [Generate 1 Mechanical].",
     overload: {
       faceSymbols: ["mechanical"],
       onRoll: [],
@@ -981,7 +979,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["instant"],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Forge 2 Synthetic Mechanical faces on your die.",
+    rulesText: "[Forge 2 Synthetic Mechanical] on your die.",
     ritual: {
       activeWhen: { mechanical: 2 },
       effects: [
@@ -1003,7 +1001,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Can only overload a Mechanical face.\nOn roll: generate Mechanical.",
+    rulesText: "Can only overload a Mechanical face.\nOn roll: [Generate 1 Mechanical].",
     overload: {
       faceSymbols: ["mechanical"],
       onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
@@ -1017,7 +1015,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Generate 1 Mechanical.",
+    rulesText: "[Generate 1 Mechanical].",
     effect: {
       effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
     },
@@ -1030,7 +1028,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Forge 2 Synthetic Mechanical faces on your die.",
+    rulesText: "[Forge 2 Synthetic Mechanical] on your die.",
     effect: {
       requires: { mechanical: 2 },
       effects: [
@@ -1052,7 +1050,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "On absorb Mechanical: gain 1 Energy.",
+    rulesText: "On absorb Mechanical: [Gain 1 Energy].",
     ritual: {
       activeWhen: { mechanical: 2 },
       effects: [],
@@ -1094,8 +1092,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     rulesText:
-      "Can only overload a Mechanical face.\n" +
-      "On roll: the next face you install this turn costs 1 Energy less.",
+      "Can only overload a Mechanical face.\nOn roll: [Discount 1] forge.",
     overload: {
       faceSymbols: ["mechanical"],
       onRoll: [{ type: "arm-forge-discount", amount: 1 }],
@@ -1109,7 +1106,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "On absorb Mechanical, once per turn: generate 1 Mechanical.",
+    rulesText: "On absorb Mechanical, once per turn: [Generate 1 Mechanical].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -1131,7 +1128,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     rulesText:
-      "Generate 1 Mechanical.\nThe next face you install this turn costs 1 Energy less.",
+      "[Generate 1 Mechanical]. [Discount 1] forge.",
     effect: {
       effects: [
         { type: "generate-symbol", symbol: "mechanical", amount: 1 },
@@ -1148,7 +1145,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     rulesText:
-      "Generate 1 Mechanical.\nThe next face you install this turn costs 1 Energy less.",
+      "[Generate 1 Mechanical]. [Discount 1] forge.",
     effect: {
       effects: [
         { type: "generate-symbol", symbol: "mechanical", amount: 1 },
@@ -1164,7 +1161,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Apply the modifiers of one of your dice again.",
+    rulesText: "[Stamp].",
     effect: {
       requires: { mechanical: 1 },
       effects: [{ type: "reapply-die-modifiers" }],
@@ -1178,7 +1175,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "The next face effect you resolve this turn is resolved twice.",
+    rulesText: "[Double].",
     effect: {
       requires: { mechanical: 2 },
       effects: [{ type: "arm-resolve-next-face-effect-twice" }],
@@ -1192,7 +1189,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "On roll Mechanical: generate Mechanical.",
+    rulesText: "On roll Mechanical: [Generate 1 Mechanical].",
     ritual: {
       activeWhen: { mechanical: 1 },
       effects: [],
@@ -1214,7 +1211,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Return a card that costs 2 or less from your discard pile to your hand.",
+    rulesText: "[Recall 1] that costs 2 or less.",
     effect: {
       effects: [{ type: "search-graveyard", amount: 1, maxEnergyCost: 2 }],
     },
@@ -1228,9 +1225,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     rulesText:
-      "Choose one Synthetic Mechanical face on one of your dice; return it to your face pool " +
-      "and install a different Synthetic Mechanical face from your pool onto that slot. " +
-      "This is not a forge — no forge-draw.",
+      "[Reforge].",
     effect: {
       requires: { mechanical: 1 },
       effects: [
@@ -1252,7 +1247,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Forge 1 Synthetic Martial face on your die.",
+    rulesText: "[Forge 1 Synthetic Martial] on your die.",
     effect: {
       effects: [
         {
@@ -1273,7 +1268,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Deal 2 damage to a chosen enemy.",
+    rulesText: "[Strike 2].",
     effect: {
       requires: { martial: 1 },
       effects: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
@@ -1287,7 +1282,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "The next attack this turn deals +2 damage.",
+    rulesText: "[Empower 2].",
     effect: {
       effects: [{ type: "next-attack-bonus", amount: 2 }],
     },
@@ -1300,7 +1295,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Generate 1 Martial. The next attack this turn deals +1 damage.",
+    rulesText: "[Generate 1 Martial]. [Empower 1].",
     effect: {
       effects: [
         { type: "generate-symbol", symbol: "martial", amount: 1 },
@@ -1316,7 +1311,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On attack: generate 1 Martial.",
+    rulesText: "On attack: [Generate 1 Martial].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -1336,7 +1331,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Forge 1 Synthetic Wild face on your die.",
+    rulesText: "[Forge 1 Synthetic Wild] on your die.",
     effect: {
       effects: [
         {
@@ -1357,7 +1352,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Choose an allied creature. Its next attack deals +2 damage.",
+    rulesText: "[Empower 2] on an allied creature.",
     effect: {
       requires: { wild: 1 },
       effects: [
@@ -1373,7 +1368,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "Generate 1 Wild. The next attack this turn deals +1 damage.",
+    rulesText: "[Generate 1 Wild]. [Empower 1].",
     effect: {
       effects: [
         { type: "generate-symbol", symbol: "wild", amount: 1 },
@@ -1389,7 +1384,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "A chosen enemy creature loses 2 Shield.",
+    rulesText: "[Strip 2 Shield].",
     effect: {
       effects: [{ type: "remove-shield", amount: 2, target: { kind: "choose-enemy" } }],
     },
@@ -1403,7 +1398,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
     rulesText:
-      "Can only overload a Natural Wild face.\nOn roll: the next attack this turn deals +1 damage.",
+      "Can only overload a Natural Wild face.\nOn roll: [Empower 1].",
     overload: {
       faceSymbols: ["wild"],
       faceKinds: ["natural"],
@@ -1418,7 +1413,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "Apply 2 Toxin markers to a chosen enemy.",
+    rulesText: "[Mark 2 Toxin].",
     effect: {
       requires: { toxin: 1 },
       effects: [{ type: "apply-toxin", amount: 2, target: { kind: "choose-enemy" } }],
@@ -1433,7 +1428,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
     rulesText:
-      "The next attack this turn deals +1 damage. All attacks this turn apply 1 Toxin marker.",
+      "[Empower 1]. [Mark 1 Toxin on attacks].",
     effect: {
       effects: [
         { type: "next-attack-bonus", amount: 1 },
@@ -1449,7 +1444,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["instant"],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "The next attack this turn deals +2 damage.",
+    rulesText: "[Empower 2].",
     ritual: {
       activeWhen: { martial: 2 },
       effects: [{ type: "next-attack-bonus", amount: 2 }],
@@ -1463,7 +1458,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "On attack: the next attack this turn deals +1 damage.",
+    rulesText: "On attack: [Empower 1].",
     ritual: {
       activeWhen: { martial: 2 },
       effects: [],
@@ -1484,7 +1479,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On absorb Wild: the next attack this turn deals +1 damage.",
+    rulesText: "On absorb Wild: [Empower 1].",
     ritual: {
       activeWhen: { wild: 2 },
       effects: [],
@@ -1506,7 +1501,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["instant"],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "Forge 2 Synthetic Toxin faces on your die.",
+    rulesText: "[Forge 2 Synthetic Toxin] on your die.",
     ritual: {
       activeWhen: { toxin: 2 },
       effects: [
@@ -1544,7 +1539,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Send 1 opposing Ritual to its owner's graveyard.",
+    rulesText: "[Destroy Ritual].",
     effect: {
       effects: [{ type: "destroy-ritual", target: { kind: "choose-opponent-ritual" } }],
     },
@@ -1557,7 +1552,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
-    rulesText: "Negate 1 Ritual.",
+    rulesText: "[Negate Ritual].",
     effect: {
       effects: [{ type: "negate-ritual" }],
     },
@@ -1570,7 +1565,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Negate the effect of 1 card.",
+    rulesText: "[Negate].",
     effect: {
       effects: [{ type: "negate-card", cardTypes: "any" }],
     },
@@ -1584,7 +1579,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Deal 3 damage to a chosen enemy.",
+    rulesText: "[Strike 3].",
     effect: {
       requires: { darkness: 1 },
       effects: [{ type: "damage", amount: 3, target: { kind: "choose-enemy" } }],
@@ -1598,7 +1593,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["instant"],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Deal 4 damage to a chosen enemy.",
+    rulesText: "[Strike 4].",
     ritual: {
       activeWhen: { arcane: 1, darkness: 1 },
       effects: [{ type: "damage", amount: 4, target: { kind: "choose-enemy" } }],
@@ -1612,7 +1607,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Destroy 1 Equipment on a chosen opposing creature.",
+    rulesText: "[Destroy Equipment].",
     effect: {
       effects: [{ type: "destroy-equipment", target: { kind: "choose-enemy" } }],
     },
@@ -1625,7 +1620,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "Can only overload a Darkness face.\nOn roll: generate 1 Darkness.",
+    rulesText: "Can only overload a Darkness face.\nOn roll: [Generate 1 Darkness].",
     overload: {
       faceSymbols: ["darkness"],
       onRoll: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
@@ -1640,8 +1635,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
-      "Can only equip an Arcane or Darkness creature.\n" +
-      "On absorb Darkness, once per turn: deal 1 damage to a chosen enemy.",
+      "Can only equip an Arcane or Darkness creature.\nOn absorb Darkness, once per turn: [Strike 1].",
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["arcane", "darkness"],
@@ -1668,7 +1662,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "A chosen allied creature gains 2 Shield.",
+    rulesText: "[Mark 2 Shield].",
     effect: {
       effects: [{ type: "grant-shield", amount: 2, target: { kind: "choose-ally" } }],
     },
@@ -1681,7 +1675,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "Prevent 2 damage.",
+    rulesText: "[Prevent 2].",
     effect: {
       effects: [
         { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
@@ -1696,7 +1690,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "Choose one of your rolled dice. You may reroll it.",
+    rulesText: "[Reroll].",
     effect: {
       effects: [{ type: "optional-reroll-die" }],
     },
@@ -1710,7 +1704,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText:
-      "Look at the top 2 cards of your deck. Put 1 into your hand and the rest on the bottom.",
+      "[Insight 2].",
     effect: {
       effects: [{ type: "look-top-deck", amount: 2 }],
     },
@@ -1724,7 +1718,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText:
-      "Gain 1 Energy.\nLook at the top card of your deck; you may put it on the bottom.",
+      "[Gain 1 Energy]. [Insight 1].",
     effect: {
       effects: [{ type: "gain-energy", amount: 1 }, { type: "peek-deck-optional-bottom" }],
     },
@@ -1737,7 +1731,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "On absorb, once per turn: this creature gains 1 Shield.",
+    rulesText: "On absorb, once per turn: [Mark 1 Shield] this creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -1758,7 +1752,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "On start of opponent's turn: apply 1 Toxin marker to the enemy with the most damage.",
+    rulesText: "On start of opponent's turn: [Mark 1 Toxin] the enemy with the most damage.",
     ritual: {
       activeWhen: { toxin: 2 },
       effects: [],
@@ -1779,7 +1773,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "On absorb Toxin: apply 1 Toxin marker to a chosen enemy.",
+    rulesText: "On absorb Toxin: [Mark 1 Toxin].",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -1800,7 +1794,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "Apply 2 Toxin markers to a chosen enemy that already has Toxin.",
+    rulesText: "[Mark 2 Toxin] a chosen enemy that already has Toxin.",
     effect: {
       requires: { toxin: 1 },
       effects: [
@@ -1820,7 +1814,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
-    rulesText: "Can only overload a Toxin face.\nOn absorb: deal 1 damage to a chosen enemy.",
+    rulesText: "Can only overload a Toxin face.\nOn absorb: [Strike 1].",
     overload: {
       faceSymbols: ["toxin"],
       onRoll: [],
@@ -1836,7 +1830,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "toxin",
     forge: { faces: 1, kind: "synthetic", attribute: "toxin", target: "own-die" },
     rulesText:
-      "On toxin damage: apply 1 Toxin marker to the opposing creature that took that damage.",
+      "On toxin damage: [Mark 1 Toxin] the opposing creature that took that damage.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
@@ -1856,7 +1850,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: ["continuous"],
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
-    rulesText: "On start of opponent's turn: deal 1 damage to the enemy with the most damage.",
+    rulesText: "On start of opponent's turn: [Strike 1] the enemy with the most damage.",
     ritual: {
       activeWhen: { corruption: 2 },
       effects: [],
@@ -1878,7 +1872,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "opponent-die" },
     rulesText:
-      "May be equipped to an opposing creature.\nOn start of turn: this creature takes 1 damage.",
+      "May be equipped to an opposing creature.\nOn start of turn: [Strike 1] this creature.",
     equipment: {
       mayTargetOpponent: true,
       abilities: [
@@ -1899,7 +1893,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "corruption",
     forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
     rulesText:
-      "Can only overload a Corruption face.\nOn roll: deal 1 damage to a chosen enemy.\nOn absorb: apply 1 Toxin marker to a chosen enemy.",
+      "Can only overload a Corruption face.\nOn roll: [Strike 1].\nOn absorb: [Mark 1 Toxin].",
     overload: {
       faceSymbols: ["corruption"],
       onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
@@ -1916,7 +1910,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
     rulesText:
-      "Look at the top 3 cards of your deck. Put 1 into your hand and the rest on the bottom.",
+      "[Insight 3].",
     effect: {
       effects: [{ type: "look-top-deck", amount: 3 }],
     },
@@ -1929,7 +1923,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
-    rulesText: "The opponent mills 3 cards.",
+    rulesText: "Opponent [Mill 3].",
     effect: {
       effects: [{ type: "mill-cards", amount: 3, player: "opponent" }],
     },
@@ -1943,8 +1937,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     attribute: "darkness",
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
-      "Can only equip an Arcane or Darkness creature.\n" +
-      "On absorb Darkness, once per turn: the opponent mills 1 card.",
+      "Can only equip an Arcane or Darkness creature.\nOn absorb Darkness, once per turn: opponent [Mill 1].",
     equipment: {
       mayTargetOpponent: false,
       creatureAttributes: ["arcane", "darkness"],
@@ -1966,7 +1959,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "martial",
     forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
-    rulesText: "Reposition an allied creature 1 space.",
+    rulesText: "[Reposition].",
     effect: {
       effects: [{ type: "reposition-creature", target: { kind: "choose-ally" } }],
     },

@@ -67,7 +67,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "War Minotaur",
     life: 17,
     attributes: ["martial"],
-    passiveRulesText: "Ignore 1 [Shield] on the target.",
+    passiveRulesText: "[Pierce 1].",
     standingAbilities: [{ type: "ignore-shield", amount: 1 }],
     attacks: [
       {
@@ -76,7 +76,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         kind: "basic",
         requires: { martial: 2 },
         range: false,
-        rulesText: "Deal 3 damage.",
+        rulesText: "[Strike 3].",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
       },
       {
@@ -87,7 +87,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         discards: { martial: 1 },
         range: false,
         rulesText:
-          "Deal 4 damage. If War Minotaur is in the back row, swap it with a frontline creature.",
+          "[Strike 4]. If War Minotaur is in the back row, [Swap] with a frontline creature.",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
         followUpEffects: [
           {
@@ -104,7 +104,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Varcolac",
     life: 13,
     attributes: ["wild"],
-    passiveRulesText: "On attack, another ally: this creature's next attack deals +1 damage.",
+    passiveRulesText: "On attack, another ally: [Empower 1] this creature.",
     standingAbilities: [
       {
         type: "on-attack",
@@ -131,7 +131,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1 },
         discards: { wild: 1 },
         range: false,
-        rulesText: "Deal 2 damage.",
+        rulesText: "[Strike 2].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -141,7 +141,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1, martial: 1 },
         discards: { wild: 1 },
         range: false,
-        rulesText: "Deal 4 damage. The next attack this turn deals +1 damage.",
+        rulesText: "[Strike 4]. [Empower 1].",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],
@@ -160,7 +160,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1 },
         discards: { wild: 1 },
         range: true,
-        rulesText: "Deal 2 damage.",
+        rulesText: "[Strike 2].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -171,7 +171,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         discards: { wild: 1 },
         range: true,
         rulesText:
-          "Deal 3 damage. Every enemy on the frontline loses 1 [Shield].",
+          "[Strike 3]. Every enemy on the frontline [Strip 1 Shield].",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
         followUpEffects: [
           { type: "remove-shield", amount: 1, target: { kind: "enemy-frontline" } },
@@ -215,7 +215,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { arcane: 1 },
         discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Draw 1 card.",
+        rulesText: "[Strike 2]. [Draw 1].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -225,7 +225,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { arcane: 1, darkness: 1 },
         discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Gain 1 Energy. Generate 1 Arcane.",
+        rulesText: "[Strike 2]. [Gain 1 Energy]. [Generate 1 Arcane].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
     ],
@@ -235,7 +235,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Corrupting Elder",
     life: 14,
     attributes: ["arcane"],
-    passiveRulesText: "On opponent roll Corruption: deal 1 damage.",
+    passiveRulesText: "On opponent roll Corruption: [Strike 1].",
     standingAbilities: [
       {
         type: "on-roll-symbol",
@@ -264,7 +264,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { arcane: 1 },
         discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 2 damage. The target loses 1 [Shield].",
+        rulesText: "[Strike 2]. [Strip 1 Shield].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -274,7 +274,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { arcane: 1, corruption: 1 },
         discards: { corruption: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Generate 1 Corruption.",
+        rulesText: "[Strike 2]. [Generate 1 Corruption].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
     ],
@@ -284,7 +284,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Void Summoner",
     life: 13,
     attributes: ["arcane"],
-    passiveRulesText: "On absorb Natural: generate 1 Arcane.",
+    passiveRulesText: "On absorb Natural: [Generate 1 Arcane].",
     standingAbilities: [
       {
         type: "on-absorb",
@@ -314,7 +314,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { arcane: 1 },
         discards: { arcane: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Generate 1 Arcane.",
+        rulesText: "[Strike 2]. [Generate 1 Arcane].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -324,7 +324,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { arcane: 1, darkness: 1 },
         discards: { darkness: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Gain 1 Energy. Draw 1 card.",
+        rulesText: "[Strike 2]. [Gain 1 Energy]. [Draw 1].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
     ],
@@ -341,7 +341,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Prism Herald",
     life: 13,
     attributes: ["luminar"],
-    passiveRulesText: "On absorb Luminar: this creature's next attack deals +1 damage.",
+    passiveRulesText: "On absorb Luminar: [Empower 1] this creature.",
     standingAbilities: [
       {
         type: "on-absorb",
@@ -363,7 +363,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { luminar: 1 },
         discards: { luminar: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Heal 1 on the most damaged ally.",
+        rulesText: "[Strike 2]. [Heal 1] on the most damaged ally.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
         followUpEffects: [
           { type: "heal", amount: 1, target: { kind: "most-damaged-ally" } },
@@ -376,7 +376,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { luminar: 1, mechanical: 1 },
         discards: { luminar: 1 },
         range: false,
-        rulesText: "Deal 2 damage. An allied creature's next attack deals +1 damage.",
+        rulesText: "[Strike 2]. [Empower 1] on an allied creature.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
         followUpEffects: [
           {
@@ -393,7 +393,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Lens Choir",
     life: 12,
     attributes: ["luminar"],
-    passiveRulesText: "On absorb Luminar, once per turn: generate 1 Luminar.",
+    passiveRulesText: "On absorb Luminar, once per turn: [Generate 1 Luminar].",
     standingAbilities: [
       {
         type: "on-absorb",
@@ -423,7 +423,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { luminar: 1 },
         discards: { luminar: 1 },
         range: false,
-        rulesText: "Deal 1 damage. Generate 1 Luminar.",
+        rulesText: "[Strike 1]. [Generate 1 Luminar].",
         effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
       {
@@ -433,7 +433,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { luminar: 1, wild: 1 },
         discards: { luminar: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Gain 1 Energy. Generate 1 Luminar.",
+        rulesText: "[Strike 2]. [Gain 1 Energy]. [Generate 1 Luminar].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
     ],
@@ -444,8 +444,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 14,
     attributes: ["luminar"],
     passiveRulesText:
-      "The first [Luminar] card used each turn costs 1 Energy less.\n" +
-      "On attack, another ally: heal 1 on the most damaged ally.",
+      "The first [Luminar] card used each turn costs 1 Energy less.\nOn attack, another ally: [Heal 1] on the most damaged ally.",
     standingAbilities: [
       {
         type: "energy-cost-discount",
@@ -469,7 +468,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { luminar: 1 },
         discards: { luminar: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Grant 1 Shield to this creature.",
+        rulesText: "[Strike 2]. [Mark 1 Shield] this creature.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
         followUpEffects: [
           { type: "grant-shield", amount: 1, target: { kind: "source-creature" } },
@@ -482,7 +481,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { luminar: 1, mechanical: 1 },
         discards: { luminar: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Prevent 1 damage on an allied creature.",
+        rulesText: "[Strike 2]. [Prevent 1] on an allied creature.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
         followUpEffects: [
           {
@@ -499,7 +498,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Cogwork Driver",
     life: 14,
     attributes: ["mechanical"],
-    passiveRulesText: "On absorb Mechanical: this creature's next attack deals +1 damage.",
+    passiveRulesText: "On absorb Mechanical: [Empower 1] this creature.",
     standingAbilities: [
       {
         type: "on-absorb",
@@ -526,7 +525,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { mechanical: 1 },
         discards: { mechanical: 1 },
         range: false,
-        rulesText: "Deal 2 damage.",
+        rulesText: "[Strike 2].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -536,7 +535,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { mechanical: 1, luminar: 1 },
         discards: { mechanical: 1 },
         range: false,
-        rulesText: "Deal 3 damage. Generate 1 Mechanical.",
+        rulesText: "[Strike 3]. [Generate 1 Mechanical].",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
       },
     ],
@@ -546,7 +545,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Servo Assembly",
     life: 13,
     attributes: ["mechanical"],
-    passiveRulesText: "On absorb Mechanical: generate 1 Mechanical.",
+    passiveRulesText: "On absorb Mechanical: [Generate 1 Mechanical].",
     standingAbilities: [
       {
         type: "on-absorb",
@@ -567,7 +566,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { mechanical: 1 },
         discards: { mechanical: 1 },
         range: false,
-        rulesText: "Deal 1 damage. Generate 1 Mechanical.",
+        rulesText: "[Strike 1]. [Generate 1 Mechanical].",
         effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
       },
       {
@@ -577,7 +576,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { mechanical: 2 },
         discards: { mechanical: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Apply the modifiers of one of your dice again.",
+        rulesText: "[Strike 2]. [Stamp].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
         followUpEffects: [{ type: "reapply-die-modifiers" }],
       },
@@ -588,7 +587,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Clockwork Dynamo",
     life: 12,
     attributes: ["mechanical"],
-    passiveRulesText: "On roll Mechanical: this creature's next attack deals +1 damage.",
+    passiveRulesText: "On roll Mechanical: [Empower 1] this creature.",
     standingAbilities: [
       {
         type: "on-roll-symbol",
@@ -616,7 +615,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { mechanical: 1 },
         discards: { mechanical: 1 },
         range: false,
-        rulesText: "Deal 2 damage.",
+        rulesText: "[Strike 2].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -627,7 +626,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         discards: { mechanical: 1 },
         range: false,
         rulesText:
-          "Deal 2 damage. The next face you install this turn costs 1 Energy less.",
+          "[Strike 2]. [Discount 1] forge.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
     ],
@@ -674,7 +673,7 @@ const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { darkness: 1 },
         discards: { darkness: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Generate 1 Darkness.",
+        rulesText: "[Strike 2]. [Generate 1 Darkness].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -684,7 +683,7 @@ const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { arcane: 1, darkness: 1 },
         discards: { darkness: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Opponent loses 1 Energy.",
+        rulesText: "[Strike 2]. [Lose 1 Energy].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
     ],
@@ -698,7 +697,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 15,
     attributes: ["toxin"],
     passiveRulesText:
-      "On toxin damage: apply 1 Toxin marker to the opposing creature that took that damage.",
+      "On toxin damage: [Mark 1 Toxin] the opposing creature that took that damage.",
     standingAbilities: [
       {
         type: "on-toxin-damage",
@@ -714,7 +713,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { toxin: 1 },
         discards: { toxin: 1 },
         range: false,
-        rulesText: "Deal 2 damage.",
+        rulesText: "[Strike 2].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -725,7 +724,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         discards: { toxin: 1 },
         range: false,
         rulesText:
-          "Deal 1 damage. Every enemy on the frontline receives 1 [Toxin] marker.",
+          "[Strike 1]. Every enemy on the frontline [Mark 1 Toxin].",
         effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
         followUpEffects: [
           { type: "apply-toxin", amount: 1, target: { kind: "enemy-frontline" } },
@@ -739,7 +738,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 14,
     attributes: ["corruption"],
     passiveRulesText:
-      "On start of opponent's turn: deal 1 damage to the enemy with the most damage.",
+      "On start of opponent's turn: [Strike 1] the enemy with the most damage.",
     standingAbilities: [
       {
         type: "on-turn-start",
@@ -755,7 +754,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { corruption: 1 },
         discards: { corruption: 1 },
         range: false,
-        rulesText: "Deal 2 damage.",
+        rulesText: "[Strike 2].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
       },
       {
@@ -765,7 +764,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { corruption: 1, toxin: 1 },
         discards: { corruption: 1 },
         range: false,
-        rulesText: "Deal 1 damage. Apply 1 Toxin marker.",
+        rulesText: "[Strike 1]. [Mark 1 Toxin].",
         effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
         followUpEffects: [
           { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
@@ -779,8 +778,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 12,
     attributes: ["toxin"],
     passiveRulesText:
-      "The first [Toxin] card used each turn costs 1 Energy less.\n" +
-      "On absorb Toxin: apply 1 Toxin marker to a chosen enemy.",
+      "The first [Toxin] card used each turn costs 1 Energy less.\nOn absorb Toxin: [Mark 1 Toxin].",
     standingAbilities: [
       {
         type: "energy-cost-discount",
@@ -802,7 +800,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { toxin: 1 },
         discards: { toxin: 1 },
         range: false,
-        rulesText: "Deal 1 damage. Apply 1 Toxin marker.",
+        rulesText: "[Strike 1]. [Mark 1 Toxin].",
         effect: { type: "damage", amount: 1, target: { kind: "declared-target" } },
         followUpEffects: [
           { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
@@ -815,7 +813,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { toxin: 1, corruption: 1 },
         discards: { toxin: 1 },
         range: false,
-        rulesText: "Deal 2 damage. Apply 1 Toxin marker.",
+        rulesText: "[Strike 2]. [Mark 1 Toxin].",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
         followUpEffects: [
           { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },

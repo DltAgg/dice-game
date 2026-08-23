@@ -1,0 +1,29 @@
+---
+description: Use docs/KEYWORDS.md for print, tokens, hooks, and new mechanics
+alwaysApply: true
+---
+
+# Keywords
+
+Print vocabulary lives in [`docs/KEYWORDS.md`](docs/KEYWORDS.md). The **Rules**
+tab shows its player sections (HTML comments are agent-only).
+
+When authoring cards, new mechanics, hooks, tokens, keywords, or other rules
+print:
+
+1. Read `docs/KEYWORDS.md` first.
+2. Prefer an existing operator + argument over a new verb — `[Mark N Toxin]`,
+   `[Mark N Toxin on attacks]`, `[Forge N]` on their die. Do **not** mint
+   Dose / Envenom / Brand / Contaminate for a slightly different window.
+3. A new **token** (creature counter, Shield, face marker) gets a rulebook
+   paragraph and joins **X** on `[Mark]` / `[Strip]`. It does not get its own
+   keyword. Attribute exclusives still gate the **argument**, not the verb.
+4. Add a **physics** keyword (`[Empower]`, `[Pierce]`, `[Prevent]`) only when
+   the operation is not placing or removing a token.
+5. Timing prefixes stay prefixes: `On roll: [Mark 1 Toxin].` Never “Whenever…”.
+6. Same change: update `docs/KEYWORDS.md`. If play itself changed, also
+   `docs/RULEBOOK.md`. Map print to existing `EffectDefinition` members; do
+   not add a generic `mark-token` AST just to match the glossary.
+
+Do not mass-rewrite existing `rulesText` unless asked. **New and edited**
+print uses the glossary.
