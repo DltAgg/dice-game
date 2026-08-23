@@ -5,6 +5,7 @@ import {
   formatTypeLine,
   type CardDefinition,
 } from "@/game";
+import { splitBracketParts } from "@/ui/keywords/reminders";
 import tacticsLayout from "./assets/tactics-layout.png";
 
 /**
@@ -81,7 +82,15 @@ function KeywordLine({ text, bold }: { text: string; bold?: boolean }) {
           : "font-[family-name:var(--font-card)] text-[length:clamp(0.55rem,3.1cqw,0.78rem)] font-normal leading-snug"
       }
     >
-      {text}
+      {splitBracketParts(text).map((part, index) =>
+        part.keyword && !bold ? (
+          <span key={`${part.text}:${String(index)}`} className="font-bold">
+            {part.text}
+          </span>
+        ) : (
+          <span key={`${part.text}:${String(index)}`}>{part.text}</span>
+        ),
+      )}
     </p>
   );
 }
@@ -108,14 +117,19 @@ function ForgeEffectSplit() {
   );
 }
 
-/** Bold only the `[Forge]` keyword, matching the layouts' treatment of `[Forje]`. */
+/** Bold `[Forge]` (and any other `[…]` token) on the forge line. */
 function ForgeLine({ text }: { text: string }) {
-  const match = /^(\[Forge\])(.*)$/.exec(text);
-  if (match === null) return <KeywordLine text={text} />;
   return (
-    <p className="mt-[0.15em] font-[family-name:var(--font-card)] text-[length:clamp(0.55rem,3.1cqw,0.78rem)] leading-snug">
-      <span className="font-bold">{match[1]}</span>
-      <span className="font-normal">{match[2]}</span>
+    <p className="mt-[0.15em] font-[family-name:var(--font-card)] text-[length:clamp(0.55rem,3.1cqw,0.78rem)] font-normal leading-snug">
+      {splitBracketParts(text).map((part, index) =>
+        part.keyword ? (
+          <span key={`${part.text}:${String(index)}`} className="font-bold">
+            {part.text}
+          </span>
+        ) : (
+          <span key={`${part.text}:${String(index)}`}>{part.text}</span>
+        ),
+      )}
     </p>
   );
 }

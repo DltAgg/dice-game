@@ -95,6 +95,8 @@ import {
   localSeatIsPendingChooser,
   seatedAction,
 } from "./seatGate";
+import { KeywordRemindersTooltip, KeywordRichText } from "@/ui/keywords/KeywordReminders";
+import { facePrintText, tacticPrintText } from "@/ui/keywords/reminders";
 
 const PHASE_LABELS: Record<TurnPhase, string> = {
   roll: "Roll",
@@ -1565,27 +1567,40 @@ const btnPrimary =
 
 const FIXED_INSPECT_TOOLTIP_CLASS =
   "pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl";
+const FIXED_INSPECT_ASIDE_CLASS =
+  "pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl";
 
 function NameInspectHover({
   name,
   negated = false,
   placement = "above",
   children,
+  aside,
 }: {
   name: string;
   negated?: boolean;
   placement?: "above" | "below";
   children: ReactNode;
+  /** When set, shows a primary + Keywords aside tooltip pair. */
+  aside?: ReactNode;
 }) {
   const rootRef = useRef<HTMLSpanElement>(null);
   const [hovered, setHovered] = useState(false);
+  const usePair = aside !== undefined;
   const pos = useAnchoredTooltip(
-    hovered,
+    hovered && !usePair,
     rootRef,
     INSPECT_TOOLTIP_WIDTH_PX,
     INSPECT_TOOLTIP_GAP_PX,
     placement,
     "start",
+  );
+  const pairPos = useAnchoredTooltipPair(
+    hovered && usePair,
+    rootRef,
+    INSPECT_TOOLTIP_WIDTH_PX,
+    INSPECT_TOOLTIP_GAP_PX,
+    placement,
   );
 
   return (
@@ -1615,6 +1630,26 @@ function NameInspectHover({
           </div>,
           document.body,
         )}
+      {pairPos !== null &&
+        createPortal(
+          <>
+            <div
+              className={FIXED_INSPECT_TOOLTIP_CLASS}
+              style={fixedTooltipPairStyle(pairPos, "primary")}
+              role="tooltip"
+            >
+              {children}
+            </div>
+            <div
+              className={FIXED_INSPECT_ASIDE_CLASS}
+              style={fixedTooltipPairStyle(pairPos, "secondary")}
+              role="tooltip"
+            >
+              {aside}
+            </div>
+          </>,
+          document.body,
+        )}
     </span>
   );
 }
@@ -1629,22 +1664,33 @@ function TacticInspectHover({
   placement?: "above" | "below";
 }) {
   return (
-    <NameInspectHover name={def.name} negated={negated} placement={placement}>
+    <NameInspectHover
+      name={def.name}
+      negated={negated}
+      placement={placement}
+      aside={<KeywordRemindersTooltip print={tacticPrintText(def)} />}
+    >
       <p className="text-sm font-medium text-stone-100">{def.name}</p>
       <p className="mt-1 text-xs text-stone-400">
         {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
         {negated ? " · negated" : ""}
       </p>
       <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-        <p>{formatTypeLine(def)}</p>
-        <p className="mt-1 text-stone-500">{formatForgeLine(def.forge)}</p>
+        <p>
+          <KeywordRichText text={formatTypeLine(def)} />
+        </p>
+        <p className="mt-1 text-stone-500">
+          <KeywordRichText text={formatForgeLine(def.forge)} />
+        </p>
         <div
           className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
           role="separator"
           aria-hidden
         />
         {formatEffectRegion(def).map((line) => (
-          <p key={line}>{line}</p>
+          <p key={line}>
+            <KeywordRichText text={line} />
+          </p>
         ))}
       </div>
     </NameInspectHover>
@@ -1659,14 +1705,18 @@ function FaceInspectHover({
   placement?: "above" | "below";
 }) {
   return (
-    <NameInspectHover name={face.name} placement={placement}>
+    <NameInspectHover
+      name={face.name}
+      placement={placement}
+      aside={<KeywordRemindersTooltip print={facePrintText(face)} />}
+    >
       <p className="text-sm font-medium text-stone-100">{face.name}</p>
       <p className="mt-1 text-xs capitalize text-stone-400">
         {face.kind} · {face.symbol}
       </p>
       {face.rulesText !== "" && (
         <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-          {face.rulesText}
+          <KeywordRichText text={face.rulesText} />
         </p>
       )}
     </NameInspectHover>
@@ -2508,13 +2558,12 @@ function RitualTile({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
-  const tooltipPos = useAnchoredTooltip(
+  const pairPos = useAnchoredTooltipPair(
     hovered,
     rootRef,
     INSPECT_TOOLTIP_WIDTH_PX,
     INSPECT_TOOLTIP_GAP_PX,
     "above",
-    "center",
   );
 
   const def = getCard(card.cardId);
@@ -2568,44 +2617,59 @@ function RitualTile({
               : "w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
       }
     >
-      {tooltipPos !== null &&
+      {pairPos !== null &&
         createPortal(
-          <div
-            className={FIXED_INSPECT_TOOLTIP_CLASS}
-            style={fixedTooltipStyle(tooltipPos)}
-            role="tooltip"
-          >
-            <p className="text-sm font-medium text-stone-100">{def.name}</p>
-            <p className="mt-1 text-xs text-stone-400">
-              {formatEnergyCost(def)} Energy
-              {activateCost !== null ? ` · ${activateCost}` : ""}
-            </p>
-            <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-              {orientation}
-              {durationLabel !== null ? ` · ${durationLabel}` : ""}
-            </p>
-            {progressLine !== null && progressLine !== "" && (
-              <p className="mt-1 text-xs text-amber-200/80">Progress: {progressLine}</p>
-            )}
-            <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-              <p>{formatTypeLine(def)}</p>
-              <p className="mt-1 text-stone-500">{formatForgeLine(def.forge)}</p>
-              <div
-                className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
-                role="separator"
-                aria-hidden
-              />
-              {formatEffectRegion(def).map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-              {(def.ritual?.standingAbilities?.length ?? 0) > 0 && (
-                <p className="text-stone-500">
-                  Standing: {String(def.ritual?.standingAbilities?.length)} trigger
-                  {(def.ritual?.standingAbilities?.length ?? 0) === 1 ? "" : "s"} while ready
-                </p>
+          <>
+            <div
+              className={FIXED_INSPECT_TOOLTIP_CLASS}
+              style={fixedTooltipPairStyle(pairPos, "primary")}
+              role="tooltip"
+            >
+              <p className="text-sm font-medium text-stone-100">{def.name}</p>
+              <p className="mt-1 text-xs text-stone-400">
+                {formatEnergyCost(def)} Energy
+                {activateCost !== null ? ` · ${activateCost}` : ""}
+              </p>
+              <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
+                {orientation}
+                {durationLabel !== null ? ` · ${durationLabel}` : ""}
+              </p>
+              {progressLine !== null && progressLine !== "" && (
+                <p className="mt-1 text-xs text-amber-200/80">Progress: {progressLine}</p>
               )}
+              <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                <p>
+                  <KeywordRichText text={formatTypeLine(def)} />
+                </p>
+                <p className="mt-1 text-stone-500">
+                  <KeywordRichText text={formatForgeLine(def.forge)} />
+                </p>
+                <div
+                  className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
+                  role="separator"
+                  aria-hidden
+                />
+                {formatEffectRegion(def).map((line) => (
+                  <p key={line}>
+                    <KeywordRichText text={line} />
+                  </p>
+                ))}
+                {(def.ritual?.standingAbilities?.length ?? 0) > 0 && (
+                  <p className="text-stone-500">
+                    Standing: {String(def.ritual?.standingAbilities?.length)} trigger
+                    {(def.ritual?.standingAbilities?.length ?? 0) === 1 ? "" : "s"} while ready
+                  </p>
+                )}
+              </div>
             </div>
-          </div>,
+            <div
+              className={FIXED_INSPECT_ASIDE_CLASS}
+              style={fixedTooltipPairStyle(pairPos, "secondary")}
+              role="tooltip"
+            >
+              <KeywordRemindersTooltip print={tacticPrintText(def)} />
+            </div>
+          </>,
           document.body,
         )}
 
@@ -2887,6 +2951,30 @@ function fixedTooltipStyle(pos: AnchoredTooltipPos): {
   return { left: pos.left, maxHeight: pos.maxHeight, bottom: pos.bottom ?? 0 };
 }
 
+type AnchoredTooltipPairPos = {
+  readonly primaryLeft: number;
+  readonly secondaryLeft: number;
+  readonly maxHeight: number;
+  readonly top?: number;
+  readonly bottom?: number;
+};
+
+function fixedTooltipPairStyle(
+  pos: AnchoredTooltipPairPos,
+  which: "primary" | "secondary",
+): {
+  readonly left: number;
+  readonly maxHeight: number;
+  readonly top?: number;
+  readonly bottom?: number;
+} {
+  const left = which === "primary" ? pos.primaryLeft : pos.secondaryLeft;
+  if (pos.top !== undefined) {
+    return { left, maxHeight: pos.maxHeight, top: pos.top };
+  }
+  return { left, maxHeight: pos.maxHeight, bottom: pos.bottom ?? 0 };
+}
+
 /** Places a single tooltip above or below `anchor`, flipped/clamped to the viewport. */
 function placeTooltip(
   anchor: DOMRect,
@@ -2952,12 +3040,13 @@ function useAnchoredTooltip(
   return pos;
 }
 
-/** Places a primary + aside tooltip pair above `anchor`, flipped/clamped so neither spills the viewport. */
+/** Places a primary + aside tooltip pair, flipped/clamped so neither spills the viewport. */
 function placeTooltipPair(
   anchor: DOMRect,
   tooltipWidth: number,
   gap: number,
-): { readonly primaryLeft: number; readonly secondaryLeft: number; readonly bottom: number } {
+  placement: "above" | "below" = "above",
+): AnchoredTooltipPairPos {
   const primaryPreferred = anchor.left;
   const secondaryPreferred = primaryPreferred + tooltipWidth + gap;
   const fitsRight =
@@ -2972,10 +3061,27 @@ function placeTooltipPair(
     tooltipWidth,
   );
 
+  const spaceAbove = Math.max(0, anchor.top - TOOLTIP_VIEW_MARGIN_PX - gap);
+  const spaceBelow = Math.max(0, window.innerHeight - anchor.bottom - TOOLTIP_VIEW_MARGIN_PX - gap);
+  const minComfort = 96;
+  const goAbove =
+    placement === "above"
+      ? spaceAbove >= minComfort || spaceAbove >= spaceBelow
+      : spaceBelow < minComfort && spaceAbove > spaceBelow;
+
+  if (goAbove) {
+    return {
+      primaryLeft,
+      secondaryLeft,
+      bottom: window.innerHeight - anchor.top + gap,
+      maxHeight: Math.max(spaceAbove, 48),
+    };
+  }
   return {
     primaryLeft,
     secondaryLeft,
-    bottom: window.innerHeight - anchor.top + gap,
+    top: anchor.bottom + gap,
+    maxHeight: Math.max(spaceBelow, 48),
   };
 }
 
@@ -2984,12 +3090,9 @@ function useAnchoredTooltipPair(
   rootRef: RefObject<HTMLElement | null>,
   tooltipWidth: number,
   gap: number,
+  placement: "above" | "below" = "above",
 ) {
-  const [pos, setPos] = useState<{
-    readonly primaryLeft: number;
-    readonly secondaryLeft: number;
-    readonly bottom: number;
-  } | null>(null);
+  const [pos, setPos] = useState<AnchoredTooltipPairPos | null>(null);
 
   useLayoutEffect(() => {
     if (!hovered) {
@@ -2999,7 +3102,7 @@ function useAnchoredTooltipPair(
     const update = () => {
       const node = rootRef.current;
       if (node === null) return;
-      setPos(placeTooltipPair(node.getBoundingClientRect(), tooltipWidth, gap));
+      setPos(placeTooltipPair(node.getBoundingClientRect(), tooltipWidth, gap, placement));
     };
     update();
     window.addEventListener("resize", update);
@@ -3008,7 +3111,7 @@ function useAnchoredTooltipPair(
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [hovered, rootRef, tooltipWidth, gap]);
+  }, [hovered, rootRef, tooltipWidth, gap, placement]);
 
   return pos;
 }
@@ -3075,7 +3178,7 @@ function CreatureTile({
           <>
             <div
               className="pointer-events-none fixed z-[60] w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
-              style={{ left: pairPos.primaryLeft, bottom: pairPos.bottom }}
+              style={fixedTooltipPairStyle(pairPos, "primary")}
               role="tooltip"
             >
               <p className="text-sm font-medium text-stone-100">{def.name}</p>
@@ -3123,8 +3226,8 @@ function CreatureTile({
               </div>
             </div>
             <div
-              className="pointer-events-none fixed z-[60] w-64 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
-              style={{ left: pairPos.secondaryLeft, bottom: pairPos.bottom }}
+              className="pointer-events-none fixed z-[60] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              style={fixedTooltipPairStyle(pairPos, "secondary")}
               role="tooltip"
             >
               <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
@@ -3362,8 +3465,8 @@ function FaceCardTile({
         createPortal(
           <>
             <div
-              className="pointer-events-none fixed z-[60] w-56 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
-              style={{ left: pairPos.primaryLeft, bottom: pairPos.bottom }}
+              className="pointer-events-none fixed z-[60] w-56 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
+              style={fixedTooltipPairStyle(pairPos, "primary")}
               role="tooltip"
             >
               <p className="text-sm font-medium text-stone-100">{face?.name ?? entry.faceCardId}</p>
@@ -3372,37 +3475,49 @@ function FaceCardTile({
               </pre>
             </div>
             <div
-              className="pointer-events-none fixed z-[60] w-56 rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
-              style={{ left: pairPos.secondaryLeft, bottom: pairPos.bottom }}
+              className="pointer-events-none fixed z-[60] w-56 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              style={fixedTooltipPairStyle(pairPos, "secondary")}
               role="tooltip"
             >
-              <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
-                Overloads
-              </p>
-              {attached.length === 0 ? (
-                <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
-              ) : (
-                <ul className="mt-2 space-y-2">
-                  {attached.map((card) => {
-                    const def = getCard(card.cardId);
-                    const effects = def !== undefined ? formatEffectRegion(def) : ["(unknown card)"];
-                    return (
-                      <li
-                        key={card.id}
-                        className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
-                      >
-                        <p className="text-sm font-medium text-stone-100">{def?.name ?? card.cardId}</p>
-                        {def !== undefined && (
-                          <p className="mt-0.5 text-[0.65rem] text-stone-500">{formatTypeLine(def)}</p>
-                        )}
-                        <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-                          {effects.join("\n")}
-                        </pre>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+              <KeywordRemindersTooltip
+                print={face !== undefined ? facePrintText(face) : ""}
+                extra={
+                  <div className="mt-3 border-t border-stone-800 pt-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
+                      Overloads
+                    </p>
+                    {attached.length === 0 ? (
+                      <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
+                    ) : (
+                      <ul className="mt-2 space-y-2">
+                        {attached.map((card) => {
+                          const def = getCard(card.cardId);
+                          const effects =
+                            def !== undefined ? formatEffectRegion(def) : ["(unknown card)"];
+                          return (
+                            <li
+                              key={card.id}
+                              className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
+                            >
+                              <p className="text-sm font-medium text-stone-100">
+                                {def?.name ?? card.cardId}
+                              </p>
+                              {def !== undefined && (
+                                <p className="mt-0.5 text-[0.65rem] text-stone-500">
+                                  {formatTypeLine(def)}
+                                </p>
+                              )}
+                              <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                                {effects.join("\n")}
+                              </pre>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                }
+              />
             </div>
           </>,
           document.body,
@@ -4103,19 +4218,19 @@ function HandStrip({
   const actionsLive = actionsPhase && canAct && !reactionWindow;
   const reactionsLive = reactionWindow && canAct;
   const [hoveredId, setHoveredId] = useState<CardInstanceId | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ left: number; bottom: number } | null>(null);
+  const [pairPos, setPairPos] = useState<AnchoredTooltipPairPos | null>(null);
   const cardRefs = useRef<Map<CardInstanceId, HTMLDivElement>>(new Map());
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    const placeTooltip = () => {
+    const placePair = () => {
       if (hoveredId === null) {
-        setTooltipPos(null);
+        setPairPos(null);
         return;
       }
       const node = cardRefs.current.get(hoveredId);
       if (node === undefined) {
-        setTooltipPos(null);
+        setPairPos(null);
         return;
       }
       const rect = node.getBoundingClientRect();
@@ -4123,21 +4238,18 @@ function HandStrip({
       if (scroller !== null) {
         const box = scroller.getBoundingClientRect();
         if (rect.bottom < box.top || rect.top > box.bottom) {
-          setTooltipPos(null);
+          setPairPos(null);
           return;
         }
       }
-      setTooltipPos({
-        left: Math.min(rect.left, window.innerWidth - 272),
-        bottom: window.innerHeight - rect.top + 8,
-      });
+      setPairPos(placeTooltipPair(rect, INSPECT_TOOLTIP_WIDTH_PX, INSPECT_TOOLTIP_GAP_PX, "above"));
     };
 
-    placeTooltip();
+    placePair();
     const scroller = scrollerRef.current;
     if (scroller === null) return;
-    scroller.addEventListener("scroll", placeTooltip, { passive: true });
-    return () => scroller.removeEventListener("scroll", placeTooltip);
+    scroller.addEventListener("scroll", placePair, { passive: true });
+    return () => scroller.removeEventListener("scroll", placePair);
   }, [hoveredId, hand.length]);
 
   useEffect(() => {
@@ -4253,30 +4365,45 @@ function HandStrip({
       </div>
 
       {hoveredDef !== undefined &&
-        tooltipPos !== null &&
+        pairPos !== null &&
         createPortal(
-          <div
-            className="pointer-events-none fixed z-[60] w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
-            style={{ left: tooltipPos.left, bottom: tooltipPos.bottom }}
-            role="tooltip"
-          >
-            <p className="text-sm font-medium text-stone-100">{hoveredDef.name}</p>
-            <p className="mt-1 text-xs text-stone-400">
-              {hoveredDef.variableEnergy === true ? "? (1+)" : hoveredDef.energyCost} Energy
-            </p>
-            <div className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-              <p>{formatTypeLine(hoveredDef)}</p>
-              <p className="mt-0.5">{formatForgeLine(hoveredDef.forge)}</p>
-              <div
-                className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
-                role="separator"
-                aria-hidden
-              />
-              {formatEffectRegion(hoveredDef).map((line) => (
-                <p key={line}>{line}</p>
-              ))}
+          <>
+            <div
+              className="pointer-events-none fixed z-[60] w-64 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
+              style={fixedTooltipPairStyle(pairPos, "primary")}
+              role="tooltip"
+            >
+              <p className="text-sm font-medium text-stone-100">{hoveredDef.name}</p>
+              <p className="mt-1 text-xs text-stone-400">
+                {hoveredDef.variableEnergy === true ? "? (1+)" : hoveredDef.energyCost} Energy
+              </p>
+              <div className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+                <p>
+                  <KeywordRichText text={formatTypeLine(hoveredDef)} />
+                </p>
+                <p className="mt-0.5">
+                  <KeywordRichText text={formatForgeLine(hoveredDef.forge)} />
+                </p>
+                <div
+                  className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
+                  role="separator"
+                  aria-hidden
+                />
+                {formatEffectRegion(hoveredDef).map((line) => (
+                  <p key={line}>
+                    <KeywordRichText text={line} />
+                  </p>
+                ))}
+              </div>
             </div>
-          </div>,
+            <div
+              className="pointer-events-none fixed z-[60] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              style={fixedTooltipPairStyle(pairPos, "secondary")}
+              role="tooltip"
+            >
+              <KeywordRemindersTooltip print={tacticPrintText(hoveredDef)} />
+            </div>
+          </>,
           document.body,
         )}
     </section>
