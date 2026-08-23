@@ -7,6 +7,8 @@ alwaysApply: true
 
 [`docs/RULEBOOK.md`](docs/RULEBOOK.md) is how the game **currently plays**.
 It is not the bible (design canon) and not `OPEN_DESIGN.md` (unsettled questions).
+Print vocabulary is [`docs/KEYWORDS.md`](docs/KEYWORDS.md) — the Rules tab
+shows both.
 
 ## Must update in the same change
 
@@ -19,8 +21,13 @@ Examples that **require** a rulebook edit: new/changed phase, Energy pass,
 absorb vs spend, attack fuel, chain windows, prevent order, draw rate,
 loadout caps, win condition.
 
-Examples that **do not**: a new card using existing effects; UI/store/PeerJS;
-metrics; parked print in `DEFERRED_CATALOGUE.md` with no engine behavior.
+Examples that **do not**: a new card using existing effects (still update
+`docs/KEYWORDS.md` if you add or rename a keyword); UI/store/PeerJS except the
+Rules tab rendering of the rulebook/glossary; metrics; parked print in
+`DEFERRED_CATALOGUE.md` with no engine behavior.
+
+If you add a token, operator, or physics keyword, edit `docs/KEYWORDS.md` in
+that same change (`.cursor/rules/keywords.mdc`).
 
 If the rule is still `OPEN` / `DEFERRED`, do not write it as fact. Point at
 `OPEN_DESIGN.md`. After implementing a `DECIDED` rule, the rulebook is the

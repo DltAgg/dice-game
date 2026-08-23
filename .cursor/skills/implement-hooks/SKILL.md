@@ -17,6 +17,7 @@ filters. Do not invent coupled hook names (`on-ally-attack`,
 Companion skills: [develop-engine](../develop-engine/SKILL.md),
 [standardize-card-effects](../standardize-card-effects/SKILL.md),
 [author-content](../author-content/SKILL.md). Spec: `docs/specs/010-trigger-hooks.md`.
+Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 
 ## Principles
 
@@ -79,7 +80,9 @@ Hook Progress:
 - [ ] 4. Walk equipment + creature standing + ready continuous rituals
 - [ ] 5. Wire proving cards; defer incomplete print honestly
 - [ ] 6. Update `docs/RULEBOOK.md` if the new hook changes player-facing timing
-- [ ] 7. Tests + DoD
+- [ ] 7. Print uses `docs/KEYWORDS.md` (`On deal damage: [Mark 1 Toxin].`); new
+      tokens do not get a new hook name if `On X: [Mark N Y]` already covers them
+- [ ] 8. Tests + DoD
 ```
 
 ### Call sites

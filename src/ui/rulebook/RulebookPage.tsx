@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import keywordsSource from "../../../docs/KEYWORDS.md?raw";
 import rulebookSource from "../../../docs/RULEBOOK.md?raw";
-import { headingSlug, rulebookToc, stripHtmlComments } from "./playerMarkdown.js";
+import { headingSlug, playerRulesMarkdown, rulebookToc } from "./playerMarkdown.js";
 
 function textFromNode(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -14,7 +15,7 @@ function textFromNode(node: ReactNode): string {
 }
 
 export function RulebookPage() {
-  const markdown = stripHtmlComments(rulebookSource);
+  const markdown = playerRulesMarkdown(rulebookSource, keywordsSource);
   const toc = rulebookToc(markdown);
 
   return (
@@ -27,8 +28,9 @@ export function RulebookPage() {
           Rules
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
-          How Dice Skirmish plays today. This is the same living rulebook the
-          engine is kept against — not a second copy of the rules.
+          How Dice Skirmish plays today, including the keyword glossary.
+          This is the same living rulebook the engine is kept against — not a
+          second copy of the rules.
         </p>
         <ol className="mt-6 hidden space-y-1 lg:block">
           {toc.map((entry) => (

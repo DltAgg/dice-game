@@ -367,6 +367,7 @@ Related docs (agents):
 - competitive_dice_game_agent_bible.md — design canon
 - docs/OPEN_DESIGN.md — OPEN / ASSUMED / DECIDED
 - docs/DEFERRED_CATALOGUE.md — unmodelled print
+- docs/KEYWORDS.md — print keywords (appended on the Rules tab)
 - docs/ARCHITECTURE.md — software advance path
 - src/game/model/config.ts — numeric knobs
 - specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill / pack feeding

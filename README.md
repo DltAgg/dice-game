@@ -58,8 +58,9 @@ the DOM, storage, the clock or `Math.random`.
 ## Design questions
 
 How the game currently plays is [`docs/RULEBOOK.md`](./docs/RULEBOOK.md)
-(kept current whenever a rules change affects play). Rules the bible leaves
-unresolved are tracked in
+(kept current whenever a rules change affects play). Print keywords are
+[`docs/KEYWORDS.md`](./docs/KEYWORDS.md) (shown on the Rules tab). Rules the
+bible leaves unresolved are tracked in
 [`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md) rather than being decided in
 code. Anything marked `ASSUMED` is reachable from `GameRulesConfig` or content
 data, so settling a question is a data edit rather than an engine change.

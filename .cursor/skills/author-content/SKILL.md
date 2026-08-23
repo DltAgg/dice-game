@@ -15,6 +15,9 @@ spreadsheets are worksheets, then catalogue entries.
 This skill is the path for **new** ritual / tactic / face cards as well as
 translating print. Design canon: `competitive_dice_game_agent_bible.md`.
 Philosophy and attribute identities: [design.md](design.md).
+Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) — new/edited
+`rulesText` uses `[Mark N X]`, `[Empower N]`, etc. Do not mint Dose/Envenom-style
+verbs for a new token.
 
 ## Choose the catalogue
 
@@ -31,7 +34,8 @@ Types: `src/game/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
 1. **Forge or play, never both** on the same use (bible §19–20). Every hand card
    still *has* a forge region; the player chooses which region to use.
 2. Set structured engine fields **only** when every printed clause is modelled.
-   Keep accurate English `rulesText`. Park gaps in `docs/DEFERRED_CATALOGUE.md`.
+   Write `rulesText` with keywords from [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md)
+   (`On roll: [Mark 1 Toxin].`). Park gaps in `docs/DEFERRED_CATALOGUE.md`.
    Never approximate silently.
 3. Effects are **data** (`EffectDefinition`), never functions. Prefer existing
    members; grow the union only with [develop-engine](../develop-engine/SKILL.md)
@@ -64,7 +68,7 @@ Copy and track:
 ```text
 Card Progress:
 - [ ] 1. Kind + attribute identity + exclusive mechanic (design.md)
-- [ ] 2. Print / rulesText in standard timing English
+- [ ] 2. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
 - [ ] 3. Map clauses → existing effects / hooks OR defer
 - [ ] 4. Author catalogue entry (ids, forge, play region)
 - [ ] 5. Grow engine only if a concrete clause needs it
@@ -86,7 +90,8 @@ Card Progress:
    when that is requested and the 50–60 / ≤4-copies rules still hold.
 8. New cards that only use existing effects do **not** belong in
    `docs/RULEBOOK.md`. If this change needed a new mechanic, engine-developer
-   updates the rulebook in the same engine change.
+   updates the rulebook in the same engine change. New tokens or keywords
+   update `docs/KEYWORDS.md` in the same change.
 9. DoD: `npm run typecheck && npm test && npm run lint` ([`TOOLS.md`](../../../TOOLS.md)).
 
 ## Progressive references

@@ -105,6 +105,9 @@ Martial, Wild, Arcane, Luminar.
 
 ## Existing effects (prefer these)
 
+Print those effects with [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md)
+(`[Mark N Toxin]` not “apply N Toxin markers”). Engine members:
+
 Read `src/game/model/effects.ts` as authority. Today:
 
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,

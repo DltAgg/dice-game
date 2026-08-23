@@ -28,9 +28,6 @@ pack feeding until `[Feed]` ships) stay spelled. The meaning is the same.
 Anyone may print `[Mark]`. Only Toxin may print `[Mark N Toxin]`. The verb is
 shared; the argument follows attribute exclusives.
 
-Rare unique sequences (Exterminate, Mind Control, Blade Rain) stay spelled
-until a second card needs the same body.
-
 | Layer | What belongs here | Example |
 |---|---|---|
 | **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, Energy, `[Requires]` |

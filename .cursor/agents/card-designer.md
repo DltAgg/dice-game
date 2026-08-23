@@ -29,10 +29,12 @@ creature attacks are not the primary damage source. Design canon:
    - Creatures → `creatures.md`
    - CSV column order (worksheet only) → `csv-tactics.md`
 3. `.cursor/skills/standardize-card-effects/SKILL.md` before writing `rulesText`
-4. Specs `docs/specs/002-card-layer.md`, `003-creature-cards.md`, `004-face-cards.md` as relevant
-5. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
-6. `.cursor/rules/content-catalogues.mdc`
-7. `docs/RULEBOOK.md` for how systems currently play — do not list individual cards there. New mechanics → engine-developer updates the rulebook.
+4. `docs/KEYWORDS.md` — new/edited print uses `[Mark N X]`, `[Empower N]`, etc.
+   Do not mint Dose/Envenom/Brand. New tokens join Mark/Strip.
+5. Specs `docs/specs/002-card-layer.md`, `003-creature-cards.md`, `004-face-cards.md` as relevant
+6. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
+7. `.cursor/rules/content-catalogues.mdc`
+8. `docs/RULEBOOK.md` for how systems currently play — do not list individual cards there. New mechanics → engine-developer updates the rulebook. Keywords → `docs/KEYWORDS.md`.
 
 Check existing members in `src/game/model/effects.ts` and `StandingTrigger` in
 `src/game/model/cards.ts` before declaring a mechanic “new.”
@@ -109,7 +111,7 @@ Existing effects/hooks: wire them yourself via `author-content` +
 ```text
 Card Progress:
 - [ ] 1. Kind + attribute identity + exclusive mechanic (design.md)
-- [ ] 2. Print / rulesText in standard timing English
+- [ ] 2. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
 - [ ] 3. Map clauses → existing effects / hooks OR defer OR engine brief
 - [ ] 4. If new mechanic: engine-developer, then resume
 - [ ] 5. Author catalogue entry (ids, forge, play region)

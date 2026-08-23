@@ -173,6 +173,10 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
 
 ## Print English
 
+- **Keywords.** New and edited print uses [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
+  Timing prefixes + keyword clauses: `On roll: [Empower 1].` `On absorb: [Mark 1 Toxin].`
+  New tokens join `[Mark N X]` / `[Strip N X]` — do not invent Dose / Envenom / Brand.
+  Do not mass-rewrite old catalogue English unless asked.
 - **Holder perspective.** The reader is the player who currently has this
   card on their field. **you** = that player. **opponent** / **enemy** =
   their opponent. If the card is forged, equipped, or handed onto the other
