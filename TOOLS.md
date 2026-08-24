@@ -43,6 +43,7 @@ npm run typecheck && npm test && npm run lint
 | Loadout legality | `src/game/rules/loadout.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 | Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
+| Keyword glossary | `docs/KEYWORDS.md` (update when print vocabulary / tokens change; Rules tab) |
 | Match store | `src/store/matchStore.ts` |
 | Deck store / localStorage | `src/store/deckStore.ts`, `src/decks/` |
 | Match metrics / IndexedDB | `src/metrics/`, `src/ui/metrics/`, `src/store/metricsStore.ts` |

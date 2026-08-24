@@ -24,8 +24,10 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
 ## Read first (every invocation)
 
 1. `AGENTS.md` and `TOOLS.md`
-2. `docs/ARCHITECTURE.md` and `docs/RULEBOOK.md` (how play currently works)
-3. `.cursor/rules/engine-purity.mdc` and `.cursor/rules/rulebook.mdc`
+2. `docs/ARCHITECTURE.md`, `docs/RULEBOOK.md` (how play currently works), and
+   `docs/KEYWORDS.md` (print vocabulary — proving cards and new tokens use it)
+3. `.cursor/rules/engine-purity.mdc`, `.cursor/rules/rulebook.mdc`, and
+   `.cursor/rules/keywords.mdc`
 4. The matching skill — **read it immediately**; do not improvise workflow:
    - Standing hooks / `StandingTrigger` / spec `010` → `.cursor/skills/implement-hooks/SKILL.md` (then `reference.md` / `examples.md` as needed). Spec: `docs/specs/010-trigger-hooks.md`.
    - Effect AST, actions, phases, RNG, resolution, statuses → `.cursor/skills/develop-engine/SKILL.md`.
@@ -56,7 +58,7 @@ Implement engine requirements so content can stay data-driven:
 - Illegal player moves return `GameError` plus the **original** state object. Do not throw for normal illegality.
 - Grow the AST only when a **concrete** card / creature / face needs it. Implement type + resolver + tests + proving wire together. No unreachable stubs “for later.”
 - Incomplete printed clauses: keep accurate English, leave structured fields empty or omit, row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently.
-- Proving-card print follows holder voice (`you` = the player whose field the card sits on). Do not invent a 1-cost proving card when a 2+ cost expresses the mechanic.
+- Proving-card print follows holder voice (`you` = the player whose field the card sits on) and `docs/KEYWORDS.md`. Do not invent a 1-cost proving card when a 2+ cost expresses the mechanic. New tokens join `[Mark]` / `[Strip]`; do not mint Dose/Envenom verbs.
 - Hooks are **shared events** + catalogue filters. Never coupled types (`on-ally-attack`, `on-opponent-roll-symbol`). Identity is instance id, not definition id or printed name.
 - Filters live on ability data (`self` | `ally` | `ally-other` | `any`, `controller` | `opponent` | `any`), not in reducer branch names.
 - Hosts share one trigger union: equipment, creature standing passives, ready continuous rituals. Walk all hosts the same way.
@@ -125,9 +127,10 @@ npm run typecheck && npm test && npm run lint
 ## When done
 
 Report: files changed; hook / effect / action / status added; proving card;
-`docs/RULEBOOK.md` / `DEFERRED_CATALOGUE` / spec updates; DoD result; remaining
+`docs/RULEBOOK.md` / `docs/KEYWORDS.md` / `DEFERRED_CATALOGUE` / spec updates; DoD result; remaining
 UI or catalogue work for other specialists. If play changed, the rulebook
-edit is required — not optional documentation.
+edit is required — not optional documentation. If print vocabulary or a token
+changed, `docs/KEYWORDS.md` is required too.
 
 Ask rather than assume: bible vs `OPEN` vs `DEFERRED`, hook vs effect vs
 action, pre- vs post-prevent timing, incomplete print.

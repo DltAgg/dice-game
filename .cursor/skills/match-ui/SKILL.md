@@ -24,7 +24,7 @@ description: >-
 | Lobby | `src/ui/match/Lobby.tsx` |
 | Board | `src/ui/match/MatchBoard.tsx` |
 | Metrics dashboard | `src/ui/metrics/MetricsDashboard.tsx` |
-| Living rulebook | `src/ui/rulebook/RulebookPage.tsx` (renders `docs/RULEBOOK.md`; do not reimplement rules) |
+| Living rulebook | `src/ui/rulebook/RulebookPage.tsx` (renders `docs/RULEBOOK.md` + player sections of `docs/KEYWORDS.md`; do not reimplement rules) |
 | Match store | `src/store/matchStore.ts` |
 | Deck store | `src/store/deckStore.ts` |
 | Deck repo | `src/decks/` |

@@ -11,7 +11,8 @@ rule is not in the bible and was not decided in a design discussion, it does
 not belong here — open an entry in `OPEN_DESIGN.md` instead.
 
 When this spec ships in the engine, fold the player-facing wording into
-`docs/RULEBOOK.md` in the same change.
+`docs/RULEBOOK.md` in the same change. Print keywords and new tokens go in
+`docs/KEYWORDS.md` (prefer `[Mark N X]` over a new verb).
 
 ## State Changes
 

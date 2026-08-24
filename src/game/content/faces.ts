@@ -209,7 +209,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     name: "Rending Claw",
     kind: "synthetic",
     symbol: "wild",
-    rulesText: "On roll: a targeted enemy creature loses 3 [Shield].",
+    rulesText: "On roll: [Strip 3 Shield].",
     onRoll: [{ type: "remove-shield", amount: 3, target: { kind: "most-shielded-enemy" } }],
     onAbsorb: [],
     maxOverloads: 3,
@@ -220,7 +220,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     name: "Crush",
     kind: "synthetic",
     symbol: "martial",
-    rulesText: "On roll: the next attack this turn deals +1 damage.",
+    rulesText: "On roll: [Empower 1].",
     onRoll: [{ type: "next-attack-bonus", amount: 1 }],
     onAbsorb: [],
     maxOverloads: 3,
@@ -244,10 +244,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
-      "Cannot be included on opening dice.\n" +
-      "On roll: your opponent draws 1 card. Retain this die.\n" +
-      "This face cannot be replaced by forging.\n" +
-      "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
+      "Cannot be included on opening dice.\nOn roll: opponent [Draw 1]. [Retain].\nThis face cannot be replaced by forging.\nActivated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
     onRoll: [
       { type: "draw-cards", amount: 1, player: "opponent" },
       { type: "retain-die" },
@@ -268,10 +265,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     kind: "synthetic",
     symbol: "corruption",
     rulesText:
-      "Cannot be included on opening dice.\n" +
-      "On roll: put 1 pestilence counter on this face. At 2 pestilence counters: remove them and forge 1 Pestilent Plague onto an adjacent slot of this die.\n" +
-      "Cannot be replaced by forging for 4 of this die's owner's turns. Whenever a Pestilent Plague is forged onto this die, reset the remaining lock to 4 on every Pestilent Plague on this die.\n" +
-      "Activated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
+      "Cannot be included on opening dice.\nOn roll: [Mark 1 Pestilence]. At 2 Pestilence: remove them and forge 1 Pestilent Plague onto an adjacent slot of this die.\nCannot be replaced by forging for 4 of this die's owner's turns. Whenever a Pestilent Plague is forged onto this die, reset the remaining lock to 4 on every Pestilent Plague on this die.\nActivated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
     onRoll: [{ type: "add-pestilence-counter" }],
     onAbsorb: [],
     maxOverloads: 2,
@@ -290,16 +284,14 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     INSIGHT_RUNE,
     "Insight Rune",
     "arcane",
-    "On roll: draw 1 card.\n" +
-      "On absorb: look at the top 2 cards of your deck; put one into your hand and the other on the bottom.",
+    "On roll: [Draw 1].\nOn absorb: [Insight 2].",
     { onRoll: [{ type: "draw-cards", amount: 1 }], onAbsorb: [{ type: "look-top-deck", amount: 2 }] },
   ),
   namedSynthetic(
     CONVERSION_RUNE,
     "Conversion Rune",
     "arcane",
-    "On roll: you may convert this Arcane symbol into any Natural symbol.\n" +
-      "On absorb: gain 1 Energy.",
+    "On roll: you may [Convert 1] this Arcane into any Natural.\nOn absorb: [Gain 1 Energy].",
     {
       onRoll: [{ type: "convert-symbols", amount: 1, sourceOnly: true }],
       onAbsorb: [{ type: "gain-energy", amount: 1 }],
@@ -309,8 +301,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     RESONANCE_RUNE,
     "Resonance Rune",
     "arcane",
-    "On roll: if there is another Arcane symbol in the Pool, gain 1 additional Energy.\n" +
-      "On absorb: the next Arcane symbol used this turn may be treated as any attribute.",
+    "On roll: if there is another Arcane symbol in the Pool, [Gain 1 Energy].\nOn absorb: [Resonance].",
     {
       onRoll: [
         {
@@ -326,8 +317,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     VITAL_SPARK,
     "Vital Spark",
     "luminar",
-    "On roll: heal 1 on an allied creature.\n" +
-      "On absorb: prevent 1 damage that would be dealt to this creature this turn.",
+    "On roll: [Heal 1] on an allied creature.\nOn absorb: [Prevent 1] this creature.",
     {
       onRoll: [{ type: "heal", amount: 1, target: { kind: "most-damaged-ally" } }],
       onAbsorb: [
@@ -339,16 +329,14 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     AEGIS,
     "Aegis",
     "luminar",
-    "On roll: generate 1 Shield.\n" +
-      "On absorb: redirect up to 2 damage that would be dealt to another allied creature to this creature.",
+    "On roll: [Generate 1 Shield].\nOn absorb: redirect up to 2 damage that would be dealt to another allied creature to this creature.",
     { onRoll: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }], onAbsorb: [{ type: "arm-redirect-damage", amount: 2, target: { kind: "source-creature" } }] },
   ),
   namedSynthetic(
     REVELATION,
     "Revelation",
     "luminar",
-    "On roll: generate 1 Luminar.\n" +
-      "On absorb: heal 2 on a creature that has less than half its Life remaining.",
+    "On roll: [Generate 1 Luminar].\nOn absorb: [Heal 2] on a creature that has less than half its Life remaining.",
     {
       onRoll: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
       onAbsorb: [{ type: "heal", amount: 2, target: { kind: "choose-ally-damage-over-half" } }],
@@ -358,8 +346,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     INSTINCT,
     "Instinct",
     "wild",
-    "On roll: an allied creature's next attack deals +1 damage.\n" +
-      "On absorb: this creature may perform a Basic Attack if it has not attacked this turn.",
+    "On roll: [Empower 1] on an allied creature.\nOn absorb: this creature may perform a Basic Attack if it has not attacked this turn.",
     {
       onRoll: [
         { type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } },
@@ -371,8 +358,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     PRIMORDIAL_FURY,
     "Primordial Fury",
     "wild",
-    "On roll: if an allied creature has attacked this turn, gain 1 Energy.\n" +
-      "On absorb: this creature's next Basic Attack deals +1 damage.",
+    "On roll: if an allied creature has attacked this turn, [Gain 1 Energy].\nOn absorb: [Empower 1] this creature's next Basic Attack.",
     {
       onRoll: [
         {
@@ -388,8 +374,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     PACK,
     "Pack",
     "wild",
-    "On roll: if you control another adjacent creature, generate 1 additional Wild symbol in the Pool.\n" +
-      "On absorb: another allied creature's next attack deals +1 damage.",
+    "On roll: if you control another adjacent creature, [Generate 1 Wild].\nOn absorb: [Empower 1] on another allied creature.",
     {
       onRoll: [
         {
@@ -423,8 +408,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     COMMAND,
     "Command",
     "martial",
-    "On roll: reposition an allied creature 1 space.\n" +
-      "On absorb: remove 1 Shield from an enemy creature.",
+    "On roll: [Reposition].\nOn absorb: [Strip 1 Shield].",
     {
       onRoll: [{ type: "reposition-creature", target: { kind: "choose-ally" } }],
       onAbsorb: [
@@ -436,8 +420,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     IMPACT,
     "Impact",
     "martial",
-    "On roll: the next attack this turn deals +1 damage.\n" +
-      "On absorb: this creature's next attack deals +2 damage.",
+    "On roll: [Empower 1].\nOn absorb: [Empower 2] this creature.",
     {
       onRoll: [{ type: "next-attack-bonus", amount: 1 }],
       onAbsorb: [{ type: "next-attack-bonus", amount: 2 }],
@@ -447,8 +430,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     FORMATION,
     "Formation",
     "martial",
-    "On roll: if this creature is on the frontline, gain 1 Energy.\n" +
-      "On absorb: another allied frontline creature gains 1 Shield.",
+    "On roll: if this creature is on the frontline, [Gain 1 Energy].\nOn absorb: [Mark 1 Shield] another allied frontline creature.",
     {
       onRoll: [
         {
@@ -470,8 +452,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     VENOM,
     "Venom",
     "toxin",
-    "On roll: apply 1 Toxin marker to an enemy creature.\n" +
-      "On absorb: the target creature takes +1 damage the next time it takes damage.",
+    "On roll: [Mark 1 Toxin].\nOn absorb: the target creature takes +1 damage the next time it takes damage.",
     {
       onRoll: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
       onAbsorb: [
@@ -483,8 +464,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     SPORES,
     "Spores",
     "toxin",
-    "On roll: if an enemy creature already has Toxin, apply 1 additional marker.\n" +
-      "On absorb: heal 1 on an allied creature that has Toxin.",
+    "On roll: if an enemy creature already has Toxin, [Mark 1 Toxin].\nOn absorb: [Heal 1] on an allied creature that has Toxin.",
     {
       onRoll: [
         {
@@ -500,8 +480,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     ADAPTIVE_TOXIN,
     "Adaptive Toxin",
     "toxin",
-    "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\n" +
-      "On absorb: remove any number of markers from an enemy creature; for each marker removed, deal 1 damage.",
+    "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb: [Strip any Toxin]. [Strike equal].",
     {
       onRoll: [
         {
@@ -522,8 +501,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     STAIN,
     "Stain",
     "corruption",
-    "On roll: put 1 Corruption marker on an opposing synthetic face.\n" +
-      "On absorb: choose an opposing Corrupted face; it cannot be used as a resource this turn.",
+    "On roll: [Mark 1 Corruption].\nOn absorb: choose an opposing Corrupted face; it cannot be used as a resource this turn.",
     {
       onRoll: [{ type: "add-corruption-marker", amount: 1 }],
       onAbsorb: [{ type: "lock-corrupted-face-resource" }],
@@ -533,8 +511,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     INFECTION,
     "Infection",
     "corruption",
-    "On roll: if the opponent has a Corrupted face, put 1 Corruption marker on another face of the same die.\n" +
-      "On absorb: the opponent loses 1 unspent Energy.",
+    "On roll: if the opponent has a Corrupted face, [Mark 1 Corruption] on another face of the same die.\nOn absorb: [Lose 1 Energy].",
     {
       onRoll: [{ type: "spread-corruption-marker" }],
       onAbsorb: [{ type: "lose-energy", amount: 1, player: "opponent" }],
@@ -555,8 +532,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     BLIGHT,
     "Blight",
     "corruption",
-    "On roll: generate 1 Corruption.\n" +
-      "On absorb: you choose 1 Ritual your opponent controls and destroy it.",
+    "On roll: [Generate 1 Corruption].\nOn absorb: [Destroy Ritual].",
     {
       onRoll: [{ type: "generate-symbol", symbol: "corruption", amount: 1 }],
       onAbsorb: [{ type: "destroy-ritual", target: { kind: "choose-opponent-ritual" } }],
@@ -566,8 +542,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     HEXBRAND,
     "Hexbrand",
     "corruption",
-    "On roll: you choose an enemy creature; that creature discards 1 attribute token.\n" +
-      "On absorb: you choose an enemy creature and destroy 1 Equipment on it.",
+    "On roll: you choose an enemy creature; that creature discards 1 attribute token.\nOn absorb: [Destroy Equipment].",
     {
       onRoll: [
         { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
@@ -579,8 +554,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     CANKER,
     "Canker",
     "corruption",
-    "On roll: put 1 Corruption marker on an opposing synthetic face.\n" +
-      "On absorb: forge 1 synthetic Corruption face on the opponent's die.",
+    "On roll: [Mark 1 Corruption].\nOn absorb: [Forge 1 Synthetic Corruption] on the opponent's die.",
     {
       onRoll: [{ type: "add-corruption-marker", amount: 1 }],
       onAbsorb: [
@@ -598,8 +572,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     GEAR,
     "Gear",
     "mechanical",
-    "On roll: if you have another Synthetic symbol in the Pool, gain 1 Energy.\n" +
-      "On absorb: the next face you install this turn costs 1 Energy less.",
+    "On roll: if you have another Synthetic symbol in the Pool, [Gain 1 Energy].\nOn absorb: [Discount 1] forge.",
     {
       onRoll: [
         {
@@ -626,8 +599,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     OVERCHARGE,
     "Overcharge",
     "mechanical",
-    "On roll: you may gain 1 additional Energy; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\n" +
-      "On absorb: the next face effect you resolve this turn is resolved twice.",
+    "On roll: you may gain 1 additional Energy; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\nOn absorb: [Double].",
     {
       onRoll: [{ type: "optional-overcharge-energy", amount: 1 }],
       onAbsorb: [{ type: "arm-resolve-next-face-effect-twice" }],
@@ -637,7 +609,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     FLYWHEEL,
     "Flywheel",
     "mechanical",
-    "On roll: gain 1 Energy.\nOn absorb: generate 1 Shield.",
+    "On roll: [Gain 1 Energy].\nOn absorb: [Generate 1 Shield].",
     {
       onRoll: [{ type: "gain-energy", amount: 1 }],
       onAbsorb: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }],
@@ -647,7 +619,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     PISTON,
     "Piston",
     "mechanical",
-    "On roll: generate Mechanical.\nOn absorb: gain 1 Energy.",
+    "On roll: [Generate 1 Mechanical].\nOn absorb: [Gain 1 Energy].",
     {
       onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
       onAbsorb: [{ type: "gain-energy", amount: 1 }],
@@ -657,8 +629,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     SHADOW_ECHO,
     "Shadow Echo",
     "darkness",
-    "On roll: you may discard a card; if you do, draw a card.\n" +
-      "On absorb: return a card that costs 2 or less from your discard pile to your hand.",
+    "On roll: you may [Discard 1]; if you do, [Draw 1].\nOn absorb: [Recall 1] that costs 2 or less.",
     {
       onRoll: [
         { type: "discard-cards", amount: 1, optional: true, then: [{ type: "draw-cards", amount: 1 }] },
@@ -670,8 +641,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     DRAIN,
     "Drain",
     "darkness",
-    "On roll: your opponent loses 1 Energy; you do not gain that Energy.\n" +
-      "On absorb: transfer 1 Energy from the opponent's reserve to yours.",
+    "On roll: [Lose 1 Energy]; you do not gain that Energy.\nOn absorb: [Move 1 Energy].",
     {
       onRoll: [{ type: "lose-energy", amount: 1, player: "opponent" }],
       onAbsorb: [{ type: "transfer-energy", amount: 1 }],
@@ -681,8 +651,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     SACRIFICE,
     "Sacrifice",
     "darkness",
-    "On roll: discard a card; if you do, gain 2 Energy.\n" +
-      "On absorb: discard a card to deal 2 damage to a creature.",
+    "On roll: [Discard 1]; if you do, [Gain 2 Energy].\nOn absorb: [Discard 1] to [Strike 2].",
     {
       onRoll: [
         { type: "discard-cards", amount: 1, then: [{ type: "gain-energy", amount: 2 }] },
@@ -700,8 +669,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     NIGHTWELL,
     "Nightwell",
     "darkness",
-    "On roll: generate 1 Darkness.\n" +
-      "On absorb: a chosen enemy creature discards 1 attribute token.",
+    "On roll: [Generate 1 Darkness].\nOn absorb: a chosen enemy creature discards 1 attribute token.",
     {
       onRoll: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
       onAbsorb: [
@@ -713,7 +681,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     RUNEFLARE,
     "Runeflare",
     "arcane",
-    "On roll: deal 1 damage to a chosen enemy.\n" + "On absorb: draw 1 card.",
+    "On roll: [Strike 1].\nOn absorb: [Draw 1].",
     {
       onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
       onAbsorb: [{ type: "draw-cards", amount: 1 }],
@@ -723,8 +691,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     WARHORN,
     "Warhorn",
     "martial",
-    "On roll: generate 1 Martial.\n" +
-      "On absorb: the next attack this turn deals +1 damage.",
+    "On roll: [Generate 1 Martial].\nOn absorb: [Empower 1].",
     {
       onRoll: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
       onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
@@ -734,8 +701,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     CLEAVING_STRIKE,
     "Cleaving Strike",
     "martial",
-    "On roll: an enemy creature with the most Shield loses 2 Shield.\n" +
-      "On absorb: the next attack this turn deals +1 damage.",
+    "On roll: [Strip 2 Shield].\nOn absorb: [Empower 1].",
     {
       onRoll: [{ type: "remove-shield", amount: 2, target: { kind: "most-shielded-enemy" } }],
       onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
@@ -745,8 +711,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     BLOODSCENT,
     "Bloodscent",
     "wild",
-    "On roll: the next attack this turn deals +1 damage.\n" +
-      "On absorb: generate 1 Wild.",
+    "On roll: [Empower 1].\nOn absorb: [Generate 1 Wild].",
     {
       onRoll: [{ type: "next-attack-bonus", amount: 1 }],
       onAbsorb: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
@@ -756,8 +721,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     GORE,
     "Gore",
     "wild",
-    "On roll: deal 1 damage to a chosen enemy.\n" +
-      "On absorb: the next attack this turn deals +1 damage.",
+    "On roll: [Strike 1].\nOn absorb: [Empower 1].",
     {
       onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
       onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
@@ -767,8 +731,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     NEEDLE,
     "Needle",
     "toxin",
-    "On roll: the next attack this turn deals +1 damage.\n" +
-      "On absorb: apply 1 Toxin marker to a chosen enemy.",
+    "On roll: [Empower 1].\nOn absorb: [Mark 1 Toxin].",
     {
       onRoll: [{ type: "next-attack-bonus", amount: 1 }],
       onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
@@ -778,8 +741,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     SEEP,
     "Seep",
     "toxin",
-    "On roll: generate 1 Toxin.\n" +
-      "On absorb: all attacks this turn apply 1 Toxin marker.",
+    "On roll: [Generate 1 Toxin].\nOn absorb: [Mark 1 Toxin on attacks].",
     {
       onRoll: [{ type: "generate-symbol", symbol: "toxin", amount: 1 }],
       onAbsorb: [{ type: "arm-attack-toxin", amount: 1 }],
@@ -789,8 +751,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     MARROW_ROT,
     "Marrow Rot",
     "toxin",
-    "On roll: apply 1 Toxin marker to a chosen enemy.\n" +
-      "On absorb: apply 1 Toxin marker to a chosen enemy that already has Toxin.",
+    "On roll: [Mark 1 Toxin].\nOn absorb: [Mark 1 Toxin] a chosen enemy that already has Toxin.",
     {
       onRoll: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
       onAbsorb: [
@@ -806,8 +767,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     CINDER,
     "Cinder",
     "corruption",
-    "On roll: deal 1 damage to a chosen enemy.\n" +
-      "On absorb: apply 1 Toxin marker to a chosen enemy.",
+    "On roll: [Strike 1].\nOn absorb: [Mark 1 Toxin].",
     {
       onRoll: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
       onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
@@ -817,8 +777,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     WASTING_BRAND,
     "Wasting Brand",
     "corruption",
-    "On roll: deal 1 damage to your creature with the most damage.\n" +
-      "On absorb: apply 1 Toxin marker to your creature with the most damage.",
+    "On roll: [Strike 1] your creature with the most damage.\nOn absorb: [Mark 1 Toxin] your creature with the most damage.",
     {
       onRoll: [{ type: "damage", amount: 1, target: { kind: "most-damaged-ally" } }],
       onAbsorb: [{ type: "apply-toxin", amount: 1, target: { kind: "most-damaged-ally" } }],

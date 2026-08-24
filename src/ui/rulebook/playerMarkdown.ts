@@ -3,6 +3,11 @@ export function stripHtmlComments(markdown: string): string {
   return markdown.replace(/<!--[\s\S]*?-->/g, "").replace(/\n{3,}/g, "\n\n").trim();
 }
 
+/** Player Rules tab: living rulebook plus the keyword glossary. */
+export function playerRulesMarkdown(rulebook: string, keywords: string): string {
+  return `${stripHtmlComments(rulebook)}\n\n---\n\n${stripHtmlComments(keywords)}`;
+}
+
 export function headingSlug(text: string): string {
   return text
     .toLowerCase()

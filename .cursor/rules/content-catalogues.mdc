@@ -14,13 +14,17 @@ Author definitions as TypeScript data in:
 
 Rules:
 
-- `rulesText` / print fields are English authority for the UI.
+- `rulesText` / print fields are player-facing authority for the UI and use
+  [`docs/KEYWORDS.md`](docs/KEYWORDS.md): `On roll: [Mark 1 Toxin].`
+  Prefer `[Mark N X]` / `[Strip N X]` over a new verb. Unique one-offs stay
+  spelled until a second card needs the same body.
 - Structured regions (`effect`, `equipment`, `overload`, `ritual`, attack `effect`, face `onRoll`) only when every clause is modelled.
 - Ids: `card-<kebab>`, `creature-<kebab>`, `face-natural|synthetic|untyped-<kebab>`, `attack-<creature>-<kebab>`.
 - `equipment` / `overload` are main `CardType` values and must match their regions (and vice versa).
 - Rituals use main `type: "ritual"` with ritual subtypes (`instant` / `continuous` / `reaction`) and must have a `ritual` region.
 - Update `docs/specs/002|003|004-*.md` and `docs/DEFERRED_CATALOGUE.md` when print coverage changes.
-- Dual-timing faces use `On roll:` / `On absorb:` print; see `.cursor/skills/standardize-card-effects/`.
+- Dual-timing faces use `On roll:` / `On absorb:` print plus keyword clauses;
+  see `.cursor/skills/standardize-card-effects/` and `docs/KEYWORDS.md`.
 - Synthetic faces are **named specials only**. Never author blank generics
   (`face-synthetic-martial`, `face-synthetic-corruption`, Forged Martial, …).
 - Follow `.cursor/skills/author-content/SKILL.md` for full workflows and templates.

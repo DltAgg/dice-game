@@ -32,6 +32,8 @@ Display `GameState`. Dispatch intents. Let `advance()` decide.
    - Online host authority → `docs/specs/007-peerjs.md`
 5. Existing UI before inventing layout: `src/ui/match/MatchBoard.tsx`,
    `Lobby.tsx`, `src/ui/decks/DeckBuilder.tsx`, `src/app/App.tsx`
+6. Rules tab: `src/ui/rulebook/RulebookPage.tsx` renders `docs/RULEBOOK.md` plus
+   player sections of `docs/KEYWORDS.md`. Do not fork a second glossary in React.
 
 Preserve the established visual language (felt, stone, accent CSS variables,
 shell tabs). Do not restyle the first viewport into a generic dashboard.

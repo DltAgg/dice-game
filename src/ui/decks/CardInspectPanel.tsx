@@ -12,6 +12,8 @@ import {
 import { UI_CONFIG } from "@/ui/config";
 import { FaceCard } from "@/ui/cards/FaceCard";
 import { TacticCard } from "@/ui/cards/TacticCard";
+import { KeywordRemindersSection, KeywordRichText } from "@/ui/keywords/KeywordReminders";
+import { facePrintText, tacticPrintText } from "@/ui/keywords/reminders";
 
 export type InspectSubject =
   | { readonly kind: "tactic"; readonly card: CardDefinition }
@@ -116,11 +118,13 @@ function TacticDossier({ card }: { card: CardDefinition }) {
               key={line}
               className={line.startsWith("[") ? "font-semibold text-amber-100/90" : undefined}
             >
-              {line}
+              <KeywordRichText text={line} />
             </p>
           ))}
         </div>
       </section>
+
+      <KeywordRemindersSection print={tacticPrintText(card)} />
     </div>
   );
 }
@@ -169,12 +173,18 @@ function FaceDossier({ face }: { face: FaceCardDefinition }) {
         </h4>
         <div className="space-y-1 rounded border border-stone-800/80 bg-black/30 px-3 py-2 text-sm leading-relaxed text-stone-200">
           {face.rulesText.length > 0 ? (
-            face.rulesText.split("\n").map((line) => <p key={line}>{line}</p>)
+            face.rulesText.split("\n").map((line) => (
+              <p key={line}>
+                <KeywordRichText text={line} />
+              </p>
+            ))
           ) : (
             <p className="text-stone-500">None (identity / footer-only face).</p>
           )}
         </div>
       </section>
+
+      <KeywordRemindersSection print={facePrintText(face)} />
     </div>
   );
 }

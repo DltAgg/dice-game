@@ -12,9 +12,10 @@ description: >-
 
 # Standardize card texts & triggers
 
-Turn free-form print into **timing-prefixed English** + **data effects** on the
-right hook. Use for **new cards** and for **refactoring** existing catalogue
-entries. Never invent silent approximations.
+Turn free-form print into **timing-prefixed keyword English** + **data effects**
+on the right hook. Use for **new cards** and for **refactoring** existing
+catalogue entries. Never invent silent approximations. New/edited `rulesText`
+follows [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 
 Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape),
 [develop-engine](../develop-engine/SKILL.md) (new `EffectDefinition` / hooks).
@@ -34,8 +35,8 @@ selects / who acts” ambiguous.
 ### Faces / overloads
 
 ```text
-On roll: <clause>.
-On absorb: <clause>.
+On roll: [Empower 1].
+On absorb: [Mark 1 Toxin].
 ```
 
 ### Standing triggers (equipment, creature passives, continuous rituals)
@@ -120,15 +121,18 @@ Prefer members already in `src/game/model/effects.ts` and selectors already in
 
 | Print fragment | Prefer |
 |---|---|
-| Deal N / heal N | `damage` / `heal` + target |
-| Gain Energy | `gain-energy` |
-| Generate [Attr] | `generate-symbol` |
-| Draw / discard | `draw-cards` / `discard-cards` |
-| Next attack +N | `next-attack-bonus` |
-| Apply toxin | `apply-toxin` |
-| Strip shields | `remove-shield` |
-| Swap with frontline ally | `swap-positions` + `choose-allied-frontline` |
-| Reposition ally 1 space | `reposition-creature` |
+| `[Strike N]` / Deal N | `damage` + target |
+| `[Heal N]` | `heal` |
+| `[Gain N Energy]` | `gain-energy` |
+| `[Generate N X]` | `generate-symbol` |
+| `[Draw N]` / `[Discard N]` | `draw-cards` / `discard-cards` |
+| `[Empower N]` | `next-attack-bonus` |
+| `[Mark N Toxin]` | `apply-toxin` |
+| `[Mark N Toxin on attacks]` | `arm-attack-toxin` |
+| `[Mark N Shield]` | `grant-shield` |
+| `[Strip N Shield]` | `remove-shield` |
+| `[Swap]` with frontline ally | `swap-positions` + `choose-allied-frontline` |
+| `[Reposition]` | `reposition-creature` |
 | Auto-pick damaged ally | `{ kind: "most-damaged-ally" }` |
 | Player picks enemy | `{ kind: "choose-enemy" }` |
 
@@ -175,8 +179,8 @@ namedSynthetic(
   EXAMPLE_FACE,
   "Example Face",
   "wild",
-  "On roll: gain 1 Energy.\n" +
-    "On absorb: this creature's next attack deals +1 damage.",
+  "On roll: [Gain 1 Energy].\n" +
+    "On absorb: [Empower 1].",
 );
 // When wiring:
 // onRoll: [{ type: "gain-energy", amount: 1 }],

@@ -11,6 +11,7 @@ alwaysApply: true
 - Effects and abilities are data (discriminated unions), never functions.
 - Incomplete printed clauses → `docs/DEFERRED_CATALOGUE.md`, not approximate silent effects.
 - Player-facing how-it-plays: `docs/RULEBOOK.md`. Update it in the same change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
+- Print / token / mechanic keywords: `docs/KEYWORDS.md` (`.cursor/rules/keywords.mdc`). New and edited print uses the glossary; new tokens join `[Mark]` / `[Strip]`, they do not get a new verb.
 - DoD: `npm run typecheck && npm test && npm run lint`.
 - Commit / push only when the user asks.
 - Print voice is the holder (`you` = the player whose field the card sits on; `opponent` = their opponent, including after a hand-off).

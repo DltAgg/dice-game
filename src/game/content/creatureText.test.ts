@@ -86,9 +86,9 @@ describe("English creature printing", () => {
       kind: "basic",
       requires: { martial: 2 },
       range: false,
-      rulesText: "Deal 3 damage.",
+      rulesText: "[Strike 3].",
     };
-    expect(formatAttackLine(attack)).toBe("Heavy Axe: Deal 3 damage.");
+    expect(formatAttackLine(attack)).toBe("Heavy Axe: [Strike 3].");
   });
 
   it("prints attack costs as Attr + Attr", () => {

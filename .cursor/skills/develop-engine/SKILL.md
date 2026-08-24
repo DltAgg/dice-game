@@ -16,7 +16,10 @@ description: >-
 3. **Effects are data** — extend `src/game/model/effects.ts`, never attach functions.
 4. **Intent actions** — players declare choices (`PLAY_CARD`, `ATTACK`, …); amounts and legality are derived by the host/engine.
 5. **Failures** — return `GameError` + original state; do not throw for illegal moves.
-6. **Proving cards** — print uses holder voice; do not default new proving cards to Energy 1 when 2+ is enough (bible §34.5).
+6. **Proving cards** — print uses holder voice and
+   [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md); do not default new proving
+   cards to Energy 1 when 2+ is enough (bible §34.5). A new token joins Mark/Strip
+   X — do not add Dose-style verbs or a generic `mark-token` AST just for print.
 
 ## Typical change: new effect kind
 
@@ -27,7 +30,9 @@ description: >-
 5. Remove or shrink the matching row in `docs/DEFERRED_CATALOGUE.md`.
 6. Update `docs/RULEBOOK.md` if players would notice different timing,
    legality, costs, phases, zones, victory, or loadout constraints.
-7. Run DoD: `npm run typecheck && npm test && npm run lint`.
+7. Update `docs/KEYWORDS.md` if you add a token, operator, or physics keyword
+   (prefer `[Mark N X]` over a new verb). Proving-card print uses the glossary.
+8. Run DoD: `npm run typecheck && npm test && npm run lint`.
 
 Do **not** add unreachable effect kinds “for later.”
 

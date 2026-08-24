@@ -1,4 +1,5 @@
-node_modules/
+# Name match (no trailing slash): directories and worktree symlinks.
+node_modules
 dist/
 coverage/
 .DS_Store

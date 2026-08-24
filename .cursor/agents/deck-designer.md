@@ -30,7 +30,9 @@ strategic vocabulary: three creatures, a tactics deck, and a face deck
 7. Builtin snapshots: `src/decks/prototype.ts`
 8. `docs/RULEBOOK.md` §2 for player-facing loadout wording. If legality
    numbers or opening-die caps change, that is an engine/`loadout.ts` change
-   and **must** update the rulebook in the same change.
+   and **must** update the rulebook in the same change. Card print vocabulary
+   is `docs/KEYWORDS.md` (do not treat Dose/Envenom-style names as constructed
+   identity).
 
 If a card’s print is incomplete, read `docs/DEFERRED_CATALOGUE.md` — do not
 treat unwired clauses as live constructed tools.
