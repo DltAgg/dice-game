@@ -108,6 +108,7 @@ export const VIRULENT_RITE: CardId = asCardId("card-virulent-rite");
 export const SIPHON_SIGIL: CardId = asCardId("card-siphon-sigil");
 export const DISPEL_CIRCLE: CardId = asCardId("card-dispel-circle");
 export const SEAL_THE_RITE: CardId = asCardId("card-seal-the-rite");
+export const COUNTERGLYPH: CardId = asCardId("card-counterglyph");
 export const FADE: CardId = asCardId("card-fade");
 export const UMBRAL_BOLT: CardId = asCardId("card-umbral-bolt");
 export const RIFT_COLLAPSE: CardId = asCardId("card-rift-collapse");
@@ -1555,6 +1556,20 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Negate Ritual].",
     effect: {
       effects: [{ type: "negate-ritual" }],
+    },
+  }),
+  card({
+    id: COUNTERGLYPH,
+    name: "Counterglyph",
+    energyCost: 0,
+    type: "reaction",
+    subtypes: [],
+    attribute: "arcane",
+    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    rulesText: "[Negate Instant].",
+    effect: {
+      requires: { arcane: 1 },
+      effects: [{ type: "negate-card", cardTypes: ["instant"] }],
     },
   }),
   card({

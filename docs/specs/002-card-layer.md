@@ -325,14 +325,16 @@ that verb.
 ### Control interaction (authored)
 
 Playtest gap-fill for Control (Arcane / Darkness): token strip, ritual destroy,
-cheaper tactic negate, ritual-only negate. Fully wired. Copies live in builtin
-Control.
+cheaper tactic negate, ritual-only negate, symbol-taxed Instant negate. Fully
+wired. Copies of the earlier package live in builtin Control; Counterglyph is
+catalogue-only until deck-designer places it.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 3 | Siphon Sigil | Instant / Arcane | 1 Natural Arcane, your die | A chosen enemy creature discards 2 attribute tokens. |
 | 4 | Dispel Circle | Instant / Arcane | 1 Natural Arcane, your die | [Destroy Ritual]. |
 | 3 | Seal the Rite | Reaction / Arcane | 1 Synthetic Arcane, your die | [Negate Ritual]. |
+| 0 | Counterglyph | Reaction / Arcane | 1 Synthetic Arcane, your die | *Requires: Arcane.* [Negate Instant]. |
 | 3 | Fade | Reaction / Darkness | 1 Synthetic Darkness, your die | [Negate]. |
 
 ### Control two-color rework (authored)
