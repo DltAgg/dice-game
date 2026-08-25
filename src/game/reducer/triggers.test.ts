@@ -414,11 +414,8 @@ describe("on-absorb overloads", () => {
     rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
 
     const after = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-    expect(after.players[P1]?.attributePool.wild ?? 0).toBeGreaterThanOrEqual(1);
-    const generated = usableSymbols(after, P1).filter(
-      (s) => s.symbol === "wild" && s.sourceDieId === null,
-    );
-    expect(generated.length).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.wild ?? 0).toBeGreaterThanOrEqual(2);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "wild")).toHaveLength(0);
   });
 });
 
@@ -604,10 +601,10 @@ describe("on-discard continuous ritual", () => {
       }),
     );
     const darkness = usableSymbols(discarded, P1).filter((s) => s.symbol === "darkness");
-    expect(darkness.length).toBeGreaterThanOrEqual(1);
+    expect(darkness).toHaveLength(0);
     const ritual = discarded.cards[ritualId];
     expect(ritual?.ritualOrientation).toBe("ready");
-    expect(discarded.players[P1]?.attributePool).toEqual({ arcane: 1, darkness: 1 });
+    expect(discarded.players[P1]?.attributePool).toEqual({ arcane: 1, darkness: 2 });
   });
 });
 
@@ -635,8 +632,8 @@ describe("Void Summoner on-absorb Natural", () => {
     state = withDie(state, dieIdOf(state, P1, 1), { retained: true, rolledSlotIndex: 4 });
     state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P1 }));
     expect(state.players[P1]?.attributePool.martial ?? 0).toBeGreaterThanOrEqual(1);
-    const arcane = usableSymbols(state, P1).filter((s) => s.symbol === "arcane");
-    expect(arcane.length).toBeGreaterThanOrEqual(1);
+    expect(state.players[P1]?.attributePool.arcane ?? 0).toBeGreaterThanOrEqual(1);
+    expect(usableSymbols(state, P1).filter((s) => s.symbol === "arcane")).toHaveLength(0);
   });
 
   it("does not generate Arcane when a creature absorbs an untyped Shield face", () => {
@@ -710,19 +707,23 @@ describe("Lens Choir on-absorb Luminar once per turn", () => {
         symbolId: firstPip.id,
       }),
     );
-    const generated = usableSymbols(afterFirst, P1).filter((s) => s.symbol === "luminar");
-    expect(generated).toHaveLength(1);
-    const offspring = generated[0];
-    if (offspring === undefined) throw new Error("generated");
+    expect(afterFirst.players[P1]?.attributePool.luminar ?? 0).toBe(2);
+    expect(usableSymbols(afterFirst, P1).filter((s) => s.symbol === "luminar")).toHaveLength(0);
+
+    const secondWave = withSymbols(afterFirst, P1, ["luminar"], "available");
+    const secondPip = usableSymbols(secondWave, P1).find((s) => s.symbol === "luminar");
+    if (secondPip === undefined) throw new Error("second luminar");
 
     const afterSecond = expectOk(
-      advance(afterFirst, {
+      advance(secondWave, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
         creatureId: choir,
-        symbolId: offspring.id,
+        symbolId: secondPip.id,
       }),
     );
+    // Once-per-turn: bank only, no second generate.
+    expect(afterSecond.players[P1]?.attributePool.luminar ?? 0).toBe(3);
     expect(usableSymbols(afterSecond, P1).filter((s) => s.symbol === "luminar")).toHaveLength(0);
   });
 });
@@ -801,8 +802,9 @@ describe("Hunter's Collar on-absorb Wild", () => {
     const after = expectOk(
       advance(primed, { type: "ABSORB_SYMBOL", playerId: P1, creatureId: bearerId, symbolId }),
     );
-    const martial = usableSymbols(after, P1).filter((s) => s.symbol === "martial");
-    expect(martial.length).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.wild ?? 0).toBe(1);
+    expect(after.players[P1]?.attributePool.martial ?? 0).toBe(1);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "martial")).toHaveLength(0);
   });
 });
 
@@ -876,9 +878,8 @@ describe("control creature attack riders", () => {
     );
 
     expect(after.creatures[targetId]?.damage).toBe(2);
-    expect(after.players[P1]?.attributePool.darkness).toBeUndefined();
-    const darkness = usableSymbols(after, P1).filter((s) => s.symbol === "darkness");
-    expect(darkness.length).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.darkness ?? 0).toBe(1);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "darkness")).toHaveLength(0);
   });
 
   it("Void Summoner Rupture deals 2 and generates Arcane", () => {
@@ -898,8 +899,8 @@ describe("control creature attack riders", () => {
     );
 
     expect(after.creatures[targetId]?.damage).toBe(2);
-    const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
-    expect(arcane.length).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.arcane ?? 0).toBeGreaterThanOrEqual(1);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "arcane")).toHaveLength(0);
   });
 });
 

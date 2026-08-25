@@ -183,7 +183,7 @@ These are not effect replacements.
 | `[Requires: …]` | Extra pool-symbol cost |
 | `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
 | `[Spend: …]` | Optional burn from the owner’s attribute pile on ritual activate |
-| Absorb | Bank an attribute into your pile (rolled usable attributes auto-bank after on-roll), or grant Shield onto a creature |
+| Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | Energy | Shared marker |
 | `On roll:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…” |

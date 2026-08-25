@@ -53,11 +53,9 @@ export const availableSymbolCounts = (
 
 /**
  * Chooses which specific symbols pay a requirement, or null when it cannot be
- * paid. Ids are sorted so the same state and requirement always select the same
- * symbols, which is what makes a replay reproduce a match exactly.
- *
- * Only engine abilities and cards pay this way. Attacks are funded from the
- * attacker's own absorbed tokens; see `rules/tokens.ts`.
+ * paid. Prefer `canPay` / pile checks for `[Requires]` — usable attributes now
+ * auto-bank into `attributePool` (spec `016`). This planner still matches the
+ * turn pool for any rare leftover unabsorbed pips (e.g. locked faces).
  */
 export function planConsumption(
   state: GameState,
@@ -85,11 +83,24 @@ export function planConsumption(
   return chosen;
 }
 
+/**
+ * Whether `[Requires]` can be paid from the owner's attribute pile (plus
+ * requirement wildcards for shortfall).
+ */
 export const canPay = (
   state: GameState,
   playerId: PlayerId,
   requirement: SymbolRequirement,
-): boolean => planConsumption(state, playerId, requirement) !== null;
+): boolean => {
+  const pile = state.players[playerId]?.attributePool ?? {};
+  let shortfall = 0;
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const held = pile[attribute] ?? 0;
+    if (held < count) shortfall += count - held;
+  }
+  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
+  return shortfall <= wildcards;
+};
 
 /** How many requirement pips are unpaid after matching the pool exactly. */
 export function requirementShortfall(

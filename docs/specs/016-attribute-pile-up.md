@@ -19,19 +19,20 @@ attribute pip into that pile (or granting Shield onto a creature).
    persist across turns until spent or removed by effects.
 2. **Turn symbol pool.** Rolling creates `SymbolInstance`s. After on-roll
    effects resolve, **usable rolled attributes auto-bank** into the pile.
-   Shield, locked/unusable pips, and effect-generated (`available`) symbols
-   remain in the turn pool. Unbanked pool symbols expire at end of turn.
-3. **Absorb (attribute).** During actions, the turn player may still absorb an
-   unabsorbed **attribute** pip from the turn pool into **their** pile (mainly
-   effect-generated leftovers). No creature target.
+   Effect `createSymbol` for usable attributes also auto-banks immediately.
+   Shield, locked/unusable pips remain in the turn pool. Unbanked pool
+   symbols expire at end of turn.
+3. **Absorb (attribute).** Manual absorb remains for any rare leftover
+   unabsorbed attribute pip. No creature target.
 4. **Absorb (Shield).** Absorbing Shield still targets a **living owned
    creature** and grants Shield immediately. Absorbing Shield is not absorbing
    a Natural.
 5. **On absorb (faces / standing).** Fires when an attribute pip is banked
-   into the pile (including auto-bank from roll). Standing `on-absorb` filters
-   stay; absorber relation is the banking player / their field as appropriate.
-6. **`[Requires]`.** Still spends from the **unabsorbed turn pool**. A pip
-   cannot both be absorbed into the pile and spent for Requires.
+   into the pile (roll auto-bank, effect auto-bank, or manual). Standing
+   `on-absorb` filters stay; absorber relation is the banking player / their
+   field as appropriate.
+6. **`[Requires]`.** Spends from the **attribute pile** (wildcards may cover
+   shortfall).
 7. **Attacks.** `requires` is checked against the attacker’s owner’s
    `attributePool` (not spent). `discards` burns from that pile. Same-turn
    absorb **can** enable an attack (pile updates immediately — no EOT delay).

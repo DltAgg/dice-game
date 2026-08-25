@@ -7,6 +7,8 @@ import type { DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { ritualsOf } from "../rules/cards.js";
 import { usableSymbols } from "../rules/symbols.js";
+import { createDraft } from "./draft.js";
+import { createSymbol, drainResolution } from "./resolution.js";
 import {
   creatureIdAt,
   expectOk,
@@ -72,6 +74,15 @@ describe("016 attribute pile-up", () => {
     expect(
       usableSymbols(after, P1).filter((s) => s.symbol === "martial" && s.status === "rolled"),
     ).toHaveLength(0);
+  });
+
+  it("auto-banks effect-generated attributes into the pile", () => {
+    const state = withPhase(newMatch(), "actions");
+    const draft = createDraft(state);
+    createSymbol(draft, P1, "martial", "available", "effect");
+    drainResolution(draft);
+    expect(draft.players[P1]?.attributePool.martial).toBe(1);
+    expect(usableSymbols(draft, P1).filter((s) => s.symbol === "martial")).toHaveLength(0);
   });
 
   it("banks absorb into the pile immediately", () => {
@@ -184,13 +195,17 @@ describe("016 attribute pile-up", () => {
     expect(after.players[P1]?.attributePool).toEqual({});
   });
 
-  it("Requires vs absorb mutual exclusion on turn pool", () => {
-    let state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial"]);
+  it("Requires spends from the attribute pile", () => {
+    let state = withAttributePool(withPhase(newMatch(), "actions"), P1, { martial: 1 });
+    expect(state.players[P1]?.attributePool.martial).toBe(1);
+    // Manual bank of a leftover pool pip still works for tests that inject via withSymbols.
+    state = withSymbols(state, P1, ["wild"]);
     const pip = Object.values(state.symbols)[0]!;
     state = expectOk(
       advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
     );
     expect(usableSymbols(state, P1).some((s) => s.id === pip.id)).toBe(false);
+    expect(state.players[P1]?.attributePool).toEqual({ martial: 1, wild: 1 });
   });
 
   it("EOT: pile persists; unabsorbed symbols expire", () => {

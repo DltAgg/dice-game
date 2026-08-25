@@ -99,15 +99,15 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    face and still generate that symbol. On-roll face / overload effects fire
    as part of the roll. **Usable attribute** pips from the roll then
    **auto-bank** into your attribute pile (On absorb fires). **Shield** and
-   locked/unusable pips stay in the turn pool. Then the turn enters **actions**.
-2. **Actions.** In any order you may: bank leftover effect-generated attribute
-   pips into your pile, absorb Shield onto a creature, spend unabsorbed
-   symbols for `[Requires]`, attack, play, forge, activate a **ready** ritual,
-   retain/release dice, or end the turn.
+   locked/unusable pips stay in the turn pool. Effect-generated attributes
+   also auto-bank when created. Then the turn enters **actions**.
+2. **Actions.** In any order you may: absorb Shield onto a creature, spend
+   attributes from your **pile** for `[Requires]`, attack, play, forge,
+   activate a **ready** ritual, retain/release dice, or end the turn.
 
-There is no dedicated absorb phase and no leftover-rolled flip. `rolled` (die
-pip) and `available` (effect-generated) are provenance only; both are the
-same unabsorbed pool for spend / Shield / leftover attribute bank.
+There is no dedicated absorb phase and no leftover-rolled flip. The turn
+pool mainly holds **Shield** (and locked/unusable pips). Attributes live in
+your pile.
 
 Ready rituals may activate during **actions**, not during roll.
 
@@ -123,30 +123,22 @@ Every face is attribute-typed except **Shield** (untyped). Attributes are
 Martial, Wild, Toxin, Arcane, Luminar, Mechanical, Corruption, Darkness.
 Costs never require Shield.
 
-Each **effect-generated** attribute symbol (and any rolled attribute that did
-not auto-bank, e.g. locked) is a **one-time** choice while it remains in the
-turn pool:
+**Rolled and effect-generated usable attributes** auto-bank into your pile
+(On absorb fires). Locked/unusable pips and **Shield** stay in the turn pool.
 
-```text
-bank    → into your attribute pile   → attack fuel / ritual Active-when / Spend
-resolve → stays in the pool this turn → [Requires] spends and engine effects
-```
+`[Requires]` spends from your **attribute pile** (requirement wildcards may
+cover shortfall). Unabsorbed turn-pool symbols expire at end of turn. There is
+no “store a symbol.” The only way to keep a **die result** across a roll is
+**retain**.
 
-**Rolled usable attributes** skip that choice: they bank automatically after
-on-roll effects resolve. A symbol cannot both be banked and spent for
-Requires. Unabsorbed symbols expire at end of turn. There is no “store a
-symbol.” The only way to keep a **die result** across a roll is **retain**.
-
-Shield absorb still names a creature (below). Effect-generated attributes may
-still be banked manually during actions.
+Shield absorb still names a creature (below).
 
 ---
 
 ## 7. Absorption payoff
 
-- **Attribute** pips from a **roll** bank into **your attribute pile**
-  automatically after on-roll resolution (usable pips only). Effect-generated
-  attributes bank when you absorb them during actions. The pile persists
+- **Attribute** pips from a **roll** or **effect** bank into **your attribute
+  pile** automatically (usable pips only; On absorb fires). The pile persists
   across turns until spent or removed. Same-turn attack after banking is legal.
 - **Shield** pips grant **immediately** on absorb onto a living owned creature
   (1 Shield prevents 1 damage, once). Shields stack and persist until spent.
@@ -176,8 +168,8 @@ whoever holds the marker.
 - Spending **past** zero ends the turn after the current action/chain
   finishes. Landing **exactly** on zero does not.
 - Playing **and** forging pay the printed header Energy cost.
-- Engine abilities cost **pool symbols**. Attacks cost **attribute-pile**
-  fuel (`requires` check; optional `discards` burn), not Energy.
+- Engine abilities / `[Requires]` and attacks cost **attribute-pile** fuel
+  (`requires` check; optional `discards` / Requires spend burn), not Energy.
 - Discounts apply to play / ritual place / equip / overload, **not** forge.
   Minimum cost after discount is 0.
 - Printed Energy 1 on cards is exceptional; 1-Energy plays should mainly
@@ -209,8 +201,8 @@ During actions (or as a legal reaction — §15):
 | Overload | Attaches to a **face card** (shared definition), not a physical die slot. Capacity is per face card. |
 | Ritual | Enters the engine area (see §10). |
 
-`[Requires]` spends unabsorbed pool symbols. Those symbols cannot also be
-absorbed.
+`[Requires]` spends from your **attribute pile** (wildcards may cover
+shortfall).
 
 Discard-from-hand effects **draw first**, then the player **names** which
 cards to discard. The engine never auto-discards the front of the hand.

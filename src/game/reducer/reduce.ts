@@ -68,13 +68,12 @@ import {
 } from "../rules/faces.js";
 import {
   isUnabsorbedPoolSymbol,
-  planConsumption,
-  requirementShortfall,
 } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
 import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
-import { addToken, holdsTokens, isLegalTokenDiscardPick, removeTokens } from "../rules/tokens.js";
+import { holdsTokens, isLegalTokenDiscardPick, removeTokens } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
+import { bankAttributeIntoPile } from "./attributeBank.js";
 import {
   buildAttackLink,
   buildEffectLink,
@@ -1549,63 +1548,6 @@ function installFacesOnDie(
 
 /* ------------------------------------------------------------ absorb --- */
 
-/**
- * Bank a usable attribute pip into the owner's pile and queue On absorb.
- * Does not drain the resolution stack (caller drains). Returns false if the
- * pip was not eligible (already gone, Shield, locked, wrong owner).
- */
-function bankAttributeIntoPile(
-  draft: Draft,
-  playerId: PlayerId,
-  symbolId: SymbolInstanceId,
-  creatureId: CreatureId | null = null,
-): boolean {
-  const symbol = draft.symbols[symbolId];
-  if (symbol === undefined) return false;
-  if (symbol.ownerId !== playerId) return false;
-  if (!isUnabsorbedPoolSymbol(symbol)) return false;
-  if (!isAttributeSymbol(symbol.symbol)) return false;
-  if (symbol.usable === false) return false;
-
-  draft.symbols[symbolId] = {
-    ...symbol,
-    status: "absorbed",
-    absorbedByCreatureId: null,
-  };
-
-  const player = draft.players[playerId];
-  if (player === undefined) return false;
-  patchPlayer(draft, playerId, {
-    attributePool: addToken(player.attributePool, symbol.symbol),
-  });
-  refreshRitualOrientations(draft, playerId);
-
-  emit(draft, {
-    type: "symbol-absorbed",
-    symbolId,
-    playerId,
-    creatureId: null,
-  });
-  emit(draft, {
-    type: "attribute-token-gained",
-    playerId,
-    attribute: symbol.symbol,
-    amount: 1,
-  });
-
-  queueAbsorbTriggers(
-    draft,
-    playerId,
-    creatureId !== null
-      ? { kind: "creature", id: creatureId }
-      : { kind: "player", id: playerId },
-    symbol.symbol,
-    symbol.sourceDieId,
-    creatureId,
-  );
-  return true;
-}
-
 /** After ROLL_DICE onRoll resolves: bank remaining rolled attributes. */
 function bankRolledAttributeIfEligible(
   draft: Draft,
@@ -1617,9 +1559,9 @@ function bankRolledAttributeIfEligible(
 
 /**
  * Spec `016`: attribute pips bank into the player's pile immediately (no
- * creature target). Rolled attributes also auto-bank at the end of ROLL_DICE.
- * Manual absorb remains for effect-generated pool attributes and for Shield
- * (creature target). Face / standing On absorb fire on bank (or shield grant).
+ * creature target). Rolled attributes auto-bank at the end of ROLL_DICE;
+ * effect-generated attributes auto-bank in `createSymbol`. Manual absorb
+ * remains for any leftover pool attributes and for Shield (creature target).
  */
 function absorbSymbol(
   draft: Draft,
@@ -2683,29 +2625,39 @@ function payCardRequires(
   playerId: PlayerId,
   requirement: SymbolRequirement,
 ): GameError | null {
-  const planned = planConsumption(draft, playerId, requirement);
-  if (planned !== null) {
-    consumeSymbols(draft, planned, "card-requires");
-    return null;
-  }
-  const shortfall = requirementShortfall(draft, playerId, requirement);
+  // Spec `016`: attributes live in the pile; [Requires] spends from the pile
+  // (wildcards cover shortfall). Turn-pool attribute pips no longer exist for
+  // usable generated/rolled attributes.
+  const player = draft.players[playerId];
+  if (player === undefined) return "UNKNOWN_ENTITY";
+  const pile = player.attributePool;
   const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
-  if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
-  consumeRequirementWildcards(draft, playerId, shortfall);
-  return null;
-}
-
-function consumeSymbols(
-  draft: Draft,
-  symbolIds: readonly SymbolInstanceId[],
-  reason: "card-requires",
-): void {
-  for (const id of symbolIds) {
-    const symbol = draft.symbols[id];
-    if (symbol === undefined) continue;
-    draft.symbols[id] = { ...symbol, status: "consumed" };
+  let shortfall = 0;
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const held = pile[attribute] ?? 0;
+    if (held < count) shortfall += count - held;
   }
-  emit(draft, { type: "symbols-consumed", symbolIds: [...symbolIds], reason });
+  if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
+
+  const spend: Partial<Record<keyof AttributeTokens, number>> = {};
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const held = pile[attribute] ?? 0;
+    const fromPile = Math.min(held, count);
+    if (fromPile > 0) spend[attribute] = fromPile;
+  }
+  if (Object.keys(spend).length > 0) {
+    patchPlayer(draft, playerId, {
+      attributePool: removeTokens(pile, spend),
+    });
+    refreshRitualOrientations(draft, playerId);
+    emit(draft, {
+      type: "attribute-tokens-discarded",
+      playerId,
+      discarded: spend,
+    });
+  }
+  if (shortfall > 0) consumeRequirementWildcards(draft, playerId, shortfall);
+  return null;
 }
 
 function markDiscountMatchesSpent(draft: Draft, matches: readonly DiscountMatch[]): void {

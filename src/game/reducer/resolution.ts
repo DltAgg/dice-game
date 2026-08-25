@@ -21,6 +21,7 @@ import {
 import type { FaceKind } from "../model/dice.js";
 import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
+import { isAttributeSymbol } from "../model/symbols.js";
 import { isSyntheticOnlyAttribute } from "../model/attributes.js";
 import {
   forgeExceedsAttributeLimit,
@@ -45,6 +46,7 @@ import {
   totalTokens,
 } from "../rules/tokens.js";
 import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
+import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
 import {
@@ -1666,6 +1668,11 @@ export function createSymbol(
     ...(options?.usable === false ? { usable: false } : {}),
   };
   emit(draft, { type: "symbol-generated", symbolId: id, symbol, ownerId, source });
+  // Spec `016`: usable attribute pips auto-bank (rolled path banks after on-roll;
+  // effect-generated bank immediately so they never sit in the turn pool).
+  if (options?.usable !== false && isAttributeSymbol(symbol)) {
+    bankAttributeIntoPile(draft, ownerId, id, null);
+  }
   return id;
 }
 

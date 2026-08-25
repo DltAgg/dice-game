@@ -34,7 +34,6 @@ import {
   withHand,
   withAttributePool,
   withPhase,
-  withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
@@ -80,7 +79,7 @@ describe("builtin Control two-color identity", () => {
 
 describe("Umbral Bolt", () => {
   it("deals 3 after choosing an enemy when Darkness is in the pool", () => {
-    const ready = withSymbols(actionsReady([UMBRAL_BOLT]), P1, ["darkness"]);
+    const ready = withAttributePool(actionsReady([UMBRAL_BOLT]), P1, { darkness: 1 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -231,9 +230,8 @@ describe("Gloom Resonance", () => {
       }),
     );
     const afterRoll = rollShowingSlot(overloaded, 0);
-    expect(
-      usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness" && s.sourceDieId === null),
-    ).toHaveLength(2);
+    expect(afterRoll.players[P1]?.attributePool.darkness ?? 0).toBeGreaterThanOrEqual(2);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness")).toHaveLength(0);
   });
 });
 
@@ -316,9 +314,8 @@ describe("Umbral Brand", () => {
 describe("Control faces", () => {
   it("Nightwell generates Darkness on roll", () => {
     const afterRoll = rollShowingSlot(installFace(newMatch(), NIGHTWELL), 0);
-    expect(
-      usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness" && s.sourceDieId === null),
-    ).toHaveLength(1);
+    expect(afterRoll.players[P1]?.attributePool.darkness ?? 0).toBeGreaterThanOrEqual(1);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness")).toHaveLength(0);
   });
 
   it("Runeflare prompts choose-enemy on roll", () => {

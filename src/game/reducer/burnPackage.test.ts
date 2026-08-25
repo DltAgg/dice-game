@@ -18,6 +18,7 @@ import {
   P2,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withSymbols,
   advanceResolvingChain as advance,
@@ -66,7 +67,7 @@ function showingFace(state: GameState, faceCardId: FaceCardId): GameState {
 describe("Concentrate", () => {
   it("applies 2 extra Toxin to a chosen enemy that already has Toxin", () => {
     const enemyId = creatureIdAt(actionsReady([CONCENTRATE]), P2, 0);
-    const ready = withToxin(withSymbols(actionsReady([CONCENTRATE]), P1, ["toxin"]), enemyId, 1);
+    const ready = withToxin(withAttributePool(actionsReady([CONCENTRATE]), P1, { toxin: 1 }), enemyId, 1);
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -85,7 +86,7 @@ describe("Concentrate", () => {
   });
 
   it("whiffs when no enemy has Toxin", () => {
-    const ready = withSymbols(actionsReady([CONCENTRATE]), P1, ["toxin"]);
+    const ready = withAttributePool(actionsReady([CONCENTRATE]), P1, { toxin: 1 });
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",

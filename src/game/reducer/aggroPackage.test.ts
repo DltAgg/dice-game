@@ -50,7 +50,6 @@ import {
   withAttributePool,
   withPhase,
   withShields,
-  withSymbols,
   withTokens,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
@@ -160,7 +159,7 @@ describe("Temper", () => {
 
 describe("Opening Cut", () => {
   it("deals 2 damage after choosing an enemy when Martial is in the pool", () => {
-    const ready = withSymbols(actionsReady([OPENING_CUT]), P1, ["martial"]);
+    const ready = withAttributePool(actionsReady([OPENING_CUT]), P1, { martial: 1 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -231,7 +230,8 @@ describe("Riposte", () => {
     const resolved = resolveOpenChain(riposted);
     expect(resolved.creatures[target]?.damage).toBe(3);
     expect(resolved.attackBonusThisTurn).toEqual({ [P2]: 1 });
-    expect(usableSymbols(resolved, P2).some((symbol) => symbol.symbol === "martial")).toBe(true);
+    expect(resolved.players[P2]?.attributePool.martial ?? 0).toBeGreaterThanOrEqual(1);
+    expect(usableSymbols(resolved, P2).filter((s) => s.symbol === "martial")).toHaveLength(0);
   });
 });
 
@@ -248,6 +248,7 @@ describe("Whetstone", () => {
       }),
     );
     const fueled = withTokens(withPhase(equipped, "actions"), bearerId, { martial: 2 });
+    const before = fueled.players[P1]?.attributePool.martial ?? 0;
     const after = expectOk(
       advance(fueled, {
         type: "ATTACK",
@@ -257,9 +258,8 @@ describe("Whetstone", () => {
         targetId: creatureIdAt(fueled, P2, 0),
       }),
     );
-    const generated = usableSymbols(after, P1).filter((s) => s.symbol === "martial");
-    expect(generated).toHaveLength(1);
-    expect(generated[0]?.sourceDieId).toBeNull();
+    expect(after.players[P1]?.attributePool.martial ?? 0).toBe(before + 1);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "martial")).toHaveLength(0);
   });
 });
 
@@ -299,7 +299,7 @@ describe("Untamed", () => {
 
 describe("Pounce", () => {
   it("grants +2 next-attack on a chosen ally when Wild is in the pool", () => {
-    const ready = withSymbols(actionsReady([POUNCE]), P1, ["wild"]);
+    const ready = withAttributePool(actionsReady([POUNCE]), P1, { wild: 1 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -330,7 +330,8 @@ describe("Pack Surge", () => {
       }),
     );
     expect(after.attackBonusThisTurn[P1]).toBe(1);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "wild")).toHaveLength(1);
+    expect(after.players[P1]?.attributePool.wild ?? 0).toBe(1);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "wild")).toHaveLength(0);
   });
 });
 
@@ -376,7 +377,7 @@ describe("Snarl", () => {
 
 describe("Dose", () => {
   it("applies 2 Toxin after choosing an enemy when Toxin is in the pool", () => {
-    const ready = withSymbols(actionsReady([DOSE]), P1, ["toxin"]);
+    const ready = withAttributePool(actionsReady([DOSE]), P1, { toxin: 1 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -491,11 +492,8 @@ describe("Virulent Rite", () => {
 describe("authored aggro faces", () => {
   it("Warhorn generates Martial on roll and arms next attack on absorb", () => {
     const afterRoll = rollShowingSlot(installFace(newMatch(), WARHORN), 0);
-    const generated = usableSymbols(afterRoll, P1).filter(
-      (s) => s.symbol === "martial" && s.sourceDieId === null,
-    );
-    expect(generated).toHaveLength(1);
-    expectBanked(afterRoll, "martial");
+    expectBanked(afterRoll, "martial", 2);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "martial")).toHaveLength(0);
     expect(afterRoll.attackBonusThisTurn[P1]).toBe(1);
   });
 
@@ -509,8 +507,8 @@ describe("authored aggro faces", () => {
   it("Bloodscent arms next attack on roll and generates Wild on absorb", () => {
     const afterRoll = rollShowingSlot(installFace(newMatch(), BLOODSCENT), 0);
     expect(afterRoll.attackBonusThisTurn[P1]).toBe(1);
-    expectBanked(afterRoll, "wild");
-    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "wild")).toHaveLength(1);
+    expectBanked(afterRoll, "wild", 2);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "wild")).toHaveLength(0);
   });
 
   it("Gore prompts choose-enemy on roll", () => {
@@ -527,10 +525,8 @@ describe("authored aggro faces", () => {
 
   it("Seep generates Toxin on roll and arms attack-toxin on absorb", () => {
     const afterRoll = rollShowingSlot(installFace(newMatch(), SEEP), 0);
-    expect(
-      usableSymbols(afterRoll, P1).filter((s) => s.symbol === "toxin" && s.sourceDieId === null),
-    ).toHaveLength(1);
-    expectBanked(afterRoll, "toxin");
+    expectBanked(afterRoll, "toxin", 2);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "toxin")).toHaveLength(0);
     expect(afterRoll.attackToxinThisTurn[P1]).toBe(1);
   });
 });

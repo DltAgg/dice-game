@@ -21,8 +21,8 @@ import {
   P2,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
-  withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
@@ -117,7 +117,7 @@ describe("Forbidden Heritage stay (cannot-replace-by-forge)", () => {
 
   it("refuses forge-faces over Forbidden Heritage", () => {
     const withFh = installFromPool(
-      withSymbols(actionsReady([RITUAL_OF_CONTAMINATION]), P1, ["corruption"]),
+      withAttributePool(actionsReady([RITUAL_OF_CONTAMINATION]), P1, { corruption: 1 }),
       FORBIDDEN_HERITAGE,
       { dieOwner: P2, faceOwner: P2, slot: 4 },
     );

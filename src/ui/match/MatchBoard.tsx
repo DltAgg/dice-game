@@ -3871,7 +3871,7 @@ function SymbolPool({
   if (symbols.length === 0) {
     return (
       <p className="text-center text-xs uppercase tracking-[0.18em] text-stone-600">
-        No symbols in the pool · rolled attributes bank into your pile
+        No symbols in the pool · attributes auto-bank into your pile
       </p>
     );
   }

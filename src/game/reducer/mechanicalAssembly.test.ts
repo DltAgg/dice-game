@@ -140,11 +140,8 @@ describe("Ratchet", () => {
     );
 
     const after = rollShowingSlot(attached, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
-    const generated = usableSymbols(after, P1).filter(
-      (s) => s.symbol === "mechanical" && s.sourceDieId === null,
-    );
-    expect(generated).toHaveLength(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
   });
 });
 
@@ -242,9 +239,8 @@ describe("Flywheel", () => {
 
     const after = rollShowingSlot(attached, 0);
 
-    expect(
-      usableSymbols(after, P1).filter((s) => s.symbol === "mechanical" && s.sourceDieId === null),
-    ).toHaveLength(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
     expect(
       usableSymbols(after, P1).filter((s) => s.symbol === SHIELD && s.sourceDieId === null),
     ).toHaveLength(1);
@@ -266,10 +262,8 @@ describe("Governor", () => {
     );
 
     const afterRoll = rollShowingSlot(attached, 0);
-    const generated = usableSymbols(afterRoll, P1).filter(
-      (s) => s.symbol === "mechanical" && s.sourceDieId === null,
-    );
-    expect(generated).toHaveLength(1);
+    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
   });
 
   it("refuses a non-Mechanical face", () => {
@@ -295,15 +289,14 @@ describe("Spare Cog", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    const generated = usableSymbols(after, P1).filter((s) => s.symbol === "mechanical");
-    expect(generated).toHaveLength(1);
-    expect(generated[0]?.sourceDieId).toBeNull();
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
   });
 });
 
 describe("Die Press", () => {
   it("pauses to forge 2 Mechanical faces when the pool has Mechanical + Mechanical", () => {
-    const ready = withSymbols(actionsReady([DIE_PRESS]), P1, ["mechanical", "mechanical"]);
+    const ready = withAttributePool(actionsReady([DIE_PRESS]), P1, { mechanical: 2 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -400,12 +393,8 @@ describe("Piston", () => {
   it("generates Mechanical on roll and gains Energy on absorb", () => {
     const seeded = withEnergy(installFace(newMatch(), PISTON), P1, 5);
     const after = rollShowingSlot(seeded, 0);
-    expect(
-      usableSymbols(after, P1).filter(
-        (s) => s.symbol === "mechanical" && s.sourceDieId === null,
-      ),
-    ).toHaveLength(1);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
     expect(after.energy).toEqual({ holderId: P1, value: 6 });
   });
 });
@@ -422,7 +411,8 @@ describe("Mechanical combo wave 2", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
     expect(after.forgeDiscountThisTurn[P1]).toBe(1);
   });
 
@@ -480,10 +470,8 @@ describe("Mechanical combo wave 2", () => {
         symbolId: mechanical.id,
       }),
     );
-    const generated = usableSymbols(after, P1).filter(
-      (s) => s.symbol === "mechanical" && s.sourceDieId === null,
-    );
-    expect(generated).toHaveLength(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
+    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
   });
 
   it("Servomotor generates Mechanical only once per turn (no absorb loop)", () => {
@@ -511,40 +499,41 @@ describe("Mechanical combo wave 2", () => {
         symbolId: mechanical.id,
       }),
     );
-    const generated = usableSymbols(afterFirst, P1).filter(
-      (s) => s.symbol === "mechanical" && s.sourceDieId === null,
+    expect(afterFirst.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
+    expect(usableSymbols(afterFirst, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
+
+    const secondWave = withSymbols(afterFirst, P1, ["mechanical"], "rolled");
+    const secondPip = Object.values(secondWave.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
     );
-    expect(generated).toHaveLength(1);
-    const offspring = generated[0];
-    if (offspring === undefined) throw new Error("generated");
+    if (secondPip === undefined) throw new Error("expected second Mechanical");
 
     const afterSecond = expectOk(
-      advance(afterFirst, {
+      advance(secondWave, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
         creatureId: bearer,
-        symbolId: offspring.id,
+        symbolId: secondPip.id,
       }),
     );
-    expect(
-      usableSymbols(afterSecond, P1).filter((s) => s.symbol === "mechanical"),
-    ).toHaveLength(0);
+    // Once-per-turn: bank only, no second generate.
+    expect(afterSecond.players[P1]?.attributePool.mechanical ?? 0).toBe(3);
+    expect(usableSymbols(afterSecond, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
   });
 
   it("Clockwork generates Mechanical when the controller rolls Mechanical", () => {
     const { state } = placedReadyRitual(CLOCKWORK, { mechanical: 2 });
     const seeded = installFace(state, mechanicalFace);
     const afterRoll = rollShowingSlot(seeded, 0);
-    const generated = usableSymbols(afterRoll, P1).filter(
-      (s) => s.symbol === "mechanical" && s.sourceDieId === null,
-    );
-    expect(generated).toHaveLength(1);
+    // Ritual progress (2) + face bank + Clockwork generate.
+    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(4);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
   });
 
   it("Stamp requires Mechanical and reapplies a rolled die's modifiers", () => {
-    let ready = withSymbols(installFace(actionsReady([STAMP]), mechanicalFace), P1, [
-      "mechanical",
-    ]);
+    let ready = withAttributePool(installFace(actionsReady([STAMP]), mechanicalFace), P1, {
+      mechanical: 1,
+    });
     ready = withPhase(rollShowingSlot(ready, 0), "actions");
     // Extra Mechanical still available for [Requires] after the roll pip is in the pool.
     const after = expectOk(
@@ -560,7 +549,7 @@ describe("Mechanical combo wave 2", () => {
   });
 
   it("Coupling requires Mech×2 and arms resolve-next-face-effect-twice", () => {
-    const ready = withSymbols(actionsReady([COUPLING]), P1, ["mechanical", "mechanical"]);
+    const ready = withAttributePool(actionsReady([COUPLING]), P1, { mechanical: 2 });
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
