@@ -87,24 +87,24 @@ Named specials:
 | Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
 | Conversion Rune | 2 | On roll: convert; On absorb: +Energy | |
 | Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |
-| Vital Spark | 2 | On roll: heal; On absorb: prevent 1 | |
-| Aegis | 2 | On roll: generate Shield; On absorb: redirect | |
+| Vital Spark | 2 | On roll: heal; On absorb: Prevent 1 on choose-ally | Spec `016` pile bank |
+| Aegis | 2 | On roll: generate Shield; On absorb: redirect on choose-ally | Spec `016` |
 | Revelation | 2 | On roll: generate Luminar; On absorb: heal if damage >½ life | |
-| Instinct | 2 | On roll: ally next-attack +1; On absorb: optional actions-window basic | Spec `013` |
-| Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | |
+| Instinct | 2 | On roll: ally Empower 1; On absorb: ally Empower 2 | Spec `016` (optional bonus basic retired) |
+| Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | Spec `016` |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: other ally next-attack +1 | |
-| Pack Share | 2 | On absorb: copy 1 token onto an adjacent allied creature | Spec `015` |
+| Pack Share | 2 | On absorb: Generate 1 Wild | Spec `016` (was pack-feed copy) |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
-| Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | |
-| Formation | 2 | On roll: Energy if controller has FL; On absorb: 1 Shield on another allied FL | |
-| Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 | |
+| Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | Spec `016` |
+| Formation | 2 | On roll: Energy if controller has FL; On absorb: 1 Shield on another allied FL | Spec `016` |
+| Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 on choose-enemy | Spec `016` |
 | Spores | 2 | On roll: extra toxin if already toxined; On absorb: heal toxined ally | |
 | Adaptive Toxin | 2 | Cap toxin receive; strip markers → damage | Spec `013` |
 | Stain | 2 | Corruption marker; lock Corrupted as resource | Spec `013` |
 | Infection | 2 | On roll: spread marker; On absorb: opp loses Energy | Spec `013` |
 | Decay | 2 | Suppress Natural inherent; strip → unusable Corruption | Spec `013` |
 | Blight | 2 | On roll: generate Corruption; On absorb: you destroy 1 Ritual your opponent controls | Catalogue (not builtin Control) |
-| Hexbrand | 2 | On roll: you strip 1 token from an enemy creature; On absorb: you destroy 1 Equipment on an enemy creature | Catalogue (not builtin Control) |
+| Hexbrand | 2 | On roll: strip 1 from chosen enemy controller’s pile; On absorb: destroy Equipment | Catalogue (not builtin Control); Spec `016` |
 | Canker | 2 | On roll: Corruption marker; On absorb: forge 1 named synthetic Corruption special on opponent die | Catalogue (not builtin Control) |
 | Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
 | Catalyst | 2 | Synthetic pool wildcard; copy appeared synthetic onRoll | Spec `013` |
@@ -114,7 +114,7 @@ Named specials:
 | Shadow Echo | 2 | On roll: optional discard→draw; On absorb: GY ≤2 | |
 | Drain | 2 | On roll: opp loses Energy; On absorb: transfer | |
 | Sacrifice | 2 | On roll: discard→2 Energy; On absorb: discard→2 damage | |
-| Nightwell | 2 | On roll: generate Darkness; On absorb: chosen enemy discards 1 token | Control Darkness fuel |
+| Nightwell | 2 | On roll: generate Darkness; On absorb: strip 1 from opp pile (choose enemy) | Control Darkness fuel; Spec `016` |
 | Runeflare | 2 | On roll: 1 damage; On absorb: draw 1 | Control Arcane chip + filter |
 | Warhorn | 2 | On roll: generate Martial; On absorb: next attack +1 | |
 | Cleaving Strike | 2 | On roll: remove 2 Shield; On absorb: next attack +1 | |
@@ -183,7 +183,8 @@ Engine query: `slotCannotBeReplacedByForge` from `src/game/rules/faces.ts`.
 - [x] Echo forge restriction
 - [x] Crush and Rending Claw on-roll effects
 - [x] Modellable CSV / named special On roll / On absorb wired (`011`–`013`)
-- [x] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll, Instinct absorb)
+- [x] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll; Instinct absorb = Empower 2 choose-ally per `016`)
+- [x] Spec `016` Phase 3: On absorb = pile bank (no creature-local absorber)
 - [x] Stay-on-slot (Heritage never-replace; Plague forge-lock + spread at 2)
 
 ## Tests

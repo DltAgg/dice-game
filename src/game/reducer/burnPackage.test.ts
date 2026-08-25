@@ -59,7 +59,7 @@ function showingFace(state: GameState, faceCardId: FaceCardId): GameState {
     dice: { ...state.dice, [dieId]: { ...die, slots } },
   };
   next = withDie(next, dieId, { retained: true, rolledSlotIndex: 0 });
-  next = withDie(next, dieIdOf(next, P1, 1), { retained: true, rolledSlotIndex: 1 });
+  next = withDie(next, dieIdOf(next, P1, 1), { retained: true, rolledSlotIndex: 4 });
   return next;
 }
 
@@ -149,24 +149,12 @@ describe("Ichor Sheath", () => {
         declaredFaceCardId: SEEP,
       }),
     );
-    const rolled = expectOk(advance(withPhase(attached, "roll"), { type: "ROLL_DICE", playerId: P1 }));
-    const toxin = Object.values(rolled.symbols).find(
-      (symbol) => symbol.symbol === "toxin" && symbol.status === "rolled" && symbol.sourceDieId === dieIdOf(rolled),
-    );
-    if (toxin === undefined) throw new Error("expected rolled toxin");
-    const absorberId = creatureIdAt(rolled, P1, 0);
-    const absorbed = expectOk(
-      advance(withPhase(rolled, "actions"), {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: absorberId,
-        symbolId: toxin.id,
-      }),
-    );
-    expect(absorbed.pendingDecision?.type).toBe("choose-creature");
-    const enemyId = creatureIdAt(absorbed, P2, 0);
+    const afterRoll = expectOk(advance(withPhase(attached, "roll"), { type: "ROLL_DICE", playerId: P1 }));
+    expect(afterRoll.players[P1]?.attributePool.toxin ?? 0).toBeGreaterThanOrEqual(1);
+    expect(afterRoll.pendingDecision?.type).toBe("choose-creature");
+    const enemyId = creatureIdAt(afterRoll, P2, 0);
     const after = expectOk(
-      advance(absorbed, {
+      advance(afterRoll, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: enemyId,

@@ -35,6 +35,7 @@ import {
   P2,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withSymbols,
   advanceResolvingChain as advance,
@@ -68,11 +69,11 @@ function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameSt
 function rollShowingSlot(state: GameState, slot: number): GameState {
   let rolled: GameState = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
-  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
-function placedReadyRitual(cardId: CardId, progress: AttributeTokens) {
+function placedReadyRitual(cardId: CardId, _progress: AttributeTokens) {
   const base = actionsReady([cardId]);
   const placed = expectOk(
     advance(base, {
@@ -85,17 +86,20 @@ function placedReadyRitual(cardId: CardId, progress: AttributeTokens) {
   if (ritualId === undefined) throw new Error("test: no ritual");
   return {
     ritualId,
-    state: {
-      ...placed,
-      cards: {
-        ...placed.cards,
-        [ritualId]: {
-          ...placed.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: progress,
+    state: withAttributePool(
+      {
+        ...placed,
+        cards: {
+          ...placed.cards,
+          [ritualId]: {
+            ...placed.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    },
+      P1,
+      _progress,
+    ),
   };
 }
 
@@ -135,21 +139,8 @@ describe("Ratchet", () => {
       }),
     );
 
-    const afterRoll = rollShowingSlot(attached, 0);
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
-    );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: mechanical.id,
-      }),
-    );
-
+    const after = rollShowingSlot(attached, 0);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
     const generated = usableSymbols(after, P1).filter(
       (s) => s.symbol === "mechanical" && s.sourceDieId === null,
     );
@@ -228,22 +219,9 @@ describe("Assembly Line", () => {
 describe("Flywheel", () => {
   it("gains Energy on roll and generates Shield on absorb", () => {
     const seeded = withEnergy(installFace(newMatch(), FLYWHEEL), P1, 5);
-    const afterRoll = rollShowingSlot(seeded, 0);
-    expect(afterRoll.energy).toEqual({ holderId: P1, value: 6 });
-
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
-    );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: mechanical.id,
-      }),
-    );
+    const after = rollShowingSlot(seeded, 0);
+    expect(after.energy).toEqual({ holderId: P1, value: 6 });
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
 
     const shields = usableSymbols(after, P1).filter(
       (s) => s.symbol === SHIELD && s.sourceDieId === null,
@@ -262,20 +240,7 @@ describe("Flywheel", () => {
       }),
     );
 
-    const afterRoll = rollShowingSlot(attached, 0);
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
-    );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: mechanical.id,
-      }),
-    );
+    const after = rollShowingSlot(attached, 0);
 
     expect(
       usableSymbols(after, P1).filter((s) => s.symbol === "mechanical" && s.sourceDieId === null),
@@ -395,55 +360,13 @@ describe("Foundry", () => {
   it("gains Energy when a controller creature absorbs Mechanical", () => {
     const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
     const seeded = withEnergy(installFace(state, mechanicalFace), P1, 5);
-    const afterRoll = rollShowingSlot(seeded, 0);
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
-    );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: mechanical.id,
-      }),
-    );
+    const after = rollShowingSlot(seeded, 0);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(3);
     expect(after.energy).toEqual({ holderId: P1, value: 6 });
   });
 
-  it("gains Energy when an allied ritual absorbs Mechanical", () => {
-    const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
-    const withAssembly = withHand(withEnergy(state, P1, 10), P1, [ASSEMBLY_LINE]);
-    const placed = expectOk(
-      advance(withAssembly, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(withAssembly, P1, 0),
-      }),
-    );
-    const assemblyId = ritualsOf(placed, P1).find((card) => card.cardId === ASSEMBLY_LINE)?.id;
-    if (assemblyId === undefined) throw new Error("test: no Assembly Line");
-    const absorbing = withEnergy(
-      withSymbols(withPhase(placed, "actions"), P1, ["mechanical"], "rolled"),
-      P1,
-      5,
-    );
-    const mechanical = Object.values(absorbing.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("expected Mechanical");
-
-    const after = expectOk(
-      advance(absorbing, {
-        type: "ABSORB_SYMBOL_TO_RITUAL",
-        playerId: P1,
-        cardInstanceId: assemblyId,
-        symbolId: mechanical.id,
-      }),
-    );
-    expect(after.cards[assemblyId]?.ritualProgress).toEqual({ mechanical: 1 });
-    expect(after.energy).toEqual({ holderId: P1, value: 6 });
+  it.skip("gains Energy when an allied ritual absorbs Mechanical", () => {
+    // Parked: ABSORB_SYMBOL_TO_RITUAL removed (spec 016).
   });
 
   it("does not gain Energy when the opponent absorbs Mechanical", () => {
@@ -476,26 +399,13 @@ describe("Foundry", () => {
 describe("Piston", () => {
   it("generates Mechanical on roll and gains Energy on absorb", () => {
     const seeded = withEnergy(installFace(newMatch(), PISTON), P1, 5);
-    const afterRoll = rollShowingSlot(seeded, 0);
+    const after = rollShowingSlot(seeded, 0);
     expect(
-      usableSymbols(afterRoll, P1).filter(
+      usableSymbols(after, P1).filter(
         (s) => s.symbol === "mechanical" && s.sourceDieId === null,
       ),
     ).toHaveLength(1);
-
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
-    );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: mechanical.id,
-      }),
-    );
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
     expect(after.energy).toEqual({ holderId: P1, value: 6 });
   });
 });
@@ -527,31 +437,19 @@ describe("Mechanical combo wave 2", () => {
       }),
     );
     const withExtra = withSymbols(attached, P1, ["luminar"], "available");
-    const afterRoll = rollShowingSlot(withExtra, 0);
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
-    );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
-
-    const afterAbsorb = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: mechanical.id,
-      }),
-    );
-    expect(afterAbsorb.pendingDecision?.type).toBe("copy-pool-symbol");
+    const after = rollShowingSlot(withExtra, 0);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.pendingDecision?.type).toBe("copy-pool-symbol");
   });
 
   it("Camshaft arms forge discount on roll", () => {
-    const ready = installFace(actionsReady([CAMSHAFT]), mechanicalFace);
+    const ready = installFace(actionsReady([CAMSHAFT]), faceIdForSymbol("mechanical"));
     const attached = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredFaceCardId: mechanicalFace,
+        declaredFaceCardId: faceIdForSymbol("mechanical"),
       }),
     );
     const afterRoll = rollShowingSlot(attached, 0);
@@ -568,18 +466,17 @@ describe("Mechanical combo wave 2", () => {
         declaredTargetCreatureId: creatureIdAt(ready, P1, 0),
       }),
     );
-    const seeded = installFace(equipped, mechanicalFace);
-    const afterRoll = rollShowingSlot(seeded, 0);
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
+    // Manual absorb with creatureId keeps equipment `self` absorber filters.
+    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["mechanical"], "rolled");
+    const mechanical = Object.values(withPool.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
     );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
-
+    if (mechanical === undefined) throw new Error("expected Mechanical");
     const after = expectOk(
-      advance(afterRoll, {
+      advance(withPool, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
+        creatureId: creatureIdAt(withPool, P1, 0),
         symbolId: mechanical.id,
       }),
     );
@@ -599,16 +496,15 @@ describe("Mechanical combo wave 2", () => {
         declaredTargetCreatureId: creatureIdAt(ready, P1, 0),
       }),
     );
-    const seeded = installFace(equipped, mechanicalFace);
-    const afterRoll = rollShowingSlot(seeded, 0);
-    const mechanical = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
+    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["mechanical"], "rolled");
+    const mechanical = Object.values(withPool.symbols).find(
+      (s) => s.symbol === "mechanical" && s.status === "rolled",
     );
-    if (mechanical === undefined) throw new Error("expected rolled Mechanical");
+    if (mechanical === undefined) throw new Error("expected Mechanical");
 
-    const bearer = creatureIdAt(afterRoll, P1, 0);
+    const bearer = creatureIdAt(withPool, P1, 0);
     const afterFirst = expectOk(
-      advance(afterRoll, {
+      advance(withPool, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
         creatureId: bearer,

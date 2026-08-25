@@ -67,6 +67,7 @@ card({
   rulesText: "Forge 3 synthetic Corruption faces on one of the opponent's dice.",
   ritual: {
     activeWhen: { arcane: 1, corruption: 2 }, // omit if print has no Active when
+    // spend?: { arcane: 1, corruption: 2 }, // pile burn on activate (often = gate)
     // additionalEnergy?: 3,
     effects: [
       {

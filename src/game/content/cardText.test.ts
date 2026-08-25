@@ -117,6 +117,24 @@ describe("English card printing", () => {
     ]);
   });
 
+  it("prints Spend below Active when when the ritual burns the pile", () => {
+    const card = exampleCard({
+      type: "ritual",
+      subtypes: ["instant"],
+      rulesText: "[Search 2] Instant or Ritual cards.",
+      ritual: {
+        activeWhen: { arcane: 2 },
+        spend: { arcane: 2 },
+        effects: [],
+      },
+    });
+    expect(formatEffectRegion(card)).toEqual([
+      "[Active when: Arcane + Arcane]",
+      "[Spend: Arcane + Arcane]",
+      "[Search 2] Instant or Ritual cards.",
+    ]);
+  });
+
   it("prints a fixed Energy cost", () => {
     expect(formatEnergyCost(exampleCard({ energyCost: 1 }))).toBe("1");
     expect(formatEnergyCost(exampleCard({ energyCost: 3 }))).toBe("3");

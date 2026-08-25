@@ -31,8 +31,11 @@ Toxin / Corruption bodies support builtin Burn (`BURN_SQUAD`).
 | Name | English translation of the Portuguese layout title |
 | HP | Max life |
 | Attribute | Primary attribute icon (header) |
-| Passive | Standing text + `standingAbilities` (`010` / `011`) |
-| Basic Attack | Cost icons + name + `effect` + optional `followUpEffects` |
+| Passive | Standing text + `standingAbilities` (`010` / `011`). Attribute absorb
+  triggers use `absorberRelation: "ally"` so they fire when the **owner banks**
+  into their attribute pile (spec `016`; `self` never matches a player bank). |
+| Basic Attack | Cost icons + name + `effect` + optional `followUpEffects`. `requires` /
+  `discards` read the owner’s **attribute pile**. |
 | Special Attack | Same |
 
 ## Catalogue (Slow game test)
@@ -62,7 +65,7 @@ but is **not** on `CONTROL_SQUAD`.
 
 | Creature | Attr | HP | Passive | Basic | Special |
 |---|---|---|---|---|---|
-| Nightbound Adept | Darkness | 14 | On absorb Darkness, once per turn: chosen enemy discards 1 token | Umbral Touch (D; disc D) 2 dmg + generate Darkness | Eclipse Pulse (A+D; disc D) 2 dmg + opponent loses 1 Energy |
+| Nightbound Adept | Darkness | 14 | On absorb Darkness, once per turn: chosen enemy discards 1 from their attribute pile | Umbral Touch (D; disc D) 2 dmg + generate Darkness | Eclipse Pulse (A+D; disc D) 2 dmg + opponent loses 1 Energy |
 
 On builtin Control (`CONTROL_SQUAD`: Archmage / Nightbound Adept / Void
 Summoner). Attacks stay in the 2-damage + resource-rider band.

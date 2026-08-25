@@ -47,6 +47,7 @@ import {
   resolveOpenChain,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withShields,
   withSymbols,
@@ -84,11 +85,11 @@ function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameSt
 function rollShowingSlot(state: GameState, slot: number): GameState {
   let rolled: GameState = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
-  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
-function placedReadyRitual(cardId: CardId, progress: AttributeTokens) {
+function placedReadyRitual(cardId: CardId, _progress: AttributeTokens) {
   const base = actionsReady([cardId]);
   const placed = expectOk(
     advance(base, {
@@ -101,30 +102,25 @@ function placedReadyRitual(cardId: CardId, progress: AttributeTokens) {
   if (ritualId === undefined) throw new Error("test: no ritual");
   return {
     ritualId,
-    state: {
-      ...placed,
-      cards: {
-        ...placed.cards,
-        [ritualId]: {
-          ...placed.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: progress,
+    state: withAttributePool(
+      {
+        ...placed,
+        cards: {
+          ...placed.cards,
+          [ritualId]: {
+            ...placed.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    },
+      P1,
+      _progress,
+    ),
   };
 }
 
-function rolledSymbol(
-  state: GameState,
-  symbol: "martial" | "wild" | "toxin",
-  dieId: DieId,
-) {
-  const found = Object.values(state.symbols).find(
-    (s) => s.symbol === symbol && s.status === "rolled" && s.sourceDieId === dieId,
-  );
-  if (found === undefined) throw new Error(`expected rolled ${symbol}`);
-  return found;
+function expectBanked(state: GameState, attribute: "martial" | "wild" | "toxin", min = 1): void {
+  expect(state.players[P1]?.attributePool[attribute] ?? 0).toBeGreaterThanOrEqual(min);
 }
 
 describe("Temper", () => {
@@ -452,16 +448,8 @@ describe("Pack Law", () => {
     const { state } = placedReadyRitual(PACK_LAW, { wild: 2 });
     const seeded = installFace(state, faceIdForSymbol("wild"));
     const afterRoll = rollShowingSlot(seeded, 0);
-    const wild = rolledSymbol(afterRoll, "wild", dieIdOf(afterRoll));
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: wild.id,
-      }),
-    );
-    expect(after.attackBonusThisTurn[P1]).toBe(1);
+    expectBanked(afterRoll, "wild");
+    expect(afterRoll.attackBonusThisTurn[P1]).toBe(1);
   });
 });
 
@@ -507,16 +495,8 @@ describe("authored aggro faces", () => {
       (s) => s.symbol === "martial" && s.sourceDieId === null,
     );
     expect(generated).toHaveLength(1);
-    const martial = rolledSymbol(afterRoll, "martial", dieIdOf(afterRoll));
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: martial.id,
-      }),
-    );
-    expect(after.attackBonusThisTurn[P1]).toBe(1);
+    expectBanked(afterRoll, "martial");
+    expect(afterRoll.attackBonusThisTurn[P1]).toBe(1);
   });
 
   it("Cleaving Strike removes 2 Shield from the most-shielded enemy on roll", () => {
@@ -529,16 +509,8 @@ describe("authored aggro faces", () => {
   it("Bloodscent arms next attack on roll and generates Wild on absorb", () => {
     const afterRoll = rollShowingSlot(installFace(newMatch(), BLOODSCENT), 0);
     expect(afterRoll.attackBonusThisTurn[P1]).toBe(1);
-    const wild = rolledSymbol(afterRoll, "wild", dieIdOf(afterRoll));
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: wild.id,
-      }),
-    );
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "wild")).toHaveLength(1);
+    expectBanked(afterRoll, "wild");
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "wild")).toHaveLength(1);
   });
 
   it("Gore prompts choose-enemy on roll", () => {
@@ -549,16 +521,8 @@ describe("authored aggro faces", () => {
   it("Needle prompts choose-enemy toxin on absorb", () => {
     const afterRoll = rollShowingSlot(installFace(newMatch(), NEEDLE), 0);
     expect(afterRoll.attackBonusThisTurn[P1]).toBe(1);
-    const toxin = rolledSymbol(afterRoll, "toxin", dieIdOf(afterRoll));
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: toxin.id,
-      }),
-    );
-    expect(after.pendingDecision?.type).toBe("choose-creature");
+    expectBanked(afterRoll, "toxin");
+    expect(afterRoll.pendingDecision?.type).toBe("choose-creature");
   });
 
   it("Seep generates Toxin on roll and arms attack-toxin on absorb", () => {
@@ -566,15 +530,7 @@ describe("authored aggro faces", () => {
     expect(
       usableSymbols(afterRoll, P1).filter((s) => s.symbol === "toxin" && s.sourceDieId === null),
     ).toHaveLength(1);
-    const toxin = rolledSymbol(afterRoll, "toxin", dieIdOf(afterRoll));
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: toxin.id,
-      }),
-    );
-    expect(after.attackToxinThisTurn[P1]).toBe(1);
+    expectBanked(afterRoll, "toxin");
+    expect(afterRoll.attackToxinThisTurn[P1]).toBe(1);
   });
 });

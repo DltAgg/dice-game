@@ -21,7 +21,7 @@ import type {
   PlayerId,
   SymbolInstanceId,
 } from "./ids.js";
-import type { SymbolInstance, SymbolType } from "./symbols.js";
+import type { AttributeTokens, SymbolInstance, SymbolType } from "./symbols.js";
 import type { RngState } from "../rng/rng.js";
 
 /** Chain link kinds for the reaction stack (`008-reaction-chain`). */
@@ -68,11 +68,10 @@ export interface ChainLink {
  * legal move is noise rather than a decision point.
  *
  * Playtest DECIDED (2026-08-17): there is no dedicated absorption phase.
- * `ROLL_DICE` enters `actions`. Absorb (creature + ritual), `[Requires]`
- * spends, attacks, plays, forges, and ready-ritual activates all share that
- * window. Unabsorbed pool symbols stay spendable and absorbable until used
- * or the turn ends — there is no leftover-rolled → available flip. Rituals
- * cannot activate during roll.
+ * `ROLL_DICE` enters `actions`. Attribute pile banking, Shield absorb onto a
+ * creature, `[Requires]` spends, attacks, plays, forges, and ready-ritual
+ * activates all share that window. Unabsorbed pool symbols stay spendable and
+ * absorbable until used or the turn ends. Rituals cannot activate during roll.
  */
 export type TurnPhase = "roll" | "actions";
 
@@ -363,6 +362,11 @@ export interface PlayerState {
   readonly overload: readonly CardInstanceId[];
   /** Ritual cards this player owns that are waiting / ready on the engine field. */
   readonly ritual: readonly CardInstanceId[];
+  /**
+   * Persistent attribute pile (spec `016`). Absorbed attribute pips bank here
+   * immediately; attacks and ritual Active-when / Spend read this pool.
+   */
+  readonly attributePool: AttributeTokens;
   /**
    * Player-scoped once-per-turn keys (Adrenaline reroll, etc.). Cleared on END_TURN.
    */

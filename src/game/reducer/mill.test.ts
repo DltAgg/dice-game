@@ -6,7 +6,7 @@ import {
   GRAVE_WHISPER,
   WAR_AXE,
 } from "../content/cards.js";
-import { CONTROL_SQUAD } from "../content/creatures.js";
+import { ARCHMAGE, MINOTAUR, VOID_SUMMONER } from "../content/creatures.js";
 import { ENGINE_TEST_FACE_DECK, legacyStartingLayout } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { asCardInstanceId, asSymbolInstanceId, type CardId, type PlayerId } from "../model/ids.js";
@@ -29,28 +29,6 @@ import {
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
-function controlReady(cards: Parameters<typeof withHand>[2]): GameState {
-  const match = newMatch({
-    players: [
-      {
-        id: P1,
-        squad: CONTROL_SQUAD,
-        deck: [],
-        faceDeck: ENGINE_TEST_FACE_DECK,
-        startingDice: legacyStartingLayout(),
-      },
-      {
-        id: P2,
-        squad: CONTROL_SQUAD,
-        deck: [],
-        faceDeck: ENGINE_TEST_FACE_DECK,
-        startingDice: legacyStartingLayout(),
-      },
-    ],
-  });
-  return withEnergy(withHand(withPhase(match, "actions"), P1, cards), P1, 10);
-}
-
 function withDeck(state: GameState, playerId: PlayerId, cardIds: readonly CardId[]): GameState {
   const player = state.players[playerId];
   if (player === undefined) throw new Error("expected player");
@@ -65,8 +43,6 @@ function withDeck(state: GameState, playerId: PlayerId, cardIds: readonly CardId
       attachedToCreatureId: null,
       attachedToFaceCardId: null,
       ritualOrientation: null,
-      ritualProgress: null,
-      ritualProgressCreditedThisTurn: null,
     };
     return id;
   });
@@ -123,7 +99,27 @@ describe("Bury the Name", () => {
 
 describe("Grave Whisper", () => {
   it("mills 1 from the opponent on absorb Darkness once per turn", () => {
-    const base = controlReady([GRAVE_WHISPER]);
+    // Avoid Nightbound Adept — its ally On absorb Darkness opens choose-creature
+    // (pile strip) and would pause before mill resolves.
+    const match = newMatch({
+      players: [
+        {
+          id: P1,
+          squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+          startingDice: legacyStartingLayout(),
+        },
+        {
+          id: P2,
+          squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+          startingDice: legacyStartingLayout(),
+        },
+      ],
+    });
+    const base = withEnergy(withHand(withPhase(match, "actions"), P1, [GRAVE_WHISPER]), P1, 10);
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = expectOk(
       advance(base, {

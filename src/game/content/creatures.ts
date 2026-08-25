@@ -288,7 +288,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     standingAbilities: [
       {
         type: "on-absorb",
-        absorberRelation: "any",
+        absorberRelation: "ally",
         faceKinds: ["natural"],
         effects: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
       },
@@ -346,6 +346,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["luminar"],
+        absorberRelation: "ally",
         effects: [
           {
             type: "grant-next-attack-bonus",
@@ -398,6 +399,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["luminar"],
+        absorberRelation: "ally",
         oncePerTurn: true,
         effects: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
       },
@@ -503,6 +505,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["mechanical"],
+        absorberRelation: "ally",
         effects: [
           {
             type: "grant-next-attack-bonus",
@@ -550,6 +553,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["mechanical"],
+        absorberRelation: "ally",
         effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
       },
       {
@@ -644,11 +648,12 @@ const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
     life: 14,
     attributes: ["darkness"],
     passiveRulesText:
-      "On absorb Darkness, once per turn: a chosen enemy creature discards 1 attribute token.",
+      "On absorb Darkness, once per turn: a chosen enemy discards 1 from their attribute pile.",
     standingAbilities: [
       {
         type: "on-absorb",
         symbols: ["darkness"],
+        absorberRelation: "ally",
         oncePerTurn: true,
         effects: [
           { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
@@ -789,6 +794,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["toxin"],
+        absorberRelation: "ally",
         effects: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
       },
     ],

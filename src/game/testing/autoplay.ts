@@ -41,10 +41,14 @@ export interface AutoplayPolicy {
    * Absorb symbols a creature still needs to arm one of its attacks. On by
    * default, because attacks are funded from absorbed tokens: a driver that
    * never absorbed could never attack, and no match would ever end.
+   * Spec `016`: rolled attributes auto-bank, so this mainly covers Shield and
+   * leftover effect-generated pips.
    */
   readonly absorbForAttacks: boolean;
   /** Absorb Shield faces onto the most damaged creature rather than wasting them. */
   readonly absorbShields: boolean;
+  /** Declare attacks when a creature's pile requirements are met. */
+  readonly attack: boolean;
   /** Play affordable cards for their effect during the actions phase. */
   readonly playCards: boolean;
   /** Forge affordable cards over Shield faces during the forge phase. */
@@ -54,15 +58,22 @@ export interface AutoplayPolicy {
 const DEFAULT_POLICY: AutoplayPolicy = {
   absorbForAttacks: true,
   absorbShields: true,
+  attack: true,
   playCards: true,
   forgeCards: true,
 };
 
-/** Never absorb, so every symbol reaches the available pool. */
+/** Never absorb leftover pool symbols / Shields (roll still auto-banks attributes). */
 export const NEVER_ABSORB: AutoplayPolicy = {
   ...DEFAULT_POLICY,
   absorbForAttacks: false,
   absorbShields: false,
+};
+
+/** Never attack — pile-up still auto-banks, but combat never fires. */
+export const NEVER_ATTACK: AutoplayPolicy = {
+  ...DEFAULT_POLICY,
+  attack: false,
 };
 
 /** Leaves the hand alone, for testing the dice game on its own. */
@@ -81,15 +92,21 @@ function absorb(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): G
   let current = state;
 
   for (const symbol of poolSymbols(current, playerId)) {
-    const creature = isAttributeSymbol(symbol.symbol)
-      ? policy.absorbForAttacks
-        ? creatureNeeding(current, playerId, symbol)
-        : undefined
-      : policy.absorbShields
-        ? mostDamaged(current, playerId)
-        : undefined;
-    if (creature === undefined) continue;
+    if (isAttributeSymbol(symbol.symbol)) {
+      if (!policy.absorbForAttacks) continue;
+      if (creatureNeeding(current, playerId, symbol) === undefined) continue;
+      const result = advance(current, {
+        type: "ABSORB_SYMBOL",
+        playerId,
+        symbolId: symbol.id,
+      });
+      if (result.ok) current = resolvePending(result.state);
+      continue;
+    }
 
+    if (!policy.absorbShields) continue;
+    const creature = mostDamaged(current, playerId);
+    if (creature === undefined) continue;
     const result = advance(current, {
       type: "ABSORB_SYMBOL",
       playerId,
@@ -119,7 +136,7 @@ function creatureNeeding(
   return livingCreaturesOf(state, playerId).find((creature) => {
     const definition = getCreatureDefinition(creature.definitionId);
     if (definition === undefined) return false;
-    const held = creature.attributeTokens[attribute] ?? 0;
+    const held = state.players[playerId]?.attributePool[attribute] ?? 0;
     return definition.attacks.some((attack) => {
       const needed = attack.requires[attribute] ?? 0;
       // Count only the shortfall vs `requires`. Extra primary tokens for an
@@ -135,7 +152,8 @@ function mostDamaged(state: GameState, playerId: PlayerId): CreatureState | unde
 }
 
 /** Attacks with every creature that is fuelled, hitting the first legal target. */
-function fight(state: GameState, playerId: PlayerId): GameState {
+function fight(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): GameState {
+  if (!policy.attack) return state;
   let current = state;
 
   for (const creature of livingCreaturesOf(current, playerId)) {
@@ -409,7 +427,8 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "choose-attribute-tokens") {
-    const tokens = state.creatures[pending.creatureId]?.attributeTokens ?? {};
+    const ownerId = state.creatures[pending.creatureId]?.ownerId;
+    const tokens = (ownerId === undefined ? {} : state.players[ownerId]?.attributePool) ?? {};
     const { discarded } = discardTokensInAttributeOrder(tokens, pending.amount);
     const result = advance(state, {
       type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
@@ -688,7 +707,7 @@ export function playTurn(state: GameState, policy: AutoplayPolicy = DEFAULT_POLI
   let current = step(state, { type: "ROLL_DICE", playerId });
   current = absorb(current, playerId, policy);
 
-  current = fight(current, playerId);
+  current = fight(current, playerId, policy);
   current = absorb(current, playerId, policy);
   if (!stillActive(current, playerId)) return current;
   current = playCards(current, playerId, policy);

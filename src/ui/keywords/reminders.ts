@@ -137,7 +137,7 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Keep retainable die across next roll.",
   },
   {
-    test: (body) => /^(?:Requires|Active when)\b/i.test(body),
+    test: (body) => /^(?:Requires|Active when|Spend)\b/i.test(body),
     reminder: "Extra cost / ritual gate.",
   },
 ];

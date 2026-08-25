@@ -97,14 +97,17 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
 
 1. **Roll.** Roll your non-retained dice. Retained dice keep their showing
    face and still generate that symbol. On-roll face / overload effects fire
-   as part of the roll. Then the turn enters **actions**.
-2. **Actions.** In any order you may: absorb (creature or ritual), spend
-   unabsorbed symbols for `[Requires]`, attack, play, forge, activate a
-   **ready** ritual, retain/release dice, or end the turn.
+   as part of the roll. **Usable attribute** pips from the roll then
+   **auto-bank** into your attribute pile (On absorb fires). **Shield** and
+   locked/unusable pips stay in the turn pool. Then the turn enters **actions**.
+2. **Actions.** In any order you may: bank leftover effect-generated attribute
+   pips into your pile, absorb Shield onto a creature, spend unabsorbed
+   symbols for `[Requires]`, attack, play, forge, activate a **ready** ritual,
+   retain/release dice, or end the turn.
 
 There is no dedicated absorb phase and no leftover-rolled flip. `rolled` (die
 pip) and `available` (effect-generated) are provenance only; both are the
-same unabsorbed pool for absorb and spend.
+same unabsorbed pool for spend / Shield / leftover attribute bank.
 
 Ready rituals may activate during **actions**, not during roll.
 
@@ -120,35 +123,40 @@ Every face is attribute-typed except **Shield** (untyped). Attributes are
 Martial, Wild, Toxin, Arcane, Luminar, Mechanical, Corruption, Darkness.
 Costs never require Shield.
 
-Each unabsorbed attribute symbol is a **one-time** choice:
+Each **effect-generated** attribute symbol (and any rolled attribute that did
+not auto-bank, e.g. locked) is a **one-time** choice while it remains in the
+turn pool:
 
 ```text
-absorb  → sits on a creature or ritual  → creature fuel (next turn) or ritual Active-when
-resolve → stays in the pool this turn   → [Requires] spends and engine effects
+bank    → into your attribute pile   → attack fuel / ritual Active-when / Spend
+resolve → stays in the pool this turn → [Requires] spends and engine effects
 ```
 
-A symbol cannot do both. Unabsorbed symbols expire at end of turn. There is
-no “store a symbol.” The only way to keep a **die result** across a roll is
-**retain**.
+**Rolled usable attributes** skip that choice: they bank automatically after
+on-roll effects resolve. A symbol cannot both be banked and spent for
+Requires. Unabsorbed symbols expire at end of turn. There is no “store a
+symbol.” The only way to keep a **die result** across a roll is **retain**.
 
-A creature may absorb **any number** of symbols in a turn. Over-filling a
-ritual’s Active-when gate is illegal.
+Shield absorb still names a creature (below). Effect-generated attributes may
+still be banked manually during actions.
 
 ---
 
 ## 7. Absorption payoff
 
-- **Attribute** pips absorbed onto a creature become tokens at **end of
-  turn**. A creature **cannot attack on the turn it was fuelled**.
-- **Shield** pips grant **immediately** on absorb (1 Shield prevents 1
-  damage, once). Shields stack and persist until spent.
+- **Attribute** pips from a **roll** bank into **your attribute pile**
+  automatically after on-roll resolution (usable pips only). Effect-generated
+  attributes bank when you absorb them during actions. The pile persists
+  across turns until spent or removed. Same-turn attack after banking is legal.
+- **Shield** pips grant **immediately** on absorb onto a living owned creature
+  (1 Shield prevents 1 damage, once). Shields stack and persist until spent.
 - Absorbing a Shield is **not** absorbing a Natural; `On absorb Natural`
   does not fire.
-- Ritual Active-when progress is credited **immediately** (not banked until
-  end of turn), including multiple pips of the same attribute in one turn.
-- **Pack feeding** (Wild): some effects **move** or **copy** absorbed
-  attribute tokens from one of your creatures to another of yours. That
-  does not steal from the opponent. A source with no tokens does nothing.
+- Ritual Active-when is checked against your **pile** (no progress counters on
+  the ritual card). Optional Spend on activate burns from the pile.
+- **Pack feeding** (Wild move/copy of creature-local attribute tokens) is
+  superseded for the pile model — parked pending conversion (spec `016`
+  Phase 6).
 
 An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
@@ -168,8 +176,8 @@ whoever holds the marker.
 - Spending **past** zero ends the turn after the current action/chain
   finishes. Landing **exactly** on zero does not.
 - Playing **and** forging pay the printed header Energy cost.
-- Engine abilities cost **pool symbols**. Attacks cost **absorbed
-  attributes**, not Energy.
+- Engine abilities cost **pool symbols**. Attacks cost **attribute-pile**
+  fuel (`requires` check; optional `discards` burn), not Energy.
 - Discounts apply to play / ritual place / equip / overload, **not** forge.
   Minimum cost after discount is 0.
 - Printed Energy 1 on cards is exceptional; 1-Energy plays should mainly
@@ -221,20 +229,20 @@ Played onto the engine area, not resolved from hand like an Instant.
 
 | Orientation | Meaning |
 |---|---|
-| Preparing | Waiting for printed Active-when symbols |
-| Ready | Gate met; standing abilities on; may activate if print has an activate body |
+| Preparing | Owner’s attribute pile does not yet meet Active-when |
+| Ready | Gate met (or no Active-when); standing abilities on; may activate if print has an activate body |
 | Exhausted | Used this turn (once-per-turn rituals) |
 
-Rituals arrive empty. Assign unabsorbed attributes to them during actions
-until the gate is filled. Rituals with no Active-when become ready on place.
+Rituals with no Active-when become ready on place. Otherwise the owner’s
+**attribute pile** must meet the printed Active-when. Optional **Spend** on
+activate burns from that pile (plus any additional Energy).
 
-At the start of your turn, exhausted rituals come off exhausted. Banked
-Active-when symbols **stay** unless an effect discards them; if the gate is
-still met the ritual returns to ready, otherwise preparing.
+At the start of your turn, exhausted rituals come off exhausted. Ready vs
+preparing is re-checked against your pile.
 
 Instant and reaction rituals go to the graveyard after one activation.
 **Continuous** rituals stay and exhaust. Standing triggers fire while
-**ready** and do not spend the banked symbols.
+**ready** and do not spend Active-when / Spend.
 
 Destroying an opposing field ritual is not negate. Negate answers chain
 links; destroy answers a card already on the field.
@@ -271,10 +279,10 @@ face) fires again.
 
 - Each living creature may attack **once per turn** during actions.
 - An attack names `requires` (checked, **not** spent) and optional
-  `discards` (tokens actually burned). Fuel is absorbed attributes on **that**
-  creature, not the shared pool.
-- Because attributes pay out at end of turn, first attacks happen on a later
-  turn than the absorb that enabled them.
+  `discards` (tokens actually burned). Fuel is the **owner’s attribute
+  pile**, not the shared turn pool and not counters on the creature.
+- Because banking is immediate, you may attack on the same turn you absorb
+  the fuel.
 - Declaring an attack opens a reaction window (§15). Prevent may answer;
   negate may not.
 - Damage apply order: **prevention → Shield → Life**.

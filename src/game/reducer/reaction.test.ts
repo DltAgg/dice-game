@@ -15,6 +15,7 @@ import {
   withActivePlayer,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withSymbols,
   withTokens,
@@ -114,17 +115,20 @@ describe("reaction chain (008)", () => {
       P1,
       [ECLIPSE],
     );
-    const ready = {
-      ...p1Turn,
-      cards: {
-        ...p1Turn.cards,
-        [ritualId]: {
-          ...p1Turn.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: { arcane: 2 },
+    const ready = withAttributePool(
+      {
+        ...p1Turn,
+        cards: {
+          ...p1Turn.cards,
+          [ritualId]: {
+            ...p1Turn.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    };
+      P2,
+      { arcane: 2 },
+    );
 
     const afterEclipse = expectOk(
       advance(ready, {
@@ -177,17 +181,20 @@ describe("reaction chain (008)", () => {
       P1,
       [ECLIPSE],
     );
-    const ready = {
-      ...p1Turn,
-      cards: {
-        ...p1Turn.cards,
-        [ritualId]: {
-          ...p1Turn.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: { arcane: 2 },
+    const ready = withAttributePool(
+      {
+        ...p1Turn,
+        cards: {
+          ...p1Turn.cards,
+          [ritualId]: {
+            ...p1Turn.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    };
+      P2,
+      { arcane: 2 },
+    );
 
     const afterEclipse = expectOk(
       advance(ready, {
@@ -282,17 +289,20 @@ describe("reaction chain (008)", () => {
       P1,
       [WAR_AXE],
     );
-    const ready = {
-      ...p1Turn,
-      cards: {
-        ...p1Turn.cards,
-        [ritualId]: {
-          ...p1Turn.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: { arcane: 2 },
+    const ready = withAttributePool(
+      {
+        ...p1Turn,
+        cards: {
+          ...p1Turn.cards,
+          [ritualId]: {
+            ...p1Turn.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    };
+      P2,
+      { arcane: 2 },
+    );
 
     const afterEquip = expectOk(
       advance(ready, {
@@ -367,17 +377,20 @@ describe("reaction chain (008)", () => {
       P1,
       [ECLIPSE],
     );
-    const readyRitual = {
-      ...withEclipse,
-      cards: {
-        ...withEclipse.cards,
-        [ritualId]: {
-          ...withEclipse.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: { arcane: 2 },
+    const readyRitual = withAttributePool(
+      {
+        ...withEclipse,
+        cards: {
+          ...withEclipse.cards,
+          [ritualId]: {
+            ...withEclipse.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    };
+      P1,
+      { arcane: 2 },
+    );
 
     const opened = expectOk(
       advance(readyRitual, {

@@ -8,7 +8,7 @@ import {
   DEFAULT_BASIC_LAYOUT,
   PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
-  PROTOTYPE_STARTING_DICE,
+  AGGRO_STARTING_DICE,
   getFaceCard,
   legacyStartingLayout,
 } from "../content/faces.js";
@@ -139,7 +139,7 @@ describe("starting face layout", () => {
           squad: PROTOTYPE_SQUAD,
           deck: [],
           faceDeck: PROTOTYPE_FACE_DECK,
-          startingDice: PROTOTYPE_STARTING_DICE,
+          startingDice: AGGRO_STARTING_DICE,
         },
         {
           id: P2,
@@ -156,7 +156,7 @@ describe("starting face layout", () => {
     expect(p1Die0.slots[0]?.faceCardId).toBe(CRUSH);
     expect(p2Die0.slots[0]?.faceCardId).not.toBe(CRUSH);
     expect(state.players[P1]?.facePool).toEqual(
-      leftoverFacePool(PROTOTYPE_FACE_DECK, PROTOTYPE_STARTING_DICE),
+      leftoverFacePool(PROTOTYPE_FACE_DECK, AGGRO_STARTING_DICE),
     );
     expect(state.players[P2]?.facePool).toEqual(
       leftoverFacePool(CONTROL_FACE_DECK, CONTROL_STARTING_DICE),

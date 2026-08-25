@@ -149,6 +149,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "Pay 2 Energy. [Negate Instant].",
     ritual: {
       activeWhen: { arcane: 2 },
+      spend: { arcane: 2 },
       additionalEnergy: 2,
       effects: [{ type: "negate-card", cardTypes: ["instant"] }],
     },
@@ -237,6 +238,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Search 2] Instant or Ritual cards.",
     ritual: {
       activeWhen: { arcane: 2 },
+      spend: { arcane: 2 },
       // Living Library: Instant or Ritual from deck.
       effects: [{ type: "search-deck", amount: 2, filter: ["instant", "ritual"] }],
     },
@@ -312,6 +314,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Recall 3].",
     ritual: {
       activeWhen: { darkness: 2 },
+      spend: { darkness: 2 },
       effects: [{ type: "search-graveyard", amount: 3 }],
     },
   }),
@@ -351,6 +354,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       "[Forge 3 Synthetic Corruption] on one of the opponent's dice.",
     ritual: {
       activeWhen: { corruption: 2 },
+      spend: { corruption: 2 },
       effects: [
         {
           type: "forge-faces",
@@ -374,6 +378,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       "Consume every synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures.",
     ritual: {
       activeWhen: { corruption: 3 },
+      spend: { corruption: 3 },
       effects: [{ type: "extermination" }],
     },
   }),
@@ -387,7 +392,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
       "Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements.",
-    // No Active when on print; place/ready still works.
+    // No Active when / Spend on print; place/ready still works.
     ritual: {
       effects: [{ type: "replay-graveyard-tactic" }],
     },
@@ -983,6 +988,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Forge 2 Synthetic Mechanical] on your die.",
     ritual: {
       activeWhen: { mechanical: 2 },
+      spend: { mechanical: 2 },
       effects: [
         {
           type: "forge-faces",
@@ -1448,6 +1454,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Empower 2].",
     ritual: {
       activeWhen: { martial: 2 },
+      spend: { martial: 2 },
       effects: [{ type: "next-attack-bonus", amount: 2 }],
     },
   }),
@@ -1505,6 +1512,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Forge 2 Synthetic Toxin] on your die.",
     ritual: {
       activeWhen: { toxin: 2 },
+      spend: { toxin: 2 },
       effects: [
         {
           type: "forge-faces",
@@ -1525,7 +1533,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "A chosen enemy creature discards 2 attribute tokens.",
+    rulesText: "A chosen enemy discards 2 from their attribute pile.",
     effect: {
       effects: [
         { type: "discard-attribute-tokens", amount: 2, target: { kind: "choose-enemy" } },
@@ -1611,6 +1619,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Strike 4].",
     ritual: {
       activeWhen: { arcane: 1, darkness: 1 },
+      spend: { arcane: 1, darkness: 1 },
       effects: [{ type: "damage", amount: 4, target: { kind: "choose-enemy" } }],
     },
   }),
@@ -1960,6 +1969,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["darkness"],
+          // Pile bank has no absorbing creature; ally = owner banks Darkness.
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "mill-cards", amount: 1, player: "opponent" }],
         },

@@ -88,8 +88,9 @@ overload an Arcane face).
 
 | Form | Meaning | Appears on |
 |---|---|---|
-| `[Active when: Arcane + Arcane]` | Cumulative gate — absorb matching symbols onto the ritual (same window as creature absorb; multiple pips per turn, including the same attribute, until the gate is filled). Progress is credited **immediately**; the assignment is an `on-absorb` event (same standing hook as creature absorb, spec `010`). | Ritual |
-| `[Requires: Corruption]` | Gate on the effect | Instant |
+| `[Active when: Arcane + Arcane]` | Gate vs the owner’s **attribute pile** (spec `016`). When met, the ritual is / becomes `ready`. Standing fire while ready does not burn the gate. | Ritual |
+| `[Spend: Arcane + Arcane]` | Optional burn from the owner’s attribute pile on `ACTIVATE_RITUAL` (often the same counts as Active-when for strong instants). Continuous standing rituals usually omit Spend. | Ritual |
+| `[Requires: Corruption]` | Gate on the effect (unabsorbed turn pool) | Instant |
 | `[Can only overload a Toxin face]` | Restricts the overload target | Overload |
 | `[This card may be equipped to a Martial creature]` | Restricts the equip target | Equipment |
 | `Pay 3 Energy` | An extra cost inside the effect, on top of the header cost | Instant |

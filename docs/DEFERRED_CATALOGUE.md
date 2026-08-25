@@ -32,6 +32,12 @@ No push leftovers. Alpha's Hide special→generate Wild is wired (`012` ASSUMED:
 controller pool). Reforge (`card-reforge`) is wired via `replace-synthetic-face`
 (`012`). No tactic / creature print rows currently deferred.
 
+### Attribute pile-up Phase 6 (spec `016`)
+
+| Item | Needed for | Why |
+|---|---|---|
+| **Pack feed transfer/copy** | `card-share-the-kill`, `card-den-share` | Creature↔creature attribute tokens removed; effects currently no-op until retargeted to piles. **Pack Share** face rewritten Phase 3 to `[Generate 1 Wild]` on absorb. |
+| **Equipment standing On absorb (`self`)** | `card-mirrored-rune`, `card-archmages-grimoire`, `card-predators-claws`, `card-hunters-collar`, `card-wild-carapace`, `card-servomotor`, `card-umbral-brand`, `card-warding-charm`, `card-venom-font`, `card-grave-whisper`, `card-den-share` | Default / explicit `self` no longer matches **player** pile bank (still fires if a stale `creatureId` is passed). Convert to `ally` or retarget in Phase 6. Foundry / Pack Law already use `ally`. |
 ---
 
 ## Revisit checklist
@@ -40,5 +46,6 @@ controller pool). Reforge (`card-reforge`) is wired via `replace-synthetic-face`
 2. Great Spark / Rekindle printings.
 3. Energy-spent scaling when a `?` card needs `energyPaid`.
 4. Re-measure first-player win rate after catalogue depth.
+5. Spec `016` Phase 6 pack-feed (Share / Den Share) / On absorb self hosts.
 
 Do not treat approximate effects as final without an `OPEN_DESIGN.md` row.

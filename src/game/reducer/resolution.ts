@@ -40,9 +40,7 @@ import {
 } from "../rules/faces.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, choiceFilterForSelector } from "../rules/targets.js";
 import {
-  addTokens,
   discardTokensInAttributeOrder,
-  removeTokens,
   tokenChoiceNeeded,
   totalTokens,
 } from "../rules/tokens.js";
@@ -54,6 +52,7 @@ import {
   destroyRitual,
   drawCards,
   millCards,
+  refreshRitualOrientations,
   releaseEquipmentOn,
   searchableDeckCards,
   setCreaturePosition,
@@ -73,6 +72,10 @@ export function drainResolution(draft: Draft): void {
   let steps = 0;
 
   while (draft.resolutionStack.length > 0) {
+    // A prior effect may already have opened a player choice (e.g. auto-bank
+    // queued On absorb while On roll is waiting). Do not overwrite it.
+    if (draft.pendingDecision !== null) return;
+
     if (steps >= draft.config.maxResolutionSteps) {
       draft.resolutionStack = [];
       emit(draft, { type: "resolution-aborted", error: "RESOLUTION_LIMIT_EXCEEDED" });
@@ -714,8 +717,10 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         if (paused) return;
         const creature = draft.creatures[targetId];
         if (creature === undefined || creature.defeated || effect.amount <= 0) return;
-        if (totalTokens(creature.attributeTokens) <= 0) return;
-        if (tokenChoiceNeeded(creature.attributeTokens, effect.amount)) {
+        const pileOwnerId = creature.ownerId;
+        const pile = draft.players[pileOwnerId]?.attributePool ?? {};
+        if (totalTokens(pile) <= 0) return;
+        if (tokenChoiceNeeded(pile, effect.amount)) {
           draft.pendingDecision = {
             type: "choose-attribute-tokens",
             controllerId: pending.controllerId,
@@ -732,14 +737,13 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
           paused = true;
           return;
         }
-        const { next, discarded } = discardTokensInAttributeOrder(
-          creature.attributeTokens,
-          effect.amount,
-        );
+        const { next, discarded } = discardTokensInAttributeOrder(pile, effect.amount);
         if (totalTokens(discarded) <= 0) return;
-        patchCreature(draft, targetId, { attributeTokens: next });
+        patchPlayer(draft, pileOwnerId, { attributePool: next });
+        refreshRitualOrientations(draft, pileOwnerId);
         emit(draft, {
           type: "attribute-tokens-discarded",
+          playerId: pileOwnerId,
           creatureId: targetId,
           discarded,
         });
@@ -1205,63 +1209,12 @@ function applyTokenShare(
   effect: TokenShareEffect,
   copy: boolean,
 ): boolean {
-  const fromId = resolveTarget(draft, pending, effect.from);
-  if (fromId === null) {
-    const filter = choiceFilterFor(effect.from);
-    if (filter === null) return false;
-    return openCreatureChoice(draft, pending, filter, false, {
-      ...effect,
-      from: { kind: "declared-target" },
-    });
-  }
-
-  const from = draft.creatures[fromId];
-  if (from === undefined || from.defeated || from.ownerId !== pending.controllerId) return false;
-  if (totalTokens(from.attributeTokens) <= 0) return false;
-
-  const toId = resolveTarget(draft, pending, effect.to);
-  if (toId === null) {
-    const filter = choiceFilterFor(effect.to);
-    if (filter === null) return false;
-    return openCreatureChoice(
-      draft,
-      { ...pending, sourceCreatureId: fromId },
-      filter,
-      false,
-      {
-        ...effect,
-        from: { kind: "source-creature" },
-        to: { kind: "declared-target" },
-      },
-    );
-  }
-
-  const dest = draft.creatures[toId];
-  if (dest === undefined || dest.defeated || dest.ownerId !== pending.controllerId) return false;
-  if (fromId === toId) return false;
-
-  if (tokenChoiceNeeded(from.attributeTokens, effect.amount)) {
-    draft.pendingDecision = {
-      type: "choose-attribute-tokens",
-      controllerId: pending.controllerId,
-      creatureId: fromId,
-      amount: effect.amount,
-      mode: copy ? "copy" : "transfer",
-      destinationCreatureId: toId,
-      ...effectChoiceSource(draft, pending),
-    };
-    emit(draft, {
-      type: "choose-attribute-tokens-started",
-      playerId: pending.controllerId,
-      creatureId: fromId,
-      amount: effect.amount,
-    });
-    return true;
-  }
-
-  const { discarded } = discardTokensInAttributeOrder(from.attributeTokens, effect.amount);
-  if (totalTokens(discarded) <= 0) return false;
-  applyTokenMove(draft, fromId, toId, discarded, copy);
+  // Pack-feed creature↔creature attribute moves are parked for Phase 6
+  // (spec `016`). Catalogue effects still print; engine no-ops until retargeted.
+  void draft;
+  void pending;
+  void effect;
+  void copy;
   return false;
 }
 
@@ -1272,22 +1225,12 @@ export function applyTokenMove(
   tokens: import("../model/symbols.js").SymbolRequirement,
   copy: boolean,
 ): void {
-  const from = draft.creatures[fromId];
-  const dest = draft.creatures[toId];
-  if (from === undefined || dest === undefined) return;
-  if (!copy) {
-    patchCreature(draft, fromId, { attributeTokens: removeTokens(from.attributeTokens, tokens) });
-  }
-  const destAfter = draft.creatures[toId];
-  if (destAfter === undefined) return;
-  patchCreature(draft, toId, { attributeTokens: addTokens(destAfter.attributeTokens, tokens) });
-  emit(draft, {
-    type: "attribute-tokens-moved",
-    fromCreatureId: fromId,
-    toCreatureId: toId,
-    tokens,
-    copy,
-  });
+  // Parked: creature attribute tokens removed. Prefer pile ops in Phase 6.
+  void draft;
+  void fromId;
+  void toId;
+  void tokens;
+  void copy;
 }
 
 function openDieSlotChoice(

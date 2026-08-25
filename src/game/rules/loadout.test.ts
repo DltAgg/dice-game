@@ -33,7 +33,7 @@ import {
   PESTILENT_PLAGUE,
   PACK_SHARE,
   PROTOTYPE_FACE_DECK,
-  PROTOTYPE_STARTING_DICE,
+  AGGRO_STARTING_DICE,
   SEEP,
   SHIELD_FACE_ID,
   MARROW_ROT,
@@ -138,7 +138,7 @@ describe("validateLoadout", () => {
           squad: PROTOTYPE_SQUAD,
           deck: PROTOTYPE_DECK,
           faceDeck: PROTOTYPE_FACE_DECK,
-          startingDice: PROTOTYPE_STARTING_DICE,
+          startingDice: AGGRO_STARTING_DICE,
         },
         DEFAULT_RULES_CONFIG,
       ),
@@ -207,7 +207,7 @@ describe("validateLoadout", () => {
         squad: PROTOTYPE_SQUAD.slice(0, 2),
         deck: PROTOTYPE_DECK,
         faceDeck: PROTOTYPE_FACE_DECK,
-        startingDice: PROTOTYPE_STARTING_DICE,
+        startingDice: AGGRO_STARTING_DICE,
       },
       DEFAULT_RULES_CONFIG,
     );
@@ -326,7 +326,7 @@ describe("validateStartingDice", () => {
 
   it("refuses a named special that is not in the face deck", () => {
     const result = validateStartingDice(
-      PROTOTYPE_STARTING_DICE,
+      AGGRO_STARTING_DICE,
       PROTOTYPE_FACE_DECK.filter((id) => id !== CRUSH),
       DEFAULT_RULES_CONFIG,
     );
@@ -337,7 +337,7 @@ describe("validateStartingDice", () => {
 
 describe("leftoverFacePool", () => {
   it("removes installed Crush and Bloodscent from the pool and leaves unused specials", () => {
-    const pool = leftoverFacePool(PROTOTYPE_FACE_DECK, PROTOTYPE_STARTING_DICE);
+    const pool = leftoverFacePool(PROTOTYPE_FACE_DECK, AGGRO_STARTING_DICE);
     expect(pool).not.toContain(CRUSH);
     expect(pool).not.toContain(BLOODSCENT);
     expect(pool).toContain(WARHORN);
@@ -349,7 +349,7 @@ describe("leftoverFacePool", () => {
   it("does not consume opening basics even when they are also listed in the face deck", () => {
     const martial = naturalFaceId("martial");
     const deck = [...PROTOTYPE_FACE_DECK.slice(0, 5), martial];
-    const pool = leftoverFacePool(deck, PROTOTYPE_STARTING_DICE);
+    const pool = leftoverFacePool(deck, AGGRO_STARTING_DICE);
     expect(pool).toContain(martial);
   });
 

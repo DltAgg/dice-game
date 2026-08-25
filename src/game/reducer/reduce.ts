@@ -31,7 +31,7 @@ import {
   type SymbolRequirement,
   type SymbolType,
 } from "../model/symbols.js";
-import type { Attribute, DualKindAttribute } from "../model/attributes.js";
+import type { DualKindAttribute } from "../model/attributes.js";
 import { createRng, type RNG } from "../rng/rng.js";
 import {
   attackDamageBonus,
@@ -96,7 +96,6 @@ import {
   applyOptionalOverchargeAccept,
   applyPoolSymbolWildcard,
   applyRemoveToxinForDamage,
-  applyTokenMove,
   checkVictory,
   clearResourceLocks,
   clearToxinReceiveCapsForOwner,
@@ -128,6 +127,7 @@ import {
   placeRitual,
   searchableDeckCards,
   setRitualOrientation,
+  refreshRitualOrientations,
   shuffleDeck,
 } from "./zones.js";
 
@@ -244,9 +244,7 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
     case "ROLL_DICE":
       return rollDice(draft, action.playerId, rng);
     case "ABSORB_SYMBOL":
-      return absorbSymbol(draft, action.playerId, action.creatureId, action.symbolId);
-    case "ABSORB_SYMBOL_TO_RITUAL":
-      return absorbSymbolToRitual(draft, action.playerId, action.cardInstanceId, action.symbolId);
+      return absorbSymbol(draft, action.playerId, action.symbolId, action.creatureId);
     case "ATTACK":
       return attack(draft, action.playerId, action.attackerId, action.attackId, action.targetId);
     case "FORGE_CARD":
@@ -374,6 +372,7 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
     readonly faceCardId: FaceCardId;
     readonly symbol: SymbolType;
     readonly suppressInherent: boolean;
+    readonly symbolId: SymbolInstanceId;
   }> = [];
 
   draft.facesAppearedThisRoll = [];
@@ -445,6 +444,7 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
       faceCardId: slot.faceCardId,
       symbol: face.symbol,
       suppressInherent,
+      symbolId,
     });
     draft.facesAppearedThisRoll = [
       ...draft.facesAppearedThisRoll,
@@ -458,7 +458,7 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
   }
 
   // Fire onRoll after every inherent pip exists so "another symbol in the pool"
-  // conditions (Gear, Resonance) see the full roll.
+  // conditions (Gear, Resonance) see the full roll before attributes bank.
   for (const entry of rolled) {
     if (!entry.suppressInherent) {
       fireFaceOnRoll(draft, playerId, entry.dieId, entry.slotIndex);
@@ -468,6 +468,19 @@ function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null 
   }
 
   drainResolution(draft);
+
+  // Spec `016`: rolled attributes auto-bank into the pile (no assign click).
+  // Shield and unusable/locked pips stay in the turn pool. Effect-generated
+  // `available` symbols are not rolled here — they remain for [Requires].
+  for (const entry of rolled) {
+    bankRolledAttributeIfEligible(draft, playerId, entry.symbolId);
+  }
+  // If on-roll already opened a choice, leave On absorb effects on the stack
+  // until that choice resolves — draining here would overwrite pendingDecision.
+  if (draft.pendingDecision === null) {
+    drainResolution(draft);
+  }
+
   return enterPhase(draft, "actions");
 }
 
@@ -769,7 +782,8 @@ function resolveChooseEquipment(
 
 /**
  * Completes a pending token-strip choice. The named pips must total the pending
- * amount and be a subset of the creature's current tokens.
+ * amount and be a subset of the target creature owner's attribute pile
+ * (spec `016`; creature id is targeting context only).
  */
 function resolveChooseAttributeTokens(
   draft: Draft,
@@ -782,30 +796,21 @@ function resolveChooseAttributeTokens(
 
   const creature = draft.creatures[pending.creatureId];
   if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
-  if (!isLegalTokenDiscardPick(creature.attributeTokens, discarded, pending.amount)) {
+  const pileOwnerId = creature.ownerId;
+  const pile = draft.players[pileOwnerId]?.attributePool ?? {};
+  if (!isLegalTokenDiscardPick(pile, discarded, pending.amount)) {
     return "INVALID_CHOICE";
   }
 
-  const next = removeTokens(creature.attributeTokens, discarded);
   const mode = pending.mode ?? "discard";
-  const destinationId = pending.destinationCreatureId;
   if (mode === "transfer" || mode === "copy") {
-    if (destinationId === undefined) return "INVALID_CHOICE";
-    const dest = draft.creatures[destinationId];
-    if (dest === undefined || dest.defeated || dest.ownerId !== playerId) return "INVALID_CHOICE";
-    if (destinationId === pending.creatureId) return "INVALID_CHOICE";
-    draft.pendingDecision = null;
-    emit(draft, {
-      type: "choose-attribute-tokens-resolved",
-      playerId,
-      creatureId: pending.creatureId,
-      discarded,
-    });
-    applyTokenMove(draft, pending.creatureId, destinationId, discarded, mode === "copy");
-    return resumeAfterEffectPause(draft);
+    // Pack-feed creature↔creature is parked for Phase 6 (spec `016`).
+    return "INVALID_CHOICE";
   }
 
-  patchCreature(draft, pending.creatureId, { attributeTokens: next });
+  const next = removeTokens(pile, discarded);
+  patchPlayer(draft, pileOwnerId, { attributePool: next });
+  refreshRitualOrientations(draft, pileOwnerId);
   draft.pendingDecision = null;
   emit(draft, {
     type: "choose-attribute-tokens-resolved",
@@ -815,6 +820,7 @@ function resolveChooseAttributeTokens(
   });
   emit(draft, {
     type: "attribute-tokens-discarded",
+    playerId: pileOwnerId,
     creatureId: pending.creatureId,
     discarded,
   });
@@ -1544,16 +1550,82 @@ function installFacesOnDie(
 /* ------------------------------------------------------------ absorb --- */
 
 /**
- * Bible §7. The symbol leaves engine resolution for good, and the die sits on
- * the creature until end of turn. Attributes harden into tokens then; Shields
- * grant immediately — they do not fuel attacks, so the end-of-turn delay that
- * blocks same-turn attacking does not apply to them.
+ * Bank a usable attribute pip into the owner's pile and queue On absorb.
+ * Does not drain the resolution stack (caller drains). Returns false if the
+ * pip was not eligible (already gone, Shield, locked, wrong owner).
+ */
+function bankAttributeIntoPile(
+  draft: Draft,
+  playerId: PlayerId,
+  symbolId: SymbolInstanceId,
+  creatureId: CreatureId | null = null,
+): boolean {
+  const symbol = draft.symbols[symbolId];
+  if (symbol === undefined) return false;
+  if (symbol.ownerId !== playerId) return false;
+  if (!isUnabsorbedPoolSymbol(symbol)) return false;
+  if (!isAttributeSymbol(symbol.symbol)) return false;
+  if (symbol.usable === false) return false;
+
+  draft.symbols[symbolId] = {
+    ...symbol,
+    status: "absorbed",
+    absorbedByCreatureId: null,
+  };
+
+  const player = draft.players[playerId];
+  if (player === undefined) return false;
+  patchPlayer(draft, playerId, {
+    attributePool: addToken(player.attributePool, symbol.symbol),
+  });
+  refreshRitualOrientations(draft, playerId);
+
+  emit(draft, {
+    type: "symbol-absorbed",
+    symbolId,
+    playerId,
+    creatureId: null,
+  });
+  emit(draft, {
+    type: "attribute-token-gained",
+    playerId,
+    attribute: symbol.symbol,
+    amount: 1,
+  });
+
+  queueAbsorbTriggers(
+    draft,
+    playerId,
+    creatureId !== null
+      ? { kind: "creature", id: creatureId }
+      : { kind: "player", id: playerId },
+    symbol.symbol,
+    symbol.sourceDieId,
+    creatureId,
+  );
+  return true;
+}
+
+/** After ROLL_DICE onRoll resolves: bank remaining rolled attributes. */
+function bankRolledAttributeIfEligible(
+  draft: Draft,
+  playerId: PlayerId,
+  symbolId: SymbolInstanceId,
+): void {
+  bankAttributeIntoPile(draft, playerId, symbolId, null);
+}
+
+/**
+ * Spec `016`: attribute pips bank into the player's pile immediately (no
+ * creature target). Rolled attributes also auto-bank at the end of ROLL_DICE.
+ * Manual absorb remains for effect-generated pool attributes and for Shield
+ * (creature target). Face / standing On absorb fire on bank (or shield grant).
  */
 function absorbSymbol(
   draft: Draft,
   playerId: PlayerId,
-  creatureId: CreatureId,
   symbolId: SymbolInstanceId,
+  creatureId: CreatureId | undefined,
 ): GameError | null {
   if (draft.phase !== "actions") return "INVALID_PHASE";
 
@@ -1562,6 +1634,16 @@ function absorbSymbol(
   if (symbol.ownerId !== playerId) return "INVALID_TARGET";
   if (!isUnabsorbedPoolSymbol(symbol)) return "SYMBOL_UNAVAILABLE";
 
+  if (isAttributeSymbol(symbol.symbol)) {
+    if (!bankAttributeIntoPile(draft, playerId, symbolId, creatureId ?? null)) {
+      return "SYMBOL_UNAVAILABLE";
+    }
+    drainResolution(draft);
+    return null;
+  }
+
+  // Shield: creature target required.
+  if (creatureId === undefined) return "INVALID_TARGET";
   const creature = draft.creatures[creatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
   if (creature.ownerId !== playerId) return "INVALID_TARGET";
@@ -1577,87 +1659,19 @@ function absorbSymbol(
     patchDie(draft, symbol.sourceDieId, { attachedToCreatureId: creatureId });
   }
 
-  emit(draft, { type: "symbol-absorbed", symbolId, creatureId });
+  emit(draft, {
+    type: "symbol-absorbed",
+    symbolId,
+    playerId,
+    creatureId,
+  });
 
-  if (!isAttributeSymbol(symbol.symbol)) {
-    grantShield(draft, creatureId, 1);
-  }
+  grantShield(draft, creatureId, 1);
 
   queueAbsorbTriggers(
     draft,
     playerId,
     { kind: "creature", id: creatureId },
-    symbol.symbol,
-    symbol.sourceDieId,
-  );
-  drainResolution(draft);
-  return null;
-}
-
-/**
- * Spend an unabsorbed attribute symbol on a field ritual's Active-when gate.
- * Same actions-window and standing `on-absorb` hooks as creature absorb;
- * progress is credited immediately (not banked until END_TURN). Multiple pips
- * may be assigned in one turn, including the same attribute, until the gate
- * is filled. The symbol is consumed (not placed on a creature) and never
- * remains in the engine pool.
- */
-function absorbSymbolToRitual(
-  draft: Draft,
-  playerId: PlayerId,
-  cardInstanceId: CardInstanceId,
-  symbolId: SymbolInstanceId,
-): GameError | null {
-  if (draft.phase !== "actions") return "INVALID_PHASE";
-
-  const symbol = draft.symbols[symbolId];
-  if (symbol === undefined) return "UNKNOWN_ENTITY";
-  if (symbol.ownerId !== playerId) return "INVALID_TARGET";
-  if (!isUnabsorbedPoolSymbol(symbol)) return "SYMBOL_UNAVAILABLE";
-  if (!isAttributeSymbol(symbol.symbol)) return "INVALID_TARGET";
-
-  const card = draft.cards[cardInstanceId];
-  if (card === undefined) return "UNKNOWN_ENTITY";
-  if (card.ownerId !== playerId || card.zone !== "ritual") return "CARD_NOT_AVAILABLE";
-  if (card.ritualOrientation === "exhausted") return "CARD_NOT_AVAILABLE";
-
-  const region = getCard(card.cardId)?.ritual;
-  if (region?.activeWhen === undefined) return "CARD_NOT_AVAILABLE";
-
-  const attribute = symbol.symbol;
-  let creditAs = attribute;
-  const needed = region.activeWhen[attribute] ?? 0;
-  if (needed < 1) {
-    const missing = firstMissingActiveWhen(region.activeWhen, card.ritualProgress ?? {});
-    const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
-    const wildcardIndex = wildcards.findIndex(
-      (wildcard) => wildcard.fromSymbol === undefined || wildcard.fromSymbol === symbol.symbol,
-    );
-    if (missing === undefined || wildcardIndex < 0) return "INVALID_TARGET";
-    creditAs = missing;
-    consumeRequirementWildcardAt(draft, playerId, wildcardIndex);
-  }
-
-  const progress = card.ritualProgress ?? {};
-  if ((progress[creditAs] ?? 0) >= (region.activeWhen[creditAs] ?? 0)) return "INVALID_TARGET";
-
-  consumeSymbols(draft, [symbolId], "ritual-progress");
-
-  const nextProgress: AttributeTokens = {
-    ...progress,
-    [creditAs]: (progress[creditAs] ?? 0) + 1,
-  };
-  draft.cards[cardInstanceId] = {
-    ...card,
-    ritualProgress: nextProgress,
-    ritualProgressCreditedThisTurn: [...(card.ritualProgressCreditedThisTurn ?? []), creditAs],
-  };
-
-  refreshRitualOrientations(draft, playerId);
-  queueAbsorbTriggers(
-    draft,
-    playerId,
-    { kind: "ritual", id: cardInstanceId },
     symbol.symbol,
     symbol.sourceDieId,
   );
@@ -1692,22 +1706,28 @@ function attack(
   const targeting = targetingError(draft, attackerId, attackDefinition, targetId);
   if (targeting !== null) return targeting;
 
-  // Paid from the attacker's own absorbed fuel, never from the shared pool.
-  // `requires` is only checked, so a fuelled creature stays fuelled; `discards`
-  // is what an attack actually burns.
+  // Paid from the owner's attribute pile (spec `016`). `requires` is checked;
+  // `discards` burns from the pile. Same-turn bank → attack is legal.
+  const pile = draft.players[playerId]?.attributePool ?? {};
   const { requires, discards } = attackDefinition;
-  if (!holdsTokens(attacker, requires)) return "ATTACK_NOT_FUELLED";
-  if (discards !== undefined && !holdsTokens(attacker, discards)) return "ATTACK_NOT_FUELLED";
+  if (!holdsTokens(pile, requires)) return "ATTACK_NOT_FUELLED";
+  if (discards !== undefined && !holdsTokens(pile, discards)) return "ATTACK_NOT_FUELLED";
 
   emit(draft, { type: "attack-declared", attackerId, attackId: attackDefinition.id, targetId });
   patchCreature(draft, attackerId, {
     attacksUsedThisCombat: attacker.attacksUsedThisCombat + 1,
   });
   if (discards !== undefined) {
-    patchCreature(draft, attackerId, {
-      attributeTokens: removeTokens(attacker.attributeTokens, discards),
+    patchPlayer(draft, playerId, {
+      attributePool: removeTokens(pile, discards),
     });
-    emit(draft, { type: "attribute-tokens-discarded", creatureId: attackerId, discarded: discards });
+    refreshRitualOrientations(draft, playerId);
+    emit(draft, {
+      type: "attribute-tokens-discarded",
+      playerId,
+      creatureId: attackerId,
+      discarded: discards,
+    });
   }
 
   const baseEffect = attackDefinition.effect;
@@ -2132,9 +2152,14 @@ function activateRitual(
 
   if (
     region.activeWhen !== undefined &&
-    !ritualProgressMeets(card.ritualProgress ?? {}, region.activeWhen)
+    !ritualProgressMeets(draft.players[playerId]?.attributePool ?? {}, region.activeWhen)
   ) {
     return "INSUFFICIENT_SYMBOLS";
+  }
+
+  if (region.spend !== undefined) {
+    const pile = draft.players[playerId]?.attributePool ?? {};
+    if (!holdsTokens(pile, region.spend)) return "INSUFFICIENT_SYMBOLS";
   }
 
   if (declaredTargetCreatureId !== null) {
@@ -2164,6 +2189,19 @@ function activateRitual(
     noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
   }
 
+  if (region.spend !== undefined) {
+    const pile = draft.players[playerId]?.attributePool ?? {};
+    patchPlayer(draft, playerId, {
+      attributePool: removeTokens(pile, region.spend),
+    });
+    refreshRitualOrientations(draft, playerId);
+    emit(draft, {
+      type: "attribute-tokens-discarded",
+      playerId,
+      discarded: region.spend,
+    });
+  }
+
   emit(draft, { type: "ritual-activated", cardInstanceId, playerId });
 
   pushChainLink(
@@ -2183,29 +2221,10 @@ function activateRitual(
 }
 
 /**
- * Flip preparing → ready when banked Active-when progress meets the gate.
- * Progress itself is only gained via ABSORB_SYMBOL_TO_RITUAL (or cards with
- * no Active when, which are ready as soon as they hit the field).
+ * Flip preparing → ready when the owner's attribute pile meets Active-when
+ * (spec `016`). Rituals with no Active-when are ready as soon as they hit the
+ * field. Implementation lives in `zones.ts` so resolution can refresh too.
  */
-function refreshRitualOrientations(draft: Draft, playerId: PlayerId): void {
-  const player = draft.players[playerId];
-  if (player === undefined) return;
-
-  for (const cardInstanceId of player.ritual) {
-    const card = draft.cards[cardInstanceId];
-    const region = card === undefined ? undefined : getCard(card.cardId)?.ritual;
-    if (card === undefined || region === undefined) continue;
-    if (card.ritualOrientation !== "preparing") continue;
-
-    const progress = card.ritualProgress ?? {};
-    const active =
-      region.activeWhen === undefined || ritualProgressMeets(progress, region.activeWhen);
-    if (active) {
-      setRitualOrientation(draft, cardInstanceId, "ready");
-    }
-  }
-}
-
 function ritualProgressMeets(
   progress: AttributeTokens,
   requirement: import("../model/symbols.js").SymbolRequirement,
@@ -2217,12 +2236,12 @@ function ritualProgressMeets(
 
 /**
  * Once-per-turn rituals come off diagonal at the start of the owner's turn.
- * Banked Active-when symbols stay unless an effect explicitly discards them;
- * the ritual returns to ready when the gate is still met.
+ * Ready vs preparing is re-checked against the owner's attribute pile.
  */
 function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
+  const pile = player.attributePool;
 
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
@@ -2230,31 +2249,20 @@ function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
 
     if (card.ritualOrientation === "exhausted") {
       const region = getCard(card.cardId)?.ritual;
-      const progress = card.ritualProgress ?? {};
       const ready =
         region === undefined ||
         region.activeWhen === undefined ||
-        ritualProgressMeets(progress, region.activeWhen);
+        ritualProgressMeets(pile, region.activeWhen);
       const orientation = ready ? "ready" : "preparing";
       draft.cards[cardInstanceId] = {
         ...card,
         ritualOrientation: orientation,
-        ritualProgressCreditedThisTurn: [],
       };
       emit(draft, {
         type: "ritual-orientation-changed",
         cardInstanceId,
         orientation,
       });
-      continue;
-    }
-
-    // New turn: clear this-turn absorb telemetry (not a legality cap).
-    if ((card.ritualProgressCreditedThisTurn?.length ?? 0) > 0) {
-      draft.cards[cardInstanceId] = {
-        ...card,
-        ritualProgressCreditedThisTurn: [],
-      };
     }
   }
 }
@@ -2597,7 +2605,6 @@ function endTurn(draft: Draft, playerId: PlayerId): GameError | null {
  * differ only in how much Energy they arrive with.
  */
 function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameError | null {
-  payOutAbsorbedSymbols(draft);
   detachDice(draft);
   expireTurnSymbols(draft);
   resetCombatCounters(draft);
@@ -2627,8 +2634,8 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   // Standing burn pulses after toxin ticks (auto-target only — no choose pending).
   fireOnTurnStart(draft, track.holderId);
   drainResolution(draft);
-  // Exhausted once-per-turn rituals come off diagonal; banked Active-when
-  // symbols persist unless an effect discarded them.
+  // Exhausted once-per-turn rituals come off diagonal; Active-when is re-checked
+  // against the owner's attribute pile.
   resetExhaustedRituals(draft, track.holderId);
 
   // Drawn on entering your own turn, so the opening hand is not topped up
@@ -2637,33 +2644,6 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
 
   checkVictory(draft);
   return enterPhase(draft, "roll");
-}
-
-/**
- * Bible §7 step 4: absorbed attributes harden into tokens once the turn ends.
- * That delay is what stops a creature attacking on the turn it was fuelled.
- * Shields are granted at absorb time instead (see absorbSymbol).
- */
-function payOutAbsorbedSymbols(draft: Draft): void {
-  for (const symbol of Object.values(draft.symbols)) {
-    if (symbol.status !== "absorbed") continue;
-    if (!isAttributeSymbol(symbol.symbol)) continue;
-    const creatureId = symbol.absorbedByCreatureId;
-    if (creatureId === null) continue;
-
-    const creature = draft.creatures[creatureId];
-    if (creature === undefined || creature.defeated) continue;
-
-    patchCreature(draft, creatureId, {
-      attributeTokens: addToken(creature.attributeTokens, symbol.symbol),
-    });
-    emit(draft, {
-      type: "attribute-token-gained",
-      creatureId,
-      attribute: symbol.symbol,
-      amount: 1,
-    });
-  }
 }
 
 function detachDice(draft: Draft): void {
@@ -2676,8 +2656,8 @@ function detachDice(draft: Draft): void {
 
 /**
  * Symbols are temporary (bible §15) and, with storing dropped, nothing exempts
- * them. What a player wanted to keep had to be absorbed onto a creature, where
- * it now lives as a token or a shield rather than as a symbol.
+ * them. What a player wanted to keep as attributes is already in their pile;
+ * Shield sits on a creature. Unbanked turn-pool symbols expire here.
  */
 function expireTurnSymbols(draft: Draft): void {
   const expired: SymbolInstanceId[] = [];
@@ -2718,7 +2698,7 @@ function payCardRequires(
 function consumeSymbols(
   draft: Draft,
   symbolIds: readonly SymbolInstanceId[],
-  reason: "ritual-progress" | "card-requires",
+  reason: "card-requires",
 ): void {
   for (const id of symbolIds) {
     const symbol = draft.symbols[id];
@@ -2746,23 +2726,4 @@ function consumeRequirementWildcards(draft: Draft, playerId: PlayerId, count: nu
   const next = { ...draft.requirementWildcardsThisTurn, [playerId]: remaining };
   if (remaining.length === 0) delete next[playerId];
   draft.requirementWildcardsThisTurn = next;
-}
-
-function consumeRequirementWildcardAt(draft: Draft, playerId: PlayerId, index: number): void {
-  const current = [...(draft.requirementWildcardsThisTurn[playerId] ?? [])];
-  if (index < 0 || index >= current.length) return;
-  current.splice(index, 1);
-  const next = { ...draft.requirementWildcardsThisTurn, [playerId]: current };
-  if (current.length === 0) delete next[playerId];
-  draft.requirementWildcardsThisTurn = next;
-}
-
-function firstMissingActiveWhen(
-  requirement: import("../model/symbols.js").SymbolRequirement,
-  progress: AttributeTokens,
-): Attribute | undefined {
-  for (const [attribute, count] of requirementEntries(requirement)) {
-    if ((progress[attribute] ?? 0) < count) return attribute;
-  }
-  return undefined;
 }

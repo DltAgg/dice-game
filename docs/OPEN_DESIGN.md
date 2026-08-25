@@ -86,43 +86,44 @@ three deploys as two frontline and one back.
 
 ### Attacks are paid from attributes absorbed onto the attacking creature
 
-**Status:** `DECIDED` · implemented in `src/game/reducer/reduce.ts` and
-`src/game/rules/tokens.ts`
+**Status:** `SUPERSEDED` · 2026-08-24 · by **Attribute pile-up** below · was
+implemented in `src/game/reducer/reduce.ts` and `src/game/rules/tokens.ts`
 
-The single largest rule change so far. Attacks are **not** paid from the shared
-symbol pool. A creature absorbs attributes from rolled dice, and those
-attributes are what enable its attacks — the Pokémon TCG attachment model. A
-creature whose attack requires Martial + Wild must have absorbed both.
+~~Attacks are not paid from the shared symbol pool. A creature absorbs
+attributes from rolled dice, and those attributes enable its attacks — the
+Pokémon TCG attachment model.~~ Physical conversion made per-creature attribute
+counters untenable. See **Attribute pile-up (player resource bank)** and
+[`docs/specs/016-attribute-pile-up.md`](./specs/016-attribute-pile-up.md).
 
-This makes the central tension of bible §33 real for the first time:
+### Attribute pile-up (player resource bank)
+
+**Status:** `DECIDED` · 2026-08-24 · spec `016` · branch `feat/attribute-pile-up`
+
+Attributes the player holds live in a **persistent player pile**
+(`PlayerState.attributePool`), not on creatures or rituals.
 
 ```text
-absorb  → attribute sits on the creature → enables that creature's attacks
-resolve → symbol stays in the pool       → feeds card `[Requires: …]` spends
-                                           (including engine damage)
+absorb (attribute) → +1 in your pile     → enables attacks / ritual gates / spends
+absorb (Shield)    → Shield on a creature → prevent (creature token OK)
+resolve            → stays in turn pool   → `[Requires]` spends this turn
 ```
-
-Creatures therefore have two distinct cost surfaces, and both already exist in
-the model:
 
 | Surface | Paid from | Bible |
 |---|---|---|
-| Engine ability | unabsorbed symbols in the shared pool | §17 |
-| Attack | attributes absorbed onto that creature | §7, §31 |
+| Engine ability | unabsorbed symbols in the turn pool | §17 |
+| Attack | owner’s attribute pile (`requires` check; `discards` burn) | §7, §31 |
+| Ritual Active-when / Spend | owner’s attribute pile | layouts / `002` |
 
-An attack names two costs. `requires` is **checked and not spent**; `discards`
-is the part an attack actually burns, normally a subset of what it requires.
-Most Aggro Slow-game-test attacks (Varcolac, Garuda, and War Minotaur's special)
-set `discards` to one primary-attribute token so a fuelled creature cannot spam
-forever without re-absorbing. War Minotaur's basic Heavy Axe instead requires
-Martial 2 and omits `discards` (higher gate, reusable fuel). Control-squad
-attacks still omit `discards` and therefore keep absorbed tokens after attacking.
+- Shield, Toxin, and other **creature** tokens remain on creatures.
+- Absorbing an attribute into the pile is **immediate** (no end-of-turn delay),
+  so same-turn attack after banking is legal.
+- Face / standing `On absorb` fires when a pip is banked into the pile (or
+  Shield is granted onto a creature).
+- Rituals no longer hold Active-when progress on the card; optional `spend` on
+  activate creates the sink decision formerly served by assigning pips to the
+  ritual.
 
-Fuel only exists once the turn is over, so **a creature can never attack on the
-turn it absorbed**. Bible §7 has the die sit on the creature and become a token
-at end of turn, and §16 puts Combat before End Turn; taken literally that makes
-absorbing always a turn of setup, and it is. Across sixty simulated matches the
-first attack lands on turn 3.5 on average, and never on turn 1.
+Phased delivery: [`016-attribute-pile-up.STATUS.md`](./specs/016-attribute-pile-up.STATUS.md).
 
 ### Absorbed energy has a payoff
 
@@ -244,8 +245,9 @@ Consequences, all applied:
 - unabsorbed symbols expire at end of turn with no exceptions;
 - retaining a die is the only way to carry a result forward.
 
-What a player wants to keep has to be absorbed onto a creature, where it lives
-as a token or a shield rather than as a symbol.
+What a player wants to keep as **attributes** is absorbed into their
+**attribute pile**. Shield still sits on a creature. Unabsorbed turn-pool
+symbols still expire at end of turn.
 
 A player declares retain (or releases it) with `RETAIN_DIE`; see the resolved
 entry below.
@@ -349,32 +351,28 @@ Retention that keeps a showing face also re-fires on that roll step.
 
 ### Rituals live on the engine field with an orientation
 
-**Status:** `DECIDED` · implemented for place / prepare / activate
-· corrected 2026-08-16: Active-when symbols persist unless an effect discards them
-· corrected 2026-08-20: Active-when may receive multiple pips of the same attribute in one turn (same as creature absorb)
+**Status:** `DECIDED` · place / prepare / activate · **Active-when source
+updated 2026-08-24** (spec `016` attribute pile-up)
 
 A Ritual is played onto the engine area, not resolved from hand like an Instant:
 
 | Orientation | Visual | Meaning |
 |---|---|---|
-| `preparing` | tapped | Waiting for Active-when symbols absorbed onto it |
-| `ready` | untapped | Condition met; standing abilities on; may activate if print has an activate body |
+| `preparing` | tapped | Waiting for owner’s attribute pile to meet Active-when |
+| `ready` | untapped | Gate met; standing abilities on; may activate if print has an activate body |
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
-Rituals are placed empty. During actions the owner may assign unabsorbed
-attribute symbols to a ritual (same window as creature absorb), including
-multiple pips of the same attribute in one turn, until the printed
-`Attr + Attr` gate is filled. Over-filling a requirement is illegal.
-Symbols spent this way are consumed and never reach the engine pool. Rituals
-with no `[Active when: …]` become ready as soon as they hit the field.
+Rituals are placed without progress counters on the card. `activeWhen` is
+checked against the owner’s **attribute pile**. Rituals with no
+`[Active when: …]` become ready as soon as they hit the field. Optional
+`spend` on activate burns from the pile (decision sink). Requirement wildcards
+may still help meet Active-when when banking / checking as specified in `016`.
 
-At the start of your turn, exhausted rituals come off diagonal. Banked
-Active-when symbols stay on the card unless an effect explicitly discards or
-consumes them; if the gate is still met the ritual returns to ready, otherwise
-it returns to preparing. Preparing ones flip to ready once their banked
-progress meets the gate. Instant and reaction rituals leave for the graveyard
-after one activation; only `continuous` rituals stay and exhaust. Standing
-triggers fire while ready and do not spend those symbols.
+At the start of your turn, exhausted rituals come off diagonal. If the pile
+still meets Active-when the ritual returns to ready, otherwise preparing.
+Instant and reaction rituals leave for the graveyard after one activation;
+only `continuous` rituals stay and exhaust. Standing triggers fire while ready
+and do not spend Active-when / Spend unless the card activates.
 
 ### Reactions use a Yu-Gi-Oh style chain
 

@@ -1,6 +1,6 @@
 import { getCard, PROTOTYPE_DECK } from "../content/cards.js";
 import { PROTOTYPE_SQUAD } from "../content/creatures.js";
-import { ENGINE_TEST_FACE_DECK, PROTOTYPE_FACE_DECK, PROTOTYPE_STARTING_DICE, legacyStartingLayout } from "../content/faces.js";
+import { ENGINE_TEST_FACE_DECK, PROTOTYPE_FACE_DECK, AGGRO_STARTING_DICE, legacyStartingLayout } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
@@ -94,8 +94,8 @@ export const newMatchWithDecks = (overrides: Partial<MatchSetup> = {}): GameStat
   newMatch({
     config: DEFAULT_RULES_CONFIG,
     players: [
-      { id: P1, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: PROTOTYPE_STARTING_DICE },
-      { id: P2, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: PROTOTYPE_STARTING_DICE },
+      { id: P1, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: AGGRO_STARTING_DICE },
+      { id: P2, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: AGGRO_STARTING_DICE },
     ],
     ...overrides,
   });
@@ -128,8 +128,6 @@ export function withHand(
       attachedToCreatureId: null,
       attachedToFaceCardId: null,
       ritualOrientation: null,
-      ritualProgress: null,
-      ritualProgressCreditedThisTurn: null,
     };
     return id;
   });
@@ -240,18 +238,40 @@ export function withSymbols(
 }
 
 /**
- * Fuels a creature directly. Attacks are paid from tokens, and tokens only
- * appear at end of turn, so without this every combat test would have to spend
- * two turns absorbing the right faces before it could assert anything.
+ * Fuels a player's attribute pile directly (spec `016`). Same-turn attack after
+ * banking is legal; tests use this to skip the absorb setup.
+ */
+export function withAttributePool(
+  state: GameState,
+  playerId: PlayerId,
+  tokens: AttributeTokens,
+): GameState {
+  const player = state.players[playerId];
+  if (player === undefined) throw new Error(`scenario: unknown player ${playerId}`);
+  return {
+    ...state,
+    players: {
+      ...state.players,
+      [playerId]: {
+        ...player,
+        attributePool: { ...player.attributePool, ...tokens },
+      },
+    },
+  };
+}
+
+/**
+ * Fuels the creature owner's attribute pile. Prefer `withAttributePool` for
+ * new tests.
  */
 export function withTokens(
   state: GameState,
   creatureId: CreatureId,
   tokens: AttributeTokens,
 ): GameState {
-  return patch(state, creatureId, (creature) => ({
-    attributeTokens: { ...creature.attributeTokens, ...tokens },
-  }));
+  const creature = state.creatures[creatureId];
+  if (creature === undefined) throw new Error(`scenario: unknown creature ${creatureId}`);
+  return withAttributePool(state, creature.ownerId, tokens);
 }
 
 export function withShields(state: GameState, creatureId: CreatureId, shields: number): GameState {

@@ -2,18 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   ABYSSAL_SACRIFICE,
   ARCHMAGES_GRIMOIRE,
-  ASSEMBLY_LINE,
   BLACK_PLAGUE,
   BLADE_OF_SERENE_LIGHT,
-  CALL_TO_ARMS,
   CINDER_HEX,
   ECLIPSE,
   FESTER,
-  FOUNDRY,
   HUNTERS_COLLAR,
   HUNTING_ARMOUR,
   MUTANT_SPORES,
-  SERVOMOTOR,
   SLOW_BURN,
   SMOLDER,
   TOXIC_BLESSING,
@@ -66,6 +62,7 @@ import {
   withDamage,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withShields,
   withSymbols,
@@ -324,8 +321,6 @@ describe("on-absorb equipment", () => {
           attachedToCreatureId: null,
           attachedToFaceCardId: null,
           ritualOrientation: null,
-          ritualProgress: null,
-          ritualProgressCreditedThisTurn: null,
         },
       },
       players: {
@@ -394,23 +389,10 @@ describe("on-absorb overloads", () => {
 
     let rolled: GameState = { ...attached, phase: "roll" };
     rolled = withDie(rolled, dieId, { retained: true, rolledSlotIndex: 0 });
-    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 1 });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
 
-    const afterRoll = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-    const toxin = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "toxin" && s.status === "rolled" && s.sourceDieId === dieId,
-    );
-    if (toxin === undefined) throw new Error("expected rolled toxin");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: allyId,
-        symbolId: toxin.id,
-      }),
-    );
-
+    const after = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+    expect(after.players[P1]?.attributePool.toxin ?? 0).toBeGreaterThanOrEqual(1);
     expect(after.creatures[allyId]?.damage).toBe(1);
   });
 
@@ -429,23 +411,10 @@ describe("on-absorb overloads", () => {
     let rolled: GameState = withPhase(attached, "roll");
     // Starting die slot 1 is Wild.
     rolled = withDie(rolled, dieIdOf(rolled, P1, 0), { retained: true, rolledSlotIndex: 1 });
-    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
 
-    const afterRoll = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-    const wild = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "wild" && s.status === "rolled",
-    );
-    if (wild === undefined) throw new Error("expected wild");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(afterRoll, P1, 0),
-        symbolId: wild.id,
-      }),
-    );
-
+    const after = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+    expect(after.players[P1]?.attributePool.wild ?? 0).toBeGreaterThanOrEqual(1);
     const generated = usableSymbols(after, P1).filter(
       (s) => s.symbol === "wild" && s.sourceDieId === null,
     );
@@ -467,7 +436,7 @@ describe("on-roll / on-absorb faces", () => {
   function rollShowingSlot(state: GameState, slot: number): GameState {
     let rolled: GameState = withPhase(state, "roll");
     rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
-    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
     return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
   }
 
@@ -488,20 +457,9 @@ describe("on-roll / on-absorb faces", () => {
         advance(state, { type: "RESOLVE_CONVERT_SYMBOLS", playerId: P1, replacements: [] }),
       );
     }
-    const arcane = Object.values(state.symbols).find(
-      (s) => s.symbol === "arcane" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
-    );
-    if (arcane === undefined) throw new Error("expected arcane");
-    const after = expectOk(
-      advance(state, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(state, P1, 0),
-        symbolId: arcane.id,
-      }),
-    );
-    expect(after.energy.holderId).toBe(P1);
-    expect(after.energy.value).toBe(energyBefore + 1);
+    expect(state.players[P1]?.attributePool.arcane ?? 0).toBeGreaterThanOrEqual(1);
+    expect(state.energy.holderId).toBe(P1);
+    expect(state.energy.value).toBe(energyBefore + 1);
   });
 
   it("heals on Vital Spark roll and prevents on absorb", () => {
@@ -509,38 +467,24 @@ describe("on-roll / on-absorb faces", () => {
     let state = withDamage(installFace(newMatch(), VITAL_SPARK), allyId, 2);
     state = rollShowingSlot(state, 0);
     expect(state.creatures[allyId]?.damage).toBe(1);
+    expect(state.players[P1]?.attributePool.luminar ?? 0).toBeGreaterThanOrEqual(1);
 
-    const luminar = Object.values(state.symbols).find(
-      (s) => s.symbol === "luminar" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
-    );
-    if (luminar === undefined) throw new Error("expected luminar");
-    const afterAbsorb = expectOk(
+    expect(state.pendingDecision?.type).toBe("choose-creature");
+    state = expectOk(
       advance(state, {
-        type: "ABSORB_SYMBOL",
+        type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: allyId,
-        symbolId: luminar.id,
       }),
     );
-    expect(afterAbsorb.creatures[allyId]?.damagePreventBuffer).toBe(1);
+    expect(state.creatures[allyId]?.damagePreventBuffer).toBe(1);
   });
 
   it("grants next-attack bonus when Primordial Fury is absorbed", () => {
     let state = installFace(newMatch(), PRIMORDIAL_FURY);
     state = rollShowingSlot(state, 0);
-    const wild = Object.values(state.symbols).find(
-      (s) => s.symbol === "wild" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
-    );
-    if (wild === undefined) throw new Error("expected wild");
-    const after = expectOk(
-      advance(state, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(state, P1, 0),
-        symbolId: wild.id,
-      }),
-    );
-    expect(after.attackBonusThisTurn[P1]).toBe(1);
+    expect(state.players[P1]?.attributePool.wild ?? 0).toBeGreaterThanOrEqual(1);
+    expect(state.attackBonusThisTurn[P1]).toBe(1);
   });
 
   it("prompts choose-enemy when Venom is rolled", () => {
@@ -627,17 +571,20 @@ describe("on-discard continuous ritual", () => {
     )?.id;
     if (ritualId === undefined) throw new Error("ritual");
 
-    let ready: GameState = {
-      ...placed,
-      cards: {
-        ...placed.cards,
-        [ritualId]: {
-          ...placed.cards[ritualId]!,
-          ritualOrientation: "ready",
-          ritualProgress: { arcane: 1, darkness: 1 },
+    let ready: GameState = withAttributePool(
+      {
+        ...placed,
+        cards: {
+          ...placed.cards,
+          [ritualId]: {
+            ...placed.cards[ritualId]!,
+            ritualOrientation: "ready",
+          },
         },
       },
-    };
+      P1,
+      { arcane: 1, darkness: 1 },
+    );
     ready = withEnergy(withHand(withPhase(ready, "actions"), P1, [ECLIPSE]), P1, 10);
 
     const afterEclipse = expectOk(
@@ -660,12 +607,12 @@ describe("on-discard continuous ritual", () => {
     expect(darkness.length).toBeGreaterThanOrEqual(1);
     const ritual = discarded.cards[ritualId];
     expect(ritual?.ritualOrientation).toBe("ready");
-    expect(ritual?.ritualProgress).toEqual({ arcane: 1, darkness: 1 });
+    expect(discarded.players[P1]?.attributePool).toEqual({ arcane: 1, darkness: 1 });
   });
 });
 
 describe("Void Summoner on-absorb Natural", () => {
-  it("generates Arcane when any creature absorbs a Natural face", () => {
+  it("generates Arcane when the owner banks a Natural face", () => {
     const state0 = newMatch({
       players: [
         {
@@ -682,25 +629,13 @@ describe("Void Summoner on-absorb Natural", () => {
         },
       ],
     });
-    // Starting die slot 0 is typically Martial (natural).
+    // Starting die slot 0 is Martial (natural); other die on Shield.
     let state = withPhase(state0, "roll");
     state = withDie(state, dieIdOf(state), { retained: true, rolledSlotIndex: 0 });
-    state = withDie(state, dieIdOf(state, P1, 1), { retained: true, rolledSlotIndex: 1 });
+    state = withDie(state, dieIdOf(state, P1, 1), { retained: true, rolledSlotIndex: 4 });
     state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P1 }));
-    const martial = Object.values(state.symbols).find(
-      (s) => s.symbol === "martial" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
-    );
-    if (martial === undefined) throw new Error("martial");
-    const absorber = creatureIdAt(state, P1, 1);
-    const after = expectOk(
-      advance(state, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: absorber,
-        symbolId: martial.id,
-      }),
-    );
-    const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
+    expect(state.players[P1]?.attributePool.martial ?? 0).toBeGreaterThanOrEqual(1);
+    const arcane = usableSymbols(state, P1).filter((s) => s.symbol === "arcane");
     expect(arcane.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -721,10 +656,10 @@ describe("Void Summoner on-absorb Natural", () => {
         },
       ],
     });
-    // Starting die slot 4 is Shield (untyped).
+    // Retain ALL owner dice on Shield so no Natural auto-banks.
     let state = withPhase(state0, "roll");
     state = withDie(state, dieIdOf(state), { retained: true, rolledSlotIndex: 4 });
-    state = withDie(state, dieIdOf(state, P1, 1), { retained: true, rolledSlotIndex: 1 });
+    state = withDie(state, dieIdOf(state, P1, 1), { retained: true, rolledSlotIndex: 4 });
     state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P1 }));
     const shield = Object.values(state.symbols).find(
       (s) => s.symbol === SHIELD && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
@@ -792,241 +727,8 @@ describe("Lens Choir on-absorb Luminar once per turn", () => {
   });
 });
 
-describe("ritual absorb shares on-absorb hooks", () => {
-  const ritualInZone = (state: GameState, cardId: CardId) => {
-    const ritual = ritualsOf(state, P1).find((card) => card.cardId === cardId);
-    if (ritual === undefined) throw new Error(`test: missing ritual ${cardId}`);
-    return ritual;
-  };
-
-  it("Foundry gains Energy when an allied ritual absorbs Mechanical", () => {
-    const base = actionsReady([FOUNDRY, ASSEMBLY_LINE]);
-    const afterFoundry = expectOk(
-      advance(base, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-      }),
-    );
-    const afterAssembly = expectOk(
-      advance(afterFoundry, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(afterFoundry, P1, 0),
-      }),
-    );
-    const foundryId = ritualInZone(afterAssembly, FOUNDRY).id;
-    const assemblyId = ritualInZone(afterAssembly, ASSEMBLY_LINE).id;
-    const foundry = afterAssembly.cards[foundryId];
-    if (foundry === undefined) throw new Error("foundry");
-    let state: GameState = {
-      ...withEnergy(afterAssembly, P1, 5),
-      cards: {
-        ...afterAssembly.cards,
-        [foundryId]: {
-          ...foundry,
-          ritualOrientation: "ready",
-          ritualProgress: { mechanical: 2 },
-        },
-      },
-    };
-    state = withSymbols(withPhase(state, "actions"), P1, ["mechanical"], "rolled");
-    const mechanical = Object.values(state.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("mechanical");
-
-    const after = expectOk(
-      advance(state, {
-        type: "ABSORB_SYMBOL_TO_RITUAL",
-        playerId: P1,
-        cardInstanceId: assemblyId,
-        symbolId: mechanical.id,
-      }),
-    );
-
-    expect(after.cards[assemblyId]?.ritualProgress).toEqual({ mechanical: 1 });
-    expect(after.energy).toEqual({ holderId: P1, value: 6 });
-  });
-
-  it("Foundry's on-absorb fires when the completing Mechanical assignment readies it", () => {
-    const base = actionsReady([FOUNDRY]);
-    const placed = expectOk(
-      advance(base, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-      }),
-    );
-    const foundryId = ritualInZone(placed, FOUNDRY).id;
-    const foundry = placed.cards[foundryId];
-    if (foundry === undefined) throw new Error("foundry");
-    let state: GameState = {
-      ...withEnergy(placed, P1, 5),
-      cards: {
-        ...placed.cards,
-        [foundryId]: {
-          ...foundry,
-          ritualOrientation: "preparing",
-          ritualProgress: { mechanical: 1 },
-          ritualProgressCreditedThisTurn: [],
-        },
-      },
-    };
-    state = withSymbols(withPhase(state, "actions"), P1, ["mechanical"], "rolled");
-    const mechanical = Object.values(state.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("mechanical");
-
-    const after = expectOk(
-      advance(state, {
-        type: "ABSORB_SYMBOL_TO_RITUAL",
-        playerId: P1,
-        cardInstanceId: foundryId,
-        symbolId: mechanical.id,
-      }),
-    );
-
-    expect(after.cards[foundryId]?.ritualProgress).toEqual({ mechanical: 2 });
-    expect(after.cards[foundryId]?.ritualOrientation).toBe("ready");
-    expect(after.energy).toEqual({ holderId: P1, value: 6 });
-  });
-
-  it("credits ritualProgress immediately, not at END_TURN", () => {
-    const base = actionsReady([ASSEMBLY_LINE]);
-    const placed = expectOk(
-      advance(base, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-      }),
-    );
-    const ritualId = ritualInZone(placed, ASSEMBLY_LINE).id;
-    const absorbing = withSymbols(
-      withPhase(placed, "actions"),
-      P1,
-      ["mechanical"],
-      "rolled",
-    );
-    const mechanical = Object.values(absorbing.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("mechanical");
-
-    const after = expectOk(
-      advance(absorbing, {
-        type: "ABSORB_SYMBOL_TO_RITUAL",
-        playerId: P1,
-        cardInstanceId: ritualId,
-        symbolId: mechanical.id,
-      }),
-    );
-    expect(after.cards[ritualId]?.ritualProgress).toEqual({ mechanical: 1 });
-
-    const afterEnd = expectOk(advance(after, { type: "END_TURN", playerId: P1 }));
-    expect(afterEnd.cards[ritualId]?.ritualProgress).toEqual({ mechanical: 1 });
-  });
-
-  it("still banks creature attribute tokens until END_TURN", () => {
-    const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial"], "rolled");
-    const creatureId = creatureIdAt(state, P1, 0);
-    const martial = Object.values(state.symbols).find((s) => s.symbol === "martial");
-    if (martial === undefined) throw new Error("martial");
-
-    const absorbed = expectOk(
-      advance(state, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId,
-        symbolId: martial.id,
-      }),
-    );
-    expect(absorbed.creatures[creatureId]?.attributeTokens).toEqual({});
-
-    const nextTurn = expectOk(advance(absorbed, { type: "END_TURN", playerId: P1 }));
-    expect(nextTurn.creatures[creatureId]?.attributeTokens).toEqual({ martial: 1 });
-  });
-
-  it("does not fire self-only equipment when a ritual absorbs Mechanical", () => {
-    const base = actionsReady([SERVOMOTOR, ASSEMBLY_LINE]);
-    const equipped = equip(base, creatureIdAt(base, P1, 0));
-    const afterRitual = expectOk(
-      advance(equipped, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(equipped, P1, 0),
-      }),
-    );
-    const ritualId = ritualInZone(afterRitual, ASSEMBLY_LINE).id;
-    const absorbing = withSymbols(
-      withPhase(afterRitual, "actions"),
-      P1,
-      ["mechanical"],
-      "rolled",
-    );
-    const mechanical = Object.values(absorbing.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("mechanical");
-
-    const after = expectOk(
-      advance(absorbing, {
-        type: "ABSORB_SYMBOL_TO_RITUAL",
-        playerId: P1,
-        cardInstanceId: ritualId,
-        symbolId: mechanical.id,
-      }),
-    );
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-  });
-
-  it("Void Summoner generates Arcane when a ritual absorbs a Natural face", () => {
-    const state0 = newMatch({
-      players: [
-        {
-          id: P1,
-          squad: [VOID_SUMMONER, MINOTAUR, GARUDA],
-          deck: [],
-          faceDeck: ENGINE_TEST_FACE_DECK,
-        },
-        {
-          id: P2,
-          squad: [MINOTAUR, GARUDA, VOID_SUMMONER],
-          deck: [],
-          faceDeck: ENGINE_TEST_FACE_DECK,
-        },
-      ],
-    });
-    const ready = withEnergy(withHand(withPhase(state0, "actions"), P1, [CALL_TO_ARMS]), P1, 10);
-    const placed = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    const ritualId = ritualInZone(placed, CALL_TO_ARMS).id;
-    let rolled: GameState = withPhase(placed, "roll");
-    rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
-    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 1 });
-    const afterRoll = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-    const martial = Object.values(afterRoll.symbols).find(
-      (s) => s.symbol === "martial" && s.status === "rolled" && s.sourceDieId === dieIdOf(afterRoll),
-    );
-    if (martial === undefined) throw new Error("martial");
-
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "ABSORB_SYMBOL_TO_RITUAL",
-        playerId: P1,
-        cardInstanceId: ritualId,
-        symbolId: martial.id,
-      }),
-    );
-    const arcane = usableSymbols(after, P1).filter((s) => s.symbol === "arcane");
-    expect(arcane.length).toBeGreaterThanOrEqual(1);
-  });
+describe.skip("ritual absorb shares on-absorb hooks", () => {
+  it("parked — 016 Phase 6 / ritual absorb removed", () => {});
 });
 
 describe("Toxic Blessing arm-attack-toxin", () => {
@@ -1132,8 +834,6 @@ describe("control creature attack riders", () => {
           attachedToCreatureId: null,
           attachedToFaceCardId: null,
           ritualOrientation: null,
-          ritualProgress: null,
-          ritualProgressCreditedThisTurn: null,
         },
       },
       players: {
@@ -1154,7 +854,7 @@ describe("control creature attack riders", () => {
     );
 
     expect(after.creatures[targetId]?.damage).toBe(2);
-    expect(after.creatures[attackerId]?.attributeTokens.arcane).toBeUndefined();
+    expect(after.players[P1]?.attributePool.arcane).toBeUndefined();
     expect(eventTypes(after)).toContain("card-drawn");
     expect(after.players[P1]?.hand).toContain(deckCardId);
   });
@@ -1176,7 +876,7 @@ describe("control creature attack riders", () => {
     );
 
     expect(after.creatures[targetId]?.damage).toBe(2);
-    expect(after.creatures[attackerId]?.attributeTokens.darkness).toBeUndefined();
+    expect(after.players[P1]?.attributePool.darkness).toBeUndefined();
     const darkness = usableSymbols(after, P1).filter((s) => s.symbol === "darkness");
     expect(darkness.length).toBeGreaterThanOrEqual(1);
   });
@@ -1205,7 +905,7 @@ describe("control creature attack riders", () => {
 
 function placedReadyRitual(
   cardId: CardId,
-  progress: { readonly toxin?: number; readonly corruption?: number },
+  _progress: { readonly toxin?: number; readonly corruption?: number },
 ) {
   const base = actionsReady([cardId]);
   const placed = expectOk(
@@ -1219,17 +919,20 @@ function placedReadyRitual(
   if (ritualId === undefined) throw new Error("test: no ritual");
   return {
     ritualId,
-    state: {
-      ...placed,
-      cards: {
-        ...placed.cards,
-        [ritualId]: {
-          ...placed.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: progress,
+    state: withAttributePool(
+      {
+        ...placed,
+        cards: {
+          ...placed.cards,
+          [ritualId]: {
+            ...placed.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    },
+      P1,
+      _progress,
+    ),
   };
 }
 

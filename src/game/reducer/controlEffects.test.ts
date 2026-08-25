@@ -57,8 +57,6 @@ function withOpponentRitual(
         attachedToCreatureId: null,
         attachedToFaceCardId: null,
         ritualOrientation: orientation,
-        ritualProgress: orientation === "ready" ? { arcane: 2 } : {},
-        ritualProgressCreditedThisTurn: [],
       },
     },
     players: {
@@ -121,7 +119,7 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
         discarded: { darkness: 1, wild: 1 },
       }),
     );
-    expect(after.creatures[targetId]?.attributeTokens).toEqual({ martial: 1 });
+    expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
     expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 
@@ -143,7 +141,7 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
         creatureId: targetId,
       }),
     );
-    expect(after.creatures[targetId]?.attributeTokens).toEqual({});
+    expect(after.players[P1]?.attributePool).toEqual({});
     expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
     expect(graveyardOf(after, P1).some((c) => c.cardId === SIPHON_SIGIL)).toBe(true);
   });
@@ -165,7 +163,7 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
         creatureId: targetId,
       }),
     );
-    expect(after.creatures[targetId]?.attributeTokens).toEqual({});
+    expect(after.players[P1]?.attributePool).toEqual({});
   });
 
   it("strips a homogeneous pile without a token prompt", () => {
@@ -185,7 +183,7 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
       }),
     );
     expect(after.pendingDecision).toBeNull();
-    expect(after.creatures[targetId]?.attributeTokens).toEqual({ martial: 1 });
+    expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
   });
 });
 
@@ -249,8 +247,6 @@ describe("Dispel Circle (destroy-ritual)", () => {
           attachedToCreatureId: null,
           attachedToFaceCardId: null,
           ritualOrientation: "preparing" as const,
-          ritualProgress: {},
-          ritualProgressCreditedThisTurn: [],
         },
       },
       players: {
@@ -392,7 +388,7 @@ function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameSt
 function rollShowingSlot(state: GameState, slot: number): GameState {
   let rolled = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
-  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
@@ -426,7 +422,7 @@ describe("Hexbrand (discard-attribute-tokens)", () => {
         discarded: { wild: 1 },
       }),
     );
-    expect(after.creatures[targetId]?.attributeTokens).toEqual({ martial: 1 });
+    expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
   });
 });
 

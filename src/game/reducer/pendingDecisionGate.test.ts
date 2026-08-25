@@ -53,7 +53,7 @@ function asTurn(state: GameState, playerId: typeof P1 | typeof P2): GameState {
   return { ...withEnergy(state, playerId, 10), activePlayerId: playerId };
 }
 
-/** Retain-roll so slot 0 shows the installed face; the other die shows slot 0. */
+/** Retain-roll so `slot` shows; other die stays on Shield (no Natural auto-bank). */
 function rollShowingSlot(state: GameState, slot: number, playerId: typeof P1 | typeof P2 = P1): GameState {
   let rolled = withPhase(asTurn(state, playerId), "roll");
   rolled = withDie(rolled, dieIdOf(rolled, playerId, 0), {
@@ -62,31 +62,23 @@ function rollShowingSlot(state: GameState, slot: number, playerId: typeof P1 | t
   });
   rolled = withDie(rolled, dieIdOf(rolled, playerId, 1), {
     retained: true,
-    rolledSlotIndex: 0,
+    rolledSlotIndex: 4,
   });
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId }));
 }
 
-function absorbShowing(
+/** Resolve Hexbrand On absorb destroy-equipment (opens after auto-bank). */
+function resolveHexbrandAbsorbFollowup(
   state: GameState,
-  faceSymbol: string,
   playerId: typeof P1 | typeof P2,
+  enemyId: ReturnType<typeof creatureIdAt>,
 ): GameState {
-  const dieId = dieIdOf(state, playerId);
-  const symbol = Object.values(state.symbols).find(
-    (entry) =>
-      entry.symbol === faceSymbol &&
-      entry.status === "rolled" &&
-      entry.sourceDieId === dieId &&
-      entry.usable !== false,
-  );
-  if (symbol === undefined) throw new Error(`expected ${faceSymbol}`);
+  if (state.pendingDecision?.type !== "choose-creature") return state;
   return expectOk(
     advance(state, {
-      type: "ABSORB_SYMBOL",
+      type: "RESOLVE_CHOOSE_CREATURE",
       playerId,
-      creatureId: creatureIdAt(state, playerId, 0),
-      symbolId: symbol.id,
+      creatureId: enemyId,
     }),
   );
 }
@@ -111,8 +103,6 @@ function withOpponentRitual(
         attachedToCreatureId: null,
         attachedToFaceCardId: null,
         ritualOrientation: "ready" as const,
-        ritualProgress: { arcane: 2 },
-        ritualProgressCreditedThisTurn: [],
       },
     },
     players: {
@@ -147,15 +137,17 @@ describe("pending-decision gate — non-active chooser", () => {
     expect(onP2Turn.activePlayerId).toBe(P2);
     expect(onP2Turn.pendingDecision).toMatchObject({ controllerId: P1 });
 
-    const resolved = expectOk(
+    let resolved = expectOk(
       advance(onP2Turn, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: enemyId,
       }),
     );
+    // Auto-bank then opens On absorb destroy-equipment.
+    resolved = resolveHexbrandAbsorbFollowup(resolved, P1, enemyId);
     expect(resolved.pendingDecision).toBeNull();
-    expect(resolved.creatures[enemyId]?.attributeTokens.martial ?? 0).toBe(0);
+    expect(resolved.players[P2]?.attributePool.martial ?? 0).toBe(0);
     expect(eventTypes(resolved)).toContain("choose-creature-resolved");
     expect(resolved.activePlayerId).toBe(P2);
 
@@ -175,15 +167,16 @@ describe("pending-decision gate — non-active chooser", () => {
       controllerId: P2,
     });
 
-    const resolved = expectOk(
+    let resolved = expectOk(
       advance(state, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P2,
         creatureId: enemyId,
       }),
     );
+    resolved = resolveHexbrandAbsorbFollowup(resolved, P2, enemyId);
     expect(resolved.pendingDecision).toBeNull();
-    expect(resolved.creatures[enemyId]?.attributeTokens.martial ?? 0).toBe(0);
+    expect(resolved.players[P1]?.attributePool.martial ?? 0).toBe(0);
   });
 
   it("blocks the turn player (and matching RESOLVE) while the opponent owns the pending", () => {
@@ -239,13 +232,14 @@ describe("pending-decision gate — non-active chooser", () => {
     );
     expectPendingDecision(advance(state, { type: "END_TURN", playerId: P2 }), state);
 
-    const resolved = expectOk(
+    let resolved = expectOk(
       advance(state, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: enemyId,
       }),
     );
+    resolved = resolveHexbrandAbsorbFollowup(resolved, P1, enemyId);
     expect(resolved.pendingDecision).toBeNull();
     expect(resolved.activePlayerId).toBe(P1);
     const ended = advance(resolved, { type: "END_TURN", playerId: P1 });
@@ -256,7 +250,8 @@ describe("pending-decision gate — non-active chooser", () => {
     let state = withOpponentRitual(installFace(newMatch(), BLIGHT), P2, LIVING_LIBRARY);
     const ritualId = ritualsOf(state, P2)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
-    state = absorbShowing(rollShowingSlot(state, 0), "corruption", P1);
+    // Auto-bank fires On absorb; no manual ABSORB_SYMBOL.
+    state = rollShowingSlot(state, 0);
     expect(state.pendingDecision).toMatchObject({
       type: "choose-ritual",
       controllerId: P1,
@@ -278,7 +273,7 @@ describe("pending-decision gate — non-active chooser", () => {
     let state = withOpponentRitual(installFace(newMatch(), BLIGHT, { playerId: P2 }), P1, LIVING_LIBRARY);
     const ritualId = ritualsOf(state, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
-    state = absorbShowing(rollShowingSlot(state, 0, P2), "corruption", P2);
+    state = rollShowingSlot(state, 0, P2);
     expect(state.activePlayerId).toBe(P2);
     expect(state.pendingDecision).toMatchObject({
       type: "choose-ritual",

@@ -94,7 +94,7 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ wild: 1 });
+    expect(after.players[P1]?.attributePool).toEqual({ wild: 1 });
     expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 
@@ -113,7 +113,7 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.creatures[attackerId]?.attributeTokens).toEqual({ martial: 2 });
+    expect(after.players[P1]?.attributePool).toEqual({ martial: 2 });
     expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
   });
 

@@ -1,6 +1,5 @@
 import type { Attribute } from "../model/attributes.js";
 import { ATTRIBUTES } from "../model/attributes.js";
-import type { CreatureState } from "../model/creatures.js";
 import {
   requirementEntries,
   requirementTotal,
@@ -9,14 +8,17 @@ import {
 } from "../model/symbols.js";
 
 /**
- * Attribute tokens are a creature's private fuel supply (bible §7). Attacks are
- * paid from here and never from the shared symbol pool, which is what turns
- * absorbing into an investment rather than a sacrifice.
+ * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
+ * spec `016`). Attacks check/burn from there; ritual Active-when / Spend read
+ * the same pile. Creature Shield / Toxin stay on creatures.
  */
 
-export const holdsTokens = (creature: CreatureState, requirement: SymbolRequirement): boolean =>
+export const holdsTokens = (
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): boolean =>
   requirementEntries(requirement).every(
-    ([attribute, count]) => (creature.attributeTokens[attribute] ?? 0) >= count,
+    ([attribute, count]) => (tokens[attribute] ?? 0) >= count,
   );
 
 export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({
@@ -39,7 +41,7 @@ export function addTokens(
 
 /**
  * Removes a requirement's worth of tokens. Zeroed attributes are dropped rather
- * than left as `0`, so two creatures holding the same fuel always serialize
+ * than left as `0`, so two piles holding the same fuel always serialize
  * identically and state comparisons in tests stay meaningful.
  */
 export function removeTokens(

@@ -94,7 +94,7 @@ Engine: remove-shield | discard-attribute-tokens | remove-toxin-deal-damage
 | Print | Why it is a different word |
 |---|---|
 | `[Generate N Toxin]` | A **pool symbol**, not a creature/face token. Expires at end of turn. |
-| Absorb Toxin | Moves a pool pip onto a creature (fuel at end of turn). Grammar, not an effect keyword. |
+| Absorb Toxin | Banks a pool pip into your attribute pile. Grammar, not an effect keyword. |
 | `[Prevent N]` | Combat step before Shield. Luminar exclusive. Not a token you Mark. |
 | `[Empower N]` | Extra damage on an attack. Not a token. |
 | `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. |
@@ -181,8 +181,9 @@ These are not effect replacements.
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
 | `[Requires: …]` | Extra pool-symbol cost |
-| `[Active when: …]` | Ritual gate (not repeated in the effect box) |
-| Absorb | Move a pool pip onto a creature or ritual, instead of leaving it in the pool |
+| `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
+| `[Spend: …]` | Optional burn from the owner’s attribute pile on ritual activate |
+| Absorb | Bank an attribute into your pile (rolled usable attributes auto-bank after on-roll), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | Energy | Shared marker |
 | `On roll:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…” |
