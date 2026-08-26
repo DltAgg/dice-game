@@ -109,6 +109,14 @@ export type GameEvent =
       readonly copy: boolean;
     }
   | {
+      readonly type: "attribute-tokens-drained";
+      readonly fromPlayerId: PlayerId;
+      readonly toPlayerId: PlayerId;
+      readonly drained: SymbolRequirement;
+      /** Creature named as the targeting context (choose-enemy). */
+      readonly creatureId?: CreatureId;
+    }
+  | {
       readonly type: "cards-milled";
       readonly playerId: PlayerId;
       readonly cardInstanceIds: readonly CardInstanceId[];
@@ -125,8 +133,8 @@ export type GameEvent =
       readonly creatureId: CreatureId;
       readonly amount: number;
       readonly shieldsRemaining: number;
-      /** What absorbed the damage. Spec `009` distinguishes buffer vs shield. */
-      readonly source: "buffer" | "shield" | "effect";
+      /** What absorbed the damage. Spec `009` distinguishes attack-prevent vs shield. */
+      readonly source: "attack-prevent" | "shield" | "effect";
     }
   | {
       readonly type: "card-drawn";

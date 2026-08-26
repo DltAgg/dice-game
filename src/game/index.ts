@@ -56,6 +56,8 @@ export {
 export {
   basicAttackOf,
   formatAttackCost,
+  formatAttackFuel,
+  attackCostOf,
   formatAttackLine,
   primaryAttribute,
   specialAttackOf,

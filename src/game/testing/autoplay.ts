@@ -138,8 +138,9 @@ function creatureNeeding(
     if (definition === undefined) return false;
     const held = state.players[playerId]?.attributePool[attribute] ?? 0;
     return definition.attacks.some((attack) => {
-      const needed = attack.requires[attribute] ?? 0;
-      // Count only the shortfall vs `requires`. Extra primary tokens for an
+      const fuel = attack.requires ?? attack.discards ?? {};
+      const needed = fuel[attribute] ?? 0;
+      // Count only the shortfall vs fuel. Extra primary tokens for an
       // incomplete multi-cost special used to stockpile forever and starve
       // combat once attacks began discarding fuel each swing.
       return needed > held;

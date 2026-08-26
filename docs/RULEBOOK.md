@@ -169,7 +169,8 @@ whoever holds the marker.
   finishes. Landing **exactly** on zero does not.
 - Playing **and** forging pay the printed header Energy cost.
 - Engine abilities / `[Requires]` and attacks cost **attribute-pile** fuel
-  (`requires` check; optional `discards` / Requires spend burn), not Energy.
+  (`requires` threshold **or** `discards` burn — never both on one attack;
+  ritual `[Requires]` / Spend are unchanged), not Energy.
 - Discounts apply to play / ritual place / equip / overload, **not** forge.
   Minimum cost after discount is 0.
 - Printed Energy 1 on cards is exceptional; 1-Energy plays should mainly
@@ -270,9 +271,10 @@ face) fires again.
 ## 13. Combat
 
 - Each living creature may attack **once per turn** during actions.
-- An attack names `requires` (checked, **not** spent) and optional
-  `discards` (tokens actually burned). Fuel is the **owner’s attribute
-  pile**, not the shared turn pool and not counters on the creature.
+- An attack names **either** `requires` (checked, **not** spent) **or**
+  `discards` (the pile must hold it and you burn it). Basics pay
+  (`discards`); specials threshold (`requires`). Fuel is the **owner’s
+  attribute pile**, not the shared turn pool and not counters on the creature.
 - Because banking is immediate, you may attack on the same turn you absorb
   the fuel.
 - Declaring an attack opens a reaction window (§15). Prevent may answer;
@@ -289,11 +291,15 @@ frontline ↔ back (swap if the frontline is full).
 
 ## 14. Damage extras
 
-**Prevention** (two shapes; cards pick one):
+**Prevention** (next attack, not a damage buffer):
 
-- Prevent-next-N-damage **buffers** on a creature, consumed as damage lands.
-- Prevent N **attacks** (whole instances) — vocabulary exists; unused
-  prevent does **not** expire for now.
+- `[Prevent]` on a creature cancels the next **attack** against it (the whole
+  instance, before Shield). Unused prevent does **not** expire for now
+  (`preventExpiry: "none"`).
+- Toxin ticks, face `[Strike]`, and other effect damage do **not** consume
+  attack-prevent.
+- Prevent reactions (Prismatic Barrier, Sidestep, Luminar Judgement) answer
+  an attack on the chain.
 
 **Toxin:** counters on a creature. At the start of **that creature’s
 owner’s** turn, it takes 1 damage per counter. Counters persist until

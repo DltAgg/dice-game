@@ -21,6 +21,30 @@ export const holdsTokens = (
     ([attribute, count]) => (tokens[attribute] ?? 0) >= count,
   );
 
+export const isNonEmptyRequirement = (
+  requirement: SymbolRequirement | undefined,
+): requirement is SymbolRequirement =>
+  requirement !== undefined && requirementTotal(requirement) > 0;
+
+/**
+ * Attack fuel XOR: pile must hold `requires` (threshold) **or** `discards`
+ * (burn). Exactly one is authored; both or neither is illegal.
+ */
+export function attackIsFuelled(
+  tokens: AttributeTokens,
+  attack: {
+    readonly requires?: SymbolRequirement;
+    readonly discards?: SymbolRequirement;
+  },
+): boolean {
+  const hasRequires = isNonEmptyRequirement(attack.requires);
+  const hasDiscards = isNonEmptyRequirement(attack.discards);
+  if (hasRequires === hasDiscards) return false;
+  if (hasRequires) return holdsTokens(tokens, attack.requires);
+  if (hasDiscards) return holdsTokens(tokens, attack.discards);
+  return false;
+}
+
 export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({
   ...tokens,
   [attribute]: (tokens[attribute] ?? 0) + 1,

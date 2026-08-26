@@ -119,11 +119,6 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    if (state.pendingDecision?.type === "remove-toxin-amount") {
-      state = expectOk(
-        advance(state, { type: "RESOLVE_REMOVE_TOXIN_AMOUNT", playerId: P1, amount: 0 }),
-      );
-    }
 
     // Apply toxin via Venom on die 1 while the cap is active.
     state = installFace(state, VENOM, { dieIndex: 1, slot: 0 });
@@ -141,7 +136,7 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    expect(state.creatures[enemyId]?.toxinMarkers).toBe(3);
+    expect(state.creatures[enemyId]?.toxinMarkers).toBe(1);
     expect(state.creatures[enemyId]?.toxinReceiveCapRemaining).toBe(0);
 
     // Further Venom applications grant nothing.
@@ -159,7 +154,7 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    expect(state.creatures[enemyId]?.toxinMarkers).toBe(3);
+    expect(state.creatures[enemyId]?.toxinMarkers).toBe(1);
 
     state = withEnergy(withPhase(state, "actions"), P1, 5);
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
@@ -190,12 +185,9 @@ describe("face markers / suppress / lock (013)", () => {
         creatureId: enemyId,
       }),
     );
-    expect(state.pendingDecision?.type).toBe("remove-toxin-amount");
-    state = expectOk(
-      advance(state, { type: "RESOLVE_REMOVE_TOXIN_AMOUNT", playerId: P1, amount: 2 }),
-    );
-    expect(state.creatures[enemyId]?.toxinMarkers).toBe(1);
-    expect(state.creatures[enemyId]?.damage).toBe(2);
+    expect(state.pendingDecision).toBeNull();
+    expect(state.creatures[enemyId]?.toxinMarkers).toBe(0);
+    expect(state.creatures[enemyId]?.damage).toBe(3);
   });
 
   it("Stain puts a Corruption marker on an opposing synthetic face", () => {

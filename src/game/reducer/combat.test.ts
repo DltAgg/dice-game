@@ -33,8 +33,8 @@ function combatState(creatureIndex: number, tokens: AttributeTokens) {
 }
 
 describe("attacking", () => {
-  it("damages the target when the attacker holds the required attributes", () => {
-    const state = combatState(0, { martial: 2 });
+  it("damages the target when the attacker holds the discarded attributes", () => {
+    const state = combatState(0, { martial: 1 });
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
 
@@ -80,7 +80,7 @@ describe("attacking", () => {
     if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
   });
 
-  it("burns discarded tokens when the attack lists discards", () => {
+  it("does not burn when the attack lists requires only", () => {
     const state = combatState(0, { martial: 1, wild: 1 });
     const attackerId = creatureIdAt(state, P1, 0);
 
@@ -94,12 +94,12 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({ wild: 1 });
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.players[P1]?.attributePool).toEqual({ martial: 1, wild: 1 });
+    expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
   });
 
-  it("burns one Martial when Heavy Axe is declared", () => {
-    const state = combatState(0, { martial: 2 });
+  it("burns discarded tokens when Heavy Axe is declared", () => {
+    const state = combatState(0, { martial: 1 });
     const attackerId = creatureIdAt(state, P1, 0);
 
     const after = expectOk(
@@ -112,7 +112,7 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({ martial: 1 });
+    expect(after.players[P1]?.attributePool).toEqual({});
     expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 

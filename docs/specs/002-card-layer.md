@@ -332,7 +332,7 @@ catalogue-only until deck-designer places it.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 3 | Siphon Sigil | Instant / Arcane | 1 Natural Arcane, your die | A chosen enemy creature discards 2 attribute tokens. |
+| 3 | Siphon Sigil | Instant / Arcane | 1 Natural Arcane, your die | [Drain 2]. |
 | 4 | Dispel Circle | Instant / Arcane | 1 Natural Arcane, your die | [Destroy Ritual]. |
 | 3 | Seal the Rite | Reaction / Arcane | 1 Synthetic Arcane, your die | [Negate Ritual]. |
 | 0 | Counterglyph | Reaction / Arcane | 1 Synthetic Arcane, your die | *Requires: Arcane.* [Negate Instant]. |
@@ -365,7 +365,7 @@ Not on Aggro / Tempo / Combo Mechanical (Hunting Armour is Tempo Luminar).
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Raise Guard | Instant / Martial | 1 Natural Martial, your die | [Mark 2 Shield]. |
-| 2 | Sidestep | Reaction / Luminar | 1 Natural Luminar, your die | [Prevent 2]. |
+| 2 | Sidestep | Reaction / Luminar | 1 Natural Luminar, your die | [Prevent]. |
 | 2 | Rethrow | Instant / Arcane | 1 Natural Arcane, your die | [Reroll]. |
 | 2 | Sift | Instant / Arcane | 1 Natural Arcane, your die | [Insight 2]. |
 | 2 | Second Wind | Instant / Arcane | 1 Natural Arcane, your die | [Gain 1 Energy]. [Insight 1]. |

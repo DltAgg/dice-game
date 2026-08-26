@@ -474,7 +474,7 @@ describe("on-roll / on-absorb faces", () => {
         creatureId: allyId,
       }),
     );
-    expect(state.creatures[allyId]?.damagePreventBuffer).toBe(1);
+    expect(state.creatures[allyId]?.attackPreventCount).toBe(1);
   });
 
   it("grants next-attack bonus when Primordial Fury is absorbed", () => {

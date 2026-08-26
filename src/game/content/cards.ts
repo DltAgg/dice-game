@@ -220,10 +220,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "[Prevent 2].",
+    rulesText: "[Prevent].",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
+        { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
       ],
     },
   }),
@@ -1533,10 +1533,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "A chosen enemy discards 2 from their attribute pile.",
+    rulesText: "[Drain 2].",
     effect: {
       effects: [
-        { type: "discard-attribute-tokens", amount: 2, target: { kind: "choose-enemy" } },
+        { type: "drain-attribute-tokens", amount: 2, target: { kind: "choose-enemy" } },
       ],
     },
   }),
@@ -1699,10 +1699,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "[Prevent 2].",
+    rulesText: "[Prevent].",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
+        { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
       ],
     },
   }),

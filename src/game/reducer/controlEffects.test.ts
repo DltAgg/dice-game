@@ -69,8 +69,8 @@ function withOpponentRitual(
   };
 }
 
-describe("Siphon Sigil (discard-attribute-tokens)", () => {
-  it("prompts which tokens to strip when the enemy has a mix", () => {
+describe("Siphon Sigil (drain-attribute-tokens)", () => {
+  it("prompts which tokens to drain when the enemy has a mix", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, {
       darkness: 1,
@@ -120,7 +120,8 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
       }),
     );
     expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.players[P1]?.attributePool).toEqual({ darkness: 1, wild: 1 });
+    expect(eventTypes(after)).toContain("attribute-tokens-drained");
   });
 
   it("whiffs legally when the enemy has no tokens", () => {
@@ -142,11 +143,11 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
       }),
     );
     expect(after.players[P1]?.attributePool).toEqual({});
-    expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
+    expect(eventTypes(after)).not.toContain("attribute-tokens-drained");
     expect(graveyardOf(after, P1).some((c) => c.cardId === SIPHON_SIGIL)).toBe(true);
   });
 
-  it("discards all remaining when fewer than amount", () => {
+  it("drains all remaining when fewer than amount", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, { arcane: 1 });
     const opened = expectOk(
@@ -163,10 +164,11 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
         creatureId: targetId,
       }),
     );
-    expect(after.players[P1]?.attributePool).toEqual({});
+    expect(after.players[P2]?.attributePool).toEqual({});
+    expect(after.players[P1]?.attributePool).toEqual({ arcane: 1 });
   });
 
-  it("strips a homogeneous pile without a token prompt", () => {
+  it("drains a homogeneous pile without a token prompt", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, { martial: 3 });
     const after = expectOk(
@@ -184,6 +186,7 @@ describe("Siphon Sigil (discard-attribute-tokens)", () => {
     );
     expect(after.pendingDecision).toBeNull();
     expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
+    expect(after.players[P1]?.attributePool).toEqual({ martial: 2 });
   });
 });
 
@@ -392,8 +395,8 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
-describe("Hexbrand (discard-attribute-tokens)", () => {
-  it("prompts which token to strip on roll when the enemy has a mix", () => {
+describe("Hexbrand (drain-attribute-tokens)", () => {
+  it("prompts which token to drain on roll when the enemy has a mix", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     const seeded = withTokens(installFace(newMatch(), HEXBRAND), targetId, {
       martial: 1,
@@ -423,6 +426,7 @@ describe("Hexbrand (discard-attribute-tokens)", () => {
       }),
     );
     expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
+    expect(after.players[P1]?.attributePool).toEqual({ corruption: 1, wild: 1 });
   });
 });
 

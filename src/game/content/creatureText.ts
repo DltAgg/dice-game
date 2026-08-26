@@ -13,6 +13,15 @@ export function formatAttackCost(requires: SymbolRequirement): string {
     .join(" + ");
 }
 
+/** `requires` (threshold) or `discards` (pay) — exactly one is authored. */
+export function attackCostOf(attack: AttackDefinition): SymbolRequirement {
+  return attack.requires ?? attack.discards ?? {};
+}
+
+export function formatAttackFuel(attack: AttackDefinition): string {
+  return formatAttackCost(attackCostOf(attack));
+}
+
 export function formatAttackLine(attack: AttackDefinition): string {
   return `${attack.name}: ${attack.rulesText}`;
 }

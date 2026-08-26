@@ -126,11 +126,11 @@ describe("Raise Guard", () => {
 });
 
 describe("Sidestep", () => {
-  it("prevents 2 from an attack on the chain target", () => {
+  it("prevents the next attack on the chain target", () => {
     const combat = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(combat, P1, 0);
     const target = creatureIdAt(combat, P2, 0);
-    const armed = withHand(withEnergy(withTokens(combat, attacker, { martial: 2 }), P2, 10), P2, [
+    const armed = withHand(withEnergy(withTokens(combat, attacker, { martial: 1 }), P2, 10), P2, [
       SIDESTEP,
     ]);
     const opened = expectOk(
@@ -150,9 +150,8 @@ describe("Sidestep", () => {
       }),
     );
     const resolved = resolveOpenChain(stepped);
-    // Heavy Axe deals 3; prevent 2 → 1 HP.
-    expect(resolved.creatures[target]?.damage).toBe(1);
-    expect(resolved.creatures[target]?.damagePreventBuffer).toBe(0);
+    expect(resolved.creatures[target]?.damage).toBe(0);
+    expect(resolved.creatures[target]?.attackPreventCount).toBe(0);
   });
 });
 

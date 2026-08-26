@@ -26,13 +26,13 @@ export interface AttackDefinition {
   /** Basic vs Special as printed on the creature card. */
   readonly kind: "basic" | "special";
   /**
-   * Attributes the owner's pile must hold. Checked, not spent: unmet discards
-   * still block the declare when the pile cannot pay both.
+   * Threshold the owner's pile must hold. Checked, not spent.
+   * Exactly one of non-empty `requires` or non-empty `discards` is authored.
    */
-  readonly requires: SymbolRequirement;
+  readonly requires?: SymbolRequirement;
   /**
-   * Attributes the attack burns from the owner's pile on use, normally a
-   * subset of `requires`.
+   * Attributes the attack burns from the owner's pile on use. Mutually
+   * exclusive with `requires` — basics pay; specials threshold.
    */
   readonly discards?: SymbolRequirement;
   /** Bible §6: Range lets an attack ignore the frontline restriction. */
@@ -81,10 +81,11 @@ export interface CreatureState {
   /** Each shield prevents 1 damage once, then is gone. Persists across turns. */
   readonly shields: number;
   /**
-   * Prevent-next-N damage buffer (spec `009`). Applied before Shields.
-   * Unused remainder persists until consumed (`preventExpiry: "none"`).
+   * Remaining incoming **attacks** to cancel whole (spec `009`). Applied before
+   * Shields. Unused remainder persists until consumed (`preventExpiry: "none"`).
+   * Non-attack damage does not consume this.
    */
-  readonly damagePreventBuffer: number;
+  readonly attackPreventCount: number;
   /**
    * Extra damage on this creature's next attack only (Varcolac passive). Cleared
    * when spent or at end of turn.
