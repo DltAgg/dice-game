@@ -114,8 +114,6 @@ Same idea, different nouns.
 | `[Move N Energy]` | — | Opponent’s Energy toward you |
 | `[Drain N]` | Attribute tokens in a player pile | Take N from the chosen enemy’s controller’s pile into yours (controller names which pips when mixed) |
 
-| `[Drain N]` | Attribute tokens in a player pile | Take N from the chosen enemy’s controller’s pile into yours (controller names which pips when mixed) |
-
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
 opponent’s die is Corruption’s exclusive (their die). Mechanical forges
 **your** die.
