@@ -57,7 +57,7 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
 - **Never** reimplement rules in React. No second legality engine. Query
   `src/game` (`legalTargetsFor`, `validateLoadout`, formatters, etc.).
 - Loadout legality is `validateLoadout` in `src/game/rules/loadout.ts` (via
-  `validateSavedDeck`). UI may show the reason; it must not invent 50–60 / ≤4
+  `validateSavedDeck`). UI may show the reason; it must not invent 40–50 / ≤3
   copy / face-deck rules.
 - Online: `mode` is `local` | `host` | `client`. Host owns `advance()` and
   overrides `action.playerId` by seat. Client sends `submit-action` and

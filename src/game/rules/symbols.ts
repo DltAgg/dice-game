@@ -7,10 +7,11 @@ import {
   type SymbolStatus,
   type SymbolType,
 } from "../model/symbols.js";
+import { pileRequirementShortfall } from "./tokens.js";
 
 /**
  * Die pips (`rolled`) and effect-generated symbols (`available`) share one
- * unabsorbed pool. Absorb and `[Requires]` spend both see this set.
+ * unabsorbed pool. Attribute banking and leftover Shield absorb see this set.
  */
 export const isUnabsorbedPoolStatus = (status: SymbolStatus): boolean =>
   status === "rolled" || status === "available";
@@ -52,12 +53,10 @@ export const availableSymbolCounts = (
 };
 
 /**
- * Chooses which specific symbols pay a requirement, or null when it cannot be
- * paid. Ids are sorted so the same state and requirement always select the same
- * symbols, which is what makes a replay reproduce a match exactly.
- *
- * Only engine abilities and cards pay this way. Attacks are funded from the
- * attacker's own absorbed tokens; see `rules/tokens.ts`.
+ * Chooses which specific turn-pool symbols match a requirement, or null when
+ * it cannot be paid. Prefer `canPay` / pile checks for `[Spend]` / gates —
+ * usable attributes auto-bank into `attributePool` (spec `016`). This planner
+ * still matches the turn pool for rare leftover unabsorbed pips.
  */
 export function planConsumption(
   state: GameState,
@@ -85,11 +84,19 @@ export function planConsumption(
   return chosen;
 }
 
+/**
+ * Whether a pile gate or Spend can be met from the owner's attribute pile
+ * (plus Resonance wildcards for shortfall).
+ */
 export const canPay = (
   state: GameState,
   playerId: PlayerId,
   requirement: SymbolRequirement,
-): boolean => planConsumption(state, playerId, requirement) !== null;
+): boolean => {
+  const pile = state.players[playerId]?.attributePool ?? {};
+  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
+  return pileRequirementShortfall(pile, requirement) <= wildcards;
+};
 
 /** How many requirement pips are unpaid after matching the pool exactly. */
 export function requirementShortfall(

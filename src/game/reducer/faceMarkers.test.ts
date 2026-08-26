@@ -12,7 +12,7 @@ import {
   VENOM,
 } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
-import { asAttackId, type CreatureId, type DieId, type FaceCardId } from "../model/ids.js";
+import type { CreatureId, DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { usableSymbols } from "../rules/symbols.js";
 import {
@@ -81,7 +81,7 @@ function withToxin(state: GameState, creatureId: CreatureId, toxinMarkers: numbe
   };
 }
 
-/** Retain-roll so slot 0 shows the installed face; other die shows slot 0. */
+/** Retain-roll so slot shows the installed face; other die stays on Shield. */
 function rollShowingSlot(state: GameState, slot: number, playerId: typeof P1 = P1): GameState {
   let rolled = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled, playerId, 0), {
@@ -90,33 +90,9 @@ function rollShowingSlot(state: GameState, slot: number, playerId: typeof P1 = P
   });
   rolled = withDie(rolled, dieIdOf(rolled, playerId, 1), {
     retained: true,
-    rolledSlotIndex: 0,
+    rolledSlotIndex: 4,
   });
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId }));
-}
-
-function absorbShowing(
-  state: GameState,
-  faceSymbol: string,
-  creatureId: CreatureId,
-): GameState {
-  const dieId = dieIdOf(state);
-  const symbol = Object.values(state.symbols).find(
-    (s) =>
-      s.symbol === faceSymbol &&
-      s.status === "rolled" &&
-      s.sourceDieId === dieId &&
-      s.usable !== false,
-  );
-  if (symbol === undefined) throw new Error(`expected ${faceSymbol}`);
-  return expectOk(
-    advance(state, {
-      type: "ABSORB_SYMBOL",
-      playerId: P1,
-      creatureId,
-      symbolId: symbol.id,
-    }),
-  );
 }
 
 describe("face markers / suppress / lock (013)", () => {
@@ -133,14 +109,7 @@ describe("face markers / suppress / lock (013)", () => {
       }),
     );
     expect(state.creatures[enemyId]?.toxinReceiveCapRemaining).toBe(1);
-
-    // Apply toxin via Venom on die 1 while the cap is active.
-    state = installFace(state, VENOM, { dieIndex: 1, slot: 0 });
-    let rolled = withPhase(state, "roll");
-    rolled = withDie(rolled, dieIdOf(rolled, P1, 0), { retained: true, rolledSlotIndex: 1 });
-    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
-    state = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-    // Venom choose-enemy
+    // Drain auto-bank On absorb (remove-toxin) so later rolls are not gated.
     if (state.pendingDecision?.type === "choose-creature") {
       state = expectOk(
         advance(state, {
@@ -150,16 +119,33 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    expect(state.creatures[enemyId]?.toxinMarkers).toBe(3);
+
+    // Apply toxin via Venom on die 1 while the cap is active.
+    state = installFace(state, VENOM, { dieIndex: 1, slot: 0 });
+    let rolled = withPhase(state, "roll");
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 0), { retained: true, rolledSlotIndex: 4 });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+    state = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+    // Venom On roll + auto-bank On absorb each open choose-enemy.
+    while (state.pendingDecision?.type === "choose-creature") {
+      state = expectOk(
+        advance(state, {
+          type: "RESOLVE_CHOOSE_CREATURE",
+          playerId: P1,
+          creatureId: enemyId,
+        }),
+      );
+    }
+    expect(state.creatures[enemyId]?.toxinMarkers).toBe(1);
     expect(state.creatures[enemyId]?.toxinReceiveCapRemaining).toBe(0);
 
     // Further Venom applications grant nothing.
     state = installFace(state, VENOM, { dieIndex: 1, slot: 0 });
     rolled = withPhase(state, "roll");
-    rolled = withDie(rolled, dieIdOf(rolled, P1, 0), { retained: true, rolledSlotIndex: 1 });
+    rolled = withDie(rolled, dieIdOf(rolled, P1, 0), { retained: true, rolledSlotIndex: 4 });
     rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
     state = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-    if (state.pendingDecision?.type === "choose-creature") {
+    while (state.pendingDecision?.type === "choose-creature") {
       state = expectOk(
         advance(state, {
           type: "RESOLVE_CHOOSE_CREATURE",
@@ -168,7 +154,7 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    expect(state.creatures[enemyId]?.toxinMarkers).toBe(3);
+    expect(state.creatures[enemyId]?.toxinMarkers).toBe(1);
 
     state = withEnergy(withPhase(state, "actions"), P1, 5);
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
@@ -178,7 +164,6 @@ describe("face markers / suppress / lock (013)", () => {
 
   it("Adaptive Toxin absorb removes toxin for damage", () => {
     const enemyId = creatureIdAt(newMatch(), P2, 0);
-    const allyId = creatureIdAt(newMatch(), P1, 0);
     let state = withToxin(withDamage(installFace(newMatch(), ADAPTIVE_TOXIN), enemyId, 0), enemyId, 3);
     state = rollShowingSlot(state, 0);
     // Cap choose: pick enemy
@@ -191,7 +176,7 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    state = absorbShowing(state, "toxin", allyId);
+    // Auto-bank then opens On absorb remove-toxin choice.
     expect(state.pendingDecision?.type).toBe("choose-creature");
     state = expectOk(
       advance(state, {
@@ -200,12 +185,9 @@ describe("face markers / suppress / lock (013)", () => {
         creatureId: enemyId,
       }),
     );
-    expect(state.pendingDecision?.type).toBe("remove-toxin-amount");
-    state = expectOk(
-      advance(state, { type: "RESOLVE_REMOVE_TOXIN_AMOUNT", playerId: P1, amount: 2 }),
-    );
-    expect(state.creatures[enemyId]?.toxinMarkers).toBe(1);
-    expect(state.creatures[enemyId]?.damage).toBe(2);
+    expect(state.pendingDecision).toBeNull();
+    expect(state.creatures[enemyId]?.toxinMarkers).toBe(0);
+    expect(state.creatures[enemyId]?.damage).toBe(3);
   });
 
   it("Stain puts a Corruption marker on an opposing synthetic face", () => {
@@ -226,7 +208,6 @@ describe("face markers / suppress / lock (013)", () => {
   });
 
   it("Stain absorb locks a Corrupted face as a resource", () => {
-    const allyId = creatureIdAt(newMatch(), P1, 0);
     let state = installFace(newMatch(), STAIN);
     state = installFace(state, FLYWHEEL, { playerId: P2, slot: 1 });
     state = withCorruptionMarker(state, P2, 0, 1, 1);
@@ -242,7 +223,7 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    state = absorbShowing(state, "corruption", allyId);
+    // Auto-bank On absorb: lock a Corrupted face.
     expect(state.pendingDecision?.type).toBe("choose-die-slot");
     state = expectOk(
       advance(state, {
@@ -301,7 +282,6 @@ describe("face markers / suppress / lock (013)", () => {
   });
 
   it("Decay absorb strips Corrupted face into an unusable Corruption symbol", () => {
-    const allyId = creatureIdAt(newMatch(), P1, 0);
     let state = withCorruptionMarker(installFace(newMatch(), DECAY), P2, 0, 1, 1);
     state = installFace(state, FLYWHEEL, { playerId: P2, slot: 1 });
     // Re-apply corruption on Flywheel slot after install
@@ -318,7 +298,7 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    state = absorbShowing(state, "corruption", allyId);
+    // Auto-bank On absorb: strip Corrupted face into unusable Corruption.
     expect(state.pendingDecision?.type).toBe("choose-die-slot");
     const oppDie = dieIdOf(state, P2);
     state = expectOk(
@@ -359,7 +339,6 @@ describe("face markers / suppress / lock (013)", () => {
   });
 
   it("Catalyst absorb copies an appeared synthetic face onRoll", () => {
-    const allyId = creatureIdAt(newMatch(), P1, 0);
     let state = installFace(newMatch(), CATALYST);
     state = installFace(state, CRUSH, { dieIndex: 1, slot: 0 });
     let rolled = withPhase(state, "roll");
@@ -374,7 +353,7 @@ describe("face markers / suppress / lock (013)", () => {
       );
     }
     const bonusBefore = state.attackBonusThisTurn[P1] ?? 0;
-    state = absorbShowing(state, "mechanical", allyId);
+    // Auto-bank On absorb: copy appeared synthetic.
     expect(state.pendingDecision?.type).toBe("choose-die-slot");
     state = expectOk(
       advance(state, {
@@ -398,15 +377,12 @@ describe("face markers / suppress / lock (013)", () => {
     );
     expect(state.energy.value).toBe(energyBefore + 1);
     expect(state.dice[dieIdOf(state)]?.slots[0]?.suppressInherentNextRoll).toBe(true);
-
-    const allyId = creatureIdAt(state, P1, 0);
-    state = absorbShowing(state, "mechanical", allyId);
+    // Auto-bank On absorb after optional resolves.
     expect(state.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Instinct absorb opens optional bonus basic during actions", () => {
+  it("Instinct absorb grants Frenzy on a chosen ally", () => {
     const attackerId = creatureIdAt(newMatch(), P1, 0);
-    const targetId = creatureIdAt(newMatch(), P2, 0);
     let state = withTokens(installFace(newMatch(), INSTINCT), attackerId, { martial: 2 });
     state = rollShowingSlot(state, 0);
     if (state.pendingDecision?.type === "choose-creature") {
@@ -418,41 +394,40 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    state = absorbShowing(state, "wild", attackerId);
-    expect(state.pendingDecision?.type).toBe("optional-bonus-attack");
-    expect(state.phase).toBe("actions");
+    // Auto-bank then opens On absorb Frenzy.
+    expect(state.pendingDecision?.type).toBe("choose-creature");
     state = expectOk(
       advance(state, {
-        type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
+        type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        accept: true,
-        attackId: asAttackId("attack-minotaur-heavy-axe"),
-        targetId,
+        creatureId: attackerId,
       }),
     );
-    expect(state.creatures[attackerId]?.attacksUsedThisCombat).toBe(1);
-    expect(state.creatures[targetId]?.damage).toBeGreaterThan(0);
+    // Roll Empower 1; absorb Frenzy 1.
+    expect(state.creatures[attackerId]?.nextAttackBonus).toBe(1);
+    expect(state.creatures[attackerId]?.extraAttacksThisTurn).toBe(1);
   });
 
-  it("Instinct optional bonus attack can be declined", () => {
-    const attackerId = creatureIdAt(newMatch(), P1, 0);
+  it("Instinct absorb Frenzy can target a different ally", () => {
+    const firstId = creatureIdAt(newMatch(), P1, 0);
+    const secondId = creatureIdAt(newMatch(), P1, 1);
     let state = installFace(newMatch(), INSTINCT);
     state = rollShowingSlot(state, 0);
     if (state.pendingDecision?.type === "choose-creature") {
       state = expectOk(
-        advance(state, { type: "RESOLVE_CHOOSE_CREATURE", playerId: P1, creatureId: attackerId }),
+        advance(state, { type: "RESOLVE_CHOOSE_CREATURE", playerId: P1, creatureId: firstId }),
       );
     }
-    state = absorbShowing(state, "wild", attackerId);
-    expect(state.pendingDecision?.type).toBe("optional-bonus-attack");
+    expect(state.pendingDecision?.type).toBe("choose-creature");
     state = expectOk(
       advance(state, {
-        type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
+        type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        accept: false,
+        creatureId: secondId,
       }),
     );
-    expect(state.pendingDecision).toBeNull();
-    expect(state.creatures[attackerId]?.attacksUsedThisCombat).toBe(0);
+    expect(state.creatures[firstId]?.nextAttackBonus).toBe(1);
+    expect(state.creatures[secondId]?.extraAttacksThisTurn).toBe(1);
+    expect(state.creatures[firstId]?.extraAttacksThisTurn).toBe(0);
   });
 });

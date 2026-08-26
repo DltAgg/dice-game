@@ -77,12 +77,20 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Next attack this turn deals +N.",
   },
   {
+    test: (body) => /^Frenzy(?:\s+\d+)?$/i.test(body),
+    reminder: "May declare N extra attacks this turn (default 1).",
+  },
+  {
     test: (body) => /^Pierce(?:\s+\d+)?$/i.test(body),
     reminder: "Ignore N Shield after Prevent.",
   },
   {
     test: (body) => /^Prevent(?:\s+\d+)?$/i.test(body),
-    reminder: "Prevent next N damage before Shield.",
+    reminder: "Prevent the next attack against that creature (before Shield).",
+  },
+  {
+    test: (body) => /^Drain(?:\s+\d+)?$/i.test(body),
+    reminder: "Take N attribute tokens from the chosen enemy's pile into yours.",
   },
   {
     test: (body) => /^Convert(?:\s+\d+)?$/i.test(body),
@@ -126,7 +134,7 @@ const STEM_RULES: readonly StemRule[] = [
   },
   {
     test: (body) => /^Resonance$/i.test(body),
-    reminder: "Pool symbol may pay any Requires/Active-when.",
+    reminder: "Pool symbol may pay any Spend / Requires / Active-when.",
   },
   {
     test: (body) => /^Reroll$/i.test(body),
@@ -137,8 +145,16 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Keep retainable die across next roll.",
   },
   {
-    test: (body) => /^(?:Requires|Active when)\b/i.test(body),
-    reminder: "Extra cost / ritual gate.",
+    test: (body) => /^Requires:/i.test(body),
+    reminder: "Pile must hold this. Not spent.",
+  },
+  {
+    test: (body) => /^Spend:/i.test(body),
+    reminder: "Burn this from your pile.",
+  },
+  {
+    test: (body) => /^Active when:/i.test(body),
+    reminder: "Ritual gate vs your pile.",
   },
 ];
 

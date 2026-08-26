@@ -13,15 +13,15 @@ import {
   P2,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
-  withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
 const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
 
-function placedReadyRitual(cardId: CardId, progress: AttributeTokens) {
+function placedReadyRitual(cardId: CardId, _progress: AttributeTokens) {
   const base = actionsReady([cardId]);
   const placed = advance(base, {
     type: "PLAY_CARD",
@@ -31,19 +31,19 @@ function placedReadyRitual(cardId: CardId, progress: AttributeTokens) {
   if (!placed.ok) throw new Error("test: place failed");
   const ritualId = ritualsOf(placed.state, P1)[0]?.id;
   if (ritualId === undefined) throw new Error("test: no ritual");
-  return {
-    ritualId,
-    state: {
-      ...placed.state,
-      cards: {
-        ...placed.state.cards,
-        [ritualId]: {
-          ...placed.state.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: progress,
-        },
+  const oriented = {
+    ...placed.state,
+    cards: {
+      ...placed.state.cards,
+      [ritualId]: {
+        ...placed.state.cards[ritualId]!,
+        ritualOrientation: "ready" as const,
       },
     },
+  };
+  return {
+    ritualId,
+    state: withAttributePool(oriented, P1, _progress),
   };
 }
 
@@ -212,9 +212,9 @@ describe("forge-faces (Great Contamination)", () => {
 
 describe("forge-faces (Ritual of Contamination)", () => {
   it("opens a one-face opponent forge when played with Corruption", () => {
-    const state = withSymbols(actionsReady([RITUAL_OF_CONTAMINATION]), P1, [
-      "corruption",
-    ]);
+    const state = withAttributePool(actionsReady([RITUAL_OF_CONTAMINATION]), P1, {
+      corruption: 1,
+    });
     const played = advance(state, {
       type: "PLAY_CARD",
       playerId: P1,

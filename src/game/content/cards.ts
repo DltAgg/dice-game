@@ -149,6 +149,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "Pay 2 Energy. [Negate Instant].",
     ritual: {
       activeWhen: { arcane: 2 },
+      spend: { arcane: 2 },
       additionalEnergy: 2,
       effects: [{ type: "negate-card", cardTypes: ["instant"] }],
     },
@@ -219,10 +220,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "[Prevent 2].",
+    rulesText: "[Prevent].",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
+        { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
       ],
     },
   }),
@@ -237,6 +238,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Search 2] Instant or Ritual cards.",
     ritual: {
       activeWhen: { arcane: 2 },
+      spend: { arcane: 2 },
       // Living Library: Instant or Ritual from deck.
       effects: [{ type: "search-deck", amount: 2, filter: ["instant", "ritual"] }],
     },
@@ -312,6 +314,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Recall 3].",
     ritual: {
       activeWhen: { darkness: 2 },
+      spend: { darkness: 2 },
       effects: [{ type: "search-graveyard", amount: 3 }],
     },
   }),
@@ -351,6 +354,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       "[Forge 3 Synthetic Corruption] on one of the opponent's dice.",
     ritual: {
       activeWhen: { corruption: 2 },
+      spend: { corruption: 2 },
       effects: [
         {
           type: "forge-faces",
@@ -374,6 +378,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       "Consume every synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures.",
     ritual: {
       activeWhen: { corruption: 3 },
+      spend: { corruption: 3 },
       effects: [{ type: "extermination" }],
     },
   }),
@@ -387,7 +392,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     forge: { faces: 1, kind: "synthetic", attribute: "darkness", target: "own-die" },
     rulesText:
       "Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements.",
-    // No Active when on print; place/ready still works.
+    // No Active when / Spend on print; place/ready still works.
     ritual: {
       effects: [{ type: "replay-graveyard-tactic" }],
     },
@@ -558,6 +563,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["arcane", "darkness"],
+          absorberRelation: "ally",
           effects: [
             { type: "draw-cards", amount: 1 },
             { type: "discard-cards", amount: 1 },
@@ -617,13 +623,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "On absorb Arcane: copy another symbol onto it.",
+    rulesText: "On absorb Arcane: copy another symbol in your pool.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
           symbols: ["arcane"],
+          absorberRelation: "ally",
           effects: [{ type: "copy-pool-symbol" }],
         },
       ],
@@ -752,6 +759,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["martial"],
+          absorberRelation: "ally",
           effects: [
             { type: "reposition-creature", target: { kind: "source-creature" }, optional: true },
           ],
@@ -859,6 +867,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["wild"],
+          absorberRelation: "ally",
           effects: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
         },
       ],
@@ -943,13 +952,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On absorb Wild: [Heal 1].",
+    rulesText: "On absorb Wild: [Heal 1] this creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
           symbols: ["wild"],
+          absorberRelation: "ally",
           effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
         },
       ],
@@ -983,6 +993,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Forge 2 Synthetic Mechanical] on your die.",
     ritual: {
       activeWhen: { mechanical: 2 },
+      spend: { mechanical: 2 },
       effects: [
         {
           type: "forge-faces",
@@ -1075,7 +1086,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Can only overload a Mechanical face.\nOn absorb: copy another symbol onto it.",
+    rulesText: "Can only overload a Mechanical face.\nOn absorb: copy another symbol in your pool.",
     overload: {
       faceSymbols: ["mechanical"],
       onRoll: [],
@@ -1114,6 +1125,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["mechanical"],
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
         },
@@ -1353,11 +1365,11 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "[Empower 2] on an allied creature.",
+    rulesText: "[Frenzy] on an allied creature.",
     effect: {
       requires: { wild: 1 },
       effects: [
-        { type: "grant-next-attack-bonus", amount: 2, target: { kind: "choose-ally" } },
+        { type: "grant-extra-attack", amount: 1, target: { kind: "choose-ally" } },
       ],
     },
   }),
@@ -1448,6 +1460,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Empower 2].",
     ritual: {
       activeWhen: { martial: 2 },
+      spend: { martial: 2 },
       effects: [{ type: "next-attack-bonus", amount: 2 }],
     },
   }),
@@ -1505,6 +1518,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Forge 2 Synthetic Toxin] on your die.",
     ritual: {
       activeWhen: { toxin: 2 },
+      spend: { toxin: 2 },
       effects: [
         {
           type: "forge-faces",
@@ -1525,10 +1539,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "A chosen enemy creature discards 2 attribute tokens.",
+    rulesText: "[Drain 2].",
     effect: {
       effects: [
-        { type: "discard-attribute-tokens", amount: 2, target: { kind: "choose-enemy" } },
+        { type: "drain-attribute-tokens", amount: 2, target: { kind: "choose-enemy" } },
       ],
     },
   }),
@@ -1611,6 +1625,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     rulesText: "[Strike 4].",
     ritual: {
       activeWhen: { arcane: 1, darkness: 1 },
+      spend: { arcane: 1, darkness: 1 },
       effects: [{ type: "damage", amount: 4, target: { kind: "choose-enemy" } }],
     },
   }),
@@ -1658,6 +1673,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["darkness"],
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
         },
@@ -1690,10 +1706,10 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "luminar",
     forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
-    rulesText: "[Prevent 2].",
+    rulesText: "[Prevent].",
     effect: {
       effects: [
-        { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
+        { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
       ],
     },
   }),
@@ -1752,6 +1768,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       abilities: [
         {
           type: "on-absorb",
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "grant-shield", amount: 1, target: { kind: "source-creature" } }],
         },
@@ -1795,7 +1812,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["toxin"],
-          absorberRelation: "self",
+          absorberRelation: "ally",
           effects: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
         },
       ],
@@ -1960,6 +1977,8 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["darkness"],
+          // Pile bank has no absorbing creature; ally = owner banks Darkness.
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "mill-cards", amount: 1, player: "opponent" }],
         },
@@ -1987,15 +2006,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText:
-      "Move 1 absorbed attribute token from one allied creature to another allied creature.",
+    // Pile-era: former ally↔ally token transfer. Drain takes from the chosen
+    // enemy's controller's attribute pile into yours.
+    rulesText: "[Drain 1].",
     effect: {
       effects: [
         {
-          type: "transfer-attribute-tokens",
+          type: "drain-attribute-tokens",
           amount: 1,
-          from: { kind: "choose-ally-with-tokens" },
-          to: { kind: "choose-ally-other" },
+          target: { kind: "choose-enemy" },
         },
       ],
     },
@@ -2008,22 +2027,21 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText:
-      "On absorb Wild, once per turn: copy 1 attribute token from this creature onto another allied creature.",
+    // Pile-era Wild exclusive: Frenzy another ally when any ally banks Wild.
+    rulesText: "On absorb Wild, once per turn: [Frenzy] another allied creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
           symbols: ["wild"],
-          absorberRelation: "self",
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [
             {
-              type: "copy-attribute-tokens",
+              type: "grant-extra-attack",
               amount: 1,
-              from: { kind: "source-creature" },
-              to: { kind: "choose-ally-other" },
+              target: { kind: "choose-ally-other" },
             },
           ],
         },
@@ -2045,30 +2063,23 @@ export const ALL_CARDS: readonly CardDefinition[] = DEFINITIONS;
  * Builtin Aggro tactics deck (spec 002: Martial / Wild only). Converts dice
  * into creature pressure — no Toxin (that is Burn / Combo splash). Densifies
  * Martial/Wild equipment, overloads, reach, and Temper/Untamed special forges.
- * Legal under M4: 50–60 cards, ≤4 copies per id.
+ * Legal: 40–50 cards, ≤3 copies per id.
  */
 const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Martial / Wild pressure equipment
-  [WAR_AXE, 4],
+  [WAR_AXE, 3],
   [TWIN_BLADES, 3],
   [WHETSTONE, 3],
   [INSIGNIA_OF_COMMAND, 2],
   [HUNTERS_COLLAR, 2],
-  [WILD_CARAPACE, 2],
   [PREDATORS_CLAWS, 2],
-  [WAR_BANNER, 2],
-  [ALPHAS_HIDE, 2],
   // Overloads
   [MARTIAL_BLESSING, 3],
-  [BLESSING_OF_THE_HUNT, 2],
   [WILD_ECHO, 3],
-  [SNARL, 2],
   [RUST, 2],
-  [ADRENALINE, 2],
   // Reach / conversion
   [OPENING_CUT, 3],
   [PRESS_THE_ATTACK, 3],
-  [POUNCE, 2],
   [SHARE_THE_KILL, 2],
   [DEN_SHARE, 2],
   [DRESS_RANKS, 2],
@@ -2076,7 +2087,6 @@ const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [UNTAMED, 2],
   // Ritual engines
   [CALL_TO_ARMS, 2],
-  [BATTLE_HYMN, 2],
   [PACK_LAW, 2],
 ];
 export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
@@ -2086,8 +2096,8 @@ export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
 /**
  * Builtin control tactics deck (spec 002: Arcane / Darkness only). Long-term
  * engine + disruption, converting that engine into lethal damage — not
- * Corruption contaminate, not Toxin burn, not cheap Aggro combat. Legal under
- * M4: 50–60 cards, ≤4 copies per id.
+ * Corruption contaminate, not Toxin burn, not cheap Aggro combat. Legal:
+ * 40–50 cards, ≤3 copies per id.
  */
 const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Engine / filter
@@ -2096,28 +2106,19 @@ const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [ARCANE_AMPLIFIER, 3],
   [ARCANE_RESONANCE, 3],
   [ARCHMAGES_GRIMOIRE, 3],
-  [ABYSSAL_SACRIFICE, 2],
   [GLOOM_RESONANCE, 3],
   [ETERNAL_DARKNESS, 3],
   // Interaction
   [FADE, 3],
   [SIPHON_SIGIL, 3],
-  [DISPEL_CIRCLE, 2],
   [SEAL_THE_RITE, 3],
-  [ARCANE_SILENCE, 2],
   [RUNIC_NULLIFICATION, 2],
   [UNMAKE, 2],
   // Engine-converted damage
   [UMBRAL_BOLT, 3],
   [RIFT_COLLAPSE, 2],
-  [UMBRAL_BRAND, 2],
   [CONSULT, 2],
   [BURY_THE_NAME, 2],
-  [GRAVE_WHISPER, 2],
-  // Generic toolkit splash (utility, not a third engine color)
-  [RETHROW, 3],
-  [SIDESTEP, 2],
-  [WARDING_CHARM, 2],
 ];
 
 export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id, copies]) =>
@@ -2129,11 +2130,11 @@ export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id,
  * Toxin splash. Showcases clean absorb→pressure (Ratchet / Servomotor / Foundry
  * feeding Cogwork Driver and Prism Herald), Camshaft / Blueprint discounts, and
  * Aegis Link’s Luminar cost reduction — not Martial face-race and not Control
- * disruption. Legal under M4: 50–60 cards, ≤4 copies per id.
+ * disruption. Legal: 40–50 cards, ≤3 copies per id.
  */
 const TEMPO_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Absorb → pressure
-  [RATCHET, 4],
+  [RATCHET, 3],
   [SERVOMOTOR, 3],
   [FOUNDRY, 3],
   [TRANSMISSION, 2],
@@ -2146,21 +2147,13 @@ const TEMPO_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [DIE_PRESS, 2],
   // Incremental tools
   [SAFETY_LATCH, 3],
-  [STAMP, 2],
-  [RECALIBRATE, 2],
-  [CLOCKWORK, 2],
   // Luminar glue (Aegis discount)
   [BLADE_OF_SERENE_LIGHT, 3],
   [LUMINAR_PRISM, 3],
   [BARRIER_OF_LIGHT, 3],
   [GLIMMER, 3],
-  [LUMINAR_JUDGEMENT, 2],
-  [HUNTING_ARMOUR, 2],
-  // Wild / Toxin splash — conversion, not Aggro beatdown
-  [WILD_ECHO, 2],
+  // Wild splash — special-forge conversion, not Aggro beatdown
   [UNTAMED, 2],
-  [PACK_SURGE, 2],
-  [DOSE, 2],
 ];
 
 export const TEMPO_DECK: readonly CardId[] = TEMPO_DECK_COUNTS.flatMap(([id, copies]) =>
@@ -2172,18 +2165,18 @@ export const TEMPO_DECK: readonly CardId[] = TEMPO_DECK_COUNTS.flatMap(([id, cop
  * cards around absorb-vs-pool tension (Ratchet / Transmission / Foundry vs
  * Governor / Clockwork / Camshaft), with Stamp / Coupling / Reforge payoffs and
  * Luminar + Wild glue for Lens Choir. Showcases chaining and symbol conversion,
- * not large generic damage. Legal under M4: 50–60 cards, ≤4 copies per id.
+ * not large generic damage. Legal: 40–50 cards, ≤3 copies per id.
  */
 const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Absorb line
-  [RATCHET, 4],
+  [RATCHET, 3],
   [SERVOMOTOR, 3],
   [TRANSMISSION, 3],
-  [FOUNDRY, 4],
+  [FOUNDRY, 3],
   // Pool / roll line
   [GOVERNOR, 3],
   [CAMSHAFT, 3],
-  [CLOCKWORK, 4],
+  [CLOCKWORK, 3],
   [BLUEPRINT, 3],
   // Forge density
   [ASSEMBLY_LINE, 3],
@@ -2192,15 +2185,9 @@ const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [STAMP, 3],
   [COUPLING, 3],
   [REFORGE, 3],
-  [RECALIBRATE, 2],
-  [SAFETY_LATCH, 2],
   // Luminar glue
   [LUMINAR_PRISM, 2],
-  [BLADE_OF_SERENE_LIGHT, 2],
-  [GLIMMER, 2],
-  [BARRIER_OF_LIGHT, 2],
   // Wild splash — pack feeding (Lens Choir token share) + Untamed specials
-  [WILD_ECHO, 2],
   [UNTAMED, 2],
   [SHARE_THE_KILL, 2],
 ];
@@ -2213,12 +2200,12 @@ export const COMBO_MECHANICAL_DECK: readonly CardId[] = COMBO_MECHANICAL_DECK_CO
  * Builtin Burn tactics deck (spec 002): Toxin ticks + Corruption DoT, with a
  * thin generic toolkit so the list can survive creature combat. Marker splash
  * (Dose) densifies the engine; Aggro beatdown (Fangs, Blight Strike, Stinger)
- * stays off the maindeck. Legal under M4: 50–60 cards, ≤4 copies per id.
+ * stays off the maindeck. Legal: 40–50 cards, ≤3 copies per id.
  */
 export const BURN_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Continuous DoT engine
-  [SLOW_BURN, 4],
-  [SMOLDER, 4],
+  [SLOW_BURN, 3],
+  [SMOLDER, 3],
   [VENOM_FONT, 3],
   [FESTER, 3],
   [CINDER_HEX, 3],
@@ -2232,13 +2219,8 @@ export const BURN_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [GREAT_CONTAMINATION, 2],
   [PERSISTENT_INFECTION, 3],
   [BLACK_PLAGUE, 2],
-  // Survive creature combat (generic toolkit splash)
+  // Survive creature combat (thin generic toolkit)
   [RAISE_GUARD, 3],
-  [SIDESTEP, 3],
-  [WARDING_CHARM, 2],
-  [RETHROW, 2],
-  [SIFT, 2],
-  [SECOND_WIND, 2],
 ];
 
 export const BURN_DECK: readonly CardId[] = BURN_DECK_COUNTS.flatMap(([id, copies]) =>

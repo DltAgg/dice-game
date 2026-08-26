@@ -59,15 +59,18 @@ export interface GameRulesConfig {
    */
   readonly startingMaxOnRollFacesPerDie: number;
   /**
-   * DECIDED (M4). Tactics deck minimum size.
+   * DECIDED (playtest 2026-08-26: Yu-Gi-Oh-sized constructed). Tactics deck
+   * minimum size. Was M4 50.
    */
   readonly deckMinCards: number;
   /**
-   * DECIDED (M4). Tactics deck maximum size.
+   * DECIDED (playtest 2026-08-26: Yu-Gi-Oh-sized constructed). Tactics deck
+   * maximum size. Was M4 60.
    */
   readonly deckMaxCards: number;
   /**
-   * DECIDED (M4). At most this many copies of the same tactics card id.
+   * DECIDED (playtest 2026-08-26: Yu-Gi-Oh-sized constructed). At most this
+   * many copies of the same tactics card id. Was M4 4.
    */
   readonly deckMaxCopiesPerCard: number;
   /** DEFINED, bible §12. Face cards selected during deckbuilding. */
@@ -112,9 +115,9 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   startingMaxSyntheticsPerPlayer: 2,
   startingMaxSyntheticsPerDie: 2,
   startingMaxOnRollFacesPerDie: 2,
-  deckMinCards: 50,
-  deckMaxCards: 60,
-  deckMaxCopiesPerCard: 4,
+  deckMinCards: 40,
+  deckMaxCards: 50,
+  deckMaxCopiesPerCard: 3,
   faceDeckMaxCards: 12,
   faceDeckMaxPerAttribute: 3,
   openingHandSize: 5,

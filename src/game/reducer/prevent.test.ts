@@ -51,8 +51,8 @@ function combatWithCharge() {
 }
 
 describe("true prevent (009)", () => {
-  it("applies buffer before shields then HP", () => {
-    // Charge deals 2 (no pierce). Buffer 1 + shield 1 → 0 HP damage.
+  it("cancels the whole attack before shields", () => {
+    // Charge deals 2 (no pierce). Attack-prevent 1 + shield 1 → 0 HP, Shield unused.
     const { attacker, target, state: combat } = combatWithCharge();
     const armed = {
       ...combat,
@@ -60,7 +60,7 @@ describe("true prevent (009)", () => {
         ...combat.creatures,
         [target]: {
           ...combat.creatures[target]!,
-          damagePreventBuffer: 1,
+          attackPreventCount: 1,
           shields: 1,
         },
       },
@@ -78,21 +78,20 @@ describe("true prevent (009)", () => {
       ),
     );
 
-    expect(after.creatures[target]?.damagePreventBuffer).toBe(0);
-    expect(after.creatures[target]?.shields).toBe(0);
+    expect(after.creatures[target]?.attackPreventCount).toBe(0);
+    expect(after.creatures[target]?.shields).toBe(1);
     expect(after.creatures[target]?.damage).toBe(0);
     const prevented = after.log.map((entry) => entry.event);
     expect(
-      prevented.some((event) => event.type === "damage-prevented" && event.source === "buffer"),
+      prevented.some((event) => event.type === "damage-prevented" && event.source === "attack-prevent"),
     ).toBe(true);
     expect(
       prevented.some((event) => event.type === "damage-prevented" && event.source === "shield"),
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it("Prismatic Barrier grants a prevent-2 buffer on the attack target", () => {
-    // Strike 3 into Barrier 2 → 1 damage, buffer spent.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
+  it("Prismatic Barrier prevents the next attack on the attack target", () => {
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
     const withBarrier = withHand(withEnergy(combat, P2, 10), P2, [BARRIER_OF_LIGHT]);
 
     const opened = expectOk(
@@ -114,8 +113,8 @@ describe("true prevent (009)", () => {
     );
     const resolved = resolveOpenChain(barred);
 
-    expect(resolved.creatures[target]?.damage).toBe(1);
-    expect(resolved.creatures[target]?.damagePreventBuffer).toBe(0);
+    expect(resolved.creatures[target]?.damage).toBe(0);
+    expect(resolved.creatures[target]?.attackPreventCount).toBe(0);
   });
 
   it("rejects Barrier when the top link is not an attack", () => {
@@ -142,7 +141,7 @@ describe("true prevent (009)", () => {
   });
 
   it("Luminar Judgement prevents the attack and reflects to the attacker", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
     const lifeBefore = currentLife(combat.creatures[attacker]!);
     const withJudgement = withHand(withEnergy(combat, P2, 10), P2, [LUMINAR_JUDGEMENT]);
 
@@ -170,7 +169,7 @@ describe("true prevent (009)", () => {
   });
 
   it("Glimmer draws when prevent resolves after Barrier", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
     const seeded = withHand(withEnergy(combat, P2, 10), P2, [
       BARRIER_OF_LIGHT,
       GLIMMER,
@@ -230,14 +229,13 @@ describe("true prevent (009)", () => {
     expect(resolved.players[P2]?.hand.length).toBe(2);
   });
 
-  it("leftover buffer persists for a later hit", () => {
-    // Buffer 5 vs Strike 3 → 2 left; second Strike consumes 2 and deals 1.
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 2 });
+  it("leftover attack-prevent persists; a later attack without prevent hits", () => {
+    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
     const buffered = {
       ...combat,
       creatures: {
         ...combat.creatures,
-        [target]: { ...combat.creatures[target]!, damagePreventBuffer: 5 },
+        [target]: { ...combat.creatures[target]!, attackPreventCount: 1 },
       },
     };
     const first = resolveOpenChain(
@@ -251,20 +249,23 @@ describe("true prevent (009)", () => {
         }),
       ),
     );
-    expect(first.creatures[target]?.damagePreventBuffer).toBe(2);
+    expect(first.creatures[target]?.attackPreventCount).toBe(0);
     expect(first.creatures[target]?.damage).toBe(0);
 
-    const refreshed = {
-      ...first,
-      creatures: {
-        ...first.creatures,
-        [attacker]: {
-          ...first.creatures[attacker]!,
-          attacksUsedThisCombat: 0,
-          attributeTokens: { martial: 2 },
+    const refreshed = withTokens(
+      {
+        ...first,
+        creatures: {
+          ...first.creatures,
+          [attacker]: {
+            ...first.creatures[attacker]!,
+            attacksUsedThisCombat: 0,
+          },
         },
       },
-    };
+      attacker,
+      { martial: 1 },
+    );
     const second = resolveOpenChain(
       expectOk(
         advance(refreshed, {
@@ -276,8 +277,8 @@ describe("true prevent (009)", () => {
         }),
       ),
     );
-    expect(second.creatures[target]?.damagePreventBuffer).toBe(0);
-    expect(second.creatures[target]?.damage).toBe(1);
+    expect(second.creatures[target]?.attackPreventCount).toBe(0);
+    expect(second.creatures[target]?.damage).toBe(3);
   });
 
   it("shield-only path still prevents with source shield", () => {

@@ -65,7 +65,11 @@ describe("structural invariants across played matches", () => {
 
       for (const symbol of absorbed) {
         expect(engineIds.has(symbol.id)).toBe(false);
-        expect(symbol.absorbedByCreatureId).not.toBeNull();
+        if (symbol.symbol === "shield") {
+          expect(symbol.absorbedByCreatureId).not.toBeNull();
+        } else {
+          expect(symbol.absorbedByCreatureId).toBeNull();
+        }
       }
     }
   });
@@ -118,23 +122,28 @@ describe("structural invariants across played matches", () => {
       const net = new Map<string, number>();
       for (const { event } of state.log) {
         if (event.type === "attribute-token-gained") {
-          net.set(event.creatureId, (net.get(event.creatureId) ?? 0) + event.amount);
+          net.set(event.playerId, (net.get(event.playerId) ?? 0) + event.amount);
         }
         if (event.type === "attribute-tokens-discarded") {
           const spent = requirementTotal(event.discarded);
-          net.set(event.creatureId, (net.get(event.creatureId) ?? 0) - spent);
+          net.set(event.playerId, (net.get(event.playerId) ?? 0) - spent);
         }
         if (event.type === "attribute-tokens-moved") {
           const moved = requirementTotal(event.tokens);
           if (!event.copy) {
-            net.set(event.fromCreatureId, (net.get(event.fromCreatureId) ?? 0) - moved);
+            net.set(event.fromPlayerId, (net.get(event.fromPlayerId) ?? 0) - moved);
           }
-          net.set(event.toCreatureId, (net.get(event.toCreatureId) ?? 0) + moved);
+          net.set(event.toPlayerId, (net.get(event.toPlayerId) ?? 0) + moved);
+        }
+        if (event.type === "attribute-tokens-drained") {
+          const moved = requirementTotal(event.drained);
+          net.set(event.fromPlayerId, (net.get(event.fromPlayerId) ?? 0) - moved);
+          net.set(event.toPlayerId, (net.get(event.toPlayerId) ?? 0) + moved);
         }
       }
 
-      for (const creature of Object.values(state.creatures)) {
-        expect(totalTokens(creature.attributeTokens)).toBe(net.get(creature.id) ?? 0);
+      for (const player of Object.values(state.players)) {
+        expect(totalTokens(player.attributePool)).toBe(net.get(player.id) ?? 0);
       }
     }
   });

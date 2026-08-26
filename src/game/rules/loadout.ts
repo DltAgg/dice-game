@@ -196,7 +196,7 @@ export function validateStartingDice(
 }
 
 /**
- * Tactics deck legality (M4): size in [deckMinCards, deckMaxCards], known card
+ * Tactics deck legality: size in [deckMinCards, deckMaxCards], known card
  * ids, and at most deckMaxCopiesPerCard of any single id.
  */
 export function validateTacticsDeck(

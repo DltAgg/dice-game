@@ -90,14 +90,14 @@ describe("English card printing", () => {
     expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Corruption]");
   });
 
-  it("prints Requires for non-ritual gates", () => {
+  it("prints Spend for non-ritual pile costs", () => {
     const card = exampleCard({
       type: "instant",
       attribute: "mechanical",
       effect: { requires: { mechanical: 2 }, effects: [] },
     });
     expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Spend: Mechanical + Mechanical]");
   });
 
   it("prints None when the card forges only", () => {
@@ -114,6 +114,24 @@ describe("English card printing", () => {
     expect(formatEffectRegion(card)).toEqual([
       "[Active when: Darkness + Darkness]",
       "Return cards from your graveyard to your hand.",
+    ]);
+  });
+
+  it("prints Spend below Active when when the ritual burns the pile", () => {
+    const card = exampleCard({
+      type: "ritual",
+      subtypes: ["instant"],
+      rulesText: "[Search 2] Instant or Ritual cards.",
+      ritual: {
+        activeWhen: { arcane: 2 },
+        spend: { arcane: 2 },
+        effects: [],
+      },
+    });
+    expect(formatEffectRegion(card)).toEqual([
+      "[Active when: Arcane + Arcane]",
+      "[Spend: Arcane + Arcane]",
+      "[Search 2] Instant or Ritual cards.",
     ]);
   });
 

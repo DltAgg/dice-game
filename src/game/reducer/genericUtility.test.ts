@@ -82,25 +82,23 @@ function seedDeck(state: GameState, fromHandIndexes: readonly number[]): GameSta
 }
 
 describe("generic utility toolkit", () => {
-  it("is not in Aggro, Tempo, or Combo Mechanical builtins", () => {
-    const ids = new Set([...PROTOTYPE_DECK, ...TEMPO_DECK, ...COMBO_MECHANICAL_DECK]);
+  it("is not in Aggro, Control, Tempo, or Combo Mechanical builtins", () => {
+    const ids = new Set([
+      ...PROTOTYPE_DECK,
+      ...CONTROL_DECK,
+      ...TEMPO_DECK,
+      ...COMBO_MECHANICAL_DECK,
+    ]);
     for (const id of [RAISE_GUARD, SIDESTEP, RETHROW, SIFT, SECOND_WIND, WARDING_CHARM]) {
-      expect(ids.has(id), `${id} should not be in Aggro/Tempo/Combo`).toBe(false);
+      expect(ids.has(id), `${id} should not be in Aggro/Control/Tempo/Combo`).toBe(false);
     }
   });
 
-  it("Control splashes the toolkit as utility, not a third engine color", () => {
-    const copies = (id: (typeof RAISE_GUARD)) => CONTROL_DECK.filter((card) => card === id).length;
-    expect(copies(RETHROW)).toBe(3);
-    expect(copies(SIDESTEP)).toBe(2);
-    expect(copies(WARDING_CHARM)).toBe(2);
-  });
-
-  it("splashes into builtin Burn for combat survival", () => {
+  it("splashes Raise Guard into builtin Burn for combat survival", () => {
     const ids = new Set(BURN_DECK);
     expect(ids.has(RAISE_GUARD)).toBe(true);
-    expect(ids.has(SIDESTEP)).toBe(true);
-    expect(ids.has(WARDING_CHARM)).toBe(true);
+    expect(ids.has(SIDESTEP)).toBe(false);
+    expect(ids.has(WARDING_CHARM)).toBe(false);
   });
 });
 
@@ -128,11 +126,11 @@ describe("Raise Guard", () => {
 });
 
 describe("Sidestep", () => {
-  it("prevents 2 from an attack on the chain target", () => {
+  it("prevents the next attack on the chain target", () => {
     const combat = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(combat, P1, 0);
     const target = creatureIdAt(combat, P2, 0);
-    const armed = withHand(withEnergy(withTokens(combat, attacker, { martial: 2 }), P2, 10), P2, [
+    const armed = withHand(withEnergy(withTokens(combat, attacker, { martial: 1 }), P2, 10), P2, [
       SIDESTEP,
     ]);
     const opened = expectOk(
@@ -152,9 +150,8 @@ describe("Sidestep", () => {
       }),
     );
     const resolved = resolveOpenChain(stepped);
-    // Heavy Axe deals 3; prevent 2 → 1 HP.
-    expect(resolved.creatures[target]?.damage).toBe(1);
-    expect(resolved.creatures[target]?.damagePreventBuffer).toBe(0);
+    expect(resolved.creatures[target]?.damage).toBe(0);
+    expect(resolved.creatures[target]?.attackPreventCount).toBe(0);
   });
 });
 

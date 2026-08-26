@@ -86,43 +86,44 @@ three deploys as two frontline and one back.
 
 ### Attacks are paid from attributes absorbed onto the attacking creature
 
-**Status:** `DECIDED` · implemented in `src/game/reducer/reduce.ts` and
-`src/game/rules/tokens.ts`
+**Status:** `SUPERSEDED` · 2026-08-24 · by **Attribute pile-up** below · was
+implemented in `src/game/reducer/reduce.ts` and `src/game/rules/tokens.ts`
 
-The single largest rule change so far. Attacks are **not** paid from the shared
-symbol pool. A creature absorbs attributes from rolled dice, and those
-attributes are what enable its attacks — the Pokémon TCG attachment model. A
-creature whose attack requires Martial + Wild must have absorbed both.
+~~Attacks are not paid from the shared symbol pool. A creature absorbs
+attributes from rolled dice, and those attributes enable its attacks — the
+Pokémon TCG attachment model.~~ Physical conversion made per-creature attribute
+counters untenable. See **Attribute pile-up (player resource bank)** and
+[`docs/specs/016-attribute-pile-up.md`](./specs/016-attribute-pile-up.md).
 
-This makes the central tension of bible §33 real for the first time:
+### Attribute pile-up (player resource bank)
+
+**Status:** `DECIDED` · 2026-08-24 · spec `016` · branch `feat/attribute-pile-up`
+
+Attributes the player holds live in a **persistent player pile**
+(`PlayerState.attributePool`), not on creatures or rituals.
 
 ```text
-absorb  → attribute sits on the creature → enables that creature's attacks
-resolve → symbol stays in the pool       → feeds card `[Requires: …]` spends
-                                           (including engine damage)
+absorb (attribute) → +1 in your pile     → enables attacks / ritual gates / spends
+absorb (Shield)    → Shield on a creature → prevent (creature token OK)
+resolve            → stays in turn pool   → `[Requires]` spends this turn
 ```
-
-Creatures therefore have two distinct cost surfaces, and both already exist in
-the model:
 
 | Surface | Paid from | Bible |
 |---|---|---|
-| Engine ability | unabsorbed symbols in the shared pool | §17 |
-| Attack | attributes absorbed onto that creature | §7, §31 |
+| Engine ability | unabsorbed symbols in the turn pool | §17 |
+| Attack | owner’s attribute pile (`requires` gate and/or `discards` Spend) | §7, §31 |
+| Ritual Active-when / Spend | owner’s attribute pile | layouts / `002` |
 
-An attack names two costs. `requires` is **checked and not spent**; `discards`
-is the part an attack actually burns, normally a subset of what it requires.
-Most Aggro Slow-game-test attacks (Varcolac, Garuda, and War Minotaur's special)
-set `discards` to one primary-attribute token so a fuelled creature cannot spam
-forever without re-absorbing. War Minotaur's basic Heavy Axe instead requires
-Martial 2 and omits `discards` (higher gate, reusable fuel). Control-squad
-attacks still omit `discards` and therefore keep absorbed tokens after attacking.
+- Shield, Toxin, and other **creature** tokens remain on creatures.
+- Absorbing an attribute into the pile is **immediate** (no end-of-turn delay),
+  so same-turn attack after banking is legal.
+- Face / standing `On absorb` fires when a pip is banked into the pile (or
+  Shield is granted onto a creature).
+- Rituals no longer hold Active-when progress on the card; optional `spend` on
+  activate creates the sink decision formerly served by assigning pips to the
+  ritual.
 
-Fuel only exists once the turn is over, so **a creature can never attack on the
-turn it absorbed**. Bible §7 has the die sit on the creature and become a token
-at end of turn, and §16 puts Combat before End Turn; taken literally that makes
-absorbing always a turn of setup, and it is. Across sixty simulated matches the
-first attack lands on turn 3.5 on average, and never on turn 1.
+Phased delivery: [`016-attribute-pile-up.STATUS.md`](./specs/016-attribute-pile-up.STATUS.md).
 
 ### Absorbed energy has a payoff
 
@@ -244,8 +245,9 @@ Consequences, all applied:
 - unabsorbed symbols expire at end of turn with no exceptions;
 - retaining a die is the only way to carry a result forward.
 
-What a player wants to keep has to be absorbed onto a creature, where it lives
-as a token or a shield rather than as a symbol.
+What a player wants to keep as **attributes** is absorbed into their
+**attribute pile**. Shield still sits on a creature. Unabsorbed turn-pool
+symbols still expire at end of turn.
 
 A player declares retain (or releases it) with `RETAIN_DIE`; see the resolved
 entry below.
@@ -349,32 +351,28 @@ Retention that keeps a showing face also re-fires on that roll step.
 
 ### Rituals live on the engine field with an orientation
 
-**Status:** `DECIDED` · implemented for place / prepare / activate
-· corrected 2026-08-16: Active-when symbols persist unless an effect discards them
-· corrected 2026-08-20: Active-when may receive multiple pips of the same attribute in one turn (same as creature absorb)
+**Status:** `DECIDED` · place / prepare / activate · **Active-when source
+updated 2026-08-24** (spec `016` attribute pile-up)
 
 A Ritual is played onto the engine area, not resolved from hand like an Instant:
 
 | Orientation | Visual | Meaning |
 |---|---|---|
-| `preparing` | tapped | Waiting for Active-when symbols absorbed onto it |
-| `ready` | untapped | Condition met; standing abilities on; may activate if print has an activate body |
+| `preparing` | tapped | Waiting for owner’s attribute pile to meet Active-when |
+| `ready` | untapped | Gate met; standing abilities on; may activate if print has an activate body |
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
-Rituals are placed empty. During actions the owner may assign unabsorbed
-attribute symbols to a ritual (same window as creature absorb), including
-multiple pips of the same attribute in one turn, until the printed
-`Attr + Attr` gate is filled. Over-filling a requirement is illegal.
-Symbols spent this way are consumed and never reach the engine pool. Rituals
-with no `[Active when: …]` become ready as soon as they hit the field.
+Rituals are placed without progress counters on the card. `activeWhen` is
+checked against the owner’s **attribute pile**. Rituals with no
+`[Active when: …]` become ready as soon as they hit the field. Optional
+`spend` on activate burns from the pile (decision sink). Requirement wildcards
+may still help meet Active-when when banking / checking as specified in `016`.
 
-At the start of your turn, exhausted rituals come off diagonal. Banked
-Active-when symbols stay on the card unless an effect explicitly discards or
-consumes them; if the gate is still met the ritual returns to ready, otherwise
-it returns to preparing. Preparing ones flip to ready once their banked
-progress meets the gate. Instant and reaction rituals leave for the graveyard
-after one activation; only `continuous` rituals stay and exhaust. Standing
-triggers fire while ready and do not spend those symbols.
+At the start of your turn, exhausted rituals come off diagonal. If the pile
+still meets Active-when the ritual returns to ready, otherwise preparing.
+Instant and reaction rituals leave for the graveyard after one activation;
+only `continuous` rituals stay and exhaust. Standing triggers fire while ready
+and do not spend Active-when / Spend unless the card activates.
 
 ### Reactions use a Yu-Gi-Oh style chain
 
@@ -439,20 +437,20 @@ Legal response **kind** depends on the top link:
 
 ### Damage prevention
 
-**Status:** `DECIDED` · 2026-08-12 · full card wiring in
+**Status:** `DECIDED` · 2026-08-26 · attack-instance prevent in
 `docs/specs/009-true-prevent.md`
 
-- **Vocabulary (both):** (1) “prevent next N damage” **buffers**, and
-  (2) prevent **N attacks** (whole attack instances). Concrete cards pick one.
-- **Apply order when damage lands:** prevention → Shield → HP (Life).
-- **Expiry of unused prevent:** **none for now** (buffers / attack-prevents
-  persist until consumed). Expiry must live in `GameRulesConfig` (or equivalent
-  data) so a later design can add end-of-turn / end-of-chain cleanup without a
-  reducer rewrite.
-- **Prismatic Barrier** (“Prevent 2 damage”) — **DECIDED** 2026-08-12:
-  create a **prevent-next-2-damage buffer** on the **ally targeted by the
-  attack** being responded to (prevent reaction; not a free retarget). Migrates
-  off the `grant-shield ×2` approximation in `009`.
+- **`[Prevent]`** grants `attackPreventCount` on a creature (usually 1). The
+  next **attack** against that creature is cancelled whole (before Shield).
+  Unused charges persist until consumed (`preventExpiry: "none"`).
+- Damage-prevent **buffers** (`damagePreventBuffer` / `grant-damage-prevent`)
+  are **gone** — they mixed with Shield at the table.
+- **Apply order when attack damage lands:** attack-prevent → Shield → HP.
+- Non-attack damage (toxin, face Strike, effect damage) does not consume
+  attack-prevent.
+- **Prismatic Barrier / Sidestep** — **DECIDED** 2026-08-26: `[Prevent]` on
+  the **ally targeted by the attack** being responded to (`grant-attack-prevent`
+  1, `chain-attack-target`).
 
 Attack chain links open a reaction window so prevent reactions can respond;
 negate effects refuse attack links.
@@ -479,7 +477,8 @@ returns to A); after Pass×2 the chain resolves and A’s turn does **not** end.
 
 Toxin counters are tokens on a creature. At the start of that creature's
 owner's turn, the creature takes 1 damage per Toxin counter it holds. Counters
-persist until something removes them. Adaptive Toxin’s “remove any number → damage” absorb and toxin receive cap are
+persist until something removes them. Adaptive Toxin’s absorb is `[Strip 3 Toxin].
+[Strike equal]` (fixed 3, no choose-count pending) and toxin receive cap are
 wired in spec `013`.
 
 ---
@@ -550,16 +549,16 @@ matching face (bible §13 — copy is kept).
 
 ### Tactics deck size and copies
 
-**Status:** `DECIDED` · implemented (M4)
+**Status:** `DECIDED` · implemented (playtest 2026-08-26: Yu-Gi-Oh-sized)
 
 | Rule | Value |
 |---|---|
-| Minimum size | 50 |
-| Maximum size | 60 |
-| Max copies of the same card id | 4 |
+| Minimum size | 40 |
+| Maximum size | 50 |
+| Max copies of the same card id | 3 |
 
-There is no tactics per-attribute cap. (Earlier prototype used 12 cards /
-3-per-attribute; superseded.)
+Was M4 50–60 / 4 copies. There is no tactics per-attribute cap. (Earlier
+prototype used 12 cards / 3-per-attribute; superseded.)
 
 ### One deck, and every card carries both regions
 
@@ -647,7 +646,7 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Retain-from-effect** | Marks a chosen owned die retained (same rules as `RETAIN_DIE`, including a known rolled slot). |
 | **Requirement wildcard** | One-shot: a matching pool symbol may pay any `[Requires]` / ritual Active-when attribute this turn (Resonance absorb). Consumed when used. |
 | **Pack adjacent** | Another living ally shares a **`creatureIds` neighbor (±1)** among living creatures. At roll, `has-adjacent-ally` is true if any two consecutive entries in the controller’s `creatureIds` are both living. |
-| **Instinct On absorb** | Optional immediate basic during the actions window: pending `optional-bonus-attack` for the absorbing creature if `attacksUsedThisCombat === 0`. Player may decline or declare that creature’s basic (fuel/range as normal). Spec `013`. |
+| **Instinct On absorb** | `[Frenzy]` on a chosen allied creature (`grant-extra-attack` 1). Raises `extraAttacksThisTurn`; does not clear attacks already used. Spec `013` optional-bonus-basic-attack remains for other print; Instinct no longer uses it. |
 | **Aegis redirect** | Until EOT, up to 2 damage that would be dealt to **another** allied creature is dealt to the absorber instead (before prevent/shield on the original). Turn-scoped `redirectDamageThisTurn` on the absorber. |
 | **Revelation heal** | Heal 2 on an allied creature with damage **strictly greater than** half life (`damage > life/2`). |
 | **Mirrored Rune** | On absorb Arcane: generate 1 extra symbol matching **another** symbol currently in the controller’s available/rolled pool (`copy-pool-symbol`). |
@@ -732,14 +731,16 @@ Infection roll, Instinct absorb) are wired in `013-face-markers.md`.
 
 **Status:** `OPEN` — not blocking (cap still undecided)
 
-**Why it matters.** Tokens persist and are spent by attacks that name a
-discard, and by strip effects (`discard-attribute-tokens`, spec `011`). A
-creature that survives long enough can still accumulate without a hard cap.
+**Why it matters.** Tokens persist and are spent by attacks that name
+`discards`, and by drain effects (`drain-attribute-tokens`, spec `011`). A
+player that banks long enough can still accumulate without a hard cap.
 
-**The question.** Is there a cap per creature, or per attribute?
+**The question.** Is there a cap per player, or per attribute?
 
-**DECIDED (playtest, 2026-08-20).** Effects may strip tokens. Siphon Sigil
-proves `discard-attribute-tokens`: after `choose-enemy`, a mixed pile with
+**DECIDED (playtest, 2026-08-26).** Attribute tokens live on the player pile.
+Effects **drain** them (`[Drain N]`): take from the opponent’s pile into
+yours. You cannot Strip Martial/Arcane off a creature. Siphon Sigil proves
+`drain-attribute-tokens`: after `choose-enemy`, a mixed pile with
 more tokens than `amount` opens `choose-attribute-tokens` (controller names
 which pips). Homogeneous leftover piles and “take all remaining” are
 deterministic (no real choice). Bible §20 / §25.
@@ -843,12 +844,12 @@ a single attack bonus, cost reduction, forge of your own attribute) stay legal.
 | Toxin | Toxin counter placement |
 | Martial | Ally creature movement (swap / reposition) |
 | Mechanical | Own-die reconstruction (extra/replace/re-fire **your** faces and overloads) |
-| Wild | Pack feeding (move or copy absorbed tokens between allied creatures) |
+| Wild | Extra attacks (`[Frenzy]`) |
 
 Catalogue off-pie leaks (Sift, Sidestep, Predator’s Claws, …) were moved or
-rewritten — do not copy the old print. Wild pack feeding is
-`transfer-attribute-tokens` / `copy-attribute-tokens` (spec `015`). Darkness
-mill is `mill-cards`.
+rewritten — do not copy the old print. Wild’s exclusive is `grant-extra-attack`
+(`[Frenzy]`). Former pack feeding (`transfer-attribute-tokens` /
+`copy-attribute-tokens`) is **retired**. Darkness mill is `mill-cards`.
 
 ---
 

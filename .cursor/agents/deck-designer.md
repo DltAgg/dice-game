@@ -1,7 +1,7 @@
 ---
 name: deck-designer
 description: >-
-  Builds legal Dice Skirmish loadouts (squad, tactics 50–60, face deck) and
+  Builds legal Dice Skirmish loadouts (squad, tactics 40–50, face deck) and
   critiques catalogue cards for constructed purpose and attribute identity.
   Use proactively when creating or tuning Aggro/Control/Combo/Support decks,
   adding cards to builtin lists, asking whether a card has a home in any
@@ -52,7 +52,7 @@ treat unwired clauses as live constructed tools.
 | Piece | Constraint |
 |---|---|
 | Squad | Exactly `creaturesPerPlayer` (3) known definition ids |
-| Tactics | 50–60 cards, ≤4 copies per id, known `card-*` ids |
+| Tactics | 40–50 cards, ≤3 copies per id, known `card-*` ids |
 | Face deck | ≤12 cards, ≤3 per attribute (Shield does not count). Naturals **may** be listed for mid-game density swaps; opening basics not in `faceDeck` do not count toward the 12. |
 | Face kind | Naturals legal for all eight attrs; synthetics are named specials only |
 | Opening dice | Two d6 layouts (`startingDice`). Basics do not consume the face deck. Named specials on opening slots must be ids in `faceDeck`. Caps on `GameRulesConfig`. Echo / Heritage / Plague refused on start. |
@@ -119,7 +119,7 @@ names the mechanic.
 Loadout Progress:
 - [ ] 1. Name archetype + splash (one sentence)
 - [ ] 2. Squad = strategic vocabulary
-- [ ] 3. Tactics counts (50–60, ≤4) with role notes
+- [ ] 3. Tactics counts (40–50, ≤3) with role notes
 - [ ] 4. Face deck (≤12, ≤3/attr) + `startingDice` (opening specials consume the 12)
 - [ ] 5. Leftover pool still supplies the forges this list's tactics name
 - [ ] 5. validateLoadout + loadout.test.ts if builtins change

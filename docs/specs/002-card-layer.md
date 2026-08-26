@@ -88,8 +88,10 @@ overload an Arcane face).
 
 | Form | Meaning | Appears on |
 |---|---|---|
-| `[Active when: Arcane + Arcane]` | Cumulative gate — absorb matching symbols onto the ritual (same window as creature absorb; multiple pips per turn, including the same attribute, until the gate is filled). Progress is credited **immediately**; the assignment is an `on-absorb` event (same standing hook as creature absorb, spec `010`). | Ritual |
-| `[Requires: Corruption]` | Gate on the effect | Instant |
+| `[Active when: Arcane + Arcane]` | Gate vs the owner’s **attribute pile** (spec `016`). When met, the ritual is / becomes `ready`. Standing fire while ready does not burn the gate. | Ritual |
+| `[Spend: Arcane + Arcane]` | Optional burn from the owner’s attribute pile on `ACTIVATE_RITUAL` (often the same counts as Active-when for strong instants). Continuous standing rituals usually omit Spend. | Ritual |
+| `[Requires: Martial + Wild]` | Attack **gate** vs the owner’s attribute pile (must hold; not spent) | Creature attack |
+| `[Spend: Martial]` | Burn from the owner’s attribute pile (attack `discards`, instant extra cost, ritual activate) | Attack / Instant / Ritual |
 | `[Can only overload a Toxin face]` | Restricts the overload target | Overload |
 | `[This card may be equipped to a Martial creature]` | Restricts the equip target | Equipment |
 | `Pay 3 Energy` | An extra cost inside the effect, on top of the header cost | Instant |
@@ -186,7 +188,7 @@ include historical Toxin / splash print for reference; those Toxin cards are
 | 2 | War Axe | Equipment / Martial | 1 Natural Martial, your die | On basic attack: +1 damage. |
 | 2 | Hunting Armour | Equipment / Luminar | 1 Natural Luminar, your die | On take damage, once per turn: reduce it by 1. |
 | 3 | Twin Blades | Equipment / Martial | 1 Natural Martial, your die | On basic attack: [Strip 1 Shield]. |
-| 3 | Wild Carapace | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: [Heal 1]. |
+| 3 | Wild Carapace | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: [Heal 1] this creature. |
 
 ### Control deck
 
@@ -220,7 +222,7 @@ catalogue identity for other strategies (burn sibling), not the Control builtin.
 | 2 | Archmage's Grimoire | Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Arcane or Darkness: [Draw 1]. [Discard 1]. |
 | 3 | Tome of Interdiction | Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane used each turn costs 1 less Energy. |
 | 3 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: Arcane + Darkness.* On discard: [Generate 1 Darkness]. |
-| 3 | Mirrored Rune | Equipment / Arcane | 1 Natural Arcane, your die | On absorb Arcane: copy another symbol onto it. |
+| 3 | Mirrored Rune | Equipment / Arcane | 1 Natural Arcane, your die | On absorb Arcane: copy another symbol in your pool. |
 
 ## Naming inconsistencies in the file
 
@@ -266,7 +268,7 @@ Safety Latch is a Mechanical reaction (generate + next-forge discount), not prev
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Transmission | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: copy another symbol onto it. |
+| 2 | Transmission | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: copy another symbol in your pool. |
 | 1 | Camshaft | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: [Discount 1] forge. Niche 1-cost: gated discount enabler, not a generator. |
 | 2 | Servomotor | Equipment / Mechanical | 1 Synthetic Mechanical, your die | On absorb Mechanical, once per turn: [Generate 1 Mechanical]. |
 | 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | [Generate 1 Mechanical]. [Discount 1] forge. |
@@ -306,15 +308,13 @@ named Synthetic Toxin).
 | 3 | Pack Law | Ritual / Continuous / Wild | 1 Natural Wild, your die | *Active when: Wild + Wild.* On absorb Wild: [Empower 1]. |
 | 3 | Virulent Rite | Ritual / Instant / Toxin | 1 Synthetic Toxin, your die | *Active when: Toxin + Toxin.* [Forge 2 Synthetic Toxin] on your die. |
 | 2 | Dress Ranks | Instant / Martial | 1 Natural Martial, your die | [Reposition]. |
-| 2 | Share the Kill | Instant / Wild | 1 Natural Wild, your die | Move 1 absorbed attribute token from one allied creature to another allied creature. |
-| 2 | Den Share | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild, once per turn: copy 1 attribute token from this creature onto another allied creature. |
+| 2 | Share the Kill | Instant / Wild | 1 Natural Wild, your die | [Drain 1]. |
+| 2 | Den Share | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild, once per turn: [Empower 1] another allied creature. |
 
 ### Attribute exclusive signatures (authored)
 
-On-pie proving cards for exclusive verbs (spec `015` mill / pack feeding).
-Former leaks (Sift, Riposte, …) were moved or rewritten onto the owning
-attribute; they are not counted as signature pieces unless they now print
-that verb.
+On-pie proving cards for exclusive verbs (spec `015` mill; Wild pack feeding
+retired under `016` — Share the Kill / Den Share / Pack Share are pile-era).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -331,7 +331,7 @@ catalogue-only until deck-designer places it.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 3 | Siphon Sigil | Instant / Arcane | 1 Natural Arcane, your die | A chosen enemy creature discards 2 attribute tokens. |
+| 3 | Siphon Sigil | Instant / Arcane | 1 Natural Arcane, your die | [Drain 2]. |
 | 4 | Dispel Circle | Instant / Arcane | 1 Natural Arcane, your die | [Destroy Ritual]. |
 | 3 | Seal the Rite | Reaction / Arcane | 1 Synthetic Arcane, your die | [Negate Ritual]. |
 | 0 | Counterglyph | Reaction / Arcane | 1 Synthetic Arcane, your die | *Requires: Arcane.* [Negate Instant]. |
@@ -364,7 +364,7 @@ Not on Aggro / Tempo / Combo Mechanical (Hunting Armour is Tempo Luminar).
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Raise Guard | Instant / Martial | 1 Natural Martial, your die | [Mark 2 Shield]. |
-| 2 | Sidestep | Reaction / Luminar | 1 Natural Luminar, your die | [Prevent 2]. |
+| 2 | Sidestep | Reaction / Luminar | 1 Natural Luminar, your die | [Prevent]. |
 | 2 | Rethrow | Instant / Arcane | 1 Natural Arcane, your die | [Reroll]. |
 | 2 | Sift | Instant / Arcane | 1 Natural Arcane, your die | [Insight 2]. |
 | 2 | Second Wind | Instant / Arcane | 1 Natural Arcane, your die | [Gain 1 Energy]. [Insight 1]. |
@@ -404,10 +404,10 @@ already express.
 | Overload attachment to a die face; on-roll effects; cleared on forge | Adrenaline / Rethrow reroll `012`; Overcharge skip-next still deferred |
 | Ritual place → preparing / ready / exhausted; ACTIVATE_RITUAL | Paradox replay `012` |
 | Toxin counters; 1 damage per counter at owner's turn start | Adaptive Toxin strip→damage still deferred |
-| `[Requires: …]` gates on an effect; `[Active when: …]` on rituals | Resonance wildcard `012` |
+| `[Requires: …]` attack gate; `[Spend: …]` pile burn; `[Active when: …]` on rituals | Resonance wildcard `012` |
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
 | Mill (`mill-cards`); Bury the Name / Grave Whisper | Spec `015` |
-| Pack feeding (`transfer-attribute-tokens` / `copy-attribute-tokens`) | Spec `015` |
+| Pack feeding (`transfer` / `copy` stubs unused) | Spec `015` superseded by `016` — Share/Den pile-rewritten |
 | Damage, heal, shield, symbol generation, draw, discard, Energy gain, destroy equipment, apply-toxin, convert, retain-from-effect, GY replay, movers | Stun / empty print — see DEFERRED_CATALOGUE |
 
 Equipment, Overload and Ritual are wired as board regions (main types for

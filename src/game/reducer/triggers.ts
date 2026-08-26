@@ -45,11 +45,11 @@ type TriggerHost = {
 
 /**
  * Who absorbed the symbol. Shared `on-absorb` event — not a coupled ritual hook.
- * Identity is the instance id (creature or ritual card), never a definition id.
+ * Attribute pile banking uses `player`; Shield uses `creature`. Spec `016`.
  */
 export type AbsorbAbsorber =
   | { readonly kind: "creature"; readonly id: CreatureId }
-  | { readonly kind: "ritual"; readonly id: CardInstanceId };
+  | { readonly kind: "player"; readonly id: PlayerId };
 
 function pushEffect(
   draft: Draft,
@@ -72,6 +72,7 @@ function pushEffect(
     sourceSlotIndex,
     sourceCardInstanceId,
     ignoreShield: 0,
+    fromAttack: false,
   });
 }
 
@@ -120,7 +121,8 @@ function absorberIsHost(host: TriggerHost, absorber: AbsorbAbsorber): boolean {
   if (absorber.kind === "creature") {
     return host.hostCreatureId !== null && absorber.id === host.hostCreatureId;
   }
-  return host.hostCardInstanceId !== null && absorber.id === host.hostCardInstanceId;
+  // Player pile bank is never "self" for a creature/equipment/ritual host.
+  return false;
 }
 
 function matchesAbsorberRelation(
@@ -343,6 +345,8 @@ export function queueAbsorbTriggers(
   absorber: AbsorbAbsorber,
   symbol: SymbolType,
   sourceDieId: DieId | null,
+  /** Optional source creature for face/overload onAbsorb (`source-creature`). */
+  faceSourceCreatureId: CreatureId | null = null,
 ): void {
   let faceKind: FaceKind | null = null;
   let faceCardId: FaceCardId | undefined;
@@ -360,16 +364,23 @@ export function queueAbsorbTriggers(
 
   fireOnAbsorb(draft, absorber, absorbingPlayerId, symbol, faceKind);
 
-  // Face/overload onAbsorb are bible §7 die-on-creature absorb. Ritual Active-when
-  // assignment shares standing `on-absorb` only — no absorbing creature, no die marker.
-  if (absorber.kind !== "creature") return;
+  // Face/overload onAbsorb fire when that face's pip is banked (spec `016`).
   if (faceCardId === undefined) return;
   const die = sourceDieId === null ? undefined : draft.dice[sourceDieId];
   const slotIndex = die?.rolledSlotIndex ?? null;
-  // Absorbing creature is the face/overload source so `source-creature` targets
-  // (e.g. Vital Spark prevent) resolve against the absorber.
-  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, absorber.id, sourceDieId, slotIndex);
-  fireOverloadsOnAbsorb(draft, absorbingPlayerId, faceCardId, absorber.id, sourceDieId, slotIndex);
+  const sourceCreatureId =
+    absorber.kind === "creature"
+      ? absorber.id
+      : faceSourceCreatureId;
+  fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, sourceCreatureId, sourceDieId, slotIndex);
+  fireOverloadsOnAbsorb(
+    draft,
+    absorbingPlayerId,
+    faceCardId,
+    sourceCreatureId,
+    sourceDieId,
+    slotIndex,
+  );
 }
 
 function fireOnAbsorb(
@@ -414,7 +425,7 @@ function fireFaceOnAbsorb(
   draft: Draft,
   controllerId: PlayerId,
   faceCardId: FaceCardId,
-  absorbingCreatureId: CreatureId,
+  absorbingCreatureId: CreatureId | null,
   sourceDieId: DieId | null,
   sourceSlotIndex: number | null,
 ): void {
@@ -437,7 +448,7 @@ function fireOverloadsOnAbsorb(
   draft: Draft,
   controllerId: PlayerId,
   faceCardId: FaceCardId,
-  absorbingCreatureId: CreatureId,
+  absorbingCreatureId: CreatureId | null,
   sourceDieId: DieId | null,
   sourceSlotIndex: number | null,
 ): void {

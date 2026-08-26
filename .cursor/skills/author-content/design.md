@@ -78,7 +78,7 @@ Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`,
 `COMBO_MECHANICAL_DECK`, and `BURN_DECK` in `cards.ts` (snapshots in
 `src/decks/prototype.ts`).
 Do not dump a new card into Aggro and Control without an identity reason; Mech
-homes are Tempo / Combo Mechanical. Legal constructed: 50–60 tactics, ≤4 copies
+homes are Tempo / Combo Mechanical. Legal constructed: 40–50 tactics, ≤3 copies
 per id; face deck ≤12, ≤3 per attribute.
 
 ## Attribute exclusive mechanics (`DECIDED`)
@@ -106,16 +106,16 @@ Pairings that keep the pie readable:
 | **Luminar** | Damage prevention | Prevent N, prevent-and-reflect, “when you prevent → …”, standing prevent buffers | Shield counters; heal; redirect (Aegis-style) unless the print is actually prevent |
 | **Corruption** | Opponent-die manipulation | Forge / markers / lock / suppress / strip / steal overloads on **their** faces; opponent-die named specials | Own-die forge; own overloads; Toxin markers on creatures |
 | **Toxin** | Toxin counter placement | Apply / spread / arm-attack Toxin markers; payoffs that *require* those markers | Corruption face ticks; generic delayed damage with no Toxin marker |
-| **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Command) | Enemy push (banned); extra attacks; sharing tokens |
+| **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Command) | Enemy push (banned); extra attacks (`[Frenzy]` is Wild); sharing tokens |
 | **Mechanical** | Own-die reconstruction | Extra forge on **your** die; replace your faces without a forge-draw (Reforge); reapply / copy / double **your** face and overload modifiers (Stamp, Coupling); move your overloads between **your** faces | Opponent-die (Corruption); deck order (Arcane); generating symbols; Energy; GY recursion |
-| **Wild** | Pack feeding | Move or copy absorbed **attribute tokens** from one allied creature to another; spend an adjacent ally’s tokens to attack; on-absorb share a token onto another ally | Absorbing onto yourself (universal); generating pool symbols; extra attack; ally reposition (Martial) |
+| **Wild** | Extra attacks (`[Frenzy]`) | Grant a creature additional attacks this turn beyond the usual one (`grant-extra-attack`); may combine with `[Spend]` / absorb timing per card | Absorbing onto yourself (universal); generating pool symbols; ally reposition (Martial); pack feeding (retired) |
 
 ### Authoring notes
 
 - **One verb, many cards.** Vary cost, timing (`On roll` / `On absorb` / instant / standing), amount, and gate — do not invent a second exclusive for the same attribute.
-- **Proving cards (already in catalogue):** Arcane — Insight Rune, Living Library, Consult, Sift, Second Wind. Darkness — Dark Pact, Bury the Name, Grave Whisper. Luminar — Glimmer and prevent package (spec `009`), Sidestep, Hunting Armour. Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap, Command, Dress Ranks, Predator’s Claws, Insignia of Command. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling, Arcane Echo (re-fire). Wild — Share the Kill, Den Share, Pack Share (spec `015`). Do not treat Hunter’s Collar / Pack / Instinct as pack feeding — they are absorb/attack/generate, not token-share.
-- **Off-pie leaks** on Sift, Second Wind, Sidestep, Hunting Armour, Safety Latch, Predator’s Claws, Insignia of Command, Hunter’s Collar, Riposte, Revelation, Instinct, Pack absorb, Garuda Dive, and Arcane Echo were **fixed** (moved onto the verb’s owner or rewritten off the stolen verb). Do not reintroduce them. Adrenaline / Rethrow (own-die reroll) are not anyone’s exclusive.
-- **Wild vs Martial:** Martial moves the **body**. Wild moves the **fuel**. A Wild card that swaps positions is in the wrong attribute; a Martial card that donates tokens is in the wrong attribute.
+- **Proving cards (already in catalogue):** Arcane — Insight Rune, Living Library, Consult, Sift, Second Wind. Darkness — Dark Pact, Bury the Name, Grave Whisper. Luminar — Glimmer and prevent package (spec `009`), Sidestep, Hunting Armour. Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap, Command, Dress Ranks, Predator’s Claws, Insignia of Command. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling, Arcane Echo (re-fire). Wild — Varcolac (creature Frenzy proving: ally-other / Coordinated Hunt), Instinct absorb Frenzy, Pounce (Spend + Frenzy), Den Share (On absorb Wild Frenzy). Share the Kill is `[Drain]` (shared). Pack Share is Generate. Do not print pack feeding.
+- **Off-pie leaks** on Sift, Second Wind, Sidestep, Hunting Armour, Safety Latch, Predator’s Claws, Insignia of Command, Hunter’s Collar, Riposte, Revelation, Pack absorb, Garuda Dive, and Arcane Echo were **fixed** (moved onto the verb’s owner or rewritten off the stolen verb). Do not reintroduce them. Adrenaline / Rethrow (own-die reroll) are not anyone’s exclusive.
+- **Wild vs Martial:** Martial moves the **body**. Wild grants **extra attacks** (`[Frenzy]`). A Wild card that swaps positions is in the wrong attribute; a Martial card that grants Frenzy is in the wrong attribute.
 - **Mechanical vs Corruption:** Mechanical rebuilds **your** engine. Corruption contaminates **theirs**. An opponent-die forge on a Mechanical card is in the wrong attribute.
 
 ## Card kinds — when to use which
@@ -188,7 +188,8 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
   hook names (see standardize-card-effects).
 - Ritual gate: stored in `ritual.activeWhen`; UI prints `[Active when: …]`.
   Do not also put that line in `rulesText`.
-- Instant gate: `effect.requires`; UI prints `[Requires: …]`.
+- Instant extra pile cost: `effect.requires`; UI prints `[Spend: …]` (it burns).
+  Attack gates print `[Requires: …]` on `AttackDefinition.requires`.
 
 ## Anti-patterns
 

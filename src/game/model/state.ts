@@ -21,7 +21,7 @@ import type {
   PlayerId,
   SymbolInstanceId,
 } from "./ids.js";
-import type { SymbolInstance, SymbolType } from "./symbols.js";
+import type { AttributeTokens, SymbolInstance, SymbolType } from "./symbols.js";
 import type { RngState } from "../rng/rng.js";
 
 /** Chain link kinds for the reaction stack (`008-reaction-chain`). */
@@ -68,11 +68,10 @@ export interface ChainLink {
  * legal move is noise rather than a decision point.
  *
  * Playtest DECIDED (2026-08-17): there is no dedicated absorption phase.
- * `ROLL_DICE` enters `actions`. Absorb (creature + ritual), `[Requires]`
- * spends, attacks, plays, forges, and ready-ritual activates all share that
- * window. Unabsorbed pool symbols stay spendable and absorbable until used
- * or the turn ends — there is no leftover-rolled → available flip. Rituals
- * cannot activate during roll.
+ * `ROLL_DICE` enters `actions`. Attribute pile banking, Shield absorb onto a
+ * creature, `[Requires]` gates, `[Spend]` burns, attacks, plays, forges, and
+ * ready-ritual activates all share that window. Unabsorbed pool symbols stay
+ * absorbable until used or the turn ends. Rituals cannot activate during roll.
  */
 export type TurnPhase = "roll" | "actions";
 
@@ -113,6 +112,11 @@ export interface PendingEffect {
   readonly sourceCardInstanceId: CardInstanceId | null;
   /** Attack damage only: skip this many Shield (spec `012`). */
   readonly ignoreShield: number;
+  /**
+   * True when this effect is the conducting attack’s Strike (or Blade Rain
+   * split of that Strike). Attack-prevent consumes only then. Spec `009`.
+   */
+  readonly fromAttack: boolean;
 }
 
 /**
@@ -199,10 +203,11 @@ export type PendingDecision =
       /** How many token pips must be named (already less than the creature's total). */
       readonly amount: number;
       /**
-       * `discard` (default, Siphon) strips the pips. `transfer` / `copy` move
-       * or duplicate them onto `destinationCreatureId` (spec `015`).
+       * `drain` (default, Siphon) takes the pips into the controller’s pile.
+       * `transfer` / `copy` move or duplicate them onto `destinationCreatureId`
+       * (spec `015`, parked).
        */
-      readonly mode?: "discard" | "transfer" | "copy";
+      readonly mode?: "drain" | "transfer" | "copy";
       readonly destinationCreatureId?: CreatureId;
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
@@ -292,6 +297,8 @@ export type PendingDecision =
       readonly range: boolean;
       readonly sourceCreatureId: CreatureId | null;
       readonly ignoreShield?: number;
+      /** Blade Rain of an attack Strike; Extermination leaves this unset. */
+      readonly fromAttack?: boolean;
       readonly thenEffects?: readonly EffectDefinition[];
     }
   | {
@@ -319,12 +326,6 @@ export type PendingDecision =
       /** Eligible symbol instance ids (synthetic-in-pool). */
       readonly eligibleSymbolIds: readonly SymbolInstanceId[];
       readonly deferred: PendingEffect;
-    }
-  | {
-      readonly type: "remove-toxin-amount";
-      readonly controllerId: PlayerId;
-      readonly creatureId: CreatureId;
-      readonly maxAmount: number;
     }
   | {
       readonly type: "optional-overcharge";
@@ -363,6 +364,11 @@ export interface PlayerState {
   readonly overload: readonly CardInstanceId[];
   /** Ritual cards this player owns that are waiting / ready on the engine field. */
   readonly ritual: readonly CardInstanceId[];
+  /**
+   * Persistent attribute pile (spec `016`). Absorbed attribute pips bank here
+   * immediately; attacks and ritual Active-when / Spend read this pool.
+   */
+  readonly attributePool: AttributeTokens;
   /**
    * Player-scoped once-per-turn keys (Adrenaline reroll, etc.). Cleared on END_TURN.
    */
@@ -421,8 +427,8 @@ export interface GameState {
   /** Next FORGE_CARD this turn costs this much less (Gear absorb). */
   readonly forgeDiscountThisTurn: Readonly<Record<string, number>>;
   /**
-   * One-shot requirement wildcards (Resonance / Catalyst). Consumed when a
-   * `[Requires]` check or ritual absorb uses one.
+   * One-shot Resonance / Catalyst wildcards. Consumed when they cover shortfall
+   * on a `[Requires]` / Active-when gate or a `[Spend]` burn this turn.
    */
   readonly requirementWildcardsThisTurn: Readonly<
     Record<string, readonly { readonly fromSymbol?: SymbolType }[]>

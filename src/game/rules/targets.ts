@@ -52,7 +52,11 @@ export function legalCreaturesForFilter(
     case "ally-damage-over-half":
       return allyIds.filter(damageOverHalf);
     case "ally-with-tokens":
-      return allyIds.filter((id) => totalTokens(state.creatures[id]?.attributeTokens ?? {}) > 0);
+      return allyIds.filter((id) => {
+        const ownerId = state.creatures[id]?.ownerId;
+        if (ownerId === undefined) return false;
+        return totalTokens(state.players[ownerId]?.attributePool ?? {}) > 0;
+      });
     case "adjacent-ally":
       return adjacentAllyIds(state, sourceCreatureId);
   }

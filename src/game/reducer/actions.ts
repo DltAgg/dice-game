@@ -19,21 +19,16 @@ import type { SymbolRequirement, SymbolType } from "../model/symbols.js";
  */
 export type GameAction =
   | { readonly type: "ROLL_DICE"; readonly playerId: PlayerId }
+  /**
+   * Bank an unabsorbed attribute into the player's pile, or grant Shield onto
+   * a living owned creature (`creatureId` required for Shield only). Spec `016`.
+   */
   | {
       readonly type: "ABSORB_SYMBOL";
       readonly playerId: PlayerId;
-      readonly creatureId: CreatureId;
       readonly symbolId: SymbolInstanceId;
-    }
-  /**
-   * Assign an unabsorbed attribute symbol to a field ritual toward its
-   * `[Active when: …]` gate (same actions window as creature absorb).
-   */
-  | {
-      readonly type: "ABSORB_SYMBOL_TO_RITUAL";
-      readonly playerId: PlayerId;
-      readonly cardInstanceId: CardInstanceId;
-      readonly symbolId: SymbolInstanceId;
+      /** Required when absorbing Shield; omitted for attribute pile banking. */
+      readonly creatureId?: CreatureId;
     }
   | {
       readonly type: "ATTACK";
@@ -246,15 +241,6 @@ export type GameAction =
       readonly type: "RESOLVE_CHOOSE_POOL_SYMBOL";
       readonly playerId: PlayerId;
       readonly symbolId: SymbolInstanceId;
-    }
-  /**
-   * Completes Adaptive Toxin absorb: remove `amount` markers (0..max) and deal
-   * that much damage. Spec `013`.
-   */
-  | {
-      readonly type: "RESOLVE_REMOVE_TOXIN_AMOUNT";
-      readonly playerId: PlayerId;
-      readonly amount: number;
     }
   /**
    * Completes Overcharge optional Energy + suppress. Spec `013`.

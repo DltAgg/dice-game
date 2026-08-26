@@ -14,13 +14,13 @@ DeckBuilder UI → DeckRepository (localStorage) → validateLoadout (pure) → 
 
 ## Rules
 
-Tactics deck (DECIDED, M4 — see `docs/OPEN_DESIGN.md`):
+Tactics deck (DECIDED, playtest 2026-08-26 Yu-Gi-Oh-sized — see `docs/OPEN_DESIGN.md`):
 
 | Rule | Value |
 |---|---|
-| Minimum size | 50 |
-| Maximum size | 60 |
-| Max copies of one card id | 4 |
+| Minimum size | 40 |
+| Maximum size | 50 |
+| Max copies of one card id | 3 |
 
 Face deck (bible §12): up to 12 faces, at most 3 per attribute.
 Squad: exactly `creaturesPerPlayer` known creature definitions.
@@ -60,7 +60,7 @@ Saved loadout JSON:
 ## Validation
 
 `validateLoadout` refuses unknown ids, illegal squad size, tactics outside
-50–60, a fifth copy of any card, illegal face decks, and illegal
+40–50, a fourth copy of any card, illegal face decks, and illegal
 `startingDice`. `createMatch` uses that check (throws only when the check
 fails, same as an illegal squad).
 
@@ -76,7 +76,7 @@ fails, same as an illegal squad).
 ## Acceptance Criteria
 
 - [x] Spec written; M3 marked implemented
-- [x] Config + OPEN_DESIGN reflect 50–60 / 4 copies; prototype deck is legal
+- [x] Config + OPEN_DESIGN reflect 40–50 / 3 copies; prototype deck is legal
 - [x] `validateLoadout` pure + tested; `createMatch` uses it
 - [x] `DeckRepository` round-trips; memory fake covers unit tests
 - [x] Deck builder can save a legal loadout and start a hotseat match from two saved decks

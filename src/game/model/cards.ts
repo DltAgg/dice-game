@@ -2,7 +2,7 @@ import type { Attribute } from "./attributes.js";
 import type { FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { EffectDefinition } from "./effects.js";
 import type { CardId, CardInstanceId, CreatureId, FaceCardId, PlayerId } from "./ids.js";
-import type { SymbolRequirement, SymbolType, AttributeTokens } from "./symbols.js";
+import type { SymbolRequirement, SymbolType } from "./symbols.js";
 
 /**
  * The card model, taken from the `Tactics card layout` template in the Card
@@ -81,9 +81,10 @@ export interface ForgeRegion {
  * the effect text; it is checked against the player's symbol pool, the same
  * supply engine abilities draw on.
  *
- * How the gate prints depends on the subtype: Rituals say `[Active when: …]`,
- * Instants say `[Requires: …]`. The UI formatter picks the label; the engine
- * only cares that the symbols are present.
+ * How the extra cost prints: Rituals say `[Active when: …]` for the gate and
+ * `[Spend: …]` for activate burn. Instants print `[Spend: …]` for
+ * `effect.requires` (it burns from the pile). Attack `[Requires: …]` is a
+ * separate hold-gate and lives on `AttackDefinition.requires`.
  */
 export interface EffectRegion {
   readonly requires?: SymbolRequirement;
@@ -267,14 +268,16 @@ export interface OverloadRegion {
  */
 export interface RitualRegion {
   /**
-   * Attribute gate that flips the ritual to ready. Progress is cumulative:
-   * printed as `Arcane + Arcane` (not `2× Arcane`). Multiple matching pool
-   * symbols may be assigned in the same turn (including two+ of the same
-   * attribute) until this requirement is filled. Absent when the print has
-   * no `[Active when: …]` (e.g. Paradox) — the ritual is ready as soon as
-   * it leaves preparing.
+   * Attribute gate checked against the owner's attribute pile (spec `016`).
+   * When met (or absent), the ritual is / becomes `ready`. Absent when the
+   * print has no `[Active when: …]` (e.g. Paradox) — ready on place.
    */
   readonly activeWhen?: SymbolRequirement;
+  /**
+   * Optional pile burn on `ACTIVATE_RITUAL` (in addition to
+   * `additionalEnergy`). Does not apply to standing-only fire while ready.
+   */
+  readonly spend?: SymbolRequirement;
   /**
    * Extra Energy paid on ACTIVATE_RITUAL (Runic Nullification’s “Pay 2
    * Energy”), on top of the header cost paid when placing the ritual.
@@ -284,7 +287,7 @@ export interface RitualRegion {
   /**
    * Standing triggers while this continuous ritual is `ready` on the field
    * (Abyssal Sacrifice, Serrated Stinger). Instant/reaction rituals ignore.
-   * Standing fire does not spend Active-when progress or exhaust the ritual.
+   * Standing fire does not spend Active-when / Spend or exhaust the ritual.
    */
   readonly standingAbilities?: readonly StandingTrigger[];
 }
@@ -359,20 +362,4 @@ export interface CardInstance {
   readonly attachedToFaceCardId: FaceCardId | null;
   /** Set only while `zone === "ritual"`. */
   readonly ritualOrientation: RitualOrientation | null;
-  /**
-   * Cumulative Active-when progress while `zone === "ritual"`. Credited
-   * immediately when the owner assigns a matching unabsorbed pool symbol onto
-   * the ritual during actions (same window and `on-absorb` event as creature
-   * absorb; unlike creature tokens this is not delayed to end of turn). The
-   * owner may assign multiple pips in one turn, including the same attribute
-   * more than once, until `activeWhen` is filled. Null outside the ritual zone.
-   */
-  readonly ritualProgress: AttributeTokens | null;
-  /**
-   * Attributes credited toward `ritualProgress` this turn (telemetry; may
-   * repeat). Not a legality cap — a second matching pip is legal until the
-   * gate is filled. Cleared at the start of the owner's turn. Null outside
-   * the ritual zone.
-   */
-  readonly ritualProgressCreditedThisTurn: readonly Attribute[] | null;
 }

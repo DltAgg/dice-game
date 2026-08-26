@@ -8,7 +8,14 @@ import {
   UNMAKE,
   WAR_AXE,
 } from "../content/cards.js";
-import { CONTROL_SQUAD, NIGHTBOUND_ADEPT } from "../content/creatures.js";
+import {
+  ARCHMAGE,
+  CONTROL_SQUAD,
+  MINOTAUR,
+  NIGHTBOUND_ADEPT,
+  VOID_SUMMONER,
+} from "../content/creatures.js";
+import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { CONTROL_FACE_DECK, CONTROL_STARTING_DICE, ENGINE_TEST_FACE_DECK, NIGHTWELL, RUNEFLARE } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import { asSymbolInstanceId, type CardId, type DieId, type FaceCardId } from "../model/ids.js";
@@ -26,8 +33,8 @@ import {
   withActivePlayer,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
-  withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
@@ -67,13 +74,14 @@ describe("builtin Control two-color identity", () => {
   it("fields Nightbound Adept and no Corruption tactics", () => {
     expect(CONTROL_SQUAD).toContain(NIGHTBOUND_ADEPT);
     expect(CONTROL_SQUAD).not.toContain("creature-corrupting-elder");
-    expect(CONTROL_DECK).toHaveLength(60);
+    expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
   });
 });
 
 describe("Umbral Bolt", () => {
   it("deals 3 after choosing an enemy when Darkness is in the pool", () => {
-    const ready = withSymbols(actionsReady([UMBRAL_BOLT]), P1, ["darkness"]);
+    const ready = withAttributePool(actionsReady([UMBRAL_BOLT]), P1, { darkness: 1 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -117,17 +125,20 @@ describe("Rift Collapse", () => {
     );
     const ritualId = ritualsOf(placed, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
-    const ready = {
-      ...placed,
-      cards: {
-        ...placed.cards,
-        [ritualId]: {
-          ...placed.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: { arcane: 1, darkness: 1 },
+    const ready = withAttributePool(
+      {
+        ...placed,
+        cards: {
+          ...placed.cards,
+          [ritualId]: {
+            ...placed.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    };
+      P1,
+      { arcane: 1, darkness: 1 },
+    );
     const activated = expectOk(
       advance(ready, { type: "ACTIVATE_RITUAL", playerId: P1, cardInstanceId: ritualId }),
     );
@@ -221,21 +232,32 @@ describe("Gloom Resonance", () => {
       }),
     );
     const afterRoll = rollShowingSlot(overloaded, 0);
-    expect(
-      usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness" && s.sourceDieId === null),
-    ).toHaveLength(2);
+    expect(afterRoll.players[P1]?.attributePool.darkness ?? 0).toBeGreaterThanOrEqual(2);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness")).toHaveLength(0);
   });
 });
 
 describe("Umbral Brand", () => {
   it("deals 1 once per Darkness absorb", () => {
+    // Squad without Nightbound — its ally On absorb Darkness would also open
+    // choose-creature (discard from pile) and steal the pending window.
     const ready = withEnergy(
       withHand(
         withPhase(
           newMatch({
             players: [
-              { id: P1, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-              { id: P2, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+              {
+                id: P1,
+                squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+                deck: [],
+                faceDeck: ENGINE_TEST_FACE_DECK,
+              },
+              {
+                id: P2,
+                squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+                deck: [],
+                faceDeck: ENGINE_TEST_FACE_DECK,
+              },
             ],
           }),
           "actions",
@@ -294,9 +316,8 @@ describe("Umbral Brand", () => {
 describe("Control faces", () => {
   it("Nightwell generates Darkness on roll", () => {
     const afterRoll = rollShowingSlot(installFace(newMatch(), NIGHTWELL), 0);
-    expect(
-      usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness" && s.sourceDieId === null),
-    ).toHaveLength(1);
+    expect(afterRoll.players[P1]?.attributePool.darkness ?? 0).toBeGreaterThanOrEqual(1);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "darkness")).toHaveLength(0);
   });
 
   it("Runeflare prompts choose-enemy on roll", () => {

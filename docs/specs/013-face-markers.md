@@ -97,14 +97,13 @@ as data — no card-id special cases in the reducer.
 |---|---|
 | `RESOLVE_CHOOSE_DIE_SLOT` | `choose-die-slot` (`dieId`/`slotIndex` null = decline if optional) |
 | `RESOLVE_CHOOSE_POOL_SYMBOL` | `choose-pool-symbol` |
-| `RESOLVE_REMOVE_TOXIN_AMOUNT` | `remove-toxin-amount` |
 | `RESOLVE_OPTIONAL_OVERCHARGE` | `optional-overcharge` |
 | `RESOLVE_OPTIONAL_BONUS_ATTACK` | `optional-bonus-attack` |
 
 ## Validation
 
 - Slot choices must match `DieSlotChoiceFilter` (+ Infection `same-die-other-slot` context).
-- Remove-toxin amount ∈ `[0, maxAmount]`.
+- Adaptive Toxin absorb: `remove-toxin-deal-damage` with `amount: 3` (no count pending).
 - Bonus attack: basic only, same creature, not yet attacked, fuelled, legal target.
 - Unusable symbols rejected by absorb / `usableSymbols` / `planConsumption`.
 
@@ -131,7 +130,6 @@ Match-ui must render (hotseat + online), **in addition to `012` pendings**:
 |---|---|
 | `choose-die-slot` | Pick a legal die face/slot (Corruption target, Natural suppress, Corrupted lock/strip, Catalyst copy, Infection spread). Show Decline when `optional`. |
 | `choose-pool-symbol` | Pick an eligible synthetic pool symbol (Catalyst wildcard). |
-| `remove-toxin-amount` | Choose how many Toxin markers to strip (0..max); deals that damage. |
 | `optional-overcharge` | Accept (+1 Energy, Overcharge face) or decline. |
 | `optional-bonus-attack` | During actions: Decline, or declare the named creature’s **basic** attack (pick target). |
 

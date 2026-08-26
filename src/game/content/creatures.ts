@@ -74,7 +74,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-minotaur-heavy-axe"),
         name: "Heavy Axe",
         kind: "basic",
-        requires: { martial: 2 },
+        discards: { martial: 1 },
         range: false,
         rulesText: "[Strike 3].",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
@@ -104,14 +104,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Varcolac",
     life: 13,
     attributes: ["wild"],
-    passiveRulesText: "On attack, another ally: [Empower 1] this creature.",
+    passiveRulesText: "On attack, another ally: [Frenzy] this creature.",
     standingAbilities: [
       {
         type: "on-attack",
         attackerRelation: "ally-other",
         effects: [
           {
-            type: "grant-next-attack-bonus",
+            type: "grant-extra-attack",
             amount: 1,
             target: { kind: "source-creature" },
           },
@@ -120,7 +120,13 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-attack",
         attackKinds: ["special"],
-        effects: [{ type: "next-attack-bonus", amount: 1 }],
+        effects: [
+          {
+            type: "grant-extra-attack",
+            amount: 1,
+            target: { kind: "source-creature" },
+          },
+        ],
       },
     ],
     attacks: [
@@ -128,7 +134,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-varcolac-charge"),
         name: "Charge",
         kind: "basic",
-        requires: { wild: 1 },
         discards: { wild: 1 },
         range: false,
         rulesText: "[Strike 2].",
@@ -141,7 +146,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1, martial: 1 },
         discards: { wild: 1 },
         range: false,
-        rulesText: "[Strike 4]. [Empower 1].",
+        rulesText: "[Strike 4]. [Frenzy].",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],
@@ -157,7 +162,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-garuda-dive"),
         name: "Dive",
         kind: "basic",
-        requires: { wild: 1 },
         discards: { wild: 1 },
         range: true,
         rulesText: "[Strike 2].",
@@ -212,7 +216,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-archmage-arcane-burst"),
         name: "Arcane Burst",
         kind: "basic",
-        requires: { arcane: 1 },
         discards: { arcane: 1 },
         range: false,
         rulesText: "[Strike 2]. [Draw 1].",
@@ -261,7 +264,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-elder-decay-touch"),
         name: "Touch of Decay",
         kind: "basic",
-        requires: { arcane: 1 },
         discards: { arcane: 1 },
         range: false,
         rulesText: "[Strike 2]. [Strip 1 Shield].",
@@ -288,7 +290,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     standingAbilities: [
       {
         type: "on-absorb",
-        absorberRelation: "any",
+        absorberRelation: "ally",
         faceKinds: ["natural"],
         effects: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
       },
@@ -311,7 +313,6 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-void-rupture"),
         name: "Rupture",
         kind: "basic",
-        requires: { arcane: 1 },
         discards: { arcane: 1 },
         range: false,
         rulesText: "[Strike 2]. [Generate 1 Arcane].",
@@ -346,6 +347,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["luminar"],
+        absorberRelation: "ally",
         effects: [
           {
             type: "grant-next-attack-bonus",
@@ -360,7 +362,6 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-prism-herald-gleam"),
         name: "Gleam",
         kind: "basic",
-        requires: { luminar: 1 },
         discards: { luminar: 1 },
         range: false,
         rulesText: "[Strike 2]. [Heal 1] on the most damaged ally.",
@@ -398,6 +399,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["luminar"],
+        absorberRelation: "ally",
         oncePerTurn: true,
         effects: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
       },
@@ -420,7 +422,6 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-lens-choir-focus"),
         name: "Focus Beam",
         kind: "basic",
-        requires: { luminar: 1 },
         discards: { luminar: 1 },
         range: false,
         rulesText: "[Strike 1]. [Generate 1 Luminar].",
@@ -465,7 +466,6 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-aegis-link-ward-strike"),
         name: "Ward Strike",
         kind: "basic",
-        requires: { luminar: 1 },
         discards: { luminar: 1 },
         range: false,
         rulesText: "[Strike 2]. [Mark 1 Shield] this creature.",
@@ -481,11 +481,11 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { luminar: 1, mechanical: 1 },
         discards: { luminar: 1 },
         range: false,
-        rulesText: "[Strike 2]. [Prevent 1] on an allied creature.",
+        rulesText: "[Strike 2]. [Prevent] on an allied creature.",
         effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
         followUpEffects: [
           {
-            type: "grant-damage-prevent",
+            type: "grant-attack-prevent",
             amount: 1,
             target: { kind: "choose-ally" },
           },
@@ -503,6 +503,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["mechanical"],
+        absorberRelation: "ally",
         effects: [
           {
             type: "grant-next-attack-bonus",
@@ -522,7 +523,6 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-cogwork-driver-drive"),
         name: "Drive",
         kind: "basic",
-        requires: { mechanical: 1 },
         discards: { mechanical: 1 },
         range: false,
         rulesText: "[Strike 2].",
@@ -550,6 +550,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["mechanical"],
+        absorberRelation: "ally",
         effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
       },
       {
@@ -563,7 +564,6 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-servo-assembly-ratchet"),
         name: "Ratchet",
         kind: "basic",
-        requires: { mechanical: 1 },
         discards: { mechanical: 1 },
         range: false,
         rulesText: "[Strike 1]. [Generate 1 Mechanical].",
@@ -612,7 +612,6 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-clockwork-dynamo-spark"),
         name: "Spark",
         kind: "basic",
-        requires: { mechanical: 1 },
         discards: { mechanical: 1 },
         range: false,
         rulesText: "[Strike 2].",
@@ -643,15 +642,15 @@ const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Nightbound Adept",
     life: 14,
     attributes: ["darkness"],
-    passiveRulesText:
-      "On absorb Darkness, once per turn: a chosen enemy creature discards 1 attribute token.",
+    passiveRulesText: "On absorb Darkness, once per turn: [Drain 1].",
     standingAbilities: [
       {
         type: "on-absorb",
         symbols: ["darkness"],
+        absorberRelation: "ally",
         oncePerTurn: true,
         effects: [
-          { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+          { type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
         ],
       },
       {
@@ -670,7 +669,6 @@ const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-nightbound-adept-umbral-touch"),
         name: "Umbral Touch",
         kind: "basic",
-        requires: { darkness: 1 },
         discards: { darkness: 1 },
         range: false,
         rulesText: "[Strike 2]. [Generate 1 Darkness].",
@@ -710,7 +708,6 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-marrow-fiend-gnaw"),
         name: "Gnaw",
         kind: "basic",
-        requires: { toxin: 1 },
         discards: { toxin: 1 },
         range: false,
         rulesText: "[Strike 2].",
@@ -751,7 +748,6 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-cinder-wight-cinder-touch"),
         name: "Cinder Touch",
         kind: "basic",
-        requires: { corruption: 1 },
         discards: { corruption: 1 },
         range: false,
         rulesText: "[Strike 2].",
@@ -789,6 +785,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-absorb",
         symbols: ["toxin"],
+        absorberRelation: "ally",
         effects: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
       },
     ],
@@ -797,7 +794,6 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
         id: asAttackId("attack-ichor-hydra-fang"),
         name: "Fang",
         kind: "basic",
-        requires: { toxin: 1 },
         discards: { toxin: 1 },
         range: false,
         rulesText: "[Strike 1]. [Mark 1 Toxin].",

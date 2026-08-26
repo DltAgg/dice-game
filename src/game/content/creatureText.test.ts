@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
 import { asAttackId, asCreatureDefinitionId } from "../model/ids.js";
+import { isNonEmptyRequirement } from "../rules/tokens.js";
 import {
   AEGIS_LINK,
   ALL_CREATURES,
@@ -20,7 +21,7 @@ import {
   VARCOLAC,
   VOID_SUMMONER,
 } from "./creatures.js";
-import { formatAttackCost, formatAttackLine, primaryAttribute } from "./creatureText.js";
+import { formatAttackCost, formatAttackFuel, formatAttackLine, primaryAttribute } from "./creatureText.js";
 
 const FIGMA_IDS = [
   ARCHMAGE,
@@ -76,6 +77,25 @@ describe("creature catalogue", () => {
       expect(creature.attacks.every((attack) => attack.effect !== undefined)).toBe(true);
     }
   });
+
+  it("gives every attack a Requires gate, a Spend, or both", () => {
+    for (const creature of ALL_CREATURES) {
+      for (const attack of creature.attacks) {
+        const hasRequires = isNonEmptyRequirement(attack.requires);
+        const hasDiscards = isNonEmptyRequirement(attack.discards);
+        expect(
+          hasRequires || hasDiscards,
+          `${creature.name} ${attack.name} needs Requires and/or Spend`,
+        ).toBe(true);
+        if (attack.kind === "special") {
+          expect(hasRequires, `${creature.name} ${attack.name} special has a Requires gate`).toBe(
+            true,
+          );
+          expect(hasDiscards, `${creature.name} ${attack.name} special Spends`).toBe(true);
+        }
+      }
+    }
+  });
 });
 
 describe("English creature printing", () => {
@@ -89,6 +109,19 @@ describe("English creature printing", () => {
       rulesText: "[Strike 3].",
     };
     expect(formatAttackLine(attack)).toBe("Heavy Axe: [Strike 3].");
+  });
+
+  it("prints Requires and Spend when an attack has both", () => {
+    const attack: AttackDefinition = {
+      id: asAttackId("attack-example-war-charge"),
+      name: "War Charge",
+      kind: "special",
+      requires: { martial: 1, wild: 1 },
+      discards: { martial: 1 },
+      range: false,
+      rulesText: "[Strike 4].",
+    };
+    expect(formatAttackFuel(attack)).toBe("[Requires: Martial + Wild] [Spend: Martial]");
   });
 
   it("prints attack costs as Attr + Attr", () => {

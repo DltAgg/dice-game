@@ -116,8 +116,6 @@ function buildCards(
     attachedToCreatureId: null,
     attachedToFaceCardId: null,
     ritualOrientation: null,
-    ritualProgress: null,
-    ritualProgressCreditedThisTurn: null,
   }));
 
   return {
@@ -140,9 +138,9 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       damage: 0,
       defeated: false,
       attacksUsedThisCombat: 0,
-      attributeTokens: {},
+      extraAttacksThisTurn: 0,
       shields: 0,
-      damagePreventBuffer: 0,
+      attackPreventCount: 0,
       nextAttackBonus: 0,
       toxinMarkers: 0,
       equipmentIds: [],
@@ -203,6 +201,7 @@ export function createMatch(setup: MatchSetup): GameState {
       equipment: [],
       overload: [],
       ritual: [],
+      attributePool: {},
       spentOncePerTurnKeys: [],
     };
   }

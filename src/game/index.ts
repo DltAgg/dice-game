@@ -56,6 +56,8 @@ export {
 export {
   basicAttackOf,
   formatAttackCost,
+  formatAttackFuel,
+  attackCostOf,
   formatAttackLine,
   primaryAttribute,
   specialAttackOf,
@@ -78,7 +80,7 @@ export {
   GREAT_SPARK,
   PESTILENT_PLAGUE,
   PROTOTYPE_FACE_DECK,
-  PROTOTYPE_STARTING_DICE,
+  AGGRO_STARTING_DICE as PROTOTYPE_STARTING_DICE,
   ENGINE_TEST_FACE_DECK,
   REKINDLE,
   RENDING_CLAW,

@@ -21,6 +21,7 @@ import {
 import type { FaceKind } from "../model/dice.js";
 import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
+import { isAttributeSymbol } from "../model/symbols.js";
 import { isSyntheticOnlyAttribute } from "../model/attributes.js";
 import {
   forgeExceedsAttributeLimit,
@@ -42,11 +43,11 @@ import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, ch
 import {
   addTokens,
   discardTokensInAttributeOrder,
-  removeTokens,
   tokenChoiceNeeded,
   totalTokens,
 } from "../rules/tokens.js";
 import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
+import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
 import {
@@ -54,6 +55,7 @@ import {
   destroyRitual,
   drawCards,
   millCards,
+  refreshRitualOrientations,
   releaseEquipmentOn,
   searchableDeckCards,
   setCreaturePosition,
@@ -73,6 +75,10 @@ export function drainResolution(draft: Draft): void {
   let steps = 0;
 
   while (draft.resolutionStack.length > 0) {
+    // A prior effect may already have opened a player choice (e.g. auto-bank
+    // queued On absorb while On roll is waiting). Do not overwrite it.
+    if (draft.pendingDecision !== null) return;
+
     if (steps >= draft.config.maxResolutionSteps) {
       draft.resolutionStack = [];
       emit(draft, { type: "resolution-aborted", error: "RESOLUTION_LIMIT_EXCEEDED" });
@@ -98,6 +104,7 @@ export function pushEffect(
   sourceSlotIndex: number | null = null,
   ignoreShield = 0,
   sourceCardInstanceId: CardInstanceId | null = null,
+  fromAttack = false,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -110,6 +117,7 @@ export function pushEffect(
     sourceSlotIndex,
     sourceCardInstanceId,
     ignoreShield,
+    fromAttack,
   });
 }
 
@@ -453,6 +461,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       pending.sourceSlotIndex,
       pending.ignoreShield,
       pending.sourceCardInstanceId,
+      pending.fromAttack,
     );
   }
 
@@ -507,6 +516,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       applyToTargets(draft, pending, effect.target, (targetId) => {
         const dealt = dealDamage(draft, targetId, effect.amount, {
           ignoreShield: pending.ignoreShield,
+          fromAttack: pending.fromAttack,
         });
         if (dealt > 0 && pending.sourceCreatureId !== null) {
           fireOnDealDamage(draft, pending.sourceCreatureId, targetId);
@@ -708,19 +718,22 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       }
       return false;
     }
-    case "discard-attribute-tokens": {
+    case "drain-attribute-tokens": {
       let paused = false;
       applyToTargets(draft, pending, effect.target, (targetId) => {
         if (paused) return;
         const creature = draft.creatures[targetId];
         if (creature === undefined || creature.defeated || effect.amount <= 0) return;
-        if (totalTokens(creature.attributeTokens) <= 0) return;
-        if (tokenChoiceNeeded(creature.attributeTokens, effect.amount)) {
+        const pileOwnerId = creature.ownerId;
+        const pile = draft.players[pileOwnerId]?.attributePool ?? {};
+        if (totalTokens(pile) <= 0) return;
+        if (tokenChoiceNeeded(pile, effect.amount)) {
           draft.pendingDecision = {
             type: "choose-attribute-tokens",
             controllerId: pending.controllerId,
             creatureId: targetId,
             amount: effect.amount,
+            mode: "drain",
             ...effectChoiceSource(draft, pending),
           };
           emit(draft, {
@@ -732,16 +745,21 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
           paused = true;
           return;
         }
-        const { next, discarded } = discardTokensInAttributeOrder(
-          creature.attributeTokens,
-          effect.amount,
-        );
+        const { next, discarded } = discardTokensInAttributeOrder(pile, effect.amount);
         if (totalTokens(discarded) <= 0) return;
-        patchCreature(draft, targetId, { attributeTokens: next });
+        const controllerPile = draft.players[pending.controllerId]?.attributePool ?? {};
+        patchPlayer(draft, pileOwnerId, { attributePool: next });
+        patchPlayer(draft, pending.controllerId, {
+          attributePool: addTokens(controllerPile, discarded),
+        });
+        refreshRitualOrientations(draft, pileOwnerId);
+        refreshRitualOrientations(draft, pending.controllerId);
         emit(draft, {
-          type: "attribute-tokens-discarded",
+          type: "attribute-tokens-drained",
+          fromPlayerId: pileOwnerId,
+          toPlayerId: pending.controllerId,
+          drained: discarded,
           creatureId: targetId,
-          discarded,
         });
       });
       return paused;
@@ -753,12 +771,12 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       destroyRitual(draft, ritualId);
       return false;
     }
-    case "grant-damage-prevent": {
+    case "grant-attack-prevent": {
       applyToTargets(draft, pending, effect.target, (targetId) => {
         const creature = draft.creatures[targetId];
         if (creature === undefined || creature.defeated) return;
         patchCreature(draft, targetId, {
-          damagePreventBuffer: creature.damagePreventBuffer + effect.amount,
+          attackPreventCount: creature.attackPreventCount + effect.amount,
         });
       });
       return false;
@@ -1096,17 +1114,8 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
     case "remove-toxin-deal-damage": {
       const targetId = resolveTarget(draft, pending, effect.target);
       if (targetId === null) return false;
-      const creature = draft.creatures[targetId];
-      if (creature === undefined || creature.defeated) return false;
-      const maxAmount = creature.toxinMarkers;
-      if (maxAmount <= 0) return false;
-      draft.pendingDecision = {
-        type: "remove-toxin-amount",
-        controllerId: pending.controllerId,
-        creatureId: targetId,
-        maxAmount,
-      };
-      return true;
+      applyRemoveToxinForDamage(draft, pending.controllerId, targetId, effect.amount);
+      return false;
     }
     case "add-corruption-marker": {
       return openDieSlotChoice(draft, pending, "opposing-synthetic", false);
@@ -1175,6 +1184,23 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       };
       return true;
     }
+    case "grant-extra-attack": {
+      applyToTargets(draft, pending, effect.target, (targetId) => {
+        const creature = draft.creatures[targetId];
+        if (creature === undefined || creature.defeated) return;
+        const amount = Math.max(0, effect.amount);
+        if (amount === 0) return;
+        patchCreature(draft, targetId, {
+          extraAttacksThisTurn: creature.extraAttacksThisTurn + amount,
+        });
+        emit(draft, {
+          type: "extra-attacks-granted",
+          creatureId: targetId,
+          amount,
+        });
+      });
+      return false;
+    }
     case "mill-cards": {
       const playerId =
         effect.player === "opponent"
@@ -1183,111 +1209,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       millCards(draft, playerId, effect.amount);
       return false;
     }
-    case "transfer-attribute-tokens":
-      return applyTokenShare(draft, pending, effect, false);
-    case "copy-attribute-tokens":
-      return applyTokenShare(draft, pending, effect, true);
   }
-}
-
-type TokenShareEffect = Extract<
-  EffectDefinition,
-  { type: "transfer-attribute-tokens" } | { type: "copy-attribute-tokens" }
->;
-
-/**
- * Wild pack feeding: move or copy absorbed tokens between allied creatures.
- * Sequential choose-creature (from, then to), then mixed-pile token pick.
- */
-function applyTokenShare(
-  draft: Draft,
-  pending: PendingEffect,
-  effect: TokenShareEffect,
-  copy: boolean,
-): boolean {
-  const fromId = resolveTarget(draft, pending, effect.from);
-  if (fromId === null) {
-    const filter = choiceFilterFor(effect.from);
-    if (filter === null) return false;
-    return openCreatureChoice(draft, pending, filter, false, {
-      ...effect,
-      from: { kind: "declared-target" },
-    });
-  }
-
-  const from = draft.creatures[fromId];
-  if (from === undefined || from.defeated || from.ownerId !== pending.controllerId) return false;
-  if (totalTokens(from.attributeTokens) <= 0) return false;
-
-  const toId = resolveTarget(draft, pending, effect.to);
-  if (toId === null) {
-    const filter = choiceFilterFor(effect.to);
-    if (filter === null) return false;
-    return openCreatureChoice(
-      draft,
-      { ...pending, sourceCreatureId: fromId },
-      filter,
-      false,
-      {
-        ...effect,
-        from: { kind: "source-creature" },
-        to: { kind: "declared-target" },
-      },
-    );
-  }
-
-  const dest = draft.creatures[toId];
-  if (dest === undefined || dest.defeated || dest.ownerId !== pending.controllerId) return false;
-  if (fromId === toId) return false;
-
-  if (tokenChoiceNeeded(from.attributeTokens, effect.amount)) {
-    draft.pendingDecision = {
-      type: "choose-attribute-tokens",
-      controllerId: pending.controllerId,
-      creatureId: fromId,
-      amount: effect.amount,
-      mode: copy ? "copy" : "transfer",
-      destinationCreatureId: toId,
-      ...effectChoiceSource(draft, pending),
-    };
-    emit(draft, {
-      type: "choose-attribute-tokens-started",
-      playerId: pending.controllerId,
-      creatureId: fromId,
-      amount: effect.amount,
-    });
-    return true;
-  }
-
-  const { discarded } = discardTokensInAttributeOrder(from.attributeTokens, effect.amount);
-  if (totalTokens(discarded) <= 0) return false;
-  applyTokenMove(draft, fromId, toId, discarded, copy);
-  return false;
-}
-
-export function applyTokenMove(
-  draft: Draft,
-  fromId: CreatureId,
-  toId: CreatureId,
-  tokens: import("../model/symbols.js").SymbolRequirement,
-  copy: boolean,
-): void {
-  const from = draft.creatures[fromId];
-  const dest = draft.creatures[toId];
-  if (from === undefined || dest === undefined) return;
-  if (!copy) {
-    patchCreature(draft, fromId, { attributeTokens: removeTokens(from.attributeTokens, tokens) });
-  }
-  const destAfter = draft.creatures[toId];
-  if (destAfter === undefined) return;
-  patchCreature(draft, toId, { attributeTokens: addTokens(destAfter.attributeTokens, tokens) });
-  emit(draft, {
-    type: "attribute-tokens-moved",
-    fromCreatureId: fromId,
-    toCreatureId: toId,
-    tokens,
-    copy,
-  });
 }
 
 function openDieSlotChoice(
@@ -1723,6 +1645,11 @@ export function createSymbol(
     ...(options?.usable === false ? { usable: false } : {}),
   };
   emit(draft, { type: "symbol-generated", symbolId: id, symbol, ownerId, source });
+  // Spec `016`: usable attribute pips auto-bank (rolled path banks after on-roll;
+  // effect-generated bank immediately so they never sit in the turn pool).
+  if (options?.usable !== false && isAttributeSymbol(symbol)) {
+    bankAttributeIntoPile(draft, ownerId, id);
+  }
   return id;
 }
 
@@ -1918,7 +1845,7 @@ export function dealDamage(
   draft: Draft,
   creatureId: CreatureId,
   amount: number,
-  options?: { readonly ignoreShield?: number },
+  options?: { readonly ignoreShield?: number; readonly fromAttack?: boolean },
 ): number {
   const creature = draft.creatures[creatureId];
   if (creature === undefined || creature.defeated) return 0;
@@ -1944,25 +1871,24 @@ export function dealDamage(
 
   let remaining = applyOnTakeDamageReduce(draft, creatureId, incoming);
 
-  // Spec 009: prevention buffer → Shield → HP.
-  const fromBuffer = Math.min(
-    draft.creatures[creatureId]?.damagePreventBuffer ?? 0,
-    remaining,
-  );
-  if (fromBuffer > 0) {
-    const buffered = draft.creatures[creatureId]!;
-    patchCreature(draft, creatureId, {
-      damagePreventBuffer: buffered.damagePreventBuffer - fromBuffer,
-    });
-    remaining -= fromBuffer;
-    emit(draft, {
-      type: "damage-prevented",
-      creatureId,
-      amount: fromBuffer,
-      shieldsRemaining: buffered.shields,
-      source: "buffer",
-    });
-    firePreventDraw(draft, buffered.ownerId);
+  // Spec 009: attack-prevent (whole attack instance) → Shield → HP.
+  if (options?.fromAttack === true) {
+    const preventCount = draft.creatures[creatureId]?.attackPreventCount ?? 0;
+    if (preventCount > 0 && remaining > 0) {
+      const prevented = draft.creatures[creatureId]!;
+      patchCreature(draft, creatureId, {
+        attackPreventCount: preventCount - 1,
+      });
+      emit(draft, {
+        type: "damage-prevented",
+        creatureId,
+        amount: remaining,
+        shieldsRemaining: prevented.shields,
+        source: "attack-prevent",
+      });
+      firePreventDraw(draft, prevented.ownerId);
+      remaining = 0;
+    }
   }
 
   if (remaining <= 0) return 0;

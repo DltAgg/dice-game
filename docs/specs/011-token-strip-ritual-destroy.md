@@ -1,35 +1,43 @@
-# 011 — Token strip & ritual destroy
+# 011 — Drain, token strip & ritual destroy
 
 Status: **IMPLEMENTED**
 
 Control interaction vocabulary for Siphon Sigil and Dispel Circle. Negate-ritual
-lives in `008` (Seal the Rite). Design cites: bible §20 (strip fuel example),
+lives in `008` (Seal the Rite). Design cites: bible §20 (deny fuel),
 §25 (resource denial before creature destruction); `OPEN_DESIGN.md` fuel-cap
-row (strip **DECIDED**; cap remains **OPEN**). Equipment destroy choice for
+row (drain **DECIDED**; cap remains **OPEN**). Equipment destroy choice for
 Calculated Sacrifice / Hexbrand absorb lives here as the same “name the
 attached piece” pattern.
 
+Attribute tokens live on the **player pile**. `[Drain N]` takes from the
+opponent’s pile into yours. `[Strip]` is only for creature/face tokens
+(Shield, Toxin, Pestilence, Corruption).
+
 ## Intent
 
-Effects can deny opposing fuel (attribute tokens) and remove opposing field
-rituals without creature destruction. When more than one legal strip / destroy
-pick exists, the controller names it — the engine does not silently take
-`ATTRIBUTES` order or earliest instance id.
+Effects can deny opposing fuel (attribute tokens) by **draining** them into
+the controller’s pile, and remove opposing field rituals without creature
+destruction. When more than one legal drain / destroy pick exists, the
+controller names it — the engine does not silently take `ATTRIBUTES` order
+or earliest instance id.
 
 ## Rules
 
-1. **`discard-attribute-tokens`.** Choose an enemy creature (existing
-   `choose-enemy` pending). Then:
-   - **Mix + leftovers:** if the creature holds more than `amount` tokens and
-     they sit in two or more attributes, open `choose-attribute-tokens`. The
-     controller names a `SymbolRequirement` totaling exactly `amount` that is a
-     subset of the creature’s current tokens.
-   - **No real choice:** fewer tokens than `amount` (discard all remaining), a
+1. **`drain-attribute-tokens`.** Choose an enemy creature (`choose-enemy`;
+   targeting context). Then take up to `amount` tokens from **that
+   creature’s controller’s attribute pile** into **your** pile:
+   - **Mix + leftovers:** if the pile holds more than `amount` tokens and
+     they sit in two or more attributes, open `choose-attribute-tokens`
+     (`mode: "drain"`). The controller names a `SymbolRequirement` totaling
+     exactly `amount` that is a subset of the pile.
+   - **No real choice:** fewer tokens than `amount` (take all remaining), a
      single attribute pile, or zero tokens (legal whiff). Homogeneous leftover
      piles use `discardTokensInAttributeOrder` (equivalent to taking from that
      only pile).
-   Emit `attribute-tokens-discarded` with the discarded requirement shape.
-2. **No token cap** in this slice — per-creature / per-attribute caps stay
+   Add the taken tokens to the controller’s `attributePool`. Refresh ritual
+   orientations for **both** seats. Emit `attribute-tokens-drained` with
+   `fromPlayerId` / `toPlayerId` / `drained`.
+2. **No token cap** in this slice — per-player / per-attribute caps stay
    `OPEN` in `OPEN_DESIGN.md`.
 3. **`destroy-ritual`.** Choose one opposing card in `zone === "ritual"`
    (preparing, ready, or exhausted). Always opens `choose-ritual` when at least
@@ -51,7 +59,7 @@ pick exists, the controller names it — the engine does not silently take
 
 | Field | Change |
 |---|---|
-| `CreatureState.attributeTokens` | Reduced by strip effects. |
+| `PlayerState.attributePool` | Reduced on the target’s controller; increased on the drain controller. |
 | Ritual card instance | Leaves `ritual` → `graveyard`. |
 | Equipment card instance | Leaves `equipment` → `graveyard`. |
 | `pendingDecision` | May be `choose-creature` (enemy), `choose-ritual` (opponent), `choose-equipment`, or `choose-attribute-tokens`. |
@@ -63,7 +71,7 @@ pick exists, the controller names it — the engine does not silently take
 | `RESOLVE_CHOOSE_CREATURE` | Existing — Siphon Sigil / Calculated Sacrifice / Hexbrand target. |
 | `RESOLVE_CHOOSE_RITUAL` | Completes `choose-ritual`; stamps `declaredTargetCardInstanceId`. |
 | `RESOLVE_CHOOSE_EQUIPMENT` | Completes `choose-equipment`; destroys that attached instance. |
-| `RESOLVE_CHOOSE_ATTRIBUTE_TOKENS` | Completes mixed token strip; `discarded` totals pending `amount`. |
+| `RESOLVE_CHOOSE_ATTRIBUTE_TOKENS` | Completes mixed token drain; `discarded` totals pending `amount`. |
 
 ## Validation
 
@@ -72,12 +80,12 @@ pick exists, the controller names it — the engine does not silently take
 - `RESOLVE_CHOOSE_EQUIPMENT`: controller matches pending; instance is in the
   pending creature’s `equipmentIds`.
 - `RESOLVE_CHOOSE_ATTRIBUTE_TOKENS`: controller matches pending; pick totals
-  `amount` and is a subset of the creature’s current tokens. Illegal picks
+  `amount` and is a subset of the target pile. Illegal picks
   return `INVALID_CHOICE` and the original state object.
 
 ## Resolution
 
-See `resolution.ts` (`discard-attribute-tokens`, `destroy-ritual`,
+See `resolution.ts` (`drain-attribute-tokens`, `destroy-ritual`,
 `destroy-equipment`) and `zones.destroyRitual` / `zones.destroyEquipment`.
 
 ## Networking
@@ -103,12 +111,12 @@ Match-ui must:
   (list that creature’s attached gear; send `RESOLVE_CHOOSE_EQUIPMENT`).
 - Prompt token pip choice when `pendingDecision.type === "choose-attribute-tokens"`
   (increment per held attribute; send `RESOLVE_CHOOSE_ATTRIBUTE_TOKENS`).
-- Surface `attribute-tokens-discarded`, `ritual-destroyed`, and
+- Surface `attribute-tokens-drained`, `ritual-destroyed`, and
   `equipment-destroyed` in the log / feedback if other destroy events are shown.
 
 ## Acceptance Criteria
 
-- [x] Siphon Sigil mixed tokens: controller names which 2 pips; not `ATTRIBUTES` order
+- [x] Siphon Sigil mixed tokens: controller names which 2 pips; opponent loses, controller gains
 - [x] Siphon Sigil partial / empty / homogeneous leftover: no token prompt
 - [x] Dispel Circle chooses and GYs an opposing ritual; empty field whiffs
 - [x] Calculated Sacrifice with 2 equipment: pending choice; named instance GYs

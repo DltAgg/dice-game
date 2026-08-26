@@ -106,13 +106,13 @@ export type EffectDefinition =
    */
   | { readonly type: "negate-ritual" }
   /**
-   * Strip up to `amount` attribute tokens from the target. When the creature
-   * holds a mix and more tokens than `amount`, opens `choose-attribute-tokens`.
-   * Otherwise discards remaining / the only attribute pile (no real choice).
-   * Whiffs legally if none remain. Spec `011`.
+   * Drain up to `amount` attribute tokens from the target creature's controller's
+   * pile into the effect controller's pile. Mixed leftover piles open
+   * `choose-attribute-tokens`. Homogeneous / take-all remaining are
+   * deterministic. Whiffs legally if none remain. Spec `011`.
    */
   | {
-      readonly type: "discard-attribute-tokens";
+      readonly type: "drain-attribute-tokens";
       readonly amount: number;
       readonly target: TargetSelector;
     }
@@ -121,10 +121,11 @@ export type EffectDefinition =
    */
   | { readonly type: "destroy-ritual"; readonly target: TargetSelector }
   /**
-   * Add to a creature’s prevent-next-N damage buffer (before Shields). Spec `009`.
+   * Add to a creature’s prevent-next-N-**attacks** counter (before Shields).
+   * Spec `009`. Amount is how many incoming attack instances to cancel.
    */
   | {
-      readonly type: "grant-damage-prevent";
+      readonly type: "grant-attack-prevent";
       readonly amount: number;
       readonly target: TargetSelector;
     }
@@ -211,8 +212,8 @@ export type EffectDefinition =
   /** Controller's attacks this turn ignore this many Shield (Rust). */
   | { readonly type: "arm-ignore-shield"; readonly amount: number }
   /**
-   * One-shot: a matching pool symbol may pay any `[Requires]` / ritual
-   * Active-when attribute this turn (Resonance / Catalyst).
+   * One-shot: may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute
+   * this turn (Resonance / Catalyst). Consumed when used.
    */
   | { readonly type: "arm-requirement-wildcard"; readonly fromSymbol?: SymbolType }
   /** Next `FORGE_CARD` this turn costs this much less Energy (min 0). */
@@ -295,10 +296,14 @@ export type EffectDefinition =
       readonly target: TargetSelector;
     }
   /**
-   * Pending: choose how many Toxin markers to remove from the target (0..current);
-   * deal that much damage. Spec `013`.
+   * Remove up to `amount` Toxin markers from the target (or all remaining if
+   * fewer) and deal that much damage. Spec `013`.
    */
-  | { readonly type: "remove-toxin-deal-damage"; readonly target: TargetSelector }
+  | {
+      readonly type: "remove-toxin-deal-damage";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
   /**
    * Pending: put `amount` Corruption marker(s) on an opposing synthetic face
    * slot. Spec `013`.
@@ -348,8 +353,18 @@ export type EffectDefinition =
   /**
    * Pending optional: the absorbing creature may declare a basic attack now
    * during the actions window if it has not attacked this turn. Spec `013`.
+   * Prefer `[Frenzy]` / `grant-extra-attack` for Wild exclusive multi-attack.
    */
   | { readonly type: "optional-bonus-basic-attack" }
+  /**
+   * Wild `[Frenzy]`: the target may declare `amount` additional attacks this
+   * turn (raises `extraAttacksThisTurn`). Does not clear attacks already used.
+   */
+  | {
+      readonly type: "grant-extra-attack";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
   /**
    * Put the top `amount` cards of `player`'s deck into that player's graveyard
    * (Darkness mill). Fewer remaining mills those; an empty deck is a legal
@@ -359,28 +374,6 @@ export type EffectDefinition =
       readonly type: "mill-cards";
       readonly amount: number;
       readonly player: "controller" | "opponent";
-    }
-  /**
-   * Move `amount` absorbed attribute tokens from one allied creature to another.
-   * Mixed leftover piles open `choose-attribute-tokens` (mode transfer).
-   * Ally-only; 0 tokens or same-creature dest is a legal whiff. Spec `015`.
-   */
-  | {
-      readonly type: "transfer-attribute-tokens";
-      readonly amount: number;
-      readonly from: TargetSelector;
-      readonly to: TargetSelector;
-    }
-  /**
-   * Copy `amount` absorbed attribute tokens from one allied creature onto
-   * another (source keeps them). Same choice / ally-only / whiff rules as
-   * transfer. Spec `015`.
-   */
-  | {
-      readonly type: "copy-attribute-tokens";
-      readonly amount: number;
-      readonly from: TargetSelector;
-      readonly to: TargetSelector;
     };
 
 export type EffectCondition =

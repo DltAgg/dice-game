@@ -67,6 +67,7 @@ card({
   rulesText: "Forge 3 synthetic Corruption faces on one of the opponent's dice.",
   ritual: {
     activeWhen: { arcane: 1, corruption: 2 }, // omit if print has no Active when
+    // spend?: { arcane: 1, corruption: 2 }, // pile burn on activate (often = gate)
     // additionalEnergy?: 3,
     effects: [
       {
@@ -116,7 +117,7 @@ Read `src/game/model/effects.ts` as authority. Today:
 `arm-attack-toxin`, `negate-card`, `negate-ritual`, `discard-attribute-tokens`,
 `destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`,
-`mill-cards`, `transfer-attribute-tokens`, `copy-attribute-tokens`
+`mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-attribute-tokens`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
 `most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
@@ -149,6 +150,6 @@ Standing triggers live on equipment / continuous rituals — see
 
 - Export the `CardId` const and add the `card({…})` to `DEFINITIONS`.
 - Builtin decks: `PROTOTYPE_DECK_COUNTS` (aggro) / `CONTROL_DECK_COUNTS`.
-  50–60 cards, ≤4 copies. Do not auto-add 4× to both decks.
+  40–50 cards, ≤3 copies. Do not auto-add 3× to both decks.
 - Consistency: `src/game/content/cards.consistency.test.ts`.
 - Wired effects need reducer tests (see `playcard.test.ts`, `forgeFaces.test.ts`).

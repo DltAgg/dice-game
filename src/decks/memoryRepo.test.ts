@@ -17,6 +17,7 @@ import {
   TEMPO_FACE_DECK,
   TEMPO_SQUAD,
 } from "@/game";
+import { DEFAULT_RULES_CONFIG } from "@/game/model/config.js";
 import { createMemoryDeckRepository } from "./memoryRepo.js";
 import {
   buildBuiltinDecks,
@@ -91,8 +92,8 @@ describe("builtin loadouts", () => {
       "creature-nightbound-adept",
       "creature-void-summoner",
     ]);
-    expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(50);
-    expect(CONTROL_DECK.length).toBeLessThanOrEqual(60);
+    expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
     expect(CONTROL_FACE_DECK).toHaveLength(12);
     expect(new Set(CONTROL_FACE_DECK).size).toBe(12);
   });
@@ -103,8 +104,8 @@ describe("builtin loadouts", () => {
       "creature-prism-herald",
       "creature-aegis-link",
     ]);
-    expect(TEMPO_DECK.length).toBeGreaterThanOrEqual(50);
-    expect(TEMPO_DECK.length).toBeLessThanOrEqual(60);
+    expect(TEMPO_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(TEMPO_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
     expect(TEMPO_FACE_DECK).toHaveLength(12);
     expect(new Set(TEMPO_FACE_DECK).size).toBe(12);
   });
@@ -115,8 +116,8 @@ describe("builtin loadouts", () => {
       "creature-clockwork-dynamo",
       "creature-lens-choir",
     ]);
-    expect(COMBO_MECHANICAL_DECK.length).toBeGreaterThanOrEqual(50);
-    expect(COMBO_MECHANICAL_DECK.length).toBeLessThanOrEqual(60);
+    expect(COMBO_MECHANICAL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(COMBO_MECHANICAL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
     expect(COMBO_MECHANICAL_FACE_DECK).toHaveLength(12);
     expect(new Set(COMBO_MECHANICAL_FACE_DECK).size).toBe(12);
   });
@@ -127,8 +128,8 @@ describe("builtin loadouts", () => {
       "creature-cinder-wight",
       "creature-ichor-hydra",
     ]);
-    expect(BURN_DECK.length).toBeGreaterThanOrEqual(50);
-    expect(BURN_DECK.length).toBeLessThanOrEqual(60);
+    expect(BURN_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(BURN_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
     expect(BURN_FACE_DECK.length).toBeLessThanOrEqual(12);
     expect(new Set(BURN_FACE_DECK).size).toBe(BURN_FACE_DECK.length);
   });

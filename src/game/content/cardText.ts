@@ -74,9 +74,9 @@ export function formatForgeLine(forge: ForgeRegion): string {
 }
 
 /**
- * The bracketed gate above the effect body. Rituals print Active when; other
- * subtypes that carry a requirement print Requires. Returns null when there is
- * no gate to show.
+ * The bracketed pile line above the effect body. Rituals print Active when
+ * (gate). Other cards that carry `effect.requires` print Spend — that field
+ * burns from the pile. Returns null when there is no line to show.
  */
 export function formatRequirementLine(card: CardDefinition): string | null {
   const requires = card.ritual?.activeWhen ?? card.effect?.requires;
@@ -85,13 +85,26 @@ export function formatRequirementLine(card: CardDefinition): string | null {
   const body = formatRequirementBody(requires);
   if (body.length === 0) return null;
   if (card.type === "ritual" || card.ritual !== undefined) return `[Active when: ${body}]`;
-  return `[Requires: ${body}]`;
+  return `[Spend: ${body}]`;
+}
+
+/**
+ * Optional pile burn on ritual activate (`RitualRegion.spend`). Printed below
+ * Active when when present. Spec `016`.
+ */
+export function formatSpendLine(card: CardDefinition): string | null {
+  const spend = card.ritual?.spend;
+  if (spend === undefined) return null;
+  const body = formatRequirementBody(spend);
+  if (body.length === 0) return null;
+  return `[Spend: ${body}]`;
 }
 
 function formatRequirementBody(requirement: SymbolRequirement): string {
   const entries = requirementEntries(requirement);
-  // Ritual Active-when and multi-attr gates print as `Attr + Attr` (cumulative /
-  // additive). Never `2× Attr` — that same-turn notation was retired.
+  // Ritual Active-when / Spend and multi-attr gates print as `Attr + Attr`
+  // (cumulative / additive). Never `2× Attr` — that same-turn notation was
+  // retired.
   return entries
     .flatMap(([attribute, count]) =>
       Array.from({ length: count }, () => ATTRIBUTE_LABEL[attribute]),
@@ -111,6 +124,8 @@ export function formatEffectRegion(card: CardDefinition): readonly string[] {
   const lines: string[] = [];
   const gate = formatRequirementLine(card);
   if (gate !== null) lines.push(gate);
+  const spend = formatSpendLine(card);
+  if (spend !== null) lines.push(spend);
 
   for (const line of card.rulesText.split("\n")) {
     if (line.length > 0) lines.push(line);

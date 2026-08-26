@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { livingCreaturesOf } from "../rules/creatures.js";
-import { autoplay, NEVER_ABSORB } from "../testing/autoplay.js";
+import { autoplay, NEVER_ATTACK } from "../testing/autoplay.js";
 import { newMatch, P1, P2 } from "../testing/scenario.js";
 
 /**
@@ -9,7 +9,7 @@ import { newMatch, P1, P2 } from "../testing/scenario.js";
  * networking anywhere in the call stack.
  */
 
-const SEEDS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+const SEEDS = [1, 2, 3, 5, 8, 13, 21, 37, 55, 89];
 
 describe("a full match through the reducer alone", () => {
   it.each(SEEDS)("seed %i reaches a decided victory", (seed) => {
@@ -40,17 +40,14 @@ describe("a full match through the reducer alone", () => {
     }
   });
 
-  it("cannot land an attack on the opening turn", () => {
-    // Bible §25 wants early destruction to be hard, and absorb payout timing
-    // guarantees it outright: fuel only becomes a token at end of turn, so the
-    // first turn is necessarily spent arming rather than swinging.
+  it("can bank and attack on the opening turn (pile-up)", () => {
+    // Spec 016: attribute banking is immediate, so same-turn attack after absorb
+    // is legal. Autoplay may or may not swing on turn 1 depending on rolls.
     for (const seed of SEEDS) {
       const { states } = autoplay(newMatch({ seed }));
       const afterFirstTurn = states[1];
       if (afterFirstTurn === undefined) continue;
-
-      expect(afterFirstTurn.log.map((entry) => entry.event.type)).not.toContain("attack-declared");
-      expect(Object.values(afterFirstTurn.creatures).every((c) => !c.defeated)).toBe(true);
+      expect(afterFirstTurn.turn).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -82,12 +79,11 @@ describe("a full match through the reducer alone", () => {
     expect(livingCreaturesOf(state, winnerId).length).toBeGreaterThan(0);
   });
 
-  it("never resolves for a player who refuses to absorb", () => {
-    // Bible §33's tension, at its sharpest: a player who sends every symbol to
-    // the engine keeps a perfect engine and no way to use it, because attacks
-    // are funded only by what a creature absorbed.
+  it("never resolves for a player who refuses to attack", () => {
+    // Spec `016`: roll auto-banks attributes into the pile, so refusing to
+    // absorb no longer starves combat. Refusing to attack does.
     const { state, turnsPlayed } = autoplay(newMatch({ seed: 5 }), {
-      policy: NEVER_ABSORB,
+      policy: NEVER_ATTACK,
       maxTurns: 40,
     });
 

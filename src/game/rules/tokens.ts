@@ -1,6 +1,5 @@
 import type { Attribute } from "../model/attributes.js";
 import { ATTRIBUTES } from "../model/attributes.js";
-import type { CreatureState } from "../model/creatures.js";
 import {
   requirementEntries,
   requirementTotal,
@@ -9,22 +8,86 @@ import {
 } from "../model/symbols.js";
 
 /**
- * Attribute tokens are a creature's private fuel supply (bible §7). Attacks are
- * paid from here and never from the shared symbol pool, which is what turns
- * absorbing into an investment rather than a sacrifice.
+ * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
+ * spec `016`). Attacks check/burn from there; ritual Active-when / Spend read
+ * the same pile. Creature Shield / Toxin stay on creatures.
  */
 
-export const holdsTokens = (creature: CreatureState, requirement: SymbolRequirement): boolean =>
+export const holdsTokens = (
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): boolean =>
   requirementEntries(requirement).every(
-    ([attribute, count]) => (creature.attributeTokens[attribute] ?? 0) >= count,
+    ([attribute, count]) => (tokens[attribute] ?? 0) >= count,
   );
+
+/**
+ * How many pips of `requirement` the pile cannot cover (before wildcards).
+ */
+export function pileRequirementShortfall(
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): number {
+  let shortfall = 0;
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const held = tokens[attribute] ?? 0;
+    if (held < count) shortfall += count - held;
+  }
+  return shortfall;
+}
+
+/** Gate / Spend check: pile plus one-shot Resonance wildcards. */
+export const holdsTokensWithWildcards = (
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+  wildcardCount: number,
+): boolean => pileRequirementShortfall(tokens, requirement) <= wildcardCount;
+
+export const isNonEmptyRequirement = (
+  requirement: SymbolRequirement | undefined,
+): requirement is SymbolRequirement =>
+  requirement !== undefined && requirementTotal(requirement) > 0;
+
+/**
+ * Attack fuel: the pile must hold every printed `requires` (gate, not spent)
+ * and every printed `discards` (Spend — burned on declare). Either or both
+ * may be authored; an attack with neither is unfuelled.
+ *
+ * `[Resonance]` wildcards may cover shortfall on either clause. Gate shortfall
+ * is reserved first so Spend still sees remaining wildcards (requires does not
+ * remove pile tokens).
+ */
+export function attackIsFuelled(
+  tokens: AttributeTokens,
+  attack: {
+    readonly requires?: SymbolRequirement;
+    readonly discards?: SymbolRequirement;
+  },
+  wildcardCount = 0,
+): boolean {
+  const hasRequires = isNonEmptyRequirement(attack.requires);
+  const hasDiscards = isNonEmptyRequirement(attack.discards);
+  if (!hasRequires && !hasDiscards) return false;
+
+  let remaining = wildcardCount;
+  if (hasRequires) {
+    const short = pileRequirementShortfall(tokens, attack.requires);
+    if (short > remaining) return false;
+    remaining -= short;
+  }
+  if (hasDiscards) {
+    const short = pileRequirementShortfall(tokens, attack.discards);
+    if (short > remaining) return false;
+  }
+  return true;
+}
 
 export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({
   ...tokens,
   [attribute]: (tokens[attribute] ?? 0) + 1,
 });
 
-/** Adds a requirement-shaped pile (pack feeding copy / transfer dest). */
+/** Adds a requirement-shaped pile (Drain / pack-feed dest). */
 export function addTokens(
   tokens: AttributeTokens,
   added: SymbolRequirement,
@@ -39,7 +102,7 @@ export function addTokens(
 
 /**
  * Removes a requirement's worth of tokens. Zeroed attributes are dropped rather
- * than left as `0`, so two creatures holding the same fuel always serialize
+ * than left as `0`, so two piles holding the same fuel always serialize
  * identically and state comparisons in tests stay meaningful.
  */
 export function removeTokens(

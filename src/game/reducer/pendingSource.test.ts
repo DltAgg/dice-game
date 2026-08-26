@@ -13,13 +13,13 @@ import type { CardId, DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { replayableGraveyardTactics, ritualsOf, searchableInGraveyard } from "../rules/cards.js";
 import {
-  creatureIdAt,
   expectOk,
   handCardIdAt,
   newMatch,
   P1,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withSymbols,
   advanceResolvingChain as advance,
@@ -79,7 +79,7 @@ function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameSt
 function rollShowingSlot(state: GameState, slot: number): GameState {
   let rolled: GameState = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
-  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 0 });
+  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
@@ -158,17 +158,20 @@ describe("pending source + GY search filter", () => {
     const ritualId = ritualsOf(placed, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
 
-    const oriented = {
-      ...withSymbols(withPhase(placed, "actions"), P1, ["arcane", "arcane"]),
-      cards: {
-        ...placed.cards,
-        [ritualId]: {
-          ...placed.cards[ritualId]!,
-          ritualOrientation: "ready" as const,
-          ritualProgress: { arcane: 2 },
+    const oriented = withAttributePool(
+      {
+        ...withSymbols(withPhase(placed, "actions"), P1, ["arcane", "arcane"]),
+        cards: {
+          ...placed.cards,
+          [ritualId]: {
+            ...placed.cards[ritualId]!,
+            ritualOrientation: "ready" as const,
+          },
         },
       },
-    };
+      P1,
+      { arcane: 2 },
+    );
 
     const activated = expectOk(
       advance(oriented, { type: "ACTIVATE_RITUAL", playerId: P1, cardInstanceId: ritualId }),
@@ -192,21 +195,8 @@ describe("pending source + GY search filter", () => {
     state = installFace(state, SHADOW_ECHO);
     state = rollShowingSlot(state, 0);
 
-    const darkness = Object.values(state.symbols).find(
-      (s) => s.symbol === "darkness" && s.status === "rolled" && s.sourceDieId === dieIdOf(state),
-    );
-    if (darkness === undefined) throw new Error("expected darkness pip");
-
-    const after = expectOk(
-      advance(state, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(state, P1, 0),
-        symbolId: darkness.id,
-      }),
-    );
-
-    expect(after.pendingDecision).toMatchObject({
+    // Auto-bank fires On absorb GY search.
+    expect(state.pendingDecision).toMatchObject({
       type: "search-graveyard",
       controllerId: P1,
       amount: 1,
@@ -214,9 +204,9 @@ describe("pending source + GY search filter", () => {
       sourceCardInstanceId: null,
       sourceFaceCardId: SHADOW_ECHO,
     });
-    const pending = after.pendingDecision;
+    const pending = state.pendingDecision;
     if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
-    expect(searchableInGraveyard(after, P1, pending.maxEnergyCost)).toEqual([cheapId]);
+    expect(searchableInGraveyard(state, P1, pending.maxEnergyCost)).toEqual([cheapId]);
   });
 
   it("replayableGraveyardTactics lists only instant/ritual cards with modelled effects", () => {

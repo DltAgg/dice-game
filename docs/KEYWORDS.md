@@ -22,17 +22,17 @@ when it is a token, symbol, card type, or target. A new token reuses
 `[Mark]` / `[Strip]`; it does not get its own word.
 
 Catalogue print uses these keywords. Rare unique sequences (Exterminate, Mind
-Control, Aegis redirect, Instinct bonus attack, Overcharge, Lock/Suppress/Hex,
-pack feeding until `[Feed]` ships) stay spelled. The meaning is the same.
+Control, Aegis redirect, Overcharge, Lock/Suppress/Hex) stay spelled. The
+meaning is the same.
 
 Anyone may print `[Mark]`. Only Toxin may print `[Mark N Toxin]`. The verb is
 shared; the argument follows attribute exclusives.
 
 | Layer | What belongs here | Example |
 |---|---|---|
-| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, Energy, `[Requires]` |
+| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, Energy, `[Requires]`, `[Spend]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]` |
-| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Prevent N]`, `[Convert N]` |
+| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Prevent]`, `[Convert N]` |
 
 ---
 
@@ -81,12 +81,11 @@ Remove up to N of token X. Legal to resolve if none remain.
 |---|---|
 | `[Strip 3 Shield]` | That creature loses 3 Shield |
 | `[Strip 1 Toxin]` | Remove 1 Toxin marker |
-| `[Strip 1 Martial]` | Discard 1 Martial token from a creature |
-| `[Strip any Toxin]. [Strike equal]` | Remove chosen Toxin; deal that much damage |
+| `[Strip 3 Toxin]. [Strike equal]` | Remove up to 3 Toxin; deal that much damage |
 
 <!--
-Engine: remove-shield | discard-attribute-tokens | remove-toxin-deal-damage
-(pending). Do not mint Detonate / Rend as keywords.
+Engine: remove-shield | remove-toxin-deal-damage (`amount` fixed). Attribute
+piles use [Drain N], not Strip. Do not mint Detonate / Rend as keywords.
 -->
 
 ### Not Mark
@@ -94,8 +93,8 @@ Engine: remove-shield | discard-attribute-tokens | remove-toxin-deal-damage
 | Print | Why it is a different word |
 |---|---|
 | `[Generate N Toxin]` | A **pool symbol**, not a creature/face token. Expires at end of turn. |
-| Absorb Toxin | Moves a pool pip onto a creature (fuel at end of turn). Grammar, not an effect keyword. |
-| `[Prevent N]` | Combat step before Shield. Luminar exclusive. Not a token you Mark. |
+| Absorb Toxin | Banks a pool pip into your attribute pile. Grammar, not an effect keyword. |
+| `[Prevent]` | Combat step before Shield. Luminar exclusive. Not a token you Mark. |
 | `[Empower N]` | Extra damage on an attack. Not a token. |
 | `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. |
 
@@ -113,6 +112,7 @@ Same idea, different nouns.
 | `[Destroy Equipment]` / `[Destroy Ritual]` | A card on the field | Send one to its owner’s graveyard |
 | `[Gain N Energy]` / `[Lose N Energy]` | You / the opponent | Move the shared Energy marker |
 | `[Move N Energy]` | — | Opponent’s Energy toward you |
+| `[Drain N]` | Attribute tokens in a player pile | Take N from the chosen enemy’s controller’s pile into yours (controller names which pips when mixed) |
 
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
 opponent’s die is Corruption’s exclusive (their die). Mechanical forges
@@ -123,8 +123,9 @@ ritual already on the field.
 
 <!--
 Engine: generate-symbol | FORGE_CARD / forge-faces | negate-card / negate-ritual |
-destroy-equipment / destroy-ritual | gain-energy / lose-energy | transfer-energy.
-No Contaminate / Seal / Disarm / Unmake / Drain / Siphon keywords.
+destroy-equipment / destroy-ritual | gain-energy / lose-energy | transfer-energy |
+drain-attribute-tokens.
+No Contaminate / Seal / Disarm / Unmake / Siphon keywords.
 -->
 
 ---
@@ -139,8 +140,9 @@ These are not tokens.
 | `[Heal N]` | Heal N |
 | `[Draw N]` / `[Discard N]` | Draw / discard. “Up to” and extra clauses stay English. |
 | `[Empower N]` | The next attack this turn deals +N. Name the creature if it is not yours. |
+| `[Frenzy]` / `[Frenzy N]` | That creature may declare N extra attacks this turn (default 1). Wild exclusive. Does not clear attacks already used. |
 | `[Pierce N]` | Ignore N Shield after Prevent |
-| `[Prevent N]` | Prevent the next N damage (before Shield). Luminar exclusive. |
+| `[Prevent]` | Prevent the next attack against that creature (before Shield). Luminar exclusive. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
 | `[Discount N]` | The next matching play or forge costs N less Energy (minimum 0) |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
@@ -151,24 +153,25 @@ These are not tokens.
 | `[Reforge]` | Replace one of your matching synthetic faces (no forge-draw). Mechanical exclusive. |
 | `[Stamp]` | Re-fire a showing face’s On roll and its overloads. Mechanical exclusive. |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
-| `[Resonance]` | A pool symbol may pay any `[Requires]` / `[Active when]` attribute this turn |
+| `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
 | `[Reroll]` | You may reroll a rolled die |
 | `[Retain]` | Keep a retainable die across the next roll |
 
 <!--
 Engine: damage | heal | draw-cards | discard-cards | next-attack-bonus |
-grant-next-attack-bonus | ignore-shield / arm-ignore-shield | grant-damage-prevent |
+grant-next-attack-bonus | ignore-shield / arm-ignore-shield | grant-attack-prevent |
 convert-symbols | energy-cost-discount / arm-forge-discount | look-top-deck /
 peek-deck-optional-bottom | search-deck | search-graveyard | dark-pact |
 reposition-creature | swap-positions | replace-synthetic-face |
 reapply-die-modifiers | arm-resolve-next-face-effect-twice |
-arm-requirement-wildcard / arm-wildcard-from-synthetic-pool | optional-reroll-die |
-retain-die.
-[Feed] is Wild exclusive pack feeding — no engine yet; do not print as live.
+arm-requirement-wildcard | arm-wildcard-from-synthetic-pool | optional-reroll-die |
+retain-die | grant-extra-attack (`[Frenzy]`).
 Peek is [Insight 1]. Prime is [Empower N] on that creature.
 Spell until they recur: Aegis, Rain, Expose, Tough, Might, Lock, Suppress, Hex,
-Copy Face, Mirror, Overcharge, Instinct, Exterminate, Mind Control.
+Copy Face, Mirror, Overcharge, Exterminate, Mind Control.
 Push is banned. Stun and Scale are deferred — do not print.
+Former pack feeding (`[Feed]` / transfer-copy stubs) is retired; Wild exclusive
+is `[Frenzy]`.
 -->
 
 ---
@@ -180,9 +183,10 @@ These are not effect replacements.
 | Print | Role |
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
-| `[Requires: …]` | Extra pool-symbol cost |
-| `[Active when: …]` | Ritual gate (not repeated in the effect box) |
-| Absorb | Move a pool pip onto a creature or ritual, instead of leaving it in the pool |
+| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent) |
+| `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
+| `[Spend: …]` | Burn from your attribute pile (attack `discards`, card extra cost, ritual activate) |
+| Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | Energy | Shared marker |
 | `On roll:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…” |
@@ -200,12 +204,12 @@ The verb may be shared. The **argument** is exclusive.
 | **Luminar** | `[Prevent]`, prevent-and-reflect, `On prevent damage:` | `[Mark N Shield]` as if it were Prevent; `[Heal]` as Prevent |
 | **Corruption** | `[Forge]` on **their** die; `[Mark N Corruption]` | `[Mark N Toxin]`; opponent-die forge on Mechanical |
 | **Toxin** | `[Mark N Toxin]` and `on attacks` | Corruption face marks; delayed damage with no Toxin token |
-| **Martial** | `[Reposition]`, `[Swap]` | Enemy push; `[Feed]` |
+| **Martial** | `[Reposition]`, `[Swap]` | Enemy push; `[Frenzy]` |
 | **Mechanical** | `[Reforge]`, `[Stamp]`, `[Double]`, own-die `[Forge]` | Opponent-die Forge; `[Insight]` |
-| **Wild** | `[Feed]` when that rule exists | `[Reposition]`; `[Mark N Toxin]` / `[Mark N Corruption]` |
+| **Wild** | `[Frenzy]` | `[Reposition]`; `[Mark N Toxin]` / `[Mark N Corruption]` |
 
 Shared on purpose: Strike, Heal, Draw, Generate, Empower, Pierce, Discount,
-Mark/Strip of **Shield**, Absorb, Retain, Reroll.
+Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 
 ---
 
@@ -219,8 +223,12 @@ Mark/Strip of **Shield**, Absorb, Retain, Reroll.
 | Grant Shield | `[Mark N Shield]` |
 | Strip Shield | `[Strip N Shield]` |
 | Next attack +N | `[Empower N]` |
+| Extra attack(s) this turn | `[Frenzy]` / `[Frenzy N]` |
 | Ignore Shield | `[Pierce N]` |
-| Stop damage (Luminar) | `[Prevent N]` |
+| Stop damage (Luminar) | `[Prevent]` |
+| Take from their pile | `[Drain N]` |
+| Hold in your pile, don’t spend | `[Requires: Martial + Wild]` |
+| Burn from your pile | `[Spend: Martial]` |
 | Pool pip | `[Generate N Arcane]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
 | Install on them | `[Forge 1 Synthetic Corruption]` on the opponent’s die |

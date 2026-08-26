@@ -1,5 +1,6 @@
 import type { Attribute } from "@/game";
 import {
+  attackCostOf,
   basicAttackOf,
   formatAttackLine,
   primaryAttribute,
@@ -126,7 +127,7 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
         {basic !== undefined ? (
           <AttackRow
             text={formatAttackLine(basic)}
-            icons={costIcons(basic.requires)}
+            icons={costIcons(attackCostOf(basic))}
             className="mt-[0.55em]"
           />
         ) : null}
@@ -134,7 +135,7 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
         {special !== undefined ? (
           <AttackRow
             text={formatAttackLine(special)}
-            icons={costIcons(special.requires)}
+            icons={costIcons(attackCostOf(special))}
             className="mt-[0.45em]"
           />
         ) : null}

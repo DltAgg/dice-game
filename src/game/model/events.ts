@@ -60,12 +60,14 @@ export type GameEvent =
   | {
       readonly type: "symbol-absorbed";
       readonly symbolId: SymbolInstanceId;
-      readonly creatureId: CreatureId;
+      readonly playerId: PlayerId;
+      /** Set when absorbing Shield onto a creature; null for attribute pile bank. */
+      readonly creatureId: CreatureId | null;
     }
   | {
       readonly type: "symbols-consumed";
       readonly symbolIds: readonly SymbolInstanceId[];
-      readonly reason: "ritual-progress" | "card-requires";
+      readonly reason: "card-requires";
     }
   | { readonly type: "symbols-expired"; readonly symbolIds: readonly SymbolInstanceId[] }
   | {
@@ -79,6 +81,12 @@ export type GameEvent =
       readonly attackId: AttackId;
       readonly targetId: CreatureId;
     }
+  /** Wild `[Frenzy]`: raises that creature’s attack allowance this turn. */
+  | {
+      readonly type: "extra-attacks-granted";
+      readonly creatureId: CreatureId;
+      readonly amount: number;
+    }
   | {
       readonly type: "damage-dealt";
       readonly creatureId: CreatureId;
@@ -88,21 +96,31 @@ export type GameEvent =
   | { readonly type: "creature-defeated"; readonly creatureId: CreatureId }
   | {
       readonly type: "attribute-token-gained";
-      readonly creatureId: CreatureId;
+      readonly playerId: PlayerId;
       readonly attribute: Attribute;
       readonly amount: number;
     }
   | {
       readonly type: "attribute-tokens-discarded";
-      readonly creatureId: CreatureId;
+      readonly playerId: PlayerId;
+      /** Attacking creature when the burn is an attack discard; omit otherwise. */
+      readonly creatureId?: CreatureId;
       readonly discarded: SymbolRequirement;
     }
   | {
       readonly type: "attribute-tokens-moved";
-      readonly fromCreatureId: CreatureId;
-      readonly toCreatureId: CreatureId;
+      readonly fromPlayerId: PlayerId;
+      readonly toPlayerId: PlayerId;
       readonly tokens: SymbolRequirement;
       readonly copy: boolean;
+    }
+  | {
+      readonly type: "attribute-tokens-drained";
+      readonly fromPlayerId: PlayerId;
+      readonly toPlayerId: PlayerId;
+      readonly drained: SymbolRequirement;
+      /** Creature named as the targeting context (choose-enemy). */
+      readonly creatureId?: CreatureId;
     }
   | {
       readonly type: "cards-milled";
@@ -121,8 +139,8 @@ export type GameEvent =
       readonly creatureId: CreatureId;
       readonly amount: number;
       readonly shieldsRemaining: number;
-      /** What absorbed the damage. Spec `009` distinguishes buffer vs shield. */
-      readonly source: "buffer" | "shield" | "effect";
+      /** What absorbed the damage. Spec `009` distinguishes attack-prevent vs shield. */
+      readonly source: "attack-prevent" | "shield" | "effect";
     }
   | {
       readonly type: "card-drawn";

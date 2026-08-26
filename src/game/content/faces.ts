@@ -317,11 +317,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     VITAL_SPARK,
     "Vital Spark",
     "luminar",
-    "On roll: [Heal 1] on an allied creature.\nOn absorb: [Prevent 1] this creature.",
+    "On roll: [Heal 1] on an allied creature.\nOn absorb: [Prevent] on an allied creature.",
     {
       onRoll: [{ type: "heal", amount: 1, target: { kind: "most-damaged-ally" } }],
       onAbsorb: [
-        { type: "grant-damage-prevent", amount: 1, target: { kind: "source-creature" } },
+        { type: "grant-attack-prevent", amount: 1, target: { kind: "choose-ally" } },
       ],
     },
   ),
@@ -329,8 +329,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     AEGIS,
     "Aegis",
     "luminar",
-    "On roll: [Generate 1 Shield].\nOn absorb: redirect up to 2 damage that would be dealt to another allied creature to this creature.",
-    { onRoll: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }], onAbsorb: [{ type: "arm-redirect-damage", amount: 2, target: { kind: "source-creature" } }] },
+    "On roll: [Generate 1 Shield].\nOn absorb: choose an allied creature; redirect up to 2 damage that would be dealt to another allied creature to that creature.",
+    {
+      onRoll: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }],
+      onAbsorb: [{ type: "arm-redirect-damage", amount: 2, target: { kind: "choose-ally" } }],
+    },
   ),
   namedSynthetic(
     REVELATION,
@@ -346,19 +349,21 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     INSTINCT,
     "Instinct",
     "wild",
-    "On roll: [Empower 1] on an allied creature.\nOn absorb: this creature may perform a Basic Attack if it has not attacked this turn.",
+    "On roll: [Empower 1] on an allied creature.\nOn absorb: [Frenzy] on an allied creature.",
     {
       onRoll: [
         { type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } },
       ],
-      onAbsorb: [{ type: "optional-bonus-basic-attack" }],
+      onAbsorb: [
+        { type: "grant-extra-attack", amount: 1, target: { kind: "choose-ally" } },
+      ],
     },
   ),
   namedSynthetic(
     PRIMORDIAL_FURY,
     "Primordial Fury",
     "wild",
-    "On roll: if an allied creature has attacked this turn, [Gain 1 Energy].\nOn absorb: [Empower 1] this creature's next Basic Attack.",
+    "On roll: if an allied creature has attacked this turn, [Gain 1 Energy].\nOn absorb: [Empower 1].",
     {
       onRoll: [
         {
@@ -392,16 +397,9 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     PACK_SHARE,
     "Pack Share",
     "wild",
-    "On absorb: copy 1 attribute token from this creature onto an adjacent allied creature.",
+    "On absorb: [Generate 1 Wild].",
     {
-      onAbsorb: [
-        {
-          type: "copy-attribute-tokens",
-          amount: 1,
-          from: { kind: "source-creature" },
-          to: { kind: "choose-adjacent-ally" },
-        },
-      ],
+      onAbsorb: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
     },
   ),
   namedSynthetic(
@@ -420,7 +418,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     IMPACT,
     "Impact",
     "martial",
-    "On roll: [Empower 1].\nOn absorb: [Empower 2] this creature.",
+    "On roll: [Empower 1].\nOn absorb: [Empower 2].",
     {
       onRoll: [{ type: "next-attack-bonus", amount: 1 }],
       onAbsorb: [{ type: "next-attack-bonus", amount: 2 }],
@@ -430,7 +428,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     FORMATION,
     "Formation",
     "martial",
-    "On roll: if this creature is on the frontline, [Gain 1 Energy].\nOn absorb: [Mark 1 Shield] another allied frontline creature.",
+    "On roll: if you control a frontline creature, [Gain 1 Energy].\nOn absorb: [Mark 1 Shield] another allied frontline creature.",
     {
       onRoll: [
         {
@@ -452,11 +450,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     VENOM,
     "Venom",
     "toxin",
-    "On roll: [Mark 1 Toxin].\nOn absorb: the target creature takes +1 damage the next time it takes damage.",
+    "On roll: [Mark 1 Toxin].\nOn absorb: a chosen enemy creature takes +1 damage the next time it takes damage.",
     {
       onRoll: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
       onAbsorb: [
-        { type: "arm-next-incoming-bonus", amount: 1, target: { kind: "source-creature" } },
+        { type: "arm-next-incoming-bonus", amount: 1, target: { kind: "choose-enemy" } },
       ],
     },
   ),
@@ -480,7 +478,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     ADAPTIVE_TOXIN,
     "Adaptive Toxin",
     "toxin",
-    "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb: [Strip any Toxin]. [Strike equal].",
+    "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb: [Strip 3 Toxin]. [Strike equal].",
     {
       onRoll: [
         {
@@ -492,6 +490,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       onAbsorb: [
         {
           type: "remove-toxin-deal-damage",
+          amount: 3,
           target: { kind: "choose-enemy" },
         },
       ],
@@ -522,7 +521,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "Decay",
     "corruption",
     "On roll: choose an opposing Natural face; until the next roll, it has no inherent effect.\n" +
-      "On absorb: remove a Corrupted face from the opponent's die and put it into its controller's Pool as an unusable Corruption symbol.",
+    "On absorb: remove a Corrupted face from the opponent's die and put it into its controller's Pool as an unusable Corruption symbol.",
     {
       onRoll: [{ type: "suppress-opposing-natural-inherent" }],
       onAbsorb: [{ type: "strip-corrupted-face-unusable-symbol" }],
@@ -542,10 +541,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     HEXBRAND,
     "Hexbrand",
     "corruption",
-    "On roll: you choose an enemy creature; that creature discards 1 attribute token.\nOn absorb: [Destroy Equipment].",
+    "On roll: [Drain 1].\nOn absorb: [Destroy Equipment].",
     {
       onRoll: [
-        { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+        { type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
       ],
       onAbsorb: [{ type: "destroy-equipment", target: { kind: "choose-enemy" } }],
     },
@@ -589,7 +588,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "Catalyst",
     "mechanical",
     "On roll: choose a Synthetic face in the Pool; it may be used as any attribute.\n" +
-      "On absorb: copy the effect of a Synthetic face that appeared this roll.",
+    "On absorb: copy the effect of a Synthetic face that appeared this roll.",
     {
       onRoll: [{ type: "arm-wildcard-from-synthetic-pool" }],
       onAbsorb: [{ type: "copy-appeared-synthetic-onroll" }],
@@ -669,11 +668,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     NIGHTWELL,
     "Nightwell",
     "darkness",
-    "On roll: [Generate 1 Darkness].\nOn absorb: a chosen enemy creature discards 1 attribute token.",
+    "On roll: [Generate 1 Darkness].\nOn absorb: [Drain 1].",
     {
       onRoll: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
       onAbsorb: [
-        { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+        { type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
       ],
     },
   ),
@@ -888,34 +887,6 @@ export function legacyStartingLayout(): StartingDiceLayout {
 }
 
 /**
- * Generic helper for non-Aggro builtins / tests: one named special + the old
- * four-color natural paint (Martial/Wild/Arcane/Luminar) + Shield. Aggro uses
- * `openingDieMartialWild` instead — do not reuse this for Martial/Wild Aggro.
- */
-const openingDieWithSpecial = (special: FaceCardId): DieFaceLayout => [
-  special,
-  naturalFaceId("martial"),
-  naturalFaceId("wild"),
-  naturalFaceId("arcane"),
-  naturalFaceId("luminar"),
-  SHIELD_FACE_ID,
-];
-
-/**
- * Aggro opening die: one Martial or Wild pressure special + Martial/Wild
- * naturals densified + Shield. Obeys starting caps (1 Shield, ≤2 synthetics /
- * on-roll per die, ≤4 same attribute).
- */
-const openingDieMartialWild = (special: FaceCardId): DieFaceLayout => [
-  special,
-  naturalFaceId("martial"),
-  naturalFaceId("martial"),
-  naturalFaceId("wild"),
-  naturalFaceId("wild"),
-  SHIELD_FACE_ID,
-];
-
-/**
  * Scenario / forge-test face pool. Unique ids (ledger: pooled xor installed).
  * Named specials cover Eclipse / Library / Contamination forge paths. The
  * builtin hotseat loadout uses `PROTOTYPE_FACE_DECK` instead.
@@ -939,9 +910,9 @@ export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
  * Builtin Aggro face deck — Martial + Wild only (≤3 per attribute → max 6).
  * Crush and Bloodscent open installed (`PROTOTYPE_STARTING_DICE`). Leftover
  * Martial / Wild pressure specials remain Temper / Untamed forge targets.
- * Pack Share is the Wild pack-feeding special. No Toxin faces (Needle / Seep /
- * Venom / toxin naturals). Opening Martial / Wild naturals are not listed here
- * — they do not consume the 12.
+ * Pack Share is the Wild absorb→Generate special (pile-era; former pack-feed
+ * copy retired). No Toxin faces (Needle / Seep / Venom / toxin naturals).
+ * Opening Martial / Wild naturals are not listed here — they do not consume the 12.
  */
 export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   CRUSH,
@@ -952,7 +923,21 @@ export const PROTOTYPE_FACE_DECK: readonly FaceCardId[] = [
   PACK_SHARE,
 ];
 
-export const PROTOTYPE_STARTING_DICE: StartingDiceLayout = [
+/**
+ * Aggro opening die: one Martial or Wild pressure special + Martial/Wild
+ * naturals densified + Shield. Obeys starting caps (1 Shield, ≤2 synthetics /
+ * on-roll per die, ≤4 same attribute).
+ */
+const openingDieMartialWild = (special: FaceCardId): DieFaceLayout => [
+  special,
+  naturalFaceId("martial"),
+  naturalFaceId("martial"),
+  naturalFaceId("wild"),
+  naturalFaceId("wild"),
+  SHIELD_FACE_ID,
+];
+
+export const AGGRO_STARTING_DICE: StartingDiceLayout = [
   openingDieMartialWild(CRUSH),
   openingDieMartialWild(BLOODSCENT),
 ];
@@ -979,9 +964,24 @@ export const CONTROL_FACE_DECK: readonly FaceCardId[] = [
   VITAL_SPARK,
 ];
 
+
+/**
+ * Generic helper for non-Aggro builtins / tests: one named special + the old
+ * four-color natural paint (Martial/Wild/Arcane/Luminar) + Shield. Aggro uses
+ * `openingDieMartialWild` instead — do not reuse this for Martial/Wild Aggro.
+ */
+const openingDieArcaneDarkness = (special: FaceCardId): DieFaceLayout => [
+  special,
+  naturalFaceId("arcane"),
+  naturalFaceId("arcane"),
+  naturalFaceId("darkness"),
+  naturalFaceId("darkness"),
+  SHIELD_FACE_ID,
+];
+
 export const CONTROL_STARTING_DICE: StartingDiceLayout = [
-  openingDieWithSpecial(NIGHTWELL),
-  openingDieWithSpecial(RESONANCE_RUNE),
+  openingDieArcaneDarkness(NIGHTWELL),
+  openingDieArcaneDarkness(RESONANCE_RUNE),
 ];
 
 /**
@@ -1004,9 +1004,24 @@ export const TEMPO_FACE_DECK: readonly FaceCardId[] = [
   VENOM,
 ];
 
+
+/**
+ * Generic helper for non-Aggro builtins / tests: one named special + the old
+ * four-color natural paint (Martial/Wild/Arcane/Luminar) + Shield. Aggro uses
+ * `openingDieMartialWild` instead — do not reuse this for Martial/Wild Aggro.
+ */
+const openingDieMechLuminar = (special: FaceCardId): DieFaceLayout => [
+  special,
+  naturalFaceId("mechanical"),
+  naturalFaceId("mechanical"),
+  naturalFaceId("luminar"),
+  naturalFaceId("luminar"),
+  SHIELD_FACE_ID,
+];
+
 export const TEMPO_STARTING_DICE: StartingDiceLayout = [
-  openingDieWithSpecial(GEAR),
-  openingDieWithSpecial(VITAL_SPARK),
+  openingDieMechLuminar(GEAR),
+  openingDieMechLuminar(VITAL_SPARK),
 ];
 
 /**
@@ -1030,8 +1045,8 @@ export const COMBO_MECHANICAL_FACE_DECK: readonly FaceCardId[] = [
 ];
 
 export const COMBO_MECHANICAL_STARTING_DICE: StartingDiceLayout = [
-  openingDieWithSpecial(GEAR),
-  openingDieWithSpecial(CATALYST),
+  openingDieMechLuminar(GEAR),
+  openingDieMechLuminar(CATALYST),
 ];
 
 /**
@@ -1048,7 +1063,22 @@ export const BURN_FACE_DECK: readonly FaceCardId[] = [
   WASTING_BRAND,
 ];
 
+
+/**
+ * Generic helper for non-Aggro builtins / tests: one named special + the old
+ * four-color natural paint (Martial/Wild/Arcane/Luminar) + Shield. Aggro uses
+ * `openingDieMartialWild` instead — do not reuse this for Martial/Wild Aggro.
+ */
+const openingDieToxinCorruption = (special: FaceCardId): DieFaceLayout => [
+  special,
+  naturalFaceId("toxin"),
+  naturalFaceId("toxin"),
+  naturalFaceId("corruption"),
+  naturalFaceId("corruption"),
+  SHIELD_FACE_ID,
+];
+
 export const BURN_STARTING_DICE: StartingDiceLayout = [
-  openingDieWithSpecial(SEEP),
-  openingDieWithSpecial(CINDER),
+  openingDieToxinCorruption(SEEP),
+  openingDieToxinCorruption(CINDER),
 ];

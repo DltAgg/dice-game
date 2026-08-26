@@ -178,7 +178,7 @@ describe("hasLegalReactionOffer (query)", () => {
 
   it("treats prevent effects as illegal without an attack targeting the seat", () => {
     const effects: readonly EffectDefinition[] = [
-      { type: "grant-damage-prevent", amount: 2, target: { kind: "chain-attack-target" } },
+      { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
     ];
     expect(preventEffectsLegalAgainstChain(stateWithTop(link("tactic-effect")), P1, effects)).toBe(
       false,

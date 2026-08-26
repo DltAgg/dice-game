@@ -19,6 +19,7 @@ import {
   eligiblePoolFacesForReplace,
   energyAvailableTo,
   formatAttackCost,
+  formatAttackFuel,
   formatAttackLine,
   formatEffectRegion,
   formatEnergyCost,
@@ -33,10 +34,10 @@ import {
   handOf,
   hasPlayableEffect,
   isFaceCardInPool,
-  absorbRitualBlockHint,
-  canAbsorbSymbolToCreature,
-  canAbsorbSymbolToRitual,
+  canAbsorbSymbol,
+  attackIsFuelled,
   forgeExceedsAttributeLimit,
+  isAttributeSymbol,
   isEnabledHandReaction,
   isLegalRitualReaction,
   isUnabsorbedPoolSymbol,
@@ -55,7 +56,6 @@ import {
   searchableInDeck,
   searchableInGraveyard,
   usableSymbols,
-  holdsTokens,
   overloadsOnFace,
   requirementTotal,
   ATTRIBUTES,
@@ -323,7 +323,7 @@ export function MatchBoard() {
       const def = getCreatureDefinition(attacker.definitionId);
       const basic = def !== undefined ? basicAttackOf(def) : undefined;
       if (basic === undefined) return;
-      if (!holdsTokens(attacker, basic.requires)) return;
+      if (!attackIsFuelled(state.players[pending.controllerId]?.attributePool ?? {}, basic)) return;
       if (!legalTargetsFor(state, pending.creatureId, basic).includes(creature.id)) return;
       tryDispatch({
         type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
@@ -339,7 +339,10 @@ export function MatchBoard() {
     if (!canAct) return;
 
     if (intent.kind === "absorb" && phase === "actions" && creature.ownerId === activeId) {
-      if (!canAbsorbSymbolToCreature(state, activeId, creature.id, intent.symbolId)) return;
+      const pip = state.symbols[intent.symbolId];
+      // Attribute pips bank on select; only Shield still needs a creature target.
+      if (pip === undefined || isAttributeSymbol(pip.symbol)) return;
+      if (!canAbsorbSymbol(state, activeId, intent.symbolId, creature.id)) return;
       tryDispatch({
         type: "ABSORB_SYMBOL",
         playerId: activeId,
@@ -860,7 +863,7 @@ export function MatchBoard() {
         />
       )}
       {pending?.type === "choose-attribute-tokens" && !isPendingChooser && (
-        <WaitingBanner>Opponent is choosing attribute tokens to discard.</WaitingBanner>
+        <WaitingBanner>Opponent is choosing pips from an attribute pile.</WaitingBanner>
       )}
 
       {pending?.type === "forge-faces" && isPendingChooser && (
@@ -1166,24 +1169,6 @@ export function MatchBoard() {
         <WaitingBanner>Opponent is choosing a pool symbol.</WaitingBanner>
       )}
 
-      {pending?.type === "remove-toxin-amount" && isPendingChooser && (
-        <RemoveToxinAmountModal
-          state={state}
-          creatureId={pending.creatureId}
-          maxAmount={pending.maxAmount}
-          onConfirm={(amount) =>
-            tryDispatch({
-              type: "RESOLVE_REMOVE_TOXIN_AMOUNT",
-              playerId: pending.controllerId,
-              amount,
-            })
-          }
-        />
-      )}
-      {pending?.type === "remove-toxin-amount" && !isPendingChooser && (
-        <WaitingBanner>Opponent is choosing how many Toxin markers to remove.</WaitingBanner>
-      )}
-
       {pending?.type === "optional-overcharge" && isPendingChooser && (
         <OptionalOverchargeModal
           state={state}
@@ -1349,21 +1334,12 @@ export function MatchBoard() {
           onRitualActivate={(id) =>
             tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
           }
-          onRitualAbsorb={(id) => {
-            if (intent.kind !== "absorb") return;
-            if (!canAbsorbSymbolToRitual(state, activeId, id, intent.symbolId)) return;
-            tryDispatch({
-              type: "ABSORB_SYMBOL_TO_RITUAL",
-              playerId: activeId,
-              cardInstanceId: id,
-              symbolId: intent.symbolId,
-            });
-          }}
         />
         <FaceCardsInPlay
           state={state}
           playerId={MATCH_P2}
           label="P2 face cards"
+          facing="down"
           actingPlayerId={actingId}
           canAct={canAct}
           onActivateFace={(dieId, slotIndex) =>
@@ -1402,21 +1378,12 @@ export function MatchBoard() {
           onRitualActivate={(id) =>
             tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
           }
-          onRitualAbsorb={(id) => {
-            if (intent.kind !== "absorb") return;
-            if (!canAbsorbSymbolToRitual(state, activeId, id, intent.symbolId)) return;
-            tryDispatch({
-              type: "ABSORB_SYMBOL_TO_RITUAL",
-              playerId: activeId,
-              cardInstanceId: id,
-              symbolId: intent.symbolId,
-            });
-          }}
         />
         <FaceCardsInPlay
           state={state}
           playerId={MATCH_P1}
           label="P1 face cards"
+          facing="up"
           actingPlayerId={actingId}
           canAct={canAct}
           onActivateFace={(dieId, slotIndex) =>
@@ -1503,6 +1470,18 @@ export function MatchBoard() {
             selected={intent.kind === "absorb" ? intent.symbolId : null}
             onSelect={(symbolId) => {
               if (!canAct || phase !== "actions") return;
+              const pip = state.symbols[symbolId];
+              if (pip === undefined) return;
+              if (isAttributeSymbol(pip.symbol)) {
+                if (!canAbsorbSymbol(state, activeId, symbolId)) return;
+                tryDispatch({
+                  type: "ABSORB_SYMBOL",
+                  playerId: activeId,
+                  symbolId,
+                });
+                return;
+              }
+              // Shield: arm absorb, then click a living owned creature.
               setIntent({ kind: "absorb", symbolId });
             }}
           />
@@ -1932,7 +1911,7 @@ function chooseCreatureFilterHint(filter: CreatureChoiceFilter): string {
     case "ally-damage-over-half":
       return "Choose an allied creature with more than half damage.";
     case "ally-with-tokens":
-      return "Choose an allied creature that holds an attribute token.";
+      return "Choose an allied creature — the strip targets that owner's attribute pile.";
     case "adjacent-ally":
       return "Choose an adjacent allied creature.";
   }
@@ -2177,11 +2156,14 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   }
   if (state.pendingDecision?.type === "choose-attribute-tokens") {
     const mode = state.pendingDecision.mode ?? "discard";
-    const verb =
-      mode === "copy" ? "copy" : mode === "transfer" ? "move" : "discard";
+    if (mode === "transfer" || mode === "copy") {
+      return isPendingChooser
+        ? "Pack-feed move/copy is deferred — this choice cannot be completed yet."
+        : "Waiting on a deferred pack-feed choice.";
+    }
     return isPendingChooser
-      ? `Choose ${String(state.pendingDecision.amount)} attribute token pip(s) to ${verb}.`
-      : "Waiting for the opponent to choose attribute tokens.";
+      ? `Choose ${String(state.pendingDecision.amount)} pip(s) from that creature owner's attribute pile to discard.`
+      : "Waiting for the opponent to discard from an attribute pile.";
   }
   if (state.pendingDecision?.type === "forge-faces") {
     if (!isPendingChooser) {
@@ -2260,11 +2242,6 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       ? "Choose a synthetic symbol from your pool (Catalyst wildcard)."
       : "Waiting for the opponent to choose a pool symbol.";
   }
-  if (state.pendingDecision?.type === "remove-toxin-amount") {
-    return isPendingChooser
-      ? `Choose how many Toxin markers to remove (0–${String(state.pendingDecision.maxAmount)}); that much damage is dealt.`
-      : "Waiting for the opponent to remove Toxin markers.";
-  }
   if (state.pendingDecision?.type === "optional-overcharge") {
     return isPendingChooser
       ? `Accept Overcharge (+${String(state.pendingDecision.amount)} Energy, suppress inherent next roll) or Decline.`
@@ -2286,8 +2263,8 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   switch (intent.kind) {
     case "absorb": {
       const pip = state.symbols[intent.symbolId];
-      const name = pip?.symbol ?? "symbol";
-      return `Absorb ${name}: click a highlighted creature, or a ritual that still needs ${name}. Illegal targets stay dim.`;
+      const name = pip?.symbol ?? "Shield";
+      return `Absorb ${name}: click a living owned creature to grant Shield. Illegal targets stay dim.`;
     }
     case "attack":
       return intent.attackId === undefined
@@ -2318,7 +2295,7 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
     case "roll":
       return "Dice roll automatically. Overloads on showing faces fire immediately, once per die that shows them. Rituals cannot activate during roll.";
     case "actions":
-      return "Absorb, spend, attack, play tactics, forge, and activate ready rituals in any order. Hover a card for its text. End turn from the phase bar when finished.";
+      return "Bank attribute pips into your pile (one click), grant Shield onto a creature, spend, attack, play tactics, forge, and activate ready rituals. End turn from the phase bar when finished.";
   }
 }
 
@@ -2411,7 +2388,6 @@ function Battlefield({
   actingPlayerId,
   canAct,
   onRitualActivate,
-  onRitualAbsorb,
 }: {
   state: GameState;
   playerId: PlayerId;
@@ -2425,7 +2401,6 @@ function Battlefield({
   actingPlayerId: PlayerId;
   canAct: boolean;
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
-  onRitualAbsorb: (cardInstanceId: CardInstanceId) => void;
 }) {
   const living = livingCreaturesOf(state, playerId);
   const front = living.filter((c) => c.position === "frontline");
@@ -2491,17 +2466,13 @@ function Battlefield({
               }
               return isActive && playerId === actingPlayerId && state.phase !== "roll";
             })();
-            const absorbSymbolId =
-              absorbArmed && isActive && intent.kind === "absorb" ? intent.symbolId : null;
             return (
               <RitualTile
                 key={card.id}
                 card={card}
                 state={state}
-                absorbSymbolId={absorbSymbolId}
                 canActivate={canActivate}
                 onActivate={() => onRitualActivate(card.id)}
-                onAbsorb={() => onRitualAbsorb(card.id)}
               />
             );
           })}
@@ -2517,13 +2488,13 @@ function Battlefield({
           : "rounded-lg border border-stone-800 bg-black/20 p-4"
       }
     >
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
+      <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
         {label}
         {playerId === actingPlayerId ? (inReactionWindow ? " · priority" : " · acting") : ""}
         {isActive && playerId !== actingPlayerId ? " · turn" : ""} · frontline / back
       </h2>
       {facing === "down" ? ritualStrip : null}
-      <div className="flex flex-col gap-3">
+      <div className="mt-3 flex flex-col gap-3">
         {facing === "down" ? (
           <>
             {backRow}
@@ -2541,20 +2512,58 @@ function Battlefield({
   );
 }
 
+/** Persistent seat fuel for attacks / ritual Active-when / Spend (spec `016`). */
+function AttributePile({
+  state,
+  playerId,
+  dense = false,
+}: {
+  state: GameState;
+  playerId: PlayerId;
+  dense?: boolean;
+}) {
+  const pile = state.players[playerId]?.attributePool ?? {};
+  const held = ATTRIBUTES.filter((attribute) => (pile[attribute] ?? 0) > 0);
+
+  return (
+    <div
+      className={
+        dense
+          ? "flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto"
+          : "flex flex-wrap items-center gap-1.5"
+      }
+    >
+      <span className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-stone-500">
+        Attribute pile
+      </span>
+      <div className={dense ? "flex flex-wrap content-start gap-1.5" : "contents"}>
+        {held.length === 0 ? (
+          <span className="text-[0.65rem] text-stone-600">empty · rolls bank here</span>
+        ) : (
+          held.map((attribute) => (
+            <span
+              key={attribute}
+              className="rounded border border-stone-700 bg-stone-900/90 px-1.5 py-0.5 text-[0.65rem] capitalize text-stone-100"
+            >
+              {attributeLabel(attribute)} {String(pile[attribute])}
+            </span>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 function RitualTile({
   card,
   state,
-  absorbSymbolId,
   canActivate,
   onActivate,
-  onAbsorb,
 }: {
   card: CardInstance;
   state: GameState;
-  absorbSymbolId: SymbolInstanceId | null;
   canActivate: boolean;
   onActivate: () => void;
-  onAbsorb: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -2578,25 +2587,26 @@ function RitualTile({
     def.ritual?.additionalEnergy !== undefined && def.ritual.additionalEnergy > 0
       ? `+${String(def.ritual.additionalEnergy)}E to activate`
       : null;
+  const spend = def.ritual?.spend;
+  const spendLine =
+    spend !== undefined && formatAttackCost(spend) !== ""
+      ? `Spend: ${formatAttackCost(spend)}`
+      : null;
   const hasActivateEffects = (def.ritual?.effects?.length ?? 0) > 0;
   const standingOnly =
     !hasActivateEffects && (def.ritual?.standingAbilities?.length ?? 0) > 0;
   const ready = card.ritualOrientation === "ready";
   const preparing = card.ritualOrientation === "preparing";
   const exhausted = card.ritualOrientation === "exhausted";
-  const canReceive =
-    absorbSymbolId !== null &&
-    canAbsorbSymbolToRitual(state, card.ownerId, card.id, absorbSymbolId);
-  const absorbBlock =
-    absorbSymbolId !== null && !canReceive
-      ? absorbRitualBlockHint(state, card.ownerId, card.id, absorbSymbolId)
-      : null;
-  const progress = card.ritualProgress ?? {};
-  const progressLine =
+  const pile = state.players[card.ownerId]?.attributePool ?? {};
+  const gateVsPile =
     def.ritual?.activeWhen !== undefined
       ? Object.entries(def.ritual.activeWhen)
           .filter(([, n]) => (n ?? 0) > 0)
-          .map(([attr, needed]) => `${attr} ${String(progress[attr as keyof typeof progress] ?? 0)}/${String(needed)}`)
+          .map(
+            ([attr, needed]) =>
+              `${attr} ${String(pile[attr as keyof typeof pile] ?? 0)}/${String(needed)}`,
+          )
           .join(" · ")
       : null;
 
@@ -2606,15 +2616,11 @@ function RitualTile({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={
-        canReceive
-          ? "w-44 rounded border-2 border-[var(--accent)] bg-stone-900 p-2.5 shadow-[0_0_12px_rgba(212,168,75,0.25)]"
-          : absorbBlock !== null
-            ? "w-44 rounded border border-stone-800 bg-stone-950 p-2.5 opacity-60"
-            : ready
-            ? "w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
-            : preparing
-              ? "w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
-              : "w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
+        ready
+          ? "w-44 rounded border border-[var(--accent)]/50 bg-stone-900 p-2.5"
+          : preparing
+            ? "w-44 rounded border border-amber-800/50 bg-stone-950 p-2.5"
+            : "w-44 rounded border border-stone-700 bg-stone-950 p-2.5 opacity-80"
       }
     >
       {pairPos !== null &&
@@ -2634,8 +2640,11 @@ function RitualTile({
                 {orientation}
                 {durationLabel !== null ? ` · ${durationLabel}` : ""}
               </p>
-              {progressLine !== null && progressLine !== "" && (
-                <p className="mt-1 text-xs text-amber-200/80">Progress: {progressLine}</p>
+              {gateVsPile !== null && gateVsPile !== "" && (
+                <p className="mt-1 text-xs text-amber-200/80">Active-when vs pile: {gateVsPile}</p>
+              )}
+              {spendLine !== null && (
+                <p className="mt-0.5 text-xs text-amber-200/70">{spendLine} (from pile on activate)</p>
               )}
               <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 <p>
@@ -2673,12 +2682,7 @@ function RitualTile({
           document.body,
         )}
 
-      <button
-        type="button"
-        className="w-full text-left"
-        disabled={!canReceive}
-        onClick={onAbsorb}
-      >
+      <div className="w-full text-left">
         <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
         <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
           {formatEnergyCost(def)}E · {def.subtypes.join("/") || "ritual"}
@@ -2699,19 +2703,16 @@ function RitualTile({
         {activeWhen !== null && (
           <p className="mt-1 truncate text-[0.65rem] text-stone-400">{activeWhen}</p>
         )}
-        {progressLine !== null && progressLine !== "" && (
-          <p className="mt-0.5 truncate text-[0.6rem] text-amber-200/70">{progressLine}</p>
+        {gateVsPile !== null && gateVsPile !== "" && (
+          <p className="mt-0.5 truncate text-[0.6rem] text-amber-200/70">Pile {gateVsPile}</p>
+        )}
+        {spendLine !== null && (
+          <p className="mt-0.5 truncate text-[0.6rem] text-stone-500">{spendLine}</p>
         )}
         {durationLabel !== null && (
           <p className="mt-0.5 text-[0.6rem] text-stone-600">{durationLabel}</p>
         )}
-        {canReceive && (
-          <p className="mt-1 text-[0.65rem] text-[var(--accent)]">Assign symbol</p>
-        )}
-        {absorbBlock !== null && (
-          <p className="mt-1 text-[0.65rem] leading-snug text-stone-500">{absorbBlock}</p>
-        )}
-      </button>
+      </div>
       {hasActivateEffects ? (
         <button
           type="button"
@@ -2723,7 +2724,7 @@ function RitualTile({
         </button>
       ) : standingOnly ? (
         <p className="mt-2 text-[0.6rem] leading-snug text-stone-500">
-          Passive while ready — does not spend banked symbols
+          Passive while ready — does not spend pile gate / Spend
         </p>
       ) : null}
     </div>
@@ -2909,9 +2910,13 @@ function attackIsArmed(
   attack: AttackDefinition,
 ): boolean {
   if (attack.effect === undefined) return false;
-  if (creature.attacksUsedThisCombat >= state.config.attacksPerCreaturePerCombat) return false;
-  if (!holdsTokens(creature, attack.requires)) return false;
-  if (attack.discards !== undefined && !holdsTokens(creature, attack.discards)) return false;
+  if (
+    creature.attacksUsedThisCombat >=
+    state.config.attacksPerCreaturePerCombat + creature.extraAttacksThisTurn
+  ) {
+    return false;
+  }
+  if (!attackIsFuelled(state.players[creature.ownerId]?.attributePool ?? {}, attack)) return false;
   return legalTargetsFor(state, creature.id, attack).length > 0;
 }
 
@@ -3144,11 +3149,17 @@ function CreatureTile({
   if (def === undefined) return null;
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
+  const absorbSymbolId = intent.kind === "absorb" ? intent.symbolId : undefined;
+  const absorbPip =
+    absorbSymbolId !== undefined ? state.symbols[absorbSymbolId] : undefined;
   const absorbHere =
-    intent.kind === "absorb" &&
-    canAbsorbSymbolToCreature(state, creature.ownerId, creature.id, intent.symbolId);
+    absorbPip !== undefined &&
+    absorbPip.symbol === SHIELD &&
+    absorbSymbolId !== undefined &&
+    canAbsorbSymbol(state, creature.ownerId, absorbSymbolId, creature.id);
   const absorbBlocked =
-    intent.kind === "absorb" &&
+    absorbPip !== undefined &&
+    absorbPip.symbol === SHIELD &&
     !absorbHere &&
     creature.ownerId === state.activePlayerId;
   const equipment = creature.equipmentIds.flatMap((id) => {
@@ -3184,21 +3195,14 @@ function CreatureTile({
               <p className="text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-400">
                 HP {life}/{def.life} · Shield {creature.shields}
-                {creature.damagePreventBuffer > 0
-                  ? ` · Prevent ${creature.damagePreventBuffer}`
+                {creature.attackPreventCount > 0
+                  ? ` · Prevent ${creature.attackPreventCount}`
                   : ""}
                 {creature.nextAttackBonus > 0 ? ` · Next ATK +${creature.nextAttackBonus}` : ""} ·
                 Toxin {creature.toxinMarkers}
               </p>
               <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
                 {creature.position} · {def.attributes.join(", ")}
-              </p>
-              <p className="mt-1 text-xs capitalize text-stone-400">
-                tokens:{" "}
-                {Object.entries(creature.attributeTokens)
-                  .filter(([, n]) => (n ?? 0) > 0)
-                  .map(([k, n]) => `${k} ${String(n)}`)
-                  .join(", ") || "none"}
               </p>
               <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 {def.passiveRulesText !== "" && (
@@ -3215,11 +3219,7 @@ function CreatureTile({
                     {attack.range ? " (Range)" : ""}
                     {" · "}
                     <span className="text-[var(--accent)]">
-                      [{formatAttackCost(attack.requires) || "—"}
-                      {attack.discards !== undefined
-                        ? `; discard ${formatAttackCost(attack.discards)}`
-                        : ""}
-                      ]
+                      {formatAttackFuel(attack) || "—"}
                     </span>
                   </p>
                 ))}
@@ -3268,20 +3268,13 @@ function CreatureTile({
         <p className="font-medium text-stone-100">{def.name}</p>
         <p className="mt-1 text-xs text-stone-400">
           HP {life}/{def.life} · Shield {creature.shields}
-          {creature.damagePreventBuffer > 0
-            ? ` · Prevent ${creature.damagePreventBuffer}`
+          {creature.attackPreventCount > 0
+            ? ` · Prevent ${creature.attackPreventCount}`
             : ""}{" "}
           · Toxin {creature.toxinMarkers}
         </p>
         <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
           {creature.position} · {def.attributes.join(", ")}
-        </p>
-        <p className="mt-1 text-xs capitalize text-stone-400">
-          tokens:{" "}
-          {Object.entries(creature.attributeTokens)
-            .filter(([, n]) => (n ?? 0) > 0)
-            .map(([k, n]) => `${k} ${String(n)}`)
-            .join(", ") || "none"}
         </p>
         {equipment.length > 0 && (
           <p className="mt-1 text-[0.65rem] text-amber-200/80">
@@ -3289,9 +3282,8 @@ function CreatureTile({
           </p>
         )}
         {absorbHere && (
-          <p className="mt-1 text-[0.65rem] font-medium text-[var(--accent)]">Absorb here</p>
+          <p className="mt-1 text-[0.65rem] font-medium text-[var(--accent)]">Absorb Shield here</p>
         )}
-        <PendingAbsorbLine state={state} creatureId={creature.id} />
       </button>
 
       <ul className="mt-2 space-y-1 border-t border-stone-800 pt-2">
@@ -3300,11 +3292,7 @@ function CreatureTile({
             <span className="text-stone-500">{attack.kind === "basic" ? "B" : "S"}:</span>{" "}
             {attack.name}{" "}
             <span className="text-[var(--accent)]">
-              [{formatAttackCost(attack.requires) || "—"}
-              {attack.discards !== undefined
-                ? `; discard ${formatAttackCost(attack.discards)}`
-                : ""}
-              ]
+              {formatAttackFuel(attack) || "—"}
             </span>
           </li>
         ))}
@@ -3314,9 +3302,10 @@ function CreatureTile({
         <div className="mt-2 flex flex-col gap-1">
           {def.attacks.map((attack) => {
             const armed = attackIsArmed(state, creature, attack);
-            const fuelled =
-              holdsTokens(creature, attack.requires) &&
-              (attack.discards === undefined || holdsTokens(creature, attack.discards));
+            const fuelled = attackIsFuelled(
+              state.players[creature.ownerId]?.attributePool ?? {},
+              attack,
+            );
             return (
               <button
                 key={attack.id}
@@ -3336,27 +3325,6 @@ function CreatureTile({
         </div>
       )}
     </div>
-  );
-}
-
-function PendingAbsorbLine({
-  state,
-  creatureId,
-}: {
-  state: GameState;
-  creatureId: CreatureId;
-}) {
-  const pending = Object.values(state.symbols).filter(
-    (symbol) =>
-      symbol.status === "absorbed" &&
-      symbol.absorbedByCreatureId === creatureId &&
-      symbol.symbol !== SHIELD,
-  );
-  if (pending.length === 0) return null;
-  return (
-    <p className="mt-1 text-[0.65rem] text-amber-200/80">
-      pending tokens: {pending.map((symbol) => symbol.symbol).join(", ")} (at end of turn)
-    </p>
   );
 }
 
@@ -3580,6 +3548,7 @@ function FaceCardsInPlay({
   state,
   playerId,
   label,
+  facing,
   actingPlayerId,
   canAct,
   onActivateFace,
@@ -3587,6 +3556,8 @@ function FaceCardsInPlay({
   state: GameState;
   playerId: PlayerId;
   label: string;
+  /** Same as Battlefield: P1 `up`, P2 `down` — flips faces vs pile toward the energy bar. */
+  facing: "up" | "down";
   actingPlayerId: PlayerId;
   canAct: boolean;
   onActivateFace: (dieId: DieId, slotIndex: number) => void;
@@ -3601,28 +3572,56 @@ function FaceCardsInPlay({
     state.phase === "actions" &&
     playerId === actingPlayerId;
 
+  const facesPane = (
+    <div className="min-h-0 flex-1 basis-1/2 overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2">
+        {faces.map((entry) => (
+          <FaceCardTile
+            key={entry.faceCardId}
+            state={state}
+            playerId={playerId}
+            entry={entry}
+            hasRolled={hasRolled}
+            canActivateShowing={canActivateShowing}
+            onActivateFace={onActivateFace}
+          />
+        ))}
+      </div>
+      {faces.length === 0 && (
+        <p className="text-sm text-stone-600">No faces installed</p>
+      )}
+    </div>
+  );
+
+  const pilePane = (
+    <div
+      className={
+        facing === "down"
+          ? "flex min-h-0 flex-1 basis-1/2 flex-col overflow-hidden border-b border-stone-800/80 pb-2"
+          : "flex min-h-0 flex-1 basis-1/2 flex-col overflow-hidden border-t border-stone-800/80 pt-2"
+      }
+    >
+      <AttributePile state={state} playerId={playerId} dense />
+    </div>
+  );
+
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-stone-800 bg-black/25 p-3">
       <h2 className="mb-2 shrink-0 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
         {label}
         {hasRolled ? " · showing after roll" : " · shared across dice"}
       </h2>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-2">
-          {faces.map((entry) => (
-            <FaceCardTile
-              key={entry.faceCardId}
-              state={state}
-              playerId={playerId}
-              entry={entry}
-              hasRolled={hasRolled}
-              canActivateShowing={canActivateShowing}
-              onActivateFace={onActivateFace}
-            />
-          ))}
-        </div>
-        {faces.length === 0 && (
-          <p className="text-sm text-stone-600">No faces installed</p>
+      <div className="flex min-h-0 flex-1 flex-col gap-2">
+        {facing === "down" ? (
+          <>
+            {pilePane}
+            {facesPane}
+          </>
+        ) : (
+          <>
+            {facesPane}
+            {pilePane}
+          </>
         )}
       </div>
     </section>
@@ -3847,7 +3846,7 @@ function SymbolPool({
   if (symbols.length === 0) {
     return (
       <p className="text-center text-xs uppercase tracking-[0.18em] text-stone-600">
-        No symbols in the pool
+        No symbols in the pool · attributes auto-bank into your pile
       </p>
     );
   }
@@ -3869,10 +3868,14 @@ function SymbolPool({
             disabled={!pickable}
             title={
               unusable
-                ? "Unusable (cannot absorb or pay costs)"
+                ? "Unusable (cannot bank or pay costs)"
                 : fromDie
-                  ? "Rolled from a die — absorb or spend"
-                  : "Generated by an effect — absorb or spend"
+                  ? isAttributeSymbol(symbol.symbol)
+                    ? "Rolled attribute (should already be in your pile)"
+                    : "Rolled Shield — click, then choose a creature"
+                  : isAttributeSymbol(symbol.symbol)
+                    ? "Effect attribute — click to bank into your pile"
+                    : "Effect Shield — click, then choose a creature"
             }
             className={
               selected === symbol.id
@@ -5378,62 +5381,6 @@ function ChoosePoolSymbolModal({
   );
 }
 
-function RemoveToxinAmountModal({
-  state,
-  creatureId,
-  maxAmount,
-  onConfirm,
-}: {
-  state: GameState;
-  creatureId: CreatureId;
-  maxAmount: number;
-  onConfirm: (amount: number) => void;
-}) {
-  const [amount, setAmount] = useState(maxAmount);
-  const creature = state.creatures[creatureId];
-  const def =
-    creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Remove Toxin
-        </h2>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Remove Toxin markers from {def?.name ?? "this creature"} and deal that much damage
-          (0–{String(maxAmount)}). Current toxin:{" "}
-          {String(creature?.toxinMarkers ?? 0)}.
-        </p>
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <button
-            type="button"
-            className={btnClass}
-            onClick={() => setAmount((value) => Math.max(0, value - 1))}
-          >
-            −
-          </button>
-          <span className="w-10 text-center text-lg text-stone-100">{String(amount)}</span>
-          <button
-            type="button"
-            className={btnClass}
-            onClick={() => setAmount((value) => Math.min(maxAmount, value + 1))}
-          >
-            +
-          </button>
-        </div>
-        <button
-          type="button"
-          className={`${btnPrimary} mt-4`}
-          onClick={() => onConfirm(amount)}
-        >
-          Confirm ({String(amount)} toxin → {String(amount)} damage)
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function OptionalOverchargeModal({
   state,
   amount,
@@ -5490,7 +5437,9 @@ function OptionalBonusAttackModal({
   const def = creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
   const basic = def !== undefined ? basicAttackOf(def) : undefined;
   const fuelled =
-    creature !== undefined && basic !== undefined && holdsTokens(creature, basic.requires);
+    creature !== undefined &&
+    basic !== undefined &&
+    attackIsFuelled(state.players[creature.ownerId]?.attributePool ?? {}, basic);
   const targets =
     basic !== undefined && fuelled
       ? legalTargetsFor(state, creatureId, basic)
@@ -5511,7 +5460,7 @@ function OptionalBonusAttackModal({
         </p>
         {basic !== undefined && (
           <p className="mt-2 text-xs text-stone-500">
-            {formatAttackLine(basic)} · requires {formatAttackCost(basic.requires)}
+            {formatAttackLine(basic)} · {formatAttackFuel(basic)}
             {!fuelled ? " · not fuelled" : ""}
           </p>
         )}
@@ -5681,10 +5630,13 @@ function ChooseAttributeTokensModal({
   pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "choose-attribute-tokens" }>;
   onConfirm: (discarded: SymbolRequirement) => void;
 }) {
-  const tokens = state.creatures[pending.creatureId]?.attributeTokens ?? {};
+  const tokenOwnerId = state.creatures[pending.creatureId]?.ownerId;
+  const tokens = (tokenOwnerId === undefined ? {} : state.players[tokenOwnerId]?.attributePool) ?? {};
   const [pick, setPick] = useState<Readonly<Partial<Record<Attribute, number>>>>({});
   const assigned = requirementTotal(pick);
   const ready = assigned === pending.amount;
+  const mode = pending.mode ?? "discard";
+  const packFeedParked = mode === "transfer" || mode === "copy";
 
   const setAmount = (attribute: Attribute, next: number) => {
     const max = tokens[attribute] ?? 0;
@@ -5697,19 +5649,32 @@ function ChooseAttributeTokensModal({
     });
   };
 
+  if (packFeedParked) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+            Pack-feed unavailable
+          </h2>
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">
+            Moving or copying attribute pips between creatures is deferred (spec 016 Phase 6).
+            This choice cannot be completed in the current build.
+          </p>
+          <CausedByLine state={state} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          {pending.mode === "copy"
-            ? "Choose tokens to copy"
-            : pending.mode === "transfer"
-              ? "Choose tokens to move"
-              : "Choose tokens to discard"}
+          Discard from attribute pile
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Name {String(pending.amount)} attribute token pip(s). Assigned: {String(assigned)}/
-          {String(pending.amount)}.
+          Name {String(pending.amount)} pip(s) from that creature owner&apos;s attribute pile.
+          Assigned: {String(assigned)}/{String(pending.amount)}.
         </p>
         <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
@@ -5723,7 +5688,7 @@ function ChooseAttributeTokensModal({
               >
                 <p className="text-sm text-stone-100">
                   {attributeLabel(attribute)}{" "}
-                  <span className="text-xs text-stone-500">({String(held)} held)</span>
+                  <span className="text-xs text-stone-500">({String(held)} in pile)</span>
                 </p>
                 <div className="flex items-center gap-2">
                   <button

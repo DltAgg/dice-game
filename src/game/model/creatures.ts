@@ -8,7 +8,7 @@ import type {
   CreatureId,
   PlayerId,
 } from "./ids.js";
-import type { AttributeTokens, SymbolRequirement } from "./symbols.js";
+import type { SymbolRequirement } from "./symbols.js";
 
 /** Bible §6: the frontline protects the back. */
 export type BattlefieldPosition = "frontline" | "back";
@@ -17,10 +17,8 @@ export type BattlefieldPosition = "frontline" | "back";
  * Bible §7 and §24: creatures have no ATK/DEF. An attack is a cost plus an
  * effect, and the interesting question is whether the cost can be paid.
  *
- * The cost is paid from attributes the *attacker itself* absorbed, never from
- * the shared symbol pool — the Pokémon TCG attachment model. That is what makes
- * absorbing a real choice rather than a loss: an absorbed symbol leaves the
- * available pool (bible §7) but arms the creature that took it.
+ * Fuel is the attacker's owner's attribute pile (spec `016`), never the shared
+ * turn-pool symbols. Absorbing an attribute banks into that pile immediately.
  */
 export interface AttackDefinition {
   readonly id: AttackId;
@@ -28,13 +26,12 @@ export interface AttackDefinition {
   /** Basic vs Special as printed on the creature card. */
   readonly kind: "basic" | "special";
   /**
-   * Attributes the attacker must be holding. Checked, not spent: a creature
-   * that is fuelled stays fuelled and can attack again on later turns.
+   * Pile gate (`[Requires: …]`): must hold, not spent. May accompany `discards`.
    */
-  readonly requires: SymbolRequirement;
+  readonly requires?: SymbolRequirement;
   /**
-   * Attributes the attack burns on use, normally a subset of `requires`. This
-   * is how a heavier attack costs more than a lighter one on the same creature.
+   * Pile burn (`[Spend: …]`): removed from the owner's pile on declare.
+   * May accompany `requires` (Pokémon-style gate + pay).
    */
   readonly discards?: SymbolRequirement;
   /** Bible §6: Range lets an attack ignore the frontline restriction. */
@@ -81,18 +78,18 @@ export interface CreatureState {
   readonly defeated: boolean;
   readonly attacksUsedThisCombat: number;
   /**
-   * Bible §7: absorbed symbols become attribute tokens at end of turn. Because
-   * they only appear once the turn is over, a creature can never attack on the
-   * same turn it absorbed the fuel — absorbing is always a turn of setup.
+   * Extra attacks allowed this turn beyond `attacksPerCreaturePerCombat`
+   * (Wild `[Frenzy]`). Cleared at end of turn.
    */
-  readonly attributeTokens: AttributeTokens;
+  readonly extraAttacksThisTurn: number;
   /** Each shield prevents 1 damage once, then is gone. Persists across turns. */
   readonly shields: number;
   /**
-   * Prevent-next-N damage buffer (spec `009`). Applied before Shields.
-   * Unused remainder persists until consumed (`preventExpiry: "none"`).
+   * Remaining incoming **attacks** to cancel whole (spec `009`). Applied before
+   * Shields. Unused remainder persists until consumed (`preventExpiry: "none"`).
+   * Non-attack damage does not consume this.
    */
-  readonly damagePreventBuffer: number;
+  readonly attackPreventCount: number;
   /**
    * Extra damage on this creature's next attack only (Varcolac passive). Cleared
    * when spent or at end of turn.

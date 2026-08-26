@@ -32,7 +32,11 @@ No push leftovers. Alpha's Hide special→generate Wild is wired (`012` ASSUMED:
 controller pool). Reforge (`card-reforge`) is wired via `replace-synthetic-face`
 (`012`). No tactic / creature print rows currently deferred.
 
----
+Spec `016` Phase 6 catalogue conversion is **done** (standing on-absorb →
+`ally`; Share the Kill → `[Drain 1]`; Den Share → `[Frenzy]` ally; Instinct /
+Pounce prove Frenzy). Unused `transfer-attribute-tokens` /
+`copy-attribute-tokens` stubs were **removed**. `[Drain]` and `[Frenzy]`
+(`grant-extra-attack`) are live.
 
 ## Revisit checklist
 
@@ -40,5 +44,6 @@ controller pool). Reforge (`card-reforge`) is wired via `replace-synthetic-face`
 2. Great Spark / Rekindle printings.
 3. Energy-spent scaling when a `?` card needs `energyPaid`.
 4. Re-measure first-player win rate after catalogue depth.
+5. Spec `016` Phase 6 complete. Pack-feed stubs deleted; Wild exclusive is `[Frenzy]`.
 
 Do not treat approximate effects as final without an `OPEN_DESIGN.md` row.
