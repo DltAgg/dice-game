@@ -130,7 +130,7 @@ const STEM_RULES: readonly StemRule[] = [
   },
   {
     test: (body) => /^Resonance$/i.test(body),
-    reminder: "Pool symbol may pay any Requires/Active-when.",
+    reminder: "Pool symbol may pay any Spend / Requires / Active-when.",
   },
   {
     test: (body) => /^Reroll$/i.test(body),
@@ -141,8 +141,16 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Keep retainable die across next roll.",
   },
   {
-    test: (body) => /^(?:Requires|Active when|Spend)\b/i.test(body),
-    reminder: "Extra cost / ritual gate.",
+    test: (body) => /^Requires:/i.test(body),
+    reminder: "Pile must hold this. Not spent.",
+  },
+  {
+    test: (body) => /^Spend:/i.test(body),
+    reminder: "Burn this from your pile.",
+  },
+  {
+    test: (body) => /^Active when:/i.test(body),
+    reminder: "Ritual gate vs your pile.",
   },
 ];
 

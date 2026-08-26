@@ -31,11 +31,12 @@ attribute pip into that pile (or granting Shield onto a creature).
    into the pile (roll auto-bank, effect auto-bank, or manual). Standing
    `on-absorb` filters stay; absorber relation is the banking player / their
    field as appropriate.
-6. **`[Requires]`.** Spends from the **attribute pile** (wildcards may cover
-   shortfall).
-7. **Attacks.** XOR: `requires` is checked against the attacker’s owner’s
-   `attributePool` (not spent) **or** `discards` is checked and burned.
-   Never both on one attack. Same-turn absorb **can** enable an attack
+6. **`[Requires]` / `[Spend]`.** `[Requires: …]` is a pile **gate** (must hold,
+   not spent). `[Spend: …]` **burns** from the pile (card `effect.requires`,
+   ritual activate `spend`, attack `discards`). Wildcards may cover shortfall.
+7. **Attacks.** `requires` is checked against the attacker’s owner’s
+   `attributePool` (not spent). `discards` is checked and burned. **Both may
+   apply** on one attack. Same-turn absorb **can** enable an attack
    (pile updates immediately — no EOT delay).
 8. **Rituals.** No progress counters on the ritual card.
    - `activeWhen` (if any): the owner’s pile must meet the requirement for the
@@ -80,8 +81,7 @@ is the design driver for this supersession.
 - Attribute absorb: actions phase, active player, unabsorbed usable attribute
   pip, no creature id required.
 - Shield absorb: same plus living owned creature target.
-- Attack: owner pile meets XOR fuel (`requires` threshold **or** `discards`
-  burn — never both).
+- Attack: owner pile meets `requires` (gate) and `discards` (Spend) when printed.
 - Ritual ready: pile meets `activeWhen` (or no gate → ready on place).
 - Ritual activate: orientation `ready`, pile still meets `activeWhen`, can pay
   `spend` + `additionalEnergy`.
@@ -92,7 +92,7 @@ is the design driver for this supersession.
    face / overload / standing `on-absorb` (bank context).
 2. Shield absorb: grant shield; queue triggers that apply.
 3. Ritual orientation refresh whenever the pile changes (absorb, spend, effects).
-4. Attack declare: check XOR fuel → burn discards if that is the cost → open
+4. Attack declare: check gate and Spend → burn discards if printed → open
    attack chain as today.
 
 ## Networking

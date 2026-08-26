@@ -90,7 +90,8 @@ overload an Arcane face).
 |---|---|---|
 | `[Active when: Arcane + Arcane]` | Gate vs the owner’s **attribute pile** (spec `016`). When met, the ritual is / becomes `ready`. Standing fire while ready does not burn the gate. | Ritual |
 | `[Spend: Arcane + Arcane]` | Optional burn from the owner’s attribute pile on `ACTIVATE_RITUAL` (often the same counts as Active-when for strong instants). Continuous standing rituals usually omit Spend. | Ritual |
-| `[Requires: Corruption]` | Gate on the effect (unabsorbed turn pool) | Instant |
+| `[Requires: Martial + Wild]` | Attack **gate** vs the owner’s attribute pile (must hold; not spent) | Creature attack |
+| `[Spend: Martial]` | Burn from the owner’s attribute pile (attack `discards`, instant extra cost, ritual activate) | Attack / Instant / Ritual |
 | `[Can only overload a Toxin face]` | Restricts the overload target | Overload |
 | `[This card may be equipped to a Martial creature]` | Restricts the equip target | Equipment |
 | `Pay 3 Energy` | An extra cost inside the effect, on top of the header cost | Instant |
@@ -405,7 +406,7 @@ already express.
 | Overload attachment to a die face; on-roll effects; cleared on forge | Adrenaline / Rethrow reroll `012`; Overcharge skip-next still deferred |
 | Ritual place → preparing / ready / exhausted; ACTIVATE_RITUAL | Paradox replay `012` |
 | Toxin counters; 1 damage per counter at owner's turn start | Adaptive Toxin strip→damage still deferred |
-| `[Requires: …]` gates on an effect; `[Active when: …]` on rituals | Resonance wildcard `012` |
+| `[Requires: …]` attack gate; `[Spend: …]` pile burn; `[Active when: …]` on rituals | Resonance wildcard `012` |
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
 | Mill (`mill-cards`); Bury the Name / Grave Whisper | Spec `015` |
 | Pack feeding (`transfer-attribute-tokens` / `copy-attribute-tokens`) | Spec `015` |

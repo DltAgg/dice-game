@@ -30,7 +30,7 @@ shared; the argument follows attribute exclusives.
 
 | Layer | What belongs here | Example |
 |---|---|---|
-| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, Energy, `[Requires]` |
+| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, Energy, `[Requires]`, `[Spend]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]` |
 | **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Prevent]`, `[Convert N]` |
 
@@ -152,7 +152,7 @@ These are not tokens.
 | `[Reforge]` | Replace one of your matching synthetic faces (no forge-draw). Mechanical exclusive. |
 | `[Stamp]` | Re-fire a showing face’s On roll and its overloads. Mechanical exclusive. |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
-| `[Resonance]` | A pool symbol may pay any `[Requires]` / `[Active when]` attribute this turn |
+| `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
 | `[Reroll]` | You may reroll a rolled die |
 | `[Retain]` | Keep a retainable die across the next roll |
 
@@ -181,9 +181,9 @@ These are not effect replacements.
 | Print | Role |
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
-| `[Requires: …]` | Extra pool-symbol cost |
+| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent) |
 | `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
-| `[Spend: …]` | Optional burn from the owner’s attribute pile on ritual activate |
+| `[Spend: …]` | Burn from your attribute pile (attack `discards`, card extra cost, ritual activate) |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | Energy | Shared marker |
@@ -224,6 +224,8 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Ignore Shield | `[Pierce N]` |
 | Stop damage (Luminar) | `[Prevent]` |
 | Take from their pile | `[Drain N]` |
+| Hold in your pile, don’t spend | `[Requires: Martial + Wild]` |
+| Burn from your pile | `[Spend: Martial]` |
 | Pool pip | `[Generate N Arcane]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
 | Install on them | `[Forge 1 Synthetic Corruption]` on the opponent’s die |

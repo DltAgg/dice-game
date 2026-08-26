@@ -188,7 +188,8 @@ caution (prefer minimum 2 unless the card is the rare niche exception).
   hook names (see standardize-card-effects).
 - Ritual gate: stored in `ritual.activeWhen`; UI prints `[Active when: …]`.
   Do not also put that line in `rulesText`.
-- Instant gate: `effect.requires`; UI prints `[Requires: …]`.
+- Instant extra pile cost: `effect.requires`; UI prints `[Spend: …]` (it burns).
+  Attack gates print `[Requires: …]` on `AttackDefinition.requires`.
 
 ## Anti-patterns
 

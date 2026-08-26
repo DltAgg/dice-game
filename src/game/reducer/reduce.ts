@@ -1639,9 +1639,9 @@ function attack(
   const targeting = targetingError(draft, attackerId, attackDefinition, targetId);
   if (targeting !== null) return targeting;
 
-  // Paid from the owner's attribute pile (spec `016`). XOR: `requires` is
-  // checked (not spent); `discards` is checked and burned. Same-turn bank →
-  // attack is legal.
+  // Paid from the owner's attribute pile (spec `016`). `requires` is a
+  // gate (not spent); `discards` (`[Spend]`) is checked and burned. Both
+  // may apply. Same-turn bank → attack is legal.
   const pile = draft.players[playerId]?.attributePool ?? {};
   if (!attackIsFuelled(pile, attackDefinition)) return "ATTACK_NOT_FUELLED";
   const discards = isNonEmptyRequirement(attackDefinition.discards)

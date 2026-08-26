@@ -81,9 +81,10 @@ export interface ForgeRegion {
  * the effect text; it is checked against the player's symbol pool, the same
  * supply engine abilities draw on.
  *
- * How the gate prints depends on the subtype: Rituals say `[Active when: …]`,
- * Instants say `[Requires: …]`. The UI formatter picks the label; the engine
- * only cares that the symbols are present.
+ * How the extra cost prints: Rituals say `[Active when: …]` for the gate and
+ * `[Spend: …]` for activate burn. Instants print `[Spend: …]` for
+ * `effect.requires` (it burns from the pile). Attack `[Requires: …]` is a
+ * separate hold-gate and lives on `AttackDefinition.requires`.
  */
 export interface EffectRegion {
   readonly requires?: SymbolRequirement;

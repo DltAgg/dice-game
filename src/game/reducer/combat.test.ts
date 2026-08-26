@@ -80,7 +80,7 @@ describe("attacking", () => {
     if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
   });
 
-  it("does not burn when the attack lists requires only", () => {
+  it("burns Spend tokens on War Charge without emptying the Requires gate", () => {
     const state = combatState(0, { martial: 1, wild: 1 });
     const attackerId = creatureIdAt(state, P1, 0);
 
@@ -94,8 +94,8 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({ martial: 1, wild: 1 });
-    expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
+    expect(after.players[P1]?.attributePool).toEqual({ wild: 1 });
+    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 
   it("burns discarded tokens when Heavy Axe is declared", () => {

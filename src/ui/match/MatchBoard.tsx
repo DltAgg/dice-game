@@ -3214,7 +3214,7 @@ function CreatureTile({
                     {attack.range ? " (Range)" : ""}
                     {" · "}
                     <span className="text-[var(--accent)]">
-                      [{formatAttackFuel(attack) || "—"}]
+                      {formatAttackFuel(attack) || "—"}
                     </span>
                   </p>
                 ))}
@@ -3287,7 +3287,7 @@ function CreatureTile({
             <span className="text-stone-500">{attack.kind === "basic" ? "B" : "S"}:</span>{" "}
             {attack.name}{" "}
             <span className="text-[var(--accent)]">
-              [{formatAttackFuel(attack) || "—"}]
+              {formatAttackFuel(attack) || "—"}
             </span>
           </li>
         ))}

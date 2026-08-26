@@ -111,7 +111,7 @@ resolve            → stays in turn pool   → `[Requires]` spends this turn
 | Surface | Paid from | Bible |
 |---|---|---|
 | Engine ability | unabsorbed symbols in the turn pool | §17 |
-| Attack | owner’s attribute pile (`requires` **or** `discards`, never both) | §7, §31 |
+| Attack | owner’s attribute pile (`requires` gate and/or `discards` Spend) | §7, §31 |
 | Ritual Active-when / Spend | owner’s attribute pile | layouts / `002` |
 
 - Shield, Toxin, and other **creature** tokens remain on creatures.

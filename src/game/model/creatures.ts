@@ -26,13 +26,12 @@ export interface AttackDefinition {
   /** Basic vs Special as printed on the creature card. */
   readonly kind: "basic" | "special";
   /**
-   * Threshold the owner's pile must hold. Checked, not spent.
-   * Exactly one of non-empty `requires` or non-empty `discards` is authored.
+   * Pile gate (`[Requires: …]`): must hold, not spent. May accompany `discards`.
    */
   readonly requires?: SymbolRequirement;
   /**
-   * Attributes the attack burns from the owner's pile on use. Mutually
-   * exclusive with `requires` — basics pay; specials threshold.
+   * Pile burn (`[Spend: …]`): removed from the owner's pile on declare.
+   * May accompany `requires` (Pokémon-style gate + pay).
    */
   readonly discards?: SymbolRequirement;
   /** Bible §6: Range lets an attack ignore the frontline restriction. */

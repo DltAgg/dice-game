@@ -45,14 +45,14 @@ describe("lookupKeywordReminders", () => {
     const print = [
       "[Instant / Toxin]",
       "[Forge] 1 face [Synthetic] [Toxin] on your die",
-      "[Requires: Toxin]",
+      "[Spend: Toxin]",
       "On roll: [Empower 1]. [Mark 1 Toxin].",
     ].join("\n");
 
     const rows = lookupKeywordReminders(print);
     expect(rows.map((row) => row.token)).toEqual([
       "[Forge]",
-      "[Requires: Toxin]",
+      "[Spend: Toxin]",
       "[Empower 1]",
       "[Mark 1 Toxin]",
       "Toxin",

@@ -74,9 +74,9 @@ export function formatForgeLine(forge: ForgeRegion): string {
 }
 
 /**
- * The bracketed gate above the effect body. Rituals print Active when; other
- * subtypes that carry a requirement print Requires. Returns null when there is
- * no gate to show.
+ * The bracketed pile line above the effect body. Rituals print Active when
+ * (gate). Other cards that carry `effect.requires` print Spend — that field
+ * burns from the pile. Returns null when there is no line to show.
  */
 export function formatRequirementLine(card: CardDefinition): string | null {
   const requires = card.ritual?.activeWhen ?? card.effect?.requires;
@@ -85,7 +85,7 @@ export function formatRequirementLine(card: CardDefinition): string | null {
   const body = formatRequirementBody(requires);
   if (body.length === 0) return null;
   if (card.type === "ritual" || card.ritual !== undefined) return `[Active when: ${body}]`;
-  return `[Requires: ${body}]`;
+  return `[Spend: ${body}]`;
 }
 
 /**

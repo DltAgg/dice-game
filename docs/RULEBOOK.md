@@ -101,8 +101,8 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    **auto-bank** into your attribute pile (On absorb fires). **Shield** and
    locked/unusable pips stay in the turn pool. Effect-generated attributes
    also auto-bank when created. Then the turn enters **actions**.
-2. **Actions.** In any order you may: absorb Shield onto a creature, spend
-   attributes from your **pile** for `[Requires]`, attack, play, forge,
+2. **Actions.** In any order you may: absorb Shield onto a creature, pay
+   `[Spend]` from your pile (and meet `[Requires]` gates), attack, play, forge,
    activate a **ready** ritual, retain/release dice, or end the turn.
 
 There is no dedicated absorb phase and no leftover-rolled flip. The turn
@@ -126,10 +126,11 @@ Costs never require Shield.
 **Rolled and effect-generated usable attributes** auto-bank into your pile
 (On absorb fires). Locked/unusable pips and **Shield** stay in the turn pool.
 
-`[Requires]` spends from your **attribute pile** (requirement wildcards may
-cover shortfall). Unabsorbed turn-pool symbols expire at end of turn. There is
-no “store a symbol.” The only way to keep a **die result** across a roll is
-**retain**.
+`[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
+`[Spend: …]` **burns** from your pile (wildcards may cover shortfall). An
+attack or card may print both. Unabsorbed turn-pool symbols expire at end of
+turn. There is no “store a symbol.” The only way to keep a **die result**
+across a roll is **retain**.
 
 Shield absorb still names a creature (below).
 
@@ -168,9 +169,8 @@ whoever holds the marker.
 - Spending **past** zero ends the turn after the current action/chain
   finishes. Landing **exactly** on zero does not.
 - Playing **and** forging pay the printed header Energy cost.
-- Engine abilities / `[Requires]` and attacks cost **attribute-pile** fuel
-  (`requires` threshold **or** `discards` burn — never both on one attack;
-  ritual `[Requires]` / Spend are unchanged), not Energy.
+- Engine abilities / `[Requires]` gates and `[Spend]` pile burns (including
+  attacks, which may print **both**) cost **attribute-pile** fuel, not Energy.
 - Discounts apply to play / ritual place / equip / overload, **not** forge.
   Minimum cost after discount is 0.
 - Printed Energy 1 on cards is exceptional; 1-Energy plays should mainly
@@ -196,14 +196,15 @@ During actions (or as a legal reaction — §15):
 
 | Kind | What happens |
 |---|---|
-| Instant | Pays Energy (and `[Requires]` if printed), then its effect. |
+| Instant | Pays Energy (and `[Spend]` if printed), then its effect. |
 | Reaction | From hand, only while a reaction window is open and the response is legal. |
 | Equipment | Attaches to a creature; stays until destroyed or the host dies. Friendly vs opponent targeting is printed. |
 | Overload | Attaches to a **face card** (shared definition), not a physical die slot. Capacity is per face card. |
 | Ritual | Enters the engine area (see §10). |
 
-`[Requires]` spends from your **attribute pile** (wildcards may cover
-shortfall).
+`[Spend]` burns from your **attribute pile** (wildcards may cover shortfall).
+`[Requires]` on an attack is a gate: the pile must hold it, and those tokens
+stay unless a `[Spend]` also names them.
 
 Discard-from-hand effects **draw first**, then the player **names** which
 cards to discard. The engine never auto-discards the front of the hand.
@@ -271,10 +272,10 @@ face) fires again.
 ## 13. Combat
 
 - Each living creature may attack **once per turn** during actions.
-- An attack names **either** `requires` (checked, **not** spent) **or**
-  `discards` (the pile must hold it and you burn it). Basics pay
-  (`discards`); specials threshold (`requires`). Fuel is the **owner’s
-  attribute pile**, not the shared turn pool and not counters on the creature.
+- Fuel is the **owner’s attribute pile**. An attack may print a **`[Requires: …]`
+  gate** (must hold, not spent), a **`[Spend: …]` cost** (burned on declare),
+  or **both**. Basics usually Spend only. Specials typically Require a mix and
+  Spend one of those attributes.
 - Because banking is immediate, you may attack on the same turn you absorb
   the fuel.
 - Declaring an attack opens a reaction window (§15). Prevent may answer;

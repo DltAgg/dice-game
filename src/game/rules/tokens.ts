@@ -27,8 +27,9 @@ export const isNonEmptyRequirement = (
   requirement !== undefined && requirementTotal(requirement) > 0;
 
 /**
- * Attack fuel XOR: pile must hold `requires` (threshold) **or** `discards`
- * (burn). Exactly one is authored; both or neither is illegal.
+ * Attack fuel: the pile must hold every printed `requires` (gate, not spent)
+ * and every printed `discards` (Spend — burned on declare). Either or both
+ * may be authored; an attack with neither is unfuelled.
  */
 export function attackIsFuelled(
   tokens: AttributeTokens,
@@ -39,10 +40,10 @@ export function attackIsFuelled(
 ): boolean {
   const hasRequires = isNonEmptyRequirement(attack.requires);
   const hasDiscards = isNonEmptyRequirement(attack.discards);
-  if (hasRequires === hasDiscards) return false;
-  if (hasRequires) return holdsTokens(tokens, attack.requires);
-  if (hasDiscards) return holdsTokens(tokens, attack.discards);
-  return false;
+  if (!hasRequires && !hasDiscards) return false;
+  if (hasRequires && !holdsTokens(tokens, attack.requires)) return false;
+  if (hasDiscards && !holdsTokens(tokens, attack.discards)) return false;
+  return true;
 }
 
 export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({

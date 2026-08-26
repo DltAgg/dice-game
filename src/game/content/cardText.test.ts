@@ -90,14 +90,14 @@ describe("English card printing", () => {
     expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Corruption]");
   });
 
-  it("prints Requires for non-ritual gates", () => {
+  it("prints Spend for non-ritual pile costs", () => {
     const card = exampleCard({
       type: "instant",
       attribute: "mechanical",
       effect: { requires: { mechanical: 2 }, effects: [] },
     });
     expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Requires: Mechanical + Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Spend: Mechanical + Mechanical]");
   });
 
   it("prints None when the card forges only", () => {
