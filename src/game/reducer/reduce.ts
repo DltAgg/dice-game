@@ -74,9 +74,10 @@ import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } fro
 import {
   addTokens,
   attackIsFuelled,
-  holdsTokens,
+  holdsTokensWithWildcards,
   isLegalTokenDiscardPick,
   isNonEmptyRequirement,
+  pileRequirementShortfall,
   removeTokens,
 } from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
@@ -1545,7 +1546,7 @@ function bankRolledAttributeIfEligible(
   playerId: PlayerId,
   symbolId: SymbolInstanceId,
 ): void {
-  bankAttributeIntoPile(draft, playerId, symbolId, null);
+  bankAttributeIntoPile(draft, playerId, symbolId);
 }
 
 /**
@@ -1568,7 +1569,7 @@ function absorbSymbol(
   if (!isUnabsorbedPoolSymbol(symbol)) return "SYMBOL_UNAVAILABLE";
 
   if (isAttributeSymbol(symbol.symbol)) {
-    if (!bankAttributeIntoPile(draft, playerId, symbolId, creatureId ?? null)) {
+    if (!bankAttributeIntoPile(draft, playerId, symbolId)) {
       return "SYMBOL_UNAVAILABLE";
     }
     drainResolution(draft);
@@ -1627,7 +1628,10 @@ function attack(
   if (attacker === undefined) return "UNKNOWN_ENTITY";
   if (attacker.ownerId !== playerId) return "INVALID_TARGET";
   if (attacker.defeated) return "CREATURE_DEFEATED";
-  if (attacker.attacksUsedThisCombat >= draft.config.attacksPerCreaturePerCombat) {
+  if (
+    attacker.attacksUsedThisCombat >=
+    draft.config.attacksPerCreaturePerCombat + attacker.extraAttacksThisTurn
+  ) {
     return "ATTACK_ALREADY_USED";
   }
 
@@ -1641,9 +1645,16 @@ function attack(
 
   // Paid from the owner's attribute pile (spec `016`). `requires` is a
   // gate (not spent); `discards` (`[Spend]`) is checked and burned. Both
-  // may apply. Same-turn bank → attack is legal.
+  // may apply. Resonance wildcards cover shortfall on either. Same-turn
+  // bank → attack is legal.
   const pile = draft.players[playerId]?.attributePool ?? {};
-  if (!attackIsFuelled(pile, attackDefinition)) return "ATTACK_NOT_FUELLED";
+  const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
+  if (!attackIsFuelled(pile, attackDefinition, wildcards.length)) {
+    return "ATTACK_NOT_FUELLED";
+  }
+  const requires = isNonEmptyRequirement(attackDefinition.requires)
+    ? attackDefinition.requires
+    : undefined;
   const discards = isNonEmptyRequirement(attackDefinition.discards)
     ? attackDefinition.discards
     : undefined;
@@ -1652,17 +1663,13 @@ function attack(
   patchCreature(draft, attackerId, {
     attacksUsedThisCombat: attacker.attacksUsedThisCombat + 1,
   });
+  if (requires !== undefined) {
+    const short = pileRequirementShortfall(pile, requires);
+    if (short > 0) consumeRequirementWildcards(draft, playerId, short);
+  }
   if (discards !== undefined) {
-    patchPlayer(draft, playerId, {
-      attributePool: removeTokens(pile, discards),
-    });
-    refreshRitualOrientations(draft, playerId);
-    emit(draft, {
-      type: "attribute-tokens-discarded",
-      playerId,
-      creatureId: attackerId,
-      discarded: discards,
-    });
+    const spendError = payPileSpend(draft, playerId, discards, attackerId);
+    if (spendError !== null) return spendError;
   }
 
   const baseEffect = attackDefinition.effect;
@@ -2087,14 +2094,26 @@ function activateRitual(
 
   if (
     region.activeWhen !== undefined &&
-    !ritualProgressMeets(draft.players[playerId]?.attributePool ?? {}, region.activeWhen)
+    !holdsTokensWithWildcards(
+      draft.players[playerId]?.attributePool ?? {},
+      region.activeWhen,
+      draft.requirementWildcardsThisTurn[playerId]?.length ?? 0,
+    )
   ) {
     return "INSUFFICIENT_SYMBOLS";
   }
 
   if (region.spend !== undefined) {
     const pile = draft.players[playerId]?.attributePool ?? {};
-    if (!holdsTokens(pile, region.spend)) return "INSUFFICIENT_SYMBOLS";
+    const activeWhenShort =
+      region.activeWhen === undefined
+        ? 0
+        : pileRequirementShortfall(pile, region.activeWhen);
+    const wildcards = draft.requirementWildcardsThisTurn[playerId]?.length ?? 0;
+    const remaining = wildcards - activeWhenShort;
+    if (pileRequirementShortfall(pile, region.spend) > remaining) {
+      return "INSUFFICIENT_SYMBOLS";
+    }
   }
 
   if (declaredTargetCreatureId !== null) {
@@ -2124,17 +2143,15 @@ function activateRitual(
     noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
   }
 
-  if (region.spend !== undefined) {
+  if (region.activeWhen !== undefined) {
     const pile = draft.players[playerId]?.attributePool ?? {};
-    patchPlayer(draft, playerId, {
-      attributePool: removeTokens(pile, region.spend),
-    });
-    refreshRitualOrientations(draft, playerId);
-    emit(draft, {
-      type: "attribute-tokens-discarded",
-      playerId,
-      discarded: region.spend,
-    });
+    const short = pileRequirementShortfall(pile, region.activeWhen);
+    if (short > 0) consumeRequirementWildcards(draft, playerId, short);
+  }
+
+  if (region.spend !== undefined) {
+    const spendError = payPileSpend(draft, playerId, region.spend);
+    if (spendError !== null) return spendError;
   }
 
   emit(draft, { type: "ritual-activated", cardInstanceId, playerId });
@@ -2156,17 +2173,17 @@ function activateRitual(
 }
 
 /**
- * Flip preparing → ready when the owner's attribute pile meets Active-when
- * (spec `016`). Rituals with no Active-when are ready as soon as they hit the
- * field. Implementation lives in `zones.ts` so resolution can refresh too.
+ * Flip preparing → ready when the owner's attribute pile (plus Resonance
+ * wildcards) meets Active-when (spec `016`). Rituals with no Active-when are
+ * ready as soon as they hit the field. Implementation lives in `zones.ts` so
+ * resolution can refresh too.
  */
 function ritualProgressMeets(
   progress: AttributeTokens,
   requirement: import("../model/symbols.js").SymbolRequirement,
+  wildcardCount = 0,
 ): boolean {
-  return requirementEntries(requirement).every(
-    ([attribute, count]) => (progress[attribute] ?? 0) >= count,
-  );
+  return holdsTokensWithWildcards(progress, requirement, wildcardCount);
 }
 
 /**
@@ -2177,6 +2194,7 @@ function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
   const pile = player.attributePool;
+  const wildcards = draft.requirementWildcardsThisTurn[playerId]?.length ?? 0;
 
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
@@ -2187,7 +2205,7 @@ function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
       const ready =
         region === undefined ||
         region.activeWhen === undefined ||
-        ritualProgressMeets(pile, region.activeWhen);
+        ritualProgressMeets(pile, region.activeWhen, wildcards);
       const orientation = ready ? "ready" : "preparing";
       draft.cards[cardInstanceId] = {
         ...card,
@@ -2608,31 +2626,47 @@ function expireTurnSymbols(draft: Draft): void {
 
 function resetCombatCounters(draft: Draft): void {
   for (const creature of Object.values(draft.creatures)) {
-    if (creature.attacksUsedThisCombat !== 0) {
-      draft.creatures[creature.id] = { ...creature, attacksUsedThisCombat: 0 };
+    if (creature.attacksUsedThisCombat !== 0 || creature.extraAttacksThisTurn !== 0) {
+      draft.creatures[creature.id] = {
+        ...creature,
+        attacksUsedThisCombat: 0,
+        extraAttacksThisTurn: 0,
+      };
     }
   }
 }
 
 /* ------------------------------------------------------------ shared --- */
 
+/**
+ * Card `[Spend]` path (print on Instant/Equipment/… as `region.requires` /
+ * `effect.requires`). Burns from the attribute pile; Resonance wildcards cover
+ * shortfall. Name kept for call-site stability — this is Spend, not a Requires
+ * gate (attack `requires` / ritual `activeWhen` are gates).
+ */
 function payCardRequires(
   draft: Draft,
   playerId: PlayerId,
   requirement: SymbolRequirement,
 ): GameError | null {
-  // Spec `016`: attributes live in the pile; [Requires] spends from the pile
-  // (wildcards cover shortfall). Turn-pool attribute pips no longer exist for
-  // usable generated/rolled attributes.
+  return payPileSpend(draft, playerId, requirement);
+}
+
+/**
+ * Burn a Spend requirement from the owner's pile. Wildcards cover shortfall;
+ * only the pile portion actually removed is emitted as discarded.
+ */
+function payPileSpend(
+  draft: Draft,
+  playerId: PlayerId,
+  requirement: SymbolRequirement,
+  creatureId?: CreatureId,
+): GameError | null {
   const player = draft.players[playerId];
   if (player === undefined) return "UNKNOWN_ENTITY";
   const pile = player.attributePool;
   const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
-  let shortfall = 0;
-  for (const [attribute, count] of requirementEntries(requirement)) {
-    const held = pile[attribute] ?? 0;
-    if (held < count) shortfall += count - held;
-  }
+  const shortfall = pileRequirementShortfall(pile, requirement);
   if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
 
   const spend: Partial<Record<keyof AttributeTokens, number>> = {};
@@ -2649,6 +2683,7 @@ function payCardRequires(
     emit(draft, {
       type: "attribute-tokens-discarded",
       playerId,
+      ...(creatureId !== undefined ? { creatureId } : {}),
       discarded: spend,
     });
   }

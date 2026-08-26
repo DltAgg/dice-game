@@ -381,7 +381,7 @@ describe("face markers / suppress / lock (013)", () => {
     expect(state.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Instinct absorb grants Empower 2 on a chosen ally", () => {
+  it("Instinct absorb grants Frenzy on a chosen ally", () => {
     const attackerId = creatureIdAt(newMatch(), P1, 0);
     let state = withTokens(installFace(newMatch(), INSTINCT), attackerId, { martial: 2 });
     state = rollShowingSlot(state, 0);
@@ -394,7 +394,7 @@ describe("face markers / suppress / lock (013)", () => {
         }),
       );
     }
-    // Auto-bank then opens On absorb Empower 2.
+    // Auto-bank then opens On absorb Frenzy.
     expect(state.pendingDecision?.type).toBe("choose-creature");
     state = expectOk(
       advance(state, {
@@ -403,11 +403,12 @@ describe("face markers / suppress / lock (013)", () => {
         creatureId: attackerId,
       }),
     );
-    // Roll Empower 1 + absorb Empower 2 on the same ally.
-    expect(state.creatures[attackerId]?.nextAttackBonus).toBe(3);
+    // Roll Empower 1; absorb Frenzy 1.
+    expect(state.creatures[attackerId]?.nextAttackBonus).toBe(1);
+    expect(state.creatures[attackerId]?.extraAttacksThisTurn).toBe(1);
   });
 
-  it("Instinct absorb Empower can target a different ally", () => {
+  it("Instinct absorb Frenzy can target a different ally", () => {
     const firstId = creatureIdAt(newMatch(), P1, 0);
     const secondId = creatureIdAt(newMatch(), P1, 1);
     let state = installFace(newMatch(), INSTINCT);
@@ -425,7 +426,8 @@ describe("face markers / suppress / lock (013)", () => {
         creatureId: secondId,
       }),
     );
-    expect(state.creatures[secondId]?.nextAttackBonus).toBe(2);
     expect(state.creatures[firstId]?.nextAttackBonus).toBe(1);
+    expect(state.creatures[secondId]?.extraAttacksThisTurn).toBe(1);
+    expect(state.creatures[firstId]?.extraAttacksThisTurn).toBe(0);
   });
 });

@@ -138,6 +138,7 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       damage: 0,
       defeated: false,
       attacksUsedThisCombat: 0,
+      extraAttacksThisTurn: 0,
       shields: 0,
       attackPreventCount: 0,
       nextAttackBonus: 0,

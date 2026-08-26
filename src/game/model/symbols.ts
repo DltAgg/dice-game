@@ -27,9 +27,9 @@ export const isAttributeSymbol = (symbol: SymbolType): symbol is Attribute => sy
  * and retaining a die as separate mechanics and asked for the terminology to be
  * standardized; only retaining a die survives, so nothing outlives the turn.
  *
- * `rolled` and `available` are the same unabsorbed pool for absorb and
- * `[Requires]` spend (playtest 2026-08-17). They remain distinct as provenance:
- * die pips vs effect-generated. ASSUMED in OPEN_DESIGN.md.
+ * `rolled` and `available` are the same unabsorbed pool for banking and Shield
+ * absorb (playtest 2026-08-17). They remain distinct as provenance: die pips vs
+ * effect-generated. ASSUMED in OPEN_DESIGN.md.
  */
 export type SymbolStatus =
   /** Generated from a die this turn; unabsorbed pool. */
@@ -52,8 +52,8 @@ export interface SymbolInstance {
   readonly sourceDieId: DieId | null;
   readonly absorbedByCreatureId: CreatureId | null;
   /**
-   * When `false`, cannot pay `[Requires]` / ritual Active-when or be absorbed
-   * as a usable attribute (Decay unusable Corruption; resource-locked faces).
+   * When `false`, cannot bank as a usable attribute or count toward pile gates /
+   * Spend (Decay unusable Corruption; resource-locked faces).
    * Omitted / `true` = usable. Spec `013`.
    */
   readonly usable?: boolean;

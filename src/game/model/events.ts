@@ -81,6 +81,12 @@ export type GameEvent =
       readonly attackId: AttackId;
       readonly targetId: CreatureId;
     }
+  /** Wild `[Frenzy]`: raises that creature’s attack allowance this turn. */
+  | {
+      readonly type: "extra-attacks-granted";
+      readonly creatureId: CreatureId;
+      readonly amount: number;
+    }
   | {
       readonly type: "damage-dealt";
       readonly creatureId: CreatureId;

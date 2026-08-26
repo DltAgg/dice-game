@@ -126,10 +126,17 @@ describe("016 attribute pile-up", () => {
     const targetId = creatureIdAt(state, P2, 0);
     const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
     const attack = def.attacks.find((a) => a.effect !== undefined && a.kind === "basic")!;
-    const fuel = attack.requires ?? attack.discards ?? {};
-    const needed = Object.entries(fuel).flatMap(([attr, n]) =>
-      Array.from({ length: n ?? 0 }, () => attr),
-    );
+    const fuelAttrs = new Set([
+      ...Object.keys(attack.requires ?? {}),
+      ...Object.keys(attack.discards ?? {}),
+    ]);
+    const needed = [...fuelAttrs].flatMap((attr) => {
+      const n = Math.max(
+        attack.requires?.[attr as keyof typeof attack.requires] ?? 0,
+        attack.discards?.[attr as keyof typeof attack.discards] ?? 0,
+      );
+      return Array.from({ length: n }, () => attr);
+    });
     state = withSymbols(state, P1, needed as never);
     for (const pip of Object.values(state.symbols)) {
       state = expectOk(
@@ -218,5 +225,95 @@ describe("016 attribute pile-up", () => {
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
     expect(state.players[P1]?.attributePool).toEqual({ martial: 1 });
     expect(Object.keys(state.symbols)).toHaveLength(0);
+  });
+
+  it("attribute bank ignores creatureId for On absorb routing", () => {
+    const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial"]);
+    const pip = Object.values(state.symbols)[0]!;
+    const creatureId = creatureIdAt(state, P1, 0);
+    const after = expectOk(
+      advance(state, {
+        type: "ABSORB_SYMBOL",
+        playerId: P1,
+        creatureId,
+        symbolId: pip.id,
+      }),
+    );
+    const absorbed = after.log.find((e) => e.event.type === "symbol-absorbed");
+    expect(absorbed?.event).toMatchObject({
+      type: "symbol-absorbed",
+      creatureId: null,
+    });
+    expect(after.players[P1]?.attributePool).toEqual({ martial: 1 });
+  });
+
+  it("Resonance wildcards cover attack Requires gate and Spend discards", () => {
+    let state = withPhase(newMatch(), "actions");
+    const attackerId = creatureIdAt(state, P1, 0);
+    const targetId = creatureIdAt(state, P2, 0);
+    const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
+    const attack = def.attacks.find((a) => a.id === "attack-minotaur-war-charge")!;
+    // Requires Martial+Wild, Spend Martial. Pile has Martial only; wildcard covers Wild.
+    state = withAttributePool(state, P1, { martial: 1 });
+    state = {
+      ...state,
+      requirementWildcardsThisTurn: { [P1]: [{ fromSymbol: "arcane" }] },
+    };
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: attack.id,
+        targetId,
+      }),
+    );
+    expect(after.log.some((e) => e.event.type === "attack-declared")).toBe(true);
+    expect(after.players[P1]?.attributePool).toEqual({});
+    expect(after.requirementWildcardsThisTurn[P1] ?? []).toHaveLength(0);
+  });
+
+  it("Resonance wildcards cover ritual Active-when and Spend on activate", () => {
+    let state = withHand(withEnergy(withPhase(newMatch(), "actions"), P1, 10), P1, [
+      LIVING_LIBRARY,
+    ]);
+    state = expectOk(
+      advance(state, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(state, P1, 0),
+      }),
+    );
+    const ritualId = ritualsOf(state, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("ritual");
+
+    // Need Arcane 2 for ready + Arcane 2 Spend; pile has 1, three wildcards.
+    state = withAttributePool(state, P1, { arcane: 1 });
+    state = {
+      ...state,
+      requirementWildcardsThisTurn: {
+        [P1]: [{}, {}, {}],
+      },
+    };
+    // Bank a pip so refreshRitualOrientations sees wildcards + pile.
+    state = withSymbols(state, P1, ["martial"]);
+    const pip = Object.values(state.symbols)[0]!;
+    state = expectOk(
+      advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
+    );
+    expect(state.cards[ritualId]?.ritualOrientation).toBe("ready");
+
+    const beforeWild = (state.requirementWildcardsThisTurn[P1] ?? []).length;
+    state = expectOk(
+      advance(state, {
+        type: "ACTIVATE_RITUAL",
+        playerId: P1,
+        cardInstanceId: ritualId,
+      }),
+    );
+    expect(state.log.some((e) => e.event.type === "ritual-activated")).toBe(true);
+    // Gate shortfall 1 + Spend shortfall 1 (pile had 1 arcane for spend) = 2 wildcards.
+    expect((state.requirementWildcardsThisTurn[P1] ?? []).length).toBe(beforeWild - 2);
+    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(0);
   });
 });

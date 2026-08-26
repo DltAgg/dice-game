@@ -69,8 +69,8 @@ export interface ChainLink {
  *
  * Playtest DECIDED (2026-08-17): there is no dedicated absorption phase.
  * `ROLL_DICE` enters `actions`. Attribute pile banking, Shield absorb onto a
- * creature, `[Requires]` spends, attacks, plays, forges, and ready-ritual
- * activates all share that window. Unabsorbed pool symbols stay spendable and
+ * creature, `[Requires]` gates, `[Spend]` burns, attacks, plays, forges, and
+ * ready-ritual activates all share that window. Unabsorbed pool symbols stay
  * absorbable until used or the turn ends. Rituals cannot activate during roll.
  */
 export type TurnPhase = "roll" | "actions";
@@ -427,8 +427,8 @@ export interface GameState {
   /** Next FORGE_CARD this turn costs this much less (Gear absorb). */
   readonly forgeDiscountThisTurn: Readonly<Record<string, number>>;
   /**
-   * One-shot requirement wildcards (Resonance / Catalyst). Consumed when a
-   * `[Requires]` check or ritual absorb uses one.
+   * One-shot Resonance / Catalyst wildcards. Consumed when they cover shortfall
+   * on a `[Requires]` / Active-when gate or a `[Spend]` burn this turn.
    */
   readonly requirementWildcardsThisTurn: Readonly<
     Record<string, readonly { readonly fromSymbol?: SymbolType }[]>

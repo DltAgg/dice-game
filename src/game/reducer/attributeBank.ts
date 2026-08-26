@@ -1,6 +1,6 @@
 import { isAttributeSymbol } from "../model/symbols.js";
 import type { Attribute } from "../model/attributes.js";
-import type { CreatureId, PlayerId, SymbolInstanceId } from "../model/ids.js";
+import type { PlayerId, SymbolInstanceId } from "../model/ids.js";
 import { addToken } from "../rules/tokens.js";
 import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
 import { emit, patchPlayer, type Draft } from "./draft.js";
@@ -13,12 +13,14 @@ import { refreshRitualOrientations } from "./zones.js";
  * pip was not eligible (already gone, Shield, locked, wrong owner).
  *
  * Used by ROLL_DICE auto-bank, effect `createSymbol`, and manual ABSORB_SYMBOL.
+ *
+ * Absorber for standing triggers is always the banking **player** (spec `016`).
+ * Shield absorb still uses a creature absorber in `reduce.ts`.
  */
 export function bankAttributeIntoPile(
   draft: Draft,
   playerId: PlayerId,
   symbolId: SymbolInstanceId,
-  creatureId: CreatureId | null = null,
 ): boolean {
   const symbol = draft.symbols[symbolId];
   if (symbol === undefined) return false;
@@ -53,15 +55,14 @@ export function bankAttributeIntoPile(
     amount: 1,
   });
 
+  // Always player absorber — ignore any creatureId on ABSORB_SYMBOL for attributes.
   queueAbsorbTriggers(
     draft,
     playerId,
-    creatureId !== null
-      ? { kind: "creature", id: creatureId }
-      : { kind: "player", id: playerId },
+    { kind: "player", id: playerId },
     symbol.symbol,
     symbol.sourceDieId,
-    creatureId,
+    null,
   );
   return true;
 }

@@ -22,8 +22,8 @@ when it is a token, symbol, card type, or target. A new token reuses
 `[Mark]` / `[Strip]`; it does not get its own word.
 
 Catalogue print uses these keywords. Rare unique sequences (Exterminate, Mind
-Control, Aegis redirect, Instinct bonus attack, Overcharge, Lock/Suppress/Hex,
-pack feeding until `[Feed]` ships) stay spelled. The meaning is the same.
+Control, Aegis redirect, Overcharge, Lock/Suppress/Hex) stay spelled. The
+meaning is the same.
 
 Anyone may print `[Mark]`. Only Toxin may print `[Mark N Toxin]`. The verb is
 shared; the argument follows attribute exclusives.
@@ -140,6 +140,7 @@ These are not tokens.
 | `[Heal N]` | Heal N |
 | `[Draw N]` / `[Discard N]` | Draw / discard. “Up to” and extra clauses stay English. |
 | `[Empower N]` | The next attack this turn deals +N. Name the creature if it is not yours. |
+| `[Frenzy]` / `[Frenzy N]` | That creature may declare N extra attacks this turn (default 1). Wild exclusive. Does not clear attacks already used. |
 | `[Pierce N]` | Ignore N Shield after Prevent |
 | `[Prevent]` | Prevent the next attack against that creature (before Shield). Luminar exclusive. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
@@ -163,13 +164,14 @@ convert-symbols | energy-cost-discount / arm-forge-discount | look-top-deck /
 peek-deck-optional-bottom | search-deck | search-graveyard | dark-pact |
 reposition-creature | swap-positions | replace-synthetic-face |
 reapply-die-modifiers | arm-resolve-next-face-effect-twice |
-arm-requirement-wildcard / arm-wildcard-from-synthetic-pool | optional-reroll-die |
-retain-die.
-[Feed] is Wild exclusive pack feeding — no engine yet; do not print as live.
+arm-requirement-wildcard | arm-wildcard-from-synthetic-pool | optional-reroll-die |
+retain-die | grant-extra-attack (`[Frenzy]`).
 Peek is [Insight 1]. Prime is [Empower N] on that creature.
 Spell until they recur: Aegis, Rain, Expose, Tough, Might, Lock, Suppress, Hex,
-Copy Face, Mirror, Overcharge, Instinct, Exterminate, Mind Control.
+Copy Face, Mirror, Overcharge, Exterminate, Mind Control.
 Push is banned. Stun and Scale are deferred — do not print.
+Former pack feeding (`[Feed]` / transfer-copy stubs) is retired; Wild exclusive
+is `[Frenzy]`.
 -->
 
 ---
@@ -202,9 +204,9 @@ The verb may be shared. The **argument** is exclusive.
 | **Luminar** | `[Prevent]`, prevent-and-reflect, `On prevent damage:` | `[Mark N Shield]` as if it were Prevent; `[Heal]` as Prevent |
 | **Corruption** | `[Forge]` on **their** die; `[Mark N Corruption]` | `[Mark N Toxin]`; opponent-die forge on Mechanical |
 | **Toxin** | `[Mark N Toxin]` and `on attacks` | Corruption face marks; delayed damage with no Toxin token |
-| **Martial** | `[Reposition]`, `[Swap]` | Enemy push; `[Feed]` |
+| **Martial** | `[Reposition]`, `[Swap]` | Enemy push; `[Frenzy]` |
 | **Mechanical** | `[Reforge]`, `[Stamp]`, `[Double]`, own-die `[Forge]` | Opponent-die Forge; `[Insight]` |
-| **Wild** | `[Feed]` when that rule exists | `[Reposition]`; `[Mark N Toxin]` / `[Mark N Corruption]` |
+| **Wild** | `[Frenzy]` | `[Reposition]`; `[Mark N Toxin]` / `[Mark N Corruption]` |
 
 Shared on purpose: Strike, Heal, Draw, Generate, Empower, Pierce, Discount,
 Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
@@ -221,6 +223,7 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Grant Shield | `[Mark N Shield]` |
 | Strip Shield | `[Strip N Shield]` |
 | Next attack +N | `[Empower N]` |
+| Extra attack(s) this turn | `[Frenzy]` / `[Frenzy N]` |
 | Ignore Shield | `[Pierce N]` |
 | Stop damage (Luminar) | `[Prevent]` |
 | Take from their pile | `[Drain N]` |

@@ -2910,7 +2910,12 @@ function attackIsArmed(
   attack: AttackDefinition,
 ): boolean {
   if (attack.effect === undefined) return false;
-  if (creature.attacksUsedThisCombat >= state.config.attacksPerCreaturePerCombat) return false;
+  if (
+    creature.attacksUsedThisCombat >=
+    state.config.attacksPerCreaturePerCombat + creature.extraAttacksThisTurn
+  ) {
+    return false;
+  }
   if (!attackIsFuelled(state.players[creature.ownerId]?.attributePool ?? {}, attack)) return false;
   return legalTargetsFor(state, creature.id, attack).length > 0;
 }

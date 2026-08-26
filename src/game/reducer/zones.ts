@@ -1,10 +1,10 @@
 import type { CardType, CardZone, RitualOrientation } from "../model/cards.js";
 import type { BattlefieldPosition } from "../model/creatures.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
-import { requirementEntries } from "../model/symbols.js";
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
 import type { RNG } from "../rng/rng.js";
+import { holdsTokensWithWildcards } from "../rules/tokens.js";
 import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
 import { fireOnChangePosition, fireOnDiscard } from "./triggers.js";
 
@@ -328,13 +328,15 @@ export function setRitualOrientation(
 }
 
 /**
- * Flip preparing → ready when the owner's attribute pile meets Active-when
- * (spec `016`).
+ * Flip preparing → ready when the owner's attribute pile (plus Resonance
+ * wildcards) meets Active-when (spec `016`). Wildcards are not consumed here —
+ * only when a Spend or activate gate actually uses them.
  */
 export function refreshRitualOrientations(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
   const pile = player.attributePool;
+  const wildcards = draft.requirementWildcardsThisTurn[playerId]?.length ?? 0;
 
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
@@ -344,9 +346,7 @@ export function refreshRitualOrientations(draft: Draft, playerId: PlayerId): voi
 
     const active =
       region.activeWhen === undefined ||
-      requirementEntries(region.activeWhen).every(
-        ([attribute, count]) => (pile[attribute] ?? 0) >= count,
-      );
+      holdsTokensWithWildcards(pile, region.activeWhen, wildcards);
     if (active) {
       setRitualOrientation(draft, cardInstanceId, "ready");
     }

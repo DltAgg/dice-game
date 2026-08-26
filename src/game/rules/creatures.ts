@@ -1,4 +1,5 @@
 import { getCreatureDefinition } from "../content/creatures.js";
+import type { GameRulesConfig } from "../model/config.js";
 import type { CreatureDefinition, CreatureState } from "../model/creatures.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -18,6 +19,25 @@ export const currentLife = (creature: CreatureState): number =>
  */
 export const isCreatureDefeated = (creature: CreatureState): boolean =>
   creature.damage >= maxLife(creature);
+
+/**
+ * How many attacks this creature may declare this turn: base config plus
+ * `[Frenzy]` grants (`extraAttacksThisTurn`).
+ */
+export function attackAllowance(
+  creature: CreatureState,
+  config: Pick<GameRulesConfig, "attacksPerCreaturePerCombat">,
+): number {
+  return config.attacksPerCreaturePerCombat + creature.extraAttacksThisTurn;
+}
+
+/** True while `attacksUsedThisCombat` is below the current allowance. */
+export function mayDeclareAttack(
+  creature: CreatureState,
+  config: Pick<GameRulesConfig, "attacksPerCreaturePerCombat">,
+): boolean {
+  return creature.attacksUsedThisCombat < attackAllowance(creature, config);
+}
 
 export const creaturesOf = (state: GameState, playerId: PlayerId): readonly CreatureState[] => {
   const player = state.players[playerId];

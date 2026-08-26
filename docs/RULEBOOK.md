@@ -127,10 +127,10 @@ Costs never require Shield.
 (On absorb fires). Locked/unusable pips and **Shield** stay in the turn pool.
 
 `[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
-`[Spend: …]` **burns** from your pile (wildcards may cover shortfall). An
-attack or card may print both. Unabsorbed turn-pool symbols expire at end of
-turn. There is no “store a symbol.” The only way to keep a **die result**
-across a roll is **retain**.
+`[Spend: …]` **burns** from your pile. Resonance wildcards may cover shortfall
+on either. An attack or card may print both. Unabsorbed turn-pool symbols
+expire at end of turn. There is no “store a symbol.” The only way to keep a
+**die result** across a roll is **retain**.
 
 Shield absorb still names a creature (below).
 
@@ -145,11 +145,12 @@ Shield absorb still names a creature (below).
   (1 Shield prevents 1 damage, once). Shields stack and persist until spent.
 - Absorbing a Shield is **not** absorbing a Natural; `On absorb Natural`
   does not fire.
-- Ritual Active-when is checked against your **pile** (no progress counters on
-  the ritual card). Optional Spend on activate burns from the pile.
-- **Pack feeding** (Wild move/copy of creature-local attribute tokens) is
-  superseded for the pile model — parked pending conversion (spec `016`
-  Phase 6).
+- Ritual Active-when is checked against your **pile** (Resonance wildcards may
+  help; they are not spent just to stay ready). Optional Spend on activate
+  burns from the pile (wildcards may cover shortfall).
+- **`[Drain]`** takes attribute tokens from an enemy’s pile into yours.
+  Former Wild pack-feed print was rewritten (Share / Den Share); unused
+  transfer/copy effect stubs remain engine no-ops.
 
 An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
@@ -203,8 +204,8 @@ During actions (or as a legal reaction — §15):
 | Ritual | Enters the engine area (see §10). |
 
 `[Spend]` burns from your **attribute pile** (wildcards may cover shortfall).
-`[Requires]` on an attack is a gate: the pile must hold it, and those tokens
-stay unless a `[Spend]` also names them.
+`[Requires]` on an attack is a gate: the pile must hold it (wildcards may
+cover), and those tokens stay unless a `[Spend]` also names them.
 
 Discard-from-hand effects **draw first**, then the player **names** which
 cards to discard. The engine never auto-discards the front of the hand.
@@ -271,7 +272,8 @@ face) fires again.
 
 ## 13. Combat
 
-- Each living creature may attack **once per turn** during actions.
+- Each living creature may attack **once per turn** during actions, unless an
+  effect grants extra attacks (`[Frenzy]` — Wild exclusive).
 - Fuel is the **owner’s attribute pile**. An attack may print a **`[Requires: …]`
   gate** (must hold, not spent), a **`[Spend: …]` cost** (burned on declare),
   or **both**. Basics usually Spend only. Specials typically Require a mix and
@@ -286,7 +288,8 @@ face) fires again.
 - Some attacks queue follow-up effects after the damage link.
 
 Enemy creature movement (push) is **not** in the game. Ally reposition is
-frontline ↔ back (swap if the frontline is full).
+Martial’s exclusive (`[Reposition]` / `[Swap]`): frontline ↔ back (swap if the
+frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 
 ---
 
@@ -377,5 +380,6 @@ Related docs (agents):
 - docs/KEYWORDS.md — print keywords (appended on the Rules tab)
 - docs/ARCHITECTURE.md — software advance path
 - src/game/model/config.ts — numeric knobs
-- specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill / pack feeding
+- specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill
+  (pack feeding retired; Wild exclusive is `[Frenzy]`)
 -->

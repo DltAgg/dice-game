@@ -21,6 +21,28 @@ export const holdsTokens = (
     ([attribute, count]) => (tokens[attribute] ?? 0) >= count,
   );
 
+/**
+ * How many pips of `requirement` the pile cannot cover (before wildcards).
+ */
+export function pileRequirementShortfall(
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): number {
+  let shortfall = 0;
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const held = tokens[attribute] ?? 0;
+    if (held < count) shortfall += count - held;
+  }
+  return shortfall;
+}
+
+/** Gate / Spend check: pile plus one-shot Resonance wildcards. */
+export const holdsTokensWithWildcards = (
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+  wildcardCount: number,
+): boolean => pileRequirementShortfall(tokens, requirement) <= wildcardCount;
+
 export const isNonEmptyRequirement = (
   requirement: SymbolRequirement | undefined,
 ): requirement is SymbolRequirement =>
@@ -30,6 +52,10 @@ export const isNonEmptyRequirement = (
  * Attack fuel: the pile must hold every printed `requires` (gate, not spent)
  * and every printed `discards` (Spend — burned on declare). Either or both
  * may be authored; an attack with neither is unfuelled.
+ *
+ * `[Resonance]` wildcards may cover shortfall on either clause. Gate shortfall
+ * is reserved first so Spend still sees remaining wildcards (requires does not
+ * remove pile tokens).
  */
 export function attackIsFuelled(
   tokens: AttributeTokens,
@@ -37,12 +63,22 @@ export function attackIsFuelled(
     readonly requires?: SymbolRequirement;
     readonly discards?: SymbolRequirement;
   },
+  wildcardCount = 0,
 ): boolean {
   const hasRequires = isNonEmptyRequirement(attack.requires);
   const hasDiscards = isNonEmptyRequirement(attack.discards);
   if (!hasRequires && !hasDiscards) return false;
-  if (hasRequires && !holdsTokens(tokens, attack.requires)) return false;
-  if (hasDiscards && !holdsTokens(tokens, attack.discards)) return false;
+
+  let remaining = wildcardCount;
+  if (hasRequires) {
+    const short = pileRequirementShortfall(tokens, attack.requires);
+    if (short > remaining) return false;
+    remaining -= short;
+  }
+  if (hasDiscards) {
+    const short = pileRequirementShortfall(tokens, attack.discards);
+    if (short > remaining) return false;
+  }
   return true;
 }
 
@@ -51,7 +87,7 @@ export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeToke
   [attribute]: (tokens[attribute] ?? 0) + 1,
 });
 
-/** Adds a requirement-shaped pile (pack feeding copy / transfer dest). */
+/** Adds a requirement-shaped pile (Drain / pack-feed dest). */
 export function addTokens(
   tokens: AttributeTokens,
   added: SymbolRequirement,

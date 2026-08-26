@@ -77,6 +77,11 @@ export interface CreatureState {
   readonly damage: number;
   readonly defeated: boolean;
   readonly attacksUsedThisCombat: number;
+  /**
+   * Extra attacks allowed this turn beyond `attacksPerCreaturePerCombat`
+   * (Wild `[Frenzy]`). Cleared at end of turn.
+   */
+  readonly extraAttacksThisTurn: number;
   /** Each shield prevents 1 damage once, then is gone. Persists across turns. */
   readonly shields: number;
   /**

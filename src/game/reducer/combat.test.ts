@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { POUNCE } from "../content/cards.js";
 import { asAttackId } from "../model/ids.js";
 import type { AttributeTokens } from "../model/symbols.js";
 import { currentLife } from "../rules/creatures.js";
@@ -6,11 +7,14 @@ import {
   creatureIdAt,
   expectOk,
   eventTypes,
+  handCardIdAt,
   newMatch,
   P1,
   P2,
   withDamage,
   withDefeatedCreature,
+  withEnergy,
+  withHand,
   withPhase,
   withShields,
   withTokens,
@@ -149,6 +153,97 @@ describe("attacking", () => {
 
     expect(twice.ok).toBe(false);
     if (!twice.ok) expect(twice.error).toBe("ATTACK_ALREADY_USED");
+  });
+
+  it("Frenzy lets a creature declare an extra attack this turn", () => {
+    const base = combatState(0, { martial: 2 });
+    const attackerId = creatureIdAt(base, P1, 0);
+    const targetId = creatureIdAt(base, P2, 0);
+    const frenzied = {
+      ...base,
+      creatures: {
+        ...base.creatures,
+        [attackerId]: {
+          ...base.creatures[attackerId]!,
+          extraAttacksThisTurn: 1,
+        },
+      },
+    };
+
+    const once = expectOk(
+      advance(frenzied, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: HEAVY_AXE,
+        targetId,
+      }),
+    );
+    expect(once.creatures[attackerId]?.attacksUsedThisCombat).toBe(1);
+    const twice = expectOk(
+      advance(once, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: HEAVY_AXE,
+        targetId,
+      }),
+    );
+    expect(twice.creatures[attackerId]?.attacksUsedThisCombat).toBe(2);
+    const thrice = advance(twice, {
+      type: "ATTACK",
+      playerId: P1,
+      attackerId,
+      attackId: HEAVY_AXE,
+      targetId,
+    });
+    expect(thrice.ok).toBe(false);
+    if (!thrice.ok) expect(thrice.error).toBe("ATTACK_ALREADY_USED");
+  });
+
+  it("clears Frenzy allowance at end of turn", () => {
+    const base = combatState(0, { martial: 1 });
+    const attackerId = creatureIdAt(base, P1, 0);
+    const frenzied = {
+      ...base,
+      creatures: {
+        ...base.creatures,
+        [attackerId]: {
+          ...base.creatures[attackerId]!,
+          extraAttacksThisTurn: 1,
+        },
+      },
+    };
+    const nextTurn = expectOk(advance(frenzied, { type: "END_TURN", playerId: P1 }));
+    expect(nextTurn.creatures[attackerId]?.extraAttacksThisTurn).toBe(0);
+  });
+
+  it("Pounce Spends Wild and grants Frenzy", () => {
+    let state = withHand(
+      withEnergy(withPhase(newMatch(), "actions"), P1, 5),
+      P1,
+      [POUNCE],
+    );
+    state = withTokens(state, creatureIdAt(state, P1, 0), { wild: 1 });
+    const allyId = creatureIdAt(state, P1, 0);
+    state = expectOk(
+      advance(state, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(state, P1, 0),
+      }),
+    );
+    expect(state.players[P1]?.attributePool.wild ?? 0).toBe(0);
+    expect(state.pendingDecision?.type).toBe("choose-creature");
+    state = expectOk(
+      advance(state, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: allyId,
+      }),
+    );
+    expect(state.creatures[allyId]?.extraAttacksThisTurn).toBe(1);
+    expect(eventTypes(state)).toContain("extra-attacks-granted");
   });
 
   it("lets a creature attack again on the following turn", () => {

@@ -1184,6 +1184,23 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       };
       return true;
     }
+    case "grant-extra-attack": {
+      applyToTargets(draft, pending, effect.target, (targetId) => {
+        const creature = draft.creatures[targetId];
+        if (creature === undefined || creature.defeated) return;
+        const amount = Math.max(0, effect.amount);
+        if (amount === 0) return;
+        patchCreature(draft, targetId, {
+          extraAttacksThisTurn: creature.extraAttacksThisTurn + amount,
+        });
+        emit(draft, {
+          type: "extra-attacks-granted",
+          creatureId: targetId,
+          amount,
+        });
+      });
+      return false;
+    }
     case "mill-cards": {
       const playerId =
         effect.player === "opponent"
@@ -1192,50 +1209,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       millCards(draft, playerId, effect.amount);
       return false;
     }
-    case "transfer-attribute-tokens":
-      return applyTokenShare(draft, pending, effect, false);
-    case "copy-attribute-tokens":
-      return applyTokenShare(draft, pending, effect, true);
   }
-}
-
-type TokenShareEffect = Extract<
-  EffectDefinition,
-  { type: "transfer-attribute-tokens" } | { type: "copy-attribute-tokens" }
->;
-
-/**
- * Wild pack feeding: move or copy absorbed tokens between allied creatures.
- * Sequential choose-creature (from, then to), then mixed-pile token pick.
- */
-function applyTokenShare(
-  draft: Draft,
-  pending: PendingEffect,
-  effect: TokenShareEffect,
-  copy: boolean,
-): boolean {
-  // Pack-feed creature↔creature attribute moves are parked for Phase 6
-  // (spec `016`). Catalogue effects still print; engine no-ops until retargeted.
-  void draft;
-  void pending;
-  void effect;
-  void copy;
-  return false;
-}
-
-export function applyTokenMove(
-  draft: Draft,
-  fromId: CreatureId,
-  toId: CreatureId,
-  tokens: import("../model/symbols.js").SymbolRequirement,
-  copy: boolean,
-): void {
-  // Parked: creature attribute tokens removed. Prefer pile ops in Phase 6.
-  void draft;
-  void fromId;
-  void toId;
-  void tokens;
-  void copy;
 }
 
 function openDieSlotChoice(
@@ -1674,7 +1648,7 @@ export function createSymbol(
   // Spec `016`: usable attribute pips auto-bank (rolled path banks after on-roll;
   // effect-generated bank immediately so they never sit in the turn pool).
   if (options?.usable !== false && isAttributeSymbol(symbol)) {
-    bankAttributeIntoPile(draft, ownerId, id, null);
+    bankAttributeIntoPile(draft, ownerId, id);
   }
   return id;
 }

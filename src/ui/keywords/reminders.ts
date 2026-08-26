@@ -77,6 +77,10 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Next attack this turn deals +N.",
   },
   {
+    test: (body) => /^Frenzy(?:\s+\d+)?$/i.test(body),
+    reminder: "May declare N extra attacks this turn (default 1).",
+  },
+  {
     test: (body) => /^Pierce(?:\s+\d+)?$/i.test(body),
     reminder: "Ignore N Shield after Prevent.",
   },

@@ -349,13 +349,13 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     INSTINCT,
     "Instinct",
     "wild",
-    "On roll: [Empower 1] on an allied creature.\nOn absorb: [Empower 2] on an allied creature.",
+    "On roll: [Empower 1] on an allied creature.\nOn absorb: [Frenzy] on an allied creature.",
     {
       onRoll: [
         { type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } },
       ],
       onAbsorb: [
-        { type: "grant-next-attack-bonus", amount: 2, target: { kind: "choose-ally" } },
+        { type: "grant-extra-attack", amount: 1, target: { kind: "choose-ally" } },
       ],
     },
   ),

@@ -23,7 +23,12 @@ import { diceOf } from "../rules/dice.js";
 import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
 import { legalTargetsFor } from "../rules/targeting.js";
 import { legalCreaturesForFilter, legalDiceForFilter } from "../rules/targets.js";
-import { discardTokensInAttributeOrder } from "../rules/tokens.js";
+import {
+  addToken,
+  attackIsFuelled,
+  discardTokensInAttributeOrder,
+  isNonEmptyRequirement,
+} from "../rules/tokens.js";
 import { advance } from "../reducer/reduce.js";
 
 /**
@@ -124,7 +129,7 @@ const poolSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInsta
     .filter((symbol) => symbol.ownerId === playerId && isUnabsorbedPoolSymbol(symbol))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
-/** The first living creature still short of this attribute for one of its attacks. */
+/** True when banking this attribute would newly fuel at least one living creature's attack. */
 function creatureNeeding(
   state: GameState,
   playerId: PlayerId,
@@ -132,18 +137,18 @@ function creatureNeeding(
 ): CreatureState | undefined {
   if (!isAttributeSymbol(symbol.symbol)) return undefined;
   const attribute = symbol.symbol;
+  const held = state.players[playerId]?.attributePool ?? {};
+  const afterBank = addToken(held, attribute);
 
   return livingCreaturesOf(state, playerId).find((creature) => {
     const definition = getCreatureDefinition(creature.definitionId);
     if (definition === undefined) return false;
-    const held = state.players[playerId]?.attributePool[attribute] ?? 0;
     return definition.attacks.some((attack) => {
-      const fuel = attack.requires ?? attack.discards ?? {};
-      const needed = fuel[attribute] ?? 0;
-      // Count only the shortfall vs fuel. Extra primary tokens for an
-      // incomplete multi-cost special used to stockpile forever and starve
-      // combat once attacks began discarding fuel each swing.
-      return needed > held;
+      if (!isNonEmptyRequirement(attack.requires) && !isNonEmptyRequirement(attack.discards)) {
+        return false;
+      }
+      // Both requires (gate) and discards (Spend) must be met — not XOR.
+      return !attackIsFuelled(held, attack) && attackIsFuelled(afterBank, attack);
     });
   });
 }

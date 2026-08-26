@@ -563,6 +563,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["arcane", "darkness"],
+          absorberRelation: "ally",
           effects: [
             { type: "draw-cards", amount: 1 },
             { type: "discard-cards", amount: 1 },
@@ -622,13 +623,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "arcane",
     forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
-    rulesText: "On absorb Arcane: copy another symbol onto it.",
+    rulesText: "On absorb Arcane: copy another symbol in your pool.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
           symbols: ["arcane"],
+          absorberRelation: "ally",
           effects: [{ type: "copy-pool-symbol" }],
         },
       ],
@@ -757,6 +759,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["martial"],
+          absorberRelation: "ally",
           effects: [
             { type: "reposition-creature", target: { kind: "source-creature" }, optional: true },
           ],
@@ -864,6 +867,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["wild"],
+          absorberRelation: "ally",
           effects: [{ type: "generate-symbol", symbol: "martial", amount: 1 }],
         },
       ],
@@ -948,13 +952,14 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "On absorb Wild: [Heal 1].",
+    rulesText: "On absorb Wild: [Heal 1] this creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
           symbols: ["wild"],
+          absorberRelation: "ally",
           effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
         },
       ],
@@ -1081,7 +1086,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "mechanical",
     forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-    rulesText: "Can only overload a Mechanical face.\nOn absorb: copy another symbol onto it.",
+    rulesText: "Can only overload a Mechanical face.\nOn absorb: copy another symbol in your pool.",
     overload: {
       faceSymbols: ["mechanical"],
       onRoll: [],
@@ -1120,6 +1125,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["mechanical"],
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
         },
@@ -1359,11 +1365,11 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText: "[Empower 2] on an allied creature.",
+    rulesText: "[Frenzy] on an allied creature.",
     effect: {
       requires: { wild: 1 },
       effects: [
-        { type: "grant-next-attack-bonus", amount: 2, target: { kind: "choose-ally" } },
+        { type: "grant-extra-attack", amount: 1, target: { kind: "choose-ally" } },
       ],
     },
   }),
@@ -1667,6 +1673,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["darkness"],
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "damage", amount: 1, target: { kind: "choose-enemy" } }],
         },
@@ -1761,6 +1768,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
       abilities: [
         {
           type: "on-absorb",
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [{ type: "grant-shield", amount: 1, target: { kind: "source-creature" } }],
         },
@@ -1804,7 +1812,7 @@ const DEFINITIONS: readonly CardDefinition[] = [
         {
           type: "on-absorb",
           symbols: ["toxin"],
-          absorberRelation: "self",
+          absorberRelation: "ally",
           effects: [{ type: "apply-toxin", amount: 1, target: { kind: "choose-enemy" } }],
         },
       ],
@@ -1998,15 +2006,15 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText:
-      "Move 1 absorbed attribute token from one allied creature to another allied creature.",
+    // Pile-era: former ally↔ally token transfer. Drain takes from the chosen
+    // enemy's controller's attribute pile into yours.
+    rulesText: "[Drain 1].",
     effect: {
       effects: [
         {
-          type: "transfer-attribute-tokens",
+          type: "drain-attribute-tokens",
           amount: 1,
-          from: { kind: "choose-ally-with-tokens" },
-          to: { kind: "choose-ally-other" },
+          target: { kind: "choose-enemy" },
         },
       ],
     },
@@ -2019,22 +2027,21 @@ const DEFINITIONS: readonly CardDefinition[] = [
     subtypes: [],
     attribute: "wild",
     forge: { faces: 1, kind: "natural", attribute: "wild", target: "own-die" },
-    rulesText:
-      "On absorb Wild, once per turn: copy 1 attribute token from this creature onto another allied creature.",
+    // Pile-era Wild exclusive: Frenzy another ally when any ally banks Wild.
+    rulesText: "On absorb Wild, once per turn: [Frenzy] another allied creature.",
     equipment: {
       mayTargetOpponent: false,
       abilities: [
         {
           type: "on-absorb",
           symbols: ["wild"],
-          absorberRelation: "self",
+          absorberRelation: "ally",
           oncePerTurn: true,
           effects: [
             {
-              type: "copy-attribute-tokens",
+              type: "grant-extra-attack",
               amount: 1,
-              from: { kind: "source-creature" },
-              to: { kind: "choose-ally-other" },
+              target: { kind: "choose-ally-other" },
             },
           ],
         },

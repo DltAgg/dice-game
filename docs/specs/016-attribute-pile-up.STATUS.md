@@ -23,7 +23,7 @@ keep flexibility without silent empty effects.
 | 3 Faces content (On absorb = bank) | card-designer | **done** | Pack Share → Generate; absorber `source-creature` retargets; Hexbrand/Nightwell pile print |
 | 4 Rituals content (Active-when + Spend) | card-designer | **done** | Instant/reaction spend = Active-when; continuous gate-only; Paradox none |
 | 5 Creatures content | card-designer | **done** | Attack pile fuel; standing `on-absorb` → `absorberRelation: "ally"` |
-| 6 Equipment / overload / pack-feed | later | pending | Do not block Phase 5 playtest |
+| 6 Equipment / overload / pack-feed | card-designer | **done** | Standing on-absorb → `ally`; Share/Den pile rewrite; overloads verified |
 | 7 Match UI | match-ui | **done** | Seat pile under face cards (bottom half); rolled attrs auto-bank; Shield needs creature |
 
 ---
@@ -38,34 +38,33 @@ creature-local attribute tokens.
 Default `absorberRelation: "self"` **no-ops** on pile bank. Convert to
 `ally` (or retarget effects) — concrete ids:
 
-- [ ] `card-mirrored-rune` — On absorb Arcane: copy pool symbol (`self` default)
-- [ ] `card-archmages-grimoire` — On absorb Arcane/Darkness: draw+discard
-- [ ] `card-predators-claws` — On absorb Martial: optional Reposition (`source-creature`)
-- [ ] `card-hunters-collar` — On absorb Wild: generate Martial
-- [ ] `card-wild-carapace` — On absorb Wild: Heal self
-- [ ] `card-servomotor` — On absorb Mechanical, once/turn: generate Mechanical
-- [ ] `card-umbral-brand` — On absorb Darkness, once/turn: Strike 1
-- [ ] `card-warding-charm` — On absorb, once/turn: Mark Shield (`source-creature`)
-- [x] `card-grave-whisper` — On absorb Darkness, once/turn: Mill 1 (`absorberRelation: "ally"`)
-- [ ] `card-venom-font` — On absorb Toxin (`self` explicit): Mark Toxin
-- [ ] `card-den-share` — On absorb Wild + `copy-attribute-tokens` (pack feed)
-- [ ] Foundry / Pack Law — **done in Phase 4** (`absorberRelation: "ally"`)
+- [x] `card-mirrored-rune` — On absorb Arcane: copy pool symbol (`ally`)
+- [x] `card-archmages-grimoire` — On absorb Arcane/Darkness: draw+discard (`ally`)
+- [x] `card-predators-claws` — On absorb Martial: optional Reposition bearer (`ally`)
+- [x] `card-hunters-collar` — On absorb Wild: generate Martial (`ally`)
+- [x] `card-wild-carapace` — On absorb Wild: Heal bearer (`ally`)
+- [x] `card-servomotor` — On absorb Mechanical, once/turn: generate Mechanical (`ally`)
+- [x] `card-umbral-brand` — On absorb Darkness, once/turn: Strike 1 (`ally`)
+- [x] `card-warding-charm` — On absorb, once/turn: Mark Shield bearer (`ally`)
+- [x] `card-grave-whisper` — On absorb Darkness, once/turn: Mill 1 (`ally`)
+- [x] `card-venom-font` — On absorb Toxin: Mark Toxin (`ally`)
+- [x] `card-den-share` — On absorb Wild, once/turn: Empower another ally (`ally`)
+- [x] Foundry / Pack Law — Phase 4 (`absorberRelation: "ally"`)
 
 ### Overload `onAbsorb` regions
 
 Face/overload path still fires on bank — review print / creature-local riders:
 
-- [ ] `card-mutant-spores`, `card-wild-echo`, `card-rust`, `card-ratchet`
-- [ ] `card-transmission`, `card-ichor-sheath` (+ any other overload `onAbsorb`)
+- [x] `card-mutant-spores`, `card-wild-echo`, `card-rust`, `card-ratchet` — no `source-creature`; pile-safe
+- [x] `card-transmission`, `card-ichor-sheath` — no `source-creature`; pile-safe
 
 ### Pack feeding / token move effects
 
-- [ ] `card-share-the-kill` — `transfer-attribute-tokens` (engine no-op)
-- [ ] `card-den-share` — `copy-attribute-tokens` (engine no-op)
-- [ ] Pack Share face and related Wild print (faces agent / Phase 3–6)
-- [ ] Engine (Phase 1–2): `transfer` / `copy` no-op; `discard-attribute-tokens`
-  strips the **target creature owner’s pile**. Pack-feed tests `@ts-nocheck`
-  until Phase 6.
+- [x] `card-share-the-kill` — rewritten to `[Drain 1]` (pile→pile)
+- [x] `card-den-share` — rewritten to `[Frenzy]` another allied creature
+- [x] Pack Share face — Phase 3 `[Generate 1 Wild]` on absorb
+- [x] Engine: `transfer` / `copy` stubs **removed**; Wild exclusive is `[Frenzy]`
+  (`grant-extra-attack`) — Instinct, Pounce, Den Share
 
 See also `docs/DEFERRED_CATALOGUE.md` § Attribute pile-up Phase 6.
 
@@ -130,6 +129,5 @@ Print: `[Active when]` / `[Spend]` via `formatEffectRegion` + `docs/KEYWORDS.md`
 
 ## Playtest gate
 
-Builtin loadouts must typecheck and play after **Phase 5**. Phase 6 items that
-would crash or silently no-op must be deferred or stubbed with STATUS notes
-before calling Phase 5 done.
+Builtin loadouts must typecheck and play after **Phase 5**. Phase 6 catalogue
+conversion is **done** (no silent creature-token transfer/copy on printed cards).

@@ -117,7 +117,7 @@ Read `src/game/model/effects.ts` as authority. Today:
 `arm-attack-toxin`, `negate-card`, `negate-ritual`, `discard-attribute-tokens`,
 `destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`,
-`mill-cards`, `transfer-attribute-tokens`, `copy-attribute-tokens`
+`mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-attribute-tokens`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
 `most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,

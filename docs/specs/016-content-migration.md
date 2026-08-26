@@ -44,14 +44,7 @@ Standing On absorb on continuous rituals: fires when owner banks matching attrib
 
 ## Phase 6 (equipment / overload / pack-feed)
 
-Concrete hooks still assuming creature absorb / creature tokens (from catalogue grep):
-
-**Cards with standing `on-absorb` or overload `onAbsorb`:** review each id around lines in `cards.ts` (Mirrored Rune, gear, Den Share, Mutant Spores, Ratchet, Transmission, pack feeders, …).
-
-**Effects to retarget or DEFER:**
-
-- `transfer-attribute-tokens` / `copy-attribute-tokens`
-- `discard-attribute-tokens` vs enemy creature tokens → enemy pile or DEFER
-- `choose-attribute-tokens` pending (creature-scoped)
-
-Until Phase 6, prefer `DEFERRED_CATALOGUE.md` rows over silent empty `effects: []` on printed clauses.
+**Done.** Standing equipment `on-absorb` uses `absorberRelation: "ally"`.
+Share the Kill → `[Drain 1]`; Den Share → Empower another ally; Pack Share
+face already Generate. Overload `onAbsorb` rows have no `source-creature`
+dependency.

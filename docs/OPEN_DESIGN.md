@@ -646,7 +646,7 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Retain-from-effect** | Marks a chosen owned die retained (same rules as `RETAIN_DIE`, including a known rolled slot). |
 | **Requirement wildcard** | One-shot: a matching pool symbol may pay any `[Requires]` / ritual Active-when attribute this turn (Resonance absorb). Consumed when used. |
 | **Pack adjacent** | Another living ally shares a **`creatureIds` neighbor (±1)** among living creatures. At roll, `has-adjacent-ally` is true if any two consecutive entries in the controller’s `creatureIds` are both living. |
-| **Instinct On absorb** | Optional immediate basic during the actions window: pending `optional-bonus-attack` for the absorbing creature if `attacksUsedThisCombat === 0`. Player may decline or declare that creature’s basic (fuel/range as normal). Spec `013`. |
+| **Instinct On absorb** | `[Frenzy]` on a chosen allied creature (`grant-extra-attack` 1). Raises `extraAttacksThisTurn`; does not clear attacks already used. Spec `013` optional-bonus-basic-attack remains for other print; Instinct no longer uses it. |
 | **Aegis redirect** | Until EOT, up to 2 damage that would be dealt to **another** allied creature is dealt to the absorber instead (before prevent/shield on the original). Turn-scoped `redirectDamageThisTurn` on the absorber. |
 | **Revelation heal** | Heal 2 on an allied creature with damage **strictly greater than** half life (`damage > life/2`). |
 | **Mirrored Rune** | On absorb Arcane: generate 1 extra symbol matching **another** symbol currently in the controller’s available/rolled pool (`copy-pool-symbol`). |
@@ -844,12 +844,12 @@ a single attack bonus, cost reduction, forge of your own attribute) stay legal.
 | Toxin | Toxin counter placement |
 | Martial | Ally creature movement (swap / reposition) |
 | Mechanical | Own-die reconstruction (extra/replace/re-fire **your** faces and overloads) |
-| Wild | Pack feeding (move or copy absorbed tokens between allied creatures) |
+| Wild | Extra attacks (`[Frenzy]`) |
 
 Catalogue off-pie leaks (Sift, Sidestep, Predator’s Claws, …) were moved or
-rewritten — do not copy the old print. Wild pack feeding is
-`transfer-attribute-tokens` / `copy-attribute-tokens` (spec `015`). Darkness
-mill is `mill-cards`.
+rewritten — do not copy the old print. Wild’s exclusive is `grant-extra-attack`
+(`[Frenzy]`). Former pack feeding (`transfer-attribute-tokens` /
+`copy-attribute-tokens`) is **retired**. Darkness mill is `mill-cards`.
 
 ---
 

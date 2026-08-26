@@ -301,7 +301,7 @@ describe("Untamed", () => {
 });
 
 describe("Pounce", () => {
-  it("grants +2 next-attack on a chosen ally when Wild is in the pool", () => {
+  it("Spends Wild and grants Frenzy on a chosen ally", () => {
     const ready = withAttributePool(actionsReady([POUNCE]), P1, { wild: 1 });
     const played = expectOk(
       advance(ready, {
@@ -310,6 +310,7 @@ describe("Pounce", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
+    expect(played.players[P1]?.attributePool.wild ?? 0).toBe(0);
     const allyId = creatureIdAt(played, P1, 1);
     const after = expectOk(
       advance(played, {
@@ -318,7 +319,7 @@ describe("Pounce", () => {
         creatureId: allyId,
       }),
     );
-    expect(after.creatures[allyId]?.nextAttackBonus).toBe(2);
+    expect(after.creatures[allyId]?.extraAttacksThisTurn).toBe(1);
   });
 });
 
