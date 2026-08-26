@@ -507,6 +507,7 @@ describe("on-attack shared event", () => {
     const targetId = creatureIdAt(base, P2, 0);
 
     let state = withPhase(withTokens(base, minotaurId, { martial: 2 }), "actions");
+    state = withTokens(state, varcolacId, { wild: 2 });
     state = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -517,7 +518,30 @@ describe("on-attack shared event", () => {
       }),
     );
 
-    expect(state.creatures[varcolacId]?.nextAttackBonus).toBe(1);
+    expect(state.creatures[varcolacId]?.extraAttacksThisTurn).toBe(1);
+    expect(state.creatures[varcolacId]?.nextAttackBonus).toBe(0);
+
+    const charge = asAttackId("attack-varcolac-charge");
+    state = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: varcolacId,
+        attackId: charge,
+        targetId,
+      }),
+    );
+    expect(state.creatures[varcolacId]?.attacksUsedThisCombat).toBe(1);
+    state = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: varcolacId,
+        attackId: charge,
+        targetId,
+      }),
+    );
+    expect(state.creatures[varcolacId]?.attacksUsedThisCombat).toBe(2);
   });
 });
 

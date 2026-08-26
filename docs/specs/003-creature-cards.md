@@ -52,7 +52,7 @@ damage still belongs mainly on the Control card / ritual / face / status layer
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
 | War Minotaur | Martial | 17 | Heavy Axe (Spend Martial 1) 3 dmg | War Charge (Requires Martial+Wild; Spend Martial 1) 4 dmg + back-row swap |
-| Varcolac | Wild | 13 | Charge (Spend Wild 1) 2 dmg | Coordinated Hunt (Requires Wild+Martial; Spend Wild 1) 4 dmg + next attack +1 |
+| Varcolac | Wild | 13 | Charge (Spend Wild 1) 2 dmg | Coordinated Hunt (Requires Wild+Martial; Spend Wild 1) 4 dmg + [Frenzy] |
 | Garuda | Wild | 11 | Dive (Spend Wild 1, Range) 2 dmg | Bombardment (Requires Wild+Martial; Spend Wild 1) 3 dmg + frontline strip Shield |
 | Archmage of the Runes | Arcane | 12 | Arcane Burst (Spend Arcane 1) 2 dmg + draw | Mystic Overload (Requires Arcane+Darkness; Spend Arcane 1) 2 dmg + Energy + generate Arcane |
 | Corrupting Elder | Arcane | 14 | Touch of Decay (Spend Arcane 1) 2 dmg + strip shield | Contamination (Requires Arcane+Corruption; Spend Corruption 1) 2 dmg + generate Corruption |
@@ -113,7 +113,7 @@ encoded yet.
 | Nightbound Adept (Darkness Control, fully wired) | — |
 | Toxin / Corruption Burn creatures (fully wired) | — |
 | Basic/Special costs, damage, `followUpEffects` / `on-attack` riders | — |
-| Passives: Minotaur pierce, Archmage Arcane discount, Varcolac / Elder / Void / Garuda Range; Luminar absorb/discount/ally heal; Mechanical absorb/roll payoffs; Burn toxin-spread / turn-start ping / absorb-toxin | — |
+| Passives: Minotaur pierce, Archmage Arcane discount, Varcolac Frenzy (ally-other / Coordinated Hunt), Elder / Void / Garuda Range; Luminar absorb/discount/ally heal; Mechanical absorb/roll payoffs; Burn toxin-spread / turn-start ping / absorb-toxin | — |
 
 War Minotaur ignore-1-Shield, War Charge back-row swap, Garuda Dive
 Range 2-damage, Bombardment frontline strip Shield, Archmage Burst draw / Overload

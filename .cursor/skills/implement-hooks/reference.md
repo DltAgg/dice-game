@@ -33,7 +33,7 @@ are that union; creatures/rituals reuse it).
 | Twin Blades | `on-attack` self + basic | remove-shield on declared target |
 | Alpha's Hide | `on-attack` self + special | “On another card” still soft |
 | Insignia of Command | `on-attack` self + oncePerTurn | `reposition-creature` → choose-ally |
-| Varcolac | `on-attack` ally-other | Creature-scoped next-attack bonus |
+| Varcolac | `on-attack` ally-other; special → Frenzy | `grant-extra-attack` on source-creature |
 | Serrated Stinger | `on-attack` ally + special | apply-toxin on attack target |
 | Black Plague | `on-roll-symbol` controller | Already wired |
 | Corrupting Elder | `on-roll-symbol` opponent | choose-enemy damage |

@@ -246,6 +246,37 @@ describe("attacking", () => {
     expect(eventTypes(state)).toContain("extra-attacks-granted");
   });
 
+  it("Coordinated Hunt grants Frenzy so Varcolac may attack again", () => {
+    const state = combatState(1, { wild: 2, martial: 1 });
+    const attackerId = creatureIdAt(state, P1, 1);
+    const targetId = creatureIdAt(state, P2, 0);
+
+    const afterHunt = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: COORDINATED_HUNT,
+        targetId,
+      }),
+    );
+    expect(afterHunt.creatures[attackerId]?.extraAttacksThisTurn).toBe(1);
+    expect(afterHunt.creatures[attackerId]?.nextAttackBonus).toBe(0);
+    expect(afterHunt.creatures[targetId]?.damage).toBe(4);
+
+    const afterCharge = expectOk(
+      advance(afterHunt, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: CHARGE,
+        targetId,
+      }),
+    );
+    expect(afterCharge.creatures[attackerId]?.attacksUsedThisCombat).toBe(2);
+    expect(afterCharge.creatures[targetId]?.damage).toBe(6);
+  });
+
   it("lets a creature attack again on the following turn", () => {
     const state = combatState(0, { martial: 2 });
     const attackerId = creatureIdAt(state, P1, 0);

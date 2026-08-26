@@ -104,14 +104,14 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
     name: "Varcolac",
     life: 13,
     attributes: ["wild"],
-    passiveRulesText: "On attack, another ally: [Empower 1] this creature.",
+    passiveRulesText: "On attack, another ally: [Frenzy] this creature.",
     standingAbilities: [
       {
         type: "on-attack",
         attackerRelation: "ally-other",
         effects: [
           {
-            type: "grant-next-attack-bonus",
+            type: "grant-extra-attack",
             amount: 1,
             target: { kind: "source-creature" },
           },
@@ -120,7 +120,13 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-attack",
         attackKinds: ["special"],
-        effects: [{ type: "next-attack-bonus", amount: 1 }],
+        effects: [
+          {
+            type: "grant-extra-attack",
+            amount: 1,
+            target: { kind: "source-creature" },
+          },
+        ],
       },
     ],
     attacks: [
@@ -140,7 +146,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         requires: { wild: 1, martial: 1 },
         discards: { wild: 1 },
         range: false,
-        rulesText: "[Strike 4]. [Empower 1].",
+        rulesText: "[Strike 4]. [Frenzy].",
         effect: { type: "damage", amount: 4, target: { kind: "declared-target" } },
       },
     ],

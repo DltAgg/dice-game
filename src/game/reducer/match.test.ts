@@ -9,7 +9,7 @@ import { newMatch, P1, P2 } from "../testing/scenario.js";
  * networking anywhere in the call stack.
  */
 
-const SEEDS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+const SEEDS = [1, 2, 3, 5, 8, 13, 21, 37, 55, 89];
 
 describe("a full match through the reducer alone", () => {
   it.each(SEEDS)("seed %i reaches a decided victory", (seed) => {

@@ -101,7 +101,7 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 - [x] Prior Phase B cards (Fangs, Blade, Plague, Heart, Carapace, Grimoire,
   Spores, Echo) still pass.
 - [x] Face absorb/roll partial wiring still passes.
-- [x] Varcolac: ally-other attack → `nextAttackBonus` on Varcolac.
+- [x] Varcolac: ally-other attack → `[Frenzy]` (`extraAttacksThisTurn`) on Varcolac.
 - [x] Hunting Armour: first incoming damage −1 once per turn.
 - [x] Abyssal Sacrifice: discard → generate Darkness while ready.
 - [x] Black Plague uses explicit `rollingPlayer: "controller"` (bearer owner).
