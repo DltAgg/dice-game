@@ -150,6 +150,6 @@ Standing triggers live on equipment / continuous rituals — see
 
 - Export the `CardId` const and add the `card({…})` to `DEFINITIONS`.
 - Builtin decks: `PROTOTYPE_DECK_COUNTS` (aggro) / `CONTROL_DECK_COUNTS`.
-  50–60 cards, ≤4 copies. Do not auto-add 4× to both decks.
+  40–50 cards, ≤3 copies. Do not auto-add 3× to both decks.
 - Consistency: `src/game/content/cards.consistency.test.ts`.
 - Wired effects need reducer tests (see `playcard.test.ts`, `forgeFaces.test.ts`).

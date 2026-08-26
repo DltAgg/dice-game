@@ -2056,30 +2056,23 @@ export const ALL_CARDS: readonly CardDefinition[] = DEFINITIONS;
  * Builtin Aggro tactics deck (spec 002: Martial / Wild only). Converts dice
  * into creature pressure — no Toxin (that is Burn / Combo splash). Densifies
  * Martial/Wild equipment, overloads, reach, and Temper/Untamed special forges.
- * Legal under M4: 50–60 cards, ≤4 copies per id.
+ * Legal: 40–50 cards, ≤3 copies per id.
  */
 const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Martial / Wild pressure equipment
-  [WAR_AXE, 4],
+  [WAR_AXE, 3],
   [TWIN_BLADES, 3],
   [WHETSTONE, 3],
   [INSIGNIA_OF_COMMAND, 2],
   [HUNTERS_COLLAR, 2],
-  [WILD_CARAPACE, 2],
   [PREDATORS_CLAWS, 2],
-  [WAR_BANNER, 2],
-  [ALPHAS_HIDE, 2],
   // Overloads
   [MARTIAL_BLESSING, 3],
-  [BLESSING_OF_THE_HUNT, 2],
   [WILD_ECHO, 3],
-  [SNARL, 2],
   [RUST, 2],
-  [ADRENALINE, 2],
   // Reach / conversion
   [OPENING_CUT, 3],
   [PRESS_THE_ATTACK, 3],
-  [POUNCE, 2],
   [SHARE_THE_KILL, 2],
   [DEN_SHARE, 2],
   [DRESS_RANKS, 2],
@@ -2087,7 +2080,6 @@ const PROTOTYPE_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [UNTAMED, 2],
   // Ritual engines
   [CALL_TO_ARMS, 2],
-  [BATTLE_HYMN, 2],
   [PACK_LAW, 2],
 ];
 export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
@@ -2097,8 +2089,8 @@ export const PROTOTYPE_DECK: readonly CardId[] = PROTOTYPE_DECK_COUNTS.flatMap(
 /**
  * Builtin control tactics deck (spec 002: Arcane / Darkness only). Long-term
  * engine + disruption, converting that engine into lethal damage — not
- * Corruption contaminate, not Toxin burn, not cheap Aggro combat. Legal under
- * M4: 50–60 cards, ≤4 copies per id.
+ * Corruption contaminate, not Toxin burn, not cheap Aggro combat. Legal:
+ * 40–50 cards, ≤3 copies per id.
  */
 const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Engine / filter
@@ -2107,28 +2099,19 @@ const CONTROL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [ARCANE_AMPLIFIER, 3],
   [ARCANE_RESONANCE, 3],
   [ARCHMAGES_GRIMOIRE, 3],
-  [ABYSSAL_SACRIFICE, 2],
   [GLOOM_RESONANCE, 3],
   [ETERNAL_DARKNESS, 3],
   // Interaction
   [FADE, 3],
   [SIPHON_SIGIL, 3],
-  [DISPEL_CIRCLE, 2],
   [SEAL_THE_RITE, 3],
-  [ARCANE_SILENCE, 2],
   [RUNIC_NULLIFICATION, 2],
   [UNMAKE, 2],
   // Engine-converted damage
   [UMBRAL_BOLT, 3],
   [RIFT_COLLAPSE, 2],
-  [UMBRAL_BRAND, 2],
   [CONSULT, 2],
   [BURY_THE_NAME, 2],
-  [GRAVE_WHISPER, 2],
-  // Generic toolkit splash (utility, not a third engine color)
-  [RETHROW, 3],
-  [SIDESTEP, 2],
-  [WARDING_CHARM, 2],
 ];
 
 export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id, copies]) =>
@@ -2140,11 +2123,11 @@ export const CONTROL_DECK: readonly CardId[] = CONTROL_DECK_COUNTS.flatMap(([id,
  * Toxin splash. Showcases clean absorb→pressure (Ratchet / Servomotor / Foundry
  * feeding Cogwork Driver and Prism Herald), Camshaft / Blueprint discounts, and
  * Aegis Link’s Luminar cost reduction — not Martial face-race and not Control
- * disruption. Legal under M4: 50–60 cards, ≤4 copies per id.
+ * disruption. Legal: 40–50 cards, ≤3 copies per id.
  */
 const TEMPO_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Absorb → pressure
-  [RATCHET, 4],
+  [RATCHET, 3],
   [SERVOMOTOR, 3],
   [FOUNDRY, 3],
   [TRANSMISSION, 2],
@@ -2157,21 +2140,13 @@ const TEMPO_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [DIE_PRESS, 2],
   // Incremental tools
   [SAFETY_LATCH, 3],
-  [STAMP, 2],
-  [RECALIBRATE, 2],
-  [CLOCKWORK, 2],
   // Luminar glue (Aegis discount)
   [BLADE_OF_SERENE_LIGHT, 3],
   [LUMINAR_PRISM, 3],
   [BARRIER_OF_LIGHT, 3],
   [GLIMMER, 3],
-  [LUMINAR_JUDGEMENT, 2],
-  [HUNTING_ARMOUR, 2],
-  // Wild / Toxin splash — conversion, not Aggro beatdown
-  [WILD_ECHO, 2],
+  // Wild splash — special-forge conversion, not Aggro beatdown
   [UNTAMED, 2],
-  [PACK_SURGE, 2],
-  [DOSE, 2],
 ];
 
 export const TEMPO_DECK: readonly CardId[] = TEMPO_DECK_COUNTS.flatMap(([id, copies]) =>
@@ -2183,18 +2158,18 @@ export const TEMPO_DECK: readonly CardId[] = TEMPO_DECK_COUNTS.flatMap(([id, cop
  * cards around absorb-vs-pool tension (Ratchet / Transmission / Foundry vs
  * Governor / Clockwork / Camshaft), with Stamp / Coupling / Reforge payoffs and
  * Luminar + Wild glue for Lens Choir. Showcases chaining and symbol conversion,
- * not large generic damage. Legal under M4: 50–60 cards, ≤4 copies per id.
+ * not large generic damage. Legal: 40–50 cards, ≤3 copies per id.
  */
 const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Absorb line
-  [RATCHET, 4],
+  [RATCHET, 3],
   [SERVOMOTOR, 3],
   [TRANSMISSION, 3],
-  [FOUNDRY, 4],
+  [FOUNDRY, 3],
   // Pool / roll line
   [GOVERNOR, 3],
   [CAMSHAFT, 3],
-  [CLOCKWORK, 4],
+  [CLOCKWORK, 3],
   [BLUEPRINT, 3],
   // Forge density
   [ASSEMBLY_LINE, 3],
@@ -2203,15 +2178,9 @@ const COMBO_MECHANICAL_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [STAMP, 3],
   [COUPLING, 3],
   [REFORGE, 3],
-  [RECALIBRATE, 2],
-  [SAFETY_LATCH, 2],
   // Luminar glue
   [LUMINAR_PRISM, 2],
-  [BLADE_OF_SERENE_LIGHT, 2],
-  [GLIMMER, 2],
-  [BARRIER_OF_LIGHT, 2],
   // Wild splash — pack feeding (Lens Choir token share) + Untamed specials
-  [WILD_ECHO, 2],
   [UNTAMED, 2],
   [SHARE_THE_KILL, 2],
 ];
@@ -2224,12 +2193,12 @@ export const COMBO_MECHANICAL_DECK: readonly CardId[] = COMBO_MECHANICAL_DECK_CO
  * Builtin Burn tactics deck (spec 002): Toxin ticks + Corruption DoT, with a
  * thin generic toolkit so the list can survive creature combat. Marker splash
  * (Dose) densifies the engine; Aggro beatdown (Fangs, Blight Strike, Stinger)
- * stays off the maindeck. Legal under M4: 50–60 cards, ≤4 copies per id.
+ * stays off the maindeck. Legal: 40–50 cards, ≤3 copies per id.
  */
 export const BURN_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   // Continuous DoT engine
-  [SLOW_BURN, 4],
-  [SMOLDER, 4],
+  [SLOW_BURN, 3],
+  [SMOLDER, 3],
   [VENOM_FONT, 3],
   [FESTER, 3],
   [CINDER_HEX, 3],
@@ -2243,13 +2212,8 @@ export const BURN_DECK_COUNTS: ReadonlyArray<readonly [CardId, number]> = [
   [GREAT_CONTAMINATION, 2],
   [PERSISTENT_INFECTION, 3],
   [BLACK_PLAGUE, 2],
-  // Survive creature combat (generic toolkit splash)
+  // Survive creature combat (thin generic toolkit)
   [RAISE_GUARD, 3],
-  [SIDESTEP, 3],
-  [WARDING_CHARM, 2],
-  [RETHROW, 2],
-  [SIFT, 2],
-  [SECOND_WIND, 2],
 ];
 
 export const BURN_DECK: readonly CardId[] = BURN_DECK_COUNTS.flatMap(([id, copies]) =>

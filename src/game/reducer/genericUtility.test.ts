@@ -82,25 +82,23 @@ function seedDeck(state: GameState, fromHandIndexes: readonly number[]): GameSta
 }
 
 describe("generic utility toolkit", () => {
-  it("is not in Aggro, Tempo, or Combo Mechanical builtins", () => {
-    const ids = new Set([...PROTOTYPE_DECK, ...TEMPO_DECK, ...COMBO_MECHANICAL_DECK]);
+  it("is not in Aggro, Control, Tempo, or Combo Mechanical builtins", () => {
+    const ids = new Set([
+      ...PROTOTYPE_DECK,
+      ...CONTROL_DECK,
+      ...TEMPO_DECK,
+      ...COMBO_MECHANICAL_DECK,
+    ]);
     for (const id of [RAISE_GUARD, SIDESTEP, RETHROW, SIFT, SECOND_WIND, WARDING_CHARM]) {
-      expect(ids.has(id), `${id} should not be in Aggro/Tempo/Combo`).toBe(false);
+      expect(ids.has(id), `${id} should not be in Aggro/Control/Tempo/Combo`).toBe(false);
     }
   });
 
-  it("Control splashes the toolkit as utility, not a third engine color", () => {
-    const copies = (id: (typeof RAISE_GUARD)) => CONTROL_DECK.filter((card) => card === id).length;
-    expect(copies(RETHROW)).toBe(3);
-    expect(copies(SIDESTEP)).toBe(2);
-    expect(copies(WARDING_CHARM)).toBe(2);
-  });
-
-  it("splashes into builtin Burn for combat survival", () => {
+  it("splashes Raise Guard into builtin Burn for combat survival", () => {
     const ids = new Set(BURN_DECK);
     expect(ids.has(RAISE_GUARD)).toBe(true);
-    expect(ids.has(SIDESTEP)).toBe(true);
-    expect(ids.has(WARDING_CHARM)).toBe(true);
+    expect(ids.has(SIDESTEP)).toBe(false);
+    expect(ids.has(WARDING_CHARM)).toBe(false);
   });
 });
 

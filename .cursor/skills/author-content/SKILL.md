@@ -87,7 +87,7 @@ Card Progress:
 5. Add exported id + definition in the right file.
 6. If vocabulary is missing → develop-engine **with** resolver + tests, then wire.
 7. Update deferred catalogue / spec tables. Add copies to a builtin deck only
-   when that is requested and the 50–60 / ≤4-copies rules still hold.
+   when that is requested and the 40–50 / ≤3-copies rules still hold.
 8. New cards that only use existing effects do **not** belong in
    `docs/RULEBOOK.md`. If this change needed a new mechanic, engine-developer
    updates the rulebook in the same engine change. New tokens or keywords

@@ -96,34 +96,46 @@ describe("validateTacticsDeck", () => {
   });
 
   it("refuses a deck below the minimum", () => {
-    const result = validateTacticsDeck(PROTOTYPE_DECK.slice(0, 49), DEFAULT_RULES_CONFIG);
+    const short = PROTOTYPE_DECK.slice(0, DEFAULT_RULES_CONFIG.deckMinCards - 1);
+    const result = validateTacticsDeck(short, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/min 50/);
+    if (!result.ok) {
+      expect(result.reason).toMatch(new RegExp(`min ${String(DEFAULT_RULES_CONFIG.deckMinCards)}`));
+    }
   });
 
   it("refuses a deck above the maximum", () => {
-    const oversized = [...PROTOTYPE_DECK, ...Array.from({ length: 9 }, () => ECLIPSE)];
+    const overflow =
+      DEFAULT_RULES_CONFIG.deckMaxCards - PROTOTYPE_DECK.length + 1;
+    const oversized = [
+      ...PROTOTYPE_DECK,
+      ...Array.from({ length: overflow }, () => ECLIPSE),
+    ];
     const result = validateTacticsDeck(oversized, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/max 60/);
+    if (!result.ok) {
+      expect(result.reason).toMatch(new RegExp(`max ${String(DEFAULT_RULES_CONFIG.deckMaxCards)}`));
+    }
   });
 
-  it("refuses a fifth copy of the same card", () => {
-    const withoutEclipse = ALL_CARDS.filter((card) => card.id !== ECLIPSE).flatMap((card) => [
-      card.id,
-      card.id,
-      card.id,
-      card.id,
-    ]);
-    const five = [...withoutEclipse.slice(0, 47), ECLIPSE, ECLIPSE, ECLIPSE, ECLIPSE, ECLIPSE];
-    expect(five).toHaveLength(52);
-    const result = validateTacticsDeck(five, DEFAULT_RULES_CONFIG);
+  it("refuses one copy over the per-id cap", () => {
+    const cap = DEFAULT_RULES_CONFIG.deckMaxCopiesPerCard;
+    const withoutEclipse = ALL_CARDS.filter((card) => card.id !== ECLIPSE).flatMap((card) =>
+      Array.from({ length: cap }, () => card.id),
+    );
+    const over = [
+      ...withoutEclipse.slice(0, DEFAULT_RULES_CONFIG.deckMinCards - cap),
+      ...Array.from({ length: cap + 1 }, () => ECLIPSE),
+    ];
+    expect(over.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(over.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+    const result = validateTacticsDeck(over, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/copies/);
   });
 
   it("refuses an unknown card id", () => {
-    const deck = [...PROTOTYPE_DECK.slice(0, 51), asCardId("card-not-real")];
+    const deck = [...PROTOTYPE_DECK.slice(0, DEFAULT_RULES_CONFIG.deckMinCards), asCardId("card-not-real")];
     const result = validateTacticsDeck(deck, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/unknown card/);

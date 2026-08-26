@@ -15,6 +15,7 @@ import {
   NIGHTBOUND_ADEPT,
   VOID_SUMMONER,
 } from "../content/creatures.js";
+import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { CONTROL_FACE_DECK, CONTROL_STARTING_DICE, ENGINE_TEST_FACE_DECK, NIGHTWELL, RUNEFLARE } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import { asSymbolInstanceId, type CardId, type DieId, type FaceCardId } from "../model/ids.js";
@@ -73,7 +74,8 @@ describe("builtin Control two-color identity", () => {
   it("fields Nightbound Adept and no Corruption tactics", () => {
     expect(CONTROL_SQUAD).toContain(NIGHTBOUND_ADEPT);
     expect(CONTROL_SQUAD).not.toContain("creature-corrupting-elder");
-    expect(CONTROL_DECK).toHaveLength(60);
+    expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
+    expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
   });
 });
 

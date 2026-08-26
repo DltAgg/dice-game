@@ -55,7 +55,7 @@ npm run typecheck && npm test && npm run lint
 |---|---|
 | `src/game/content/cards.consistency.test.ts` | Attachment subtype ↔ region lockstep |
 | `src/game/content/cardText.test.ts` | English type / forge / requirement printing |
-| `src/game/rules/loadout.test.ts` | Deck 50–60, ≤4 copies, known ids |
+| `src/game/rules/loadout.test.ts` | Deck 40–50, ≤3 copies, known ids |
 | `src/architecture/engine-purity.test.ts` | Engine stays pure |
 | `src/game/reducer/*.test.ts` | Behavior of play / forge / combat / etc. |
 

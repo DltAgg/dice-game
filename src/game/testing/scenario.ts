@@ -39,7 +39,7 @@ export const P2: PlayerId = asPlayerId("p2");
 /**
  * Engine tests that predate decks keep an empty tactics list so the opening
  * shuffle does not consume RNG and shift die rolls. Production matches always
- * use a legal 50–60 deck.
+ * use a legal 40–50 deck.
  */
 const TEST_SETUP_CONFIG = {
   ...DEFAULT_RULES_CONFIG,

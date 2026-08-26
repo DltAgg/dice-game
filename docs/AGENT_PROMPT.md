@@ -82,7 +82,7 @@ Keep:
 - Face card in pool **XOR** installed (bible §12)
 - Opponent-die forges still use the **forger’s** pool; `faceCardOwnerId` stays
   the forger
-- Tactics 50–60 / ≤4 copies; squad of 3
+- Tactics 40–50 / ≤3 copies; squad of 3
 - Shield is untyped, not an attribute, never `[Requires]`
 
 ---

@@ -31,7 +31,7 @@ Each player’s loadout is:
 | Piece | Rule |
 |---|---|
 | Squad | Exactly **3** creatures |
-| Tactics deck | **50–60** cards, **≤4** copies of the same card id |
+| Tactics deck | **40–50** cards, **≤3** copies of the same card id |
 | Face deck | **≤12** face cards, **≤3** sharing one attribute |
 | Opening dice | Two d6 layouts (`startingDice`) |
 

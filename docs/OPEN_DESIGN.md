@@ -548,16 +548,16 @@ matching face (bible §13 — copy is kept).
 
 ### Tactics deck size and copies
 
-**Status:** `DECIDED` · implemented (M4)
+**Status:** `DECIDED` · implemented (playtest 2026-08-26: Yu-Gi-Oh-sized)
 
 | Rule | Value |
 |---|---|
-| Minimum size | 50 |
-| Maximum size | 60 |
-| Max copies of the same card id | 4 |
+| Minimum size | 40 |
+| Maximum size | 50 |
+| Max copies of the same card id | 3 |
 
-There is no tactics per-attribute cap. (Earlier prototype used 12 cards /
-3-per-attribute; superseded.)
+Was M4 50–60 / 4 copies. There is no tactics per-attribute cap. (Earlier
+prototype used 12 cards / 3-per-attribute; superseded.)
 
 ### One deck, and every card carries both regions
 
