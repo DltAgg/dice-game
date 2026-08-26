@@ -98,8 +98,7 @@ describe("attacking", () => {
     expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 
-  it("leaves absorbed tokens when the attack has no discards", () => {
-    // Heavy Axe gates on Martial 2 but does not burn tokens; specials still discard.
+  it("burns one Martial when Heavy Axe is declared", () => {
     const state = combatState(0, { martial: 2 });
     const attackerId = creatureIdAt(state, P1, 0);
 
@@ -113,8 +112,8 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({ martial: 2 });
-    expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
+    expect(after.players[P1]?.attributePool).toEqual({ martial: 1 });
+    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
   });
 
   it("still requires every attribute listed on a multi-cost attack", () => {
@@ -133,7 +132,7 @@ describe("attacking", () => {
   });
 
   it("allows only one attack per creature per combat phase", () => {
-    const state = combatState(0, { martial: 2 });
+    const state = combatState(0, { martial: 3 });
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
 

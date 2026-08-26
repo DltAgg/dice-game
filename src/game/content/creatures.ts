@@ -75,6 +75,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         name: "Heavy Axe",
         kind: "basic",
         requires: { martial: 2 },
+        discards: { martial: 1 },
         range: false,
         rulesText: "[Strike 3].",
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },

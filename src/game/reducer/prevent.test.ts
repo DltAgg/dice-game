@@ -254,17 +254,20 @@ describe("true prevent (009)", () => {
     expect(first.creatures[target]?.damagePreventBuffer).toBe(2);
     expect(first.creatures[target]?.damage).toBe(0);
 
-    const refreshed = {
-      ...first,
-      creatures: {
-        ...first.creatures,
-        [attacker]: {
-          ...first.creatures[attacker]!,
-          attacksUsedThisCombat: 0,
-          attributeTokens: { martial: 2 },
+    const refreshed = withTokens(
+      {
+        ...first,
+        creatures: {
+          ...first.creatures,
+          [attacker]: {
+            ...first.creatures[attacker]!,
+            attacksUsedThisCombat: 0,
+          },
         },
       },
-    };
+      attacker,
+      { martial: 2 },
+    );
     const second = resolveOpenChain(
       expectOk(
         advance(refreshed, {

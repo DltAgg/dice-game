@@ -50,7 +50,7 @@ damage still belongs mainly on the Control card / ritual / face / status layer
 
 | Creature | Attr | HP | Basic | Special |
 |---|---|---|---|---|
-| War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; no discard) 3 dmg | War Charge (req Martial+Wild; discard Martial 1) 4 dmg + back-row swap |
+| War Minotaur | Martial | 17 | Heavy Axe (req Martial 2; discard Martial 1) 3 dmg | War Charge (req Martial+Wild; discard Martial 1) 4 dmg + back-row swap |
 | Varcolac | Wild | 13 | Charge (req Wild 1; discard Wild 1) 2 dmg | Coordinated Hunt (req Wild+Martial; discard Wild 1) 4 dmg + next attack +1 |
 | Garuda | Wild | 11 | Dive (req Wild 1, Range; discard Wild 1) 2 dmg | Bombardment (req Wild+Martial; discard Wild 1) 3 dmg + frontline strip Shield |
 | Archmage of the Runes | Arcane | 12 | Arcane Burst (Arcane; discard Arcane 1) 2 dmg + draw | Mystic Overload (Arcane+Darkness; discard Arcane 1) 2 dmg + Energy + generate Arcane |

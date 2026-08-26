@@ -39,6 +39,7 @@ import { usableSymbols } from "../rules/symbols.js";
 import { advance as reduceAdvance } from "./reduce.js";
 import {
   creatureIdAt,
+  eventTypes,
   expectOk,
   handCardIdAt,
   newMatch,
@@ -258,7 +259,9 @@ describe("Whetstone", () => {
         targetId: creatureIdAt(fueled, P2, 0),
       }),
     );
-    expect(after.players[P1]?.attributePool.martial ?? 0).toBe(before + 1);
+    expect(eventTypes(after)).toContain("symbol-generated");
+    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.players[P1]?.attributePool.martial ?? 0).toBe(before);
     expect(usableSymbols(after, P1).filter((s) => s.symbol === "martial")).toHaveLength(0);
   });
 });
