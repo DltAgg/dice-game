@@ -139,7 +139,7 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       defeated: false,
       attacksUsedThisCombat: 0,
       shields: 0,
-      damagePreventBuffer: 0,
+      attackPreventCount: 0,
       nextAttackBonus: 0,
       toxinMarkers: 0,
       equipmentIds: [],

@@ -19,6 +19,7 @@ import {
   eligiblePoolFacesForReplace,
   energyAvailableTo,
   formatAttackCost,
+  formatAttackFuel,
   formatAttackLine,
   formatEffectRegion,
   formatEnergyCost,
@@ -34,7 +35,7 @@ import {
   hasPlayableEffect,
   isFaceCardInPool,
   canAbsorbSymbol,
-  holdsTokens,
+  attackIsFuelled,
   forgeExceedsAttributeLimit,
   isAttributeSymbol,
   isEnabledHandReaction,
@@ -322,7 +323,7 @@ export function MatchBoard() {
       const def = getCreatureDefinition(attacker.definitionId);
       const basic = def !== undefined ? basicAttackOf(def) : undefined;
       if (basic === undefined) return;
-      if (!holdsTokens(state.players[pending.controllerId]?.attributePool ?? {}, basic.requires)) return;
+      if (!attackIsFuelled(state.players[pending.controllerId]?.attributePool ?? {}, basic)) return;
       if (!legalTargetsFor(state, pending.creatureId, basic).includes(creature.id)) return;
       tryDispatch({
         type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
@@ -1166,24 +1167,6 @@ export function MatchBoard() {
       )}
       {pending?.type === "choose-pool-symbol" && !isPendingChooser && (
         <WaitingBanner>Opponent is choosing a pool symbol.</WaitingBanner>
-      )}
-
-      {pending?.type === "remove-toxin-amount" && isPendingChooser && (
-        <RemoveToxinAmountModal
-          state={state}
-          creatureId={pending.creatureId}
-          maxAmount={pending.maxAmount}
-          onConfirm={(amount) =>
-            tryDispatch({
-              type: "RESOLVE_REMOVE_TOXIN_AMOUNT",
-              playerId: pending.controllerId,
-              amount,
-            })
-          }
-        />
-      )}
-      {pending?.type === "remove-toxin-amount" && !isPendingChooser && (
-        <WaitingBanner>Opponent is choosing how many Toxin markers to remove.</WaitingBanner>
       )}
 
       {pending?.type === "optional-overcharge" && isPendingChooser && (
@@ -2259,11 +2242,6 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
       ? "Choose a synthetic symbol from your pool (Catalyst wildcard)."
       : "Waiting for the opponent to choose a pool symbol.";
   }
-  if (state.pendingDecision?.type === "remove-toxin-amount") {
-    return isPendingChooser
-      ? `Choose how many Toxin markers to remove (0–${String(state.pendingDecision.maxAmount)}); that much damage is dealt.`
-      : "Waiting for the opponent to remove Toxin markers.";
-  }
   if (state.pendingDecision?.type === "optional-overcharge") {
     return isPendingChooser
       ? `Accept Overcharge (+${String(state.pendingDecision.amount)} Energy, suppress inherent next roll) or Decline.`
@@ -2933,8 +2911,7 @@ function attackIsArmed(
 ): boolean {
   if (attack.effect === undefined) return false;
   if (creature.attacksUsedThisCombat >= state.config.attacksPerCreaturePerCombat) return false;
-  if (!holdsTokens(state.players[creature.ownerId]?.attributePool ?? {}, attack.requires)) return false;
-  if (attack.discards !== undefined && !holdsTokens(state.players[creature.ownerId]?.attributePool ?? {}, attack.discards)) return false;
+  if (!attackIsFuelled(state.players[creature.ownerId]?.attributePool ?? {}, attack)) return false;
   return legalTargetsFor(state, creature.id, attack).length > 0;
 }
 
@@ -3213,8 +3190,8 @@ function CreatureTile({
               <p className="text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-400">
                 HP {life}/{def.life} · Shield {creature.shields}
-                {creature.damagePreventBuffer > 0
-                  ? ` · Prevent ${creature.damagePreventBuffer}`
+                {creature.attackPreventCount > 0
+                  ? ` · Prevent ${creature.attackPreventCount}`
                   : ""}
                 {creature.nextAttackBonus > 0 ? ` · Next ATK +${creature.nextAttackBonus}` : ""} ·
                 Toxin {creature.toxinMarkers}
@@ -3237,11 +3214,7 @@ function CreatureTile({
                     {attack.range ? " (Range)" : ""}
                     {" · "}
                     <span className="text-[var(--accent)]">
-                      [{formatAttackCost(attack.requires) || "—"}
-                      {attack.discards !== undefined
-                        ? `; discard ${formatAttackCost(attack.discards)}`
-                        : ""}
-                      ]
+                      [{formatAttackFuel(attack) || "—"}]
                     </span>
                   </p>
                 ))}
@@ -3290,8 +3263,8 @@ function CreatureTile({
         <p className="font-medium text-stone-100">{def.name}</p>
         <p className="mt-1 text-xs text-stone-400">
           HP {life}/{def.life} · Shield {creature.shields}
-          {creature.damagePreventBuffer > 0
-            ? ` · Prevent ${creature.damagePreventBuffer}`
+          {creature.attackPreventCount > 0
+            ? ` · Prevent ${creature.attackPreventCount}`
             : ""}{" "}
           · Toxin {creature.toxinMarkers}
         </p>
@@ -3314,11 +3287,7 @@ function CreatureTile({
             <span className="text-stone-500">{attack.kind === "basic" ? "B" : "S"}:</span>{" "}
             {attack.name}{" "}
             <span className="text-[var(--accent)]">
-              [{formatAttackCost(attack.requires) || "—"}
-              {attack.discards !== undefined
-                ? `; discard ${formatAttackCost(attack.discards)}`
-                : ""}
-              ]
+              [{formatAttackFuel(attack) || "—"}]
             </span>
           </li>
         ))}
@@ -3328,9 +3297,10 @@ function CreatureTile({
         <div className="mt-2 flex flex-col gap-1">
           {def.attacks.map((attack) => {
             const armed = attackIsArmed(state, creature, attack);
-            const fuelled =
-              holdsTokens(state.players[creature.ownerId]?.attributePool ?? {}, attack.requires) &&
-              (attack.discards === undefined || holdsTokens(state.players[creature.ownerId]?.attributePool ?? {}, attack.discards));
+            const fuelled = attackIsFuelled(
+              state.players[creature.ownerId]?.attributePool ?? {},
+              attack,
+            );
             return (
               <button
                 key={attack.id}
@@ -5406,62 +5376,6 @@ function ChoosePoolSymbolModal({
   );
 }
 
-function RemoveToxinAmountModal({
-  state,
-  creatureId,
-  maxAmount,
-  onConfirm,
-}: {
-  state: GameState;
-  creatureId: CreatureId;
-  maxAmount: number;
-  onConfirm: (amount: number) => void;
-}) {
-  const [amount, setAmount] = useState(maxAmount);
-  const creature = state.creatures[creatureId];
-  const def =
-    creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Remove Toxin
-        </h2>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Remove Toxin markers from {def?.name ?? "this creature"} and deal that much damage
-          (0–{String(maxAmount)}). Current toxin:{" "}
-          {String(creature?.toxinMarkers ?? 0)}.
-        </p>
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <button
-            type="button"
-            className={btnClass}
-            onClick={() => setAmount((value) => Math.max(0, value - 1))}
-          >
-            −
-          </button>
-          <span className="w-10 text-center text-lg text-stone-100">{String(amount)}</span>
-          <button
-            type="button"
-            className={btnClass}
-            onClick={() => setAmount((value) => Math.min(maxAmount, value + 1))}
-          >
-            +
-          </button>
-        </div>
-        <button
-          type="button"
-          className={`${btnPrimary} mt-4`}
-          onClick={() => onConfirm(amount)}
-        >
-          Confirm ({String(amount)} toxin → {String(amount)} damage)
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function OptionalOverchargeModal({
   state,
   amount,
@@ -5518,7 +5432,9 @@ function OptionalBonusAttackModal({
   const def = creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
   const basic = def !== undefined ? basicAttackOf(def) : undefined;
   const fuelled =
-    creature !== undefined && basic !== undefined && holdsTokens(state.players[creature.ownerId]?.attributePool ?? {}, basic.requires);
+    creature !== undefined &&
+    basic !== undefined &&
+    attackIsFuelled(state.players[creature.ownerId]?.attributePool ?? {}, basic);
   const targets =
     basic !== undefined && fuelled
       ? legalTargetsFor(state, creatureId, basic)
@@ -5539,7 +5455,7 @@ function OptionalBonusAttackModal({
         </p>
         {basic !== undefined && (
           <p className="mt-2 text-xs text-stone-500">
-            {formatAttackLine(basic)} · requires {formatAttackCost(basic.requires)}
+            {formatAttackLine(basic)} · {formatAttackFuel(basic)}
             {!fuelled ? " · not fuelled" : ""}
           </p>
         )}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
 import { asAttackId, asCreatureDefinitionId } from "../model/ids.js";
+import { isNonEmptyRequirement } from "../rules/tokens.js";
 import {
   AEGIS_LINK,
   ALL_CREATURES,
@@ -74,6 +75,26 @@ describe("creature catalogue", () => {
       expect(creature.attacks.some((attack) => attack.kind === "basic")).toBe(true);
       expect(creature.attacks.some((attack) => attack.kind === "special")).toBe(true);
       expect(creature.attacks.every((attack) => attack.effect !== undefined)).toBe(true);
+    }
+  });
+
+  it("gives every attack exactly one of requires or discards", () => {
+    for (const creature of ALL_CREATURES) {
+      for (const attack of creature.attacks) {
+        const hasRequires = isNonEmptyRequirement(attack.requires);
+        const hasDiscards = isNonEmptyRequirement(attack.discards);
+        expect(
+          hasRequires !== hasDiscards,
+          `${creature.name} ${attack.name} must have exactly one of requires or discards`,
+        ).toBe(true);
+        if (attack.kind === "basic") {
+          expect(hasDiscards, `${creature.name} ${attack.name} basic pays discards`).toBe(true);
+        } else {
+          expect(hasRequires, `${creature.name} ${attack.name} special thresholds requires`).toBe(
+            true,
+          );
+        }
+      }
     }
   });
 });

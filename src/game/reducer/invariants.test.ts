@@ -135,6 +135,11 @@ describe("structural invariants across played matches", () => {
           }
           net.set(event.toPlayerId, (net.get(event.toPlayerId) ?? 0) + moved);
         }
+        if (event.type === "attribute-tokens-drained") {
+          const moved = requirementTotal(event.drained);
+          net.set(event.fromPlayerId, (net.get(event.fromPlayerId) ?? 0) - moved);
+          net.set(event.toPlayerId, (net.get(event.toPlayerId) ?? 0) + moved);
+        }
       }
 
       for (const player of Object.values(state.players)) {

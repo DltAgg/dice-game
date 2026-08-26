@@ -126,7 +126,8 @@ describe("016 attribute pile-up", () => {
     const targetId = creatureIdAt(state, P2, 0);
     const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
     const attack = def.attacks.find((a) => a.effect !== undefined && a.kind === "basic")!;
-    const needed = Object.entries(attack.requires).flatMap(([attr, n]) =>
+    const fuel = attack.requires ?? attack.discards ?? {};
+    const needed = Object.entries(fuel).flatMap(([attr, n]) =>
       Array.from({ length: n ?? 0 }, () => attr),
     );
     state = withSymbols(state, P1, needed as never);

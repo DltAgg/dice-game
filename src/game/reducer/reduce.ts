@@ -71,7 +71,14 @@ import {
 } from "../rules/symbols.js";
 import { targetingError } from "../rules/targeting.js";
 import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
-import { holdsTokens, isLegalTokenDiscardPick, removeTokens } from "../rules/tokens.js";
+import {
+  addTokens,
+  attackIsFuelled,
+  holdsTokens,
+  isLegalTokenDiscardPick,
+  isNonEmptyRequirement,
+  removeTokens,
+} from "../rules/tokens.js";
 import type { GameAction } from "./actions.js";
 import { bankAttributeIntoPile } from "./attributeBank.js";
 import {
@@ -94,7 +101,6 @@ import {
   applyDieSlotChoice,
   applyOptionalOverchargeAccept,
   applyPoolSymbolWildcard,
-  applyRemoveToxinForDamage,
   checkVictory,
   clearResourceLocks,
   clearToxinReceiveCapsForOwner,
@@ -229,8 +235,6 @@ function isMatchingPendingResolve(pending: ChoicePending, action: GameAction): b
       return action.type === "RESOLVE_CHOOSE_DIE_SLOT";
     case "choose-pool-symbol":
       return action.type === "RESOLVE_CHOOSE_POOL_SYMBOL";
-    case "remove-toxin-amount":
-      return action.type === "RESOLVE_REMOVE_TOXIN_AMOUNT";
     case "optional-overcharge":
       return action.type === "RESOLVE_OPTIONAL_OVERCHARGE";
     case "optional-bonus-attack":
@@ -332,8 +336,6 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return resolveChooseDieSlot(draft, action.playerId, action.dieId, action.slotIndex);
     case "RESOLVE_CHOOSE_POOL_SYMBOL":
       return resolveChoosePoolSymbol(draft, action.playerId, action.symbolId);
-    case "RESOLVE_REMOVE_TOXIN_AMOUNT":
-      return resolveRemoveToxinAmount(draft, action.playerId, action.amount);
     case "RESOLVE_OPTIONAL_OVERCHARGE":
       return resolveOptionalOvercharge(draft, action.playerId, action.accept);
     case "RESOLVE_OPTIONAL_BONUS_ATTACK":
@@ -780,9 +782,10 @@ function resolveChooseEquipment(
 }
 
 /**
- * Completes a pending token-strip choice. The named pips must total the pending
+ * Completes a pending token-drain choice. The named pips must total the pending
  * amount and be a subset of the target creature owner's attribute pile
- * (spec `016`; creature id is targeting context only).
+ * (spec `016`; creature id is targeting context only). Drain adds them to the
+ * controller's pile.
  */
 function resolveChooseAttributeTokens(
   draft: Draft,
@@ -801,15 +804,18 @@ function resolveChooseAttributeTokens(
     return "INVALID_CHOICE";
   }
 
-  const mode = pending.mode ?? "discard";
+  const mode = pending.mode ?? "drain";
   if (mode === "transfer" || mode === "copy") {
     // Pack-feed creature↔creature is parked for Phase 6 (spec `016`).
     return "INVALID_CHOICE";
   }
 
   const next = removeTokens(pile, discarded);
+  const controllerPile = draft.players[playerId]?.attributePool ?? {};
   patchPlayer(draft, pileOwnerId, { attributePool: next });
+  patchPlayer(draft, playerId, { attributePool: addTokens(controllerPile, discarded) });
   refreshRitualOrientations(draft, pileOwnerId);
+  refreshRitualOrientations(draft, playerId);
   draft.pendingDecision = null;
   emit(draft, {
     type: "choose-attribute-tokens-resolved",
@@ -818,10 +824,11 @@ function resolveChooseAttributeTokens(
     discarded,
   });
   emit(draft, {
-    type: "attribute-tokens-discarded",
-    playerId: pileOwnerId,
+    type: "attribute-tokens-drained",
+    fromPlayerId: pileOwnerId,
+    toPlayerId: playerId,
+    drained: discarded,
     creatureId: pending.creatureId,
-    discarded,
   });
   return resumeAfterEffectPause(draft);
 }
@@ -1242,9 +1249,10 @@ function resolveSplitDamage(
   }
 
   const ignoreShield = pending.ignoreShield ?? 0;
+  const fromAttack = pending.fromAttack === true;
   for (const entry of assignments) {
     if (entry.amount <= 0) continue;
-    dealDamage(draft, entry.creatureId, entry.amount, { ignoreShield });
+    dealDamage(draft, entry.creatureId, entry.amount, { ignoreShield, fromAttack });
   }
 
   if (pending.thenEffects !== undefined) {
@@ -1364,23 +1372,6 @@ function resolveChoosePoolSymbol(
 
   draft.pendingDecision = null;
   applyPoolSymbolWildcard(draft, playerId, symbolId);
-  return resumeAfterEffectPause(draft);
-}
-
-function resolveRemoveToxinAmount(
-  draft: Draft,
-  playerId: PlayerId,
-  amount: number,
-): GameError | null {
-  const pending = draft.pendingDecision;
-  if (pending === null || pending.type !== "remove-toxin-amount") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "PENDING_DECISION";
-  if (!Number.isInteger(amount) || amount < 0 || amount > pending.maxAmount) {
-    return "INVALID_CHOICE";
-  }
-
-  draft.pendingDecision = null;
-  applyRemoveToxinForDamage(draft, playerId, pending.creatureId, amount);
   return resumeAfterEffectPause(draft);
 }
 
@@ -1648,12 +1639,14 @@ function attack(
   const targeting = targetingError(draft, attackerId, attackDefinition, targetId);
   if (targeting !== null) return targeting;
 
-  // Paid from the owner's attribute pile (spec `016`). `requires` is checked;
-  // `discards` burns from the pile. Same-turn bank → attack is legal.
+  // Paid from the owner's attribute pile (spec `016`). XOR: `requires` is
+  // checked (not spent); `discards` is checked and burned. Same-turn bank →
+  // attack is legal.
   const pile = draft.players[playerId]?.attributePool ?? {};
-  const { requires, discards } = attackDefinition;
-  if (!holdsTokens(pile, requires)) return "ATTACK_NOT_FUELLED";
-  if (discards !== undefined && !holdsTokens(pile, discards)) return "ATTACK_NOT_FUELLED";
+  if (!attackIsFuelled(pile, attackDefinition)) return "ATTACK_NOT_FUELLED";
+  const discards = isNonEmptyRequirement(attackDefinition.discards)
+    ? attackDefinition.discards
+    : undefined;
 
   emit(draft, { type: "attack-declared", attackerId, attackId: attackDefinition.id, targetId });
   patchCreature(draft, attackerId, {
@@ -1884,7 +1877,7 @@ function playCard(
   if (
     region.effects.some(
       (effect) =>
-        effect.type === "grant-damage-prevent" || effect.type === "prevent-attack-reflect",
+        effect.type === "grant-attack-prevent" || effect.type === "prevent-attack-reflect",
     )
   ) {
     const top = topChainLink(draft);
@@ -2432,6 +2425,7 @@ function conductLink(draft: Draft, link: ChainLink): void {
           range: attackDef?.range ?? false,
           sourceCreatureId: link.attackerId,
           ignoreShield,
+          fromAttack: true,
           thenEffects: followUps,
         };
         return;
@@ -2449,6 +2443,8 @@ function conductLink(draft: Draft, link: ChainLink): void {
         null,
         null,
         ignoreShield,
+        null,
+        true,
       );
       drainResolution(draft);
       return;

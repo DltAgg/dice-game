@@ -112,6 +112,11 @@ export interface PendingEffect {
   readonly sourceCardInstanceId: CardInstanceId | null;
   /** Attack damage only: skip this many Shield (spec `012`). */
   readonly ignoreShield: number;
+  /**
+   * True when this effect is the conducting attack’s Strike (or Blade Rain
+   * split of that Strike). Attack-prevent consumes only then. Spec `009`.
+   */
+  readonly fromAttack: boolean;
 }
 
 /**
@@ -198,10 +203,11 @@ export type PendingDecision =
       /** How many token pips must be named (already less than the creature's total). */
       readonly amount: number;
       /**
-       * `discard` (default, Siphon) strips the pips. `transfer` / `copy` move
-       * or duplicate them onto `destinationCreatureId` (spec `015`).
+       * `drain` (default, Siphon) takes the pips into the controller’s pile.
+       * `transfer` / `copy` move or duplicate them onto `destinationCreatureId`
+       * (spec `015`, parked).
        */
-      readonly mode?: "discard" | "transfer" | "copy";
+      readonly mode?: "drain" | "transfer" | "copy";
       readonly destinationCreatureId?: CreatureId;
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
@@ -291,6 +297,8 @@ export type PendingDecision =
       readonly range: boolean;
       readonly sourceCreatureId: CreatureId | null;
       readonly ignoreShield?: number;
+      /** Blade Rain of an attack Strike; Extermination leaves this unset. */
+      readonly fromAttack?: boolean;
       readonly thenEffects?: readonly EffectDefinition[];
     }
   | {
@@ -318,12 +326,6 @@ export type PendingDecision =
       /** Eligible symbol instance ids (synthetic-in-pool). */
       readonly eligibleSymbolIds: readonly SymbolInstanceId[];
       readonly deferred: PendingEffect;
-    }
-  | {
-      readonly type: "remove-toxin-amount";
-      readonly controllerId: PlayerId;
-      readonly creatureId: CreatureId;
-      readonly maxAmount: number;
     }
   | {
       readonly type: "optional-overcharge";

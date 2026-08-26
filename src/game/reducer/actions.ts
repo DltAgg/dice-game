@@ -243,15 +243,6 @@ export type GameAction =
       readonly symbolId: SymbolInstanceId;
     }
   /**
-   * Completes Adaptive Toxin absorb: remove `amount` markers (0..max) and deal
-   * that much damage. Spec `013`.
-   */
-  | {
-      readonly type: "RESOLVE_REMOVE_TOXIN_AMOUNT";
-      readonly playerId: PlayerId;
-      readonly amount: number;
-    }
-  /**
    * Completes Overcharge optional Energy + suppress. Spec `013`.
    */
   | {

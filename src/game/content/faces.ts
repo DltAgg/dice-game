@@ -317,11 +317,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     VITAL_SPARK,
     "Vital Spark",
     "luminar",
-    "On roll: [Heal 1] on an allied creature.\nOn absorb: [Prevent 1] on an allied creature.",
+    "On roll: [Heal 1] on an allied creature.\nOn absorb: [Prevent] on an allied creature.",
     {
       onRoll: [{ type: "heal", amount: 1, target: { kind: "most-damaged-ally" } }],
       onAbsorb: [
-        { type: "grant-damage-prevent", amount: 1, target: { kind: "choose-ally" } },
+        { type: "grant-attack-prevent", amount: 1, target: { kind: "choose-ally" } },
       ],
     },
   ),
@@ -478,7 +478,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     ADAPTIVE_TOXIN,
     "Adaptive Toxin",
     "toxin",
-    "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb: [Strip any Toxin]. [Strike equal].",
+    "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb: [Strip 3 Toxin]. [Strike equal].",
     {
       onRoll: [
         {
@@ -490,6 +490,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       onAbsorb: [
         {
           type: "remove-toxin-deal-damage",
+          amount: 3,
           target: { kind: "choose-enemy" },
         },
       ],
@@ -540,10 +541,10 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     HEXBRAND,
     "Hexbrand",
     "corruption",
-    "On roll: you choose an enemy creature; discard 1 attribute from that creature's controller's pile.\nOn absorb: [Destroy Equipment].",
+    "On roll: [Drain 1].\nOn absorb: [Destroy Equipment].",
     {
       onRoll: [
-        { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+        { type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
       ],
       onAbsorb: [{ type: "destroy-equipment", target: { kind: "choose-enemy" } }],
     },
@@ -667,11 +668,11 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     NIGHTWELL,
     "Nightwell",
     "darkness",
-    "On roll: [Generate 1 Darkness].\nOn absorb: discard 1 attribute from the opponent's pile (choose an enemy creature).",
+    "On roll: [Generate 1 Darkness].\nOn absorb: [Drain 1].",
     {
       onRoll: [{ type: "generate-symbol", symbol: "darkness", amount: 1 }],
       onAbsorb: [
-        { type: "discard-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
+        { type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } },
       ],
     },
   ),

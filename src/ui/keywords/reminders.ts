@@ -82,7 +82,11 @@ const STEM_RULES: readonly StemRule[] = [
   },
   {
     test: (body) => /^Prevent(?:\s+\d+)?$/i.test(body),
-    reminder: "Prevent next N damage before Shield.",
+    reminder: "Prevent the next attack against that creature (before Shield).",
+  },
+  {
+    test: (body) => /^Drain(?:\s+\d+)?$/i.test(body),
+    reminder: "Take N attribute tokens from the chosen enemy's pile into yours.",
   },
   {
     test: (body) => /^Convert(?:\s+\d+)?$/i.test(body),

@@ -106,13 +106,13 @@ export type EffectDefinition =
    */
   | { readonly type: "negate-ritual" }
   /**
-   * Strip up to `amount` attribute tokens from the target. When the creature
-   * holds a mix and more tokens than `amount`, opens `choose-attribute-tokens`.
-   * Otherwise discards remaining / the only attribute pile (no real choice).
-   * Whiffs legally if none remain. Spec `011`.
+   * Drain up to `amount` attribute tokens from the target creature's controller's
+   * pile into the effect controller's pile. Mixed leftover piles open
+   * `choose-attribute-tokens`. Homogeneous / take-all remaining are
+   * deterministic. Whiffs legally if none remain. Spec `011`.
    */
   | {
-      readonly type: "discard-attribute-tokens";
+      readonly type: "drain-attribute-tokens";
       readonly amount: number;
       readonly target: TargetSelector;
     }
@@ -121,10 +121,11 @@ export type EffectDefinition =
    */
   | { readonly type: "destroy-ritual"; readonly target: TargetSelector }
   /**
-   * Add to a creature’s prevent-next-N damage buffer (before Shields). Spec `009`.
+   * Add to a creature’s prevent-next-N-**attacks** counter (before Shields).
+   * Spec `009`. Amount is how many incoming attack instances to cancel.
    */
   | {
-      readonly type: "grant-damage-prevent";
+      readonly type: "grant-attack-prevent";
       readonly amount: number;
       readonly target: TargetSelector;
     }
@@ -295,10 +296,14 @@ export type EffectDefinition =
       readonly target: TargetSelector;
     }
   /**
-   * Pending: choose how many Toxin markers to remove from the target (0..current);
-   * deal that much damage. Spec `013`.
+   * Remove up to `amount` Toxin markers from the target (or all remaining if
+   * fewer) and deal that much damage. Spec `013`.
    */
-  | { readonly type: "remove-toxin-deal-damage"; readonly target: TargetSelector }
+  | {
+      readonly type: "remove-toxin-deal-damage";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
   /**
    * Pending: put `amount` Corruption marker(s) on an opposing synthetic face
    * slot. Spec `013`.

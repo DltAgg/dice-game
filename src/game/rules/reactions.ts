@@ -69,7 +69,7 @@ export function preventEffectsLegalAgainstChain(
 ): boolean {
   const needsTopAttackPrevent = effects.some(
     (effect) =>
-      effect.type === "grant-damage-prevent" || effect.type === "prevent-attack-reflect",
+      effect.type === "grant-attack-prevent" || effect.type === "prevent-attack-reflect",
   );
   if (needsTopAttackPrevent) {
     const top = topChainLinkOf(state);

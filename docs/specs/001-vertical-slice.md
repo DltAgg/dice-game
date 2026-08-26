@@ -32,7 +32,7 @@ forges, and passes the turn. Reducing an opponent's squad to zero wins.
 | At end of turn an absorbed attribute becomes a token; an absorbed Shield grants a shield immediately | §7, decision of 2026-08-11 |
 | Engine abilities are paid from the shared symbol pool | §17 |
 | Attacks are paid from the attacker's own absorbed tokens | §7, decision of 2026-08-07 |
-| An attack's `requires` is checked, not spent; only `discards` is burned | decision of 2026-08-07 |
+| An attack has exactly one of `requires` (threshold) or `discards` (burn) | physical-play simplification |
 | A shield prevents 1 damage once, stacks, and persists across turns | decision of 2026-08-07 |
 | The player chooses the order engine effects resolve in | §17 |
 | A creature makes at most one attack per Combat phase | §7 |

@@ -111,7 +111,7 @@ resolve            → stays in turn pool   → `[Requires]` spends this turn
 | Surface | Paid from | Bible |
 |---|---|---|
 | Engine ability | unabsorbed symbols in the turn pool | §17 |
-| Attack | owner’s attribute pile (`requires` check; `discards` burn) | §7, §31 |
+| Attack | owner’s attribute pile (`requires` **or** `discards`, never both) | §7, §31 |
 | Ritual Active-when / Spend | owner’s attribute pile | layouts / `002` |
 
 - Shield, Toxin, and other **creature** tokens remain on creatures.
@@ -437,20 +437,20 @@ Legal response **kind** depends on the top link:
 
 ### Damage prevention
 
-**Status:** `DECIDED` · 2026-08-12 · full card wiring in
+**Status:** `DECIDED` · 2026-08-26 · attack-instance prevent in
 `docs/specs/009-true-prevent.md`
 
-- **Vocabulary (both):** (1) “prevent next N damage” **buffers**, and
-  (2) prevent **N attacks** (whole attack instances). Concrete cards pick one.
-- **Apply order when damage lands:** prevention → Shield → HP (Life).
-- **Expiry of unused prevent:** **none for now** (buffers / attack-prevents
-  persist until consumed). Expiry must live in `GameRulesConfig` (or equivalent
-  data) so a later design can add end-of-turn / end-of-chain cleanup without a
-  reducer rewrite.
-- **Prismatic Barrier** (“Prevent 2 damage”) — **DECIDED** 2026-08-12:
-  create a **prevent-next-2-damage buffer** on the **ally targeted by the
-  attack** being responded to (prevent reaction; not a free retarget). Migrates
-  off the `grant-shield ×2` approximation in `009`.
+- **`[Prevent]`** grants `attackPreventCount` on a creature (usually 1). The
+  next **attack** against that creature is cancelled whole (before Shield).
+  Unused charges persist until consumed (`preventExpiry: "none"`).
+- Damage-prevent **buffers** (`damagePreventBuffer` / `grant-damage-prevent`)
+  are **gone** — they mixed with Shield at the table.
+- **Apply order when attack damage lands:** attack-prevent → Shield → HP.
+- Non-attack damage (toxin, face Strike, effect damage) does not consume
+  attack-prevent.
+- **Prismatic Barrier / Sidestep** — **DECIDED** 2026-08-26: `[Prevent]` on
+  the **ally targeted by the attack** being responded to (`grant-attack-prevent`
+  1, `chain-attack-target`).
 
 Attack chain links open a reaction window so prevent reactions can respond;
 negate effects refuse attack links.
@@ -477,7 +477,8 @@ returns to A); after Pass×2 the chain resolves and A’s turn does **not** end.
 
 Toxin counters are tokens on a creature. At the start of that creature's
 owner's turn, the creature takes 1 damage per Toxin counter it holds. Counters
-persist until something removes them. Adaptive Toxin’s “remove any number → damage” absorb and toxin receive cap are
+persist until something removes them. Adaptive Toxin’s absorb is `[Strip 3 Toxin].
+[Strike equal]` (fixed 3, no choose-count pending) and toxin receive cap are
 wired in spec `013`.
 
 ---
@@ -730,14 +731,16 @@ Infection roll, Instinct absorb) are wired in `013-face-markers.md`.
 
 **Status:** `OPEN` — not blocking (cap still undecided)
 
-**Why it matters.** Tokens persist and are spent by attacks that name a
-discard, and by strip effects (`discard-attribute-tokens`, spec `011`). A
-creature that survives long enough can still accumulate without a hard cap.
+**Why it matters.** Tokens persist and are spent by attacks that name
+`discards`, and by drain effects (`drain-attribute-tokens`, spec `011`). A
+player that banks long enough can still accumulate without a hard cap.
 
-**The question.** Is there a cap per creature, or per attribute?
+**The question.** Is there a cap per player, or per attribute?
 
-**DECIDED (playtest, 2026-08-20).** Effects may strip tokens. Siphon Sigil
-proves `discard-attribute-tokens`: after `choose-enemy`, a mixed pile with
+**DECIDED (playtest, 2026-08-26).** Attribute tokens live on the player pile.
+Effects **drain** them (`[Drain N]`): take from the opponent’s pile into
+yours. You cannot Strip Martial/Arcane off a creature. Siphon Sigil proves
+`drain-attribute-tokens`: after `choose-enemy`, a mixed pile with
 more tokens than `amount` opens `choose-attribute-tokens` (controller names
 which pips). Homogeneous leftover piles and “take all remaining” are
 deterministic (no real choice). Bible §20 / §25.

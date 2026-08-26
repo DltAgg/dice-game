@@ -72,6 +72,7 @@ function pushEffect(
     sourceSlotIndex,
     sourceCardInstanceId,
     ignoreShield: 0,
+    fromAttack: false,
   });
 }
 
