@@ -215,7 +215,6 @@ describe("on-roll-symbol equipment", () => {
     let rolled: GameState = {
       ...equipped,
       activePlayerId: P2,
-      energy: { holderId: P2, value: 5 },
       phase: "roll",
       dice: { ...equipped.dice, [dieId]: { ...die, slots } },
     };
@@ -239,7 +238,6 @@ describe("on-toxin-damage equipment", () => {
     const asP2 = {
       ...damaged,
       activePlayerId: P2,
-      energy: { holderId: P2, value: 3 },
       phase: "actions" as const,
     };
     const after = expectOk(advance(asP2, { type: "END_TURN", playerId: P2 }));
@@ -444,10 +442,9 @@ describe("on-roll / on-absorb faces", () => {
     expect(state.players[P1]?.hand.length).toBe(handBefore + 1);
   });
 
-  it("gains Energy when Conversion Rune is absorbed", () => {
+  it("generates Corruption when Conversion Rune is absorbed", () => {
     let state = installFace(newMatch(), CONVERSION_RUNE);
-    const energyBefore =
-      state.energy.holderId === P1 ? state.energy.value : 0;
+    const corruptionBefore = state.players[P1]?.attributePool.corruption ?? 0;
     state = rollShowingSlot(state, 0);
     if (state.pendingDecision?.type === "convert-symbols") {
       state = expectOk(
@@ -455,8 +452,7 @@ describe("on-roll / on-absorb faces", () => {
       );
     }
     expect(state.players[P1]?.attributePool.arcane ?? 0).toBeGreaterThanOrEqual(1);
-    expect(state.energy.holderId).toBe(P1);
-    expect(state.energy.value).toBe(energyBefore + 1);
+    expect(state.players[P1]?.attributePool.corruption ?? 0).toBe(corruptionBefore + 1);
   });
 
   it("heals on Vital Spark roll and prevents on absorb", () => {
@@ -554,7 +550,6 @@ describe("on-take-damage reduce", () => {
     state = {
       ...state,
       activePlayerId: P2,
-      energy: { holderId: P2, value: 5 },
       phase: "actions",
     };
     state = withTokens(state, attackerId, { martial: 2 });
@@ -606,7 +601,8 @@ describe("on-discard continuous ritual", () => {
       P1,
       { arcane: 1, darkness: 1 },
     );
-    ready = withEnergy(withHand(withPhase(ready, "actions"), P1, [ECLIPSE]), P1, 10);
+    ready = withHand(withPhase(ready, "actions"), P1, [ECLIPSE]);
+    ready = withAttributePool(ready, P1, { arcane: 1, darkness: 4 });
 
     const afterEclipse = expectOk(
       advance(ready, {
@@ -628,7 +624,7 @@ describe("on-discard continuous ritual", () => {
     expect(darkness).toHaveLength(0);
     const ritual = discarded.cards[ritualId];
     expect(ritual?.ritualOrientation).toBe("ready");
-    expect(discarded.players[P1]?.attributePool).toEqual({ arcane: 1, darkness: 2 });
+    expect(discarded.players[P1]?.attributePool).toMatchObject({ arcane: 1, darkness: 2 });
   });
 });
 
@@ -802,7 +798,11 @@ describe("Toxic Blessing arm-attack-toxin", () => {
 
 describe("Hunter's Collar on-absorb Wild", () => {
   it("generates Martial when the bearer absorbs Wild", () => {
-    const base = actionsReady([HUNTERS_COLLAR]);
+    const base = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [HUNTERS_COLLAR]),
+      P1,
+      { wild: 3 },
+    );
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = equip(base, bearerId);
     const symbolId = asSymbolInstanceId("sym-collar-wild");
@@ -1027,7 +1027,6 @@ describe("on-toxin-damage opponent filter", () => {
     const asP2 = {
       ...poisoned,
       activePlayerId: P2,
-      energy: { holderId: P2, value: 3 },
       phase: "actions" as const,
     };
 

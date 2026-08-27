@@ -13,6 +13,7 @@ import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols.js";
 import {
   handOf,
+  playCostTotal,
   replayableGraveyardTactics,
   ritualsOf,
   searchableInDeck,
@@ -213,7 +214,12 @@ function playCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy)
 
     const definition = getCard(card.cardId);
     if (definition?.effect === undefined) continue;
-    if (definition.energyCost > current.energy.value) continue;
+    if (playCostTotal(definition) > 0) {
+      const pool = current.players[playerId]?.attributePool ?? {};
+      const cost = definition.playCost ?? {};
+      const shortfall = Object.entries(cost).some(([attr, n]) => (pool[attr as keyof typeof pool] ?? 0) < (n ?? 0));
+      if (shortfall) continue;
+    }
 
     const targetId = mostDamaged(current, playerId)?.id;
     const result = advance(current, {
@@ -243,7 +249,12 @@ function forgeCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy
 
     const definition = getCard(card.cardId);
     if (definition === undefined) continue;
-    if (definition.energyCost > current.energy.value) continue;
+    if (playCostTotal(definition) > 0) {
+      const pool = current.players[playerId]?.attributePool ?? {};
+      const cost = definition.playCost ?? {};
+      const shortfall = Object.entries(cost).some(([attr, n]) => (pool[attr as keyof typeof pool] ?? 0) < (n ?? 0));
+      if (shortfall) continue;
+    }
 
     const plan = shieldSlotsFor(current, playerId, definition.forge.faces);
     if (plan === undefined) continue;
@@ -337,7 +348,7 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "search-graveyard") {
-    const picks = searchableInGraveyard(state, pending.controllerId, pending.maxEnergyCost).slice(
+    const picks = searchableInGraveyard(state, pending.controllerId, pending.maxPlayCost).slice(
       0,
       pending.amount,
     );

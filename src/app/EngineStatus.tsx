@@ -101,8 +101,8 @@ export function EngineStatus() {
           <Row label="Phase" value={state.phase} />
           <Row label="Turn" value={String(state.turn)} />
           <Row
-            label="Energy"
-            value={`${state.energy.holderId} holds ${String(state.energy.value)}`}
+            label="Attribute pile (p1)"
+            value={JSON.stringify(state.players[P1]?.attributePool ?? {})}
           />
           <Row label="Symbols rolled" value={rolledSymbols || "none"} />
           <Row label="Hand size (p1)" value={String(handSize)} />

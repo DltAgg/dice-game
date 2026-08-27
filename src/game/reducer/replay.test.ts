@@ -16,7 +16,7 @@ const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
   withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
 
 describe("Paradox GY replay", () => {
-  it("replays a GY tactic's effect without paying Energy or Requires", () => {
+  it("replays a GY tactic's effect without paying play cost or Requires", () => {
     const ready = actionsReady([PARADOX, ECLIPSE, ECLIPSE, ECLIPSE]);
     const paradoxId = handCardIdAt(ready, P1, 0);
     const eclipseId = handCardIdAt(ready, P1, 1);
@@ -55,7 +55,7 @@ describe("Paradox GY replay", () => {
       }),
     );
     expect(activated.pendingDecision?.type).toBe("replay-graveyard-tactic");
-    expect(activated.energy.value).toBe(7);
+    expect(activated.players[P1]?.attributePool.darkness).toBe(7);
 
     const replayed = expectOk(
       advance(activated, {

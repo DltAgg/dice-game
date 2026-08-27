@@ -164,9 +164,9 @@ describe("016 attribute pile-up", () => {
   });
 
   it("ritual becomes ready when the owner's pile meets Active-when", () => {
-    let state = withHand(withEnergy(withPhase(newMatch(), "actions"), P1, 10), P1, [
-      LIVING_LIBRARY,
-    ]);
+    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]), P1, {
+      arcane: 2,
+    });
     state = expectOk(
       advance(state, {
         type: "PLAY_CARD",

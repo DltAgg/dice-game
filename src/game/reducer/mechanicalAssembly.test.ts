@@ -214,11 +214,11 @@ describe("Assembly Line", () => {
 });
 
 describe("Flywheel", () => {
-  it("gains Energy on roll and generates Shield on absorb", () => {
-    const seeded = withEnergy(installFace(newMatch(), FLYWHEEL), P1, 5);
+  it("generates Mechanical on roll and generates Shield on absorb", () => {
+    const seeded = installFace(newMatch(), FLYWHEEL);
+    const before = seeded.players[P1]?.attributePool.mechanical ?? 0;
     const after = rollShowingSlot(seeded, 0);
-    expect(after.energy).toEqual({ holderId: P1, value: 6 });
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(before + 1);
 
     const shields = usableSymbols(after, P1).filter(
       (s) => s.symbol === SHIELD && s.sourceDieId === null,
@@ -281,7 +281,11 @@ describe("Governor", () => {
 
 describe("Spare Cog", () => {
   it("generates 1 Mechanical when played", () => {
-    const ready = actionsReady([SPARE_COG]);
+    const ready = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [SPARE_COG]),
+      P1,
+      { mechanical: 3 },
+    );
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -296,7 +300,7 @@ describe("Spare Cog", () => {
 
 describe("Die Press", () => {
   it("pauses to forge 2 Mechanical faces when the pool has Mechanical + Mechanical", () => {
-    const ready = withAttributePool(actionsReady([DIE_PRESS]), P1, { mechanical: 2 });
+    const ready = withAttributePool(actionsReady([DIE_PRESS]), P1, { mechanical: 5 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -336,7 +340,11 @@ describe("Die Press", () => {
   });
 
   it("refuses without two Mechanical in the pool", () => {
-    const ready = withSymbols(actionsReady([DIE_PRESS]), P1, ["mechanical"]);
+    const ready = withSymbols(
+      withHand(withPhase(newMatch(), "actions"), P1, [DIE_PRESS]),
+      P1,
+      ["mechanical"],
+    );
     const refused = advance(ready, {
       type: "PLAY_CARD",
       playerId: P1,
@@ -350,26 +358,23 @@ describe("Die Press", () => {
 describe("Foundry", () => {
   const mechanicalFace = GEAR;
 
-  it("gains Energy when a controller creature absorbs Mechanical", () => {
+  it("generates Mechanical when a controller creature absorbs Mechanical", () => {
     const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
-    const seeded = withEnergy(installFace(state, mechanicalFace), P1, 5);
+    const seeded = installFace(state, mechanicalFace);
+    const before = seeded.players[P1]?.attributePool.mechanical ?? 0;
     const after = rollShowingSlot(seeded, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(3);
-    expect(after.energy).toEqual({ holderId: P1, value: 6 });
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(before + 1);
   });
 
   it.skip("gains Energy when an allied ritual absorbs Mechanical", () => {
     // Parked: ABSORB_SYMBOL_TO_RITUAL removed (spec 016).
   });
 
-  it("does not gain Energy when the opponent absorbs Mechanical", () => {
+  it("does not generate extra Mechanical when the opponent absorbs Mechanical", () => {
     const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
+    const before = state.players[P1]?.attributePool.mechanical ?? 0;
     const seeded: GameState = {
-      ...withEnergy(
-        withSymbols(withPhase(state, "actions"), P2, ["mechanical"], "rolled"),
-        P1,
-        5,
-      ),
+      ...withSymbols(withPhase(state, "actions"), P2, ["mechanical"], "rolled"),
       activePlayerId: P2,
     };
     const mechanical = Object.values(seeded.symbols).find(
@@ -385,17 +390,15 @@ describe("Foundry", () => {
         symbolId: mechanical.id,
       }),
     );
-    expect(after.energy).toEqual({ holderId: P1, value: 5 });
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(before);
   });
 });
 
 describe("Piston", () => {
-  it("generates Mechanical on roll and gains Energy on absorb", () => {
-    const seeded = withEnergy(installFace(newMatch(), PISTON), P1, 5);
+  it("generates Mechanical on roll and on absorb", () => {
+    const seeded = installFace(newMatch(), PISTON);
     const after = rollShowingSlot(seeded, 0);
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-    expect(after.energy).toEqual({ holderId: P1, value: 6 });
   });
 });
 
@@ -403,7 +406,11 @@ describe("Mechanical combo wave 2", () => {
   const mechanicalFace = GEAR;
 
   it("Blueprint generates Mechanical and arms a forge discount", () => {
-    const ready = actionsReady([BLUEPRINT]);
+    const ready = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [BLUEPRINT]),
+      P1,
+      { mechanical: 2 },
+    );
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -447,7 +454,9 @@ describe("Mechanical combo wave 2", () => {
   });
 
   it("Servomotor generates Mechanical when the bearer absorbs Mechanical", () => {
-    const ready = actionsReady([SERVOMOTOR]);
+    const ready = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [SERVOMOTOR]), P1, {
+      mechanical: 2,
+    });
     const equipped = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -475,7 +484,9 @@ describe("Mechanical combo wave 2", () => {
   });
 
   it("Servomotor generates Mechanical only once per turn (no absorb loop)", () => {
-    const ready = actionsReady([SERVOMOTOR]);
+    const ready = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [SERVOMOTOR]), P1, {
+      mechanical: 2,
+    });
     const equipped = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -532,7 +543,7 @@ describe("Mechanical combo wave 2", () => {
 
   it("Stamp requires Mechanical and reapplies a rolled die's modifiers", () => {
     let ready = withAttributePool(installFace(actionsReady([STAMP]), mechanicalFace), P1, {
-      mechanical: 1,
+      mechanical: 4,
     });
     ready = withPhase(rollShowingSlot(ready, 0), "actions");
     // Extra Mechanical still available for [Requires] after the roll pip is in the pool.
@@ -549,7 +560,7 @@ describe("Mechanical combo wave 2", () => {
   });
 
   it("Coupling requires Mech×2 and arms resolve-next-face-effect-twice", () => {
-    const ready = withAttributePool(actionsReady([COUPLING]), P1, { mechanical: 2 });
+    const ready = withAttributePool(actionsReady([COUPLING]), P1, { mechanical: 5 });
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",

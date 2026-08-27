@@ -59,11 +59,11 @@ describe("match setup", () => {
     }
   });
 
-  it("starts the marker with the first player at the configured Energy", () => {
+  it("starts each player with an empty attribute pile", () => {
     const state = newMatch();
 
-    expect(state.energy.holderId).toBe(P1);
-    expect(state.energy.value).toBe(DEFAULT_RULES_CONFIG.energy.startingEnergy);
+    expect(state.players[P1]?.attributePool).toEqual({});
+    expect(state.players[P2]?.attributePool).toEqual({});
   });
 
   it("produces byte-identical state for the same setup", () => {

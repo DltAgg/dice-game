@@ -49,18 +49,13 @@ export type EffectDefinition =
     }
   /**
    * Choose up to `amount` cards in the controller's graveyard and return them
-   * to hand (Eternal Darkness). Optional `maxEnergyCost` (Shadow Echo).
+   * to hand (Eternal Darkness). Optional `maxPlayCost` (Shadow Echo).
    */
   | {
       readonly type: "search-graveyard";
       readonly amount: number;
-      readonly maxEnergyCost?: number;
+      readonly maxPlayCost?: number;
     }
-  /**
-   * Moves the shared marker in the controller's favour. Bible §18: this is the
-   * one effect that buys a longer turn rather than spending one.
-   */
-  | { readonly type: "gain-energy"; readonly amount: number }
   /**
    * Sends one equipment on the target creature to its owner's graveyard.
    * After the creature is known, 2+ attached pieces open `choose-equipment`
@@ -187,16 +182,6 @@ export type EffectDefinition =
       readonly when: EffectCondition;
       readonly then: readonly EffectDefinition[];
     }
-  /**
-   * Opponent loses Energy on the shared track without the controller gaining a
-   * spend. No-op when the opponent does not hold the marker or holds 0.
-   */
-  | { readonly type: "lose-energy"; readonly amount: number; readonly player: "opponent" }
-  /**
-   * Move the marker `amount` toward the controller (opponent-held Energy
-   * decreases). No-op when the opponent holds 0 / does not hold the marker.
-   */
-  | { readonly type: "transfer-energy"; readonly amount: number }
   /** Pending: choose an owned retainable die and mark it retained. */
   | { readonly type: "retain-die" }
   /**
@@ -341,10 +326,14 @@ export type EffectDefinition =
    */
   | { readonly type: "copy-appeared-synthetic-onroll" }
   /**
-   * Pending optional: gain `amount` Energy and mark the source slot
+   * Pending optional: bank `amount` of `symbol` and mark the source slot
    * Overcharged (suppress inherent next roll). Spec `013`.
    */
-  | { readonly type: "optional-overcharge-energy"; readonly amount: number }
+  | {
+      readonly type: "optional-overcharge";
+      readonly symbol: SymbolType;
+      readonly amount: number;
+    }
   /**
    * The next face-sourced effect (`sourceDieId` set) the controller resolves
    * this turn is applied twice. Spec `013`.

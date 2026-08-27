@@ -29,6 +29,7 @@ import {
   withActivePlayer,
   withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withTokens,
 } from "../testing/scenario.js";
@@ -72,11 +73,15 @@ function withOpponentRitual(
 describe("Siphon Sigil (drain-attribute-tokens)", () => {
   it("prompts which tokens to drain when the enemy has a mix", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
-    const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, {
-      darkness: 1,
-      martial: 1,
-      wild: 1,
-    });
+    const ready = withAttributePool(
+      withTokens(withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]), targetId, {
+        darkness: 1,
+        martial: 1,
+        wild: 1,
+      }),
+      P1,
+      { arcane: 3 },
+    );
     const opened = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -125,7 +130,11 @@ describe("Siphon Sigil (drain-attribute-tokens)", () => {
   });
 
   it("whiffs legally when the enemy has no tokens", () => {
-    const ready = actionsReady([SIPHON_SIGIL]);
+    const ready = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]),
+      P1,
+      { arcane: 3 },
+    );
     const targetId = creatureIdAt(ready, P2, 0);
     const opened = expectOk(
       advance(ready, {
@@ -149,7 +158,13 @@ describe("Siphon Sigil (drain-attribute-tokens)", () => {
 
   it("drains all remaining when fewer than amount", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
-    const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, { arcane: 1 });
+    const ready = withAttributePool(
+      withTokens(withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]), targetId, {
+        arcane: 1,
+      }),
+      P1,
+      { arcane: 3 },
+    );
     const opened = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -170,7 +185,13 @@ describe("Siphon Sigil (drain-attribute-tokens)", () => {
 
   it("drains a homogeneous pile without a token prompt", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
-    const ready = withTokens(actionsReady([SIPHON_SIGIL]), targetId, { martial: 3 });
+    const ready = withAttributePool(
+      withTokens(withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]), targetId, {
+        martial: 3,
+      }),
+      P1,
+      { arcane: 3 },
+    );
     const after = expectOk(
       advance(resolveOpenChain(expectOk(
         advance(ready, {
@@ -287,10 +308,14 @@ describe("Dispel Circle (destroy-ritual)", () => {
 
 describe("Seal the Rite (negate-ritual)", () => {
   it("negates an opposing ritual place", () => {
-    const state = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]), P1, 10),
+    const state = withEnergy(
+      withHand(
+        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]), P1, 10),
+        P2,
+        [SEAL_THE_RITE],
+      ),
       P2,
-      [SEAL_THE_RITE],
+      10,
     );
     const opened = expectOk(
       advance(state, {
@@ -341,10 +366,14 @@ describe("Seal the Rite (negate-ritual)", () => {
 
 describe("Fade (negate-card any)", () => {
   it("negates the top card link from hand", () => {
-    const state = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+    const state = withEnergy(
+      withHand(
+        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+        P2,
+        [FADE],
+      ),
       P2,
-      [FADE],
+      10,
     );
     const opened = expectOk(
       advance(state, {

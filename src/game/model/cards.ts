@@ -88,8 +88,6 @@ export interface ForgeRegion {
  */
 export interface EffectRegion {
   readonly requires?: SymbolRequirement;
-  /** An extra Energy cost inside the effect, on top of the header cost. */
-  readonly additionalEnergy?: number;
   readonly effects: readonly EffectDefinition[];
 }
 
@@ -121,11 +119,11 @@ export type StandingTrigger =
       readonly bearerRelation?: "self" | "left-ally";
     }
   /**
-   * Reduce PLAY_CARD / ritual place / equip / overload Energy (not FORGE).
+   * Reduce PLAY_CARD / ritual place / equip / overload pile cost (not FORGE).
    * Min cost 0. `oncePerTurn` spends a host key on the first matching play.
    */
   | {
-      readonly type: "energy-cost-discount";
+      readonly type: "play-cost-discount";
       readonly amount: number;
       readonly oncePerTurn?: boolean;
       readonly cardTypes?: readonly CardType[];
@@ -278,11 +276,6 @@ export interface RitualRegion {
    * `additionalEnergy`). Does not apply to standing-only fire while ready.
    */
   readonly spend?: SymbolRequirement;
-  /**
-   * Extra Energy paid on ACTIVATE_RITUAL (Runic Nullification’s “Pay 2
-   * Energy”), on top of the header cost paid when placing the ritual.
-   */
-  readonly additionalEnergy?: number;
   readonly effects: readonly EffectDefinition[];
   /**
    * Standing triggers while this continuous ritual is `ready` on the field
@@ -296,16 +289,11 @@ export interface CardDefinition {
   readonly id: CardId;
   readonly name: string;
   /**
-   * Header Energy cost. Fixed cards pay exactly this; variable (`?`) cards pay
-   * at least this much (always 1) and may pay more — see `variableEnergy`.
+   * Header play/forge cost — burned from the attribute pile when playing or
+   * forging. Instants print this as `[Spend: …]` above the effect body;
+   * equipment / overload / ritual place share the same pile gate.
    */
-  readonly energyCost: number;
-  /**
-   * Figma `?` cost: pay `energyCost` or more (declared as `energyPaid` on
-   * PLAY_CARD / FORGE_CARD). Extra spend is available for effects that scale
-   * off the amount paid once that vocabulary exists.
-   */
-  readonly variableEnergy?: boolean;
+  readonly playCost?: SymbolRequirement;
   readonly type: CardType;
   readonly subtypes: readonly CardSubtype[];
   /**

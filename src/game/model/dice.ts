@@ -86,8 +86,8 @@ export interface FaceCardDefinition {
    */
   readonly activated?: {
     readonly kind: "remove-corruption-face";
-    readonly energyBase: number;
-    readonly energyPerCorruptionOnDie: number;
+    readonly spendBase: number;
+    readonly spendPerCorruptionOnDie: number;
   };
   /**
    * Stay-on-slot while installed. Forbidden Heritage never yields to a forge

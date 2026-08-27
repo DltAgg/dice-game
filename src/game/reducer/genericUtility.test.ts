@@ -262,7 +262,7 @@ describe("Sift", () => {
 });
 
 describe("Second Wind", () => {
-  it("gains 1 Energy and offers a peek when the deck has a card", () => {
+  it("gains 1 Arcane and offers a peek when the deck has a card", () => {
     const ready = seedDeck(actionsReady([SECOND_WIND, ECLIPSE]), [1]);
     const played = expectOk(
       play(ready, {
@@ -271,7 +271,7 @@ describe("Second Wind", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(played.energy).toEqual({ holderId: P1, value: 9 });
+    expect(played.players[P1]?.attributePool.arcane).toBe(9);
     expect(played.pendingDecision?.type).toBe("peek-deck");
     const after = expectOk(
       play(played, { type: "RESOLVE_PEEK_DECK", playerId: P1, putOnBottom: true }),

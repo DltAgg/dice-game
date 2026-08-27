@@ -3,7 +3,7 @@ import type { CardDefinition, ForgeRegion } from "../model/cards.js";
 import { asCardId } from "../model/ids.js";
 import {
   formatEffectRegion,
-  formatEnergyCost,
+  formatPlayCostLine,
   formatForgeLine,
   formatRequirementLine,
   formatTypeLine,
@@ -15,7 +15,7 @@ function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
   return {
     id: asCardId("card-example"),
     name: "Example",
-    energyCost: 1,
+    playCost: { arcane: 1 },
     type: "instant",
     subtypes: [],
     attribute,
@@ -67,7 +67,7 @@ describe("English card printing", () => {
       subtypes: ["instant"],
       ritual: { activeWhen: { arcane: 2 }, effects: [] },
     });
-    expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Arcane]");
+    expect(formatRequirementLine(card)).toBe("[Active when: 2 x Arcane]");
   });
 
   it("prints a single-token Active when without repeating the attribute", () => {
@@ -97,7 +97,7 @@ describe("English card printing", () => {
       effect: { requires: { mechanical: 2 }, effects: [] },
     });
     expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Spend: Mechanical + Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Spend: 2 x Mechanical]");
   });
 
   it("prints None when the card forges only", () => {
@@ -112,7 +112,8 @@ describe("English card printing", () => {
       ritual: { activeWhen: { darkness: 2 }, effects: [] },
     });
     expect(formatEffectRegion(card)).toEqual([
-      "[Active when: Darkness + Darkness]",
+      "[Spend: Arcane]",
+      "[Active when: 2 x Darkness]",
       "Return cards from your graveyard to your hand.",
     ]);
   });
@@ -129,18 +130,26 @@ describe("English card printing", () => {
       },
     });
     expect(formatEffectRegion(card)).toEqual([
-      "[Active when: Arcane + Arcane]",
-      "[Spend: Arcane + Arcane]",
+      "[Spend: Arcane]",
+      "[Active when: 2 x Arcane]",
+      "[Spend: 2 x Arcane]",
       "[Search 2] Instant or Ritual cards.",
     ]);
   });
 
-  it("prints a fixed Energy cost", () => {
-    expect(formatEnergyCost(exampleCard({ energyCost: 1 }))).toBe("1");
-    expect(formatEnergyCost(exampleCard({ energyCost: 3 }))).toBe("3");
+  it("prints a fixed play cost line", () => {
+    expect(formatPlayCostLine(exampleCard({ playCost: { arcane: 1 } }))).toBe(
+      "[Spend: Arcane]",
+    );
+    expect(formatPlayCostLine(exampleCard({ playCost: { arcane: 3 } }))).toBe(
+      "[Spend: 3 x Arcane]",
+    );
   });
 
-  it("prints ? for variable Energy", () => {
-    expect(formatEnergyCost(exampleCard({ energyCost: 1, variableEnergy: true }))).toBe("?");
+  it("omits the play cost line when playCost is absent", () => {
+    const card = exampleCard();
+    const { playCost, ...withoutCost } = card;
+    void playCost;
+    expect(formatPlayCostLine(withoutCost)).toBeNull();
   });
 });

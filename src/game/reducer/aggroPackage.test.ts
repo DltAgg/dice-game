@@ -160,7 +160,7 @@ describe("Temper", () => {
 
 describe("Opening Cut", () => {
   it("deals 2 damage after choosing an enemy when Martial is in the pool", () => {
-    const ready = withAttributePool(actionsReady([OPENING_CUT]), P1, { martial: 1 });
+    const ready = withAttributePool(actionsReady([OPENING_CUT]), P1, { martial: 3 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -181,7 +181,7 @@ describe("Opening Cut", () => {
   });
 
   it("refuses without Martial in the pool", () => {
-    const ready = actionsReady([OPENING_CUT]);
+    const ready = withHand(withPhase(newMatch(), "actions"), P1, [OPENING_CUT]);
     const refused = advance(ready, {
       type: "PLAY_CARD",
       playerId: P1,
@@ -211,7 +211,11 @@ describe("Riposte", () => {
     const combat = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(combat, P1, 0);
     const target = creatureIdAt(combat, P2, 0);
-    const armed = withHand(withTokens(combat, attacker, { martial: 2 }), P2, [RIPOSTE]);
+    const armed = withHand(
+      withAttributePool(withTokens(combat, attacker, { martial: 2 }), P2, { martial: 2 }),
+      P2,
+      [RIPOSTE],
+    );
     const opened = expectOk(
       reduceAdvance(armed, {
         type: "ATTACK",
@@ -302,7 +306,7 @@ describe("Untamed", () => {
 
 describe("Pounce", () => {
   it("Spends Wild and grants Frenzy on a chosen ally", () => {
-    const ready = withAttributePool(actionsReady([POUNCE]), P1, { wild: 1 });
+    const ready = withAttributePool(actionsReady([POUNCE]), P1, { wild: 3 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -325,7 +329,11 @@ describe("Pounce", () => {
 
 describe("Pack Surge", () => {
   it("generates Wild and arms next attack +1", () => {
-    const ready = actionsReady([PACK_SURGE]);
+    const ready = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [PACK_SURGE]),
+      P1,
+      { wild: 2 },
+    );
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -381,7 +389,7 @@ describe("Snarl", () => {
 
 describe("Dose", () => {
   it("applies 2 Toxin after choosing an enemy when Toxin is in the pool", () => {
-    const ready = withAttributePool(actionsReady([DOSE]), P1, { toxin: 1 });
+    const ready = withAttributePool(actionsReady([DOSE]), P1, { toxin: 3 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",

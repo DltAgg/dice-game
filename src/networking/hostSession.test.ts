@@ -764,15 +764,13 @@ function jsonClone<T>(value: T): T {
 
 describe("host/client reaction-priority (P2 guest)", () => {
   function openP1TacticWindow(): GameState {
-    const ready = withEnergy(
-      withHand(
-        withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]),
-        P2,
-        [ARCANE_SILENCE],
-      ),
-      P1,
-      10,
+    let ready = withHand(
+      withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]),
+      P2,
+      [ARCANE_SILENCE],
     );
+    ready = withEnergy(ready, P1, 10);
+    ready = withEnergy(ready, P2, 10);
     const opened = expectOk(
       advance(ready, {
         type: "PLAY_CARD",

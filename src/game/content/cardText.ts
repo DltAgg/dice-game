@@ -5,7 +5,7 @@ import type {
 } from "../model/cards.js";
 import type { Attribute } from "../model/attributes.js";
 import type { FaceKind } from "../model/dice.js";
-import { requirementEntries, type SymbolRequirement } from "../model/symbols.js";
+import { requirementEntries, requirementTotal, type SymbolRequirement } from "../model/symbols.js";
 
 /**
  * English printing of the Figma tactic-card grammar. The layouts are Portuguese;
@@ -50,9 +50,19 @@ export function formatFaceKind(kind: FaceKind): string {
   }
 }
 
-/** Header cost glyph: fixed amount, or `?` for variable (pay 1+). */
-export function formatEnergyCost(card: CardDefinition): string {
-  return card.variableEnergy === true ? "?" : String(card.energyCost);
+/** Compact header glyph: total pile tokens in playCost, or empty when free. */
+export function formatPlayCostHeader(card: CardDefinition): string {
+  if (card.playCost === undefined) return "";
+  const total = requirementTotal(card.playCost);
+  return total > 0 ? String(total) : "";
+}
+
+/** Header play/forge pile cost as `[Spend: …]`. */
+export function formatPlayCostLine(card: CardDefinition): string | null {
+  if (card.playCost === undefined) return null;
+  const body = formatRequirementBody(card.playCost);
+  if (body.length === 0) return null;
+  return `[Spend: ${body}]`;
 }
 
 /** `[Instant / Arcane]`, `[Equipment / Martial]`, or `[Ritual / Instant / Arcane]` */
@@ -100,28 +110,28 @@ export function formatSpendLine(card: CardDefinition): string | null {
   return `[Spend: ${body}]`;
 }
 
-function formatRequirementBody(requirement: SymbolRequirement): string {
-  const entries = requirementEntries(requirement);
-  // Ritual Active-when / Spend and multi-attr gates print as `Attr + Attr`
-  // (cumulative / additive). Never `2× Attr` — that same-turn notation was
-  // retired.
-  return entries
-    .flatMap(([attribute, count]) =>
-      Array.from({ length: count }, () => ATTRIBUTE_LABEL[attribute]),
-    )
+/** Shared pile-cost wording for Spend, Requires, Active when, and playCost. */
+export function formatRequirementBody(requirement: SymbolRequirement): string {
+  return requirementEntries(requirement)
+    .flatMap(([attribute, count]) => {
+      const label = ATTRIBUTE_LABEL[attribute];
+      if (count <= 1) return [label];
+      return [`${String(count)} x ${label}`];
+    })
     .join(" + ");
 }
 
 /**
- * Everything below the "or" separator: optional gate derived from `effect`,
- * then the printed rules text line by line, or "None" when the card forges
- * only. Unimplemented cards may put the whole printed region — gate included —
- * into `rulesText` and leave `effect` absent.
+ * Everything below the "or" separator: header play cost, optional gate derived
+ * from `effect`, then the printed rules text line by line, or "None" when the
+ * card forges only.
  */
 export function formatEffectRegion(card: CardDefinition): readonly string[] {
   if (card.rulesText.length === 0) return ["None"];
 
   const lines: string[] = [];
+  const playCost = formatPlayCostLine(card);
+  if (playCost !== null) lines.push(playCost);
   const gate = formatRequirementLine(card);
   if (gate !== null) lines.push(gate);
   const spend = formatSpendLine(card);

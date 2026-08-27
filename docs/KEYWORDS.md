@@ -30,7 +30,7 @@ shared; the argument follows attribute exclusives.
 
 | Layer | What belongs here | Example |
 |---|---|---|
-| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, Energy, `[Requires]`, `[Spend]` |
+| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]` |
 | **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Prevent]`, `[Convert N]` |
 
@@ -110,8 +110,6 @@ Same idea, different nouns.
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` | A card on the field | Send one to its owner’s graveyard |
-| `[Gain N Energy]` / `[Lose N Energy]` | You / the opponent | Move the shared Energy marker |
-| `[Move N Energy]` | — | Opponent’s Energy toward you |
 | `[Drain N]` | Attribute tokens in a player pile | Take N from the chosen enemy’s controller’s pile into yours (controller names which pips when mixed) |
 
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
@@ -123,8 +121,7 @@ ritual already on the field.
 
 <!--
 Engine: generate-symbol | FORGE_CARD / forge-faces | negate-card / negate-ritual |
-destroy-equipment / destroy-ritual | gain-energy / lose-energy | transfer-energy |
-drain-attribute-tokens.
+destroy-equipment / destroy-ritual | drain-attribute-tokens |
 No Contaminate / Seal / Disarm / Unmake / Siphon keywords.
 -->
 
@@ -144,7 +141,7 @@ These are not tokens.
 | `[Pierce N]` | Ignore N Shield after Prevent |
 | `[Prevent]` | Prevent the next attack against that creature (before Shield). Luminar exclusive. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
-| `[Discount N]` | The next matching play or forge costs N less Energy (minimum 0) |
+| `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0) |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
 | `[Search N]` | Look through your deck; add up to N cards of the printed types; shuffle. Arcane exclusive. |
 | `[Recall N]` | Return up to N cards from your graveyard to your hand |
@@ -160,7 +157,7 @@ These are not tokens.
 <!--
 Engine: damage | heal | draw-cards | discard-cards | next-attack-bonus |
 grant-next-attack-bonus | ignore-shield / arm-ignore-shield | grant-attack-prevent |
-convert-symbols | energy-cost-discount / arm-forge-discount | look-top-deck /
+convert-symbols | play-cost-discount / arm-forge-discount | look-top-deck /
 peek-deck-optional-bottom | search-deck | search-graveyard | dark-pact |
 reposition-creature | swap-positions | replace-synthetic-face |
 reapply-die-modifiers | arm-resolve-next-face-effect-twice |
@@ -188,7 +185,6 @@ These are not effect replacements.
 | `[Spend: …]` | Burn from your attribute pile (attack `discards`, card extra cost, ritual activate) |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
-| Energy | Shared marker |
 | `On roll:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…” |
 
 ---
@@ -227,8 +223,8 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Ignore Shield | `[Pierce N]` |
 | Stop damage (Luminar) | `[Prevent]` |
 | Take from their pile | `[Drain N]` |
-| Hold in your pile, don’t spend | `[Requires: Martial + Wild]` |
-| Burn from your pile | `[Spend: Martial]` |
+| Hold in your pile, don’t spend | `[Requires: Martial + Wild]` or `[Requires: 2 x Martial]` |
+| Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` |
 | Pool pip | `[Generate N Arcane]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
 | Install on them | `[Forge 1 Synthetic Corruption]` on the opponent’s die |

@@ -66,7 +66,7 @@ function withPoolFaces(state: GameState, faceCardIds: readonly FaceCardId[]): Ga
 }
 
 function reforgeReady(extraPool: readonly FaceCardId[] = [FLYWHEEL, PISTON]): GameState {
-  let state = withAttributePool(actionsReady([REFORGE]), P1, { mechanical: 1 });
+  let state = withAttributePool(actionsReady([REFORGE]), P1, { mechanical: 4 });
   state = withPoolFaces(state, extraPool);
   return state;
 }
@@ -177,7 +177,7 @@ describe("replace-synthetic-face (Reforge)", () => {
 
   it("whiffs when the only pool mechanical synthetic would be the same face after return", () => {
     // Only one Mechanical special available: installed Flywheel, nothing else in pool.
-    let ready = withAttributePool(actionsReady([REFORGE]), P1, { mechanical: 1 });
+    let ready = withAttributePool(actionsReady([REFORGE]), P1, { mechanical: 4 });
     ready = withPoolFaces(ready, [FLYWHEEL]);
     // Strip other mechanical synthetics from the pool.
     const player = ready.players[P1];
@@ -236,7 +236,7 @@ describe("replace-synthetic-face (Reforge)", () => {
     let ready = withPoolFaces(reforgeReady([FLYWHEEL, PISTON]), [FLYWHEEL, PISTON]);
     ready = installFromPool(ready, FLYWHEEL);
     ready = withHand(ready, P1, [RATCHET, REFORGE]);
-    ready = withAttributePool(ready, P1, { mechanical: 1 });
+    ready = withAttributePool(ready, P1, { mechanical: 4 });
     ready = withEnergy(ready, P1, 10);
 
     const attached = expectOk(
@@ -251,7 +251,7 @@ describe("replace-synthetic-face (Reforge)", () => {
 
     // Reforge is second in hand after Ratchet left.
     const reforgeId = handCardIdAt(attached, P1, 0);
-    const withFuel = withAttributePool(withEnergy(attached, P1, 10), P1, { mechanical: 1 });
+    const withFuel = withAttributePool(attached, P1, { mechanical: 4 });
     const played = expectOk(
       advance(withFuel, {
         type: "PLAY_CARD",

@@ -314,30 +314,6 @@ export type GameEvent =
       readonly removedFaceCardId: FaceCardId;
       readonly installedFaceCardId: FaceCardId;
     }
-  | {
-      readonly type: "energy-spent";
-      readonly playerId: PlayerId;
-      readonly amount: number;
-      readonly remaining: number;
-    }
-  | {
-      readonly type: "energy-gained";
-      readonly playerId: PlayerId;
-      readonly amount: number;
-      readonly remaining: number;
-    }
-  | {
-      readonly type: "energy-lost";
-      readonly playerId: PlayerId;
-      readonly amount: number;
-      readonly remaining: number;
-    }
-  | {
-      readonly type: "energy-passed";
-      readonly toPlayerId: PlayerId;
-      readonly amount: number;
-      readonly cause: "overshoot" | "voluntary-pass";
-    }
   | { readonly type: "turn-ended"; readonly playerId: PlayerId }
   | { readonly type: "match-finished"; readonly winnerId: PlayerId }
   | { readonly type: "resolution-aborted"; readonly error: GameError }

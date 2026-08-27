@@ -67,20 +67,32 @@ function rollShowingSlot(state: GameState, slot: number, playerId: typeof P1 | t
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId }));
 }
 
-/** Resolve Hexbrand On absorb destroy-equipment (opens after auto-bank). */
+/** Resolve Hexbrand on-roll drain tokens then On absorb destroy-equipment (after auto-bank). */
 function resolveHexbrandAbsorbFollowup(
   state: GameState,
   playerId: typeof P1 | typeof P2,
   enemyId: ReturnType<typeof creatureIdAt>,
 ): GameState {
-  if (state.pendingDecision?.type !== "choose-creature") return state;
-  return expectOk(
-    advance(state, {
-      type: "RESOLVE_CHOOSE_CREATURE",
-      playerId,
-      creatureId: enemyId,
-    }),
-  );
+  let current = state;
+  if (current.pendingDecision?.type === "choose-attribute-tokens") {
+    current = expectOk(
+      advance(current, {
+        type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
+        playerId,
+        discarded: { martial: 1 },
+      }),
+    );
+  }
+  if (current.pendingDecision?.type === "choose-creature") {
+    current = expectOk(
+      advance(current, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId,
+        creatureId: enemyId,
+      }),
+    );
+  }
+  return current;
 }
 
 function withOpponentRitual(
@@ -147,7 +159,7 @@ describe("pending-decision gate — non-active chooser", () => {
     // Auto-bank then opens On absorb destroy-equipment.
     resolved = resolveHexbrandAbsorbFollowup(resolved, P1, enemyId);
     expect(resolved.pendingDecision).toBeNull();
-    expect(resolved.players[P2]?.attributePool.martial ?? 0).toBe(0);
+    expect(eventTypes(resolved)).toContain("attribute-tokens-drained");
     expect(eventTypes(resolved)).toContain("choose-creature-resolved");
     expect(resolved.activePlayerId).toBe(P2);
 
@@ -297,7 +309,11 @@ describe("pending-decision gate — reaction priority", () => {
     withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
 
   it("still lets the non-active priority seat pass and respond", () => {
-    const state = withHand(actionsReady([ECLIPSE]), P2, [ARCANE_SILENCE]);
+    const state = withEnergy(
+      withHand(actionsReady([ECLIPSE]), P2, [ARCANE_SILENCE]),
+      P2,
+      10,
+    );
     const opened = expectOk(
       advance(state, {
         type: "PLAY_CARD",

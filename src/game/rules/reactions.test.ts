@@ -30,7 +30,7 @@ function exampleReaction(effects: readonly EffectDefinition[]): CardDefinition {
   return {
     id: asCardId("card-example-reaction"),
     name: "Example Reaction",
-    energyCost: 1,
+    playCost: { arcane: 1 },
     type: "reaction",
     subtypes: [],
     attribute: "arcane",

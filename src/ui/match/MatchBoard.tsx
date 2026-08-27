@@ -17,16 +17,16 @@ import {
   diceOf,
   eligibleFacesForForge,
   eligiblePoolFacesForReplace,
-  energyAvailableTo,
   formatAttackCost,
   formatAttackFuel,
   formatAttackLine,
   formatEffectRegion,
-  formatEnergyCost,
   formatFaceKind,
   formatForgeLine,
+  formatPlayCostLine,
   formatRequirementLine,
   formatTypeLine,
+  playCostTotal,
   getCard,
   getCreatureDefinition,
   getFaceCard,
@@ -102,6 +102,19 @@ const PHASE_LABELS: Record<TurnPhase, string> = {
   roll: "Roll",
   actions: "Actions",
 };
+
+type CardDef = NonNullable<ReturnType<typeof getCard>>;
+
+function formatPlayCostCompact(def: CardDef): string {
+  if (def.playCost === undefined) return "—";
+  const formatted = formatAttackCost(def.playCost);
+  return formatted.length > 0 ? formatted : "—";
+}
+
+function formatPlayCostHover(def: CardDef): string {
+  const line = formatPlayCostLine(def);
+  return line ?? "No play cost";
+}
 
 type Intent =
   | { readonly kind: "idle" }
@@ -541,7 +554,7 @@ export function MatchBoard() {
   if (isOnline && !onlineReady) {
     return (
       <div className="relative mx-auto flex max-w-lg flex-col gap-4 px-4 pb-16 pt-28 sm:px-6">
-        <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur">
+        <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur" data-match-top-bar>
           <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-3 px-4 py-2.5 sm:px-6">
             <div>
               <h1 className="font-[family-name:var(--font-display)] text-2xl leading-none text-[var(--ink)] sm:text-3xl">
@@ -589,7 +602,7 @@ export function MatchBoard() {
     <div className={`relative mx-auto flex max-w-5xl flex-col gap-4 px-4 pt-28 sm:px-6 ${isSpectator ? "pb-[28rem] sm:pb-[32rem]" : "pb-96 sm:pb-[18rem]"}`}>
       <ErrorSnackbar error={lastError} onDismiss={clearError} />
 
-      <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur">
+      <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur" data-match-top-bar>
         <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-3 px-4 py-2.5 sm:px-6">
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-2xl leading-none text-[var(--ink)] sm:text-3xl">
@@ -1309,13 +1322,14 @@ export function MatchBoard() {
           kind={forgeDef.forge.kind}
           attribute={forgeDef.forge.attribute}
           forgingCard={forgeDef}
+          sourceCard={forgeDef}
           subtitle={`${forgeDef.name} forges ${formatForgeLine(forgeDef.forge)}. Pick a face from your face pool (or an already-installed copy) to represent it.`}
           onPick={confirmForgeFace}
           onCancel={clearIntent}
         />
       )}
 
-      {/* Field (≥70%) + faces (≤30%). Energy bar spans full width between seats. */}
+      {/* Field (≥70%) + faces (≤30%). Phase bar spans full width between seats. */}
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,30%)] items-stretch gap-x-3 gap-y-4">
         <Battlefield
           state={state}
@@ -1353,7 +1367,7 @@ export function MatchBoard() {
         />
 
         <div className="col-span-2 min-w-0">
-          <EnergyBar
+          <PhaseBar
             state={state}
             canAct={canAct}
             onGoToPhase={goToPhase}
@@ -1651,7 +1665,7 @@ function TacticInspectHover({
     >
       <p className="text-sm font-medium text-stone-100">{def.name}</p>
       <p className="mt-1 text-xs text-stone-400">
-        {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
+        {formatPlayCostHover(def)}
         {negated ? " · negated" : ""}
       </p>
       <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
@@ -1784,28 +1798,113 @@ function pendingSourceOf(
   }
 }
 
+/** Inline source card / face print for selection modals (searches, targets, overload/face triggers). */
+function DecisionSourcePanel({
+  state,
+  cardInstanceId = null,
+  faceCardId = null,
+  cardDef,
+  faceDef,
+  label = "Caused by",
+}: {
+  state?: GameState;
+  cardInstanceId?: CardInstanceId | null;
+  faceCardId?: FaceCardId | null;
+  cardDef?: NonNullable<ReturnType<typeof getCard>>;
+  faceDef?: NonNullable<ReturnType<typeof getFaceCard>>;
+  label?: string;
+}) {
+  const resolvedCard =
+    cardDef ??
+    (state !== undefined && cardInstanceId !== null
+      ? (() => {
+          const card = state.cards[cardInstanceId];
+          return card !== undefined ? getCard(card.cardId) : undefined;
+        })()
+      : undefined);
+  const resolvedFace =
+    faceDef ??
+    (faceCardId !== null ? getFaceCard(faceCardId) : undefined);
+
+  if (resolvedCard === undefined && resolvedFace === undefined) return null;
+
+  const nameHover =
+    resolvedCard !== undefined ? (
+      state !== undefined && cardInstanceId !== null ? (
+        <DecisionSourceHover
+          state={state}
+          cardInstanceId={cardInstanceId}
+          faceCardId={null}
+          placement="below"
+        />
+      ) : (
+        <TacticInspectHover def={resolvedCard} placement="below" />
+      )
+    ) : resolvedFace !== undefined ? (
+      state !== undefined ? (
+        <DecisionSourceHover
+          state={state}
+          cardInstanceId={null}
+          faceCardId={faceCardId ?? resolvedFace.id}
+          placement="below"
+        />
+      ) : (
+        <FaceInspectHover face={resolvedFace} placement="below" />
+      )
+    ) : null;
+
+  return (
+    <div className="mt-3 rounded border border-amber-800/40 bg-amber-950/20 p-3 text-left">
+      <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-amber-200/70">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium text-stone-100">
+        {nameHover ?? resolvedCard?.name ?? resolvedFace?.name}
+      </p>
+      {resolvedCard !== undefined && (
+        <>
+          <p className="mt-0.5 text-xs text-stone-500">
+            {formatPlayCostCompact(resolvedCard)} · {formatTypeLine(resolvedCard)}
+          </p>
+          {formatEffectRegion(resolvedCard).length > 0 && (
+            <div className="mt-2 space-y-1 border-t border-amber-900/40 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+              {formatEffectRegion(resolvedCard).map((line) => (
+                <p key={line}>
+                  <KeywordRichText text={line} />
+                </p>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+      {resolvedCard === undefined && resolvedFace !== undefined && (
+        <>
+          <p className="mt-0.5 text-xs capitalize text-stone-500">
+            {formatFaceKind(resolvedFace.kind)} · {resolvedFace.symbol}
+          </p>
+          {resolvedFace.rulesText !== "" && (
+            <p className="mt-2 border-t border-amber-900/40 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+              <KeywordRichText text={resolvedFace.rulesText} />
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function CausedByLine({ state }: { state: GameState }) {
   const pending = state.pendingDecision;
   if (pending === null) return null;
   const source = pendingSourceOf(state, pending);
   if (source === null) return null;
 
-  const card =
-    source.cardInstanceId !== null ? state.cards[source.cardInstanceId] : undefined;
-  const def = card !== undefined ? getCard(card.cardId) : undefined;
-  const face = source.faceCardId !== null ? getFaceCard(source.faceCardId) : undefined;
-  if (def === undefined && face === undefined) return null;
-
   return (
-    <p className="mt-2 text-sm text-amber-100/80">
-      Caused by{" "}
-      <DecisionSourceHover
-        state={state}
-        cardInstanceId={source.cardInstanceId}
-        faceCardId={source.faceCardId}
-        placement="below"
-      />
-    </p>
+    <DecisionSourcePanel
+      state={state}
+      cardInstanceId={source.cardInstanceId}
+      faceCardId={source.faceCardId}
+    />
   );
 }
 
@@ -1999,9 +2098,14 @@ function stayStatusForFace(
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
-function activateFaceEnergyCost(state: GameState, dieId: DieId, energyBase: number, energyPerCorruptionOnDie: number): number {
+function activateFaceSpendCost(
+  state: GameState,
+  dieId: DieId,
+  spendBase: number,
+  spendPerCorruptionOnDie: number,
+): number {
   const die = state.dice[dieId];
-  if (die === undefined) return energyBase;
+  if (die === undefined) return spendBase;
   let corruptionFaces = 0;
   for (const slot of die.slots) {
     const face = getFaceCard(slot.faceCardId);
@@ -2009,7 +2113,7 @@ function activateFaceEnergyCost(state: GameState, dieId: DieId, energyBase: numb
       corruptionFaces += 1;
     }
   }
-  return energyBase + energyPerCorruptionOnDie * corruptionFaces;
+  return spendBase + spendPerCorruptionOnDie * corruptionFaces;
 }
 
 function showingSlotsForFace(
@@ -2069,8 +2173,10 @@ function formatCardTypeList(types: readonly CardType[]): string {
   return `${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1] ?? ""}`;
 }
 
-function maxEnergyCostPhrase(maxEnergyCost: number): string {
-  return maxEnergyCost === 1 ? "cost 1 Energy or less" : `cost ${String(maxEnergyCost)} or less Energy`;
+function maxPlayCostPhrase(maxPlayCost: number): string {
+  return maxPlayCost === 1
+    ? "cost 1 pile token or less"
+    : `cost ${String(maxPlayCost)} pile tokens or less`;
 }
 
 function opposingOverloadedFaces(
@@ -2126,8 +2232,8 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   }
   if (state.pendingDecision?.type === "search-graveyard") {
     const cost =
-      state.pendingDecision.maxEnergyCost !== undefined
-        ? ` that ${maxEnergyCostPhrase(state.pendingDecision.maxEnergyCost)}`
+      state.pendingDecision.maxPlayCost !== undefined
+        ? ` that ${maxPlayCostPhrase(state.pendingDecision.maxPlayCost)}`
         : "";
     return isPendingChooser
       ? `Choose up to ${String(state.pendingDecision.amount)} card(s)${cost} from your graveyard to return to hand.`
@@ -2299,7 +2405,7 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   }
 }
 
-function EnergyBar({
+function PhaseBar({
   state,
   canAct,
   onGoToPhase,
@@ -2310,17 +2416,12 @@ function EnergyBar({
   onGoToPhase: (phase: TurnPhase) => void;
   onEndTurn: () => void;
 }) {
-  const p1 = energyAvailableTo(state.energy, MATCH_P1);
-  const p2 = energyAvailableTo(state.energy, MATCH_P2);
   const currentIndex = TURN_PHASE_ORDER.indexOf(state.phase);
   const controlsLocked =
     !canAct || state.status === "finished" || state.pendingDecision !== null;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--accent)]/30 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 px-4 py-3 text-sm">
-      <span>
-        P1 energy: <strong className="text-[var(--accent)]">{p1}</strong>
-      </span>
+    <div className="flex flex-wrap items-center justify-center gap-3 rounded-lg border border-[var(--accent)]/30 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 px-4 py-3 text-sm">
       <div className="flex flex-wrap items-center justify-center gap-1">
         {TURN_PHASE_ORDER.map((phase, index) => {
           const isCurrent = index === currentIndex;
@@ -2368,9 +2469,6 @@ function EnergyBar({
           End turn
         </button>
       </div>
-      <span>
-        P2 energy: <strong className="text-[var(--accent)]">{p2}</strong>
-      </span>
     </div>
   );
 }
@@ -2583,10 +2681,6 @@ function RitualTile({
   const durationLabel =
     duration === "continuous" ? "Continuous (stays)" : duration === "instant" ? "Leaves after activate" : null;
   const activeWhen = formatRequirementLine(def);
-  const activateCost =
-    def.ritual?.additionalEnergy !== undefined && def.ritual.additionalEnergy > 0
-      ? `+${String(def.ritual.additionalEnergy)}E to activate`
-      : null;
   const spend = def.ritual?.spend;
   const spendLine =
     spend !== undefined && formatAttackCost(spend) !== ""
@@ -2633,8 +2727,7 @@ function RitualTile({
             >
               <p className="text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-400">
-                {formatEnergyCost(def)} Energy
-                {activateCost !== null ? ` · ${activateCost}` : ""}
+                {formatPlayCostHover(def)}
               </p>
               <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
                 {orientation}
@@ -2685,7 +2778,7 @@ function RitualTile({
       <div className="w-full text-left">
         <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
         <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
-          {formatEnergyCost(def)}E · {def.subtypes.join("/") || "ritual"}
+          {formatPlayCostCompact(def)} · {def.subtypes.join("/") || "ritual"}
         </p>
         <p
           className={
@@ -2931,6 +3024,49 @@ const CREATURE_TOOLTIP_GAP_PX = 8;
 const INSPECT_TOOLTIP_WIDTH_PX = 256;
 const INSPECT_TOOLTIP_GAP_PX = 8;
 const TOOLTIP_VIEW_MARGIN_PX = 8;
+/** Never squeeze a tooltip into a strip shorter than this — flip to the other side. */
+const TOOLTIP_MIN_USABLE_PX = 220;
+
+/** Lowest Y (viewport px) tooltips may occupy — clears sticky nav + match title bar. */
+function measureTooltipTopSafeY(): number {
+  let safeY = TOOLTIP_VIEW_MARGIN_PX;
+  const nav = document.querySelector("nav");
+  if (nav instanceof HTMLElement) {
+    safeY = Math.max(safeY, nav.getBoundingClientRect().bottom);
+  }
+  for (const el of document.querySelectorAll("[data-match-top-bar]")) {
+    if (!(el instanceof HTMLElement)) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) continue;
+    safeY = Math.max(safeY, rect.bottom);
+  }
+  return safeY + TOOLTIP_VIEW_MARGIN_PX;
+}
+
+function tooltipSpaceAbove(anchor: DOMRect, gap: number): number {
+  return Math.max(0, anchor.top - gap - measureTooltipTopSafeY());
+}
+
+/**
+ * Prefer `placement`, but never choose a side with less than TOOLTIP_MIN_USABLE_PX
+ * when the other side is roomier — that was collapsing top-row tooltips to ~48px.
+ */
+function chooseTooltipSide(
+  placement: "above" | "below",
+  spaceAbove: number,
+  spaceBelow: number,
+): "above" | "below" {
+  const aboveOk = spaceAbove >= TOOLTIP_MIN_USABLE_PX;
+  const belowOk = spaceBelow >= TOOLTIP_MIN_USABLE_PX;
+  if (placement === "above") {
+    if (aboveOk && spaceAbove >= spaceBelow) return "above";
+    if (belowOk) return "below";
+    return spaceAbove >= spaceBelow ? "above" : "below";
+  }
+  if (belowOk && spaceBelow >= spaceAbove) return "below";
+  if (aboveOk) return "above";
+  return spaceBelow >= spaceAbove ? "below" : "above";
+}
 
 type AnchoredTooltipPos = {
   readonly left: number;
@@ -2991,25 +3127,21 @@ function placeTooltip(
   const preferredLeft =
     align === "center" ? anchor.left + anchor.width / 2 - tooltipWidth / 2 : anchor.left;
   const left = clampTooltipLeft(preferredLeft, tooltipWidth);
-  const spaceAbove = Math.max(0, anchor.top - TOOLTIP_VIEW_MARGIN_PX - gap);
+  const spaceAbove = tooltipSpaceAbove(anchor, gap);
   const spaceBelow = Math.max(0, window.innerHeight - anchor.bottom - TOOLTIP_VIEW_MARGIN_PX - gap);
-  const minComfort = 96;
-  const goAbove =
-    placement === "above"
-      ? spaceAbove >= minComfort || spaceAbove >= spaceBelow
-      : spaceBelow < minComfort && spaceAbove > spaceBelow;
+  const side = chooseTooltipSide(placement, spaceAbove, spaceBelow);
 
-  if (goAbove) {
+  if (side === "above") {
     return {
       left,
       bottom: window.innerHeight - anchor.top + gap,
-      maxHeight: Math.max(spaceAbove, 48),
+      maxHeight: Math.max(spaceAbove, 1),
     };
   }
   return {
     left,
     top: anchor.bottom + gap,
-    maxHeight: Math.max(spaceBelow, 48),
+    maxHeight: Math.max(spaceBelow, 1),
   };
 }
 
@@ -3066,27 +3198,23 @@ function placeTooltipPair(
     tooltipWidth,
   );
 
-  const spaceAbove = Math.max(0, anchor.top - TOOLTIP_VIEW_MARGIN_PX - gap);
+  const spaceAbove = tooltipSpaceAbove(anchor, gap);
   const spaceBelow = Math.max(0, window.innerHeight - anchor.bottom - TOOLTIP_VIEW_MARGIN_PX - gap);
-  const minComfort = 96;
-  const goAbove =
-    placement === "above"
-      ? spaceAbove >= minComfort || spaceAbove >= spaceBelow
-      : spaceBelow < minComfort && spaceAbove > spaceBelow;
+  const side = chooseTooltipSide(placement, spaceAbove, spaceBelow);
 
-  if (goAbove) {
+  if (side === "above") {
     return {
       primaryLeft,
       secondaryLeft,
       bottom: window.innerHeight - anchor.top + gap,
-      maxHeight: Math.max(spaceAbove, 48),
+      maxHeight: Math.max(spaceAbove, 1),
     };
   }
   return {
     primaryLeft,
     secondaryLeft,
     top: anchor.bottom + gap,
-    maxHeight: Math.max(spaceBelow, 48),
+    maxHeight: Math.max(spaceBelow, 1),
   };
 }
 
@@ -3188,7 +3316,7 @@ function CreatureTile({
         createPortal(
           <>
             <div
-              className="pointer-events-none fixed z-[60] w-64 rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
+              className="pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
               style={fixedTooltipPairStyle(pairPos, "primary")}
               role="tooltip"
             >
@@ -3226,7 +3354,7 @@ function CreatureTile({
               </div>
             </div>
             <div
-              className="pointer-events-none fixed z-[60] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              className="pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
               style={fixedTooltipPairStyle(pairPos, "secondary")}
               role="tooltip"
             >
@@ -3244,7 +3372,7 @@ function CreatureTile({
                     >
                       <p className="text-sm font-medium text-stone-100">{equipDef.name}</p>
                       <p className="mt-0.5 text-[0.65rem] text-stone-500">
-                        {formatEnergyCost(equipDef)}E · {formatTypeLine(equipDef)}
+                        {formatPlayCostCompact(equipDef)} · {formatTypeLine(equipDef)}
                       </p>
                       <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                         {formatEffectRegion(equipDef).join("\n")}
@@ -3433,7 +3561,7 @@ function FaceCardTile({
         createPortal(
           <>
             <div
-              className="pointer-events-none fixed z-[60] w-56 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
+              className="pointer-events-none fixed z-[70] w-56 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
               style={fixedTooltipPairStyle(pairPos, "primary")}
               role="tooltip"
             >
@@ -3443,7 +3571,7 @@ function FaceCardTile({
               </pre>
             </div>
             <div
-              className="pointer-events-none fixed z-[60] w-56 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              className="pointer-events-none fixed z-[70] w-56 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
               style={fixedTooltipPairStyle(pairPos, "secondary")}
               role="tooltip"
             >
@@ -3522,11 +3650,11 @@ function FaceCardTile({
       {canActivateShowing &&
         activated !== undefined &&
         showingSlots.map((slot) => {
-          const cost = activateFaceEnergyCost(
+          const cost = activateFaceSpendCost(
             state,
             slot.dieId,
-            activated.energyBase,
-            activated.energyPerCorruptionOnDie,
+            activated.spendBase,
+            activated.spendPerCorruptionOnDie,
           );
           return (
             <button
@@ -3535,7 +3663,7 @@ function FaceCardTile({
               className={`${btnPrimary} mt-2 w-full text-xs`}
               onClick={() => onActivateFace(slot.dieId, slot.slotIndex)}
             >
-              Activate ({String(cost)}E)
+              Activate ({String(cost)} from pile)
             </button>
           );
         })}
@@ -3556,7 +3684,7 @@ function FaceCardsInPlay({
   state: GameState;
   playerId: PlayerId;
   label: string;
-  /** Same as Battlefield: P1 `up`, P2 `down` — flips faces vs pile toward the energy bar. */
+  /** Same as Battlefield: P1 `up`, P2 `down` — flips faces vs pile toward the phase bar. */
   facing: "up" | "down";
   actingPlayerId: PlayerId;
   canAct: boolean;
@@ -3992,7 +4120,7 @@ function TacticChoiceContent({
     <>
       <p className="text-sm font-medium text-stone-100">{def.name}</p>
       <p className="text-xs text-stone-500">
-        {def.variableEnergy === true ? "?" : def.energyCost}E · {def.subtypes.join("/")}
+        {formatPlayCostCompact(def)} · {def.subtypes.join("/")}
       </p>
       <p className="mt-1 text-[0.7rem] text-stone-400">{formatTypeLine(def)}</p>
       {formatEffectRegion(def).length > 0 && (
@@ -4327,7 +4455,7 @@ function HandStrip({
             >
               <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-500">
-                {def.variableEnergy === true ? "?" : def.energyCost}E · {def.subtypes.join("/")}
+                {formatPlayCostCompact(def)} · {def.subtypes.join("/")}
               </p>
               <div className="mt-3 flex gap-2">
                 {actionsLive && (
@@ -4372,13 +4500,13 @@ function HandStrip({
         createPortal(
           <>
             <div
-              className="pointer-events-none fixed z-[60] w-64 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
+              className="pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
               style={fixedTooltipPairStyle(pairPos, "primary")}
               role="tooltip"
             >
               <p className="text-sm font-medium text-stone-100">{hoveredDef.name}</p>
               <p className="mt-1 text-xs text-stone-400">
-                {hoveredDef.variableEnergy === true ? "? (1+)" : hoveredDef.energyCost} Energy
+                {formatPlayCostHover(hoveredDef)}
               </p>
               <div className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 <p>
@@ -4400,7 +4528,7 @@ function HandStrip({
               </div>
             </div>
             <div
-              className="pointer-events-none fixed z-[60] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
+              className="pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
               style={fixedTooltipPairStyle(pairPos, "secondary")}
               role="tooltip"
             >
@@ -5785,7 +5913,7 @@ function DiscardModal({
                   </p>
                   <p className="text-xs text-stone-500">
                     {def !== undefined
-                      ? `${def.variableEnergy === true ? "?" : def.energyCost}E · ${def.subtypes.join("/")}`
+                      ? `${formatPlayCostCompact(def)} · ${def.subtypes.join("/")}`
                       : ""}
                   </p>
                 </button>
@@ -5840,50 +5968,52 @@ function OverloadFacePickModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Overload a face card
-        </h2>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          {def?.name ?? "Card"} attaches to a shared face card. Every die showing that face will
-          fire the overload when rolled.
-        </p>
-        <ul className="mt-4 space-y-2">
-          {eligible.map(({ faceCardId, copies, overloads }) => {
-            const face = getFaceCard(faceCardId);
-            return (
-              <li key={faceCardId}>
-                <button
-                  type="button"
-                  className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
-                  onClick={() => onPick(faceCardId)}
-                >
-                  <p className="text-sm font-medium text-stone-100">
-                    {face !== undefined ? (
-                      <FaceInspectHover face={face} placement="below" />
-                    ) : (
-                      faceCardId
-                    )}
-                  </p>
-                  <p className="text-xs capitalize text-stone-500">
-                    {face?.kind} · {face?.symbol}
-                    {copies > 1 ? ` · ×${String(copies)} die faces` : ""}
-                    {overloads > 0 ? ` · ${String(overloads)} overload` : ""}
-                  </p>
-                </button>
-              </li>
-            );
-          })}
-          {eligible.length === 0 && (
-            <li className="text-sm text-red-300">No eligible installed face cards.</li>
-          )}
-        </ul>
-        <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
-          Cancel
-        </button>
-      </div>
-    </div>
+    <BoardModal
+      title="Overload a face card"
+      subtitle="Attaches to a shared face card. Every die showing that face will fire the overload when rolled."
+      causedBy={
+        <DecisionSourcePanel
+          state={state}
+          cardInstanceId={cardInstanceId}
+          label="Overload"
+        />
+      }
+      onDismiss={onCancel}
+    >
+      <ul className="mt-4 space-y-2">
+        {eligible.map(({ faceCardId, copies, overloads }) => {
+          const face = getFaceCard(faceCardId);
+          return (
+            <li key={faceCardId}>
+              <button
+                type="button"
+                className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
+                onClick={() => onPick(faceCardId)}
+              >
+                <p className="text-sm font-medium text-stone-100">
+                  {face !== undefined ? (
+                    <FaceInspectHover face={face} placement="below" />
+                  ) : (
+                    faceCardId
+                  )}
+                </p>
+                <p className="text-xs capitalize text-stone-500">
+                  {face?.kind} · {face?.symbol}
+                  {copies > 1 ? ` · ×${String(copies)} die faces` : ""}
+                  {overloads > 0 ? ` · ${String(overloads)} overload` : ""}
+                </p>
+              </button>
+            </li>
+          );
+        })}
+        {eligible.length === 0 && (
+          <li className="text-sm text-red-300">No eligible installed face cards.</li>
+        )}
+      </ul>
+      <button type="button" className={`${btnClass} mt-4`} onClick={onCancel}>
+        Cancel
+      </button>
+    </BoardModal>
   );
 }
 
@@ -5893,6 +6023,7 @@ function FacePickModal({
   kind,
   attribute,
   forgingCard,
+  sourceCard,
   eligibleIds,
   subtitle,
   onPick,
@@ -5905,6 +6036,8 @@ function FacePickModal({
   kind: ForgeableFaceKind;
   attribute: SymbolType;
   forgingCard?: { readonly forgeTags?: readonly string[] };
+  /** Tactic/ritual being forged — shown when there is no pending `Caused by` source. */
+  sourceCard?: NonNullable<ReturnType<typeof getCard>>;
   /** When set, overrides forge eligibility (e.g. Reforge pool-only list). */
   eligibleIds?: readonly FaceCardId[];
   subtitle: string;
@@ -5915,12 +6048,20 @@ function FacePickModal({
 }) {
   const eligible =
     eligibleIds ?? eligibleFacesForForge(state, playerId, kind, attribute, forgingCard);
+  const pendingSource = <CausedByLine state={state} />;
 
   return (
     <BoardModal
       title="Choose face card"
       subtitle={subtitle}
-      causedBy={<CausedByLine state={state} />}
+      causedBy={
+        <>
+          {pendingSource}
+          {sourceCard !== undefined && state.pendingDecision === null && (
+            <DecisionSourcePanel cardDef={sourceCard} label="Forging" />
+          )}
+        </>
+      }
       onDismiss={onCancel}
     >
       <ul className="mt-4 space-y-2">
@@ -6167,7 +6308,7 @@ function SearchPanel({
   onToggle: (id: CardInstanceId) => void;
   onConfirm: () => void;
 }) {
-  const [sort, setSort] = useState<"name" | "energy" | "type">("energy");
+  const [sort, setSort] = useState<"name" | "cost" | "type">("cost");
   const [typeFilter, setTypeFilter] = useState<CardType | "all">("all");
 
   const pending = state.pendingDecision;
@@ -6181,7 +6322,7 @@ function SearchPanel({
       return searchableInDeck(state, pending.controllerId, pending.filter);
     }
     if (pending.type === "search-graveyard") {
-      return searchableInGraveyard(state, pending.controllerId, pending.maxEnergyCost);
+      return searchableInGraveyard(state, pending.controllerId, pending.maxPlayCost);
     }
     return [];
   }, [matches, pending, state]);
@@ -6212,8 +6353,10 @@ function SearchPanel({
     ranked.sort((a, b) => {
       const da = defsById.get(a);
       const db = defsById.get(b);
-      if (sort === "energy") {
-        return (da?.energyCost ?? 99) - (db?.energyCost ?? 99);
+      if (sort === "cost") {
+        const ca = da !== undefined ? playCostTotal(da) : 99;
+        const cb = db !== undefined ? playCostTotal(db) : 99;
+        return ca - cb;
       }
       if (sort === "type") {
         const ta = da?.type ?? "";
@@ -6238,8 +6381,8 @@ function SearchPanel({
   const subtitle =
     pending.type === "search-deck"
       ? `Pick ${String(amount)} ${formatCardTypeList(pending.filter)} card${amount === 1 ? "" : "s"} from your deck.`
-      : pending.maxEnergyCost !== undefined
-        ? `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} that ${maxEnergyCostPhrase(pending.maxEnergyCost)} from your graveyard to return to hand.`
+      : pending.maxPlayCost !== undefined
+        ? `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} that ${maxPlayCostPhrase(pending.maxPlayCost)} from your graveyard to return to hand.`
         : `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} from your graveyard to return to hand.`;
 
   const confirmLabel = emptyOptions
@@ -6265,10 +6408,10 @@ function SearchPanel({
               className="ml-2 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-xs text-stone-200"
               value={sort}
               onChange={(event) =>
-                setSort(event.target.value as "name" | "energy" | "type")
+                setSort(event.target.value as "name" | "cost" | "type")
               }
             >
-              <option value="energy">Energy</option>
+              <option value="cost">Cost</option>
               <option value="type">Type</option>
               <option value="name">Name</option>
             </select>

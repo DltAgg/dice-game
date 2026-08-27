@@ -10,7 +10,7 @@ import { faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { overloadsOf, overloadsOnFace, graveyardOf, resolveEnergyPayment } from "../rules/cards.js";
+import { overloadsOf, overloadsOnFace, graveyardOf } from "../rules/cards.js";
 import { advanceResolvingChain as advance } from "../testing/scenario.js";
 import {
   eventTypes,
@@ -67,7 +67,7 @@ describe("overload attachment", () => {
     expect(overload?.attachedToFaceCardId).toBe(luminarFace);
     expect(overloadsOnFace(result.state, P1, luminarFace)).toHaveLength(1);
     expect(eventTypes(result.state)).toContain("overload-attached");
-    expect(result.state.energy).toEqual({ holderId: P1, value: 8 });
+    expect(result.state.players[P1]?.attributePool.luminar).toBe(8);
   });
 
   it("refuses a face that does not match the printed restriction", () => {
@@ -264,8 +264,8 @@ describe("forging and face-card overloads", () => {
   });
 });
 
-describe("former variable Energy costs (? → temporary cheap On-roll band)", () => {
-  it("pays the fixed catalogue cost of 1 for Martial Blessing", () => {
+describe("former variable Energy costs (? → fixed play cost)", () => {
+  it("pays the fixed catalogue play cost of 1 Martial for Martial Blessing", () => {
     const state = actionsReady([MARTIAL_BLESSING]);
     const result = advance(state, {
       type: "PLAY_CARD",
@@ -276,20 +276,7 @@ describe("former variable Energy costs (? → temporary cheap On-roll band)", ()
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.energy).toEqual({ holderId: P1, value: 9 });
+    expect(result.state.players[P1]?.attributePool.martial).toBe(9);
     expect(overloadsOf(result.state, P1)).toHaveLength(1);
-  });
-});
-
-describe("resolveEnergyPayment variable path", () => {
-  it("still accepts energyPaid at or above the minimum when variableEnergy is set", () => {
-    const definition = {
-      energyCost: 1,
-      variableEnergy: true,
-    } as import("../model/cards.js").CardDefinition;
-
-    expect(resolveEnergyPayment(definition, undefined)).toBe(1);
-    expect(resolveEnergyPayment(definition, 4)).toBe(4);
-    expect(resolveEnergyPayment(definition, 0)).toBeNull();
   });
 });

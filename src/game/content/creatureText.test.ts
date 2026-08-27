@@ -125,7 +125,7 @@ describe("English creature printing", () => {
   });
 
   it("prints attack costs as Attr + Attr", () => {
-    expect(formatAttackCost({ mechanical: 2 })).toBe("Mechanical + Mechanical");
+    expect(formatAttackCost({ mechanical: 2 })).toBe("2 x Mechanical");
     expect(formatAttackCost({ martial: 1, toxin: 1 })).toBe("Martial + Toxin");
   });
 

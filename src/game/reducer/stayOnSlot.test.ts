@@ -117,7 +117,7 @@ describe("Forbidden Heritage stay (cannot-replace-by-forge)", () => {
 
   it("refuses forge-faces over Forbidden Heritage", () => {
     const withFh = installFromPool(
-      withAttributePool(actionsReady([RITUAL_OF_CONTAMINATION]), P1, { corruption: 1 }),
+      withAttributePool(actionsReady([RITUAL_OF_CONTAMINATION]), P1, { corruption: 2 }),
       FORBIDDEN_HERITAGE,
       { dieOwner: P2, faceOwner: P2, slot: 4 },
     );

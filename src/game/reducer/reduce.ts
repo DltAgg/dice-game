@@ -19,7 +19,6 @@ import { fail, ok, type ReduceResult } from "../model/result.js";
 import {
   TURN_PHASE_ORDER,
   type ChainLink,
-  type EnergyTrack,
   type GameState,
   type PendingDecision,
   type TurnPhase,
@@ -38,23 +37,17 @@ import {
   forgeExceedsAttributeLimit,
   isReactionCard,
   replayableGraveyardTactics,
-  resolveEnergyPayment,
   ritualDurationOf,
   searchableInGraveyard,
 } from "../rules/cards.js";
 import {
-  discountedPlayCost,
+  discountedPlayRequirement,
+  reduceRequirement,
   attackIgnoreShieldAmount,
   type DiscountMatch,
 } from "../rules/discounts.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../rules/dice.js";
-import {
-  energyAfterOvershootPass,
-  passEnergy,
-  spendEnergy,
-  type EnergySpendOutcome,
-} from "../rules/energy.js";
 import {
   countInstalledCopies,
   eligibleFacesForForge,
@@ -91,7 +84,6 @@ import {
   cardCommittedToChain,
   linkMatchesNegateCard,
   isRitualNegatableLinkKind,
-  noteDeferredTurnEnd,
   openReactionWindow,
   pushChainLink,
   topChainLink,
@@ -259,7 +251,6 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.dieId,
         action.slotIndexes,
         action.faceCardId,
-        action.energyPaid,
       );
     case "PLAY_CARD":
       return playCard(
@@ -268,7 +259,6 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.cardInstanceId,
         action.declaredTargetCreatureId ?? null,
         action.declaredFaceCardId ?? null,
-        action.energyPaid,
       );
     case "ACTIVATE_RITUAL":
       return activateRitual(
@@ -613,7 +603,7 @@ function resolveSearch(
     if (cardInstanceIds.length > pending.amount) return "INVALID_SEARCH";
 
     const eligible = new Set(
-      searchableInGraveyard(draft, playerId, pending.maxEnergyCost),
+      searchableInGraveyard(draft, playerId, pending.maxPlayCost),
     );
     for (const id of cardInstanceIds) {
       if (!eligible.has(id)) return "INVALID_SEARCH";
@@ -658,10 +648,6 @@ function resolveDiscard(
     if (!hand.has(id)) return "INVALID_DISCARD";
   }
 
-  const turnEnds = pending.turnEnds;
-  if (turnEnds) {
-    noteDeferredTurnEnd(draft, playerId, true);
-  }
   discardSpecificCards(draft, playerId, cardInstanceIds);
   if (pending.thenEffects !== undefined && cardInstanceIds.length > 0) {
     for (const effect of [...pending.thenEffects].reverse()) {
@@ -1390,6 +1376,7 @@ function resolveOptionalOvercharge(
     applyOptionalOverchargeAccept(
       draft,
       playerId,
+      pending.symbol,
       pending.amount,
       pending.dieId,
       pending.slotIndex,
@@ -1455,9 +1442,9 @@ function activateFace(
   }
 
   const cost =
-    face.activated.energyBase + face.activated.energyPerCorruptionOnDie * corruptionFaces;
-  if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
-  const spend = payEnergy(draft, playerId, cost);
+    face.activated.spendBase + face.activated.spendPerCorruptionOnDie * corruptionFaces;
+  const spendError = payPileSpend(draft, playerId, { corruption: cost });
+  if (spendError !== null) return spendError;
 
   const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
   const slots = die.slots.map((candidate) =>
@@ -1477,7 +1464,7 @@ function activateFace(
     clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
   }
 
-  return settleTurnAfterSpend(draft, playerId, spend);
+  return null;
 }
 
 /**
@@ -1731,7 +1718,6 @@ function forgeCard(
   dieId: DieId,
   slotIndexes: readonly number[],
   faceCardId: FaceCardId,
-  energyPaid: number | undefined,
 ): GameError | null {
   // Play and forge share the actions window.
   if (draft.phase !== "actions") return "INVALID_PHASE";
@@ -1775,7 +1761,8 @@ function forgeCard(
     return "INVALID_TARGET";
   }
 
-  if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
+  const forgeCostError = payForgeCost(draft, playerId, definition);
+  if (forgeCostError !== null) return forgeCostError;
 
   const eligible = eligibleFacesForForge(
     draft,
@@ -1799,16 +1786,7 @@ function forgeCard(
   // The card is consumed by being installed, so it goes to the graveyard rather
   // than staying available to be played for its effect as well.
   moveCard(draft, cardInstanceId, "graveyard");
-  const cost = resolveEnergyPayment(definition, energyPaid);
-  if (cost === null) return "INVALID_TARGET";
-  const discount = draft.forgeDiscountThisTurn[playerId] ?? 0;
-  const paid = Math.max(0, cost - discount);
-  if (discount > 0) {
-    const next = { ...draft.forgeDiscountThisTurn };
-    delete next[playerId];
-    draft.forgeDiscountThisTurn = next;
-  }
-  return settleTurnAfterSpend(draft, playerId, payEnergy(draft, playerId, paid));
+  return null;
 }
 
 /**
@@ -1822,7 +1800,6 @@ function playCard(
   cardInstanceId: CardInstanceId,
   declaredTargetCreatureId: CreatureId | null,
   declaredFaceCardId: FaceCardId | null,
-  energyPaid: number | undefined,
 ): GameError | null {
   const inReactionWindow = draft.pendingDecision?.type === "reaction-priority";
   if (!inReactionWindow && draft.phase !== "actions") return "INVALID_PHASE";
@@ -1842,15 +1819,15 @@ function playCard(
 
   if (definition.equipment !== undefined) {
     if (inReactionWindow) return "CARD_NOT_AVAILABLE";
-    return equipCard(draft, playerId, cardInstanceId, definition, declaredTargetCreatureId, energyPaid);
+    return equipCard(draft, playerId, cardInstanceId, definition, declaredTargetCreatureId);
   }
   if (definition.overload !== undefined) {
     if (inReactionWindow) return "CARD_NOT_AVAILABLE";
-    return overloadCard(draft, playerId, cardInstanceId, definition, declaredFaceCardId, energyPaid);
+    return overloadCard(draft, playerId, cardInstanceId, definition, declaredFaceCardId);
   }
   if (definition.ritual !== undefined) {
     if (inReactionWindow) return "CARD_NOT_AVAILABLE";
-    return placeRitualCard(draft, playerId, cardInstanceId, definition, energyPaid);
+    return placeRitualCard(draft, playerId, cardInstanceId, definition);
   }
 
   const region = definition.effect;
@@ -1912,17 +1889,11 @@ function playCard(
     }
   }
 
-  const cost = resolveEnergyPayment(definition, energyPaid, region.additionalEnergy ?? 0);
-  if (cost === null) return "INVALID_TARGET";
-
-  const discounted = discountedPlayCost(draft, playerId, definition, cost);
-  const spend = payEnergyFlexible(draft, playerId, discounted.cost, inReactionWindow);
-  if (spend === null) return "INSUFFICIENT_ENERGY";
-  markDiscountMatchesSpent(draft, discounted.matches);
+  const headerCostError = payHeaderCost(draft, playerId, definition, true);
+  if (headerCostError !== null) return headerCostError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
   moveCard(draft, cardInstanceId, "graveyard");
-  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
   pushChainLink(
     draft,
@@ -1945,7 +1916,6 @@ function equipCard(
   cardInstanceId: CardInstanceId,
   definition: NonNullable<ReturnType<typeof getCard>>,
   declaredTargetCreatureId: CreatureId | null,
-  energyPaid: number | undefined,
 ): GameError | null {
   const region = definition.equipment;
   if (region === undefined) return "CARD_HAS_NO_EFFECT";
@@ -1969,17 +1939,11 @@ function equipCard(
     if (!allowed) return "INVALID_TARGET";
   }
 
-  if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
-
-  const cost = resolveEnergyPayment(definition, energyPaid);
-  if (cost === null) return "INVALID_TARGET";
-  const discounted = discountedPlayCost(draft, playerId, definition, cost);
+  const headerCostError = payHeaderCost(draft, playerId, definition, true);
+  if (headerCostError !== null) return headerCostError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
   // Stay in hand until the chain link resolves (or is negated → GY).
-  const spend = payEnergy(draft, playerId, discounted.cost);
-  markDiscountMatchesSpent(draft, discounted.matches);
-  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
   pushChainLink(
     draft,
@@ -1999,23 +1963,16 @@ function overloadCard(
   cardInstanceId: CardInstanceId,
   definition: CardDefinition,
   declaredFaceCardId: FaceCardId | null,
-  energyPaid: number | undefined,
 ): GameError | null {
   if (declaredFaceCardId === null) return "INVALID_TARGET";
   if (!overloadFitsFace(draft, cardInstanceId, declaredFaceCardId, playerId)) {
     return "INVALID_TARGET";
   }
 
-  if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
-
-  const cost = resolveEnergyPayment(definition, energyPaid);
-  if (cost === null) return "INVALID_TARGET";
-  const discounted = discountedPlayCost(draft, playerId, definition, cost);
+  const headerCostError = payHeaderCost(draft, playerId, definition, true);
+  if (headerCostError !== null) return headerCostError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
-  const spend = payEnergy(draft, playerId, discounted.cost);
-  markDiscountMatchesSpent(draft, discounted.matches);
-  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
   pushChainLink(
     draft,
@@ -2034,18 +1991,11 @@ function placeRitualCard(
   playerId: PlayerId,
   cardInstanceId: CardInstanceId,
   definition: CardDefinition,
-  energyPaid: number | undefined,
 ): GameError | null {
-  if (!holdsMarker(draft, playerId)) return "INSUFFICIENT_ENERGY";
-
-  const cost = resolveEnergyPayment(definition, energyPaid);
-  if (cost === null) return "INVALID_TARGET";
-  const discounted = discountedPlayCost(draft, playerId, definition, cost);
+  const headerCostError = payHeaderCost(draft, playerId, definition, true);
+  if (headerCostError !== null) return headerCostError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
-  const spend = payEnergy(draft, playerId, discounted.cost);
-  markDiscountMatchesSpent(draft, discounted.matches);
-  noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
 
   pushChainLink(
     draft,
@@ -2136,13 +2086,6 @@ function activateRitual(
     }
   }
 
-  const extra = region.additionalEnergy ?? 0;
-  if (extra > 0) {
-    const spend = payEnergyFlexible(draft, playerId, extra, inReactionWindow);
-    if (spend === null) return "INSUFFICIENT_ENERGY";
-    noteDeferredTurnEnd(draft, playerId, spend.turnEnds);
-  }
-
   if (region.activeWhen !== undefined) {
     const pile = draft.players[playerId]?.attributePool ?? {};
     const short = pileRequirementShortfall(pile, region.activeWhen);
@@ -2220,63 +2163,42 @@ function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
   }
 }
 
-/**
- * Bible §18. A spend is refused outright only when the player does not hold the
- * marker; going past zero is legal and ends the turn, which is what makes Energy
- * a pacing mechanism rather than a wallet.
- */
-const holdsMarker = (draft: Draft, playerId: PlayerId): boolean =>
-  draft.energy.holderId === playerId;
-
-function payEnergy(draft: Draft, playerId: PlayerId, amount: number): EnergySpendOutcome {
-  const spend = spendEnergy(draft.energy, amount, opponentOf(draft, playerId), draft.config.energy);
-  draft.energy = spend.track;
-  emit(draft, {
-    type: "energy-spent",
-    playerId,
-    amount,
-    remaining: spend.turnEnds ? 0 : spend.track.value,
-  });
-  return spend;
-}
-
-/**
- * Reaction-priority Energy: seats are opposing sides of one track.
- * Holder pays by the normal spend (toward the opponent). Non-holder pays by
- * pushing Energy **to the holder** (+cost, capped at trackMax) — never by
- * eating the holder’s remaining value. See OPEN_DESIGN “Reaction Energy”.
- */
-function payEnergyFlexible(
+function payHeaderCost(
   draft: Draft,
   playerId: PlayerId,
-  amount: number,
-  asReaction: boolean,
-): EnergySpendOutcome | null {
-  if (!asReaction && !holdsMarker(draft, playerId)) return null;
-
-  if (asReaction && !holdsMarker(draft, playerId)) {
-    const holderId = draft.energy.holderId;
-    const capped = Math.min(draft.energy.value + amount, draft.config.energy.trackMax);
-    const gained = capped - draft.energy.value;
-    draft.energy = { holderId, value: capped };
-    emit(draft, {
-      type: "energy-spent",
-      playerId,
-      amount,
-      remaining: 0,
-    });
-    if (gained > 0) {
-      emit(draft, {
-        type: "energy-gained",
-        playerId: holderId,
-        amount: gained,
-        remaining: capped,
-      });
-    }
-    return { track: draft.energy, turnEnds: false, passedToOpponent: 0 };
+  definition: CardDefinition,
+  applyDiscounts: boolean,
+): GameError | null {
+  const base = definition.playCost;
+  if (base === undefined || !isNonEmptyRequirement(base)) return null;
+  const { cost, matches } = applyDiscounts
+    ? discountedPlayRequirement(draft, playerId, definition, base)
+    : { cost: base, matches: [] as DiscountMatch[] };
+  if (!isNonEmptyRequirement(cost)) {
+    markDiscountMatchesSpent(draft, matches);
+    return null;
   }
+  const err = payPileSpend(draft, playerId, cost);
+  if (err === null) markDiscountMatchesSpent(draft, matches);
+  return err;
+}
 
-  return payEnergy(draft, playerId, amount);
+function payForgeCost(
+  draft: Draft,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): GameError | null {
+  const base = definition.playCost;
+  if (base === undefined || !isNonEmptyRequirement(base)) return null;
+  const discount = draft.forgeDiscountThisTurn[playerId] ?? 0;
+  if (discount > 0) {
+    const next = { ...draft.forgeDiscountThisTurn };
+    delete next[playerId];
+    draft.forgeDiscountThisTurn = next;
+  }
+  const cost = reduceRequirement(base, discount);
+  if (!isNonEmptyRequirement(cost)) return null;
+  return payPileSpend(draft, playerId, cost);
 }
 
 function passPriority(draft: Draft, playerId: PlayerId): GameError | null {
@@ -2330,7 +2252,7 @@ function drainChain(draft: Draft): GameError | null {
     if (draft.pendingDecision !== null) return null;
   }
 
-  return settleDeferredTurnEnd(draft);
+  return null;
 }
 
 function conductLink(draft: Draft, link: ChainLink): void {
@@ -2483,47 +2405,6 @@ function finishRitualActivation(draft: Draft, link: ChainLink): void {
   }
 }
 
-function settleDeferredTurnEnd(draft: Draft): GameError | null {
-  // Always clear the bookkeeping flag; the real check is the track below.
-  draft.deferredTurnEndPlayerId = null;
-
-  // Energy overshoot may flip the marker when a link’s cost is paid, but a later
-  // reaction can move it back (opposing +/-). Turn end is decided only after the
-  // whole chain (and any nested choices) have finished — if the turn player
-  // holds the marker again, the turn continues.
-  if (draft.energy.holderId === draft.activePlayerId) {
-    return null;
-  }
-
-  return passTurnOnOvershoot(draft, draft.activePlayerId);
-}
-
-/**
- * §18 ends the turn once the current action has finished rather than
- * interrupting it, so this runs after the card has fully resolved. The track
- * comes from the draft rather than from the spend, because an effect may have
- * moved it in between.
- */
-function settleTurnAfterSpend(
-  draft: Draft,
-  playerId: PlayerId,
-  spend: EnergySpendOutcome,
-): GameError | null {
-  if (!spend.turnEnds) return null;
-  return passTurnOnOvershoot(draft, playerId);
-}
-
-function passTurnOnOvershoot(draft: Draft, playerId: PlayerId): GameError | null {
-  const track = energyAfterOvershootPass(draft.energy, draft.config.energy);
-  emit(draft, {
-    type: "energy-passed",
-    toPlayerId: track.holderId,
-    amount: track.value,
-    cause: "overshoot",
-  });
-  return finishTurn(draft, playerId, track);
-}
-
 /* ------------------------------------------------------------- phase --- */
 
 function advancePhase(draft: Draft): GameError | null {
@@ -2544,23 +2425,10 @@ function enterPhase(draft: Draft, phase: TurnPhase): GameError | null {
 
 function endTurn(draft: Draft, playerId: PlayerId): GameError | null {
   const nextPlayerId = opponentOf(draft, playerId);
-  const track = passEnergy(nextPlayerId, draft.config.energy);
-
-  emit(draft, {
-    type: "energy-passed",
-    toPlayerId: nextPlayerId,
-    amount: track.value,
-    cause: "voluntary-pass",
-  });
-  return finishTurn(draft, playerId, track);
+  return finishTurn(draft, playerId, nextPlayerId);
 }
 
-/**
- * The one path a turn ends by, whether the player passed or spent past zero.
- * The incoming player is whoever ends up holding the marker, so the two cases
- * differ only in how much Energy they arrive with.
- */
-function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameError | null {
+function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): GameError | null {
   detachDice(draft);
   expireTurnSymbols(draft);
   resetCombatCounters(draft);
@@ -2577,26 +2445,25 @@ function finishTurn(draft: Draft, playerId: PlayerId, track: EnergyTrack): GameE
   tickForgeLocksForOwner(draft, playerId);
   clearTurnTriggerState(draft);
 
-  draft.energy = track;
   emit(draft, { type: "turn-ended", playerId });
 
   draft.turn += 1;
-  draft.activePlayerId = track.holderId;
-  emit(draft, { type: "turn-started", turn: draft.turn, playerId: track.holderId });
+  draft.activePlayerId = nextPlayerId;
+  emit(draft, { type: "turn-started", turn: draft.turn, playerId: nextPlayerId });
 
-  clearToxinReceiveCapsForOwner(draft, track.holderId);
+  clearToxinReceiveCapsForOwner(draft, nextPlayerId);
   // Toxin counters tick at the start of the creature's owner's turn.
-  tickToxins(draft, track.holderId);
+  tickToxins(draft, nextPlayerId);
   // Standing burn pulses after toxin ticks (auto-target only — no choose pending).
-  fireOnTurnStart(draft, track.holderId);
+  fireOnTurnStart(draft, nextPlayerId);
   drainResolution(draft);
   // Exhausted once-per-turn rituals come off diagonal; Active-when is re-checked
   // against the owner's attribute pile.
-  resetExhaustedRituals(draft, track.holderId);
+  resetExhaustedRituals(draft, nextPlayerId);
 
   // Drawn on entering your own turn, so the opening hand is not topped up
   // before the first player has had a turn to use it.
-  drawCards(draft, track.holderId, draft.config.cardsDrawnPerTurn);
+  drawCards(draft, nextPlayerId, draft.config.cardsDrawnPerTurn);
 
   checkVictory(draft);
   return enterPhase(draft, "roll");

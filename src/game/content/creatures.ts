@@ -192,7 +192,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
       "The first [Arcane] card used each turn costs 1 Energy less.",
     standingAbilities: [
       {
-        type: "energy-cost-discount",
+        type: "play-cost-discount",
         amount: 1,
         oncePerTurn: true,
         attributes: ["arcane"],
@@ -206,7 +206,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         type: "on-attack",
         attackKinds: ["special"],
         effects: [
-          { type: "gain-energy", amount: 1 },
+          { type: "generate-symbol", symbol: "arcane", amount: 1 },
           { type: "generate-symbol", symbol: "arcane", amount: 1 },
         ],
       },
@@ -303,7 +303,7 @@ const FIGMA_DEFINITIONS: readonly CreatureDefinition[] = [
         type: "on-attack",
         attackKinds: ["special"],
         effects: [
-          { type: "gain-energy", amount: 1 },
+          { type: "generate-symbol", symbol: "arcane", amount: 1 },
           { type: "draw-cards", amount: 1 },
         ],
       },
@@ -412,7 +412,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
         type: "on-attack",
         attackKinds: ["special"],
         effects: [
-          { type: "gain-energy", amount: 1 },
+          { type: "generate-symbol", symbol: "luminar", amount: 1 },
           { type: "generate-symbol", symbol: "luminar", amount: 1 },
         ],
       },
@@ -448,7 +448,7 @@ const TEMPO_COMBO_DEFINITIONS: readonly CreatureDefinition[] = [
       "The first [Luminar] card used each turn costs 1 Energy less.\nOn attack, another ally: [Heal 1] on the most damaged ally.",
     standingAbilities: [
       {
-        type: "energy-cost-discount",
+        type: "play-cost-discount",
         amount: 1,
         oncePerTurn: true,
         attributes: ["luminar"],
@@ -661,7 +661,7 @@ const CONTROL_REWORK_DEFINITIONS: readonly CreatureDefinition[] = [
       {
         type: "on-attack",
         attackKinds: ["special"],
-        effects: [{ type: "lose-energy", amount: 1, player: "opponent" }],
+        effects: [{ type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } }],
       },
     ],
     attacks: [
@@ -777,7 +777,7 @@ const BURN_DEFINITIONS: readonly CreatureDefinition[] = [
       "The first [Toxin] card used each turn costs 1 Energy less.\nOn absorb Toxin: [Mark 1 Toxin].",
     standingAbilities: [
       {
-        type: "energy-cost-discount",
+        type: "play-cost-discount",
         amount: 1,
         oncePerTurn: true,
         attributes: ["toxin"],

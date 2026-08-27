@@ -79,13 +79,6 @@ export function pushChainLink(
   });
   return full;
 }
-
-export function noteDeferredTurnEnd(draft: Draft, playerId: PlayerId, turnEnds: boolean): void {
-  if (turnEnds) {
-    draft.deferredTurnEndPlayerId = playerId;
-  }
-}
-
 export function buildEffectLink(args: {
   readonly kind: "tactic-effect" | "ritual-activate";
   readonly controllerId: PlayerId;

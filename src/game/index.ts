@@ -14,7 +14,6 @@ export * from "./rules/absorb.js";
 export * from "./rules/cards.js";
 export * from "./rules/creatures.js";
 export * from "./rules/dice.js";
-export * from "./rules/energy.js";
 export * from "./rules/faces.js";
 export * from "./rules/loadout.js";
 export * from "./rules/reactions.js";
@@ -37,9 +36,11 @@ export {
 export {
   attributeLabel,
   formatEffectRegion,
-  formatEnergyCost,
   formatFaceKind,
   formatForgeLine,
+  formatPlayCostHeader,
+  formatPlayCostLine,
+  formatRequirementBody,
   formatRequirementLine,
   formatTypeLine,
 } from "./content/cardText.js";

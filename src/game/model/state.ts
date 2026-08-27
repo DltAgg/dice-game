@@ -78,18 +78,6 @@ export type TurnPhase = "roll" | "actions";
 export const TURN_PHASE_ORDER: readonly TurnPhase[] = ["roll", "actions"];
 
 export type MatchStatus = "in-progress" | "finished";
-
-/**
- * Bible §5 and §18: one shared marker, not a per-player pool. `value` is the
- * Energy available to `holderId`; the turn ends when a spend pushes it below
- * zero, and the overshoot (plus `energyOnOvershootBonus` when the turn
- * actually passes) becomes the other player's starting Energy.
- */
-export interface EnergyTrack {
-  readonly holderId: PlayerId;
-  readonly value: number;
-}
-
 /**
  * SPDD §17 asks for an explicit resolution structure so that an effect which
  * spawns another effect does not recurse uncontrollably. Effects are pushed
@@ -141,7 +129,7 @@ export type PendingDecision =
       readonly controllerId: PlayerId;
       /** Maximum cards that may be returned (already capped to GY size). */
       readonly amount: number;
-      readonly maxEnergyCost?: number;
+      readonly maxPlayCost?: number;
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
     }
@@ -150,11 +138,6 @@ export type PendingDecision =
       readonly controllerId: PlayerId;
       /** How many hand cards must be chosen (capped to current hand size). */
       readonly amount: number;
-      /**
-       * Energy spend from the card that opened this decision. Applied after the
-       * discard resolves so an overshoot does not end the turn mid-choice.
-       */
-      readonly turnEnds: boolean;
       readonly optional?: boolean;
       readonly thenEffects?: readonly EffectDefinition[];
       readonly sourceCreatureId?: CreatureId | null;
@@ -330,6 +313,7 @@ export type PendingDecision =
   | {
       readonly type: "optional-overcharge";
       readonly controllerId: PlayerId;
+      readonly symbol: SymbolType;
       readonly amount: number;
       readonly dieId: DieId;
       readonly slotIndex: number;
@@ -389,7 +373,6 @@ export interface GameState {
   readonly symbols: Readonly<Record<string, SymbolInstance>>;
   readonly cards: Readonly<Record<string, CardInstance>>;
 
-  readonly energy: EnergyTrack;
   /**
    * Immediate effect drain while a chain link is conducting (search/discard
    * pauses live here). Separate from `chainStack`.
@@ -402,11 +385,6 @@ export interface GameState {
    * open. Resolution resumes after the matching resolve / Pass action.
    */
   readonly pendingDecision: PendingDecision | null;
-  /**
-   * Energy overshoot that must wait until the chain (and nested choices)
-   * finishes. Spec `008`.
-   */
-  readonly deferredTurnEndPlayerId: PlayerId | null;
   /**
    * Extra damage on the next attack this turn (Crush and similar). Keyed by
    * player id; cleared at end of turn.

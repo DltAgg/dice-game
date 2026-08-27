@@ -188,10 +188,18 @@ export function forgeAction(
   };
 }
 
-export const withEnergy = (state: GameState, playerId: PlayerId, value: number): GameState => ({
-  ...state,
-  energy: { holderId: playerId, value },
-});
+/** Test helper: fuel every attribute pile so any play/forge cost is affordable. */
+export const withEnergy = (state: GameState, playerId: PlayerId, value: number): GameState =>
+  withAttributePool(state, playerId, {
+    martial: value,
+    wild: value,
+    toxin: value,
+    arcane: value,
+    luminar: value,
+    mechanical: value,
+    corruption: value,
+    darkness: value,
+  });
 
 /** Creatures in deployment order: 0 and 1 are frontline, 2 is in the back. */
 export function creatureAt(state: GameState, playerId: PlayerId, index: number): CreatureState {

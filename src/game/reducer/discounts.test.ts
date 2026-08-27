@@ -25,17 +25,17 @@ function controlMatch() {
   });
 }
 
-const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
-  withEnergy(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: Parameters<typeof withHand>[2], fuel = 10) =>
+  withEnergy(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, fuel);
 
-describe("energy-cost-discount", () => {
+describe("play-cost-discount", () => {
   it("discounts the first Arcane tactic Archmage's controller plays, not the second", () => {
     const state = actionsReady([COLLAPSE_OF_REALITY, COLLAPSE_OF_REALITY]);
     const firstId = handCardIdAt(state, P1, 0);
     const secondId = handCardIdAt(state, P1, 1);
 
     const first = expectOk(advance(state, { type: "PLAY_CARD", playerId: P1, cardInstanceId: firstId }));
-    expect(first.energy.value).toBe(7);
+    expect(first.players[P1]?.attributePool.arcane).toBe(7);
     const afterConvert =
       first.pendingDecision?.type === "convert-symbols"
         ? expectOk(
@@ -54,7 +54,7 @@ describe("energy-cost-discount", () => {
         cardInstanceId: secondId,
       }),
     );
-    expect(second.energy.value).toBe(3);
+    expect(second.players[P1]?.attributePool.arcane).toBe(3);
   });
 
   it("does not discount FORGE_CARD", () => {
@@ -65,7 +65,7 @@ describe("energy-cost-discount", () => {
     const forged = expectOk(
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [5])),
     );
-    expect(forged.energy.value).toBe(6);
+    expect(forged.players[P1]?.attributePool.arcane).toBe(6);
   });
 
   it("lets Tome discount Instant Arcane after Archmage spent on the Tome", () => {
@@ -79,7 +79,7 @@ describe("energy-cost-discount", () => {
         declaredTargetCreatureId: archmageId,
       }),
     );
-    expect(equipped.energy.value).toBe(8);
+    expect(equipped.players[P1]?.attributePool.arcane).toBe(8);
 
     const collapseId = handCardIdAt(equipped, P1, 0);
     const played = expectOk(
@@ -89,7 +89,7 @@ describe("energy-cost-discount", () => {
         cardInstanceId: collapseId,
       }),
     );
-    expect(played.energy.value).toBe(5);
+    expect(played.players[P1]?.attributePool.arcane).toBe(5);
   });
 
   it("does not let Tome discount a non-instant Arcane card", () => {
@@ -112,6 +112,7 @@ describe("energy-cost-discount", () => {
         declaredTargetCreatureId: archmageId,
       }),
     );
-    expect(martial.energy.value).toBe(6);
+    expect(martial.players[P1]?.attributePool.martial).toBe(8);
+    expect(martial.players[P1]?.attributePool.arcane).toBe(8);
   });
 });

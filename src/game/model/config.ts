@@ -8,29 +8,6 @@
  *   ASSUMED — a prototype assumption; see docs/OPEN_DESIGN.md.
  */
 
-export interface EnergyRulesConfig {
-  /**
-   * DECIDED. The shared track runs from `trackMax` on one player's side,
-   * through zero, to `trackMax` on the other's (bible §18, Digimon-style).
-   */
-  readonly trackMax: number;
-  /** DECIDED. Energy held by the player taking the first turn (not the clean-pass amount). */
-  readonly startingEnergy: number;
-  /**
-   * DECIDED. What the incoming player receives when the outgoing player ends
-   * their turn voluntarily (clean `END_TURN`, no overshoot this turn). A
-   * fixed amount, not a floor — overshoot passes use
-   * `energyOnOvershootBonus` instead of this value.
-   */
-  readonly energyOnVoluntaryPass: number;
-  /**
-   * DECIDED. Added to the overshoot when a turn actually ends because the
-   * marker crossed zero. Incoming Energy is `overshoot + this`, capped at
-   * `trackMax`. Applied at turn-pass, not at the moment of spend, so a
-   * reaction can still restore the marker before the bonus lands.
-   */
-  readonly energyOnOvershootBonus: number;
-}
 
 export interface GameRulesConfig {
   /** DEFINED, bible §4. */
@@ -104,7 +81,6 @@ export interface GameRulesConfig {
    * reducer rewrite.
    */
   readonly preventExpiry: "none";
-  readonly energy: EnergyRulesConfig;
 }
 
 export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
@@ -127,10 +103,4 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   frontlineSlots: 2,
   maxResolutionSteps: 64,
   preventExpiry: "none",
-  energy: {
-    trackMax: 10,
-    startingEnergy: 3,
-    energyOnVoluntaryPass: 5,
-    energyOnOvershootBonus: 2,
-  },
 };

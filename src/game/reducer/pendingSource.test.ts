@@ -84,7 +84,7 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
 }
 
 describe("pending source + GY search filter", () => {
-  it("Recalibrate GY search lists only cost ≤ maxEnergyCost and attributes the Recalibrate instance", () => {
+  it("Recalibrate GY search lists only cost ≤ maxPlayCost and attributes the Recalibrate instance", () => {
     let ready = actionsReady([RECALIBRATE, RATCHET, ECLIPSE]);
     const recalibrateId = handCardIdAt(ready, P1, 0);
     const cheapId = handCardIdAt(ready, P1, 1);
@@ -99,7 +99,7 @@ describe("pending source + GY search filter", () => {
       type: "search-graveyard",
       controllerId: P1,
       amount: 1,
-      maxEnergyCost: 2,
+      maxPlayCost: 2,
       sourceCardInstanceId: recalibrateId,
       sourceFaceCardId: null,
     });
@@ -108,7 +108,7 @@ describe("pending source + GY search filter", () => {
 
     const pending = after.pendingDecision;
     if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
-    const eligible = searchableInGraveyard(after, P1, pending.maxEnergyCost);
+    const eligible = searchableInGraveyard(after, P1, pending.maxPlayCost);
     expect(eligible).toEqual([cheapId]);
     expect(eligible).not.toContain(eclipseId);
     expect(eligible).not.toContain(recalibrateId);
@@ -200,13 +200,13 @@ describe("pending source + GY search filter", () => {
       type: "search-graveyard",
       controllerId: P1,
       amount: 1,
-      maxEnergyCost: 2,
+      maxPlayCost: 2,
       sourceCardInstanceId: null,
       sourceFaceCardId: SHADOW_ECHO,
     });
     const pending = state.pendingDecision;
     if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
-    expect(searchableInGraveyard(state, P1, pending.maxEnergyCost)).toEqual([cheapId]);
+    expect(searchableInGraveyard(state, P1, pending.maxPlayCost)).toEqual([cheapId]);
   });
 
   it("replayableGraveyardTactics lists only instant/ritual cards with modelled effects", () => {
