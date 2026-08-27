@@ -12,6 +12,7 @@ import type { DieState } from "../model/dice.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import type { SymbolType } from "../model/symbols.js";
+import { requirementTotal } from "../model/symbols.js";
 
 /**
  * Reading helpers for the card zones, and the one rule forging has to enforce
@@ -120,25 +121,9 @@ export const isNonRitualCard = (definition: CardDefinition): boolean =>
 export const isReactionCard = (definition: CardDefinition): boolean =>
   definition.type === "reaction" || definition.subtypes.includes("reaction");
 
-/**
- * Resolves how much Energy a play or forge spends. Fixed costs ignore
- * `energyPaid`. Variable (`?`) costs require an integer ≥ `energyCost`
- * (defaulting to the minimum when omitted).
- *
- * Returns `null` when the declared payment is illegal.
- */
-export function resolveEnergyPayment(
-  definition: CardDefinition,
-  energyPaid: number | undefined,
-  additionalEnergy = 0,
-): number | null {
-  if (definition.variableEnergy === true) {
-    const base = energyPaid ?? definition.energyCost;
-    if (!Number.isInteger(base) || base < definition.energyCost) return null;
-    return base + additionalEnergy;
-  }
-  return definition.energyCost + additionalEnergy;
-}
+/** Total pile tokens in the header play/forge cost, if any. */
+export const playCostTotal = (definition: CardDefinition): number =>
+  definition.playCost === undefined ? 0 : requirementTotal(definition.playCost);
 
 /**
  * Deck cards matching a search filter, in current deck order.
@@ -162,21 +147,21 @@ export function searchableInDeck(
 }
 
 /**
- * Graveyard card instance ids in current order. When `maxEnergyCost` is set,
- * only cards whose definition costs that Energy or less (Recalibrate / Assembly).
+ * Graveyard card instance ids in current order. When `maxPlayCost` is set,
+ * only cards whose header pile cost is that total or less (Recalibrate / Assembly).
  */
 export function searchableInGraveyard(
   state: GameState,
   playerId: PlayerId,
-  maxEnergyCost?: number,
+  maxPlayCost?: number,
 ): readonly CardInstanceId[] {
   const graveyard = state.players[playerId]?.graveyard ?? [];
-  if (maxEnergyCost === undefined) return graveyard;
+  if (maxPlayCost === undefined) return graveyard;
   return graveyard.filter((id) => {
     const card = state.cards[id];
     if (card === undefined) return false;
     const definition = getCard(card.cardId);
-    return definition !== undefined && definition.energyCost <= maxEnergyCost;
+    return definition !== undefined && playCostTotal(definition) <= maxPlayCost;
   });
 }
 

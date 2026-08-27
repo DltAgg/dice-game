@@ -3,6 +3,11 @@ import { getCreatureDefinition } from "../content/creatures.js";
 import type { CardDefinition, StandingTrigger } from "../model/cards.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import type { Attribute } from "../model/attributes.js";
+import {
+  requirementEntries,
+  type SymbolRequirement,
+} from "../model/symbols.js";
 import type { Draft } from "../reducer/draft.js";
 
 export type DiscountMatch = {
@@ -12,7 +17,7 @@ export type DiscountMatch = {
 };
 
 function discountMatches(ability: StandingTrigger, definition: CardDefinition): boolean {
-  if (ability.type !== "energy-cost-discount") return false;
+  if (ability.type !== "play-cost-discount") return false;
   if (ability.cardTypes !== undefined && !ability.cardTypes.includes(definition.type)) {
     return false;
   }
@@ -65,11 +70,11 @@ function collectDiscountHosts(state: GameState | Draft): readonly {
 }
 
 /**
- * Energy discounts for PLAY_CARD / ritual place / equip / overload (not FORGE).
+ * Pile-cost discounts for PLAY_CARD / ritual place / equip / overload (not FORGE).
  * Stacks; each once-per-turn ability applies at most once. Min cost is applied
  * by the caller.
  */
-export function matchingPlayEnergyDiscounts(
+export function matchingPlayCostDiscounts(
   state: GameState | Draft,
   playerId: PlayerId,
   definition: CardDefinition,
@@ -80,8 +85,8 @@ export function matchingPlayEnergyDiscounts(
     if (owner !== playerId) continue;
     for (const ability of host.abilities) {
       if (!discountMatches(ability, definition)) continue;
-      const key = `${host.keyPrefix}:energy-cost-discount`;
-      if (ability.type !== "energy-cost-discount") continue;
+      const key = `${host.keyPrefix}:play-cost-discount`;
+      if (ability.type !== "play-cost-discount") continue;
       if (
         ability.oncePerTurn === true &&
         (state.creatures[host.creatureId]?.spentOncePerTurnTriggers.includes(key) ?? false)
@@ -94,15 +99,30 @@ export function matchingPlayEnergyDiscounts(
   return matches;
 }
 
-export function discountedPlayCost(
+export function reduceRequirement(
+  requirement: SymbolRequirement,
+  discount: number,
+): SymbolRequirement {
+  if (discount <= 0) return requirement;
+  const result: Partial<Record<Attribute, number>> = {};
+  let remaining = discount;
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const reduced = Math.max(0, count - remaining);
+    remaining = Math.max(0, remaining - count);
+    if (reduced > 0) result[attribute] = reduced;
+  }
+  return result;
+}
+
+export function discountedPlayRequirement(
   state: GameState | Draft,
   playerId: PlayerId,
   definition: CardDefinition,
-  baseCost: number,
-): { readonly cost: number; readonly matches: readonly DiscountMatch[] } {
-  const matches = matchingPlayEnergyDiscounts(state, playerId, definition);
+  baseCost: SymbolRequirement,
+): { readonly cost: SymbolRequirement; readonly matches: readonly DiscountMatch[] } {
+  const matches = matchingPlayCostDiscounts(state, playerId, definition);
   const discount = matches.reduce((sum, match) => sum + match.amount, 0);
-  return { cost: Math.max(0, baseCost - discount), matches };
+  return { cost: reduceRequirement(baseCost, discount), matches };
 }
 
 export function attackIgnoreShieldAmount(

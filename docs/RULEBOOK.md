@@ -82,8 +82,7 @@ Squad order (`creatureIds`) is left-to-right on the battlefield.
 
 ## 4. Match start
 
-- First player in `playerOrder` takes turn 1, phase **roll**, with **3**
-  Energy.
+- First player in `playerOrder` takes turn 1, phase **roll**.
 - Opening hand is 5. The first player does **not** draw extra before acting.
   You draw **2** when **your** turn begins after an opponent’s turn ends.
 - Dice are built from that seat’s `startingDice`. Each seat’s leftover face
@@ -156,38 +155,18 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
 ---
 
-## 8. Energy
+## 8. Playing and forging costs
 
-One shared marker on a 10 · 0 · 10 track. `value` is Energy available to
-whoever holds the marker.
+Playing a tactic and forging its faces use the **same header cost**: `[Spend: …]`
+from your **attribute pile**. Attacks, optional effect `[Spend]` lines, and
+ritual Active-when / activate burns also draw from that pile (see §6).
 
-| Event | Incoming Energy |
-|---|---|
-| First player’s first turn | **3** |
-| Clean `END_TURN` (marker never crossed this turn) | **5** |
-| Turn actually ends because the marker crossed zero | overshoot **+ 2**, capped at **10** |
-
-- Spending **past** zero ends the turn after the current action/chain
-  finishes. Landing **exactly** on zero does not.
-- Playing **and** forging pay the printed header Energy cost.
-- Engine abilities / `[Requires]` gates and `[Spend]` pile burns (including
-  attacks, which may print **both**) cost **attribute-pile** fuel, not Energy.
-- Discounts apply to play / ritual place / equip / overload, **not** forge.
-  Minimum cost after discount is 0.
-- Printed Energy 1 on cards is exceptional; 1-Energy plays should mainly
-  come from discounts on higher printed costs.
-- Variable `?` costs (pay at least the printed minimum, then more) are
-  designed but catalogue cards that print `?` currently use a fixed integer
-  until spend UX lands.
-
-**Reactions and the marker:** if you pay Energy during a reaction window
-while you **do not** hold the marker, that cost is added to the current
-holder (capped at 10). If you already hold it, you spend normally.
-
-**Turn end vs chain:** an overshoot may flip the marker when a link’s cost
-is paid, but turn end is checked only after the **whole chain** (and nested
-choices) finishes. A later reaction can restore the marker so the turn
-continues.
+- **Play** burns the header `[Spend]` before the card resolves or attaches.
+- **Forge** burns the same header `[Spend]` when you install faces.
+- **Discounts** reduce the next matching play's pile cost (minimum 0). Forge
+  has a separate one-turn discount from some gear.
+- Reactions pay pile costs during a reaction window — there is no Energy track.
+- Turn end is voluntary (`END_TURN`) or from effects that say so.
 
 ---
 
@@ -197,7 +176,7 @@ During actions (or as a legal reaction — §15):
 
 | Kind | What happens |
 |---|---|
-| Instant | Pays Energy (and `[Spend]` if printed), then its effect. |
+| Instant | Pays header `[Spend]` (and any extra `[Spend]` on the effect), then resolves. |
 | Reaction | From hand, only while a reaction window is open and the response is legal. |
 | Equipment | Attaches to a creature; stays until destroyed or the host dies. Friendly vs opponent targeting is printed. |
 | Overload | Attaches to a **face card** (shared definition), not a physical die slot. Capacity is per face card. |
@@ -230,7 +209,7 @@ Played onto the engine area, not resolved from hand like an Instant.
 
 Rituals with no Active-when become ready on place. Otherwise the owner’s
 **attribute pile** must meet the printed Active-when. Optional **Spend** on
-activate burns from that pile (plus any additional Energy).
+activate burns from that pile only.
 
 At the start of your turn, exhausted rituals come off exhausted. Ready vs
 preparing is re-checked against your pile.
@@ -248,7 +227,7 @@ links; destroy answers a card already on the field.
 
 During actions, `FORGE_CARD` installs a face from your leftover pool **or**
 copies an already-installed matching face onto a legal slot. Pay the card’s
-header Energy. Forge does **not** open a reaction window.
+header `[Spend]` from your pile. Forge does **not** open a reaction window.
 
 You draw **one card per face installed** (own die or opponent’s). Empty
 deck still fails the draw quietly. This draw is a forge rule, not card text.

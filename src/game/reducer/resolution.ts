@@ -557,7 +557,6 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         type: "discard-cards",
         controllerId: pending.controllerId,
         amount,
-        turnEnds: false,
         ...(effect.optional === true ? { optional: true } : {}),
         ...(effect.then !== undefined ? { thenEffects: effect.then } : {}),
         sourceCreatureId: pending.sourceCreatureId,
@@ -604,7 +603,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       const graveyard = searchableInGraveyard(
         draft,
         pending.controllerId,
-        effect.maxEnergyCost,
+        effect.maxPlayCost,
       );
       const amount = Math.min(effect.amount, graveyard.length);
       if (amount === 0) {
@@ -620,7 +619,7 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
         type: "search-graveyard",
         controllerId: pending.controllerId,
         amount,
-        ...(effect.maxEnergyCost !== undefined ? { maxEnergyCost: effect.maxEnergyCost } : {}),
+        ...(effect.maxPlayCost !== undefined ? { maxPlayCost: effect.maxPlayCost } : {}),
         ...effectChoiceSource(draft, pending),
       };
       emit(draft, {
@@ -631,9 +630,17 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
       });
       return true;
     }
-    case "gain-energy": {
-      gainEnergy(draft, pending.controllerId, effect.amount);
-      return false;
+    case "optional-overcharge": {
+      if (pending.sourceDieId === null || pending.sourceSlotIndex === null) return false;
+      draft.pendingDecision = {
+        type: "optional-overcharge",
+        controllerId: pending.controllerId,
+        symbol: effect.symbol,
+        amount: effect.amount,
+        dieId: pending.sourceDieId,
+        slotIndex: pending.sourceSlotIndex,
+      };
+      return true;
     }
     case "destroy-equipment": {
       const targetId = resolveTarget(draft, pending, effect.target);
@@ -881,14 +888,6 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
           );
         }
       }
-      return false;
-    }
-    case "lose-energy": {
-      reduceOpponentEnergy(draft, pending.controllerId, effect.amount, "lose");
-      return false;
-    }
-    case "transfer-energy": {
-      reduceOpponentEnergy(draft, pending.controllerId, effect.amount, "transfer");
       return false;
     }
     case "retain-die": {
@@ -1153,17 +1152,6 @@ function applyEffect(draft: Draft, pending: PendingEffect): boolean {
     case "copy-appeared-synthetic-onroll": {
       return openDieSlotChoice(draft, pending, "appeared-synthetic-this-roll", false);
     }
-    case "optional-overcharge-energy": {
-      if (pending.sourceDieId === null || pending.sourceSlotIndex === null) return false;
-      draft.pendingDecision = {
-        type: "optional-overcharge",
-        controllerId: pending.controllerId,
-        amount: effect.amount,
-        dieId: pending.sourceDieId,
-        slotIndex: pending.sourceSlotIndex,
-      };
-      return true;
-    }
     case "arm-resolve-next-face-effect-twice": {
       draft.resolveNextFaceEffectTwice = {
         ...draft.resolveNextFaceEffectTwice,
@@ -1320,11 +1308,14 @@ export function applyRemoveToxinForDamage(
 export function applyOptionalOverchargeAccept(
   draft: Draft,
   controllerId: PlayerId,
+  symbol: SymbolType,
   amount: number,
   dieId: DieId,
   slotIndex: number,
 ): void {
-  gainEnergy(draft, controllerId, amount);
+  for (let i = 0; i < amount; i += 1) {
+    createSymbol(draft, controllerId, symbol, "available", "effect");
+  }
   setSuppressInherentNextRoll(draft, dieId, slotIndex);
 }
 
@@ -1384,23 +1375,6 @@ function openDieChoice(
     deferred: pending,
   };
   return true;
-}
-
-function reduceOpponentEnergy(
-  draft: Draft,
-  controllerId: PlayerId,
-  amount: number,
-  _mode: "lose" | "transfer",
-): void {
-  void _mode;
-  if (amount <= 0) return;
-  const opponentId = opponentOf(draft, controllerId);
-  if (draft.energy.holderId !== opponentId) return;
-  const lost = Math.min(amount, draft.energy.value);
-  if (lost <= 0) return;
-  const value = draft.energy.value - lost;
-  draft.energy = { holderId: opponentId, value };
-  emit(draft, { type: "energy-lost", playerId: opponentId, amount: lost, remaining: value });
 }
 
 export function applyRetainDieFromEffect(draft: Draft, playerId: PlayerId, dieId: DieId): void {
@@ -1608,22 +1582,6 @@ function firePreventDraw(draft: Draft, playerId: PlayerId): void {
   delete next[playerId];
   draft.preventDrawArmed = next;
   drawCards(draft, playerId, amount);
-}
-
-/**
- * Bible §18: the marker only ever means "Energy available to whoever holds it",
- * so a gain by the player who does not hold it would have nowhere to go. Only
- * the holder can gain, and the track's maximum still caps them.
- */
-function gainEnergy(draft: Draft, playerId: PlayerId, amount: number): void {
-  if (draft.energy.holderId !== playerId || amount <= 0) return;
-
-  const value = Math.min(draft.energy.value + amount, draft.config.energy.trackMax);
-  const gained = value - draft.energy.value;
-  if (gained <= 0) return;
-
-  draft.energy = { holderId: playerId, value };
-  emit(draft, { type: "energy-gained", playerId, amount: gained, remaining: value });
 }
 
 export function createSymbol(

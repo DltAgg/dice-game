@@ -108,8 +108,8 @@ describe("applyObservation", () => {
     const first = recording.turns.find((turn) => turn.turn === 1);
     expect(first?.endedAt).not.toBeNull();
     expect(first?.durationMs).toBe(7_000);
-    expect(first?.energyPassCause).toBe("voluntary-pass");
-    expect(recording.energyPassCounts["voluntary-pass"]).toBe(1);
+    expect(first?.energyPassCause).toBeNull();
+    expect(recording.energyPassCounts["voluntary-pass"] ?? 0).toBe(0);
     expect(ended.state.turn).toBe(2);
     expect(recording.totalTurns).toBe(2);
   });

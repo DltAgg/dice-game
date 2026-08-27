@@ -67,7 +67,7 @@ function showingFace(state: GameState, faceCardId: FaceCardId): GameState {
 describe("Concentrate", () => {
   it("applies 2 extra Toxin to a chosen enemy that already has Toxin", () => {
     const enemyId = creatureIdAt(actionsReady([CONCENTRATE]), P2, 0);
-    const ready = withToxin(withAttributePool(actionsReady([CONCENTRATE]), P1, { toxin: 1 }), enemyId, 1);
+    const ready = withToxin(withAttributePool(actionsReady([CONCENTRATE]), P1, { toxin: 4 }), enemyId, 1);
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -86,7 +86,11 @@ describe("Concentrate", () => {
   });
 
   it("whiffs when no enemy has Toxin", () => {
-    const ready = withAttributePool(actionsReady([CONCENTRATE]), P1, { toxin: 1 });
+    const ready = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [CONCENTRATE]),
+      P1,
+      { toxin: 4 },
+    );
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",

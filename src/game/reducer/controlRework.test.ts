@@ -81,7 +81,7 @@ describe("builtin Control two-color identity", () => {
 
 describe("Umbral Bolt", () => {
   it("deals 3 after choosing an enemy when Darkness is in the pool", () => {
-    const ready = withAttributePool(actionsReady([UMBRAL_BOLT]), P1, { darkness: 1 });
+    const ready = withAttributePool(actionsReady([UMBRAL_BOLT]), P1, { darkness: 4 });
     const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -102,7 +102,7 @@ describe("Umbral Bolt", () => {
   });
 
   it("refuses without Darkness in the pool", () => {
-    const ready = actionsReady([UMBRAL_BOLT]);
+    const ready = withHand(withPhase(newMatch(), "actions"), P1, [UMBRAL_BOLT]);
     const refused = reduceAdvance(ready, {
       type: "PLAY_CARD",
       playerId: P1,

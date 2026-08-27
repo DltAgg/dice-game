@@ -213,7 +213,7 @@ describe("forge-faces (Great Contamination)", () => {
 describe("forge-faces (Ritual of Contamination)", () => {
   it("opens a one-face opponent forge when played with Corruption", () => {
     const state = withAttributePool(actionsReady([RITUAL_OF_CONTAMINATION]), P1, {
-      corruption: 1,
+      corruption: 2,
     });
     const played = advance(state, {
       type: "PLAY_CARD",

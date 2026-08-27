@@ -30,14 +30,11 @@ describe("a full match through the reducer alone", () => {
     expect(livingCreaturesOf(state, winnerId).length).toBeGreaterThan(0);
   });
 
-  it("passes the turn back and forth, alternating the energy holder", () => {
+  it("passes the turn back and forth, alternating the active player", () => {
     const { states } = autoplay(newMatch({ seed: 3 }));
-    const holders = states.slice(0, 6).map((state) => state.energy.holderId);
+    const actives = states.slice(0, 6).map((state) => state.activePlayerId);
 
-    expect(holders).toEqual([P1, P2, P1, P2, P1, P2]);
-    for (const state of states) {
-      expect(state.energy.holderId).toBe(state.activePlayerId);
-    }
+    expect(actives).toEqual([P1, P2, P1, P2, P1, P2]);
   });
 
   it("can bank and attack on the opening turn (pile-up)", () => {
@@ -61,7 +58,7 @@ describe("a full match through the reducer alone", () => {
     expect(types).toContain("attack-declared");
     expect(types).toContain("damage-dealt");
     expect(types).toContain("creature-defeated");
-    expect(types).toContain("energy-passed");
+    expect(types).toContain("turn-ended");
     expect(types.at(-1)).toBe("match-finished");
   });
 

@@ -13,7 +13,6 @@ import type {
   SymbolInstanceId,
 } from "../model/ids.js";
 import type {
-  EnergyTrack,
   GameState,
   MatchStatus,
   PendingDecision,
@@ -44,11 +43,9 @@ export interface Draft {
   dice: Record<string, DieState>;
   symbols: Record<string, SymbolInstance>;
   cards: Record<string, CardInstance>;
-  energy: EnergyTrack;
   resolutionStack: PendingEffect[];
   chainStack: ChainLink[];
   pendingDecision: PendingDecision | null;
-  deferredTurnEndPlayerId: PlayerId | null;
   attackBonusThisTurn: Record<string, number>;
   attackToxinThisTurn: Record<string, number>;
   preventDrawArmed: Record<string, number>;

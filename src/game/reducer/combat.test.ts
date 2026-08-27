@@ -13,8 +13,8 @@ import {
   P2,
   withDamage,
   withDefeatedCreature,
-  withEnergy,
   withHand,
+  withAttributePool,
   withPhase,
   withShields,
   withTokens,
@@ -219,12 +219,11 @@ describe("attacking", () => {
   });
 
   it("Pounce Spends Wild and grants Frenzy", () => {
-    let state = withHand(
-      withEnergy(withPhase(newMatch(), "actions"), P1, 5),
+    let state = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [POUNCE]),
       P1,
-      [POUNCE],
+      { wild: 3 },
     );
-    state = withTokens(state, creatureIdAt(state, P1, 0), { wild: 1 });
     const allyId = creatureIdAt(state, P1, 0);
     state = expectOk(
       advance(state, {

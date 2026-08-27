@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import {
   attributeLabel,
   formatEffectRegion,
-  formatEnergyCost,
+  formatPlayCostLine,
   formatForgeLine,
   formatRequirementLine,
   formatTypeLine,
@@ -69,11 +69,8 @@ function TacticDossier({ card }: { card: CardDefinition }) {
       </header>
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
-        <Dt>Energy</Dt>
-        <Dd>
-          {formatEnergyCost(card)}
-          {card.variableEnergy === true ? " (pay 1+)" : ""}
-        </Dd>
+        <Dt>Play cost</Dt>
+        <Dd>{formatPlayCostLine(card) ?? "—"}</Dd>
 
         <Dt>Type</Dt>
         <Dd className="capitalize">{card.type}</Dd>

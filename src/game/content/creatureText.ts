@@ -1,17 +1,15 @@
 import type { Attribute } from "../model/attributes.js";
 import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
-import { requirementEntries, type SymbolRequirement } from "../model/symbols.js";
+import type { SymbolRequirement } from "../model/symbols.js";
 import { isNonEmptyRequirement } from "../rules/tokens.js";
-import { attributeLabel } from "./cardText.js";
+import { formatRequirementBody } from "./cardText.js";
 
 /**
  * English printing helpers for the Figma creature-card grammar.
  */
 
 export function formatAttackCost(requires: SymbolRequirement): string {
-  return requirementEntries(requires)
-    .flatMap(([attribute, count]) => Array.from({ length: count }, () => attributeLabel(attribute)))
-    .join(" + ");
+  return formatRequirementBody(requires);
 }
 
 /**

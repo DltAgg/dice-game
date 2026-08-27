@@ -23,6 +23,7 @@ import {
   P2,
   withDamage,
   withEnergy,
+  withAttributePool,
   withPhase,
   withTokens,
   advanceResolvingChain as advance,
@@ -367,15 +368,15 @@ describe("face markers / suppress / lock (013)", () => {
     expect(state.attackBonusThisTurn[P1] ?? 0).toBe(bonusBefore + 1);
   });
 
-  it("Overcharge optional energy suppresses next inherent; absorb doubles next face effect", () => {
-    let state = withEnergy(installFace(newMatch(), OVERCHARGE), P1, 3);
-    const energyBefore = state.energy.value;
+  it("Overcharge optional Mechanical suppresses next inherent; absorb doubles next face effect", () => {
+    let state = withAttributePool(installFace(newMatch(), OVERCHARGE), P1, { mechanical: 3 });
+    const mechanicalBefore = state.players[P1]?.attributePool.mechanical ?? 0;
     state = rollShowingSlot(state, 0);
     expect(state.pendingDecision?.type).toBe("optional-overcharge");
     state = expectOk(
       advance(state, { type: "RESOLVE_OPTIONAL_OVERCHARGE", playerId: P1, accept: true }),
     );
-    expect(state.energy.value).toBe(energyBefore + 1);
+    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(mechanicalBefore + 1);
     expect(state.dice[dieIdOf(state)]?.slots[0]?.suppressInherentNextRoll).toBe(true);
     // Auto-bank On absorb after optional resolves.
     expect(state.resolveNextFaceEffectTwice[P1]).toBe(true);

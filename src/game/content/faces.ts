@@ -255,8 +255,8 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     stayPolicy: { kind: "cannot-replace-by-forge" },
     activated: {
       kind: "remove-corruption-face",
-      energyBase: 2,
-      energyPerCorruptionOnDie: 1,
+      spendBase: 2,
+      spendPerCorruptionOnDie: 1,
     },
   }),
   face({
@@ -274,8 +274,8 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     pestilenceSpreadAt: 2,
     activated: {
       kind: "remove-corruption-face",
-      energyBase: 2,
-      energyPerCorruptionOnDie: 1,
+      spendBase: 2,
+      spendPerCorruptionOnDie: 1,
     },
   }),
 
@@ -294,7 +294,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "On roll: you may [Convert 1] this Arcane into any Natural.\nOn absorb: [Gain 1 Energy].",
     {
       onRoll: [{ type: "convert-symbols", amount: 1, sourceOnly: true }],
-      onAbsorb: [{ type: "gain-energy", amount: 1 }],
+      onAbsorb: [{ type: "generate-symbol", symbol: "corruption", amount: 1 }],
     },
   ),
   namedSynthetic(
@@ -307,7 +307,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
         {
           type: "conditional",
           when: { type: "has-other-symbol", symbol: "arcane" },
-          then: [{ type: "gain-energy", amount: 1 }],
+          then: [{ type: "generate-symbol", symbol: "arcane", amount: 1 }],
         },
       ],
       onAbsorb: [{ type: "arm-requirement-wildcard", fromSymbol: "arcane" }],
@@ -369,7 +369,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
         {
           type: "conditional",
           when: { type: "any-ally-attacked-this-turn" },
-          then: [{ type: "gain-energy", amount: 1 }],
+          then: [{ type: "generate-symbol", symbol: "luminar", amount: 1 }],
         },
       ],
       onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
@@ -434,7 +434,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
         {
           type: "conditional",
           when: { type: "controller-has-frontline" },
-          then: [{ type: "gain-energy", amount: 1 }],
+          then: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
         },
       ],
       onAbsorb: [
@@ -513,7 +513,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "On roll: if the opponent has a Corrupted face, [Mark 1 Corruption] on another face of the same die.\nOn absorb: [Lose 1 Energy].",
     {
       onRoll: [{ type: "spread-corruption-marker" }],
-      onAbsorb: [{ type: "lose-energy", amount: 1, player: "opponent" }],
+      onAbsorb: [{ type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } }],
     },
   ),
   namedSynthetic(
@@ -577,7 +577,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
         {
           type: "conditional",
           when: { type: "has-other-symbol", faceKind: "synthetic" },
-          then: [{ type: "gain-energy", amount: 1 }],
+          then: [{ type: "generate-symbol", symbol: "corruption", amount: 1 }],
         },
       ],
       onAbsorb: [{ type: "arm-forge-discount", amount: 1 }],
@@ -600,7 +600,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "mechanical",
     "On roll: you may gain 1 additional Energy; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\nOn absorb: [Double].",
     {
-      onRoll: [{ type: "optional-overcharge-energy", amount: 1 }],
+      onRoll: [{ type: "optional-overcharge", symbol: "mechanical", amount: 1 }],
       onAbsorb: [{ type: "arm-resolve-next-face-effect-twice" }],
     },
   ),
@@ -610,7 +610,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "mechanical",
     "On roll: [Gain 1 Energy].\nOn absorb: [Generate 1 Shield].",
     {
-      onRoll: [{ type: "gain-energy", amount: 1 }],
+      onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
       onAbsorb: [{ type: "generate-symbol", symbol: SHIELD, amount: 1 }],
     },
   ),
@@ -621,7 +621,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "On roll: [Generate 1 Mechanical].\nOn absorb: [Gain 1 Energy].",
     {
       onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
-      onAbsorb: [{ type: "gain-energy", amount: 1 }],
+      onAbsorb: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
     },
   ),
   namedSynthetic(
@@ -633,7 +633,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
       onRoll: [
         { type: "discard-cards", amount: 1, optional: true, then: [{ type: "draw-cards", amount: 1 }] },
       ],
-      onAbsorb: [{ type: "search-graveyard", amount: 1, maxEnergyCost: 2 }],
+      onAbsorb: [{ type: "search-graveyard", amount: 1, maxPlayCost: 2 }],
     },
   ),
   namedSynthetic(
@@ -642,8 +642,8 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "darkness",
     "On roll: [Lose 1 Energy]; you do not gain that Energy.\nOn absorb: [Move 1 Energy].",
     {
-      onRoll: [{ type: "lose-energy", amount: 1, player: "opponent" }],
-      onAbsorb: [{ type: "transfer-energy", amount: 1 }],
+      onRoll: [{ type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } }],
+      onAbsorb: [{ type: "drain-attribute-tokens", amount: 1, target: { kind: "choose-enemy" } }],
     },
   ),
   namedSynthetic(
@@ -653,7 +653,7 @@ const DEFINITIONS: readonly FaceCardDefinition[] = [
     "On roll: [Discard 1]; if you do, [Gain 2 Energy].\nOn absorb: [Discard 1] to [Strike 2].",
     {
       onRoll: [
-        { type: "discard-cards", amount: 1, then: [{ type: "gain-energy", amount: 2 }] },
+        { type: "discard-cards", amount: 1, then: [{ type: "generate-symbol", symbol: "mechanical", amount: 2 }] },
       ],
       onAbsorb: [
         {

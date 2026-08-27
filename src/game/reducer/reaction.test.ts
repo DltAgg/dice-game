@@ -51,10 +51,14 @@ describe("reaction chain (008)", () => {
   });
 
   it("lets Arcane Silence negate the top tactic link", () => {
-    const state = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+    const state = withEnergy(
+      withHand(
+        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+        P2,
+        [ARCANE_SILENCE],
+      ),
       P2,
-      [ARCANE_SILENCE],
+      10,
     );
 
     const opened = expectOk(
@@ -73,9 +77,8 @@ describe("reaction chain (008)", () => {
       }),
     );
     expect(silenced.chainStack).toHaveLength(2);
-    // Non-holder Silence (4) adds 4 to holder: 10−3+4 = 11 capped at trackMax.
-    expect(silenced.energy.holderId).toBe(P1);
-    expect(silenced.energy.value).toBe(Math.min(7 + 4, silenced.config.energy.trackMax));
+    expect(silenced.players[P1]?.attributePool.darkness).toBe(7);
+    expect(silenced.players[P2]?.attributePool.arcane).toBe(6);
 
     const resolved = resolveOpenChain(silenced);
     expect(resolved.chainStack).toHaveLength(0);
@@ -83,7 +86,7 @@ describe("reaction chain (008)", () => {
     expect(resolved.pendingDecision).toBeNull();
   });
 
-  it("non-holder reaction cost adds Energy to the holder (opposing +/-)", () => {
+  it("reaction ritual activation spends from the responder's pile", () => {
     // P2 places Nullification earlier; P1 holds 5, plays Eclipse (3) → 2;
     // P2 activates Nullification (+2) → holder gains 2 → 4.
     const p2Place = withEnergy(
@@ -108,7 +111,9 @@ describe("reaction chain (008)", () => {
     // Pass turn-ish: give P1 the marker with 5 and an Eclipse, ritual ready for P2.
     const p1Turn = withHand(
       withSymbols(
-        withEnergy(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, 5),
+        withAttributePool(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, {
+          darkness: 5,
+        }),
         P2,
         ["arcane", "arcane"],
       ),
@@ -137,7 +142,7 @@ describe("reaction chain (008)", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(afterEclipse.energy).toEqual({ holderId: P1, value: 2 });
+    expect(afterEclipse.players[P1]?.attributePool.darkness).toBe(2);
 
     const afterNegate = expectOk(
       advance(afterEclipse, {
@@ -146,11 +151,10 @@ describe("reaction chain (008)", () => {
         cardInstanceId: ritualId,
       }),
     );
-    expect(afterNegate.energy).toEqual({ holderId: P1, value: 4 });
-    expect(afterNegate.deferredTurnEndPlayerId).toBeNull();
+    expect(afterNegate.players[P2]?.attributePool.arcane ?? 0).toBe(0);
   });
 
-  it("overshoot then reaction restore: turn ends only after chain, and may not end", () => {
+  it("P1's turn continues after reaction chain resolves", () => {
     // A holds 2, plays Eclipse (3) → marker flips to B; B Nullifies (+2 holder spend
     // toward A) → marker returns to A; after Pass×2 A’s turn continues.
     const p2Place = withEnergy(
@@ -174,7 +178,9 @@ describe("reaction chain (008)", () => {
 
     const p1Turn = withHand(
       withSymbols(
-        withEnergy(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, 2),
+        withAttributePool(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, {
+          darkness: 5,
+        }),
         P2,
         ["arcane", "arcane"],
       ),
@@ -203,9 +209,6 @@ describe("reaction chain (008)", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    // Cost paid immediately: 2−3 overshoots to B with 1 (bonus not yet applied);
-    // turn must NOT end yet.
-    expect(afterEclipse.energy).toEqual({ holderId: P2, value: 1 });
     expect(afterEclipse.activePlayerId).toBe(P1);
     expect(afterEclipse.pendingDecision?.type).toBe("reaction-priority");
 
@@ -216,12 +219,9 @@ describe("reaction chain (008)", () => {
         cardInstanceId: ritualId,
       }),
     );
-    // B holds and pays +2 toward A: 1−2 → A gets 1.
-    expect(afterNegate.energy).toEqual({ holderId: P1, value: 1 });
 
     const resolved = resolveOpenChain(afterNegate);
     expect(resolved.activePlayerId).toBe(P1);
-    expect(resolved.energy.holderId).toBe(P1);
     expect(eventTypes(resolved)).not.toContain("turn-ended");
     expect(eventTypes(resolved)).toContain("chain-link-negated");
   });
@@ -325,10 +325,14 @@ describe("reaction chain (008)", () => {
   });
 
   it("lets Arcane Silence negate a non-Instant equipment attach link", () => {
-    const state = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [WAR_AXE]), P1, 10),
+    const state = withEnergy(
+      withHand(
+        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [WAR_AXE]), P1, 10),
+        P2,
+        [ARCANE_SILENCE],
+      ),
       P2,
-      [ARCANE_SILENCE],
+      10,
     );
 
     const opened = expectOk(
@@ -458,10 +462,14 @@ describe("reaction chain (008)", () => {
   });
 
   it("lets P2 pass and respond after a JSON round-trip of the window", () => {
-    const state = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+    const state = withEnergy(
+      withHand(
+        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+        P2,
+        [ARCANE_SILENCE],
+      ),
       P2,
-      [ARCANE_SILENCE],
+      10,
     );
     const opened = expectOk(
       advance(state, {

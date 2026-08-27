@@ -17,16 +17,16 @@ import {
   diceOf,
   eligibleFacesForForge,
   eligiblePoolFacesForReplace,
-  energyAvailableTo,
   formatAttackCost,
   formatAttackFuel,
   formatAttackLine,
   formatEffectRegion,
-  formatEnergyCost,
   formatFaceKind,
   formatForgeLine,
+  formatPlayCostLine,
   formatRequirementLine,
   formatTypeLine,
+  playCostTotal,
   getCard,
   getCreatureDefinition,
   getFaceCard,
@@ -102,6 +102,19 @@ const PHASE_LABELS: Record<TurnPhase, string> = {
   roll: "Roll",
   actions: "Actions",
 };
+
+type CardDef = NonNullable<ReturnType<typeof getCard>>;
+
+function formatPlayCostCompact(def: CardDef): string {
+  if (def.playCost === undefined) return "—";
+  const formatted = formatAttackCost(def.playCost);
+  return formatted.length > 0 ? formatted : "—";
+}
+
+function formatPlayCostHover(def: CardDef): string {
+  const line = formatPlayCostLine(def);
+  return line ?? "No play cost";
+}
 
 type Intent =
   | { readonly kind: "idle" }
@@ -1315,7 +1328,7 @@ export function MatchBoard() {
         />
       )}
 
-      {/* Field (≥70%) + faces (≤30%). Energy bar spans full width between seats. */}
+      {/* Field (≥70%) + faces (≤30%). Phase bar spans full width between seats. */}
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,30%)] items-stretch gap-x-3 gap-y-4">
         <Battlefield
           state={state}
@@ -1353,7 +1366,7 @@ export function MatchBoard() {
         />
 
         <div className="col-span-2 min-w-0">
-          <EnergyBar
+          <PhaseBar
             state={state}
             canAct={canAct}
             onGoToPhase={goToPhase}
@@ -1651,7 +1664,7 @@ function TacticInspectHover({
     >
       <p className="text-sm font-medium text-stone-100">{def.name}</p>
       <p className="mt-1 text-xs text-stone-400">
-        {def.variableEnergy === true ? "? (1+)" : def.energyCost} Energy
+        {formatPlayCostHover(def)}
         {negated ? " · negated" : ""}
       </p>
       <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
@@ -1999,9 +2012,14 @@ function stayStatusForFace(
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
-function activateFaceEnergyCost(state: GameState, dieId: DieId, energyBase: number, energyPerCorruptionOnDie: number): number {
+function activateFaceSpendCost(
+  state: GameState,
+  dieId: DieId,
+  spendBase: number,
+  spendPerCorruptionOnDie: number,
+): number {
   const die = state.dice[dieId];
-  if (die === undefined) return energyBase;
+  if (die === undefined) return spendBase;
   let corruptionFaces = 0;
   for (const slot of die.slots) {
     const face = getFaceCard(slot.faceCardId);
@@ -2009,7 +2027,7 @@ function activateFaceEnergyCost(state: GameState, dieId: DieId, energyBase: numb
       corruptionFaces += 1;
     }
   }
-  return energyBase + energyPerCorruptionOnDie * corruptionFaces;
+  return spendBase + spendPerCorruptionOnDie * corruptionFaces;
 }
 
 function showingSlotsForFace(
@@ -2069,8 +2087,10 @@ function formatCardTypeList(types: readonly CardType[]): string {
   return `${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1] ?? ""}`;
 }
 
-function maxEnergyCostPhrase(maxEnergyCost: number): string {
-  return maxEnergyCost === 1 ? "cost 1 Energy or less" : `cost ${String(maxEnergyCost)} or less Energy`;
+function maxPlayCostPhrase(maxPlayCost: number): string {
+  return maxPlayCost === 1
+    ? "cost 1 pile token or less"
+    : `cost ${String(maxPlayCost)} pile tokens or less`;
 }
 
 function opposingOverloadedFaces(
@@ -2126,8 +2146,8 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   }
   if (state.pendingDecision?.type === "search-graveyard") {
     const cost =
-      state.pendingDecision.maxEnergyCost !== undefined
-        ? ` that ${maxEnergyCostPhrase(state.pendingDecision.maxEnergyCost)}`
+      state.pendingDecision.maxPlayCost !== undefined
+        ? ` that ${maxPlayCostPhrase(state.pendingDecision.maxPlayCost)}`
         : "";
     return isPendingChooser
       ? `Choose up to ${String(state.pendingDecision.amount)} card(s)${cost} from your graveyard to return to hand.`
@@ -2299,7 +2319,7 @@ function hintFor(intent: Intent, state: GameState, isPendingChooser: boolean): s
   }
 }
 
-function EnergyBar({
+function PhaseBar({
   state,
   canAct,
   onGoToPhase,
@@ -2310,17 +2330,12 @@ function EnergyBar({
   onGoToPhase: (phase: TurnPhase) => void;
   onEndTurn: () => void;
 }) {
-  const p1 = energyAvailableTo(state.energy, MATCH_P1);
-  const p2 = energyAvailableTo(state.energy, MATCH_P2);
   const currentIndex = TURN_PHASE_ORDER.indexOf(state.phase);
   const controlsLocked =
     !canAct || state.status === "finished" || state.pendingDecision !== null;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--accent)]/30 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 px-4 py-3 text-sm">
-      <span>
-        P1 energy: <strong className="text-[var(--accent)]">{p1}</strong>
-      </span>
+    <div className="flex flex-wrap items-center justify-center gap-3 rounded-lg border border-[var(--accent)]/30 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 px-4 py-3 text-sm">
       <div className="flex flex-wrap items-center justify-center gap-1">
         {TURN_PHASE_ORDER.map((phase, index) => {
           const isCurrent = index === currentIndex;
@@ -2368,9 +2383,6 @@ function EnergyBar({
           End turn
         </button>
       </div>
-      <span>
-        P2 energy: <strong className="text-[var(--accent)]">{p2}</strong>
-      </span>
     </div>
   );
 }
@@ -2583,10 +2595,6 @@ function RitualTile({
   const durationLabel =
     duration === "continuous" ? "Continuous (stays)" : duration === "instant" ? "Leaves after activate" : null;
   const activeWhen = formatRequirementLine(def);
-  const activateCost =
-    def.ritual?.additionalEnergy !== undefined && def.ritual.additionalEnergy > 0
-      ? `+${String(def.ritual.additionalEnergy)}E to activate`
-      : null;
   const spend = def.ritual?.spend;
   const spendLine =
     spend !== undefined && formatAttackCost(spend) !== ""
@@ -2633,8 +2641,7 @@ function RitualTile({
             >
               <p className="text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-400">
-                {formatEnergyCost(def)} Energy
-                {activateCost !== null ? ` · ${activateCost}` : ""}
+                {formatPlayCostHover(def)}
               </p>
               <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
                 {orientation}
@@ -2685,7 +2692,7 @@ function RitualTile({
       <div className="w-full text-left">
         <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
         <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
-          {formatEnergyCost(def)}E · {def.subtypes.join("/") || "ritual"}
+          {formatPlayCostCompact(def)} · {def.subtypes.join("/") || "ritual"}
         </p>
         <p
           className={
@@ -3244,7 +3251,7 @@ function CreatureTile({
                     >
                       <p className="text-sm font-medium text-stone-100">{equipDef.name}</p>
                       <p className="mt-0.5 text-[0.65rem] text-stone-500">
-                        {formatEnergyCost(equipDef)}E · {formatTypeLine(equipDef)}
+                        {formatPlayCostCompact(equipDef)} · {formatTypeLine(equipDef)}
                       </p>
                       <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                         {formatEffectRegion(equipDef).join("\n")}
@@ -3522,11 +3529,11 @@ function FaceCardTile({
       {canActivateShowing &&
         activated !== undefined &&
         showingSlots.map((slot) => {
-          const cost = activateFaceEnergyCost(
+          const cost = activateFaceSpendCost(
             state,
             slot.dieId,
-            activated.energyBase,
-            activated.energyPerCorruptionOnDie,
+            activated.spendBase,
+            activated.spendPerCorruptionOnDie,
           );
           return (
             <button
@@ -3535,7 +3542,7 @@ function FaceCardTile({
               className={`${btnPrimary} mt-2 w-full text-xs`}
               onClick={() => onActivateFace(slot.dieId, slot.slotIndex)}
             >
-              Activate ({String(cost)}E)
+              Activate ({String(cost)} from pile)
             </button>
           );
         })}
@@ -3556,7 +3563,7 @@ function FaceCardsInPlay({
   state: GameState;
   playerId: PlayerId;
   label: string;
-  /** Same as Battlefield: P1 `up`, P2 `down` — flips faces vs pile toward the energy bar. */
+  /** Same as Battlefield: P1 `up`, P2 `down` — flips faces vs pile toward the phase bar. */
   facing: "up" | "down";
   actingPlayerId: PlayerId;
   canAct: boolean;
@@ -3992,7 +3999,7 @@ function TacticChoiceContent({
     <>
       <p className="text-sm font-medium text-stone-100">{def.name}</p>
       <p className="text-xs text-stone-500">
-        {def.variableEnergy === true ? "?" : def.energyCost}E · {def.subtypes.join("/")}
+        {formatPlayCostCompact(def)} · {def.subtypes.join("/")}
       </p>
       <p className="mt-1 text-[0.7rem] text-stone-400">{formatTypeLine(def)}</p>
       {formatEffectRegion(def).length > 0 && (
@@ -4327,7 +4334,7 @@ function HandStrip({
             >
               <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-500">
-                {def.variableEnergy === true ? "?" : def.energyCost}E · {def.subtypes.join("/")}
+                {formatPlayCostCompact(def)} · {def.subtypes.join("/")}
               </p>
               <div className="mt-3 flex gap-2">
                 {actionsLive && (
@@ -4378,7 +4385,7 @@ function HandStrip({
             >
               <p className="text-sm font-medium text-stone-100">{hoveredDef.name}</p>
               <p className="mt-1 text-xs text-stone-400">
-                {hoveredDef.variableEnergy === true ? "? (1+)" : hoveredDef.energyCost} Energy
+                {formatPlayCostHover(hoveredDef)}
               </p>
               <div className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 <p>
@@ -5785,7 +5792,7 @@ function DiscardModal({
                   </p>
                   <p className="text-xs text-stone-500">
                     {def !== undefined
-                      ? `${def.variableEnergy === true ? "?" : def.energyCost}E · ${def.subtypes.join("/")}`
+                      ? `${formatPlayCostCompact(def)} · ${def.subtypes.join("/")}`
                       : ""}
                   </p>
                 </button>
@@ -6167,7 +6174,7 @@ function SearchPanel({
   onToggle: (id: CardInstanceId) => void;
   onConfirm: () => void;
 }) {
-  const [sort, setSort] = useState<"name" | "energy" | "type">("energy");
+  const [sort, setSort] = useState<"name" | "cost" | "type">("cost");
   const [typeFilter, setTypeFilter] = useState<CardType | "all">("all");
 
   const pending = state.pendingDecision;
@@ -6181,7 +6188,7 @@ function SearchPanel({
       return searchableInDeck(state, pending.controllerId, pending.filter);
     }
     if (pending.type === "search-graveyard") {
-      return searchableInGraveyard(state, pending.controllerId, pending.maxEnergyCost);
+      return searchableInGraveyard(state, pending.controllerId, pending.maxPlayCost);
     }
     return [];
   }, [matches, pending, state]);
@@ -6212,8 +6219,10 @@ function SearchPanel({
     ranked.sort((a, b) => {
       const da = defsById.get(a);
       const db = defsById.get(b);
-      if (sort === "energy") {
-        return (da?.energyCost ?? 99) - (db?.energyCost ?? 99);
+      if (sort === "cost") {
+        const ca = da !== undefined ? playCostTotal(da) : 99;
+        const cb = db !== undefined ? playCostTotal(db) : 99;
+        return ca - cb;
       }
       if (sort === "type") {
         const ta = da?.type ?? "";
@@ -6238,8 +6247,8 @@ function SearchPanel({
   const subtitle =
     pending.type === "search-deck"
       ? `Pick ${String(amount)} ${formatCardTypeList(pending.filter)} card${amount === 1 ? "" : "s"} from your deck.`
-      : pending.maxEnergyCost !== undefined
-        ? `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} that ${maxEnergyCostPhrase(pending.maxEnergyCost)} from your graveyard to return to hand.`
+      : pending.maxPlayCost !== undefined
+        ? `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} that ${maxPlayCostPhrase(pending.maxPlayCost)} from your graveyard to return to hand.`
         : `Pick up to ${String(amount)} card${amount === 1 ? "" : "s"} from your graveyard to return to hand.`;
 
   const confirmLabel = emptyOptions
@@ -6265,10 +6274,10 @@ function SearchPanel({
               className="ml-2 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-xs text-stone-200"
               value={sort}
               onChange={(event) =>
-                setSort(event.target.value as "name" | "energy" | "type")
+                setSort(event.target.value as "name" | "cost" | "type")
               }
             >
-              <option value="energy">Energy</option>
+              <option value="cost">Cost</option>
               <option value="type">Type</option>
               <option value="name">Name</option>
             </select>

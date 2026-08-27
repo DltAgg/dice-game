@@ -6,7 +6,6 @@ import {
 } from "../content/cards.js";
 import { handOf, graveyardOf } from "../rules/cards.js";
 import {
-  creatureIdAt,
   eventTypes,
   handCardIdAt,
   newMatchWithDecks,
@@ -20,16 +19,14 @@ import {
 } from "../testing/scenario.js";
 
 /**
- * The effect region. Playing a card costs Energy and can therefore end the turn
- * (bible §18), which is the pacing pressure that makes a hand of cheap cards
- * different from a hand of expensive ones.
+ * The effect region. Playing a card spends from the attribute pile (spec `016`).
  */
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], fuel = 10) =>
+  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, fuel);
 
 describe("playing a card for its effect", () => {
-  it("resolves the effect and spends the Energy", () => {
+  it("resolves the effect and spends the play cost", () => {
     const state = actionsReady([ECLIPSE]);
     const cardInstanceId = handCardIdAt(state, P1, 0);
 
@@ -41,7 +38,7 @@ describe("playing a card for its effect", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.energy).toEqual({ holderId: P1, value: 7 });
+    expect(result.state.players[P1]?.attributePool.darkness).toBe(7);
     expect(eventTypes(result.state)).toContain("card-played");
     expect(graveyardOf(result.state, P1).map((card) => card.id)).toEqual([cardInstanceId]);
   });
@@ -104,7 +101,6 @@ describe("playing a card for its effect", () => {
       type: "discard-cards",
       controllerId: P1,
       amount: 1,
-      turnEnds: false,
     });
 
     const hand = result.state.players[P1]?.hand ?? [];
@@ -122,28 +118,22 @@ describe("playing a card for its effect", () => {
   });
 });
 
-describe("Energy and the turn", () => {
-  it("ends the turn when the cost pushes the marker past zero", () => {
-    const state = actionsReady([ECLIPSE], 2);
+describe("play cost and the pile", () => {
+  it("refuses when the pile lacks the play cost", () => {
+    const state = withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]);
 
     const result = advance(state, {
       type: "PLAY_CARD",
       playerId: P1,
       cardInstanceId: handCardIdAt(state, P1, 0),
-      declaredTargetCreatureId: creatureIdAt(state, P1, 0),
     });
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    // Empty deck → no draw → no discard pending → turn ends immediately.
-    expect(result.state.activePlayerId).toBe(P2);
-    expect(result.state.energy).toEqual({ holderId: P2, value: 3 });
-    expect(result.state.phase).toBe("roll");
-    expect(eventTypes(result.state)).toContain("turn-ended");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("INSUFFICIENT_SYMBOLS");
   });
 
-  it("does not end the turn on landing exactly on zero", () => {
-    const state = actionsReady([ECLIPSE], 3);
+  it("does not end the turn automatically after playing", () => {
+    const state = actionsReady([ECLIPSE]);
 
     const result = advance(state, {
       type: "PLAY_CARD",
@@ -154,14 +144,14 @@ describe("Energy and the turn", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.state.activePlayerId).toBe(P1);
-    expect(result.state.energy).toEqual({ holderId: P1, value: 0 });
+    expect(eventTypes(result.state)).not.toContain("turn-ended");
   });
 
-  it("defers the Energy overshoot until the discard is chosen", () => {
+  it("keeps the turn through a discard pending decision", () => {
     const ready = withEnergy(
       withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE, ECLIPSE]),
       P1,
-      1,
+      10,
     );
     const player = ready.players[P1];
     if (player === undefined) throw new Error("test: no player");
@@ -186,7 +176,6 @@ describe("Energy and the turn", () => {
     expect(played.ok).toBe(true);
     if (!played.ok) return;
     expect(played.state.activePlayerId).toBe(P1);
-    expect(played.state.deferredTurnEndPlayerId).toBe(P1);
     expect(played.state.pendingDecision).toMatchObject({
       type: "discard-cards",
       amount: 1,
@@ -200,23 +189,27 @@ describe("Energy and the turn", () => {
     });
     expect(resolved.ok).toBe(true);
     if (!resolved.ok) return;
-    expect(resolved.state.activePlayerId).toBe(P2);
-    expect(resolved.state.energy).toEqual({ holderId: P2, value: 4 });
+    expect(resolved.state.activePlayerId).toBe(P1);
     expect(eventTypes(resolved.state)).toContain("card-discarded");
-    expect(eventTypes(resolved.state)).toContain("turn-ended");
+    expect(eventTypes(resolved.state)).not.toContain("turn-ended");
   });
 
-  it("refuses a spend by the player who does not hold the marker", () => {
-    const state = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P2, 10);
+  it("refuses PLAY_CARD from a non-active player", () => {
+    const state = withEnergy(
+      withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]),
+      P1,
+      10,
+    );
+    const p2Turn = { ...state, activePlayerId: P2 };
 
-    const result = advance(state, {
+    const result = advance(p2Turn, {
       type: "PLAY_CARD",
       playerId: P1,
-      cardInstanceId: handCardIdAt(state, P1, 0),
+      cardInstanceId: handCardIdAt(p2Turn, P1, 0),
     });
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("INSUFFICIENT_ENERGY");
+    if (!result.ok) expect(result.error).toBe("NOT_ACTIVE_PLAYER");
   });
 });
 

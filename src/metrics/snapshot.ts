@@ -198,10 +198,7 @@ export function sumField(events: readonly GameEvent[], type: GameEvent["type"], 
 export function energyPassCause(
   events: readonly GameEvent[],
 ): "overshoot" | "voluntary-pass" | null {
-  for (let i = events.length - 1; i >= 0; i -= 1) {
-    const event = events[i];
-    if (event?.type === "energy-passed") return event.cause;
-  }
+  void events;
   return null;
 }
 

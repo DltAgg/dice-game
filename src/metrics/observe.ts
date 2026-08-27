@@ -2,7 +2,6 @@ import type { GameAction, GameError, GameState, LoggedEvent } from "@/game";
 import {
   countByType,
   creatureHpSnapshots,
-  energyPassCause,
   eventsSince,
   firstPlayerFromLog,
   incrementCardForges,
@@ -28,11 +27,21 @@ export interface Observation {
 
 type GameEvent = LoggedEvent["event"];
 
+function sumPileDiscarded(events: readonly GameEvent[]): number {
+  let total = 0;
+  for (const event of events) {
+    if (event.type !== "attribute-tokens-discarded") continue;
+    for (const count of Object.values(event.discarded)) {
+      if (typeof count === "number") total += count;
+    }
+  }
+  return total;
+}
+
 const emptyTurn = (
   turn: number,
   playerId: string,
   startedAt: string | null,
-  energy: number | null,
 ): TurnRecord => ({
   turn,
   playerId,
@@ -41,7 +50,7 @@ const emptyTurn = (
   durationMs: null,
   actionCount: 0,
   rejectedCount: 0,
-  energyAtStart: energy,
+  energyAtStart: null,
   energyAtEnd: null,
   energyPassCause: null,
   energySpent: 0,
@@ -74,11 +83,7 @@ function applyEventsToTurn(turn: TurnRecord, events: readonly GameEvent[], state
   return {
     ...turn,
     damageDealt,
-    energySpent: (turn.energySpent ?? 0) + sumField(events, "energy-spent", "amount"),
-    energyGained: (turn.energyGained ?? 0) + sumField(events, "energy-gained", "amount"),
-    energyLost: (turn.energyLost ?? 0) + sumField(events, "energy-lost", "amount"),
-    energyPassedAmount:
-      (turn.energyPassedAmount ?? 0) + sumField(events, "energy-passed", "amount"),
+    energySpent: (turn.energySpent ?? 0) + sumPileDiscarded(events),
     healAmount: turn.healAmount + sumField(events, "creature-healed", "amount"),
     damagePrevented: turn.damagePrevented + sumField(events, "damage-prevented", "amount"),
     attacksDeclared,
@@ -107,20 +112,13 @@ function applyEventsToTurn(turn: TurnRecord, events: readonly GameEvent[], state
   };
 }
 
-function closeTurn(
-  turn: TurnRecord,
-  endedAt: string,
-  energy: number,
-  cause: TurnRecord["energyPassCause"],
-): TurnRecord {
+function closeTurn(turn: TurnRecord, endedAt: string): TurnRecord {
   const startedMs = turn.startedAt !== null ? Date.parse(turn.startedAt) : Number.NaN;
   const endedMs = Date.parse(endedAt);
   return {
     ...turn,
     endedAt,
     durationMs: Number.isFinite(startedMs) ? Math.max(0, endedMs - startedMs) : turn.durationMs,
-    energyAtEnd: energy,
-    energyPassCause: cause ?? turn.energyPassCause,
   };
 }
 
@@ -195,7 +193,7 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
   const lastAction = recording.actions[recording.actions.length - 1];
   const deltaMs = lastAction === undefined ? 0 : Math.max(0, ctx.nowMs - Date.parse(lastAction.at));
   const pending = (prevState ?? state).pendingDecision?.type ?? null;
-  const passCause = accepted ? energyPassCause(newEvents) : null;
+  const passCause = null;
 
   const sample: ActionSample = {
     seq: recording.actions.length,
@@ -222,14 +220,13 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
   if (turns.length === 0) {
     const firstTurn = newEvents.find((event) => event.type === "turn-started");
     if (firstTurn?.type === "turn-started") {
-      turns.push(emptyTurn(firstTurn.turn, firstTurn.playerId, at, prevState?.energy.value ?? state.energy.value));
+      turns.push(emptyTurn(firstTurn.turn, firstTurn.playerId, at));
     } else {
       turns.push(
         emptyTurn(
           (prevState ?? state).turn,
           (prevState ?? state).activePlayerId,
           at,
-          (prevState ?? state).energy.value,
         ),
       );
     }
@@ -238,7 +235,7 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
   let workingIndex = Math.max(0, turns.length - 1);
   let working = turns[workingIndex];
   if (working === undefined) {
-    working = emptyTurn(state.turn, state.activePlayerId, at, state.energy.value);
+    working = emptyTurn(state.turn, state.activePlayerId, at);
     turns.push(working);
     workingIndex = turns.length - 1;
   }
@@ -257,12 +254,7 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
     for (const event of newEvents) {
       if (event.type === "turn-started") {
         if (working.endedAt === null && working.turn !== event.turn) {
-          working = closeTurn(
-            working,
-            at,
-            prevState?.energy.value ?? state.energy.value,
-            energyPassCause(newEvents),
-          );
+          working = closeTurn(working, at);
           stampTurn(workingIndex, working);
         }
         const existingIndex = turns.findIndex((turn) => turn.turn === event.turn && turn.endedAt === null);
@@ -270,7 +262,7 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
           workingIndex = existingIndex;
           working = turns[workingIndex] ?? working;
         } else {
-          working = emptyTurn(event.turn, event.playerId, at, state.energy.value);
+          working = emptyTurn(event.turn, event.playerId, at);
           turns.push(working);
           workingIndex = turns.length - 1;
         }
@@ -285,11 +277,8 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
         seenForgeCards.add(event.cardInstanceId);
         working = { ...working, cardsForged: working.cardsForged + 1 };
       }
-      if (event.type === "energy-passed") {
-        working = { ...working, energyPassCause: event.cause };
-      }
       if (event.type === "turn-ended") {
-        working = closeTurn(working, at, state.energy.value, working.energyPassCause);
+        working = closeTurn(working, at);
       }
       stampTurn(workingIndex, working);
     }
@@ -298,7 +287,7 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
   if (state.status === "finished") {
     const last = turns[turns.length - 1];
     if (last !== undefined && last.endedAt === null) {
-      stampTurn(turns.length - 1, closeTurn(last, at, state.energy.value, energyPassCause(newEvents)));
+      stampTurn(turns.length - 1, closeTurn(last, at));
     }
   }
 
@@ -329,7 +318,7 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
       recording.totalCardsForged + (accepted ? uniqueForgeCardInstanceIds(newEvents).length : 0),
     totalEnergySpent:
       (recording.totalEnergySpent ?? 0) +
-      (accepted ? sumField(newEvents, "energy-spent", "amount") : 0),
+      (accepted ? sumPileDiscarded(newEvents) : 0),
     eventCounts: accepted ? mergeCounts(recording.eventCounts, countByType(newEvents)) : recording.eventCounts,
     cardPlayCounts: accepted ? incrementCardPlays(recording.cardPlayCounts, newEvents) : recording.cardPlayCounts,
     cardForgeCounts: accepted
