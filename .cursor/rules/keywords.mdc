@@ -22,8 +22,9 @@ print:
    the operation is not placing or removing a token.
 5. Timing prefixes stay prefixes: `On roll: [Mark 1 Toxin].` Never “Whenever…”.
 6. Same change: update `docs/KEYWORDS.md`. If play itself changed, also
-   `docs/RULEBOOK.md`. Map print to existing `EffectDefinition` members; do
-   not add a generic `mark-token` AST just to match the glossary.
+   `docs/RULEBOOK.md`. Map print to AST opcodes (`mark`, `strip`, `modify`).
+   New tokens are `X` arguments, not new opcodes. Unique one-offs stay named
+   until a second card needs the same composition.
 
 Do not mass-rewrite existing `rulesText` unless asked. **New and edited**
 print uses the glossary.

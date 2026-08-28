@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-virulent-rite",
+  "name": "Virulent Rite",
+  "playCost": {
+    "toxin": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "[Forge 2 Synthetic Toxin] on your die.",
+  "ritual": {
+    "activeWhen": {
+      "toxin": 2
+    },
+    "spend": {
+      "toxin": 2
+    },
+    "effects": [
+      {
+        "type": "forge-faces",
+        "faces": 2,
+        "kind": "synthetic",
+        "attribute": "toxin",
+        "target": "own-die"
+      }
+    ]
+  }
+}

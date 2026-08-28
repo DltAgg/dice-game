@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-marrow-rot",
+  "name": "Marrow Rot",
+  "kind": "synthetic",
+  "symbol": "toxin",
+  "rulesText": "On roll: [Mark 1 Toxin].\nOn absorb: [Mark 1 Toxin] a chosen enemy that already has Toxin.",
+  "onRoll": [
+    {
+      "type": "apply-toxin",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "conditional",
+      "when": {
+        "type": "any-enemy-has-toxin"
+      },
+      "then": [
+        {
+          "type": "apply-toxin",
+          "amount": 1,
+          "target": {
+            "kind": "choose-enemy-with-toxin"
+          }
+        }
+      ]
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

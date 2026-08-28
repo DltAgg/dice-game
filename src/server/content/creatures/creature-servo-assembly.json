@@ -1,0 +1,83 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-servo-assembly",
+  "name": "Servo Assembly",
+  "life": 13,
+  "attributes": [
+    "mechanical"
+  ],
+  "passiveRulesText": "On absorb Mechanical: [Generate 1 Mechanical].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "mechanical"
+      ],
+      "absorberRelation": "ally",
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "basic"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-servo-assembly-ratchet",
+      "name": "Ratchet",
+      "kind": "basic",
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 1]. [Generate 1 Mechanical].",
+      "effect": {
+        "type": "damage",
+        "amount": 1,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-servo-assembly-stamp-pulse",
+      "name": "Stamp Pulse",
+      "kind": "special",
+      "requires": {
+        "mechanical": 2
+      },
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Stamp].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "reapply-die-modifiers"
+        }
+      ]
+    }
+  ]
+}

@@ -24,10 +24,10 @@ strategic vocabulary: three creatures, a tactics deck, and a face deck
 2. `.cursor/skills/author-content/design.md` — attribute identities, archetypes, cost bands
 3. Bible §§8, 12, 27–30, 34 (`competitive_dice_game_agent_bible.md`)
 4. `docs/specs/002-card-layer.md` (archetype table + Aggro/Control list identity)
-5. `src/game/rules/loadout.ts`, `src/game/rules/faces.ts` (`validateFaceDeck`)
-6. Current lists: `PROTOTYPE_DECK_COUNTS` / `CONTROL_DECK_COUNTS` in
-   `src/game/content/cards.ts`; face decks in `faces.ts`; squads in `creatures.ts`
-7. Builtin snapshots: `src/decks/prototype.ts`
+5. `src/server/rules/loadout.ts`, `src/server/rules/faces.ts` (`validateFaceDeck`)
+6. Current lists: one JSON per builtin in `src/server/content/loadouts/`
+   (`aggro.json` keeps persisted id `deck-prototype`)
+7. Client wrappers: `src/client/decks/prototype.ts` / `builtins.ts`
 8. `docs/RULEBOOK.md` §2 for player-facing loadout wording. If legality
    numbers or opening-die caps change, that is an engine/`loadout.ts` change
    and **must** update the rulebook in the same change. Card print vocabulary
@@ -128,7 +128,7 @@ Loadout Progress:
 
 Edit counts in `PROTOTYPE_DECK_COUNTS` / `CONTROL_DECK_COUNTS` (or a new
 exported list if the user asked for Combo/Support). Keep
-`src/decks/prototype.ts` in lockstep for builtins (`builtin: true`, do not
+`src/client/decks/prototype.ts` in lockstep for builtins (`builtin: true`, do not
 overwrite those ids from the UI repo).
 
 A new builtin id needs `prototype.ts` + `isBuiltinDeckId` — ask before adding
@@ -148,7 +148,7 @@ redesign `rulesText` or regions except by briefing card-designer.
 ## Verify
 
 ```bash
-npx vitest run src/game/rules/loadout.test.ts src/game/reducer/faceDeck.test.ts src/decks/memoryRepo.test.ts
+npx vitest run src/server/rules/loadout.test.ts src/server/reducer/faceDeck.test.ts src/client/decks/memoryRepo.test.ts
 npm run typecheck && npm test && npm run lint
 ```
 

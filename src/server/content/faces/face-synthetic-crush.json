@@ -1,0 +1,17 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-crush",
+  "name": "Crush",
+  "kind": "synthetic",
+  "symbol": "martial",
+  "rulesText": "On roll: [Empower 1].",
+  "onRoll": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 3,
+  "forgeRestriction": null
+}

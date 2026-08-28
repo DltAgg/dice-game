@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-primordial-fury",
+  "name": "Primordial Fury",
+  "kind": "synthetic",
+  "symbol": "wild",
+  "rulesText": "On roll: if an allied creature has attacked this turn, [Gain 1 Energy].\nOn absorb: [Empower 1].",
+  "onRoll": [
+    {
+      "type": "conditional",
+      "when": {
+        "type": "any-ally-attacked-this-turn"
+      },
+      "then": [
+        {
+          "type": "generate-symbol",
+          "symbol": "luminar",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

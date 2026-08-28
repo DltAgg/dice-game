@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-mirrored-rune",
+  "name": "Mirrored Rune",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Arcane: copy another symbol in your pool.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "arcane"
+        ],
+        "absorberRelation": "ally",
+        "effects": [
+          {
+            "type": "copy-pool-symbol"
+          }
+        ]
+      }
+    ]
+  }
+}

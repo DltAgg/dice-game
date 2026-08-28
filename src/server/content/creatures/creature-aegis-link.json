@@ -1,0 +1,91 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-aegis-link",
+  "name": "Aegis Link",
+  "life": 14,
+  "attributes": [
+    "luminar"
+  ],
+  "passiveRulesText": "The first [Luminar] card used each turn costs 1 Energy less.\nOn attack, another ally: [Heal 1] on the most damaged ally.",
+  "standingAbilities": [
+    {
+      "type": "play-cost-discount",
+      "amount": 1,
+      "oncePerTurn": true,
+      "attributes": [
+        "luminar"
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackerRelation": "ally-other",
+      "effects": [
+        {
+          "type": "heal",
+          "amount": 1,
+          "target": {
+            "kind": "most-damaged-ally"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-aegis-link-ward-strike",
+      "name": "Ward Strike",
+      "kind": "basic",
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Mark 1 Shield] this creature.",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "grant-shield",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ]
+    },
+    {
+      "id": "attack-aegis-link-beacon",
+      "name": "Beacon",
+      "kind": "special",
+      "requires": {
+        "luminar": 1,
+        "mechanical": 1
+      },
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Prevent] on an allied creature.",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "grant-attack-prevent",
+          "amount": 1,
+          "target": {
+            "kind": "choose-ally"
+          }
+        }
+      ]
+    }
+  ]
+}

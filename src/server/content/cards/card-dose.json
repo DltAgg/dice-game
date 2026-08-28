@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-dose",
+  "name": "Dose",
+  "playCost": {
+    "toxin": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "[Mark 2 Toxin].",
+  "effect": {
+    "requires": {
+      "toxin": 1
+    },
+    "effects": [
+      {
+        "type": "apply-toxin",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

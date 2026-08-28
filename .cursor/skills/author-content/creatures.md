@@ -1,6 +1,6 @@
 # Creature cards
 
-File: `src/game/content/creatures.ts`  
+File: `src/server/content/creatures/<creature-id>.json` (add the id constant in `creatures.ts`)  
 Spec: `docs/specs/003-creature-cards.md`
 
 ## Shape

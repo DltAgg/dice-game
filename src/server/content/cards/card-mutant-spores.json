@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-mutant-spores",
+  "name": "Mutant Spores",
+  "playCost": {
+    "toxin": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Toxin face.\nOn absorb: [Heal 1].",
+  "overload": {
+    "faceSymbols": [
+      "toxin"
+    ],
+    "onRoll": [],
+    "onAbsorb": [
+      {
+        "type": "heal",
+        "amount": 1,
+        "target": {
+          "kind": "most-damaged-ally"
+        }
+      }
+    ]
+  }
+}

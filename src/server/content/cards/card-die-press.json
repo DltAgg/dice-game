@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-die-press",
+  "name": "Die Press",
+  "playCost": {
+    "mechanical": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Forge 2 Synthetic Mechanical] on your die.",
+  "effect": {
+    "requires": {
+      "mechanical": 2
+    },
+    "effects": [
+      {
+        "type": "forge-faces",
+        "faces": 2,
+        "kind": "synthetic",
+        "attribute": "mechanical",
+        "target": "own-die"
+      }
+    ]
+  }
+}

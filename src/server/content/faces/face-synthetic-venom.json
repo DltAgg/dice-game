@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-venom",
+  "name": "Venom",
+  "kind": "synthetic",
+  "symbol": "toxin",
+  "rulesText": "On roll: [Mark 1 Toxin].\nOn absorb: a chosen enemy creature takes +1 damage the next time it takes damage.",
+  "onRoll": [
+    {
+      "type": "apply-toxin",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "arm-next-incoming-bonus",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

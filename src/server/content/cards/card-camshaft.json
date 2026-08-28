@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-camshaft",
+  "name": "Camshaft",
+  "playCost": {
+    "mechanical": 1
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Mechanical face.\nOn roll: [Discount 1] forge.",
+  "overload": {
+    "faceSymbols": [
+      "mechanical"
+    ],
+    "onRoll": [
+      {
+        "type": "arm-forge-discount",
+        "amount": 1
+      }
+    ]
+  }
+}

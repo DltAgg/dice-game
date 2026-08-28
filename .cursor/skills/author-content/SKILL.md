@@ -2,15 +2,15 @@
 name: author-content
 description: >-
   Create or update tactic, ritual, and face-card catalogue entries (and
-  creatures) as typed data in src/game/content. Use when designing a new card,
+  creatures) as typed data in src/server/content. Use when designing a new card,
   adding print/Figma/CSV text, or when the user mentions catalogue, forge,
   overload, ritual, equipment, face deck, or deferred effects.
 ---
 
 # Author game content
 
-Hand-author TypeScript in `src/game/content`. There is **no** CSV ingest —
-spreadsheets are worksheets, then catalogue entries.
+Hand-author **JSON** (one file per entity) under `src/server/content`. There is
+**no** CSV ingest — spreadsheets are worksheets, then catalogue documents.
 
 This skill is the path for **new** ritual / tactic / face cards as well as
 translating print. Design canon: `competitive_dice_game_agent_bible.md`.
@@ -23,11 +23,12 @@ verbs for a new token.
 
 | Content | File | Spec |
 |---|---|---|
-| Tactic + ritual (hand) | `src/game/content/cards.ts` | `docs/specs/002-card-layer.md` |
-| Face cards (dice) | `src/game/content/faces.ts` | `docs/specs/004-face-cards.md` |
-| Creatures | `src/game/content/creatures.ts` | `docs/specs/003-creature-cards.md` |
+| Tactic + ritual (hand) | `src/server/content/cards/<card-id>.json` | `docs/specs/002-card-layer.md` |
+| Face cards (dice) | `src/server/content/faces/<face-id>.json` | `docs/specs/004-face-cards.md` |
+| Creatures | `src/server/content/creatures/<creature-id>.json` | `docs/specs/003-creature-cards.md` |
+| Builtin loadouts | `src/server/content/loadouts/<archetype>.json` | `docs/specs/019-content-json.md` |
 
-Types: `src/game/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
+Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
 
 ## Hard rules
 
@@ -37,10 +38,10 @@ Types: `src/game/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    Write `rulesText` with keywords from [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md)
    (`On roll: [Mark 1 Toxin].`). Park gaps in `docs/DEFERRED_CATALOGUE.md`.
    Never approximate silently.
-3. Effects are **data** (`EffectDefinition`), never functions. Prefer existing
-   members; grow the union only with [develop-engine](../develop-engine/SKILL.md)
-   in the same change as the card that needs it.
-4. `src/game` stays pure. Do not put rules in UI / store / networking.
+3. Effects are **data** (AST `op` nodes or legacy `type` members compiled by
+   `AstCompiler`). Prefer existing opcodes; grow the engine only with
+   [develop-engine](../develop-engine/SKILL.md) in the same change as the card.
+4. `src/server` stays pure. Do not put rules in UI / store / networking.
 5. Forge the card’s own attribute. Natural forges are legal for every
    attribute; synthetic forges still name a special from the pool (never
    blank `face-synthetic-<attr>`). Keep splash in overload/equip gates or

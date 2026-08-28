@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-adrenaline",
+  "name": "Adrenaline",
+  "playCost": {
+    "wild": 1
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Natural Wild face.\nOn roll: once per turn you may [Reroll] this face. If it lands on this face again, [Strike 1] 2 of your creatures.",
+  "overload": {
+    "faceSymbols": [
+      "wild"
+    ],
+    "faceKinds": [
+      "natural"
+    ],
+    "onRoll": [
+      {
+        "type": "optional-reroll-die",
+        "oncePerTurn": true,
+        "sameFaceAllyDamage": 1
+      }
+    ]
+  }
+}

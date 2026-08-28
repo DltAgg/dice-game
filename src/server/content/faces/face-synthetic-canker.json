@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-canker",
+  "name": "Canker",
+  "kind": "synthetic",
+  "symbol": "corruption",
+  "rulesText": "On roll: [Mark 1 Corruption].\nOn absorb: [Forge 1 Synthetic Corruption] on the opponent's die.",
+  "onRoll": [
+    {
+      "type": "add-corruption-marker",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "forge-faces",
+      "faces": 1,
+      "kind": "synthetic",
+      "attribute": "corruption",
+      "target": "opponent-die"
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

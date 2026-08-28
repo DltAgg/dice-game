@@ -1,0 +1,16 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-arcane-echo",
+  "name": "Arcane Echo",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "[Requirement: may only be forged by \"Echo\" cards]\nCannot be included on opening dice.\nOn roll: copy the other die's face, applying its effects, attributes, and overloads.",
+  "onRoll": [
+    {
+      "type": "copy-other-die-face"
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 0,
+  "forgeRestriction": "echo-cards"
+}

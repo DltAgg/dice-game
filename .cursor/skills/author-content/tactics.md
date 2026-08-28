@@ -1,6 +1,6 @@
 # Tactic and ritual cards
 
-File: `src/game/content/cards.ts`  
+File: `src/server/content/cards/<card-id>.json` (add the id constant in `cards.ts`)  
 Grammar: `docs/specs/002-card-layer.md`  
 Design: [design.md](design.md)
 
@@ -109,7 +109,7 @@ Martial, Wild, Arcane, Luminar.
 Print those effects with [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md)
 (`[Mark N Toxin]` not “apply N Toxin markers”). Engine members:
 
-Read `src/game/model/effects.ts` as authority. Today:
+Read `src/server/model/effects.ts` as authority. Today:
 
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,
 `search-deck`, `search-graveyard`, `gain-energy`, `destroy-equipment`,
@@ -151,5 +151,5 @@ Standing triggers live on equipment / continuous rituals — see
 - Export the `CardId` const and add the `card({…})` to `DEFINITIONS`.
 - Builtin decks: `PROTOTYPE_DECK_COUNTS` (aggro) / `CONTROL_DECK_COUNTS`.
   40–50 cards, ≤3 copies. Do not auto-add 3× to both decks.
-- Consistency: `src/game/content/cards.consistency.test.ts`.
+- Consistency: `src/server/content/cards.consistency.test.ts`.
 - Wired effects need reducer tests (see `playcard.test.ts`, `forgeFaces.test.ts`).

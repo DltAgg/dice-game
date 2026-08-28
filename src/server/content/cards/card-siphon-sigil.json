@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-siphon-sigil",
+  "name": "Siphon Sigil",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Drain 2].",
+  "effect": {
+    "effects": [
+      {
+        "type": "drain-attribute-tokens",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

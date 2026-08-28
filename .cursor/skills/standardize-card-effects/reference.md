@@ -15,7 +15,7 @@
 
 ## Effect union (grow carefully)
 
-See `src/game/model/effects.ts`. Current members include: `damage`, `heal`,
+See `src/server/model/effects.ts`. Current members include: `damage`, `heal`,
 `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`, `search-deck`,
 `search-graveyard`, `gain-energy`, `destroy-equipment`, `apply-toxin`,
 `remove-shield`, `next-attack-bonus`, `negate-card`, `grant-damage-prevent`,
@@ -60,11 +60,11 @@ Reaction vs Instant = window legality, not field permanence.
 
 | Task | Path |
 |---|---|
-| Face catalogue | `src/game/content/faces.ts` |
-| Tactic catalogue | `src/game/content/cards.ts` |
-| Effects / targets | `src/game/model/effects.ts` |
-| Equipment abilities | `src/game/model/cards.ts` |
-| Hooks | `src/game/reducer/triggers.ts` |
-| Hook tests | `src/game/reducer/triggers.test.ts` |
+| Face catalogue | `src/server/content/faces/*.json` |
+| Tactic catalogue | `src/server/content/cards/*.json` |
+| Effects / targets | `src/server/model/effects.ts` |
+| Equipment abilities | `src/server/model/cards.ts` |
+| Hooks | `src/server/reducer/triggers.ts` |
+| Hook tests | `src/server/reducer/triggers.test.ts` |
 | Spec | `docs/specs/010-trigger-hooks.md` |
 | Backlog | `docs/DEFERRED_CATALOGUE.md` |

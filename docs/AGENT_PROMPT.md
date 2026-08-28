@@ -30,7 +30,7 @@ Delegate:
 
 | Layer | Owner |
 |---|---|
-| Loadout shape, `validateLoadout`, `createMatch`, face ledger, forge eligibility | **engine-developer** (`src/game` only) |
+| Loadout shape, `validateLoadout`, `createMatch`, face ledger, forge eligibility | **engine-developer** (`src/server` only) |
 | Deck builder dice painter, saved-deck schema, lobby/Play, protocol loadout JSON | **match-ui** (no second rules engine) |
 | Builtin Aggro / Control / Tempo / Combo Mechanical opening layouts + leftover pools | **deck-designer** |
 | New face print | **card-designer** only if a proving face is missing — do not author a catalogue pass |
@@ -237,7 +237,7 @@ naturals that are **not** in the face deck do **not** count toward the 12.
 2. **Fixtures:** replace `STARTING_DIE_SYMBOLS` as the match opener; keep the
    constant as `DEFAULT_BASIC_LAYOUT` for tests/helpers only.
 3. **Persistence / protocol:** `SavedDeck` + `DECK_SCHEMA_VERSION`; host/guest
-   loadout in `src/networking/protocol.ts` + hostSession tests.
+   loadout in `src/client/networking/protocol.ts` + hostSession tests.
 4. **match-ui:** Deck builder — two dice (6 slots each), click to assign
    basic vs face-deck special; live `validateLoadout` reason; show leftover
    pool. Play/lobby refuse illegal layouts. Match board: dice already differ
@@ -245,7 +245,7 @@ naturals that are **not** in the face deck do **not** count toward the 12.
 5. **deck-designer:** each builtin (`PROTOTYPE_*`, Control, Tempo, Combo
    Mechanical) gets an opening layout that matches squad attack attributes
    **and** a leftover pool those tactics can forge. Keep ≤2 synthetics per
-   player (or whatever you set). Update `src/decks/prototype.ts` snapshots
+   player (or whatever you set). Update `src/client/decks/prototype.ts` snapshots
    and `loadout.test.ts`.
 6. DoD. Summary: model, caps, builtin layouts (6+6 faces + remaining pool
    ids), UI/protocol notes.
@@ -255,7 +255,7 @@ naturals that are **not** in the face deck do **not** count toward the 12.
 ## Tests that will break (update, don’t skip)
 
 - `createMatch.test.ts` (identical layouts, `STARTING_DIE_SYMBOLS`)
-- `loadout.test.ts` / `src/decks/validate.ts`
+- `loadout.test.ts` / `src/client/decks/validate.ts`
 - `hostLoadout.test.ts` / `hostSession.test.ts`
 - Any reducer test that assumes slot 0 is always Martial on both seats
 - Face ledger / forge eligibility / stay-on-slot if opening Plague is

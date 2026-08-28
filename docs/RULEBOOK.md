@@ -8,7 +8,7 @@ change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
 It is not the design bible and not a card catalogue. Individual cards stay
 in specs 002 / 003 / 004. Unsettled questions stay in OPEN_DESIGN.md.
 Unmodelled print stays in DEFERRED_CATALOGUE.md. Numeric knobs live in
-src/game/model/config.ts (DEFAULT_RULES_CONFIG).
+src/server/model/config.ts (DEFAULT_RULES_CONFIG).
 -->
 
 ---
@@ -358,7 +358,7 @@ Related docs (agents):
 - docs/DEFERRED_CATALOGUE.md — unmodelled print
 - docs/KEYWORDS.md — print keywords (appended on the Rules tab)
 - docs/ARCHITECTURE.md — software advance path
-- src/game/model/config.ts — numeric knobs
+- src/server/model/config.ts — numeric knobs
 - specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill
   (pack feeding retired; Wild exclusive is `[Frenzy]`)
 -->

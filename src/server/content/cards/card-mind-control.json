@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-mind-control",
+  "name": "Mind Control",
+  "playCost": {
+    "corruption": 6
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces.",
+  "effect": {
+    "effects": [
+      {
+        "type": "mind-control"
+      }
+    ]
+  }
+}

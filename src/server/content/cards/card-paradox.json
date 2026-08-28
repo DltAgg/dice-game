@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-paradox",
+  "name": "Paradox",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Choose 1 Instant or Ritual card in your graveyard and use its effect immediately, ignoring its requirements.",
+  "ritual": {
+    "effects": [
+      {
+        "type": "replay-graveyard-tactic"
+      }
+    ]
+  }
+}

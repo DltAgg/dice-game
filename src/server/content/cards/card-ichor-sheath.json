@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-ichor-sheath",
+  "name": "Ichor Sheath",
+  "playCost": {
+    "toxin": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Toxin face.\nOn absorb: [Strike 1].",
+  "overload": {
+    "faceSymbols": [
+      "toxin"
+    ],
+    "onRoll": [],
+    "onAbsorb": [
+      {
+        "type": "damage",
+        "amount": 1,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

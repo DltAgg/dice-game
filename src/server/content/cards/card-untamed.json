@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-untamed",
+  "name": "Untamed",
+  "playCost": {
+    "wild": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "[Forge 1 Synthetic Wild] on your die.",
+  "effect": {
+    "effects": [
+      {
+        "type": "forge-faces",
+        "faces": 1,
+        "kind": "synthetic",
+        "attribute": "wild",
+        "target": "own-die"
+      }
+    ]
+  }
+}

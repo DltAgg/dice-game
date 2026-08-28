@@ -1,0 +1,94 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-ichor-hydra",
+  "name": "Ichor Hydra",
+  "life": 12,
+  "attributes": [
+    "toxin"
+  ],
+  "passiveRulesText": "The first [Toxin] card used each turn costs 1 Energy less.\nOn absorb Toxin: [Mark 1 Toxin].",
+  "standingAbilities": [
+    {
+      "type": "play-cost-discount",
+      "amount": 1,
+      "oncePerTurn": true,
+      "attributes": [
+        "toxin"
+      ]
+    },
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "toxin"
+      ],
+      "absorberRelation": "ally",
+      "effects": [
+        {
+          "type": "apply-toxin",
+          "amount": 1,
+          "target": {
+            "kind": "choose-enemy"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-ichor-hydra-fang",
+      "name": "Fang",
+      "kind": "basic",
+      "discards": {
+        "toxin": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 1]. [Mark 1 Toxin].",
+      "effect": {
+        "type": "damage",
+        "amount": 1,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "apply-toxin",
+          "amount": 1,
+          "target": {
+            "kind": "declared-target"
+          }
+        }
+      ]
+    },
+    {
+      "id": "attack-ichor-hydra-molt-venom",
+      "name": "Molt Venom",
+      "kind": "special",
+      "requires": {
+        "toxin": 1,
+        "corruption": 1
+      },
+      "discards": {
+        "toxin": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Mark 1 Toxin].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "apply-toxin",
+          "amount": 1,
+          "target": {
+            "kind": "declared-target"
+          }
+        }
+      ]
+    }
+  ]
+}

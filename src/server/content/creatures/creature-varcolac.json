@@ -1,0 +1,80 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-varcolac",
+  "name": "Varcolac",
+  "life": 13,
+  "attributes": [
+    "wild"
+  ],
+  "passiveRulesText": "On attack, another ally: [Frenzy] this creature.",
+  "standingAbilities": [
+    {
+      "type": "on-attack",
+      "attackerRelation": "ally-other",
+      "effects": [
+        {
+          "type": "grant-extra-attack",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "special"
+      ],
+      "effects": [
+        {
+          "type": "grant-extra-attack",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-varcolac-charge",
+      "name": "Charge",
+      "kind": "basic",
+      "discards": {
+        "wild": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-varcolac-coordinated-hunt",
+      "name": "Coordinated Hunt",
+      "kind": "special",
+      "requires": {
+        "wild": 1,
+        "martial": 1
+      },
+      "discards": {
+        "wild": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 4]. [Frenzy].",
+      "effect": {
+        "type": "damage",
+        "amount": 4,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

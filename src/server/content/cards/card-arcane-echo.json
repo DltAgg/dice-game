@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-arcane-echo",
+  "name": "Arcane Echo",
+  "playCost": {
+    "mechanical": 5
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "forgeTags": [
+    "echo"
+  ],
+  "rulesText": "[Stamp].",
+  "effect": {
+    "effects": [
+      {
+        "type": "reapply-die-modifiers"
+      }
+    ]
+  }
+}

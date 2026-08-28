@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-blight",
+  "name": "Blight",
+  "kind": "synthetic",
+  "symbol": "corruption",
+  "rulesText": "On roll: [Generate 1 Corruption].\nOn absorb: [Destroy Ritual].",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "corruption",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "destroy-ritual",
+      "target": {
+        "kind": "choose-opponent-ritual"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

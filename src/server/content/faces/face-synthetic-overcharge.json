@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-overcharge",
+  "name": "Overcharge",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll: you may gain 1 additional Energy; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\nOn absorb: [Double].",
+  "onRoll": [
+    {
+      "type": "optional-overcharge",
+      "symbol": "mechanical",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "arm-resolve-next-face-effect-twice"
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

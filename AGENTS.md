@@ -20,10 +20,10 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 ## Before you change code
 
-1. Identify the layer: `game` (rules) · `store` · `decks` · `networking` · `metrics` · `ui`.
-2. If the change is **rules or content**, stay inside `src/game` and keep it pure.
+1. Identify the layer: `src/server` (rules + JSON catalogues) · `src/client` (store, decks, networking, metrics, ui).
+2. If the change is **rules or content**, stay inside `src/server` and keep it pure.
 3. If the change is **online**, host owns `reduce()`; clients send intents only.
-4. Prefer extending data (`EffectDefinition`, catalogues) over special-casing UI.
+4. Prefer composing AST opcodes in catalogue JSON over special-casing UI.
 5. Park unfinished print clauses in [`docs/DEFERRED_CATALOGUE.md`](./docs/DEFERRED_CATALOGUE.md)
    — never fake silent behavior.
 6. If a rules change changes how the game plays, update
@@ -41,8 +41,8 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
 | Match UI / lobby / decks | Subagent: [match-ui](.cursor/agents/match-ui.md) + skill [match-ui](.cursor/skills/match-ui/SKILL.md) — do not put rules there |
 | Builtin / constructed loadouts, card-has-no-home, attribute identity in builds | Subagent: [deck-designer](.cursor/agents/deck-designer.md) |
-| Match metrics, pacing charts, agent export of playtest recordings | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/metrics` (spec `014`) |
-| PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/networking` + `docs/specs/007-peerjs.md` |
+| Match metrics, pacing charts, agent export of playtest recordings | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`) |
+| PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/client/networking` + `docs/specs/007-peerjs.md` |
 
 ## Subagents
 
@@ -52,7 +52,7 @@ than doing their job in the parent thread.
 | Subagent | Use when |
 |---|---|
 | [card-designer](.cursor/agents/card-designer.md) | New/updated catalogue cards; print → data; delegates new mechanics to engine-developer |
-| [engine-developer](.cursor/agents/engine-developer.md) | `src/game` rules: hooks, triggers, `EffectDefinition`, reducer, resolution, statuses |
+| [engine-developer](.cursor/agents/engine-developer.md) | `src/server` rules: hooks, triggers, `EffectDefinition`, reducer, resolution, statuses |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, MatchBoard, deck builder, catalogues, stores, decks persistence, PeerJS adapters |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts; constructed critique (orphans, attribute identity) |
 
@@ -67,6 +67,10 @@ than doing their job in the parent thread.
 | `docs/specs/006-deck-persistence.md` | Deck builder / loadouts |
 | `docs/specs/007-peerjs.md` | Online host authority |
 | `docs/specs/014-match-metrics.md` | Observer telemetry, dashboard, agent export |
+| `docs/specs/017-layer-split.md` | `src/server` vs `src/client` import rules |
+| `docs/specs/018-ast-engine.md` | Opcode AST, validator / compiler / executor |
+| `docs/specs/019-content-json.md` | Per-entity / per-loadout JSON catalogues |
+| `docs/specs/020-module-split.md` | Reducer commands + MatchBoard carve |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
@@ -82,8 +86,8 @@ Do not commit unless the user asks. Do not push unless the user asks.
 
 ## Hard rules (summary)
 
-- `src/game` cannot import React, Zustand, PeerJS, nanoid, `@/metrics`, or touch DOM / storage / network / clock / `Math.random`.
-- Effects are **data** (discriminated unions), never functions.
+- `src/server` cannot import React, Zustand, PeerJS, nanoid, `@client/*`, or touch DOM / storage / network / clock / `Math.random`.
+- Effects are **data** (JSON AST / discriminated unions), never functions. New tokens are `[Mark]` / `[Strip]` arguments, not new opcodes.
 - Content ids: `card-*`, `creature-*`, `face-*`, `attack-*`, `ability-*` (kebab after prefix).
 - Attachment types (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region and ritual subtypes.
 - Grow effect AST only when a concrete card needs it; implement resolver + tests in the same change.

@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-alphas-hide",
+  "name": "Alpha's Hide",
+  "playCost": {
+    "wild": 4
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "On special attack: [Generate 1 Wild] on another card.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-attack",
+        "attackKinds": [
+          "special"
+        ],
+        "attackerRelation": "self",
+        "effects": [
+          {
+            "type": "generate-symbol",
+            "symbol": "wild",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  }
+}

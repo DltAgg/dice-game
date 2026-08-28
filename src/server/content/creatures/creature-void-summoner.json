@@ -1,0 +1,96 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-void-summoner",
+  "name": "Void Summoner",
+  "life": 13,
+  "attributes": [
+    "arcane"
+  ],
+  "passiveRulesText": "On absorb Natural: [Generate 1 Arcane].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "absorberRelation": "ally",
+      "faceKinds": [
+        "natural"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "arcane",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "basic"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "arcane",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "special"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "arcane",
+          "amount": 1
+        },
+        {
+          "type": "draw-cards",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-void-rupture",
+      "name": "Rupture",
+      "kind": "basic",
+      "discards": {
+        "arcane": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Generate 1 Arcane].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-void-dimensional-rift",
+      "name": "Dimensional Rift",
+      "kind": "special",
+      "requires": {
+        "arcane": 1,
+        "darkness": 1
+      },
+      "discards": {
+        "darkness": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Gain 1 Energy]. [Draw 1].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

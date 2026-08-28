@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-cleaving-strike",
+  "name": "Cleaving Strike",
+  "kind": "synthetic",
+  "symbol": "martial",
+  "rulesText": "On roll: [Strip 2 Shield].\nOn absorb: [Empower 1].",
+  "onRoll": [
+    {
+      "type": "remove-shield",
+      "amount": 2,
+      "target": {
+        "kind": "most-shielded-enemy"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

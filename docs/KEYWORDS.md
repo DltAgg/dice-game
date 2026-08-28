@@ -1,8 +1,8 @@
 <!--
 Agents: this file is print vocabulary for cards, hooks, tokens, and new
 mechanics (`.cursor/rules/keywords.mdc`). Player sections render on the Rules
-tab; HTML comments are stripped. Map print → existing EffectDefinition members
-(do not add a generic mark-token AST just to match the glossary).
+tab; HTML comments are stripped. Map print → AST opcodes (`mark`, `strip`, `modify`, …).
+New tokens are X arguments on `[Mark]` / `[Strip]`, not new opcodes.
 New/edited rulesText uses these keywords. Do not mass-rewrite old print unless
 asked. New tokens join X on Mark/Strip. Do not mint Dose/Envenom/Brand/Contaminate.
 -->

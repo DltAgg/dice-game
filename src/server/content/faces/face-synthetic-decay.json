@@ -1,0 +1,20 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-decay",
+  "name": "Decay",
+  "kind": "synthetic",
+  "symbol": "corruption",
+  "rulesText": "On roll: choose an opposing Natural face; until the next roll, it has no inherent effect.\nOn absorb: remove a Corrupted face from the opponent's die and put it into its controller's Pool as an unusable Corruption symbol.",
+  "onRoll": [
+    {
+      "type": "suppress-opposing-natural-inherent"
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "strip-corrupted-face-unusable-symbol"
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-martial-blessing",
+  "name": "Martial Blessing",
+  "playCost": {
+    "martial": 1
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "On roll: [Empower 1].",
+  "overload": {
+    "onRoll": [
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}

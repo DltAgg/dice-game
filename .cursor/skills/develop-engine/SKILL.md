@@ -4,7 +4,7 @@ description: >-
   Extend the pure game engine: EffectDefinition vocabulary, reducer actions,
   resolution, phases, purity, and tests. Use when implementing new rules
   behavior, wiring deferred catalogue clauses, changing reduce()/advance(),
-  RNG, or anything under src/game outside of simple catalogue data edits.
+  RNG, or anything under src/server outside of simple catalogue data edits.
 ---
 
 # Develop the game engine
@@ -13,46 +13,48 @@ description: >-
 
 1. **One advance path** — `reduce(state, action, rng)` / `advance(state, action)`.
 2. **Pure** — see `.cursor/rules/engine-purity.mdc` and `src/architecture/engine-purity.test.ts`.
-3. **Effects are data** — extend `src/game/model/effects.ts`, never attach functions.
+3. **Effects are data** — prefer composing opcodes in JSON (`mark`, `strip`,
+   `modify`, `damage`, …). A genuinely new verb adds one `IOpcodeHandler` class
+   under `src/server/ast/opcodes/` plus a compile mapping. Do not attach functions
+   to `GameState` or catalogue documents.
 4. **Intent actions** — players declare choices (`PLAY_CARD`, `ATTACK`, …); amounts and legality are derived by the host/engine.
 5. **Failures** — return `GameError` + original state; do not throw for illegal moves.
 6. **Proving cards** — print uses holder voice and
    [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md); do not default new proving
    cards to Energy 1 when 2+ is enough (bible §34.5). A new token joins Mark/Strip
-   X — do not add Dose-style verbs or a generic `mark-token` AST just for print.
+   X — do not add Dose-style verbs. New tokens are Mark/Strip arguments, not new opcodes.
 
 ## Typical change: new effect kind
 
-1. Add a member to `EffectDefinition` (and `TargetSelector` if needed) in `effects.ts`.
-2. Implement resolution in `src/game/reducer/resolution.ts` (and call sites).
-3. Add focused tests under `src/game/reducer/*.test.ts`.
-4. Wire the concrete card/creature/face that needed it in `src/game/content/*`.
-5. Remove or shrink the matching row in `docs/DEFERRED_CATALOGUE.md`.
-6. Update `docs/RULEBOOK.md` if players would notice different timing,
-   legality, costs, phases, zones, victory, or loadout constraints.
-7. Update `docs/KEYWORDS.md` if you add a token, operator, or physics keyword
-   (prefer `[Mark N X]` over a new verb). Proving-card print uses the glossary.
-8. Run DoD: `npm run typecheck && npm test && npm run lint`.
+Prefer composing existing opcodes + `ValueExpr` + `Duration` in catalogue JSON
+(no engine change). If a new verb is required:
 
-Do **not** add unreachable effect kinds “for later.”
+1. Add an `IOpcodeHandler` class in `src/server/ast/opcodes/` and register it.
+2. Map legacy `EffectDefinition` in `AstCompiler.compileLegacy` if catalogues still use `type`.
+3. Add focused tests under `src/server/reducer/*.test.ts` and/or `src/server/ast/`.
+4. Wire the proving card JSON. Do not add unreachable opcodes “for later.”
+5. Update `docs/RULEBOOK.md` if play changed; `docs/KEYWORDS.md` for new tokens/operators.
+6. Run DoD: `npm run typecheck && npm test && npm run lint`.
 
 ## Layout cheat sheet
 
 | Area | Path |
 |---|---|
-| Actions | `src/game/reducer/actions.ts` |
-| Reducer | `src/game/reducer/reduce.ts` |
-| Effect stack | `src/game/reducer/resolution.ts` |
-| Zones / cards helpers | `src/game/reducer/zones.ts` |
-| Setup | `src/game/setup/createMatch.ts` |
-| Queries | `src/game/rules/*` |
-| Scenario helpers | `src/game/testing/*` |
+| AST / opcodes | `src/server/ast/` |
+| Actions | `src/server/reducer/actions.ts` |
+| Reducer facade | `src/server/reducer/reduce.ts` |
+| Commands | `src/server/reducer/commands/` |
+| Effect stack | `src/server/reducer/resolution.ts` |
+| Zones / cards helpers | `src/server/reducer/zones.ts` |
+| Setup | `src/server/setup/createMatch.ts` |
+| Queries | `src/server/rules/*` |
+| Scenario helpers | `src/server/testing/*` |
 
 ## Networking boundary
 
-Host (`src/networking/hostSession.ts`) calls `advance()` and broadcasts state.
+Host (`src/client/networking/hostSession.ts`) calls `advance()` and broadcasts state.
 Clients send intent-shaped `GameAction` only; host overrides `playerId` by seat.
-Never put rules in `networking/` or the UI.
+Never put rules in `src/client/networking/` or the UI.
 
 ## Phases
 

@@ -3,9 +3,9 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 /**
- * The `src/game` override is the architectural boundary from the SPDD, not a
+ * The `src/server` override is the architectural boundary from the SPDD, not a
  * style preference: the reducer stays pure so a match can be replayed from its
- * action log. `src/game/purity.test.ts` enforces the same rule at test time.
+ * action log. `src/architecture/engine-purity.test.ts` enforces the same rule.
  */
 export default tseslint.config(
   { ignores: ["dist", "node_modules", "coverage"] },
@@ -19,7 +19,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/game/**/*.ts"],
+    files: ["src/server/**/*.ts"],
     languageOptions: {
       globals: {},
     },
@@ -50,9 +50,20 @@ export default tseslint.config(
             { name: "peerjs", message: "The game engine must not depend on PeerJS." },
             { name: "nanoid", message: "Ids entering the engine are supplied by the caller." },
             { name: "@/metrics", message: "Metrics is an adapter, not a rules source." },
+            { name: "@client/metrics", message: "Metrics is an adapter, not a rules source." },
           ],
           patterns: [
-            { group: ["@/ui/*", "@/store/*", "@/networking/*", "@/decks/*", "@/app/*", "@/metrics/*"] },
+            {
+              group: [
+                "@/ui/*",
+                "@/store/*",
+                "@/networking/*",
+                "@/decks/*",
+                "@/app/*",
+                "@/metrics/*",
+                "@client/*",
+              ],
+            },
           ],
         },
       ],

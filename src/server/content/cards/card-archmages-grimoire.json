@@ -1,0 +1,45 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-archmages-grimoire",
+  "name": "Archmage's Grimoire",
+  "playCost": {
+    "darkness": 2
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Can only equip an Arcane or Darkness creature.\nOn absorb Arcane or Darkness: [Draw 1]. [Discard 1].",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "creatureAttributes": [
+      "arcane",
+      "darkness"
+    ],
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "arcane",
+          "darkness"
+        ],
+        "absorberRelation": "ally",
+        "effects": [
+          {
+            "type": "draw-cards",
+            "amount": 1
+          },
+          {
+            "type": "discard-cards",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  }
+}

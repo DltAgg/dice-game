@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-safety-latch",
+  "name": "Safety Latch",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Generate 1 Mechanical]. [Discount 1] forge.",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "mechanical",
+        "amount": 1
+      },
+      {
+        "type": "arm-forge-discount",
+        "amount": 1
+      }
+    ]
+  }
+}

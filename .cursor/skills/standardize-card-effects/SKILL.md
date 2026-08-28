@@ -75,7 +75,7 @@ Qualifiers use a comma before the colon (`On take damage, once per turn:`), neve
 | `On change position:` | `on-change-position` | Ally moved via `setCreaturePosition` |
 | `On start of turn:` | `on-turn-start` + `whoseTurn` | Incoming player's turn begins (after toxin ticks) |
 
-Shared hook implementation: `src/game/reducer/triggers.ts` · spec
+Shared hook implementation: `src/server/reducer/triggers.ts` · spec
 `docs/specs/010-trigger-hooks.md`.
 
 **Banned forever:** enemy push / forced move of opponent creatures. Do not
@@ -116,7 +116,7 @@ structured array empty, row in `docs/DEFERRED_CATALOGUE.md`.
 
 ### 3. Map to existing vocabulary
 
-Prefer members already in `src/game/model/effects.ts` and selectors already in
+Prefer members already in `src/server/model/effects.ts` and selectors already in
 `TargetSelector`. Examples:
 
 | Print fragment | Prefer |
@@ -167,7 +167,7 @@ Never add unreachable stubs “for later.”
 npm run typecheck && npm test && npm run lint
 ```
 
-Focused: `src/game/reducer/triggers.test.ts`, face/overload/equipment tests as
+Focused: `src/server/reducer/triggers.test.ts`, face/overload/equipment tests as
 touched. Update `002`/`004` tables when print changes.
 
 ## Authoring templates

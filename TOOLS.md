@@ -31,39 +31,40 @@ npm run typecheck && npm test && npm run lint
 
 | Concern | Path |
 |---|---|
-| Tactic catalogue | `src/game/content/cards.ts` |
-| Creature catalogue | `src/game/content/creatures.ts` |
-| Face catalogue | `src/game/content/faces.ts` |
-| Effect AST | `src/game/model/effects.ts` |
-| Card / forge / ritual types | `src/game/model/cards.ts` |
-| Creature / attack types | `src/game/model/creatures.ts` |
-| Die / face types | `src/game/model/dice.ts` |
-| Reducer | `src/game/reducer/reduce.ts` |
-| Effect resolution | `src/game/reducer/resolution.ts` |
-| Loadout legality | `src/game/rules/loadout.ts` |
+| Tactic catalogue | `src/server/content/cards/*.json` (ids in `cards.ts`) |
+| Creature catalogue | `src/server/content/creatures/*.json` (ids in `creatures.ts`) |
+| Face catalogue | `src/server/content/faces/*.json` (ids in `faces.ts`) |
+| Builtin loadouts | `src/server/content/loadouts/*.json` |
+| Effect AST | `src/server/ast/` (legacy union still in `src/server/model/effects.ts`) |
+| Card / forge / ritual types | `src/server/model/cards.ts` |
+| Creature / attack types | `src/server/model/creatures.ts` |
+| Die / face types | `src/server/model/dice.ts` |
+| Reducer | `src/server/reducer/reduce.ts` |
+| Effect resolution | `src/server/reducer/resolution.ts` |
+| Loadout legality | `src/server/rules/loadout.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 | Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
 | Keyword glossary | `docs/KEYWORDS.md` (update when print vocabulary / tokens change; Rules tab) |
-| Match store | `src/store/matchStore.ts` |
-| Deck store / localStorage | `src/store/deckStore.ts`, `src/decks/` |
-| Match metrics / IndexedDB | `src/metrics/`, `src/ui/metrics/`, `src/store/metricsStore.ts` |
-| PeerJS sessions | `src/networking/` |
+| Match store | `src/client/store/matchStore.ts` |
+| Deck store / localStorage | `src/client/store/deckStore.ts`, `src/client/decks/` |
+| Match metrics / IndexedDB | `src/client/metrics/`, `src/client/ui/metrics/`, `src/client/store/metricsStore.ts` |
+| PeerJS sessions | `src/client/networking/` |
 
 ## Tests that matter for content
 
 | File | Checks |
 |---|---|
-| `src/game/content/cards.consistency.test.ts` | Attachment subtype ↔ region lockstep |
-| `src/game/content/cardText.test.ts` | English type / forge / requirement printing |
-| `src/game/rules/loadout.test.ts` | Deck 40–50, ≤3 copies, known ids |
+| `src/server/content/cards.consistency.test.ts` | Attachment subtype ↔ region lockstep |
+| `src/server/content/cardText.test.ts` | English type / forge / requirement printing |
+| `src/server/rules/loadout.test.ts` | Deck 40–50, ≤3 copies, known ids |
 | `src/architecture/engine-purity.test.ts` | Engine stays pure |
-| `src/game/reducer/*.test.ts` | Behavior of play / forge / combat / etc. |
+| `src/server/reducer/*.test.ts` | Behavior of play / forge / combat / etc. |
 
 Focused run:
 
 ```bash
-npx vitest run src/game/content/cards.consistency.test.ts
-npx vitest run src/game/reducer/playcard.test.ts
+npx vitest run src/server/content/cards.consistency.test.ts
+npx vitest run src/server/reducer/playcard.test.ts
 ```
 
 ## Manual smoke (online)
@@ -84,7 +85,7 @@ Details: `docs/specs/007-peerjs.md`.
 
 | File | Purpose |
 |---|---|
-| `src/ui/config.ts` | Toggle deck-builder card art (`showDeckBuilderCardArt`) |
+| `src/client/ui/config.ts` | Toggle deck-builder card art (`showDeckBuilderCardArt`) |
 
 ## Agent skills (project)
 
@@ -102,7 +103,7 @@ Details: `docs/specs/007-peerjs.md`.
 | Agent | Use when |
 |---|---|
 | `.cursor/agents/card-designer.md` | Authoring tactics / rituals / faces / creatures; new mechanics → engine-developer |
-| `.cursor/agents/engine-developer.md` | Implementing rules in `src/game` (hooks, reducer, resolution, statuses) |
+| `.cursor/agents/engine-developer.md` | Implementing rules in `src/server` (hooks, reducer, resolution, statuses) |
 | `.cursor/agents/match-ui.md` | Lobby / MatchBoard / deck builder / stores / PeerJS adapters |
 | `.cursor/agents/deck-designer.md` | Constructed loadouts; orphan / attribute-identity critique |
 

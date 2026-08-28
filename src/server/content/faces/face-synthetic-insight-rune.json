@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-insight-rune",
+  "name": "Insight Rune",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "On roll: [Draw 1].\nOn absorb: [Insight 2].",
+  "onRoll": [
+    {
+      "type": "draw-cards",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "look-top-deck",
+      "amount": 2
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

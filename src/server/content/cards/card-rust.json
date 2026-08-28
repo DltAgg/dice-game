@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-rust",
+  "name": "Rust",
+  "playCost": {
+    "martial": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Natural Martial face.\nOn absorb: [Pierce 2].",
+  "overload": {
+    "faceSymbols": [
+      "martial"
+    ],
+    "faceKinds": [
+      "natural"
+    ],
+    "onRoll": [],
+    "onAbsorb": [
+      {
+        "type": "arm-ignore-shield",
+        "amount": 2
+      }
+    ]
+  }
+}

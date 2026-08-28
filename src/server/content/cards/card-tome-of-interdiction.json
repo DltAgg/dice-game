@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-tome-of-interdiction",
+  "name": "Tome of Interdiction",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "The first Instant Arcane used each turn costs 1 less Energy.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "play-cost-discount",
+        "amount": 1,
+        "oncePerTurn": true,
+        "cardTypes": [
+          "instant"
+        ],
+        "attributes": [
+          "arcane"
+        ]
+      }
+    ]
+  }
+}

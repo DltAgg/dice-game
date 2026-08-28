@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-rethrow",
+  "name": "Rethrow",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Reroll].",
+  "effect": {
+    "effects": [
+      {
+        "type": "optional-reroll-die"
+      }
+    ]
+  }
+}

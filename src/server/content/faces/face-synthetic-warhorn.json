@@ -1,0 +1,23 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-warhorn",
+  "name": "Warhorn",
+  "kind": "synthetic",
+  "symbol": "martial",
+  "rulesText": "On roll: [Generate 1 Martial].\nOn absorb: [Empower 1].",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "martial",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

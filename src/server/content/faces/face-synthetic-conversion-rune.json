@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-conversion-rune",
+  "name": "Conversion Rune",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "On roll: you may [Convert 1] this Arcane into any Natural.\nOn absorb: [Gain 1 Energy].",
+  "onRoll": [
+    {
+      "type": "convert-symbols",
+      "amount": 1,
+      "sourceOnly": true
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "generate-symbol",
+      "symbol": "corruption",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

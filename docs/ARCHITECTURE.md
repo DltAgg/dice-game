@@ -21,30 +21,35 @@ Test            state + action + rng → reduce → expected state
 
 ```text
 src/
-├── game/                  the only rules authority
+├── server/                future host process — the only rules authority
 │   ├── model/             types: state, dice, creatures, symbols, effects, events, errors
-│   ├── rng/               injectable seeded generator with a serializable snapshot
-│   ├── content/           face, creature, and card definitions as data
+│   ├── ast/               validator, compiler, executor, opcode handlers
+│   ├── content/           JSON catalogues + builtin loadouts + loaders
 │   ├── rules/             pure predicates and queries over GameState
-│   ├── reducer/           actions, the reducer, effect resolution
+│   ├── reducer/           reduce() facade, command handlers, effect resolution
+│   ├── rng/               injectable seeded generator with a serializable snapshot
 │   ├── setup/             deterministic match construction
 │   └── testing/           scenario helpers and an autoplay driver (test-only)
 │
-├── store/                 Zustand match + deck stores
-├── decks/                 DeckRepository (localStorage) + loadout helpers
-├── metrics/               match telemetry observer (IndexedDB / localStorage)
-├── networking/            PeerJS host/client adapters (no rules)
-├── ui/                    React: match board, lobby, deck builder, catalogues, metrics
-├── app/                   Vite entry / shell
-└── architecture/          the purity guard
+├── client/                browser only
+│   ├── store/             Zustand match + deck stores
+│   ├── decks/             DeckRepository (localStorage) + SavedDeck wrappers
+│   ├── metrics/           match telemetry observer (IndexedDB / localStorage)
+│   ├── networking/        PeerJS host/client adapters (no rules)
+│   ├── ui/                React: match board, lobby, deck builder, catalogues, metrics
+│   └── app/               Vite entry / shell
+├── shared/                thin re-exports of wire DTOs
+└── architecture/          the purity guard (scans src/server)
 ```
 
-`networking/` wraps `advance()` on the host and ships JSON state to every
-peer (seated players and spectators). None of it holds rules.
+Aliases: `@server`, `@server/*`, `@client/*`, `@shared`.
+
+`src/client/networking` wraps `advance()` on the host and ships JSON state to
+every peer (seated players and spectators). None of it holds rules.
 
 ## Why the engine is pure
 
-`src/game` may not import React, Zustand, PeerJS or nanoid, and may not touch
+`src/server` may not import React, Zustand, PeerJS or nanoid, and may not touch
 `window`, `document`, `localStorage`, `fetch`, `Date.now` or `Math.random`.
 This is checked two ways:
 
@@ -78,9 +83,10 @@ malformed content, never for illegal player moves.
 
 ## Effects are data
 
-Card and ability effects are a discriminated union, never functions. GameState
-has to survive JSON, travel over PeerJS and be replayed from a log, none of
-which works if a definition carries executable code.
+Card and ability effects are JSON trees (`EffectNode` / legacy `EffectDefinition`),
+never functions. `AstValidator` / `AstCompiler` / `AstExecutor` plus opcode
+handler classes execute them. `GameState` stays a serializable DTO (no methods
+or closures) so it can travel over PeerJS and replay from a log.
 
 ## Commands
 

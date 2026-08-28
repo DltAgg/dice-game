@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dice-skirmish.local/schema/face.schema.json",
+  "title": "FaceCardDefinition",
+  "type": "object",
+  "required": ["id", "name", "kind", "symbol", "rulesText", "onRoll", "onAbsorb", "maxOverloads"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "kind": { "type": "string" },
+    "symbol": { "type": "string" },
+    "rulesText": { "type": "string" },
+    "onRoll": { "type": "array" },
+    "onAbsorb": { "type": "array" },
+    "maxOverloads": { "type": "number" },
+    "forgeRestriction": {},
+    "stayPolicy": {},
+    "activated": {},
+    "pestilenceSpreadAt": { "type": "number" }
+  }
+}

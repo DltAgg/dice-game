@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-riposte",
+  "name": "Riposte",
+  "playCost": {
+    "martial": 2
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Generate 1 Martial]. [Empower 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "martial",
+        "amount": 1
+      },
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}
