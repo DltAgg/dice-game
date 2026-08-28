@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-pack-law",
+  "name": "Pack Law",
+  "playCost": {
+    "wild": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Wild, once per turn: [Empower 1].",
+  "ritual": {
+    "activeWhen": {
+      "wild": 2
+    },
+    "effects": [],
+    "standingAbilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "wild"
+        ],
+        "absorberRelation": "ally",
+        "effects": [
+          {
+            "type": "next-attack-bonus",
+            "amount": 1
+          }
+        ],
+        "oncePerTurn": true
+      }
+    ]
+  }
+}

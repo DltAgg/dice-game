@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-pack-surge",
+  "name": "Pack Surge",
+  "playCost": {
+    "wild": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "[Generate 1 Wild]. [Empower 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "wild",
+        "amount": 1
+      },
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "../schema/loadout.schema.json",
+  "id": "deck-tempo",
+  "name": "Tempo",
+  "squad": [
+    "creature-cogwork-driver",
+    "creature-prism-herald",
+    "creature-aegis-link"
+  ],
+  "deckCounts": [
+    {
+      "cardId": "card-ratchet",
+      "copies": 3
+    },
+    {
+      "cardId": "card-servomotor",
+      "copies": 3
+    },
+    {
+      "cardId": "card-foundry",
+      "copies": 3
+    },
+    {
+      "cardId": "card-transmission",
+      "copies": 2
+    },
+    {
+      "cardId": "card-camshaft",
+      "copies": 3
+    },
+    {
+      "cardId": "card-blueprint",
+      "copies": 3
+    },
+    {
+      "cardId": "card-spare-cog",
+      "copies": 3
+    },
+    {
+      "cardId": "card-governor",
+      "copies": 2
+    },
+    {
+      "cardId": "card-assembly-line",
+      "copies": 2
+    },
+    {
+      "cardId": "card-die-press",
+      "copies": 2
+    },
+    {
+      "cardId": "card-safety-latch",
+      "copies": 3
+    },
+    {
+      "cardId": "card-blade-of-serene-light",
+      "copies": 3
+    },
+    {
+      "cardId": "card-luminar-prism",
+      "copies": 3
+    },
+    {
+      "cardId": "card-barrier-of-light",
+      "copies": 3
+    },
+    {
+      "cardId": "card-glimmer",
+      "copies": 3
+    },
+    {
+      "cardId": "card-untamed",
+      "copies": 2
+    }
+  ],
+  "faceDeck": [
+    "face-synthetic-gear",
+    "face-synthetic-piston",
+    "face-synthetic-flywheel",
+    "face-synthetic-vital-spark",
+    "face-synthetic-aegis",
+    "face-synthetic-revelation",
+    "face-synthetic-instinct",
+    "face-synthetic-pack",
+    "face-synthetic-bloodscent",
+    "face-synthetic-needle",
+    "face-synthetic-seep",
+    "face-synthetic-venom"
+  ],
+  "startingDice": [
+    [
+      "face-synthetic-gear",
+      "face-natural-mechanical",
+      "face-natural-mechanical",
+      "face-natural-luminar",
+      "face-natural-luminar",
+      "face-untyped-shield"
+    ],
+    [
+      "face-synthetic-vital-spark",
+      "face-natural-mechanical",
+      "face-natural-mechanical",
+      "face-natural-luminar",
+      "face-natural-luminar",
+      "face-untyped-shield"
+    ]
+  ]
+}

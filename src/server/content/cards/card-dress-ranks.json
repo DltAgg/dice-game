@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-dress-ranks",
+  "name": "Dress Ranks",
+  "playCost": {
+    "martial": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Reposition].",
+  "effect": {
+    "effects": [
+      {
+        "type": "reposition-creature",
+        "target": {
+          "kind": "choose-ally"
+        }
+      }
+    ]
+  }
+}

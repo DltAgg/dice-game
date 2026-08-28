@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-second-wind",
+  "name": "Second Wind",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Gain 1 Energy]. [Insight 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "arcane",
+        "amount": 1
+      },
+      {
+        "type": "peek-deck-optional-bottom"
+      }
+    ]
+  }
+}

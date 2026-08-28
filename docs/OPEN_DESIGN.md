@@ -3,6 +3,10 @@
 Required by the SPDD agent instructions §48. Every question the game bible
 leaves unresolved is tracked here rather than being answered silently in code.
 
+Engine code lives in `src/server` (formerly `src/game`). Catalogue print lives
+in `src/server/content/{cards,creatures,faces}/*.json`. Historical “implemented
+in `src/game/…`” pointers below mean the same modules under `src/server`.
+
 **A prototype assumption must never quietly become a game rule.** Anything
 marked `ASSUMED` below is reachable from a single place — usually
 `GameRulesConfig` or content data — so that settling the question is an edit to

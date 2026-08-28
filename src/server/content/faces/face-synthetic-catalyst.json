@@ -1,0 +1,20 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-catalyst",
+  "name": "Catalyst",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll: choose a Synthetic face in the Pool; it may be used as any attribute.\nOn absorb, once per turn: copy the effect of a Synthetic face that appeared this roll.",
+  "onRoll": [
+    {
+      "type": "arm-wildcard-from-synthetic-pool"
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "copy-appeared-synthetic-onroll"
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

@@ -1,8 +1,8 @@
 # Face cards (dice faces)
 
-File: `src/game/content/faces.ts`  
+File: `src/server/content/faces/<face-id>.json` (add the id constant in `faces.ts`)  
 Spec: `docs/specs/004-face-cards.md`  
-Types: `src/game/model/dice.ts` (`FaceCardDefinition`)
+Types: `src/server/model/dice.ts` (`FaceCardDefinition`)
 
 ## Kinds
 

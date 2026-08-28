@@ -24,7 +24,7 @@ briefing is enough for a first pass.
 Dedupe is already done (`matchId`, richer sample wins). Guest think times
 include network delay; prefer `recordedAs: "host" | "local"`.
 
-Pace is **per match**, not a 11–20 band (`src/metrics/pace.ts`):
+Pace is **per match**, not a 11–20 band (`src/client/metrics/pace.ts`):
 
 | Flag | Number / rule |
 |---|---|
@@ -79,5 +79,5 @@ Bullets with numbers from the export (cite drag, idle, overtime per match).
 Only if the sample is too small or guest-only.
 ```
 
-Do not change `src/game` from this skill. If a rules experiment is agreed,
+Do not change `src/server` from this skill. If a rules experiment is agreed,
 hand off to `engine-developer`. Match-board chrome stays with `match-ui`.

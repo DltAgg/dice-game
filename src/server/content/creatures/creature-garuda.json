@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-garuda",
+  "name": "Garuda",
+  "life": 11,
+  "attributes": [
+    "wild"
+  ],
+  "passiveRulesText": "[Range] (May attack any position).",
+  "attacks": [
+    {
+      "id": "attack-garuda-dive",
+      "name": "Dive",
+      "kind": "basic",
+      "discards": {
+        "wild": 1
+      },
+      "range": true,
+      "rulesText": "[Strike 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-garuda-bombardment",
+      "name": "Bombardment",
+      "kind": "special",
+      "requires": {
+        "wild": 1,
+        "martial": 1
+      },
+      "discards": {
+        "wild": 1
+      },
+      "range": true,
+      "rulesText": "[Strike 3]. Every enemy on the frontline [Strip 1 Shield].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "remove-shield",
+          "amount": 1,
+          "target": {
+            "kind": "enemy-frontline"
+          }
+        }
+      ]
+    }
+  ]
+}

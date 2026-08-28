@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dice-skirmish.local/schema/creature.schema.json",
+  "title": "CreatureDefinition",
+  "type": "object",
+  "required": ["id", "name", "life", "attributes", "passiveRulesText", "attacks"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "life": { "type": "number" },
+    "attributes": { "type": "array", "items": { "type": "string" } },
+    "passiveRulesText": { "type": "string" },
+    "standingAbilities": { "type": "array" },
+    "attacks": { "type": "array" }
+  }
+}

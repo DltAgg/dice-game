@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-piston",
+  "name": "Piston",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll: [Generate 1 Mechanical].\nOn absorb, once per turn: [Gain 1 Energy].",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "mechanical",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "generate-symbol",
+      "symbol": "mechanical",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

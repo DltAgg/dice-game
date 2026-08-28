@@ -1,0 +1,39 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-rift-collapse",
+  "name": "Rift Collapse",
+  "playCost": {
+    "darkness": 4
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 4].",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 1,
+      "darkness": 1
+    },
+    "spend": {
+      "arcane": 1,
+      "darkness": 1
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 4,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

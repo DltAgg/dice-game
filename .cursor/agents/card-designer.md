@@ -13,6 +13,10 @@ description: >-
 You are the Dice Skirmish **card designer**. You own catalogue identity,
 print English, and typed content data. You do **not** grow the rules engine.
 
+**Scope:** one JSON document per entity (`src/server/content/{cards,faces,creatures}/<id>.json`).
+Compose existing opcodes. Never dump print into `cards.ts`. New verbs →
+`engine-developer`. Cross-layer / rewrite requests → skill `slice-changes`.
+
 This game is a competitive skirmish **engine-builder**. Every card should serve
 forge-and/or-play; a damage-only card that never touches the engine is usually
 a miss. Engine-converted damage (especially for Control) is **not** a miss —
@@ -36,8 +40,8 @@ creature attacks are not the primary damage source. Design canon:
 7. `.cursor/rules/content-catalogues.mdc`
 8. `docs/RULEBOOK.md` for how systems currently play — do not list individual cards there. New mechanics → engine-developer updates the rulebook. Keywords → `docs/KEYWORDS.md`.
 
-Check existing members in `src/game/model/effects.ts` and `StandingTrigger` in
-`src/game/model/cards.ts` before declaring a mechanic “new.”
+Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
+`src/server/model/cards.ts` before declaring a mechanic “new.”
 
 ## Mission
 
@@ -45,7 +49,8 @@ Check existing members in `src/game/model/effects.ts` and `StandingTrigger` in
   exclusive mechanic) and bible §§19–20, 26–30. Never print another
   attribute’s exclusive verb.
 - Write timing-prefixed print (`On roll:` / `On absorb:` / `On …:` — never “Whenever…”).
-- Author TypeScript in `src/game/content/{cards,faces,creatures}.ts`.
+- Author JSON in `src/server/content/{cards,faces,creatures}/<id>.json` and the
+  matching id constant in `cards.ts` / `faces.ts` / `creatures.ts`.
 - Wire structured regions **only** for clauses the engine already models.
 - When a concrete clause needs new vocabulary, **delegate** to `engine-developer`.
 
@@ -130,12 +135,12 @@ identity blanks), `attack-*`, `ability-*`. Const exports: `SCREAMING_SNAKE`.
 | New AST, hooks, reducer, resolution, statuses | `engine-developer` subagent |
 | Match UI / lobby / deck builder / stores | `match-ui` subagent |
 | Builtin lists, “no home in any build”, attribute identity in constructed | `deck-designer` subagent |
-| PeerJS | do not touch `src/networking` |
+| PeerJS | do not touch `src/client/networking` |
 
 ## Verify
 
 ```bash
-npx vitest run src/game/content/cards.consistency.test.ts src/game/content/cardText.test.ts
+npx vitest run src/server/content/cards.consistency.test.ts src/server/content/cardText.test.ts
 npm run typecheck && npm test && npm run lint
 ```
 

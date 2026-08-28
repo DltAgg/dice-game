@@ -1,0 +1,23 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-bloodscent",
+  "name": "Bloodscent",
+  "kind": "synthetic",
+  "symbol": "wild",
+  "rulesText": "On roll: [Empower 1].\nOn absorb, once per turn: [Generate 1 Wild].",
+  "onRoll": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "generate-symbol",
+      "symbol": "wild",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-seal-the-rite",
+  "name": "Seal the Rite",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Negate Ritual].",
+  "effect": {
+    "effects": [
+      {
+        "type": "negate-ritual"
+      }
+    ]
+  }
+}

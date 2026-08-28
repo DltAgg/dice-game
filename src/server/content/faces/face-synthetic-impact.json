@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-impact",
+  "name": "Impact",
+  "kind": "synthetic",
+  "symbol": "martial",
+  "rulesText": "On roll: [Empower 1].\nOn absorb, once per turn: [Empower 2].",
+  "onRoll": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 2
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

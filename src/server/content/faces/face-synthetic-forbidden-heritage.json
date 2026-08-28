@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-forbidden-heritage",
+  "name": "Forbidden Heritage",
+  "kind": "synthetic",
+  "symbol": "corruption",
+  "rulesText": "Cannot be included on opening dice.\nOn roll: opponent [Draw 1]. [Retain].\nThis face cannot be replaced by forging.\nActivated: pay Energy equal to 2 plus 1 per Corruption face on this die to remove this face.",
+  "onRoll": [
+    {
+      "type": "draw-cards",
+      "amount": 1,
+      "player": "opponent"
+    },
+    {
+      "type": "retain-die"
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null,
+  "stayPolicy": {
+    "kind": "cannot-replace-by-forge"
+  },
+  "activated": {
+    "kind": "remove-corruption-face",
+    "spendBase": 2,
+    "spendPerCorruptionOnDie": 1
+  }
+}

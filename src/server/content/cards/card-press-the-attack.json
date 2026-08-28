@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-press-the-attack",
+  "name": "Press the Attack",
+  "playCost": {
+    "martial": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Empower 2].",
+  "effect": {
+    "effects": [
+      {
+        "type": "next-attack-bonus",
+        "amount": 2
+      }
+    ]
+  }
+}

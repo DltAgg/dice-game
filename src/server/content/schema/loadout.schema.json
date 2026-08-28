@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dice-skirmish.local/schema/loadout.schema.json",
+  "title": "BuiltinLoadout",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "squad", "deckCounts", "faceDeck", "startingDice"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "squad": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "string" }
+    },
+    "deckCounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cardId", "copies"],
+        "properties": {
+          "cardId": { "type": "string" },
+          "copies": { "type": "integer", "minimum": 1, "maximum": 3 }
+        }
+      }
+    },
+    "faceDeck": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "startingDice": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "array",
+        "minItems": 6,
+        "maxItems": 6,
+        "items": { "type": "string" }
+      }
+    }
+  }
+}

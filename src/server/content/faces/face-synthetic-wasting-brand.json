@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-wasting-brand",
+  "name": "Wasting Brand",
+  "kind": "synthetic",
+  "symbol": "corruption",
+  "rulesText": "On roll: [Strike 1] your creature with the most damage.\nOn absorb, once per turn: [Mark 1 Toxin] your creature with the most damage.",
+  "onRoll": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": {
+        "kind": "most-damaged-ally"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "apply-toxin",
+      "amount": 1,
+      "target": {
+        "kind": "most-damaged-ally"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

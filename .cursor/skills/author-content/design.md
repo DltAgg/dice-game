@@ -74,9 +74,9 @@ discounts, not 1-drops). Toxin is **not** builtin Aggro — it lives on Burn
 require an Arcane/Darkness manabase. Do not turn Corruption into generic
 Arcane negate.
 
-Builtin decks: `PROTOTYPE_DECK` (Aggro), `CONTROL_DECK`, `TEMPO_DECK`,
-`COMBO_MECHANICAL_DECK`, and `BURN_DECK` in `cards.ts` (snapshots in
-`src/decks/prototype.ts`).
+Builtin decks: `src/server/content/loadouts/` (`aggro.json` persisted id
+`deck-prototype`, plus control / tempo / combo-mechanical / burn). Client
+wrappers: `src/client/decks/prototype.ts`.
 Do not dump a new card into Aggro and Control without an identity reason; Mech
 homes are Tempo / Combo Mechanical. Legal constructed: 40–50 tactics, ≤3 copies
 per id; face deck ≤12, ≤3 per attribute.

@@ -12,7 +12,8 @@ description: >-
 
 One **system event** → one **hook** → rich **context ids** → **ability data**
 filters. Do not invent coupled hook names (`on-ally-attack`,
-`on-opponent-roll-symbol`).
+`on-opponent-roll-symbol`). One hook per change; do not grow `triggers.ts` past
+`module-budget.test.ts` — extract a helper instead.
 
 Companion skills: [develop-engine](../develop-engine/SKILL.md),
 [standardize-card-effects](../standardize-card-effects/SKILL.md),

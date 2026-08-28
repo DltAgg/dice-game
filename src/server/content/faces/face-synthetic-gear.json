@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-gear",
+  "name": "Gear",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll: if you have another Synthetic symbol in the Pool, [Gain 1 Energy].\nOn absorb, once per turn: [Discount 1] forge.",
+  "onRoll": [
+    {
+      "type": "conditional",
+      "when": {
+        "type": "has-other-symbol",
+        "faceKind": "synthetic"
+      },
+      "then": [
+        {
+          "type": "generate-symbol",
+          "symbol": "corruption",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "arm-forge-discount",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

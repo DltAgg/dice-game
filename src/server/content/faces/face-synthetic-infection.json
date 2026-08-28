@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-infection",
+  "name": "Infection",
+  "kind": "synthetic",
+  "symbol": "corruption",
+  "rulesText": "On roll: if the opponent has a Corrupted face, [Mark 1 Corruption] on another face of the same die.\nOn absorb, once per turn: [Lose 1 Energy].",
+  "onRoll": [
+    {
+      "type": "spread-corruption-marker"
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "drain-attribute-tokens",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

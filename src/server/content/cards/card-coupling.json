@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-coupling",
+  "name": "Coupling",
+  "playCost": {
+    "mechanical": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Double].",
+  "effect": {
+    "requires": {
+      "mechanical": 2
+    },
+    "effects": [
+      {
+        "type": "arm-resolve-next-face-effect-twice"
+      }
+    ]
+  }
+}

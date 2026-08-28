@@ -8,7 +8,7 @@ change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
 It is not the design bible and not a card catalogue. Individual cards stay
 in specs 002 / 003 / 004. Unsettled questions stay in OPEN_DESIGN.md.
 Unmodelled print stays in DEFERRED_CATALOGUE.md. Numeric knobs live in
-src/game/model/config.ts (DEFAULT_RULES_CONFIG).
+src/server/model/config.ts (DEFAULT_RULES_CONFIG).
 -->
 
 ---
@@ -140,6 +140,9 @@ Shield absorb still names a creature (below).
 - **Attribute** pips from a **roll** or **effect** bank into **your attribute
   pile** automatically (usable pips only; On absorb fires). The pile persists
   across turns until spent or removed. Same-turn attack after banking is legal.
+- Each **On absorb** hook (standing ability, face, or overload) fires **at
+  most once per turn** per source, so generated pips cannot re-trigger the same
+  absorb effect in a loop.
 - **Shield** pips grant **immediately** on absorb onto a living owned creature
   (1 Shield prevents 1 damage, once). Shields stack and persist until spent.
 - Absorbing a Shield is **not** absorbing a Natural; `On absorb Natural`
@@ -358,7 +361,7 @@ Related docs (agents):
 - docs/DEFERRED_CATALOGUE.md — unmodelled print
 - docs/KEYWORDS.md — print keywords (appended on the Rules tab)
 - docs/ARCHITECTURE.md — software advance path
-- src/game/model/config.ts — numeric knobs
+- src/server/model/config.ts — numeric knobs
 - specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill
   (pack feeding retired; Wild exclusive is `[Frenzy]`)
 -->

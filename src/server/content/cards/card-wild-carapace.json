@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-wild-carapace",
+  "name": "Wild Carapace",
+  "playCost": {
+    "wild": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Wild, once per turn: [Heal 1] this creature.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "wild"
+        ],
+        "absorberRelation": "ally",
+        "effects": [
+          {
+            "type": "heal",
+            "amount": 1,
+            "target": {
+              "kind": "source-creature"
+            }
+          }
+        ],
+        "oncePerTurn": true
+      }
+    ]
+  }
+}

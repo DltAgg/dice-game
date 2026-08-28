@@ -8,7 +8,7 @@
 | Creature passive | `CreatureDefinition.standingAbilities` | Creature alive |
 | Continuous ritual | `RitualRegion.standingAbilities` | Zone `ritual`, orientation `ready` |
 
-Shared type: `StandingTrigger` in `src/game/model/cards.ts` (equipment abilities
+Shared type: `StandingTrigger` in `src/server/model/cards.ts` (equipment abilities
 are that union; creatures/rituals reuse it).
 
 ## Hook inventory
@@ -57,9 +57,9 @@ are that union; creatures/rituals reuse it).
 
 | Path | Role |
 |---|---|
-| `src/game/model/cards.ts` | `StandingTrigger` |
-| `src/game/model/creatures.ts` | `standingAbilities`, `nextAttackBonus`, spent keys |
-| `src/game/reducer/triggers.ts` | `fireOn*` |
-| `src/game/reducer/triggers.test.ts` | Proving tests |
+| `src/server/model/cards.ts` | `StandingTrigger` |
+| `src/server/model/creatures.ts` | `standingAbilities`, `nextAttackBonus`, spent keys |
+| `src/server/reducer/triggers.ts` | `fireOn*` |
+| `src/server/reducer/triggers.test.ts` | Proving tests |
 | `docs/specs/010-trigger-hooks.md` | Normative spec |
 | `docs/DEFERRED_CATALOGUE.md` | Gaps |

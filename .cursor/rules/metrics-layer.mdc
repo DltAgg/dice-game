@@ -1,14 +1,14 @@
 ---
 description: Match metrics collector lives outside the engine
-globs: src/metrics/**/*
+globs: src/client/metrics/**/*
 alwaysApply: false
 ---
 
 # Metrics layer
 
-`src/metrics` is an adapter, like `src/decks` and `src/networking`.
+`src/client/metrics` is an adapter, like `src/client/decks` and `src/client/networking`.
 
-- Never import it from `src/game`.
+- Never import it from `src/server`.
 - Never call `reduce()` / `advance()` from the collector.
 - Persist with IndexedDB (localStorage fallback); write after every observation.
 - Wall-clock (`Date.now`) is allowed here; it is forbidden in the engine.

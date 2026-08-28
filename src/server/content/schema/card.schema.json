@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dice-skirmish.local/schema/card.schema.json",
+  "title": "CardDefinition",
+  "type": "object",
+  "required": ["id", "name", "type", "subtypes", "attribute", "forge", "rulesText"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "type": { "type": "string" },
+    "subtypes": { "type": "array", "items": { "type": "string" } },
+    "attribute": { "type": "string" },
+    "forge": { "type": "object" },
+    "rulesText": { "type": "string" },
+    "playCost": { "type": "object" },
+    "effect": { "type": "object" },
+    "equipment": { "type": "object" },
+    "overload": { "type": "object" },
+    "ritual": { "type": "object" },
+    "forgeTags": { "type": "array" }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-great-contamination",
+  "name": "Great Contamination",
+  "playCost": {
+    "corruption": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "[Forge 3 Synthetic Corruption] on one of the opponent's dice.",
+  "ritual": {
+    "activeWhen": {
+      "corruption": 2
+    },
+    "spend": {
+      "corruption": 2
+    },
+    "effects": [
+      {
+        "type": "forge-faces",
+        "faces": 3,
+        "kind": "synthetic",
+        "attribute": "corruption",
+        "target": "opponent-die"
+      }
+    ]
+  }
+}

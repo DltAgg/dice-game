@@ -1,0 +1,82 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-cogwork-driver",
+  "name": "Cogwork Driver",
+  "life": 14,
+  "attributes": [
+    "mechanical"
+  ],
+  "passiveRulesText": "On absorb Mechanical, once per turn: [Empower 1] this creature.",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "mechanical"
+      ],
+      "absorberRelation": "ally",
+      "effects": [
+        {
+          "type": "grant-next-attack-bonus",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ],
+      "oncePerTurn": true
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "special"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-cogwork-driver-drive",
+      "name": "Drive",
+      "kind": "basic",
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-cogwork-driver-overclock",
+      "name": "Overclock",
+      "kind": "special",
+      "requires": {
+        "mechanical": 1,
+        "luminar": 1
+      },
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3]. [Generate 1 Mechanical].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

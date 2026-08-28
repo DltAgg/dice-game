@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-calculated-sacrifice",
+  "name": "Calculated Sacrifice",
+  "playCost": {
+    "corruption": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "[Destroy Equipment].",
+  "effect": {
+    "effects": [
+      {
+        "type": "destroy-equipment",
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

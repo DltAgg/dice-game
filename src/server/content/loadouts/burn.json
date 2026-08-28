@@ -1,0 +1,97 @@
+{
+  "$schema": "../schema/loadout.schema.json",
+  "id": "deck-burn",
+  "name": "Burn",
+  "squad": [
+    "creature-marrow-fiend",
+    "creature-cinder-wight",
+    "creature-ichor-hydra"
+  ],
+  "deckCounts": [
+    {
+      "cardId": "card-slow-burn",
+      "copies": 3
+    },
+    {
+      "cardId": "card-smolder",
+      "copies": 3
+    },
+    {
+      "cardId": "card-venom-font",
+      "copies": 3
+    },
+    {
+      "cardId": "card-fester",
+      "copies": 3
+    },
+    {
+      "cardId": "card-cinder-hex",
+      "copies": 3
+    },
+    {
+      "cardId": "card-concentrate",
+      "copies": 3
+    },
+    {
+      "cardId": "card-ichor-sheath",
+      "copies": 3
+    },
+    {
+      "cardId": "card-ember-tide",
+      "copies": 3
+    },
+    {
+      "cardId": "card-dose",
+      "copies": 3
+    },
+    {
+      "cardId": "card-virulent-rite",
+      "copies": 3
+    },
+    {
+      "cardId": "card-ritual-of-contamination",
+      "copies": 3
+    },
+    {
+      "cardId": "card-great-contamination",
+      "copies": 2
+    },
+    {
+      "cardId": "card-persistent-infection",
+      "copies": 3
+    },
+    {
+      "cardId": "card-black-plague",
+      "copies": 2
+    },
+    {
+      "cardId": "card-raise-guard",
+      "copies": 3
+    }
+  ],
+  "faceDeck": [
+    "face-synthetic-seep",
+    "face-synthetic-marrow-rot",
+    "face-synthetic-spores",
+    "face-synthetic-cinder",
+    "face-synthetic-wasting-brand"
+  ],
+  "startingDice": [
+    [
+      "face-synthetic-seep",
+      "face-natural-toxin",
+      "face-natural-toxin",
+      "face-natural-corruption",
+      "face-natural-corruption",
+      "face-untyped-shield"
+    ],
+    [
+      "face-synthetic-cinder",
+      "face-natural-toxin",
+      "face-natural-toxin",
+      "face-natural-corruption",
+      "face-natural-corruption",
+      "face-untyped-shield"
+    ]
+  ]
+}

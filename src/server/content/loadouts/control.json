@@ -1,0 +1,108 @@
+{
+  "$schema": "../schema/loadout.schema.json",
+  "id": "deck-control",
+  "name": "Control",
+  "squad": [
+    "creature-archmage",
+    "creature-nightbound-adept",
+    "creature-void-summoner"
+  ],
+  "deckCounts": [
+    {
+      "cardId": "card-living-library",
+      "copies": 3
+    },
+    {
+      "cardId": "card-eclipse",
+      "copies": 3
+    },
+    {
+      "cardId": "card-arcane-amplifier",
+      "copies": 3
+    },
+    {
+      "cardId": "card-arcane-resonance",
+      "copies": 3
+    },
+    {
+      "cardId": "card-archmages-grimoire",
+      "copies": 3
+    },
+    {
+      "cardId": "card-gloom-resonance",
+      "copies": 3
+    },
+    {
+      "cardId": "card-eternal-darkness",
+      "copies": 3
+    },
+    {
+      "cardId": "card-fade",
+      "copies": 3
+    },
+    {
+      "cardId": "card-siphon-sigil",
+      "copies": 3
+    },
+    {
+      "cardId": "card-seal-the-rite",
+      "copies": 3
+    },
+    {
+      "cardId": "card-runic-nullification",
+      "copies": 2
+    },
+    {
+      "cardId": "card-unmake",
+      "copies": 2
+    },
+    {
+      "cardId": "card-umbral-bolt",
+      "copies": 3
+    },
+    {
+      "cardId": "card-rift-collapse",
+      "copies": 2
+    },
+    {
+      "cardId": "card-consult",
+      "copies": 2
+    },
+    {
+      "cardId": "card-bury-the-name",
+      "copies": 2
+    }
+  ],
+  "faceDeck": [
+    "face-synthetic-nightwell",
+    "face-synthetic-sacrifice",
+    "face-synthetic-shadow-echo",
+    "face-synthetic-resonance-rune",
+    "face-synthetic-insight-rune",
+    "face-synthetic-runeflare",
+    "face-synthetic-cleaving-strike",
+    "face-synthetic-command",
+    "face-synthetic-rending-claw",
+    "face-synthetic-aegis",
+    "face-synthetic-revelation",
+    "face-synthetic-vital-spark"
+  ],
+  "startingDice": [
+    [
+      "face-synthetic-nightwell",
+      "face-natural-arcane",
+      "face-natural-arcane",
+      "face-natural-darkness",
+      "face-natural-darkness",
+      "face-untyped-shield"
+    ],
+    [
+      "face-synthetic-resonance-rune",
+      "face-natural-arcane",
+      "face-natural-arcane",
+      "face-natural-darkness",
+      "face-natural-darkness",
+      "face-untyped-shield"
+    ]
+  ]
+}

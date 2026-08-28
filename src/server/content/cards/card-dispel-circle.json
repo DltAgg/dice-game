@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-dispel-circle",
+  "name": "Dispel Circle",
+  "playCost": {
+    "arcane": 4
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Destroy Ritual].",
+  "effect": {
+    "effects": [
+      {
+        "type": "destroy-ritual",
+        "target": {
+          "kind": "choose-opponent-ritual"
+        }
+      }
+    ]
+  }
+}

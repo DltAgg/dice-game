@@ -1,0 +1,94 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-corrupting-elder",
+  "name": "Corrupting Elder",
+  "life": 14,
+  "attributes": [
+    "arcane"
+  ],
+  "passiveRulesText": "On opponent roll Corruption: [Strike 1].",
+  "standingAbilities": [
+    {
+      "type": "on-roll-symbol",
+      "symbol": "corruption",
+      "rollingPlayer": "opponent",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 1,
+          "target": {
+            "kind": "choose-enemy"
+          }
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "basic"
+      ],
+      "effects": [
+        {
+          "type": "remove-shield",
+          "amount": 1,
+          "target": {
+            "kind": "declared-target"
+          }
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "special"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "corruption",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-elder-decay-touch",
+      "name": "Touch of Decay",
+      "kind": "basic",
+      "discards": {
+        "arcane": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Strip 1 Shield].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-elder-contamination",
+      "name": "Contamination",
+      "kind": "special",
+      "requires": {
+        "arcane": 1,
+        "corruption": 1
+      },
+      "discards": {
+        "corruption": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Generate 1 Corruption].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

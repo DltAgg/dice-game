@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-hunters-collar",
+  "name": "Hunter's Collar",
+  "playCost": {
+    "wild": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Wild, once per turn: [Generate 1 Martial].",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "wild"
+        ],
+        "absorberRelation": "ally",
+        "effects": [
+          {
+            "type": "generate-symbol",
+            "symbol": "martial",
+            "amount": 1
+          }
+        ],
+        "oncePerTurn": true
+      }
+    ]
+  }
+}

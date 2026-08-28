@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-ritual-of-contamination",
+  "name": "Ritual of Contamination",
+  "playCost": {
+    "corruption": 1
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "[Forge 1 Synthetic Corruption] on the opponent's die.",
+  "effect": {
+    "requires": {
+      "corruption": 1
+    },
+    "effects": [
+      {
+        "type": "forge-faces",
+        "faces": 1,
+        "kind": "synthetic",
+        "attribute": "corruption",
+        "target": "opponent-die"
+      }
+    ]
+  }
+}

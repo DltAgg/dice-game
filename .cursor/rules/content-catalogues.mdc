@@ -1,16 +1,20 @@
 ---
 description: Conventions when editing tactic, creature, or face catalogues
-globs: src/game/content/**/*
+globs: src/server/content/**/*
 alwaysApply: false
 ---
 
 # Catalogue content
 
-Author definitions as TypeScript data in:
+Author definitions as JSON documents (one file per entity):
 
-- Tactics → `cards.ts`
-- Creatures → `creatures.ts`
-- Faces → `faces.ts`
+- Tactics → `src/server/content/cards/<card-id>.json`
+- Creatures → `src/server/content/creatures/<creature-id>.json`
+- Faces → `src/server/content/faces/<face-id>.json`
+- Builtin loadouts → `src/server/content/loadouts/<archetype>.json`
+
+Id constants and loaders stay in `cards.ts` / `creatures.ts` / `faces.ts`.
+Effects use the AST (`op` nodes) or legacy `type` members compiled by `AstCompiler`.
 
 Rules:
 

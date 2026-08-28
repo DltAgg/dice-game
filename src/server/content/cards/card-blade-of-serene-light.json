@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-blade-of-serene-light",
+  "name": "Blade of Serene Light",
+  "playCost": {
+    "luminar": 2
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "On deal damage: [Heal 1] on an allied creature.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-deal-damage",
+        "effects": [
+          {
+            "type": "heal",
+            "amount": 1,
+            "target": {
+              "kind": "choose-ally"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

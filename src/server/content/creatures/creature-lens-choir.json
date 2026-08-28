@@ -1,0 +1,98 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-lens-choir",
+  "name": "Lens Choir",
+  "life": 12,
+  "attributes": [
+    "luminar"
+  ],
+  "passiveRulesText": "On absorb Luminar, once per turn: [Generate 1 Luminar].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "luminar"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "luminar",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "basic"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "luminar",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "special"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "luminar",
+          "amount": 1
+        },
+        {
+          "type": "generate-symbol",
+          "symbol": "luminar",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-lens-choir-focus",
+      "name": "Focus Beam",
+      "kind": "basic",
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 1]. [Generate 1 Luminar].",
+      "effect": {
+        "type": "damage",
+        "amount": 1,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-lens-choir-cascade",
+      "name": "Cascade",
+      "kind": "special",
+      "requires": {
+        "luminar": 1,
+        "wild": 1
+      },
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Gain 1 Energy]. [Generate 1 Luminar].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

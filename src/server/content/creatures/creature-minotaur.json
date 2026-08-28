@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-minotaur",
+  "name": "War Minotaur",
+  "life": 17,
+  "attributes": [
+    "martial"
+  ],
+  "passiveRulesText": "[Pierce 1].",
+  "standingAbilities": [
+    {
+      "type": "ignore-shield",
+      "amount": 1
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-minotaur-heavy-axe",
+      "name": "Heavy Axe",
+      "kind": "basic",
+      "discards": {
+        "martial": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-minotaur-war-charge",
+      "name": "War Charge",
+      "kind": "special",
+      "requires": {
+        "martial": 1,
+        "wild": 1
+      },
+      "discards": {
+        "martial": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 4]. If War Minotaur is in the back row, [Swap] with a frontline creature.",
+      "effect": {
+        "type": "damage",
+        "amount": 4,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "conditional",
+          "when": {
+            "type": "source-position",
+            "position": "back"
+          },
+          "then": [
+            {
+              "type": "swap-positions",
+              "with": {
+                "kind": "choose-allied-frontline"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

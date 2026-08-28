@@ -1,0 +1,38 @@
+---
+description: Keep changes small — no megamodule rewrites; OOP, DRY, KISS, YAGNI
+alwaysApply: true
+---
+
+# Scope, modules, and design
+
+This repo already paid for a megamodule rewrite. Do not start another.
+
+## Slice first
+
+- One concern per change: one opcode, one hook, one card JSON, one UI surface.
+- If the request spans engine + UI + catalogue, **delegate** (engine-developer /
+  card-designer / match-ui). Do not implement every layer in the parent thread.
+- Prefer composing existing AST opcodes in JSON over a new `EffectDefinition`
+  member, a new reducer branch, or a UI special case.
+- Strangler-fig: extract or wrap; do not rewrite `resolution.ts`, MatchBoard,
+  or a catalogue in one shot.
+
+## OOP / DRY / KISS / YAGNI
+
+- **OOP:** new verbs are one `IOpcodeHandler` class, registered, tested. No
+  methods or closures on `GameState` or catalogue JSON (serializable DTOs).
+- **DRY:** share `dealDamage`, zone helpers, prompt openers — do not copy the
+  switch. Reuse `[Mark]` / `[Strip]` / `[Modify]`; do not mint Dose-style verbs.
+- **KISS:** the smallest change that matches print. Empty structured fields +
+  `DEFERRED_CATALOGUE.md` beat a fake implementation.
+- **YAGNI:** no “flexibility” stubs, no parallel AST, no HTTP server, no extra
+  `GameState` bags until a proving card needs them.
+
+## File budget (enforced)
+
+Guideline **~400** lines for new production modules (spec `020`).
+`src/architecture/module-budget.test.ts` fails the DoD if you grow a frozen
+oversized file or add a new production file over the hard cap. Split instead.
+
+Catalogue **data** is JSON (`cards/*.json`, …). Loaders stay thin id constants.
+Do not recreate `src/game` or TS megamodules.

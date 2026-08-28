@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-vital-spark",
+  "name": "Vital Spark",
+  "kind": "synthetic",
+  "symbol": "luminar",
+  "rulesText": "On roll: [Heal 1] on an allied creature.\nOn absorb, once per turn: [Prevent] on an allied creature.",
+  "onRoll": [
+    {
+      "type": "heal",
+      "amount": 1,
+      "target": {
+        "kind": "most-damaged-ally"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "grant-attack-prevent",
+      "amount": 1,
+      "target": {
+        "kind": "choose-ally"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

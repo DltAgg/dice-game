@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-sacrifice",
+  "name": "Sacrifice",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll: [Discard 1]; if you do, [Gain 2 Energy].\nOn absorb, once per turn: [Discard 1] to [Strike 2].",
+  "onRoll": [
+    {
+      "type": "discard-cards",
+      "amount": 1,
+      "then": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 2
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "discard-cards",
+      "amount": 1,
+      "then": [
+        {
+          "type": "damage",
+          "amount": 2,
+          "target": {
+            "kind": "choose-enemy"
+          }
+        }
+      ]
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

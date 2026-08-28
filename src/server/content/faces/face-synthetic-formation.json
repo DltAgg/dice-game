@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-formation",
+  "name": "Formation",
+  "kind": "synthetic",
+  "symbol": "martial",
+  "rulesText": "On roll: if you control a frontline creature, [Gain 1 Energy].\nOn absorb, once per turn: [Mark 1 Shield] another allied frontline creature.",
+  "onRoll": [
+    {
+      "type": "conditional",
+      "when": {
+        "type": "controller-has-frontline"
+      },
+      "then": [
+        {
+          "type": "generate-symbol",
+          "symbol": "wild",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "grant-shield",
+      "amount": 1,
+      "target": {
+        "kind": "choose-allied-frontline-other"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

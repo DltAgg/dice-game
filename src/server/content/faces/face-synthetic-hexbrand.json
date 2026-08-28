@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-hexbrand",
+  "name": "Hexbrand",
+  "kind": "synthetic",
+  "symbol": "corruption",
+  "rulesText": "On roll: [Drain 1].\nOn absorb, once per turn: [Destroy Equipment].",
+  "onRoll": [
+    {
+      "type": "drain-attribute-tokens",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "destroy-equipment",
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

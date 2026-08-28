@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-extermination",
+  "name": "Extermination",
+  "playCost": {
+    "corruption": 6
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "Consume every synthetic Corruption face from one die of one player and deal twice the number consumed as damage, split across up to 2 creatures.",
+  "ritual": {
+    "activeWhen": {
+      "corruption": 3
+    },
+    "spend": {
+      "corruption": 3
+    },
+    "effects": [
+      {
+        "type": "extermination"
+      }
+    ]
+  }
+}

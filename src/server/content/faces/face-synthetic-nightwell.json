@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-nightwell",
+  "name": "Nightwell",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll: [Generate 1 Darkness].\nOn absorb, once per turn: [Drain 1].",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "darkness",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "drain-attribute-tokens",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-persistent-infection",
+  "name": "Persistent Infection",
+  "playCost": {
+    "corruption": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Corruption face.\nOn roll: [Gain 1 Energy].",
+  "overload": {
+    "faceSymbols": [
+      "corruption"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "corruption",
+        "amount": 1
+      }
+    ]
+  }
+}

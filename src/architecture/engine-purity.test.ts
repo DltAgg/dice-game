@@ -13,7 +13,7 @@ import { describe, expect, it } from "vitest";
  * gates the build.
  */
 
-const ENGINE_ROOT = fileURLToPath(new URL("../game", import.meta.url));
+const ENGINE_ROOT = fileURLToPath(new URL("../server", import.meta.url));
 
 function engineSourceFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
@@ -87,7 +87,7 @@ describe("game engine purity", () => {
     expect(banned).toEqual([]);
 
     const outward = specifiers.filter((specifier) =>
-      /^@\/(ui|store|networking|app|decks|metrics)\b/.test(specifier),
+      /^(@\/(ui|store|networking|app|decks|metrics)\b|@client\/)/.test(specifier),
     );
     expect(outward).toEqual([]);
   });

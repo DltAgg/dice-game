@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-den-share",
+  "name": "Den Share",
+  "playCost": {
+    "wild": 2
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Wild, once per turn: [Frenzy] another allied creature.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "wild"
+        ],
+        "absorberRelation": "ally",
+        "oncePerTurn": true,
+        "effects": [
+          {
+            "type": "grant-extra-attack",
+            "amount": 1,
+            "target": {
+              "kind": "choose-ally-other"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-nightbound-adept",
+  "name": "Nightbound Adept",
+  "life": 14,
+  "attributes": [
+    "darkness"
+  ],
+  "passiveRulesText": "On absorb Darkness, once per turn: [Drain 1].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "darkness"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "drain-attribute-tokens",
+          "amount": 1,
+          "target": {
+            "kind": "choose-enemy"
+          }
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "basic"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "darkness",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "special"
+      ],
+      "effects": [
+        {
+          "type": "drain-attribute-tokens",
+          "amount": 1,
+          "target": {
+            "kind": "choose-enemy"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-nightbound-adept-umbral-touch",
+      "name": "Umbral Touch",
+      "kind": "basic",
+      "discards": {
+        "darkness": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Generate 1 Darkness].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-nightbound-adept-eclipse-pulse",
+      "name": "Eclipse Pulse",
+      "kind": "special",
+      "requires": {
+        "arcane": 1,
+        "darkness": 1
+      },
+      "discards": {
+        "darkness": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Lose 1 Energy].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

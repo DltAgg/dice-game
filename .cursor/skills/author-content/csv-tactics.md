@@ -23,7 +23,7 @@ pool. It is not a card titled Synthetic Darkness.
 
 1. List every row with proposed: main type, ritual subtypes if any, attribute, forge, playable region, deferred gaps.
 2. Get alignment (or proceed if the user said to implement the batch).
-3. Author each row into `src/game/content/cards.ts` per [tactics.md](tactics.md).
+3. Author each row into `src/server/content/cards/<card-id>.json` per [tactics.md](tactics.md).
 4. Update `docs/specs/002-card-layer.md` tables and `docs/DEFERRED_CATALOGUE.md`.
 5. Run DoD checks.
 

@@ -6,8 +6,9 @@ alwaysApply: true
 # Dice Skirmish — core
 
 - Read `AGENTS.md` and `TOOLS.md` at the repo root before large changes.
+- Slice work: `.cursor/rules/scope-and-modules.mdc` + skill `slice-changes`. Do not one-shot engine+UI+catalogue or rewrite megamodules.
 - Only `reduce()` / `advance()` may change game rules state.
-- Keep layers separate: `src/game` (pure rules) · `store` · `decks` · `networking` · `metrics` · `ui`.
+- Keep layers separate: `src/server` (pure rules) · `src/client` (store, decks, networking, metrics, ui).
 - Effects and abilities are data (discriminated unions), never functions.
 - Incomplete printed clauses → `docs/DEFERRED_CATALOGUE.md`, not approximate silent effects.
 - Player-facing how-it-plays: `docs/RULEBOOK.md`. Update it in the same change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
@@ -20,5 +21,5 @@ alwaysApply: true
 - Engine/reducer/hooks/resolution → subagent `.cursor/agents/engine-developer.md` (skills `develop-engine`, `implement-hooks`).
 - Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.
 - Match / lobby / deck builder / PeerJS adapters → subagent `.cursor/agents/match-ui.md` (skill `match-ui`). No rules in UI.
-- Match metrics dashboard / collector / agent export → skill `analyze-match-metrics` plus `src/metrics` (not the engine).
+- Match metrics dashboard / collector / agent export → skill `analyze-match-metrics` plus `src/client/metrics` (not the engine).
 - Constructed loadouts / “does this card have a home?” / attribute identity in builds → subagent `.cursor/agents/deck-designer.md`.

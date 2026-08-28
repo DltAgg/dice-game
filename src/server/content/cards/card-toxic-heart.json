@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-toxic-heart",
+  "name": "Toxic Heart",
+  "playCost": {
+    "toxin": 5
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "On toxin damage: [Heal 1] this creature.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-toxin-damage",
+        "effects": [
+          {
+            "type": "heal",
+            "amount": 1,
+            "target": {
+              "kind": "source-creature"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

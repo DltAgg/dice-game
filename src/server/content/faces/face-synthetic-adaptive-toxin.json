@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-adaptive-toxin",
+  "name": "Adaptive Toxin",
+  "kind": "synthetic",
+  "symbol": "toxin",
+  "rulesText": "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb, once per turn: [Strip 3 Toxin]. [Strike equal].",
+  "onRoll": [
+    {
+      "type": "arm-toxin-receive-cap",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy-with-toxin"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "remove-toxin-deal-damage",
+      "amount": 3,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}
