@@ -18,6 +18,12 @@ UI → Zustand → GameAction → reduce()/advance() → GameState
 Only `reduce()` advances rules state. Networking and persistence are adapters.
 Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
+**Slice, do not rewrite.** OOP / DRY / KISS / YAGNI — compose existing opcodes
+and queries; extract modules instead of growing frozen files. Always-on:
+[`.cursor/rules/scope-and-modules.mdc`](.cursor/rules/scope-and-modules.mdc).
+Large or cross-layer work: skill [slice-changes](.cursor/skills/slice-changes/SKILL.md).
+Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
+
 ## Before you change code
 
 1. Identify the layer: `src/server` (rules + JSON catalogues) · `src/client` (store, decks, networking, metrics, ui).
@@ -35,6 +41,7 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 | Task | Start here |
 |---|---|
+| Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
 | New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
@@ -47,7 +54,8 @@ Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 ## Subagents
 
 Project specialists live in [`.cursor/agents/`](.cursor/agents/). Delegate rather
-than doing their job in the parent thread.
+than doing their job in the parent thread. If a request needs two specialists,
+invoke them separately — do not implement both layers yourself.
 
 | Subagent | Use when |
 |---|---|
@@ -90,7 +98,8 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Effects are **data** (JSON AST / discriminated unions), never functions. New tokens are `[Mark]` / `[Strip]` arguments, not new opcodes.
 - Content ids: `card-*`, `creature-*`, `face-*`, `attack-*`, `ability-*` (kebab after prefix).
 - Attachment types (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region and ritual subtypes.
-- Grow effect AST only when a concrete card needs it; implement resolver + tests in the same change.
+- Grow effect AST only when a concrete card needs it; one opcode handler class + tests in the same change. No unreachable stubs.
+- Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.
 - Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
 - Printed `energyCost: 1` is exceptional and niche. Players should reach 1-Energy plays mainly via **cost reduction**, not a catalogue of 1-drops.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.

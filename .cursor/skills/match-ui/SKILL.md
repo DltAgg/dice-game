@@ -10,6 +10,8 @@ description: >-
 
 ## Boundaries
 
+- **Slice:** extract under `board/` / `modals/` / `intents/` instead of growing
+  `MatchBoard.tsx`. See `scope-and-modules.mdc` and `module-budget.test.ts`.
 - UI dispatches `GameAction` intents via `useMatchStore.dispatch`.
 - **Never** reimplement rules in React. Display `GameState`; let `advance()` decide.
 - Online: `mode` is `local` | `host` | `client`. Host/client sessions live in

@@ -43,6 +43,7 @@ npm run typecheck && npm test && npm run lint
 | Effect resolution | `src/server/reducer/resolution.ts` |
 | Loadout legality | `src/server/rules/loadout.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
+| Module budget | `src/architecture/module-budget.test.ts` (no megamodules / freeze) |
 | Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
 | Keyword glossary | `docs/KEYWORDS.md` (update when print vocabulary / tokens change; Rules tab) |
 | Match store | `src/client/store/matchStore.ts` |
@@ -58,11 +59,13 @@ npm run typecheck && npm test && npm run lint
 | `src/server/content/cardText.test.ts` | English type / forge / requirement printing |
 | `src/server/rules/loadout.test.ts` | Deck 40–50, ≤3 copies, known ids |
 | `src/architecture/engine-purity.test.ts` | Engine stays pure |
+| `src/architecture/module-budget.test.ts` | File size freeze; no `src/game`; thin catalogue loaders |
 | `src/server/reducer/*.test.ts` | Behavior of play / forge / combat / etc. |
 
 Focused run:
 
 ```bash
+npx vitest run src/architecture/module-budget.test.ts
 npx vitest run src/server/content/cards.consistency.test.ts
 npx vitest run src/server/reducer/playcard.test.ts
 ```
@@ -91,6 +94,7 @@ Details: `docs/specs/007-peerjs.md`.
 
 | Skill | Use when |
 |---|---|
+| `.cursor/skills/slice-changes/` | Large / cross-layer work — stop megamodule rewrites |
 | `.cursor/skills/author-content/` | Adding catalogue cards from print / CSV |
 | `.cursor/skills/standardize-card-effects/` | Normalizing On roll / On absorb text and wiring triggers |
 | `.cursor/skills/develop-engine/` | New effect AST, reducer, hooks |

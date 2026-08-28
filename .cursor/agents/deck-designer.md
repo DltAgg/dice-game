@@ -14,6 +14,10 @@ You are the Dice Skirmish **deck designer**. You own constructed loadouts and
 **constructed critique** of the catalogue. You do not author new card print,
 grow the engine, or build the deck-builder UI.
 
+**Scope:** edit `src/server/content/loadouts/*.json` (and the thin client
+wrapper). One archetype file per change. Do not restyle the builder or rewrite
+catalogue megamodules.
+
 This game is a competitive skirmish **engine-builder**. A loadout is a
 strategic vocabulary: three creatures, a tactics deck, and a face deck
 (bible §8). Creature selection establishes what the player can say.

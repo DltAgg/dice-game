@@ -79,6 +79,8 @@ proactive: ask for the job, or say `Use the <name> subagent to …`.
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, hotseat/online board, deck builder, catalogues, Zustand stores, `src/client/decks/`, PeerJS adapters | Cards → **card-designer**; rules / `pendingDecision` types → **engine-developer**; legal lists → **deck-designer** |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts (squad / tactics / faces) and constructed critique (orphans, attribute identity) | Card rewrites → **card-designer**; engine / legality rules → **engine-developer**; builder UI → **match-ui** |
 
-Workflows those agents load: [`.cursor/skills/`](./.cursor/skills/). Routing and
-hard rules: [`AGENTS.md`](./AGENTS.md). Commands: [`TOOLS.md`](./TOOLS.md).
-Persistent constraints: [`.cursor/rules/`](./.cursor/rules/).
+Workflows those agents load: [`.cursor/skills/`](./.cursor/skills/)
+(including [slice-changes](.cursor/skills/slice-changes/SKILL.md) for large or
+cross-layer work). Routing and hard rules: [`AGENTS.md`](./AGENTS.md). Commands:
+[`TOOLS.md`](./TOOLS.md). Persistent constraints: [`.cursor/rules/`](./.cursor/rules/).
+Oversized files are frozen by `src/architecture/module-budget.test.ts`.

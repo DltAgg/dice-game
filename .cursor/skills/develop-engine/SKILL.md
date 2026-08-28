@@ -13,13 +13,14 @@ description: >-
 
 1. **One advance path** — `reduce(state, action, rng)` / `advance(state, action)`.
 2. **Pure** — see `.cursor/rules/engine-purity.mdc` and `src/architecture/engine-purity.test.ts`.
-3. **Effects are data** — prefer composing opcodes in JSON (`mark`, `strip`,
+3. **Small** — `.cursor/rules/scope-and-modules.mdc`. One opcode or one command per change. `module-budget.test.ts` fails DoD if you grow frozen files.
+4. **Effects are data** — prefer composing opcodes in JSON (`mark`, `strip`,
    `modify`, `damage`, …). A genuinely new verb adds one `IOpcodeHandler` class
    under `src/server/ast/opcodes/` plus a compile mapping. Do not attach functions
    to `GameState` or catalogue documents.
-4. **Intent actions** — players declare choices (`PLAY_CARD`, `ATTACK`, …); amounts and legality are derived by the host/engine.
-5. **Failures** — return `GameError` + original state; do not throw for illegal moves.
-6. **Proving cards** — print uses holder voice and
+5. **Intent actions** — players declare choices (`PLAY_CARD`, `ATTACK`, …); amounts and legality are derived by the host/engine.
+6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
+7. **Proving cards** — print uses holder voice and
    [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md); do not default new proving
    cards to Energy 1 when 2+ is enough (bible §34.5). A new token joins Mark/Strip
    X — do not add Dose-style verbs. New tokens are Mark/Strip arguments, not new opcodes.

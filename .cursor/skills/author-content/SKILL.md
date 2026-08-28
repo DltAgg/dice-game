@@ -42,6 +42,8 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    `AstCompiler`). Prefer existing opcodes; grow the engine only with
    [develop-engine](../develop-engine/SKILL.md) in the same change as the card.
 4. `src/server` stays pure. Do not put rules in UI / store / networking.
+   One entity per JSON file; do not grow `cards.ts` / `creatures.ts` / `faces.ts`
+   past `module-budget.test.ts`.
 5. Forge the card’s own attribute. Natural forges are legal for every
    attribute; synthetic forges still name a special from the pool (never
    blank `face-synthetic-<attr>`). Keep splash in overload/equip gates or

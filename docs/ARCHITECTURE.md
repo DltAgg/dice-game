@@ -47,6 +47,10 @@ Aliases: `@server`, `@server/*`, `@client/*`, `@shared`.
 `src/client/networking` wraps `advance()` on the host and ships JSON state to
 every peer (seated players and spectators). None of it holds rules.
 
+New production modules stay small (spec `020`, ~400 lines). Frozen leftovers
+are gated by `src/architecture/module-budget.test.ts`. Split instead of growing
+`resolution.ts` or MatchBoard. Catalogue data is JSON, not TypeScript megamodules.
+
 ## Why the engine is pure
 
 `src/server` may not import React, Zustand, PeerJS or nanoid, and may not touch

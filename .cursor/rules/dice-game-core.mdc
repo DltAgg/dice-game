@@ -6,6 +6,7 @@ alwaysApply: true
 # Dice Skirmish — core
 
 - Read `AGENTS.md` and `TOOLS.md` at the repo root before large changes.
+- Slice work: `.cursor/rules/scope-and-modules.mdc` + skill `slice-changes`. Do not one-shot engine+UI+catalogue or rewrite megamodules.
 - Only `reduce()` / `advance()` may change game rules state.
 - Keep layers separate: `src/server` (pure rules) · `src/client` (store, decks, networking, metrics, ui).
 - Effects and abilities are data (discriminated unions), never functions.

@@ -26,7 +26,7 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
 1. `AGENTS.md` and `TOOLS.md`
 2. `docs/ARCHITECTURE.md`, `docs/RULEBOOK.md` (how play currently works), and
    `docs/KEYWORDS.md` (print vocabulary — proving cards and new tokens use it)
-3. `.cursor/rules/engine-purity.mdc`, `.cursor/rules/rulebook.mdc`, and
+3. `.cursor/rules/engine-purity.mdc`, `.cursor/rules/scope-and-modules.mdc`, `.cursor/rules/rulebook.mdc`, and
    `.cursor/rules/keywords.mdc`
 4. The matching skill — **read it immediately**; do not improvise workflow:
    - Standing hooks / `StandingTrigger` / spec `010` → `.cursor/skills/implement-hooks/SKILL.md` (then `reference.md` / `examples.md` as needed). Spec: `docs/specs/010-trigger-hooks.md`.
@@ -56,7 +56,8 @@ Implement engine requirements so content can stay data-driven:
 - Effects and abilities are **data** (discriminated unions), never functions.
 - Actions describe **intent**. There is no client-supplied `DEAL_DAMAGE` amount; the engine derives outcomes.
 - Illegal player moves return `GameError` plus the **original** state object. Do not throw for normal illegality.
-- Grow the AST only when a **concrete** card / creature / face needs it. Implement type + resolver + tests + proving wire together. No unreachable stubs “for later.”
+- Grow the AST only when a **concrete** card / creature / face needs it. One `IOpcodeHandler` class + compile mapping + tests + proving wire. No unreachable stubs “for later.”
+- Do not rewrite `resolution.ts` in one shot. Do not grow files past `src/architecture/module-budget.test.ts` — extract a command / opcode / helper instead.
 - Incomplete printed clauses: keep accurate English, leave structured fields empty or omit, row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently.
 - Proving-card print follows holder voice (`you` = the player whose field the card sits on) and `docs/KEYWORDS.md`. Do not invent a 1-cost proving card when a 2+ cost expresses the mechanic. New tokens join `[Mark]` / `[Strip]`; do not mint Dose/Envenom verbs.
 - Hooks are **shared events** + catalogue filters. Never coupled types (`on-ally-attack`, `on-opponent-roll-symbol`). Identity is instance id, not definition id or printed name.

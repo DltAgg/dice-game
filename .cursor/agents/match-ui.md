@@ -21,6 +21,11 @@ UI → Zustand → GameAction → reduce()/advance() → GameState
 
 Display `GameState`. Dispatch intents. Let `advance()` decide.
 
+**Scope:** one surface per change (one modal, one dock, one store helper). Do
+not grow `MatchBoard.tsx` / `Lobby.tsx` / `DeckBuilder.tsx` past
+`src/architecture/module-budget.test.ts` — extract under `board/`, `modals/`,
+`intents/`. No rules in UI. Cross-layer work → `slice-changes` then hand off.
+
 ## Read first (every invocation)
 
 1. `AGENTS.md` and `TOOLS.md`
