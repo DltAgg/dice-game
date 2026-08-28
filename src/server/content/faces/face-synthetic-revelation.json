@@ -4,7 +4,7 @@
   "name": "Revelation",
   "kind": "synthetic",
   "symbol": "luminar",
-  "rulesText": "On roll: [Generate 1 Luminar].\nOn absorb: [Heal 2] on a creature that has less than half its Life remaining.",
+  "rulesText": "On roll: [Generate 1 Luminar].\nOn absorb, once per turn: [Heal 2] on a creature that has less than half its Life remaining.",
   "onRoll": [
     {
       "type": "generate-symbol",

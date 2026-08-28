@@ -4,7 +4,7 @@
   "name": "Seep",
   "kind": "synthetic",
   "symbol": "toxin",
-  "rulesText": "On roll: [Generate 1 Toxin].\nOn absorb: [Mark 1 Toxin on attacks].",
+  "rulesText": "On roll: [Generate 1 Toxin].\nOn absorb, once per turn: [Mark 1 Toxin on attacks].",
   "onRoll": [
     {
       "type": "generate-symbol",

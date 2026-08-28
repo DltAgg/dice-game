@@ -14,7 +14,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Mechanical face.\nOn absorb: [Generate 1 Mechanical].",
+  "rulesText": "Can only overload a Mechanical face.\nOn absorb, once per turn: [Generate 1 Mechanical].",
   "overload": {
     "faceSymbols": [
       "mechanical"

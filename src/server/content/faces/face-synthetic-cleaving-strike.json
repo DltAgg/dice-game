@@ -4,7 +4,7 @@
   "name": "Cleaving Strike",
   "kind": "synthetic",
   "symbol": "martial",
-  "rulesText": "On roll: [Strip 2 Shield].\nOn absorb: [Empower 1].",
+  "rulesText": "On roll: [Strip 2 Shield].\nOn absorb, once per turn: [Empower 1].",
   "onRoll": [
     {
       "type": "remove-shield",

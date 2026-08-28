@@ -4,7 +4,7 @@
   "name": "Venom",
   "kind": "synthetic",
   "symbol": "toxin",
-  "rulesText": "On roll: [Mark 1 Toxin].\nOn absorb: a chosen enemy creature takes +1 damage the next time it takes damage.",
+  "rulesText": "On roll: [Mark 1 Toxin].\nOn absorb, once per turn: a chosen enemy creature takes +1 damage the next time it takes damage.",
   "onRoll": [
     {
       "type": "apply-toxin",

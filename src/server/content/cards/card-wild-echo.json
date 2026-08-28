@@ -14,7 +14,7 @@
     "attribute": "wild",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Natural Wild face.\nOn absorb: [Generate 1 Wild].",
+  "rulesText": "Can only overload a Natural Wild face.\nOn absorb, once per turn: [Generate 1 Wild].",
   "overload": {
     "faceSymbols": [
       "wild"

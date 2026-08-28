@@ -4,7 +4,7 @@
   "name": "Piston",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: [Generate 1 Mechanical].\nOn absorb: [Gain 1 Energy].",
+  "rulesText": "On roll: [Generate 1 Mechanical].\nOn absorb, once per turn: [Gain 1 Energy].",
   "onRoll": [
     {
       "type": "generate-symbol",

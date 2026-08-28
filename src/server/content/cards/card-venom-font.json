@@ -14,7 +14,7 @@
     "attribute": "toxin",
     "target": "own-die"
   },
-  "rulesText": "On absorb Toxin: [Mark 1 Toxin].",
+  "rulesText": "On absorb Toxin, once per turn: [Mark 1 Toxin].",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -32,7 +32,8 @@
               "kind": "choose-enemy"
             }
           }
-        ]
+        ],
+        "oncePerTurn": true
       }
     ]
   }

@@ -4,7 +4,7 @@
   "name": "Pack Share",
   "kind": "synthetic",
   "symbol": "wild",
-  "rulesText": "On absorb: [Generate 1 Wild].",
+  "rulesText": "On absorb, once per turn: [Generate 1 Wild].",
   "onRoll": [],
   "onAbsorb": [
     {

@@ -4,7 +4,7 @@
   "name": "Formation",
   "kind": "synthetic",
   "symbol": "martial",
-  "rulesText": "On roll: if you control a frontline creature, [Gain 1 Energy].\nOn absorb: [Mark 1 Shield] another allied frontline creature.",
+  "rulesText": "On roll: if you control a frontline creature, [Gain 1 Energy].\nOn absorb, once per turn: [Mark 1 Shield] another allied frontline creature.",
   "onRoll": [
     {
       "type": "conditional",

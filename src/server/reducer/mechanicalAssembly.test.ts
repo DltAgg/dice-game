@@ -16,7 +16,8 @@ import {
   STAMP,
   TRANSMISSION,
 } from "../content/cards.js";
-import { FLYWHEEL, GEAR, PISTON, faceIdForSymbol } from "../content/faces.js";
+import { SERVO_ASSEMBLY, MINOTAUR, GARUDA, LENS_CHOIR } from "../content/creatures.js";
+import { FLYWHEEL, GEAR, PISTON, ENGINE_TEST_FACE_DECK, faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { CardId, DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -102,6 +103,32 @@ function placedReadyRitual(cardId: CardId, _progress: AttributeTokens) {
     ),
   };
 }
+
+describe("Servo Assembly on-absorb", () => {
+  it("does not loop when rolling Mechanical (pile stays small, not resolution cap)", () => {
+    const state0 = newMatch({
+      players: [
+        {
+          id: P1,
+          squad: [SERVO_ASSEMBLY, MINOTAUR, GARUDA],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+        {
+          id: P2,
+          squad: [MINOTAUR, GARUDA, LENS_CHOIR],
+          deck: [],
+          faceDeck: ENGINE_TEST_FACE_DECK,
+        },
+      ],
+    });
+    const seeded = installFace(withPhase(state0, "roll"), GEAR);
+    const afterRoll = rollShowingSlot(seeded, 0);
+    // Rolled pip + one Servo generate — not 64 (maxResolutionSteps).
+    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
+    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
+  });
+});
 
 describe("Ratchet", () => {
   const mechanicalFace = GEAR;

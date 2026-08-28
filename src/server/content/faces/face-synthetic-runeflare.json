@@ -4,7 +4,7 @@
   "name": "Runeflare",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: [Strike 1].\nOn absorb: [Draw 1].",
+  "rulesText": "On roll: [Strike 1].\nOn absorb, once per turn: [Draw 1].",
   "onRoll": [
     {
       "type": "damage",

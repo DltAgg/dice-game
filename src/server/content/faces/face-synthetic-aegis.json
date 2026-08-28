@@ -4,7 +4,7 @@
   "name": "Aegis",
   "kind": "synthetic",
   "symbol": "luminar",
-  "rulesText": "On roll: [Generate 1 Shield].\nOn absorb: choose an allied creature; redirect up to 2 damage that would be dealt to another allied creature to that creature.",
+  "rulesText": "On roll: [Generate 1 Shield].\nOn absorb, once per turn: choose an allied creature; redirect up to 2 damage that would be dealt to another allied creature to that creature.",
   "onRoll": [
     {
       "type": "generate-symbol",

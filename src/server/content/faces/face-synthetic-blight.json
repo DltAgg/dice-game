@@ -4,7 +4,7 @@
   "name": "Blight",
   "kind": "synthetic",
   "symbol": "corruption",
-  "rulesText": "On roll: [Generate 1 Corruption].\nOn absorb: [Destroy Ritual].",
+  "rulesText": "On roll: [Generate 1 Corruption].\nOn absorb, once per turn: [Destroy Ritual].",
   "onRoll": [
     {
       "type": "generate-symbol",

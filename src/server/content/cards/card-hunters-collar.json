@@ -14,7 +14,7 @@
     "attribute": "wild",
     "target": "own-die"
   },
-  "rulesText": "On absorb Wild: [Generate 1 Martial].",
+  "rulesText": "On absorb Wild, once per turn: [Generate 1 Martial].",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -30,7 +30,8 @@
             "symbol": "martial",
             "amount": 1
           }
-        ]
+        ],
+        "oncePerTurn": true
       }
     ]
   }

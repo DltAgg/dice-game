@@ -14,7 +14,7 @@
     "attribute": "toxin",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Toxin face.\nOn absorb: [Strike 1].",
+  "rulesText": "Can only overload a Toxin face.\nOn absorb, once per turn: [Strike 1].",
   "overload": {
     "faceSymbols": [
       "toxin"

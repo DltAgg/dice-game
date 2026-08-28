@@ -4,7 +4,7 @@
   "name": "Wasting Brand",
   "kind": "synthetic",
   "symbol": "corruption",
-  "rulesText": "On roll: [Strike 1] your creature with the most damage.\nOn absorb: [Mark 1 Toxin] your creature with the most damage.",
+  "rulesText": "On roll: [Strike 1] your creature with the most damage.\nOn absorb, once per turn: [Mark 1 Toxin] your creature with the most damage.",
   "onRoll": [
     {
       "type": "damage",

@@ -4,7 +4,7 @@
   "name": "Command",
   "kind": "synthetic",
   "symbol": "martial",
-  "rulesText": "On roll: [Reposition].\nOn absorb: [Strip 1 Shield].",
+  "rulesText": "On roll: [Reposition].\nOn absorb, once per turn: [Strip 1 Shield].",
   "onRoll": [
     {
       "type": "reposition-creature",

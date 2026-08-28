@@ -4,7 +4,7 @@
   "name": "Gore",
   "kind": "synthetic",
   "symbol": "wild",
-  "rulesText": "On roll: [Strike 1].\nOn absorb: [Empower 1].",
+  "rulesText": "On roll: [Strike 1].\nOn absorb, once per turn: [Empower 1].",
   "onRoll": [
     {
       "type": "damage",

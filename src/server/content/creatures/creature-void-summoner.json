@@ -6,7 +6,7 @@
   "attributes": [
     "arcane"
   ],
-  "passiveRulesText": "On absorb Natural: [Generate 1 Arcane].",
+  "passiveRulesText": "On absorb Natural, once per turn: [Generate 1 Arcane].",
   "standingAbilities": [
     {
       "type": "on-absorb",
@@ -20,7 +20,8 @@
           "symbol": "arcane",
           "amount": 1
         }
-      ]
+      ],
+      "oncePerTurn": true
     },
     {
       "type": "on-attack",

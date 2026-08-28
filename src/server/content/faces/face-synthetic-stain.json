@@ -4,7 +4,7 @@
   "name": "Stain",
   "kind": "synthetic",
   "symbol": "corruption",
-  "rulesText": "On roll: [Mark 1 Corruption].\nOn absorb: choose an opposing Corrupted face; it cannot be used as a resource this turn.",
+  "rulesText": "On roll: [Mark 1 Corruption].\nOn absorb, once per turn: choose an opposing Corrupted face; it cannot be used as a resource this turn.",
   "onRoll": [
     {
       "type": "add-corruption-marker",

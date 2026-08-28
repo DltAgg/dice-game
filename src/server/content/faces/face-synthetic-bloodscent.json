@@ -4,7 +4,7 @@
   "name": "Bloodscent",
   "kind": "synthetic",
   "symbol": "wild",
-  "rulesText": "On roll: [Empower 1].\nOn absorb: [Generate 1 Wild].",
+  "rulesText": "On roll: [Empower 1].\nOn absorb, once per turn: [Generate 1 Wild].",
   "onRoll": [
     {
       "type": "next-attack-bonus",

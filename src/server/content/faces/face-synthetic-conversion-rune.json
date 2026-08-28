@@ -4,7 +4,7 @@
   "name": "Conversion Rune",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: you may [Convert 1] this Arcane into any Natural.\nOn absorb: [Gain 1 Energy].",
+  "rulesText": "On roll: you may [Convert 1] this Arcane into any Natural.\nOn absorb, once per turn: [Gain 1 Energy].",
   "onRoll": [
     {
       "type": "convert-symbols",

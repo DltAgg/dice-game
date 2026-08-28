@@ -4,7 +4,7 @@
   "name": "Infection",
   "kind": "synthetic",
   "symbol": "corruption",
-  "rulesText": "On roll: if the opponent has a Corrupted face, [Mark 1 Corruption] on another face of the same die.\nOn absorb: [Lose 1 Energy].",
+  "rulesText": "On roll: if the opponent has a Corrupted face, [Mark 1 Corruption] on another face of the same die.\nOn absorb, once per turn: [Lose 1 Energy].",
   "onRoll": [
     {
       "type": "spread-corruption-marker"

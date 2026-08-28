@@ -4,7 +4,7 @@
   "name": "Adaptive Toxin",
   "kind": "synthetic",
   "symbol": "toxin",
-  "rulesText": "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb: [Strip 3 Toxin]. [Strike equal].",
+  "rulesText": "On roll: choose an enemy creature with Toxin; until its next turn, it cannot receive more than 1 Toxin marker.\nOn absorb, once per turn: [Strip 3 Toxin]. [Strike equal].",
   "onRoll": [
     {
       "type": "arm-toxin-receive-cap",

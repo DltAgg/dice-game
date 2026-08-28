@@ -4,7 +4,7 @@
   "name": "Pack",
   "kind": "synthetic",
   "symbol": "wild",
-  "rulesText": "On roll: if you control another adjacent creature, [Generate 1 Wild].\nOn absorb: [Empower 1] on another allied creature.",
+  "rulesText": "On roll: if you control another adjacent creature, [Generate 1 Wild].\nOn absorb, once per turn: [Empower 1] on another allied creature.",
   "onRoll": [
     {
       "type": "conditional",

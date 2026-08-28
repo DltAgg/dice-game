@@ -14,7 +14,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Mechanical face.\nOn absorb: copy another symbol in your pool.",
+  "rulesText": "Can only overload a Mechanical face.\nOn absorb, once per turn: copy another symbol in your pool.",
   "overload": {
     "faceSymbols": [
       "mechanical"

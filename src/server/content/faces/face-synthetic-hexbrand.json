@@ -4,7 +4,7 @@
   "name": "Hexbrand",
   "kind": "synthetic",
   "symbol": "corruption",
-  "rulesText": "On roll: [Drain 1].\nOn absorb: [Destroy Equipment].",
+  "rulesText": "On roll: [Drain 1].\nOn absorb, once per turn: [Destroy Equipment].",
   "onRoll": [
     {
       "type": "drain-attribute-tokens",

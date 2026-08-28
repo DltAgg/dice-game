@@ -4,7 +4,7 @@
   "name": "Canker",
   "kind": "synthetic",
   "symbol": "corruption",
-  "rulesText": "On roll: [Mark 1 Corruption].\nOn absorb: [Forge 1 Synthetic Corruption] on the opponent's die.",
+  "rulesText": "On roll: [Mark 1 Corruption].\nOn absorb, once per turn: [Forge 1 Synthetic Corruption] on the opponent's die.",
   "onRoll": [
     {
       "type": "add-corruption-marker",

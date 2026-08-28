@@ -4,7 +4,7 @@
   "name": "Marrow Rot",
   "kind": "synthetic",
   "symbol": "toxin",
-  "rulesText": "On roll: [Mark 1 Toxin].\nOn absorb: [Mark 1 Toxin] a chosen enemy that already has Toxin.",
+  "rulesText": "On roll: [Mark 1 Toxin].\nOn absorb, once per turn: [Mark 1 Toxin] a chosen enemy that already has Toxin.",
   "onRoll": [
     {
       "type": "apply-toxin",

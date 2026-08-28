@@ -4,7 +4,7 @@
   "name": "Insight Rune",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: [Draw 1].\nOn absorb: [Insight 2].",
+  "rulesText": "On roll: [Draw 1].\nOn absorb, once per turn: [Insight 2].",
   "onRoll": [
     {
       "type": "draw-cards",

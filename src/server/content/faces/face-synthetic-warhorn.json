@@ -4,7 +4,7 @@
   "name": "Warhorn",
   "kind": "synthetic",
   "symbol": "martial",
-  "rulesText": "On roll: [Generate 1 Martial].\nOn absorb: [Empower 1].",
+  "rulesText": "On roll: [Generate 1 Martial].\nOn absorb, once per turn: [Empower 1].",
   "onRoll": [
     {
       "type": "generate-symbol",

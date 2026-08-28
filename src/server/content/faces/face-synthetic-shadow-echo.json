@@ -4,7 +4,7 @@
   "name": "Shadow Echo",
   "kind": "synthetic",
   "symbol": "darkness",
-  "rulesText": "On roll: you may [Discard 1]; if you do, [Draw 1].\nOn absorb: [Recall 1] that costs 2 or less.",
+  "rulesText": "On roll: you may [Discard 1]; if you do, [Draw 1].\nOn absorb, once per turn: [Recall 1] that costs 2 or less.",
   "onRoll": [
     {
       "type": "discard-cards",

@@ -16,7 +16,7 @@
     "attribute": "wild",
     "target": "own-die"
   },
-  "rulesText": "On absorb Wild: [Empower 1].",
+  "rulesText": "On absorb Wild, once per turn: [Empower 1].",
   "ritual": {
     "activeWhen": {
       "wild": 2
@@ -34,7 +34,8 @@
             "type": "next-attack-bonus",
             "amount": 1
           }
-        ]
+        ],
+        "oncePerTurn": true
       }
     ]
   }

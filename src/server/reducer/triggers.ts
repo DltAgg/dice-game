@@ -19,6 +19,15 @@ import {
 } from "../model/ids.js";
 import type { SymbolType } from "../model/symbols.js";
 import { nextInstanceId, patchCreature, type Draft } from "./draft.js";
+import {
+  isHostSpent,
+  isPlayerSpent,
+  isSpent,
+  markHostSpent,
+  markPlayerSpent,
+  markSpent,
+  onceKey,
+} from "./triggerSpent.js";
 
 /**
  * Shared standing-trigger hooks (`010-trigger-hooks`). Catalogue data lists
@@ -156,25 +165,6 @@ function matchesPlayerRelation(
     case "opponent":
       return subjectPlayerId !== hostControllerId;
   }
-}
-
-function onceKey(prefix: string, triggerType: string): string {
-  return `${prefix}:${triggerType}`;
-}
-
-function isSpent(draft: Draft, creatureId: CreatureId | null, key: string): boolean {
-  if (creatureId === null) return false;
-  return draft.creatures[creatureId]?.spentOncePerTurnTriggers.includes(key) ?? false;
-}
-
-function markSpent(draft: Draft, creatureId: CreatureId | null, key: string): void {
-  if (creatureId === null) return;
-  const creature = draft.creatures[creatureId];
-  if (creature === undefined) return;
-  if (creature.spentOncePerTurnTriggers.includes(key)) return;
-  patchCreature(draft, creatureId, {
-    spentOncePerTurnTriggers: [...creature.spentOncePerTurnTriggers, key],
-  });
 }
 
 /** Collect equipment + creature passives + ready continuous rituals. */
@@ -404,9 +394,8 @@ function fireOnAbsorb(
       if (!matchesAbsorberRelation(relation, host, absorber, absorberOwnerId)) {
         continue;
       }
-      const key = onceKey(host.keyPrefix, "on-absorb");
-      if (ability.oncePerTurn === true && isSpent(draft, host.hostCreatureId, key)) continue;
-      if (ability.oncePerTurn === true) markSpent(draft, host.hostCreatureId, key);
+      if (isHostSpent(draft, host, "on-absorb")) continue;
+      markHostSpent(draft, host, "on-absorb");
       const declaredTarget =
         absorber.kind === "creature" ? absorber.id : null;
       pushAbilityEffects(
@@ -431,6 +420,11 @@ function fireFaceOnAbsorb(
 ): void {
   const face = getFaceCard(faceCardId);
   if (face === undefined || face.onAbsorb.length === 0) return;
+  if (sourceDieId !== null && sourceSlotIndex !== null) {
+    const key = `face-on-absorb:${controllerId}:${sourceDieId}:${sourceSlotIndex}`;
+    if (isPlayerSpent(draft, controllerId, key)) return;
+    markPlayerSpent(draft, controllerId, key);
+  }
   for (const effect of [...face.onAbsorb].reverse()) {
     pushEffect(
       draft,
@@ -459,6 +453,9 @@ function fireOverloadsOnAbsorb(
     const card = draft.cards[cardInstanceId];
     if (card?.attachedToFaceCardId !== faceCardId) continue;
     const effects = getCard(card.cardId)?.overload?.onAbsorb ?? [];
+    const key = `overload-on-absorb:${cardInstanceId}`;
+    if (isPlayerSpent(draft, controllerId, key)) continue;
+    markPlayerSpent(draft, controllerId, key);
     for (const effect of [...effects].reverse()) {
       pushEffect(
         draft,

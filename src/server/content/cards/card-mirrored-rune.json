@@ -14,7 +14,7 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "On absorb Arcane: copy another symbol in your pool.",
+  "rulesText": "On absorb Arcane, once per turn: copy another symbol in your pool.",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -28,7 +28,8 @@
           {
             "type": "copy-pool-symbol"
           }
-        ]
+        ],
+        "oncePerTurn": true
       }
     ]
   }

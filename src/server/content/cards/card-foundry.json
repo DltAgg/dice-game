@@ -16,7 +16,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "On absorb Mechanical: [Gain 1 Energy].",
+  "rulesText": "On absorb Mechanical, once per turn: [Gain 1 Energy].",
   "ritual": {
     "activeWhen": {
       "mechanical": 2
@@ -35,7 +35,8 @@
             "symbol": "mechanical",
             "amount": 1
           }
-        ]
+        ],
+        "oncePerTurn": true
       }
     ]
   }

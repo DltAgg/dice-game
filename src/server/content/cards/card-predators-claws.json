@@ -14,7 +14,7 @@
     "attribute": "martial",
     "target": "own-die"
   },
-  "rulesText": "On absorb Martial: this creature may [Reposition].",
+  "rulesText": "On absorb Martial, once per turn: this creature may [Reposition].",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -32,7 +32,8 @@
             },
             "optional": true
           }
-        ]
+        ],
+        "oncePerTurn": true
       }
     ]
   }

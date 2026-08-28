@@ -14,7 +14,7 @@
     "attribute": "wild",
     "target": "own-die"
   },
-  "rulesText": "On absorb Wild: [Heal 1] this creature.",
+  "rulesText": "On absorb Wild, once per turn: [Heal 1] this creature.",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -32,7 +32,8 @@
               "kind": "source-creature"
             }
           }
-        ]
+        ],
+        "oncePerTurn": true
       }
     ]
   }

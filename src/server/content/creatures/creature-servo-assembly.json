@@ -6,7 +6,7 @@
   "attributes": [
     "mechanical"
   ],
-  "passiveRulesText": "On absorb Mechanical: [Generate 1 Mechanical].",
+  "passiveRulesText": "On absorb Mechanical, once per turn: [Generate 1 Mechanical].",
   "standingAbilities": [
     {
       "type": "on-absorb",
@@ -20,7 +20,8 @@
           "symbol": "mechanical",
           "amount": 1
         }
-      ]
+      ],
+      "oncePerTurn": true
     },
     {
       "type": "on-attack",

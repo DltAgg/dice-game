@@ -14,7 +14,7 @@
     "attribute": "corruption",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Corruption face.\nOn roll: [Strike 1].\nOn absorb: [Mark 1 Toxin].",
+  "rulesText": "Can only overload a Corruption face.\nOn roll: [Strike 1].\nOn absorb, once per turn: [Mark 1 Toxin].",
   "overload": {
     "faceSymbols": [
       "corruption"

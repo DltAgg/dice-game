@@ -14,7 +14,7 @@
     "attribute": "martial",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Natural Martial face.\nOn absorb: [Pierce 2].",
+  "rulesText": "Can only overload a Natural Martial face.\nOn absorb, once per turn: [Pierce 2].",
   "overload": {
     "faceSymbols": [
       "martial"

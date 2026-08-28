@@ -4,7 +4,7 @@
   "name": "Catalyst",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: choose a Synthetic face in the Pool; it may be used as any attribute.\nOn absorb: copy the effect of a Synthetic face that appeared this roll.",
+  "rulesText": "On roll: choose a Synthetic face in the Pool; it may be used as any attribute.\nOn absorb, once per turn: copy the effect of a Synthetic face that appeared this roll.",
   "onRoll": [
     {
       "type": "arm-wildcard-from-synthetic-pool"

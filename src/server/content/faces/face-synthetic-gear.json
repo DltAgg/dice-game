@@ -4,7 +4,7 @@
   "name": "Gear",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: if you have another Synthetic symbol in the Pool, [Gain 1 Energy].\nOn absorb: [Discount 1] forge.",
+  "rulesText": "On roll: if you have another Synthetic symbol in the Pool, [Gain 1 Energy].\nOn absorb, once per turn: [Discount 1] forge.",
   "onRoll": [
     {
       "type": "conditional",

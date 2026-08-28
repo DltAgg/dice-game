@@ -4,7 +4,7 @@
   "name": "Instinct",
   "kind": "synthetic",
   "symbol": "wild",
-  "rulesText": "On roll: [Empower 1] on an allied creature.\nOn absorb: [Frenzy] on an allied creature.",
+  "rulesText": "On roll: [Empower 1] on an allied creature.\nOn absorb, once per turn: [Frenzy] on an allied creature.",
   "onRoll": [
     {
       "type": "grant-next-attack-bonus",

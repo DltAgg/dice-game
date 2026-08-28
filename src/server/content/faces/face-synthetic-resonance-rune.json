@@ -4,7 +4,7 @@
   "name": "Resonance Rune",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: if there is another Arcane symbol in the Pool, [Gain 1 Energy].\nOn absorb: [Resonance].",
+  "rulesText": "On roll: if there is another Arcane symbol in the Pool, [Gain 1 Energy].\nOn absorb, once per turn: [Resonance].",
   "onRoll": [
     {
       "type": "conditional",

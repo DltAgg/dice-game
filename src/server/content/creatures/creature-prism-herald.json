@@ -6,7 +6,7 @@
   "attributes": [
     "luminar"
   ],
-  "passiveRulesText": "On absorb Luminar: [Empower 1] this creature.",
+  "passiveRulesText": "On absorb Luminar, once per turn: [Empower 1] this creature.",
   "standingAbilities": [
     {
       "type": "on-absorb",
@@ -22,7 +22,8 @@
             "kind": "source-creature"
           }
         }
-      ]
+      ],
+      "oncePerTurn": true
     }
   ],
   "attacks": [
