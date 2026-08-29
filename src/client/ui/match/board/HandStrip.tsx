@@ -9,6 +9,8 @@ import {
   formatEffectRegion,
   formatForgeLine,
   formatTypeLine,
+  canAffordForge,
+  canAffordPlay,
   getCard,
   handOf,
   hasPlayableEffect,
@@ -149,9 +151,15 @@ export function HandStrip({
           const def = getCard(card.cardId);
           if (def === undefined) return null;
           const isSelected = selected === card.id;
-          const canPlay = actionsLive && hasPlayableEffect(def);
+          const canPlay =
+            actionsLive &&
+            hasPlayableEffect(def) &&
+            canAffordPlay(state, playerId, def);
+          const canForge = actionsLive && canAffordForge(state, playerId, def);
           const canRespond =
-            reactionsLive && isEnabledHandReaction(state, playerId, def);
+            reactionsLive &&
+            isEnabledHandReaction(state, playerId, def) &&
+            canAffordPlay(state, playerId, def);
 
           return (
             <div
@@ -183,7 +191,12 @@ export function HandStrip({
                     >
                       Play
                     </button>
-                    <button type="button" className={btnClass} onClick={() => onForge(card)}>
+                    <button
+                      type="button"
+                      className={canForge ? btnClass : `${btnClass} opacity-40`}
+                      disabled={!canForge}
+                      onClick={() => onForge(card)}
+                    >
                       Forge
                     </button>
                   </>

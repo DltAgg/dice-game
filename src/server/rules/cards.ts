@@ -13,6 +13,12 @@ import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/
 import type { GameState } from "../model/state.js";
 import type { SymbolType } from "../model/symbols.js";
 import { requirementTotal } from "../model/symbols.js";
+import {
+  discountedPlayRequirement,
+  reduceRequirement,
+} from "./discounts.js";
+import { canPay } from "./symbols.js";
+import { isNonEmptyRequirement } from "./tokens.js";
 
 /**
  * Reading helpers for the card zones, and the one rule forging has to enforce
@@ -124,6 +130,41 @@ export const isReactionCard = (definition: CardDefinition): boolean =>
 /** Total pile tokens in the header play/forge cost, if any. */
 export const playCostTotal = (definition: CardDefinition): number =>
   definition.playCost === undefined ? 0 : requirementTotal(definition.playCost);
+
+/**
+ * Whether the player can pay the header pile cost to play / attach this card
+ * (mirrors `payHeaderCost` with play-cost discounts applied). Free / empty
+ * cost → true. Does not mutate state.
+ */
+export function canAffordPlay(
+  state: GameState,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): boolean {
+  const base = definition.playCost;
+  if (base === undefined || !isNonEmptyRequirement(base)) return true;
+  const { cost } = discountedPlayRequirement(state, playerId, definition, base);
+  if (!isNonEmptyRequirement(cost)) return true;
+  return canPay(state, playerId, cost);
+}
+
+/**
+ * Whether the player can pay the header pile cost to forge this card (mirrors
+ * `payForgeCost`: forgeDiscountThisTurn only — not play-cost discounts).
+ * Free / empty cost → true. Does not mutate state.
+ */
+export function canAffordForge(
+  state: GameState,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): boolean {
+  const base = definition.playCost;
+  if (base === undefined || !isNonEmptyRequirement(base)) return true;
+  const discount = state.forgeDiscountThisTurn[playerId] ?? 0;
+  const cost = reduceRequirement(base, discount);
+  if (!isNonEmptyRequirement(cost)) return true;
+  return canPay(state, playerId, cost);
+}
 
 /**
  * Deck cards matching a search filter, in current deck order.
