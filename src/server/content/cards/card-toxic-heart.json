@@ -3,7 +3,7 @@
   "id": "card-toxic-heart",
   "name": "Toxic Heart",
   "playCost": {
-    "toxin": 5
+    "toxin": 3
   },
   "type": "equipment",
   "subtypes": [],

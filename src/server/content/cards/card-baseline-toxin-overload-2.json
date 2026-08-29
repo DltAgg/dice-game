@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-toxin-overload-2",
+  "name": "Baseline Toxin Overload 2",
+  "playCost": {
+    "toxin": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Toxin face.\nOn roll: [Generate 1 Toxin].",
+  "overload": {
+    "faceSymbols": [
+      "toxin"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "toxin",
+        "amount": 1
+      }
+    ]
+  }
+}

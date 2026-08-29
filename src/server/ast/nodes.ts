@@ -97,7 +97,7 @@ export type EffectOp =
   | "optional-bonus-basic-attack"
   | "destroy-equipment"
   | "destroy-ritual"
-  | "drain-attribute-tokens"
+  | "drain-life"
   | "search-graveyard";
 
 export type EffectNode = {

@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-wild-instant-4",
+  "name": "Baseline Wild Instant 4",
+  "playCost": {
+    "wild": 4
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3].",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

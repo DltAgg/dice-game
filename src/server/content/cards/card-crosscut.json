@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-crosscut",
+  "name": "Crosscut",
+  "playCost": {
+    "martial": 1,
+    "wild": 1
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Empower 2].",
+  "effect": {
+    "effects": [
+      {
+        "type": "next-attack-bonus",
+        "amount": 2
+      }
+    ]
+  }
+}

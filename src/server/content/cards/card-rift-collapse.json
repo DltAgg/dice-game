@@ -3,7 +3,7 @@
   "id": "card-rift-collapse",
   "name": "Rift Collapse",
   "playCost": {
-    "darkness": 4
+    "darkness": 3
   },
   "type": "ritual",
   "subtypes": [

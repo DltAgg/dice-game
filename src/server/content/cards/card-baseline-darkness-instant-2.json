@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-darkness-instant-2",
+  "name": "Baseline Darkness Instant 2",
+  "playCost": {
+    "darkness": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 1,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

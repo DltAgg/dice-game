@@ -10,15 +10,7 @@
       "type": "spread-corruption-marker"
     }
   ],
-  "onAbsorb": [
-    {
-      "type": "drain-attribute-tokens",
-      "amount": 1,
-      "target": {
-        "kind": "choose-enemy"
-      }
-    }
-  ],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

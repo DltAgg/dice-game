@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-gear-salute",
+  "name": "Gear Salute",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Generate 2 Martial].",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "martial",
+        "amount": 2
+      }
+    ]
+  }
+}

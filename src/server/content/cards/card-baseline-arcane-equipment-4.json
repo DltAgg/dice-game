@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-arcane-equipment-4",
+  "name": "Baseline Arcane Equipment 4",
+  "playCost": {
+    "arcane": 4
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "On basic attack: +3 damage.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "attack-damage-bonus",
+        "amount": 3,
+        "attackKinds": [
+          "basic"
+        ]
+      }
+    ]
+  }
+}

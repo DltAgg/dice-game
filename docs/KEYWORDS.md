@@ -85,7 +85,8 @@ Remove up to N of token X. Legal to resolve if none remain.
 
 <!--
 Engine: remove-shield | remove-toxin-deal-damage (`amount` fixed). Attribute
-piles use [Drain N], not Strip. Do not mint Detonate / Rend as keywords.
+piles are spent with [Spend] / attack discards, not Strip. [Drain N] is life
+transfer. Do not mint Detonate / Rend as keywords.
 -->
 
 ### Not Mark
@@ -110,7 +111,7 @@ Same idea, different nouns.
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` | A card on the field | Send one to its owner’s graveyard |
-| `[Drain N]` | Attribute tokens in a player pile | Take N from the chosen enemy’s controller’s pile into yours (controller names which pips when mixed) |
+| `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal a chosen ally for the **HP actually lost**. |
 
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
 opponent’s die is Corruption’s exclusive (their die). Mechanical forges
@@ -121,7 +122,7 @@ ritual already on the field.
 
 <!--
 Engine: generate-symbol | FORGE_CARD / forge-faces | negate-card / negate-ritual |
-destroy-equipment / destroy-ritual | drain-attribute-tokens |
+destroy-equipment / destroy-ritual | drain-life |
 No Contaminate / Seal / Disarm / Unmake / Siphon keywords.
 -->
 
@@ -222,7 +223,7 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Extra attack(s) this turn | `[Frenzy]` / `[Frenzy N]` |
 | Ignore Shield | `[Pierce N]` |
 | Stop damage (Luminar) | `[Prevent]` |
-| Take from their pile | `[Drain N]` |
+| Take life from an enemy into an ally | `[Drain N]` |
 | Hold in your pile, don’t spend | `[Requires: Martial + Wild]` or `[Requires: 2 x Martial]` |
 | Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` |
 | Pool pip | `[Generate N Arcane]` |

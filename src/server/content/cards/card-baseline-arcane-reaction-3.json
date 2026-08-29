@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-arcane-reaction-3",
+  "name": "Baseline Arcane Reaction 3",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Generate 2 Arcane].",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "arcane",
+        "amount": 2
+      }
+    ]
+  }
+}

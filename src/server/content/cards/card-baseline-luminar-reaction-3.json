@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-luminar-reaction-3",
+  "name": "Baseline Luminar Reaction 3",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Prevent]. [Heal 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-attack-prevent",
+        "amount": 1,
+        "target": {
+          "kind": "chain-attack-target"
+        }
+      },
+      {
+        "type": "heal",
+        "amount": 1,
+        "target": {
+          "kind": "most-damaged-ally"
+        }
+      }
+    ]
+  }
+}

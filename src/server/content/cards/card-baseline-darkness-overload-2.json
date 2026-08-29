@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-darkness-overload-2",
+  "name": "Baseline Darkness Overload 2",
+  "playCost": {
+    "darkness": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Darkness face.\nOn roll: [Generate 1 Darkness].",
+  "overload": {
+    "faceSymbols": [
+      "darkness"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "darkness",
+        "amount": 1
+      }
+    ]
+  }
+}

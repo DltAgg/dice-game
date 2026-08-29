@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-umbral-lens",
+  "name": "Umbral Lens",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload an Arcane face.\nOn roll: [Generate 1 Darkness].",
+  "overload": {
+    "faceSymbols": [
+      "arcane"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "darkness",
+        "amount": 1
+      }
+    ]
+  }
+}

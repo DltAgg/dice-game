@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-luminar-reaction-2",
+  "name": "Baseline Luminar Reaction 2",
+  "playCost": {
+    "luminar": 2
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Prevent].",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-attack-prevent",
+        "amount": 1,
+        "target": {
+          "kind": "chain-attack-target"
+        }
+      }
+    ]
+  }
+}

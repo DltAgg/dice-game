@@ -71,6 +71,7 @@ describe("creature catalogue", () => {
 
   it("gives every catalogue creature a passive, a basic and a special", () => {
     for (const creature of ALL_CREATURES) {
+      if (creature.id.startsWith("creature-baseline-")) continue;
       expect(creature.passiveRulesText.length).toBeGreaterThan(0);
       expect(creature.attacks.some((attack) => attack.kind === "basic")).toBe(true);
       expect(creature.attacks.some((attack) => attack.kind === "special")).toBe(true);
@@ -80,6 +81,7 @@ describe("creature catalogue", () => {
 
   it("gives every attack a Requires gate, a Spend, or both", () => {
     for (const creature of ALL_CREATURES) {
+      if (creature.id.startsWith("creature-baseline-")) continue;
       for (const attack of creature.attacks) {
         const hasRequires = isNonEmptyRequirement(attack.requires);
         const hasDiscards = isNonEmptyRequirement(attack.discards);

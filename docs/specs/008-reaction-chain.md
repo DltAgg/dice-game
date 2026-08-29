@@ -58,7 +58,7 @@ conducts, its body cannot be interrupted.
     Arcane + Arcane]` (cumulative) → ready. Activation pays **+2 Energy**, then
     negates the top link if its source card is an **Instant**
     (`negate-card` / `cardTypes: ["instant"]`).
-11. **Arcane Silence.** Hand reaction; header cost 4; negate top card link
+11. **Arcane Silence.** Hand reaction; header cost 3; negate top card link
     (`negate-card` / `cardTypes: "any"`).
 11b. **Seal the Rite.** Hand reaction; header cost 3; `negate-ritual` only.
 11c. **Fade.** Hand reaction; header cost 3; `negate-card` / `cardTypes: "any"`.

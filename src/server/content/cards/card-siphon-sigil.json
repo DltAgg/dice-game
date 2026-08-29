@@ -18,10 +18,13 @@
   "effect": {
     "effects": [
       {
-        "type": "drain-attribute-tokens",
+        "type": "drain-life",
         "amount": 2,
         "target": {
           "kind": "choose-enemy"
+        },
+        "with": {
+          "kind": "choose-ally"
         }
       }
     ]

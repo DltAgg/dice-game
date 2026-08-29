@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-martial-equipment-4",
+  "name": "Baseline Martial Equipment 4",
+  "playCost": {
+    "martial": 4
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "On basic attack: +3 damage.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "attack-damage-bonus",
+        "amount": 3,
+        "attackKinds": [
+          "basic"
+        ]
+      }
+    ]
+  }
+}

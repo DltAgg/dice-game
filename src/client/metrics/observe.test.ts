@@ -255,8 +255,8 @@ describe("applyObservation", () => {
       ctx(2_000),
     ).recording;
 
-    expect(recording.totalEnergySpent).toBe(3);
+    expect(recording.totalEnergySpent).toBe(2);
     const spentTurn = recording.turns.find((turn) => (turn.energySpent ?? 0) > 0);
-    expect(spentTurn?.energySpent).toBe(3);
+    expect(spentTurn?.energySpent).toBe(2);
   });
 });

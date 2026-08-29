@@ -3,7 +3,7 @@
   "id": "card-wild-carapace",
   "name": "Wild Carapace",
   "playCost": {
-    "wild": 3
+    "wild": 2
   },
   "type": "equipment",
   "subtypes": [],

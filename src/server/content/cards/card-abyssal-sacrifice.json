@@ -3,7 +3,7 @@
   "id": "card-abyssal-sacrifice",
   "name": "Abyssal Sacrifice",
   "playCost": {
-    "darkness": 3
+    "darkness": 2
   },
   "type": "ritual",
   "subtypes": [

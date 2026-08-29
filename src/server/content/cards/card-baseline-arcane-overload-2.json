@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-arcane-overload-2",
+  "name": "Baseline Arcane Overload 2",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Arcane face.\nOn roll: [Generate 1 Arcane].",
+  "overload": {
+    "faceSymbols": [
+      "arcane"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "arcane",
+        "amount": 1
+      }
+    ]
+  }
+}

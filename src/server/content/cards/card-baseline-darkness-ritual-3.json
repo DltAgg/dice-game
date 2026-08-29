@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-darkness-ritual-3",
+  "name": "Baseline Darkness Ritual 3",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3].",
+  "ritual": {
+    "activeWhen": {
+      "darkness": 2
+    },
+    "spend": {
+      "darkness": 2
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

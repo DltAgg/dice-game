@@ -117,7 +117,7 @@ Read `src/server/model/effects.ts` as authority. Today:
 `arm-attack-toxin`, `negate-card`, `negate-ritual`, `discard-attribute-tokens`,
 `destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`,
-`mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-attribute-tokens`
+`mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-life`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
 `most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
@@ -141,7 +141,7 @@ Standing triggers live on equipment / continuous rituals — see
 | War Axe | Equipment `attack-damage-bonus` |
 | Black Plague | Equipment `mayTargetOpponent` + `on-roll-symbol`; forge `opponent-die` |
 | Abyssal Sacrifice | Continuous ritual `standingAbilities` on discard |
-| Siphon Sigil | Instant `discard-attribute-tokens` + choose-enemy; mixed leftovers open `choose-attribute-tokens` |
+| Siphon Sigil | Instant `drain-life` — choose enemy then ally; heal = HP lost |
 | Dispel Circle | Instant `destroy-ritual` + choose-opponent-ritual |
 | Seal the Rite | Reaction `negate-ritual` |
 | Fade | Reaction `negate-card` (`"any"`) (cheaper Darkness Silence) |

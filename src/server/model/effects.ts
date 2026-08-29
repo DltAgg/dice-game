@@ -1,6 +1,7 @@
 import type { Attribute, DualKindAttribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
 import type { FaceKind, ForgeableFaceKind } from "./dice.js";
+import type { CreatureId } from "./ids.js";
 import type { SymbolType } from "./symbols.js";
 
 /**
@@ -101,15 +102,18 @@ export type EffectDefinition =
    */
   | { readonly type: "negate-ritual" }
   /**
-   * Drain up to `amount` attribute tokens from the target creature's controller's
-   * pile into the effect controller's pile. Mixed leftover piles open
-   * `choose-attribute-tokens`. Homogeneous / take-all remaining are
-   * deterministic. Whiffs legally if none remain. Spec `011`.
+   * Transfer life: deal up to `amount` damage to `target` (normal prevent /
+   * Shield → HP), then heal `with` for the **HP actually lost**. Spec `011`.
+   * Runtime may rewrite `target` to `{ kind: "fixed", creatureId }` between
+   * nested creature choices.
    */
   | {
-      readonly type: "drain-attribute-tokens";
+      readonly type: "drain-life";
       readonly amount: number;
+      /** Source creature that loses HP. */
       readonly target: TargetSelector;
+      /** Destination creature that is healed. */
+      readonly with: TargetSelector;
     }
   /**
    * Send one opposing field ritual to its owner's graveyard. Spec `011`.
@@ -389,6 +393,12 @@ export type TargetSelector =
   | { readonly kind: "source-creature" }
   /** The creature named by the action that started this resolution. */
   | { readonly kind: "declared-target" }
+  /**
+   * A concrete creature id stamped at runtime between nested choices
+   * (e.g. drain-life source while choosing the heal destination). Catalogue
+   * JSON never uses this.
+   */
+  | { readonly kind: "fixed"; readonly creatureId: CreatureId }
   /**
    * The controller's living creature with the most damage (ties: earliest id).
    * Intentional silent pick for on-roll heals with no declared target — print

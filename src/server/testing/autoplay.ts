@@ -249,7 +249,8 @@ function forgeCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy
 
     const definition = getCard(card.cardId);
     if (definition === undefined) continue;
-    if (playCostTotal(definition) > 0) {
+    // Natural forge is free; only synthetic forges burn header playCost.
+    if (definition.forge.kind !== "natural" && playCostTotal(definition) > 0) {
       const pool = current.players[playerId]?.attributePool ?? {};
       const cost = definition.playCost ?? {};
       const shortfall = Object.entries(cost).some(([attr, n]) => (pool[attr as keyof typeof pool] ?? 0) < (n ?? 0));

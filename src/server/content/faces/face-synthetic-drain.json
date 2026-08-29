@@ -5,24 +5,8 @@
   "kind": "synthetic",
   "symbol": "darkness",
   "rulesText": "On roll: [Lose 1 Energy]; you do not gain that Energy.\nOn absorb, once per turn: [Move 1 Energy].",
-  "onRoll": [
-    {
-      "type": "drain-attribute-tokens",
-      "amount": 1,
-      "target": {
-        "kind": "choose-enemy"
-      }
-    }
-  ],
-  "onAbsorb": [
-    {
-      "type": "drain-attribute-tokens",
-      "amount": 1,
-      "target": {
-        "kind": "choose-enemy"
-      }
-    }
-  ],
+  "onRoll": [],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

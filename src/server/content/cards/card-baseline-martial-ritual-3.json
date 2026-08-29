@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-martial-ritual-3",
+  "name": "Baseline Martial Ritual 3",
+  "playCost": {
+    "martial": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3].",
+  "ritual": {
+    "activeWhen": {
+      "martial": 2
+    },
+    "spend": {
+      "martial": 2
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

@@ -3,7 +3,7 @@
   "id": "card-insignia-of-command",
   "name": "Insignia of Command",
   "playCost": {
-    "martial": 5
+    "martial": 4
   },
   "type": "equipment",
   "subtypes": [],

@@ -117,6 +117,22 @@ export const DRESS_RANKS: CardId = asCardId("card-dress-ranks");
 export const SHARE_THE_KILL: CardId = asCardId("card-share-the-kill");
 export const DEN_SHARE: CardId = asCardId("card-den-share");
 
+/** Attribute-bridge glue (playtest stranded-pile fix). */
+export const BLOODLINE_PACT: CardId = asCardId("card-bloodline-pact");
+export const PACK_DRILL: CardId = asCardId("card-pack-drill");
+export const CROSSCUT: CardId = asCardId("card-crosscut");
+export const WARPATH_HARNESS: CardId = asCardId("card-warpath-harness");
+export const SHADOW_CIPHER: CardId = asCardId("card-shadow-cipher");
+export const VEILED_TOME: CardId = asCardId("card-veiled-tome");
+export const UMBRAL_LENS: CardId = asCardId("card-umbral-lens");
+export const ICHOR_EXCHANGE: CardId = asCardId("card-ichor-exchange");
+export const BLIGHT_TRADE: CardId = asCardId("card-blight-trade");
+export const SEEPING_BRAND: CardId = asCardId("card-seeping-brand");
+export const PRISM_CONDUIT: CardId = asCardId("card-prism-conduit");
+export const HUNT_BEACON: CardId = asCardId("card-hunt-beacon");
+export const GEAR_SALUTE: CardId = asCardId("card-gear-salute");
+export const RUNIC_COG: CardId = asCardId("card-runic-cog");
+
 const cardModules = import.meta.glob("./cards/card-*.json", { eager: true, import: "default" });
 const loadedCards = catalogueFromModules<CardDefinition>(cardModules, cardOrder);
 

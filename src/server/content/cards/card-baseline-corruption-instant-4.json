@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-corruption-instant-4",
+  "name": "Baseline Corruption Instant 4",
+  "playCost": {
+    "corruption": 4
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3].",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

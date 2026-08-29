@@ -150,14 +150,15 @@ export function canAffordPlay(
 
 /**
  * Whether the player can pay the header pile cost to forge this card (mirrors
- * `payForgeCost`: forgeDiscountThisTurn only — not play-cost discounts).
- * Free / empty cost → true. Does not mutate state.
+ * `payForgeCost`: natural is free; synthetic uses forgeDiscountThisTurn only —
+ * not play-cost discounts). Free / empty cost → true. Does not mutate state.
  */
 export function canAffordForge(
   state: GameState,
   playerId: PlayerId,
   definition: CardDefinition,
 ): boolean {
+  if (definition.forge.kind === "natural") return true;
   const base = definition.playCost;
   if (base === undefined || !isNonEmptyRequirement(base)) return true;
   const discount = state.forgeDiscountThisTurn[playerId] ?? 0;

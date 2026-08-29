@@ -3,7 +3,7 @@
   "id": "card-war-banner",
   "name": "War Banner",
   "playCost": {
-    "wild": 4
+    "wild": 3
   },
   "type": "equipment",
   "subtypes": [],

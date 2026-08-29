@@ -4,6 +4,7 @@ import {
   LIVING_LIBRARY,
   RATCHET,
   RECALIBRATE,
+  UNMAKE,
   WAR_AXE,
   getCard,
 } from "../content/cards.js";
@@ -85,11 +86,11 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
 
 describe("pending source + GY search filter", () => {
   it("Recalibrate GY search lists only cost ≤ maxPlayCost and attributes the Recalibrate instance", () => {
-    let ready = actionsReady([RECALIBRATE, RATCHET, ECLIPSE]);
+    let ready = actionsReady([RECALIBRATE, RATCHET, UNMAKE]);
     const recalibrateId = handCardIdAt(ready, P1, 0);
     const cheapId = handCardIdAt(ready, P1, 1);
-    const eclipseId = handCardIdAt(ready, P1, 2);
-    ready = moveHandCardsToGraveyard(ready, [cheapId, eclipseId]);
+    const expensiveId = handCardIdAt(ready, P1, 2);
+    ready = moveHandCardsToGraveyard(ready, [cheapId, expensiveId]);
 
     const after = expectOk(
       advance(ready, { type: "PLAY_CARD", playerId: P1, cardInstanceId: recalibrateId }),
@@ -110,13 +111,13 @@ describe("pending source + GY search filter", () => {
     if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
     const eligible = searchableInGraveyard(after, P1, pending.maxPlayCost);
     expect(eligible).toEqual([cheapId]);
-    expect(eligible).not.toContain(eclipseId);
+    expect(eligible).not.toContain(expensiveId);
     expect(eligible).not.toContain(recalibrateId);
 
     const rejected = advance(after, {
       type: "RESOLVE_SEARCH",
       playerId: P1,
-      cardInstanceIds: [eclipseId],
+      cardInstanceIds: [expensiveId],
     });
     expect(rejected.ok).toBe(false);
     if (!rejected.ok) expect(rejected.error).toBe("INVALID_SEARCH");
@@ -188,10 +189,10 @@ describe("pending source + GY search filter", () => {
   });
 
   it("Shadow Echo on-absorb GY search attributes the face, not a card", () => {
-    let state = actionsReady([RATCHET, ECLIPSE]);
+    let state = actionsReady([RATCHET, UNMAKE]);
     const cheapId = handCardIdAt(state, P1, 0);
-    const eclipseId = handCardIdAt(state, P1, 1);
-    state = moveHandCardsToGraveyard(state, [cheapId, eclipseId]);
+    const expensiveId = handCardIdAt(state, P1, 1);
+    state = moveHandCardsToGraveyard(state, [cheapId, expensiveId]);
     state = installFace(state, SHADOW_ECHO);
     state = rollShowingSlot(state, 0);
 

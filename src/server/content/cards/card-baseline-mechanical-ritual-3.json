@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-mechanical-ritual-3",
+  "name": "Baseline Mechanical Ritual 3",
+  "playCost": {
+    "mechanical": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3].",
+  "ritual": {
+    "activeWhen": {
+      "mechanical": 2
+    },
+    "spend": {
+      "mechanical": 2
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

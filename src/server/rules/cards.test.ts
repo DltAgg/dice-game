@@ -85,4 +85,14 @@ describe("canAffordPlay / canAffordForge", () => {
     expect(canAffordForge(state, P1, card)).toBe(true);
     expect(canAffordPlay(state, P1, card)).toBe(false);
   });
+
+  it("treats natural forge as free regardless of pile or playCost", () => {
+    const state = withAttributePool(newMatch(), P1, {});
+    const card = exampleCard({
+      playCost: { arcane: 2 },
+      forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+    });
+    expect(canAffordForge(state, P1, card)).toBe(true);
+    expect(canAffordPlay(state, P1, card)).toBe(false);
+  });
 });

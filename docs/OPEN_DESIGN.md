@@ -736,23 +736,24 @@ Infection roll, Instinct absorb) are wired in `013-face-markers.md`.
 **Status:** `OPEN` — not blocking (cap still undecided)
 
 **Why it matters.** Tokens persist and are spent by attacks that name
-`discards`, and by drain effects (`drain-attribute-tokens`, spec `011`). A
-player that banks long enough can still accumulate without a hard cap.
+`discards`. A player that banks long enough can still accumulate without a
+hard cap. (`[Drain N]` is life transfer — see DECIDED row below — not pile
+steal.)
 
 **The question.** Is there a cap per player, or per attribute?
 
 **DECIDED (playtest, 2026-08-26).** Attribute tokens live on the player pile.
-Effects **drain** them (`[Drain N]`): take from the opponent’s pile into
-yours. You cannot Strip Martial/Arcane off a creature. Siphon Sigil proves
-`drain-attribute-tokens`: after `choose-enemy`, a mixed pile with
-more tokens than `amount` opens `choose-attribute-tokens` (controller names
-which pips). Homogeneous leftover piles and “take all remaining” are
-deterministic (no real choice). Bible §20 / §25.
+You cannot Strip Martial/Arcane off a creature.
 
-**ASSUMED (label for the no-choice path).** When there is no mix leftover,
-strip uses `ATTRIBUTES` array order (`martial` → … → `darkness`) — equivalent
-to taking from the only pile / taking everything that remains. Token **cap**
-remains OPEN.
+**DECIDED (playtest, 2026-08-29).** `[Drain N]` / `drain-life` transfers life:
+deal up to N damage to a chosen enemy (normal Prevent → Shield → HP), then
+heal a chosen ally for the **HP actually lost**. Former pile-steal
+`drain-attribute-tokens` is removed. Siphon Sigil / Share the Kill / Hexbrand /
+Nightbound Adept / Nightwell prove it. Spec `011`.
+
+**ASSUMED (label for homogeneous discard order on other effects).** When
+there is no mix leftover for token discards, strip uses `ATTRIBUTES` array
+order (`martial` → … → `darkness`). Token **cap** remains OPEN.
 
 **Decision (cap).** TBD.
 

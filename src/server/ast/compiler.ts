@@ -64,11 +64,12 @@ export class AstCompiler {
         return { op: "destroy-equipment", target: effect.target };
       case "destroy-ritual":
         return { op: "destroy-ritual", target: effect.target };
-      case "drain-attribute-tokens":
+      case "drain-life":
         return {
-          op: "drain-attribute-tokens",
+          op: "drain-life",
           amount: amount(effect.amount),
           target: effect.target,
+          with: effect.with,
         };
       case "next-attack-bonus":
         return {

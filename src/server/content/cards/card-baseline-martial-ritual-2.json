@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-martial-ritual-2",
+  "name": "Baseline Martial Ritual 2",
+  "playCost": {
+    "martial": 2
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 2].",
+  "ritual": {
+    "activeWhen": {
+      "martial": 1
+    },
+    "spend": {
+      "martial": 1
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

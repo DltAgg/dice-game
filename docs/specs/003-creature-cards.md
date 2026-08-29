@@ -101,6 +101,12 @@ engine. All printed clauses wired with existing `010` / `012` vocabulary.
 | Cinder Wight | Corruption | 14 | On start of opponent's turn: 1 dmg to most-damaged enemy | Cinder Touch (Spend C) 2 dmg | Brand (Requires C+T; Spend C) 1 dmg + toxin |
 | Ichor Hydra | Toxin | 12 | First Toxin card −1 Energy / On absorb Toxin: apply 1 Toxin to a chosen enemy | Fang (Spend T) 1 dmg + toxin | Molt Venom (Requires T+C; Spend T) 2 dmg + toxin |
 
+### Vanilla baseline bodies (rate anchors)
+
+One reference creature per attribute (`creature-baseline-{attr}`): 10 HP, no
+passive engine, single basic attack `[Strike 2]` discarding 1 primary token.
+Print notes intended cost band 2–3. **Not** on any builtin squad.
+
 A separate Fast game test section in Figma adjusts some HP and costs; it is not
 encoded yet.
 

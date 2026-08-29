@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-toxin-ritual-3",
+  "name": "Baseline Toxin Ritual 3",
+  "playCost": {
+    "toxin": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3].",
+  "ritual": {
+    "activeWhen": {
+      "toxin": 2
+    },
+    "spend": {
+      "toxin": 2
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

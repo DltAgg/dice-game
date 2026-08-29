@@ -150,9 +150,9 @@ Shield absorb still names a creature (below).
 - Ritual Active-when is checked against your **pile** (Resonance wildcards may
   help; they are not spent just to stay ready). Optional Spend on activate
   burns from the pile (wildcards may cover shortfall).
-- **`[Drain]`** takes attribute tokens from an enemy’s pile into yours.
-  Former Wild pack-feed print was rewritten (Share / Den Share); unused
-  transfer/copy effect stubs remain engine no-ops.
+- **`[Drain]`** deals damage to a chosen enemy creature and heals a chosen ally
+  for the HP actually lost (after Prevent/Shield). Former Wild pack-feed print
+  was rewritten (Share / Den Share); unused transfer/copy stubs remain no-ops.
 
 An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
@@ -160,14 +160,17 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
 ## 8. Playing and forging costs
 
-Playing a tactic and forging its faces use the **same header cost**: `[Spend: …]`
-from your **attribute pile**. Attacks, optional effect `[Spend]` lines, and
-ritual Active-when / activate burns also draw from that pile (see §6).
+**Play** burns the tactic’s header `[Spend: …]` from your **attribute pile**.
+**Forge** depends on the forge region’s face kind:
 
-- **Play** burns the header `[Spend]` before the card resolves or attaches.
-- **Forge** burns the same header `[Spend]` when you install faces.
-- **Discounts** reduce the next matching play's pile cost (minimum 0). Forge
-  has a separate one-turn discount from some gear.
+- **Natural forge** is free (no pile burn). Header `[Spend]` still applies when
+  you **play** the card for its effect.
+- **Synthetic forge** burns the same header `[Spend]` when you install faces.
+- **Discounts** reduce the next matching play’s pile cost (minimum 0). Forge
+  has a separate one-turn discount from some gear; it applies only to synthetic
+  forge (natural is already free and does not consume that discount).
+- Attacks, optional effect `[Spend]` lines, and ritual Active-when / activate
+  burns also draw from the pile (see §6).
 - Reactions pay pile costs during a reaction window — there is no Energy track.
 - Turn end is voluntary (`END_TURN`) or from effects that say so.
 
@@ -229,8 +232,9 @@ links; destroy answers a card already on the field.
 ## 11. Forging
 
 During actions, `FORGE_CARD` installs a face from your leftover pool **or**
-copies an already-installed matching face onto a legal slot. Pay the card’s
-header `[Spend]` from your pile. Forge does **not** open a reaction window.
+copies an already-installed matching face onto a legal slot. **Natural** forge
+regions install for free; **synthetic** forge regions burn the card’s header
+`[Spend]` from your pile. Forge does **not** open a reaction window.
 
 You draw **one card per face installed** (own die or opponent’s). Empty
 deck still fails the draw quietly. This draw is a forge rule, not card text.

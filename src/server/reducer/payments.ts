@@ -39,11 +39,17 @@ export function payHeaderCost(
   return err;
 }
 
+/**
+ * Synthetic forge burns the header `playCost` (minus `forgeDiscountThisTurn`).
+ * Natural forge is free — no pile burn and the forge discount is left unused
+ * so a later synthetic forge this turn can still consume it.
+ */
 export function payForgeCost(
   draft: Draft,
   playerId: PlayerId,
   definition: CardDefinition,
 ): GameError | null {
+  if (definition.forge.kind === "natural") return null;
   const base = definition.playCost;
   if (base === undefined || !isNonEmptyRequirement(base)) return null;
   const discount = draft.forgeDiscountThisTurn[playerId] ?? 0;

@@ -60,7 +60,7 @@ Face/overload path still fires on bank — review print / creature-local riders:
 
 ### Pack feeding / token move effects
 
-- [x] `card-share-the-kill` — rewritten to `[Drain 1]` (pile→pile)
+- [x] `card-share-the-kill` — rewritten to `[Drain 1]` (life transfer)
 - [x] `card-den-share` — rewritten to `[Frenzy]` another allied creature
 - [x] Pack Share face — Phase 3 `[Generate 1 Wild]` on absorb
 - [x] Engine: `transfer` / `copy` stubs **removed**; Wild exclusive is `[Frenzy]`

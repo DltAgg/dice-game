@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-martial-reaction-2",
+  "name": "Baseline Martial Reaction 2",
+  "playCost": {
+    "martial": 2
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 1,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

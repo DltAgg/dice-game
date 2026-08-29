@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-wild-instant-2",
+  "name": "Baseline Wild Instant 2",
+  "playCost": {
+    "wild": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 1,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

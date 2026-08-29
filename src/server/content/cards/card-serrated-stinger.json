@@ -3,7 +3,7 @@
   "id": "card-serrated-stinger",
   "name": "Serrated Stinger",
   "playCost": {
-    "toxin": 4
+    "toxin": 3
   },
   "type": "ritual",
   "subtypes": [

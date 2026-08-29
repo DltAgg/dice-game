@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-wild-equipment-4",
+  "name": "Baseline Wild Equipment 4",
+  "playCost": {
+    "wild": 4
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "wild",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "wild",
+    "target": "own-die"
+  },
+  "rulesText": "On basic attack: +3 damage.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "attack-damage-bonus",
+        "amount": 3,
+        "attackKinds": [
+          "basic"
+        ]
+      }
+    ]
+  }
+}

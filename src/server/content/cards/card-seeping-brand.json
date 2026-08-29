@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-seeping-brand",
+  "name": "Seeping Brand",
+  "playCost": {
+    "toxin": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "On deal damage: [Generate 1 Corruption].",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-deal-damage",
+        "effects": [
+          {
+            "type": "generate-symbol",
+            "symbol": "corruption",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-mechanical-overload-4",
+  "name": "Baseline Mechanical Overload 4",
+  "playCost": {
+    "mechanical": 4
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Mechanical face.\nOn roll: [Generate 2 Mechanical].",
+  "overload": {
+    "faceSymbols": [
+      "mechanical"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "mechanical",
+        "amount": 2
+      }
+    ]
+  }
+}

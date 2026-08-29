@@ -3,7 +3,7 @@
   "id": "card-arcane-echo",
   "name": "Arcane Echo",
   "playCost": {
-    "mechanical": 5
+    "mechanical": 4
   },
   "type": "instant",
   "subtypes": [],

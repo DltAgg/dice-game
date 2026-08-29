@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-luminar-equipment-3",
+  "name": "Baseline Luminar Equipment 3",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "On basic attack: +2 damage.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "attack-damage-bonus",
+        "amount": 2,
+        "attackKinds": [
+          "basic"
+        ]
+      }
+    ]
+  }
+}

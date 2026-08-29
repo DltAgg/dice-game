@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-mechanical-equipment-4",
+  "name": "Baseline Mechanical Equipment 4",
+  "playCost": {
+    "mechanical": 4
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "On basic attack: +3 damage.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "attack-damage-bonus",
+        "amount": 3,
+        "attackKinds": [
+          "basic"
+        ]
+      }
+    ]
+  }
+}

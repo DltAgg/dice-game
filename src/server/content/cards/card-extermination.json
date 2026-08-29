@@ -3,7 +3,7 @@
   "id": "card-extermination",
   "name": "Extermination",
   "playCost": {
-    "corruption": 6
+    "corruption": 4
   },
   "type": "ritual",
   "subtypes": [

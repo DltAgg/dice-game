@@ -40,12 +40,6 @@ import {
   withForgeLockResetOnInstall,
 } from "../rules/faces.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, choiceFilterForSelector } from "../rules/targets.js";
-import {
-  addTokens,
-  discardTokensInAttributeOrder,
-  tokenChoiceNeeded,
-  totalTokens,
-} from "../rules/tokens.js";
 import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
 import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
@@ -55,7 +49,6 @@ import {
   destroyRitual,
   drawCards,
   millCards,
-  refreshRitualOrientations,
   releaseEquipmentOn,
   searchableDeckCards,
   setCreaturePosition,
@@ -223,6 +216,8 @@ function resolveTarget(
       return pending.sourceCreatureId;
     case "declared-target":
       return pending.declaredTargetCreatureId;
+    case "fixed":
+      return selector.creatureId;
     case "most-damaged-ally":
       return mostDamagedAlly(draft, pending.controllerId);
     case "most-damaged-enemy":
@@ -311,6 +306,9 @@ function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
   if (effect.type === "reposition-creature") {
     return { ...effect, target: { kind: "declared-target" }, optional: false };
   }
+  if (effect.type === "drain-life") {
+    return { ...effect, target: { kind: "declared-target" } };
+  }
   if (!("target" in effect) || typeof effect.target !== "object") return effect;
   return { ...effect, target: { kind: "declared-target" } } as EffectDefinition;
 }
@@ -322,6 +320,7 @@ function withDeclaredRitual(effect: EffectDefinition): EffectDefinition {
 
 function selectorOf(effect: EffectDefinition): TargetSelector | null {
   if (effect.type === "swap-positions") return effect.with;
+  if (effect.type === "drain-life") return effect.target;
   if ("target" in effect && typeof effect.target === "object") return effect.target;
   return null;
 }
@@ -776,51 +775,57 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       }
       return false;
     }
-    case "drain-attribute-tokens": {
-      let paused = false;
-      applyToTargets(draft, pending, effect.target, (targetId) => {
-        if (paused) return;
-        const creature = draft.creatures[targetId];
-        if (creature === undefined || creature.defeated || effect.amount <= 0) return;
-        const pileOwnerId = creature.ownerId;
-        const pile = draft.players[pileOwnerId]?.attributePool ?? {};
-        if (totalTokens(pile) <= 0) return;
-        if (tokenChoiceNeeded(pile, effect.amount)) {
-          draft.pendingDecision = {
-            type: "choose-attribute-tokens",
-            controllerId: pending.controllerId,
-            creatureId: targetId,
-            amount: effect.amount,
-            mode: "drain",
-            ...effectChoiceSource(draft, pending),
-          };
-          emit(draft, {
-            type: "choose-attribute-tokens-started",
-            playerId: pending.controllerId,
-            creatureId: targetId,
-            amount: effect.amount,
-          });
-          paused = true;
-          return;
-        }
-        const { next, discarded } = discardTokensInAttributeOrder(pile, effect.amount);
-        if (totalTokens(discarded) <= 0) return;
-        const controllerPile = draft.players[pending.controllerId]?.attributePool ?? {};
-        patchPlayer(draft, pileOwnerId, { attributePool: next });
-        patchPlayer(draft, pending.controllerId, {
-          attributePool: addTokens(controllerPile, discarded),
-        });
-        refreshRitualOrientations(draft, pileOwnerId);
-        refreshRitualOrientations(draft, pending.controllerId);
+    case "drain-life": {
+      const sourceId = resolveTarget(draft, pending, effect.target);
+      if (sourceId === null) return false;
+      const destFilter = choiceFilterFor(effect.with);
+      if (destFilter !== null) {
+        const legal = legalCreaturesForFilter(
+          draft,
+          pending.controllerId,
+          destFilter,
+          pending.sourceCreatureId,
+        );
+        if (legal.length === 0) return false;
+        draft.pendingDecision = {
+          type: "choose-creature",
+          controllerId: pending.controllerId,
+          filter: destFilter,
+          optional: false,
+          deferred: {
+            ...pending,
+            effect: {
+              type: "drain-life",
+              amount: effect.amount,
+              target: { kind: "fixed", creatureId: sourceId },
+              with: { kind: "declared-target" },
+            },
+          },
+        };
         emit(draft, {
-          type: "attribute-tokens-drained",
-          fromPlayerId: pileOwnerId,
-          toPlayerId: pending.controllerId,
-          drained: discarded,
-          creatureId: targetId,
+          type: "choose-creature-started",
+          playerId: pending.controllerId,
+          filter: destFilter,
         });
+        return true;
+      }
+      const destId = resolveTarget(draft, pending, effect.with);
+      if (destId === null) return false;
+      const dealt = dealDamage(draft, sourceId, effect.amount, {
+        ignoreShield: pending.ignoreShield,
       });
-      return paused;
+      if (dealt <= 0) return false;
+      healCreature(draft, destId, dealt);
+      if (pending.sourceCreatureId !== null) {
+        fireOnDealDamage(draft, pending.sourceCreatureId, sourceId);
+      }
+      emit(draft, {
+        type: "life-drained",
+        fromCreatureId: sourceId,
+        toCreatureId: destId,
+        amount: dealt,
+      });
+      return false;
     }
     case "destroy-ritual": {
       // Always a choose-ritual pending when ≥1 opposing ritual exists (including one).

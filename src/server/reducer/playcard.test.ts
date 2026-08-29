@@ -38,7 +38,7 @@ describe("playing a card for its effect", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.players[P1]?.attributePool.darkness).toBe(7);
+    expect(result.state.players[P1]?.attributePool.darkness).toBe(8);
     expect(eventTypes(result.state)).toContain("card-played");
     expect(graveyardOf(result.state, P1).map((card) => card.id)).toEqual([cardInstanceId]);
   });

@@ -3,7 +3,7 @@
   "id": "card-eternal-darkness",
   "name": "Eternal Darkness",
   "playCost": {
-    "darkness": 5
+    "darkness": 4
   },
   "type": "ritual",
   "subtypes": [

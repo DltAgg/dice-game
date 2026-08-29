@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-corruption-overload-3",
+  "name": "Baseline Corruption Overload 3",
+  "playCost": {
+    "corruption": 3
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Corruption face.\nOn roll: [Empower 1].",
+  "overload": {
+    "faceSymbols": [
+      "corruption"
+    ],
+    "onRoll": [
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}

@@ -3,7 +3,7 @@
   "id": "card-mind-control",
   "name": "Mind Control",
   "playCost": {
-    "corruption": 6
+    "corruption": 4
   },
   "type": "instant",
   "subtypes": [],

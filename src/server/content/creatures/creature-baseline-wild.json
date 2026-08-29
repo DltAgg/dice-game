@@ -1,0 +1,49 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-baseline-wild",
+  "name": "Baseline Wild Body",
+  "life": 10,
+  "attributes": [
+    "wild"
+  ],
+  "passiveRulesText": "Vanilla body — intended cost band 2–3.",
+  "attacks": [
+    {
+      "id": "attack-baseline-wild-strike",
+      "name": "Strike",
+      "kind": "basic",
+      "discards": {
+        "wild": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-baseline-wild-heavy",
+      "name": "Heavy Strike",
+      "kind": "special",
+      "requires": {
+        "wild": 2
+      },
+      "discards": {
+        "wild": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

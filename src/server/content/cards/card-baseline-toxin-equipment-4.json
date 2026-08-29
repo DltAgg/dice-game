@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-toxin-equipment-4",
+  "name": "Baseline Toxin Equipment 4",
+  "playCost": {
+    "toxin": 4
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "On basic attack: +3 damage.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "attack-damage-bonus",
+        "amount": 3,
+        "attackKinds": [
+          "basic"
+        ]
+      }
+    ]
+  }
+}

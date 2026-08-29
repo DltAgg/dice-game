@@ -3,7 +3,7 @@
   "id": "card-arcane-silence",
   "name": "Arcane Silence",
   "playCost": {
-    "arcane": 4
+    "arcane": 3
   },
   "type": "reaction",
   "subtypes": [],

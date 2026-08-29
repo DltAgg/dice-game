@@ -7,10 +7,13 @@
   "rulesText": "On roll: [Drain 1].\nOn absorb, once per turn: [Destroy Equipment].",
   "onRoll": [
     {
-      "type": "drain-attribute-tokens",
+      "type": "drain-life",
       "amount": 1,
       "target": {
         "kind": "choose-enemy"
+      },
+      "with": {
+        "kind": "choose-ally"
       }
     }
   ],

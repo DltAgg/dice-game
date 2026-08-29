@@ -1,0 +1,49 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-baseline-mechanical",
+  "name": "Baseline Mechanical Body",
+  "life": 10,
+  "attributes": [
+    "mechanical"
+  ],
+  "passiveRulesText": "Vanilla body — intended cost band 2–3.",
+  "attacks": [
+    {
+      "id": "attack-baseline-mechanical-strike",
+      "name": "Strike",
+      "kind": "basic",
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-baseline-mechanical-heavy",
+      "name": "Heavy Strike",
+      "kind": "special",
+      "requires": {
+        "mechanical": 2
+      },
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    }
+  ]
+}

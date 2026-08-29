@@ -9,6 +9,11 @@ export const UI_CONFIG = {
    * width for the scrollable text dossier.
    */
   showDeckBuilderCardArt: false,
+  /**
+   * Soft Web Audio cues: end-turn thunk + reaction-priority alert.
+   * Set false to mute without a chrome toggle.
+   */
+  matchSfxEnabled: true,
 } as const;
 
 export type UiConfig = typeof UI_CONFIG;

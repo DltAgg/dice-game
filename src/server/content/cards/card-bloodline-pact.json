@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-bloodline-pact",
+  "name": "Bloodline Pact",
+  "playCost": {
+    "martial": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Generate 2 Wild].",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "wild",
+        "amount": 2
+      }
+    ]
+  }
+}

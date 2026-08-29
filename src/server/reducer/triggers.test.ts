@@ -624,7 +624,7 @@ describe("on-discard continuous ritual", () => {
     expect(darkness).toHaveLength(0);
     const ritual = discarded.cards[ritualId];
     expect(ritual?.ritualOrientation).toBe("ready");
-    expect(discarded.players[P1]?.attributePool).toMatchObject({ arcane: 1, darkness: 2 });
+    expect(discarded.players[P1]?.attributePool).toMatchObject({ arcane: 1, darkness: 3 });
   });
 });
 
@@ -801,7 +801,7 @@ describe("Hunter's Collar on-absorb Wild", () => {
     const base = withAttributePool(
       withHand(withPhase(newMatch(), "actions"), P1, [HUNTERS_COLLAR]),
       P1,
-      { wild: 3 },
+      { wild: 2 },
     );
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = equip(base, bearerId);

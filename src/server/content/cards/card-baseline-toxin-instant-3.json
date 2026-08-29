@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-toxin-instant-3",
+  "name": "Baseline Toxin Instant 3",
+  "playCost": {
+    "toxin": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "[Mark 2 Toxin].",
+  "effect": {
+    "effects": [
+      {
+        "type": "apply-toxin",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

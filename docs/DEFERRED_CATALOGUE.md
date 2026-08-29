@@ -17,6 +17,7 @@ are now data-driven. This file lists only what is still honestly unfinished.
 | **Stun application** | — | `OPEN_DESIGN.md` stays `DEFERRED`. `DieState.stunMarkers` exists; nothing applies stun. |
 | **Great Spark / Rekindle** | Named faces | Empty print — no clauses to wire. |
 | **Energy-spent scaling** (`energyPaid` → draw) | Future `?` cards | TEMP fixed costs; no printed clause needs it yet. |
+| **Lose / Move Energy** (Drain face absorb/roll; Infection absorb) | `face-synthetic-drain`, `face-synthetic-infection` | No Energy track in engine; former `drain-attribute-tokens` stub removed when `[Drain]` became life transfer. |
 
 Implemented elsewhere (not deferred): reaction chain / negate-card / negate-ritual
 (`008`); prevent buffer / reflect / prevent-draw (`009`); shared trigger hooks

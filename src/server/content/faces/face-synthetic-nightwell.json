@@ -14,10 +14,13 @@
   ],
   "onAbsorb": [
     {
-      "type": "drain-attribute-tokens",
+      "type": "drain-life",
       "amount": 1,
       "target": {
         "kind": "choose-enemy"
+      },
+      "with": {
+        "kind": "choose-ally"
       }
     }
   ],

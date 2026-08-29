@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-toxin-overload-3",
+  "name": "Baseline Toxin Overload 3",
+  "playCost": {
+    "toxin": 3
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Toxin face.\nOn roll: [Empower 1].",
+  "overload": {
+    "faceSymbols": [
+      "toxin"
+    ],
+    "onRoll": [
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}

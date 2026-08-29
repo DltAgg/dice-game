@@ -311,7 +311,7 @@ describe("Spare Cog", () => {
     const ready = withAttributePool(
       withHand(withPhase(newMatch(), "actions"), P1, [SPARE_COG]),
       P1,
-      { mechanical: 3 },
+      { mechanical: 2 },
     );
     const after = expectOk(
       advance(ready, {

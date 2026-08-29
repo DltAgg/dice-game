@@ -3,7 +3,7 @@
   "id": "card-spare-cog",
   "name": "Spare Cog",
   "playCost": {
-    "mechanical": 3
+    "mechanical": 2
   },
   "type": "instant",
   "subtypes": [],

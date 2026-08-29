@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-corruption-ritual-2",
+  "name": "Baseline Corruption Ritual 2",
+  "playCost": {
+    "corruption": 2
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 2].",
+  "ritual": {
+    "activeWhen": {
+      "corruption": 1
+    },
+    "spend": {
+      "corruption": 1
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

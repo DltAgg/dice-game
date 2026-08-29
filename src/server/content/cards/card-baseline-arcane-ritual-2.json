@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-arcane-ritual-2",
+  "name": "Baseline Arcane Ritual 2",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 2].",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 1
+    },
+    "spend": {
+      "arcane": 1
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

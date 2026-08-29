@@ -77,8 +77,8 @@ describe("reaction chain (008)", () => {
       }),
     );
     expect(silenced.chainStack).toHaveLength(2);
-    expect(silenced.players[P1]?.attributePool.darkness).toBe(7);
-    expect(silenced.players[P2]?.attributePool.arcane).toBe(6);
+    expect(silenced.players[P1]?.attributePool.darkness).toBe(8);
+    expect(silenced.players[P2]?.attributePool.arcane).toBe(7);
 
     const resolved = resolveOpenChain(silenced);
     expect(resolved.chainStack).toHaveLength(0);
@@ -87,7 +87,7 @@ describe("reaction chain (008)", () => {
   });
 
   it("reaction ritual activation spends from the responder's pile", () => {
-    // P2 places Nullification earlier; P1 holds 5, plays Eclipse (3) → 2;
+    // P2 places Nullification earlier; P1 holds 4, plays Eclipse (2) → 2;
     // P2 activates Nullification (+2) → holder gains 2 → 4.
     const p2Place = withEnergy(
       withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
@@ -108,11 +108,11 @@ describe("reaction chain (008)", () => {
     const ritualId = ritualsOf(afterP2Place, P2)[0]?.id;
     if (ritualId === undefined) throw new Error("test: no ritual");
 
-    // Pass turn-ish: give P1 the marker with 5 and an Eclipse, ritual ready for P2.
+    // Pass turn-ish: give P1 the marker with 4 and an Eclipse, ritual ready for P2.
     const p1Turn = withHand(
       withSymbols(
         withAttributePool(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, {
-          darkness: 5,
+          darkness: 4,
         }),
         P2,
         ["arcane", "arcane"],
@@ -155,7 +155,7 @@ describe("reaction chain (008)", () => {
   });
 
   it("P1's turn continues after reaction chain resolves", () => {
-    // A holds 2, plays Eclipse (3) → marker flips to B; B Nullifies (+2 holder spend
+    // A holds 2, plays Eclipse (2) → marker flips to B; B Nullifies (+2 holder spend
     // toward A) → marker returns to A; after Pass×2 A’s turn continues.
     const p2Place = withEnergy(
       withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
@@ -179,7 +179,7 @@ describe("reaction chain (008)", () => {
     const p1Turn = withHand(
       withSymbols(
         withAttributePool(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, {
-          darkness: 5,
+          darkness: 4,
         }),
         P2,
         ["arcane", "arcane"],

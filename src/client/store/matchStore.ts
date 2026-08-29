@@ -3,6 +3,7 @@ import type { GameAction, GameError, GameState, PlayerId } from "@server";
 import { PROTOTYPE_SAVED_DECK_ID, type SavedDeckId } from "@client/decks";
 import type { RoomSnapshot, SeatId } from "@client/networking";
 import { clearOnlineSessionHint, getOrCreateClientId } from "./onlineSessionHint.js";
+import { observeMatchSfx } from "@client/ui/audio/observeMatchSfx";
 import { trackMetrics } from "./trackMetrics.js";
 import {
   MATCH_P1,
@@ -91,6 +92,15 @@ function observeMatch(
     p2DeckId: snapshot.p2DeckId,
     p1DeckName: deckName(snapshot.p1DeckId),
     p2DeckName: deckName(snapshot.p2DeckId),
+  });
+  observeMatchSfx({
+    prevState,
+    state,
+    action,
+    accepted,
+    error,
+    mode: snapshot.mode,
+    localPlayerId: snapshot.localPlayerId,
   });
 }
 

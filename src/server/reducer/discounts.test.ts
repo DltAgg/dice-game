@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COLLAPSE_OF_REALITY, TOME_OF_INTERDICTION, WAR_AXE } from "../content/cards.js";
+import { COLLAPSE_OF_REALITY, LIVING_LIBRARY, TOME_OF_INTERDICTION, WAR_AXE } from "../content/cards.js";
 import { CONTROL_SQUAD } from "../content/creatures.js";
 import { ENGINE_TEST_FACE_DECK } from "../content/faces.js";
 import {
@@ -35,7 +35,7 @@ describe("play-cost-discount", () => {
     const secondId = handCardIdAt(state, P1, 1);
 
     const first = expectOk(advance(state, { type: "PLAY_CARD", playerId: P1, cardInstanceId: firstId }));
-    expect(first.players[P1]?.attributePool.arcane).toBe(7);
+    expect(first.players[P1]?.attributePool.arcane).toBe(8);
     const afterConvert =
       first.pendingDecision?.type === "convert-symbols"
         ? expectOk(
@@ -54,18 +54,19 @@ describe("play-cost-discount", () => {
         cardInstanceId: secondId,
       }),
     );
-    expect(second.players[P1]?.attributePool.arcane).toBe(3);
+    expect(second.players[P1]?.attributePool.arcane).toBe(5);
   });
 
-  it("does not discount FORGE_CARD", () => {
-    const state = actionsReady([COLLAPSE_OF_REALITY]);
+  it("does not apply play-cost discounts to synthetic FORGE_CARD", () => {
+    const state = actionsReady([LIVING_LIBRARY]);
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("expected a die");
 
     const forged = expectOk(
-      advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [5])),
+      advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
     );
-    expect(forged.players[P1]?.attributePool.arcane).toBe(6);
+    // Living Library playCost 2; Archmage play-discount must not apply to forge.
+    expect(forged.players[P1]?.attributePool.arcane).toBe(8);
   });
 
   it("lets Tome discount Instant Arcane after Archmage spent on the Tome", () => {
@@ -89,7 +90,7 @@ describe("play-cost-discount", () => {
         cardInstanceId: collapseId,
       }),
     );
-    expect(played.players[P1]?.attributePool.arcane).toBe(5);
+    expect(played.players[P1]?.attributePool.arcane).toBe(6);
   });
 
   it("does not let Tome discount a non-instant Arcane card", () => {

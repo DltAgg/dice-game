@@ -90,7 +90,7 @@ const STEM_RULES: readonly StemRule[] = [
   },
   {
     test: (body) => /^Drain(?:\s+\d+)?$/i.test(body),
-    reminder: "Take N attribute tokens from the chosen enemy's pile into yours.",
+    reminder: "Deal up to N to a chosen enemy; heal a chosen ally for HP lost.",
   },
   {
     test: (body) => /^Convert(?:\s+\d+)?$/i.test(body),

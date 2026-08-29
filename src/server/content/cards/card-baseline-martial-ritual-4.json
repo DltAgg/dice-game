@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-martial-ritual-4",
+  "name": "Baseline Martial Ritual 4",
+  "playCost": {
+    "martial": 4
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 4].",
+  "ritual": {
+    "activeWhen": {
+      "martial": 2
+    },
+    "spend": {
+      "martial": 2
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 4,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

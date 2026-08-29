@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-martial-overload-3",
+  "name": "Baseline Martial Overload 3",
+  "playCost": {
+    "martial": 3
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "martial",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Martial face.\nOn roll: [Empower 1].",
+  "overload": {
+    "faceSymbols": [
+      "martial"
+    ],
+    "onRoll": [
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-corruption-overload-4",
+  "name": "Baseline Corruption Overload 4",
+  "playCost": {
+    "corruption": 4
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Corruption face.\nOn roll: [Generate 2 Corruption].",
+  "overload": {
+    "faceSymbols": [
+      "corruption"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "corruption",
+        "amount": 2
+      }
+    ]
+  }
+}

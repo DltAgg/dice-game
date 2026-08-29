@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-luminar-instant-2",
+  "name": "Baseline Luminar Instant 2",
+  "playCost": {
+    "luminar": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Mark 1 Shield].",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-shield",
+        "amount": 1,
+        "target": {
+          "kind": "choose-ally"
+        }
+      }
+    ]
+  }
+}

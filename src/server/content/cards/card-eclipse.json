@@ -3,7 +3,7 @@
   "id": "card-eclipse",
   "name": "Eclipse",
   "playCost": {
-    "darkness": 3
+    "darkness": 2
   },
   "type": "instant",
   "subtypes": [],

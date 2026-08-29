@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-luminar-overload-2",
+  "name": "Baseline Luminar Overload 2",
+  "playCost": {
+    "luminar": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Luminar face.\nOn roll: [Generate 1 Luminar].",
+  "overload": {
+    "faceSymbols": [
+      "luminar"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "luminar",
+        "amount": 1
+      }
+    ]
+  }
+}

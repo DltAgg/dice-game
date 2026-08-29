@@ -93,6 +93,12 @@ export type GameEvent =
       readonly amount: number;
     }
   | { readonly type: "creature-healed"; readonly creatureId: CreatureId; readonly amount: number }
+  | {
+      readonly type: "life-drained";
+      readonly fromCreatureId: CreatureId;
+      readonly toCreatureId: CreatureId;
+      readonly amount: number;
+    }
   | { readonly type: "creature-defeated"; readonly creatureId: CreatureId }
   | {
       readonly type: "attribute-token-gained";

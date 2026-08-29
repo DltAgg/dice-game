@@ -3,7 +3,7 @@
   "id": "card-dark-pact",
   "name": "Dark Pact",
   "playCost": {
-    "darkness": 4
+    "darkness": 3
   },
   "type": "instant",
   "subtypes": [],

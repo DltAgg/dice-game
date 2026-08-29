@@ -67,28 +67,31 @@ function rollShowingSlot(state: GameState, slot: number, playerId: typeof P1 | t
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId }));
 }
 
-/** Resolve Hexbrand on-roll drain tokens then On absorb destroy-equipment (after auto-bank). */
+/** Resolve Hexbrand on-roll drain-life ally choice then On absorb destroy-equipment. */
 function resolveHexbrandAbsorbFollowup(
   state: GameState,
   playerId: typeof P1 | typeof P2,
   enemyId: ReturnType<typeof creatureIdAt>,
+  allyId: ReturnType<typeof creatureIdAt>,
 ): GameState {
   let current = state;
-  if (current.pendingDecision?.type === "choose-attribute-tokens") {
-    current = expectOk(
-      advance(current, {
-        type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
-        playerId,
-        discarded: { martial: 1 },
-      }),
-    );
-  }
   if (current.pendingDecision?.type === "choose-creature") {
+    const filter = current.pendingDecision.filter;
     current = expectOk(
       advance(current, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId,
-        creatureId: enemyId,
+        creatureId: filter === "ally" ? allyId : enemyId,
+      }),
+    );
+  }
+  if (current.pendingDecision?.type === "choose-creature") {
+    const filter = current.pendingDecision.filter;
+    current = expectOk(
+      advance(current, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId,
+        creatureId: filter === "ally" ? allyId : enemyId,
       }),
     );
   }
@@ -157,9 +160,10 @@ describe("pending-decision gate — non-active chooser", () => {
       }),
     );
     // Auto-bank then opens On absorb destroy-equipment.
-    resolved = resolveHexbrandAbsorbFollowup(resolved, P1, enemyId);
+    const allyId = creatureIdAt(resolved, P1, 0);
+    resolved = resolveHexbrandAbsorbFollowup(resolved, P1, enemyId, allyId);
     expect(resolved.pendingDecision).toBeNull();
-    expect(eventTypes(resolved)).toContain("attribute-tokens-drained");
+    expect(eventTypes(resolved)).toContain("life-drained");
     expect(eventTypes(resolved)).toContain("choose-creature-resolved");
     expect(resolved.activePlayerId).toBe(P2);
 
@@ -186,9 +190,10 @@ describe("pending-decision gate — non-active chooser", () => {
         creatureId: enemyId,
       }),
     );
-    resolved = resolveHexbrandAbsorbFollowup(resolved, P2, enemyId);
+    const allyId = creatureIdAt(resolved, P2, 0);
+    resolved = resolveHexbrandAbsorbFollowup(resolved, P2, enemyId, allyId);
     expect(resolved.pendingDecision).toBeNull();
-    expect(resolved.players[P1]?.attributePool.martial ?? 0).toBe(0);
+    expect(eventTypes(resolved)).toContain("life-drained");
   });
 
   it("blocks the turn player (and matching RESOLVE) while the opponent owns the pending", () => {
@@ -251,7 +256,7 @@ describe("pending-decision gate — non-active chooser", () => {
         creatureId: enemyId,
       }),
     );
-    resolved = resolveHexbrandAbsorbFollowup(resolved, P1, enemyId);
+    resolved = resolveHexbrandAbsorbFollowup(resolved, P1, enemyId, creatureIdAt(resolved, P1, 0));
     expect(resolved.pendingDecision).toBeNull();
     expect(resolved.activePlayerId).toBe(P1);
     const ended = advance(resolved, { type: "END_TURN", playerId: P1 });

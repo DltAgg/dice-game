@@ -31,7 +31,7 @@ import {
   withHand,
   withAttributePool,
   withPhase,
-  withTokens,
+  withDamage,
 } from "../testing/scenario.js";
 
 const actionsReady = (cards: readonly CardId[], energy = 10) =>
@@ -70,17 +70,18 @@ function withOpponentRitual(
   };
 }
 
-describe("Siphon Sigil (drain-attribute-tokens)", () => {
-  it("prompts which tokens to drain when the enemy has a mix", () => {
-    const targetId = creatureIdAt(newMatch(), P2, 0);
-    const ready = withAttributePool(
-      withTokens(withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]), targetId, {
-        darkness: 1,
-        martial: 1,
-        wild: 1,
-      }),
-      P1,
-      { arcane: 3 },
+describe("Siphon Sigil (drain-life)", () => {
+  it("damages a chosen enemy and heals a chosen ally for HP lost", () => {
+    const enemyId = creatureIdAt(newMatch(), P2, 0);
+    const allyId = creatureIdAt(newMatch(), P1, 0);
+    const ready = withDamage(
+      withAttributePool(
+        withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]),
+        P1,
+        { arcane: 3 },
+      ),
+      allyId,
+      4,
     );
     const opened = expectOk(
       advance(ready, {
@@ -92,107 +93,52 @@ describe("Siphon Sigil (drain-attribute-tokens)", () => {
     const afterChain = resolveOpenChain(opened);
     expect(afterChain.pendingDecision?.type).toBe("choose-creature");
 
-    const afterCreature = expectOk(
+    const afterEnemy = expectOk(
       advance(afterChain, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        creatureId: targetId,
+        creatureId: enemyId,
       }),
     );
-    expect(afterCreature.pendingDecision).toMatchObject({
-      type: "choose-attribute-tokens",
-      controllerId: P1,
-      creatureId: targetId,
-      amount: 2,
+    expect(afterEnemy.pendingDecision).toMatchObject({
+      type: "choose-creature",
+      filter: "ally",
     });
 
-    const refused = advance(afterCreature, {
-      type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
-      playerId: P1,
-      discarded: { martial: 1, wild: 1, darkness: 1 },
-    });
-    expect(refused.ok).toBe(false);
-    if (!refused.ok) {
-      expect(refused.error).toBe("INVALID_CHOICE");
-      expect(refused.state).toBe(afterCreature);
-    }
-
     const after = expectOk(
-      advance(afterCreature, {
-        type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
-        playerId: P1,
-        discarded: { darkness: 1, wild: 1 },
-      }),
-    );
-    expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
-    expect(after.players[P1]?.attributePool).toEqual({ darkness: 1, wild: 1 });
-    expect(eventTypes(after)).toContain("attribute-tokens-drained");
-  });
-
-  it("whiffs legally when the enemy has no tokens", () => {
-    const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]),
-      P1,
-      { arcane: 3 },
-    );
-    const targetId = creatureIdAt(ready, P2, 0);
-    const opened = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    const afterChain = resolveOpenChain(opened);
-    const after = expectOk(
-      advance(afterChain, {
+      advance(afterEnemy, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        creatureId: targetId,
+        creatureId: allyId,
       }),
     );
-    expect(after.players[P1]?.attributePool).toEqual({});
-    expect(eventTypes(after)).not.toContain("attribute-tokens-drained");
+    expect(after.creatures[enemyId]?.damage).toBe(2);
+    expect(after.creatures[allyId]?.damage).toBe(2);
+    expect(eventTypes(after)).toContain("life-drained");
+    expect(eventTypes(after)).toContain("creature-healed");
     expect(graveyardOf(after, P1).some((c) => c.cardId === SIPHON_SIGIL)).toBe(true);
   });
 
-  it("drains all remaining when fewer than amount", () => {
-    const targetId = creatureIdAt(newMatch(), P2, 0);
-    const ready = withAttributePool(
-      withTokens(withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]), targetId, {
-        arcane: 1,
-      }),
-      P1,
-      { arcane: 3 },
+  it("heals only for HP lost after Shields", () => {
+    const enemyId = creatureIdAt(newMatch(), P2, 0);
+    const allyId = creatureIdAt(newMatch(), P1, 0);
+    let ready = withDamage(
+      withAttributePool(
+        withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]),
+        P1,
+        { arcane: 3 },
+      ),
+      allyId,
+      5,
     );
-    const opened = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    const after = expectOk(
-      advance(resolveOpenChain(opened), {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: targetId,
-      }),
-    );
-    expect(after.players[P2]?.attributePool).toEqual({});
-    expect(after.players[P1]?.attributePool).toEqual({ arcane: 1 });
-  });
-
-  it("drains a homogeneous pile without a token prompt", () => {
-    const targetId = creatureIdAt(newMatch(), P2, 0);
-    const ready = withAttributePool(
-      withTokens(withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]), targetId, {
-        martial: 3,
-      }),
-      P1,
-      { arcane: 3 },
-    );
-    const after = expectOk(
+    ready = {
+      ...ready,
+      creatures: {
+        ...ready.creatures,
+        [enemyId]: { ...ready.creatures[enemyId]!, shields: 1 },
+      },
+    };
+    const afterEnemy = expectOk(
       advance(resolveOpenChain(expectOk(
         advance(ready, {
           type: "PLAY_CARD",
@@ -202,12 +148,63 @@ describe("Siphon Sigil (drain-attribute-tokens)", () => {
       )), {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        creatureId: targetId,
+        creatureId: enemyId,
       }),
     );
-    expect(after.pendingDecision).toBeNull();
-    expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
-    expect(after.players[P1]?.attributePool).toEqual({ martial: 2 });
+    const after = expectOk(
+      advance(afterEnemy, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: allyId,
+      }),
+    );
+    expect(after.creatures[enemyId]?.shields).toBe(0);
+    expect(after.creatures[enemyId]?.damage).toBe(1);
+    expect(after.creatures[allyId]?.damage).toBe(4);
+  });
+
+  it("whiffs heal when Shields absorb the whole Drain", () => {
+    const enemyId = creatureIdAt(newMatch(), P2, 0);
+    const allyId = creatureIdAt(newMatch(), P1, 0);
+    let ready = withDamage(
+      withAttributePool(
+        withHand(withPhase(newMatch(), "actions"), P1, [SIPHON_SIGIL]),
+        P1,
+        { arcane: 3 },
+      ),
+      allyId,
+      3,
+    );
+    ready = {
+      ...ready,
+      creatures: {
+        ...ready.creatures,
+        [enemyId]: { ...ready.creatures[enemyId]!, shields: 2 },
+      },
+    };
+    const afterEnemy = expectOk(
+      advance(resolveOpenChain(expectOk(
+        advance(ready, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(ready, P1, 0),
+        }),
+      )), {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: enemyId,
+      }),
+    );
+    const after = expectOk(
+      advance(afterEnemy, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: allyId,
+      }),
+    );
+    expect(after.creatures[enemyId]?.damage).toBe(0);
+    expect(after.creatures[allyId]?.damage).toBe(3);
+    expect(eventTypes(after)).not.toContain("life-drained");
   });
 });
 
@@ -424,38 +421,36 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
-describe("Hexbrand (drain-attribute-tokens)", () => {
-  it("prompts which token to drain on roll when the enemy has a mix", () => {
-    const targetId = creatureIdAt(newMatch(), P2, 0);
-    const seeded = withTokens(installFace(newMatch(), HEXBRAND), targetId, {
-      martial: 1,
-      wild: 1,
-    });
+describe("Hexbrand (drain-life)", () => {
+  it("drains life on roll then opens destroy-equipment absorb", () => {
+    const enemyId = creatureIdAt(newMatch(), P2, 0);
+    const allyId = creatureIdAt(newMatch(), P1, 0);
+    const seeded = withDamage(installFace(newMatch(), HEXBRAND), allyId, 3);
     const afterRoll = rollShowingSlot(seeded, 0);
     expect(afterRoll.pendingDecision?.type).toBe("choose-creature");
 
-    const afterCreature = expectOk(
+    const afterEnemy = expectOk(
       advance(afterRoll, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        creatureId: targetId,
+        creatureId: enemyId,
       }),
     );
-    expect(afterCreature.pendingDecision).toMatchObject({
-      type: "choose-attribute-tokens",
-      amount: 1,
-      creatureId: targetId,
+    expect(afterEnemy.pendingDecision).toMatchObject({
+      type: "choose-creature",
+      filter: "ally",
     });
 
     const after = expectOk(
-      advance(afterCreature, {
-        type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
+      advance(afterEnemy, {
+        type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        discarded: { wild: 1 },
+        creatureId: allyId,
       }),
     );
-    expect(after.players[P2]?.attributePool).toEqual({ martial: 1 });
-    expect(after.players[P1]?.attributePool).toEqual({ corruption: 1, wild: 1 });
+    expect(after.creatures[enemyId]?.damage).toBe(1);
+    expect(after.creatures[allyId]?.damage).toBe(2);
+    expect(eventTypes(after)).toContain("life-drained");
   });
 });
 

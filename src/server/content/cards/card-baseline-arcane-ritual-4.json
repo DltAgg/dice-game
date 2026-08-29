@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-arcane-ritual-4",
+  "name": "Baseline Arcane Ritual 4",
+  "playCost": {
+    "arcane": 4
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 4].",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 2
+    },
+    "spend": {
+      "arcane": 2
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 4,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

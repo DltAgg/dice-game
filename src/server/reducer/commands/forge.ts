@@ -130,9 +130,9 @@ export function installFacesOnDie(
  * changes, and the player names which slots to give up because that sacrifice
  * is the decision the card is really asking about.
  *
- * The Energy cost is paid here as well as on PLAY_CARD. One printed cost on one
- * card is read as the cost of using it either way — see docs/OPEN_DESIGN.md,
- * where this is recorded as an assumption rather than a settled rule.
+ * Synthetic forge burns the header pile `playCost` (with forge-discount).
+ * Natural forge installs for free — play still pays the header when resolving
+ * the effect region instead.
  */
 export function forgeCard(
   draft: Draft,

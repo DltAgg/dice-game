@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-corruption-equipment-3",
+  "name": "Baseline Corruption Equipment 3",
+  "playCost": {
+    "corruption": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "corruption",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "corruption",
+    "target": "own-die"
+  },
+  "rulesText": "On basic attack: +2 damage.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "attack-damage-bonus",
+        "amount": 2,
+        "attackKinds": [
+          "basic"
+        ]
+      }
+    ]
+  }
+}

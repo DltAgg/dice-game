@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-arcane-overload-3",
+  "name": "Baseline Arcane Overload 3",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Arcane face.\nOn roll: [Empower 1].",
+  "overload": {
+    "faceSymbols": [
+      "arcane"
+    ],
+    "onRoll": [
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}

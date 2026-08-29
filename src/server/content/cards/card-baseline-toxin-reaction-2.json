@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-baseline-toxin-reaction-2",
+  "name": "Baseline Toxin Reaction 2",
+  "playCost": {
+    "toxin": 2
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "toxin",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "toxin",
+    "target": "own-die"
+  },
+  "rulesText": "[Mark 1 Toxin].",
+  "effect": {
+    "effects": [
+      {
+        "type": "apply-toxin",
+        "amount": 1,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}
