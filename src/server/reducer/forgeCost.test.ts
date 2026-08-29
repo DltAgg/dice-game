@@ -51,7 +51,7 @@ describe("FORGE_CARD pile cost", () => {
     const forged = expectOk(
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
-    expect(forged.players[P1]?.attributePool.arcane).toBe(1);
+    expect(forged.players[P1]?.attributePool.arcane).toBe(2);
   });
 
   it("forge discount reduces synthetic forge cost and is consumed", () => {
@@ -69,7 +69,7 @@ describe("FORGE_CARD pile cost", () => {
     const forged = expectOk(
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
-    expect(forged.players[P1]?.attributePool.arcane ?? 0).toBe(0);
+    expect(forged.players[P1]?.attributePool.arcane ?? 0).toBe(1);
     expect(forged.forgeDiscountThisTurn[P1]).toBeUndefined();
   });
 
@@ -95,7 +95,8 @@ describe("FORGE_CARD pile cost", () => {
     const libraryId = handCardIdAt(state, P1, 0);
     state = expectOk(advance(state, forgeAction(state, P1, libraryId, dieId, [4])));
     expect(state.forgeDiscountThisTurn[P1]).toBeUndefined();
-    // Living Library playCost 2, discount 1 → burn 1 arcane from 2.
-    expect(state.players[P1]?.attributePool.arcane).toBe(1);
+    // Living Library playCost 2, discount 1 → burn 1 arcane from 2, then
+    // synthetic forge bank +1 arcane.
+    expect(state.players[P1]?.attributePool.arcane).toBe(2);
   });
 });

@@ -313,21 +313,43 @@ describe("Governor", () => {
 });
 
 describe("Spare Cog", () => {
-  it("generates 1 Mechanical when played", () => {
+  it("pauses to forge 1 Synthetic Mechanical face when played", () => {
     const ready = withAttributePool(
       withHand(withPhase(newMatch(), "actions"), P1, [SPARE_COG]),
       P1,
       { mechanical: 2 },
     );
-    const after = expectOk(
+    const played = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
+    expect(played.pendingDecision).toEqual({
+      type: "forge-faces",
+      controllerId: P1,
+      faces: 1,
+      kind: "synthetic",
+      attribute: "mechanical",
+      target: "own-die",
+      sourceCardInstanceId: handCardIdAt(ready, P1, 0),
+      sourceFaceCardId: null,
+    });
+    expect(played.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+
+    const dieId = dieIdOf(played);
+    const resolved = expectOk(
+      advance(played, {
+        type: "RESOLVE_FORGE_FACES",
+        playerId: P1,
+        dieId,
+        slotIndexes: [0],
+        faceCardId: GEAR,
+      }),
+    );
+    expect(resolved.pendingDecision).toBeNull();
+    expect(resolved.dice[dieId]?.slots[0]?.faceCardId).toBe(GEAR);
   });
 });
 
@@ -438,7 +460,7 @@ describe("Piston", () => {
 describe("Mechanical combo wave 2", () => {
   const mechanicalFace = GEAR;
 
-  it("Blueprint generates Mechanical and arms a forge discount", () => {
+  it("Blueprint arms a 2-token forge discount", () => {
     const ready = withAttributePool(
       withHand(withPhase(newMatch(), "actions"), P1, [BLUEPRINT]),
       P1,
@@ -451,9 +473,8 @@ describe("Mechanical combo wave 2", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-    expect(after.forgeDiscountThisTurn[P1]).toBe(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
   });
 
   it("Transmission copies another pool symbol on absorb", () => {
@@ -604,7 +625,7 @@ describe("Mechanical combo wave 2", () => {
     expect(after.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Safety Latch generates Mechanical and arms a 1-Energy forge discount", () => {
+  it("Safety Latch arms a 2-token forge discount", () => {
     const ready = actionsReady([SAFETY_LATCH]);
     const after = expectOk(
       advance(ready, {
@@ -613,8 +634,8 @@ describe("Mechanical combo wave 2", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(eventTypes(after)).toContain("symbol-generated");
-    expect(after.forgeDiscountThisTurn[P1]).toBe(1);
+    expect(eventTypes(after)).not.toContain("symbol-generated");
+    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
   });
 
   it("Recalibrate returns a cheap card from the graveyard", () => {

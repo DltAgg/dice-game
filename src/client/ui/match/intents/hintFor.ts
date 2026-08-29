@@ -1,6 +1,7 @@
 import {
   formatFaceKind,
   getCard,
+  hasLegalReactionOffer,
   type CardInstanceId,
   type CardType,
   type CreatureChoiceFilter,
@@ -230,6 +231,9 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
   }
   if (state.pendingDecision?.type === "reaction-priority") {
     const who = state.pendingDecision.priorityPlayerId;
+    if (!hasLegalReactionOffer(state, who)) {
+      return "No legal response — passing priority…";
+    }
     return isPendingChooser
       ? `Your reaction priority (${who}): Pass, or play a Reaction / activate a ready ritual-reaction.`
       : `${who} holds reaction priority. Waiting.`;

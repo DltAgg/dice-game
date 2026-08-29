@@ -9,6 +9,7 @@ import {
   type GameState,
   type PlayerId,
 } from "@server";
+import { drainEmptyReactionPriority } from "@client/store/autoPassPriority";
 import {
   parseWireMessage,
   type HostToClient,
@@ -476,6 +477,16 @@ export class HostSession {
       action: bound,
       ok: true,
       error: null,
+    });
+    this.state = drainEmptyReactionPriority(this.state, (from, to, pass) => {
+      this.actionLog.push(pass);
+      this.onAdvance?.({
+        prev: from,
+        next: to,
+        action: pass,
+        ok: true,
+        error: null,
+      });
     });
     this.onState(this.state);
     this.broadcastState(actorPeerId, clientSeq);

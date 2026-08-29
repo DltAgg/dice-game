@@ -14,13 +14,15 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Generate 1 Mechanical].",
+  "rulesText": "[Forge 1 Synthetic Mechanical] on your die.",
   "effect": {
     "effects": [
       {
-        "type": "generate-symbol",
-        "symbol": "mechanical",
-        "amount": 1
+        "type": "forge-faces",
+        "faces": 1,
+        "kind": "synthetic",
+        "attribute": "mechanical",
+        "target": "own-die"
       }
     ]
   }

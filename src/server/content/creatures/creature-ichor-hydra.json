@@ -6,7 +6,7 @@
   "attributes": [
     "toxin"
   ],
-  "passiveRulesText": "The first [Toxin] card used each turn costs 1 Energy less.\nOn absorb Toxin, once per turn: [Mark 1 Toxin].",
+  "passiveRulesText": "The first [Toxin] card used each turn costs 1 less.\nOn absorb Toxin, once per turn: [Mark 1 Toxin].",
   "standingAbilities": [
     {
       "type": "play-cost-discount",

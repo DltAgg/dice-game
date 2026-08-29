@@ -4,7 +4,7 @@
   "name": "Overcharge",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: you may gain 1 additional Energy; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\nOn absorb, once per turn: [Double].",
+  "rulesText": "On roll: you may [Generate 1 Mechanical]; if you do, this face becomes Overcharged and cannot generate its effect on the next roll.\nOn absorb, once per turn: [Double].",
   "onRoll": [
     {
       "type": "optional-overcharge",

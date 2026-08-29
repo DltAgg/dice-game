@@ -11,6 +11,7 @@ import {
   isAttributeSymbol,
   isEnabledHandReaction,
   isUnabsorbedPoolSymbol,
+  hasLegalReactionOffer,
   legalCreaturesForFilter,
   legalTargetsFor,
   opponentOf,
@@ -115,6 +116,10 @@ export function MatchBoard() {
   const actingId = actingPlayerIdOf(state);
   const canAct = localSeatCanAct(isOnline, localPlayerId, state);
   const isPendingChooser = localSeatIsPendingChooser(isOnline, localPlayerId, state);
+  /** Hide priority chrome while the seat has nothing to Respond with (auto-pass). */
+  const reactionPriorityLive =
+    pending?.type === "reaction-priority" &&
+    hasLegalReactionOffer(state, pending.priorityPlayerId);
   /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. Spectators see both. */
   const dockPlayerId =
     isOnline && localPlayerId !== null ? localPlayerId : actingId;
@@ -566,7 +571,7 @@ export function MatchBoard() {
               {seed} · turn {state.turn} · phase{" "}
               <span className="text-[var(--accent)]">{phase}</span> · active{" "}
               <span className="text-[var(--accent)]">{activeId}</span>
-              {pending?.type === "reaction-priority" ? (
+              {reactionPriorityLive ? (
                 <>
                   {" · priority "}
                   <span className="text-[var(--accent)]">{pending.priorityPlayerId}</span>
@@ -1159,7 +1164,7 @@ export function MatchBoard() {
         <WaitingBanner>Opponent may declare a bonus basic attack.</WaitingBanner>
       )}
 
-      {pending?.type === "reaction-priority" && !isPendingChooser && (
+      {reactionPriorityLive && !isPendingChooser && (
         <WaitingBanner>
           {`${pending.priorityPlayerId} holds reaction priority — they may respond or Pass.`}
         </WaitingBanner>
@@ -1373,7 +1378,7 @@ export function MatchBoard() {
           </button>
           {isSpectator ? (
             <>
-              {pending?.type === "reaction-priority" && (
+              {reactionPriorityLive && (
                 <div className="flex flex-wrap items-center gap-3 rounded border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
                   <span className="flex min-w-0 flex-wrap items-center gap-x-1">
                     Chain ({String(state.chainStack.length)} link
@@ -1397,13 +1402,13 @@ export function MatchBoard() {
                   state={state}
                   playerId={MATCH_P2}
                   phase={phase}
-                  pendingReaction={pending?.type === "reaction-priority"}
+                  pendingReaction={reactionPriorityLive}
                 />
                 <SpectatorSeatDock
                   state={state}
                   playerId={MATCH_P1}
                   phase={phase}
-                  pendingReaction={pending?.type === "reaction-priority"}
+                  pendingReaction={reactionPriorityLive}
                 />
               </div>
             </>
@@ -1432,7 +1437,7 @@ export function MatchBoard() {
             }}
           />
 
-          {pending?.type === "reaction-priority" && (
+          {reactionPriorityLive && (
             <div className="flex flex-wrap items-center gap-3 rounded border border-amber-700/50 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
               <span className="flex min-w-0 flex-wrap items-center gap-x-1">
                 Chain ({String(state.chainStack.length)} link
@@ -1466,7 +1471,7 @@ export function MatchBoard() {
                 playerId={dockPlayerId}
                 phase={phase}
                 canAct={canAct}
-                reactionWindow={pending?.type === "reaction-priority"}
+                reactionWindow={reactionPriorityLive}
                 selected={
                   intent.kind === "play" || intent.kind === "forge" ? intent.cardInstanceId : null
                 }

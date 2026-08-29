@@ -58,7 +58,8 @@ export function payForgeCost(
     delete next[playerId];
     draft.forgeDiscountThisTurn = next;
   }
-  const cost = reduceRequirement(base, discount);
+  const pile = draft.players[playerId]?.attributePool ?? {};
+  const cost = reduceRequirement(base, discount, pile);
   if (!isNonEmptyRequirement(cost)) return null;
   return payPileSpend(draft, playerId, cost);
 }

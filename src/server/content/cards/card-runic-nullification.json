@@ -16,7 +16,7 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "Pay 2 Energy. [Negate Instant].",
+  "rulesText": "[Active when: 2 x Arcane]. [Spend: 2 x Arcane]. [Negate Instant].",
   "ritual": {
     "activeWhen": {
       "arcane": 2

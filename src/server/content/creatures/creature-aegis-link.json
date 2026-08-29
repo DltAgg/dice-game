@@ -6,7 +6,7 @@
   "attributes": [
     "luminar"
   ],
-  "passiveRulesText": "The first [Luminar] card used each turn costs 1 Energy less.\nOn attack, another ally: [Heal 1] on the most damaged ally.",
+  "passiveRulesText": "The first [Luminar] card used each turn costs 1 less.\nOn attack, another ally: [Heal 1] on the most damaged ally.",
   "standingAbilities": [
     {
       "type": "play-cost-discount",

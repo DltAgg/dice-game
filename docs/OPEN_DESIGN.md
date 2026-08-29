@@ -336,6 +336,23 @@ Whenever a player forges a die face — on their own die or an opponent's — th
 draw one card per face installed. This is a forge rule, not a card effect: empty
 deck still stops quietly.
 
+### Forge yield and synthetic forge bank
+
+**Status:** `DECIDED` · 2026-08-29 · playtest · implemented
+
+Forge was too weak as a late-game income path (players still banked ~2
+attributes/turn from opening pips). Own-die forge is the universal scaler
+every deck can use:
+
+| Rule | Behaviour |
+|---|---|
+| **Forge yield** | `installFacesOnDie` onto a die you own marks each overwritten slot `forgeYield: true`. Opponent-die installs do not. Opening slots have no yield. Overwrite / peel clears yield unless re-set. |
+| **On roll** | When a `forgeYield` slot is showing after `ROLL_DICE`, generate `forgeYieldGenerate` (default **1**) extra of that face’s attribute for the die owner (effect Generate / auto-bank). Skip Shield / untyped. |
+| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed. Natural forge: install + draw + yield only (no immediate bank). |
+
+Config knobs: `GameRulesConfig.forgeYieldGenerate`, `forgeBankPerFace`. See
+`docs/RULEBOOK.md` §11. Not a print keyword — forge rules like draw-on-forge.
+
 ### No mulligan
 
 **Status:** `DECIDED`

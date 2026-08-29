@@ -14,7 +14,7 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "The first Instant Arcane used each turn costs 1 less Energy.",
+  "rulesText": "The first Instant Arcane used each turn costs 1 less.",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [

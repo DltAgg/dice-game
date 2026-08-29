@@ -14,12 +14,11 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "[Generate 2 Arcane].",
+  "rulesText": "[Insight 2].",
   "effect": {
     "effects": [
       {
-        "type": "generate-symbol",
-        "symbol": "arcane",
+        "type": "look-top-deck",
         "amount": 2
       }
     ]

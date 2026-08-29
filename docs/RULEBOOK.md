@@ -174,8 +174,12 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 - **Natural forge** is free (no pile burn). Header `[Spend]` still applies when
   you **play** the card for its effect.
 - **Synthetic forge** burns the same header `[Spend]` when you install faces.
-- **Discounts** reduce the next matching play’s pile cost (minimum 0). Forge
-  has a separate one-turn discount from some gear; it applies only to synthetic
+- **Discounts** (`[Discount N]`) cut N tokens from the header pile total
+  (minimum 0). After discount you still pay with attributes that appear on the
+  printed cost, without exceeding each attribute’s printed count — e.g. cost
+  `1 Arcane + 1 Corruption` with discount 1 needs **one** token: either Arcane
+  or Corruption. Play-cost discounts do not apply to forge; forge has a
+  separate one-turn discount from some gear that applies only to synthetic
   forge (natural is already free and does not consume that discount).
 - Attacks, optional effect `[Spend]` lines, and ritual Active-when / activate
   burns also draw from the pile (see §6).
@@ -246,6 +250,19 @@ regions install for free; **synthetic** forge regions burn the card’s header
 
 You draw **one card per face installed** (own die or opponent’s). Empty
 deck still fails the draw quietly. This draw is a forge rule, not card text.
+
+**Own-die forge yield:** When you install a face onto **your own** die (via
+`FORGE_CARD` or a forge-faces effect), that slot gains **forge yield**. While
+that forged face is showing after your roll, you also generate one extra pip of
+its attribute (same auto-bank path as effect Generate). Shield / untyped faces
+grant no yield. Opponent-die installs (Corruption harassment) do **not** gain
+yield. Overwriting or peeling a slot clears yield unless the new install
+re-sets it.
+
+**Synthetic forge bank:** On a successful own-die **synthetic** `FORGE_CARD`
+only, you also bank one of the forged face’s attribute into your pile **per
+face installed** (immediate payoff). Natural forge stays free install + draw +
+yield with no immediate bank.
 
 Some faces **stay locked** on a slot for printed turns after install
 (forge-lock). That is not retain.

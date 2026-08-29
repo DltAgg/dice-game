@@ -6,18 +6,21 @@ import {
   PROTOTYPE_SQUAD,
   PROTOTYPE_STARTING_DICE,
   advance,
+  asAttackId,
   asPlayerId,
   type GameState,
 } from "@server";
 import { buildControlSavedDeck } from "@client/decks";
 import { ARCANE_SILENCE, ECLIPSE } from "@server/content/cards.js";
 import {
+  creatureIdAt,
   expectOk,
   handCardIdAt,
   newMatch,
   withEnergy,
   withHand,
   withPhase,
+  withTokens,
 } from "@server/testing/scenario.js";
 import { ClientSession } from "./clientSession.js";
 import { HostSession } from "./hostSession.js";
@@ -848,13 +851,11 @@ describe("host/client reaction-priority (P2 guest)", () => {
     });
     expect(ok).toBe(true);
     expect(lastError()).toBeNull();
-    expect(hostBox.state?.pendingDecision).toMatchObject({
-      type: "reaction-priority",
-      priorityPlayerId: P1,
-      consecutivePasses: 1,
-    });
+    // P1 has no Respond offer after Eclipse — host drains their empty seat and
+    // resolves the chain instead of broadcasting a no-offer priority box.
+    expect(hostBox.state?.pendingDecision?.type).not.toBe("reaction-priority");
     expect(guestBox.state?.pendingDecision).toEqual(hostBox.state?.pendingDecision);
-    expect(guestBox.state?.chainStack).toHaveLength(1);
+    expect(guestBox.state?.chainStack).toEqual(hostBox.state?.chainStack);
 
     hostSession.destroy();
     clientSession.destroy();
@@ -874,13 +875,12 @@ describe("host/client reaction-priority (P2 guest)", () => {
     });
     expect(ok).toBe(true);
     expect(lastError()).toBeNull();
-    expect(hostBox.state?.chainStack).toHaveLength(2);
-    expect(hostBox.state?.pendingDecision).toMatchObject({
-      type: "reaction-priority",
-      priorityPlayerId: P1,
-      consecutivePasses: 0,
-    });
+    // Silence is added, then P1's empty priority is drained and the chain resolves.
+    expect(hostBox.state?.chainStack).toHaveLength(0);
+    expect(hostBox.state?.pendingDecision?.type).not.toBe("reaction-priority");
     expect(guestBox.state).toEqual(hostBox.state);
+    // Silence left P2's hand.
+    expect(guestBox.state?.cards[silenceId]?.zone).not.toBe("hand");
 
     hostSession.destroy();
     clientSession.destroy();
@@ -908,6 +908,58 @@ describe("host/client reaction-priority (P2 guest)", () => {
       type: "reaction-priority",
       priorityPlayerId: P2,
     });
+
+    hostSession.destroy();
+    clientSession.destroy();
+  });
+
+  it("drains empty reaction windows before broadcasting so guests never see a no-offer box", () => {
+    const heavyAxe = asAttackId("attack-minotaur-heavy-axe");
+    let ready = withPhase(newMatch(), "actions");
+    const attacker = creatureIdAt(ready, P1, 0);
+    const target = creatureIdAt(ready, P2, 0);
+    ready = withTokens(withHand(withHand(ready, P1, []), P2, []), attacker, { martial: 2 });
+    ready = jsonClone(ready);
+
+    const { host, guest } = openFakeLink("CHAIN-EMPTY", "g-empty");
+    const hostBox: { state: GameState | null } = { state: null };
+    const guestBox: { state: GameState | null } = { state: null };
+
+    const hostSession = new HostSession({
+      roomCode: "CHAIN-EMPTY",
+      transport: host,
+      hostClientId: HOST_CLIENT,
+      seed: 1,
+      initialState: ready,
+      restoredRoom: persistedSeats(HOST_CLIENT, P2_CLIENT),
+      onState: (state) => {
+        hostBox.state = state;
+      },
+    });
+
+    const clientSession = new ClientSession({
+      roomCode: "CHAIN-EMPTY",
+      transport: guest,
+      hostPeerId: "CHAIN-EMPTY",
+      clientId: P2_CLIENT,
+      onState: (state) => {
+        guestBox.state = state;
+      },
+      onWelcome: () => undefined,
+    });
+    clientSession.greet();
+
+    const ok = hostSession.submitLocalAction({
+      type: "ATTACK",
+      playerId: P1,
+      attackerId: attacker,
+      attackId: heavyAxe,
+      targetId: target,
+    });
+    expect(ok).toBe(true);
+    expect(hostBox.state?.pendingDecision?.type).not.toBe("reaction-priority");
+    expect(guestBox.state?.pendingDecision?.type).not.toBe("reaction-priority");
+    expect(guestBox.state?.chainStack).toEqual(hostBox.state?.chainStack);
 
     hostSession.destroy();
     clientSession.destroy();

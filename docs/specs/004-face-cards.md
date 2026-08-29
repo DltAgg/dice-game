@@ -82,38 +82,38 @@ Named specials:
 | Blade Rain | 3 | On roll: arm next-attack split | `split-damage` pending |
 | Rending Claw | 3 | On roll: remove 3 Shields from most-shielded enemy | |
 | Crush | 3 | On roll: next attack +1 damage | |
-| Forbidden Heritage | 1 | Cannot open; On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel | |
-| Pestilent Plague | 2 | Cannot open; On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` | |
+| Forbidden Heritage | 1 | Cannot open; On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel ([Spend] Corruption scaling) | |
+| Pestilent Plague | 2 | Cannot open; On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` ([Spend] Corruption scaling) | |
 | Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
-| Conversion Rune | 2 | On roll: convert; On absorb: +Energy | |
-| Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |
+| Conversion Rune | 2 | On roll: convert; On absorb: generate Corruption | |
+| Resonance Rune | 2 | On roll: conditional generate Arcane; On absorb: requirement wildcard | |
 | Vital Spark | 2 | On roll: heal; On absorb: [Prevent] on choose-ally | Spec `016` pile bank |
 | Aegis | 2 | On roll: generate Shield; On absorb: redirect on choose-ally | Spec `016` |
 | Revelation | 2 | On roll: generate Luminar; On absorb: heal if damage >½ life | |
 | Instinct | 2 | On roll: ally Empower 1; On absorb: ally Empower 2 | Spec `016` (optional bonus basic retired) |
-| Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | Spec `016` |
+| Primordial Fury | 2 | On roll: generate Luminar if ally attacked; On absorb: next attack +1 | Spec `016` |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: other ally next-attack +1 | |
 | Pack Share | 2 | On absorb: Generate 1 Wild | Spec `016` (was pack-feed copy) |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
 | Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | Spec `016` |
-| Formation | 2 | On roll: Energy if controller has FL; On absorb: 1 Shield on another allied FL | Spec `016` |
+| Formation | 2 | On roll: generate Wild if controller has FL; On absorb: 1 Shield on another allied FL | Spec `016` |
 | Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 on choose-enemy | Spec `016` |
 | Spores | 2 | On roll: extra toxin if already toxined; On absorb: heal toxined ally | |
 | Adaptive Toxin | 2 | Cap toxin receive; [Strip 3 Toxin]. [Strike equal] | Spec `013` |
 | Stain | 2 | Corruption marker; lock Corrupted as resource | Spec `013` |
-| Infection | 2 | On roll: spread marker; On absorb: opp loses Energy | Spec `013` |
+| Infection | 2 | On roll: spread marker; On absorb: tax opp attribute pile (deferred) | Spec `013` |
 | Decay | 2 | Suppress Natural inherent; strip → unusable Corruption | Spec `013` |
 | Blight | 2 | On roll: generate Corruption; On absorb: you destroy 1 Ritual your opponent controls | Catalogue (not builtin Control) |
 | Hexbrand | 2 | On roll: [Drain 1]; On absorb: destroy Equipment | Catalogue (not builtin Control); Spec `016` |
 | Canker | 2 | On roll: Corruption marker; On absorb: forge 1 named synthetic Corruption special on opponent die | Catalogue (not builtin Control) |
-| Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
+| Gear | 2 | On roll: generate Corruption if other Synthetic; On absorb: forge −1 | |
 | Catalyst | 2 | Synthetic pool wildcard; copy appeared synthetic onRoll | Spec `013` |
-| Overcharge | 2 | Optional Energy + suppress; next face effect twice | Spec `013` |
-| Flywheel | 2 | On roll: +Energy; On absorb: generate Shield | |
-| Piston | 2 | On roll: generate Mechanical; On absorb: +Energy | |
+| Overcharge | 2 | Optional generate Mechanical + Overcharge suppress; next face effect twice | Spec `013` |
+| Flywheel | 2 | On roll: generate Mechanical; On absorb: generate Shield | |
+| Piston | 2 | On roll: generate Mechanical; On absorb: generate Mechanical | |
 | Shadow Echo | 2 | On roll: optional discard→draw; On absorb: GY ≤2 | |
-| Drain | 2 | On roll: opp loses Energy; On absorb: transfer | |
-| Sacrifice | 2 | On roll: discard→2 Energy; On absorb: discard→2 damage | |
+| Drain | 2 | On roll / absorb: attribute-pile tax / transfer (deferred) | |
+| Sacrifice | 2 | On roll: discard→generate 2 Darkness; On absorb: discard→2 damage | |
 | Nightwell | 2 | On roll: generate Darkness; On absorb: [Drain 1] | Control Darkness fuel; Spec `016` |
 | Runeflare | 2 | On roll: 1 damage; On absorb: draw 1 | Control Arcane chip + filter |
 | Warhorn | 2 | On roll: generate Martial; On absorb: next attack +1 | |

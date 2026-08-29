@@ -139,6 +139,13 @@ export interface DieSlot {
    * (Stain absorb). Cleared `END_TURN`. Spec `013`.
    */
   readonly resourceLockedThisTurn?: boolean;
+  /**
+   * Own-die forge scaler: when true and this slot is showing after
+   * `ROLL_DICE`, generate `forgeYieldGenerate` extra attribute pips for the
+   * die owner (skip Shield / untyped). Set only on own-die installs; cleared
+   * by overwrite / peel unless re-set. OPEN_DESIGN DECIDED 2026-08-29.
+   */
+  readonly forgeYield?: boolean;
 }
 
 export interface DieState {

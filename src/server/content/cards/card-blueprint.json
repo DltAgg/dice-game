@@ -14,17 +14,12 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Generate 1 Mechanical]. [Discount 1] forge.",
+  "rulesText": "[Discount 2] forge.",
   "effect": {
     "effects": [
       {
-        "type": "generate-symbol",
-        "symbol": "mechanical",
-        "amount": 1
-      },
-      {
         "type": "arm-forge-discount",
-        "amount": 1
+        "amount": 2
       }
     ]
   }

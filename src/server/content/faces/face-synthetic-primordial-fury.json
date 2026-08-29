@@ -4,7 +4,7 @@
   "name": "Primordial Fury",
   "kind": "synthetic",
   "symbol": "wild",
-  "rulesText": "On roll: if an allied creature has attacked this turn, [Gain 1 Energy].\nOn absorb, once per turn: [Empower 1].",
+  "rulesText": "On roll: if an allied creature has attacked this turn, [Generate 1 Luminar].\nOn absorb, once per turn: [Empower 1].",
   "onRoll": [
     {
       "type": "conditional",

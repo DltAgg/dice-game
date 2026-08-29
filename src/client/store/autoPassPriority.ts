@@ -1,4 +1,5 @@
 import {
+  advance,
   hasLegalReactionOffer,
   type GameAction,
   type GameState,
@@ -43,4 +44,30 @@ export function tryAutoPassPriority(args: {
   const action = autoPassPriorityAction(args);
   if (action === null) return false;
   return args.dispatch(action);
+}
+
+/**
+ * Authority-side collapse: keep `PASS_PRIORITY`-ing empty seats until someone
+ * has a Respond offer or the window closes. Hotseat and online host both use
+ * this so React / peers never paint a no-offer priority box.
+ */
+export function drainEmptyReactionPriority(
+  state: GameState,
+  onStep?: (prev: GameState, next: GameState, action: GameAction) => void,
+): GameState {
+  let current = state;
+  for (let i = 0; i < 16; i += 1) {
+    const pass = autoPassPriorityAction({
+      state: current,
+      mode: "local",
+      localPlayerId: null,
+      canAct: true,
+    });
+    if (pass === null) break;
+    const next = advance(current, pass);
+    if (!next.ok) break;
+    onStep?.(current, next.state, pass);
+    current = next.state;
+  }
+  return current;
 }

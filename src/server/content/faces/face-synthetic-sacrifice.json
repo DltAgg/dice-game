@@ -4,7 +4,7 @@
   "name": "Sacrifice",
   "kind": "synthetic",
   "symbol": "darkness",
-  "rulesText": "On roll: [Discard 1]; if you do, [Gain 2 Energy].\nOn absorb, once per turn: [Discard 1] to [Strike 2].",
+  "rulesText": "On roll: [Discard 1]; if you do, [Generate 2 Darkness].\nOn absorb, once per turn: [Discard 1] to [Strike 2].",
   "onRoll": [
     {
       "type": "discard-cards",
@@ -12,7 +12,7 @@
       "then": [
         {
           "type": "generate-symbol",
-          "symbol": "mechanical",
+          "symbol": "darkness",
           "amount": 2
         }
       ]

@@ -1,5 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { asPlayerId, type GameAction, type GameState, type LoggedEvent, type PlayerId } from "@server";
+import {
+  advance,
+  asAttackId,
+  asPlayerId,
+  type GameAction,
+  type GameState,
+  type LoggedEvent,
+  type PlayerId,
+} from "@server";
+import {
+  creatureIdAt,
+  expectOk,
+  newMatch,
+  withEnergy,
+  withHand,
+  withPhase,
+  withTokens,
+} from "@server/testing/scenario.js";
 import { matchSfxCuesFor } from "./matchSfxDecide.js";
 
 const P1 = asPlayerId("p1");
@@ -24,6 +41,26 @@ function turnEnded(playerId: PlayerId, seq: number): LoggedEvent {
 }
 
 const endTurnP1: GameAction = { type: "END_TURN", playerId: P1 };
+
+function openedEmptyPriority(): GameState {
+  const base = withPhase(newMatch(), "actions");
+  const attacker = creatureIdAt(base, P1, 0);
+  const target = creatureIdAt(base, P2, 0);
+  const combat = withHand(
+    withEnergy(withTokens(base, attacker, { martial: 2 }), P2, 10),
+    P2,
+    [],
+  );
+  return expectOk(
+    advance(combat, {
+      type: "ATTACK",
+      playerId: P1,
+      attackerId: attacker,
+      attackId: asAttackId("attack-minotaur-heavy-axe"),
+      targetId: target,
+    }),
+  );
+}
 
 describe("matchSfxCuesFor — end turn", () => {
   it("plays on successful END_TURN in hotseat", () => {
@@ -52,7 +89,7 @@ describe("matchSfxCuesFor — end turn", () => {
     ).toEqual(["end-turn"]);
   });
 
-  it("stays quiet when the opponent ends online", () => {
+  it("mutes online when another seat ended the turn", () => {
     expect(
       matchSfxCuesFor({
         prevState: stateOf({}),
@@ -65,22 +102,20 @@ describe("matchSfxCuesFor — end turn", () => {
     ).toEqual([]);
   });
 
-  it("detects turn-ended from the log when action is absent (guest sync)", () => {
-    const prev = stateOf({ log: [] });
-    const next = stateOf({ activePlayerId: P2, log: [turnEnded(P1, 1)] });
+  it("mutes spectators online", () => {
     expect(
       matchSfxCuesFor({
-        prevState: prev,
-        state: next,
-        action: null,
+        prevState: stateOf({}),
+        state: stateOf({ activePlayerId: P2, log: [turnEnded(P1, 1)] }),
+        action: endTurnP1,
         accepted: true,
-        mode: "client",
-        localPlayerId: P1,
+        mode: "host",
+        localPlayerId: null,
       }),
-    ).toEqual(["end-turn"]);
+    ).toEqual([]);
   });
 
-  it("ignores rejected END_TURN", () => {
+  it("ignores rejected actions", () => {
     expect(
       matchSfxCuesFor({
         prevState: stateOf({}),
@@ -163,6 +198,21 @@ describe("matchSfxCuesFor — reaction priority", () => {
         state: stateOf({
           pending: { ...priorityP2, consecutivePasses: 0 },
         }),
+        action: null,
+        accepted: true,
+        mode: "local",
+        localPlayerId: null,
+      }),
+    ).toEqual([]);
+  });
+
+  it("does not play when the priority seat has no legal Respond offer", () => {
+    const opened = openedEmptyPriority();
+    expect(opened.pendingDecision?.type).toBe("reaction-priority");
+    expect(
+      matchSfxCuesFor({
+        prevState: { ...opened, pendingDecision: null },
+        state: opened,
         action: null,
         accepted: true,
         mode: "local",

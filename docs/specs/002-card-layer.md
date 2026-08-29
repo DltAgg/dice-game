@@ -170,7 +170,7 @@ splash print for reference; those Toxin cards are **not** on the Aggro builtin
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
-| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *Active when: Arcane + Arcane.* Pay 2 Energy. [Negate Instant]. |
+| 2 | Runic Nullification | Ritual / Reaction / Arcane | 1 Synthetic Arcane, your die | *[Active when: 2 x Arcane]. [Spend: 2 x Arcane]. [Negate Instant].* |
 | 4 | Arcane Echo | Instant / Mechanical | 1 Synthetic Mechanical, your die | [Stamp]. |
 | 1 | Blessing of the Hunt | Overload / Martial | 1 Natural Martial, your die | On roll: [Generate 1 Martial]. |
 | 1 | Martial Blessing | Overload / Martial | 1 Natural Martial, your die | On roll: [Empower 1]. |
@@ -223,11 +223,11 @@ for other strategies (burn sibling), not the Control builtin.
 | 3 | Dark Pact | Instant / Darkness | 1 Synthetic Darkness, your die | [Mill 2] Rituals of different attributes. |
 | 4 | Mind Control | Instant / Corruption | 1 Synthetic Corruption, your die | Choose one: remove every Overload from 1 opposing face; or remove 1 Overload from up to 2 opposing faces. |
 | 3 | Arcane Silence | Reaction / Arcane | 2 Synthetic Arcane, your die | [Negate]. |
-| 2 | Persistent Infection | Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: [Gain 1 Energy]. |
+| 2 | Persistent Infection | Overload / Corruption | 1 Synthetic Corruption, your die | *Corruption faces only.* On roll: [Generate 1 Corruption]. |
 | 2 | Blade of Serene Light | Equipment / Luminar | 1 Natural Luminar, your die | On deal damage: [Heal 1] on an allied creature. |
 | 2 | Black Plague | Equipment / Corruption | 1 Synthetic Corruption, **the opponent's die** | *May be equipped to an opposing creature.* On roll Corruption: [Strike 1] this creature. |
 | 2 | Archmage's Grimoire | Equipment / Darkness | 1 Synthetic Darkness, your die | *Arcane or Darkness creatures only.* On absorb Arcane or Darkness: [Draw 1]. [Discard 1]. |
-| 3 | Tome of Interdiction | Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane used each turn costs 1 less Energy. |
+| 3 | Tome of Interdiction | Equipment / Arcane | 1 Natural Arcane, your die | The first Instant Arcane used each turn costs 1 less. |
 | 2 | Abyssal Sacrifice | Ritual / Continuous / Darkness | 1 Synthetic Darkness, your die | *Active when: Arcane + Darkness.* On discard: [Generate 1 Darkness]. |
 | 3 | Mirrored Rune | Equipment / Arcane | 1 Natural Arcane, your die | On absorb Arcane: copy another symbol in your pool. |
 
@@ -252,34 +252,36 @@ Corruption in that dump and are now Wild / Wild / Martial.
 ### Mechanical assembly (authored)
 
 First Mechanical engine-construction package (absorb-vs-pool: Ratchet / Foundry
-want absorb; Governor / Spare Cog / Die Press want the pool). Not dumped into
-Aggro / Control; featured in builtin **Tempo** and **Combo Mechanical** lists.
+want absorb; Governor / Die Press want the pool; Spare Cog installs a face). Not
+dumped into Aggro / Control; featured in builtin **Tempo** and **Combo
+Mechanical** lists.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Ratchet | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: [Generate 1 Mechanical]. |
 | 3 | Assembly Line | Ritual / Instant / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* [Forge 2 Synthetic Mechanical] on your die. |
 | 2 | Governor | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: [Generate 1 Mechanical]. |
-| 2 | Spare Cog | Instant / Mechanical | 1 Synthetic Mechanical, your die | [Generate 1 Mechanical]. |
+| 2 | Spare Cog | Instant / Mechanical | 1 Synthetic Mechanical, your die | [Forge 1 Synthetic Mechanical] on your die. |
 | 3 | Die Press | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* [Forge 2 Synthetic Mechanical] on your die. |
-| 3 | Foundry | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On absorb Mechanical: [Gain 1 Energy]. |
+| 3 | Foundry | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On absorb Mechanical: [Generate 1 Mechanical]. |
 
 ### Mechanical combo wave 2 (authored)
 
 Deepens Combo sequencing on the same absorb-vs-pool tension: Transmission /
-Servomotor / Foundry lean absorb; Camshaft / Clockwork / Blueprint / Stamp lean
-roll-pool; Coupling spends a stacked pool; Safety Latch / Recalibrate protect or
-reset without Arcane negate. Densified in builtin **Combo Mechanical**; Tempo
-takes a lighter cut. **Reforge** uses `replace-synthetic-face` (spec `012`).
-Safety Latch is a Mechanical reaction (generate + next-forge discount), not prevent.
+Servomotor / Foundry lean absorb; Camshaft / Clockwork / Stamp lean roll-pool;
+Coupling spends a stacked pool; Blueprint / Safety Latch arm forge discounts;
+Recalibrate resets without Arcane negate. Densified in builtin **Combo
+Mechanical**; Tempo takes a lighter cut. **Reforge** uses
+`replace-synthetic-face` (spec `012`). Safety Latch is a Mechanical reaction
+(next-forge discount), not prevent.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 2 | Transmission | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On absorb: copy another symbol in your pool. |
 | 1 | Camshaft | Overload / Mechanical | 1 Synthetic Mechanical, your die | *Mechanical faces only.* On roll: [Discount 1] forge. Niche 1-cost: gated discount enabler, not a generator. |
 | 2 | Servomotor | Equipment / Mechanical | 1 Synthetic Mechanical, your die | On absorb Mechanical, once per turn: [Generate 1 Mechanical]. |
-| 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | [Generate 1 Mechanical]. [Discount 1] forge. |
-| 2 | Blueprint | Instant / Mechanical | 1 Synthetic Mechanical, your die | [Generate 1 Mechanical]. [Discount 1] forge. |
+| 2 | Safety Latch | Reaction / Mechanical | 1 Synthetic Mechanical, your die | [Discount 2] forge. |
+| 2 | Blueprint | Instant / Mechanical | 1 Synthetic Mechanical, your die | [Discount 2] forge. |
 | 3 | Stamp | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* [Stamp]. |
 | 3 | Coupling | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* [Double]. |
 | 2 | Clockwork | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On roll Mechanical: [Generate 1 Mechanical]. |
@@ -301,11 +303,11 @@ named Synthetic Toxin).
 | 2 | Temper | Instant / Martial | 1 Natural Martial, your die | [Forge 1 Synthetic Martial] on your die. |
 | 2 | Opening Cut | Instant / Martial | 1 Natural Martial, your die | *Requires: Martial.* [Strike 2]. |
 | 2 | Press the Attack | Instant / Martial | 1 Natural Martial, your die | [Empower 2]. |
-| 2 | Riposte | Reaction / Martial | 1 Natural Martial, your die | [Generate 1 Martial]. [Empower 1]. |
+| 2 | Riposte | Reaction / Martial | 1 Natural Martial, your die | [Empower 2]. |
 | 2 | Whetstone | Equipment / Martial | 1 Natural Martial, your die | On attack: [Generate 1 Martial]. |
 | 2 | Untamed | Instant / Wild | 1 Natural Wild, your die | [Forge 1 Synthetic Wild] on your die. |
 | 2 | Pounce | Instant / Wild | 1 Natural Wild, your die | *Requires: Wild.* [Empower 2] on an allied creature. |
-| 2 | Pack Surge | Instant / Wild | 1 Natural Wild, your die | [Generate 1 Wild]. [Empower 1]. |
+| 2 | Pack Surge | Instant / Wild | 1 Natural Wild, your die | [Empower 2]. |
 | 2 | Rending Mark | Instant / Wild | 1 Natural Wild, your die | [Strip 2 Shield]. |
 | 1 | Snarl | Overload / Wild | 1 Natural Wild, your die | *Natural Wild faces only.* On roll: [Empower 1]. |
 | 2 | Dose | Instant / Toxin | 1 Synthetic Toxin, your die | *Requires: Toxin.* [Mark 2 Toxin]. |
@@ -375,7 +377,7 @@ Sidestep are Tempo / Combo Luminar).
 | 2 | Sidestep | Reaction / Luminar | 1 Natural Luminar, your die | [Prevent]. |
 | 2 | Rethrow | Instant / Arcane | 1 Natural Arcane, your die | [Reroll]. |
 | 2 | Sift | Instant / Arcane | 1 Natural Arcane, your die | [Insight 2]. |
-| 2 | Second Wind | Instant / Arcane | 1 Natural Arcane, your die | [Gain 1 Energy]. [Insight 1]. |
+| 2 | Second Wind | Instant / Arcane | 1 Natural Arcane, your die | [Insight 1]. |
 | 2 | Warding Charm | Equipment / Arcane | 1 Natural Arcane, your die | On absorb, once per turn: [Mark 1 Shield] this creature. |
 
 ### Toxin / Corruption continuous burn (authored)
@@ -451,10 +453,14 @@ generate of the partner.
 Reference-only curve anchors — **not** for competitive builtins. Ids
 `card-baseline-{attr}-{instant\|reaction\|equipment\|overload\|ritual}-{2\|3\|4}`
 (120 hand cards). Each forges 1 Natural of its attribute. Rate sketch: Instant
-Strike/Generate/Mark scales `cost−1`; Equipment basic-attack bonus `cost−1`;
-Overload On roll Generate/Empower; Ritual Instant delayed Strike = cost.
-Attribute exclusives honored (e.g. Luminar reactions use `[Prevent]`; Toxin
-uses `[Mark N Toxin]`).
+Strike/Mark scales `cost−1`; Mechanical instant/reaction `[Discount (cost−1)]
+forge`; Arcane instant/reaction `[Insight (cost−1)]` (Insight 1 =
+`peek-deck-optional-bottom`); Equipment basic-attack bonus `cost−1`; Overload
+On roll Generate/Empower (recurring Generate same-attr is fine); Ritual Instant
+delayed Strike = cost. Do **not** print same-attr `[Generate]` on
+instant/reaction baselines — under pile banking that is a net loss. Attribute
+exclusives honored (e.g. Luminar reactions use `[Prevent]`; Toxin uses
+`[Mark N Toxin]`).
 
 `src/ui/cards/TacticCard.tsx` renders the Figma template in English:
 

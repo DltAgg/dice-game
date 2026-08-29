@@ -4,7 +4,7 @@
   "name": "Flywheel",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: [Gain 1 Energy].\nOn absorb, once per turn: [Generate 1 Shield].",
+  "rulesText": "On roll: [Generate 1 Mechanical].\nOn absorb, once per turn: [Generate 1 Shield].",
   "onRoll": [
     {
       "type": "generate-symbol",

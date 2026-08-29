@@ -1,4 +1,5 @@
 import type { GameAction, GameState, PlayerId } from "@server";
+import { hasLegalReactionOffer } from "@server";
 
 /** Subset of store mode — avoids importing the Zustand store into decide logic. */
 export type MatchSfxMode = "local" | "host" | "client";
@@ -54,6 +55,7 @@ function shouldPlayEndTurn(args: {
 /**
  * Hotseat: dock follows the priority seat, so any gain plays.
  * Online: only when the local seat gains priority.
+ * Skip empty windows (authority auto-passes them; no Respond offer).
  */
 function shouldPlayPriority(args: {
   readonly prevState: GameState | null;
@@ -69,6 +71,11 @@ function shouldPlayPriority(args: {
   const prevWho =
     prevPending?.type === "reaction-priority" ? prevPending.priorityPlayerId : null;
   if (prevWho === who) return false;
+
+  // Incomplete fixtures (unit tests) omit `players` — keep the cue.
+  if (args.state.players !== undefined && !hasLegalReactionOffer(args.state, who)) {
+    return false;
+  }
 
   if (!isOnline(args.mode)) return true;
   if (args.localPlayerId === null) return false;

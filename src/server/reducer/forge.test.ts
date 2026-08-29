@@ -88,7 +88,7 @@ describe("forging a face", () => {
     const result = forge(state);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.players[P1]?.attributePool.darkness).toBe(8);
+    expect(result.state.players[P1]?.attributePool.darkness).toBe(9);
     expect(result.state.cards[cardInstanceId]?.zone).toBe("graveyard");
     expect(result.state.players[P1]?.hand).toHaveLength(0);
     expect(result.state.players[P1]?.graveyard).toEqual([cardInstanceId]);

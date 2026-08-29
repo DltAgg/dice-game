@@ -81,6 +81,18 @@ export interface GameRulesConfig {
    * reducer rewrite.
    */
   readonly preventExpiry: "none";
+  /**
+   * DECIDED (playtest 2026-08-29). Extra attribute pips generated when a
+   * `forgeYield` slot is showing after `ROLL_DICE` (per yield face). Shield /
+   * untyped faces grant nothing.
+   */
+  readonly forgeYieldGenerate: number;
+  /**
+   * DECIDED (playtest 2026-08-29). Immediate pile bank per face installed by
+   * own-die **synthetic** `FORGE_CARD` only. Natural forge and opponent-die
+   * forge do not bank.
+   */
+  readonly forgeBankPerFace: number;
 }
 
 export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
@@ -103,4 +115,6 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   frontlineSlots: 2,
   maxResolutionSteps: 64,
   preventExpiry: "none",
+  forgeYieldGenerate: 1,
+  forgeBankPerFace: 1,
 };

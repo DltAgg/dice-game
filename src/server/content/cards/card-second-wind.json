@@ -14,14 +14,9 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "[Gain 1 Energy]. [Insight 1].",
+  "rulesText": "[Insight 1].",
   "effect": {
     "effects": [
-      {
-        "type": "generate-symbol",
-        "symbol": "arcane",
-        "amount": 1
-      },
       {
         "type": "peek-deck-optional-bottom"
       }

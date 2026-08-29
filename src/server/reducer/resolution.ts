@@ -1577,6 +1577,7 @@ export function consumeSyntheticCorruptionOnDie(
       faceCardOwnerId: die.ownerId,
       pestilenceCounters: 0,
       forgeLockRemaining: 0,
+      forgeYield: false,
     };
   });
   if (consumed === 0) return 0;

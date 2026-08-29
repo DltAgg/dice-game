@@ -142,7 +142,7 @@ These are not tokens.
 | `[Pierce N]` | Ignore N Shield after Prevent |
 | `[Prevent]` | Prevent the next attack against that creature (before Shield). Luminar exclusive. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
-| `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0) |
+| `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). Remaining cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
 | `[Search N]` | Look through your deck; add up to N cards of the printed types; shuffle. Arcane exclusive. |
 | `[Recall N]` | Return up to N cards from your graveyard to your hand |

@@ -48,14 +48,9 @@
       ],
       "effects": [
         {
-          "type": "drain-life",
+          "type": "mill-cards",
           "amount": 1,
-          "target": {
-            "kind": "choose-enemy"
-          },
-          "with": {
-            "kind": "choose-ally"
-          }
+          "player": "opponent"
         }
       ]
     }
@@ -90,7 +85,7 @@
         "darkness": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Lose 1 Energy].",
+      "rulesText": "[Strike 2]. Opponent [Mill 1].",
       "effect": {
         "type": "damage",
         "amount": 2,

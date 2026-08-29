@@ -14,7 +14,7 @@
     "attribute": "corruption",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Corruption face.\nOn roll: [Gain 1 Energy].",
+  "rulesText": "Can only overload a Corruption face.\nOn roll: [Generate 1 Corruption].",
   "overload": {
     "faceSymbols": [
       "corruption"

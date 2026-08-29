@@ -6,7 +6,7 @@
   "attributes": [
     "arcane"
   ],
-  "passiveRulesText": "The first [Arcane] card used each turn costs 1 Energy less.",
+  "passiveRulesText": "The first [Arcane] card used each turn costs 1 less.",
   "standingAbilities": [
     {
       "type": "play-cost-discount",
@@ -34,11 +34,6 @@
         "special"
       ],
       "effects": [
-        {
-          "type": "generate-symbol",
-          "symbol": "arcane",
-          "amount": 1
-        },
         {
           "type": "generate-symbol",
           "symbol": "arcane",
@@ -77,7 +72,7 @@
         "arcane": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Gain 1 Energy]. [Generate 1 Arcane].",
+      "rulesText": "[Strike 2]. [Generate 1 Arcane].",
       "effect": {
         "type": "damage",
         "amount": 2,

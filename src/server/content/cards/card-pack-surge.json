@@ -14,17 +14,12 @@
     "attribute": "wild",
     "target": "own-die"
   },
-  "rulesText": "[Generate 1 Wild]. [Empower 1].",
+  "rulesText": "[Empower 2].",
   "effect": {
     "effects": [
       {
-        "type": "generate-symbol",
-        "symbol": "wild",
-        "amount": 1
-      },
-      {
         "type": "next-attack-bonus",
-        "amount": 1
+        "amount": 2
       }
     ]
   }

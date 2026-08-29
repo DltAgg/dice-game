@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { COLLAPSE_OF_REALITY, LIVING_LIBRARY, TOME_OF_INTERDICTION, WAR_AXE } from "../content/cards.js";
+import {
+  COLLAPSE_OF_REALITY,
+  LIVING_LIBRARY,
+  TOME_OF_INTERDICTION,
+  WAR_AXE,
+  getCard,
+} from "../content/cards.js";
 import { CONTROL_SQUAD } from "../content/creatures.js";
 import { ENGINE_TEST_FACE_DECK } from "../content/faces.js";
+import type { CardDefinition } from "../model/cards.js";
+import { asCardId, type PlayerId } from "../model/ids.js";
+import type { GameState } from "../model/state.js";
 import {
   creatureIdAt,
   expectOk,
@@ -10,11 +19,14 @@ import {
   newMatch,
   P1,
   P2,
+  withAttributePool,
   withEnergy,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
+import { createDraft } from "./draft.js";
+import { payForgeCost, payHeaderCost } from "./payments.js";
 
 function controlMatch() {
   return newMatch({
@@ -27,6 +39,32 @@ function controlMatch() {
 
 const actionsReady = (cards: Parameters<typeof withHand>[2], fuel = 10) =>
   withEnergy(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, fuel);
+
+function withForgeDiscount(
+  state: GameState,
+  playerId: PlayerId,
+  amount: number,
+): GameState {
+  return {
+    ...state,
+    forgeDiscountThisTurn: { ...state.forgeDiscountThisTurn, [playerId]: amount },
+  };
+}
+
+const CROSSCUT = getCard(asCardId("card-crosscut"))!;
+
+/** Crosscut cost on a synthetic forge so forge-discount payment is exercised. */
+function crosscutSyntheticForge(): CardDefinition {
+  return {
+    ...CROSSCUT,
+    forge: {
+      faces: 1,
+      kind: "synthetic",
+      attribute: "martial",
+      target: "own-die",
+    },
+  };
+}
 
 describe("play-cost-discount", () => {
   it("discounts the first Arcane tactic Archmage's controller plays, not the second", () => {
@@ -66,7 +104,8 @@ describe("play-cost-discount", () => {
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
     );
     // Living Library playCost 2; Archmage play-discount must not apply to forge.
-    expect(forged.players[P1]?.attributePool.arcane).toBe(8);
+    // Synthetic forge then banks +1 of the forged face attribute (arcane).
+    expect(forged.players[P1]?.attributePool.arcane).toBe(9);
   });
 
   it("lets Tome discount Instant Arcane after Archmage spent on the Tome", () => {
@@ -115,5 +154,48 @@ describe("play-cost-discount", () => {
     );
     expect(martial.players[P1]?.attributePool.martial).toBe(8);
     expect(martial.players[P1]?.attributePool.arcane).toBe(8);
+  });
+
+  it("multi-attr Arcane cost with Archmage discount burns only martial when that is all they have", () => {
+    const card: CardDefinition = {
+      ...CROSSCUT,
+      id: asCardId("card-test-multi-arcane"),
+      attribute: "arcane",
+      playCost: { arcane: 1, martial: 1 },
+    };
+    const draft = createDraft(withAttributePool(controlMatch(), P1, { martial: 1 }));
+    expect(payHeaderCost(draft, P1, card, true)).toBeNull();
+    expect(draft.players[P1]?.attributePool).toEqual({});
+  });
+});
+
+describe("flexible Crosscut-shaped forge discount payment", () => {
+  it("burns only martial when that is the only matching token", () => {
+    const draft = createDraft(
+      withForgeDiscount(withAttributePool(controlMatch(), P1, { martial: 1 }), P1, 1),
+    );
+    expect(payForgeCost(draft, P1, crosscutSyntheticForge())).toBeNull();
+    expect(draft.players[P1]?.attributePool).toEqual({});
+    expect(draft.forgeDiscountThisTurn[P1]).toBeUndefined();
+  });
+
+  it("burns only wild when that is the only matching token", () => {
+    const draft = createDraft(
+      withForgeDiscount(withAttributePool(controlMatch(), P1, { wild: 1 }), P1, 1),
+    );
+    expect(payForgeCost(draft, P1, crosscutSyntheticForge())).toBeNull();
+    expect(draft.players[P1]?.attributePool).toEqual({});
+  });
+
+  it("with both martial and wild, burns martial (ATTRIBUTES order)", () => {
+    const draft = createDraft(
+      withForgeDiscount(
+        withAttributePool(controlMatch(), P1, { martial: 1, wild: 1 }),
+        P1,
+        1,
+      ),
+    );
+    expect(payForgeCost(draft, P1, crosscutSyntheticForge())).toBeNull();
+    expect(draft.players[P1]?.attributePool).toEqual({ wild: 1 });
   });
 });

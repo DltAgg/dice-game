@@ -1,7 +1,9 @@
 import { getCard } from "../../content/cards.js";
 import { getFaceCard, SHIELD_FACE_ID } from "../../content/faces.js";
+import type { Attribute } from "../../model/attributes.js";
 import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, DieId, FaceCardId, PlayerId } from "../../model/ids.js";
+import { isAttributeSymbol } from "../../model/symbols.js";
 import { forgeExceedsAttributeLimit } from "../../rules/cards.js";
 import {
   countInstalledCopies,
@@ -13,7 +15,8 @@ import {
   takeFaceFromPool,
   withForgeLockResetOnInstall,
 } from "../../rules/faces.js";
-import { emit, patchDie, type Draft } from "../draft.js";
+import { addTokens } from "../../rules/tokens.js";
+import { emit, patchDie, patchPlayer, type Draft } from "../draft.js";
 import { payForgeCost, payPileSpend } from "../payments.js";
 import { clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
 
@@ -55,6 +58,7 @@ export function activateFace(
           faceCardOwnerId: playerId,
           pestilenceCounters: 0,
           forgeLockRemaining: 0,
+          forgeYield: false,
         }
       : candidate,
   );
@@ -99,12 +103,14 @@ export function installFacesOnDie(
   const die = draft.dice[dieId];
   if (die === undefined) return "UNKNOWN_ENTITY";
 
+  const ownDie = die.ownerId === playerId;
   const displaced: Array<{ faceCardId: FaceCardId; ownerId: PlayerId }> = [];
   const slots = withForgeLockResetOnInstall(
     die.slots.map((slot) => {
       if (!slotIndexes.includes(slot.index)) return slot;
       displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
-      return overwrittenSlot(slot, faceCardId, playerId);
+      const next = overwrittenSlot(slot, faceCardId, playerId);
+      return ownDie ? { ...next, forgeYield: true } : next;
     }),
     faceCardId,
   );
@@ -206,8 +212,42 @@ export function forgeCard(
   );
   if (installed !== null) return installed;
 
+  // Own-die synthetic FORGE_CARD: immediate pile bank per face (DECIDED
+  // 2026-08-29). Natural and opponent-die forge stay install + draw (+ yield
+  // when own-die) only.
+  if (forge.target === "own-die" && forge.kind === "synthetic") {
+    bankSyntheticForgeReward(draft, playerId, faceCardId, slotIndexes.length);
+  }
+
   // The card is consumed by being installed, so it goes to the graveyard rather
   // than staying available to be played for its effect as well.
   moveCard(draft, cardInstanceId, "graveyard");
   return null;
+}
+
+/** Immediate pile reward for own-die synthetic `FORGE_CARD`. */
+function bankSyntheticForgeReward(
+  draft: Draft,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+  facesInstalled: number,
+): void {
+  const face = getFaceCard(faceCardId);
+  if (face === undefined || !isAttributeSymbol(face.symbol)) return;
+  const perFace = draft.config.forgeBankPerFace;
+  if (perFace <= 0 || facesInstalled <= 0) return;
+  const player = draft.players[playerId];
+  if (player === undefined) return;
+  const amount = perFace * facesInstalled;
+  patchPlayer(draft, playerId, {
+    attributePool: addTokens(player.attributePool, {
+      [face.symbol as Attribute]: amount,
+    }),
+  });
+  emit(draft, {
+    type: "attribute-token-gained",
+    playerId,
+    attribute: face.symbol as Attribute,
+    amount,
+  });
 }

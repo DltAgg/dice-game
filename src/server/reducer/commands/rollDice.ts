@@ -9,12 +9,12 @@ import {
   type PlayerId,
   type SymbolInstanceId,
 } from "../../model/ids.js";
-import type { SymbolType } from "../../model/symbols.js";
+import { isAttributeSymbol, type SymbolType } from "../../model/symbols.js";
 import type { RNG } from "../../rng/rng.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../../rules/dice.js";
 import { bankAttributeIntoPile } from "../attributeBank.js";
 import { emit, nextInstanceId, patchDie, type Draft } from "../draft.js";
-import { drainResolution, pushEffect } from "../resolution.js";
+import { createSymbol, drainResolution, pushEffect } from "../resolution.js";
 import { fireEquipmentOnRollSymbol } from "../triggers.js";
 import { enterPhase } from "./turn.js";
 
@@ -117,6 +117,10 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
         kind: face.kind,
       },
     ];
+
+    // Own-die forge yield: extra Generate of the showing face's attribute
+    // (DECIDED 2026-08-29). Same auto-bank path as effect Generate.
+    applyForgeYieldGenerate(draft, playerId, liveDie.slots[slotIndex] ?? slot, face.symbol);
   }
 
   // Fire onRoll after every inherent pip exists so "another symbol in the pool"
@@ -237,4 +241,23 @@ function bankRolledAttributeIfEligible(
   symbolId: SymbolInstanceId,
 ): void {
   bankAttributeIntoPile(draft, playerId, symbolId);
+}
+
+/**
+ * When a `forgeYield` slot shows an attribute face, generate
+ * `forgeYieldGenerate` extra pips for the die owner (effect Generate path).
+ */
+function applyForgeYieldGenerate(
+  draft: Draft,
+  dieOwnerId: PlayerId,
+  slot: { readonly forgeYield?: boolean },
+  symbol: SymbolType,
+): void {
+  if (slot.forgeYield !== true) return;
+  if (!isAttributeSymbol(symbol)) return;
+  const count = draft.config.forgeYieldGenerate;
+  if (count <= 0) return;
+  for (let i = 0; i < count; i += 1) {
+    createSymbol(draft, dieOwnerId, symbol, "available", "effect");
+  }
 }

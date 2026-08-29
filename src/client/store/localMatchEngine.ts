@@ -14,7 +14,7 @@ import {
   type SavedDeckId,
 } from "@client/decks";
 import type { WireLoadout } from "@client/networking";
-import { autoPassPriorityAction } from "./autoPassPriority.js";
+import { drainEmptyReactionPriority } from "./autoPassPriority.js";
 
 export const MATCH_P1 = asPlayerId("p1");
 export const MATCH_P2 = asPlayerId("p2");
@@ -98,19 +98,9 @@ export function dispatchHotseat(
   if (result.ok) {
     let current = result.state;
     observe(prev, current, action, true, null);
-    for (let i = 0; i < 16; i += 1) {
-      const pass = autoPassPriorityAction({
-        state: current,
-        mode: "local",
-        localPlayerId: null,
-        canAct: true,
-      });
-      if (pass === null) break;
-      const next = advance(current, pass);
-      if (!next.ok) break;
-      observe(current, next.state, pass, true, null);
-      current = next.state;
-    }
+    current = drainEmptyReactionPriority(current, (from, to, pass) => {
+      observe(from, to, pass, true, null);
+    });
     return { ok: true, state: current };
   }
   observe(prev, prev, action, false, result.error);

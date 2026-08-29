@@ -12,7 +12,7 @@ import {
   withPhase,
   withTokens,
 } from "@server/testing/scenario.js";
-import { autoPassPriorityAction, tryAutoPassPriority } from "./autoPassPriority.js";
+import { autoPassPriorityAction, drainEmptyReactionPriority, tryAutoPassPriority } from "./autoPassPriority.js";
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
@@ -92,6 +92,24 @@ describe("autoPassPriorityAction", () => {
         canAct: true,
       }),
     ).toEqual({ type: "PASS_PRIORITY", playerId: P2 });
+  });
+
+  it("drainEmptyReactionPriority collapses a two-seat empty window before paint", () => {
+    const opened = openedAttack([]);
+    expect(opened.pendingDecision?.type).toBe("reaction-priority");
+    const drained = drainEmptyReactionPriority(opened);
+    expect(drained.pendingDecision?.type).not.toBe("reaction-priority");
+    expect(drained.chainStack).toHaveLength(0);
+  });
+
+  it("drainEmptyReactionPriority stops when a seat has a legal Respond", () => {
+    const opened = openedAttack([BARRIER_OF_LIGHT]);
+    const drained = drainEmptyReactionPriority(opened);
+    expect(drained.pendingDecision).toEqual({
+      type: "reaction-priority",
+      priorityPlayerId: P2,
+      consecutivePasses: 0,
+    });
   });
 
   it("dispatches the Pass intent when the helper runs", () => {

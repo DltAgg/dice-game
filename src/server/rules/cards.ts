@@ -14,10 +14,10 @@ import type { GameState } from "../model/state.js";
 import type { SymbolType } from "../model/symbols.js";
 import { requirementTotal } from "../model/symbols.js";
 import {
-  discountedPlayRequirement,
-  reduceRequirement,
+  canAffordUnderCaps,
+  discountedRequirementNeed,
+  matchingPlayCostDiscounts,
 } from "./discounts.js";
-import { canPay } from "./symbols.js";
 import { isNonEmptyRequirement } from "./tokens.js";
 
 /**
@@ -143,9 +143,13 @@ export function canAffordPlay(
 ): boolean {
   const base = definition.playCost;
   if (base === undefined || !isNonEmptyRequirement(base)) return true;
-  const { cost } = discountedPlayRequirement(state, playerId, definition, base);
-  if (!isNonEmptyRequirement(cost)) return true;
-  return canPay(state, playerId, cost);
+  const matches = matchingPlayCostDiscounts(state, playerId, definition);
+  const discount = matches.reduce((sum, match) => sum + match.amount, 0);
+  const need = discountedRequirementNeed(base, discount);
+  if (need <= 0) return true;
+  const pile = state.players[playerId]?.attributePool ?? {};
+  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
+  return canAffordUnderCaps(pile, base, need, wildcards);
 }
 
 /**
@@ -162,9 +166,11 @@ export function canAffordForge(
   const base = definition.playCost;
   if (base === undefined || !isNonEmptyRequirement(base)) return true;
   const discount = state.forgeDiscountThisTurn[playerId] ?? 0;
-  const cost = reduceRequirement(base, discount);
-  if (!isNonEmptyRequirement(cost)) return true;
-  return canPay(state, playerId, cost);
+  const need = discountedRequirementNeed(base, discount);
+  if (need <= 0) return true;
+  const pile = state.players[playerId]?.attributePool ?? {};
+  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
+  return canAffordUnderCaps(pile, base, need, wildcards);
 }
 
 /**

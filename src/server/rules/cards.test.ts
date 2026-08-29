@@ -95,4 +95,39 @@ describe("canAffordPlay / canAffordForge", () => {
     expect(canAffordForge(state, P1, card)).toBe(true);
     expect(canAffordPlay(state, P1, card)).toBe(false);
   });
+
+  it("multi-attr play cost with discount 1 accepts either printed attribute", () => {
+    const martialOnly = withAttributePool(controlMatch(), P1, { martial: 1 });
+    const arcaneOnly = withAttributePool(controlMatch(), P1, { arcane: 1 });
+    const neither = withAttributePool(controlMatch(), P1, {});
+    // Archmage −1 on Arcane; printed 1 arcane + 1 martial → need 1 of either
+    const card = exampleCard({
+      playCost: { arcane: 1, martial: 1 },
+      attribute: "arcane",
+    });
+    expect(canAffordPlay(martialOnly, P1, card)).toBe(true);
+    expect(canAffordPlay(arcaneOnly, P1, card)).toBe(true);
+    expect(canAffordPlay(neither, P1, card)).toBe(false);
+    // Forge ignores play-cost discounts — still need both without forge discount
+    expect(canAffordForge(martialOnly, P1, card)).toBe(false);
+    expect(canAffordForge(arcaneOnly, P1, card)).toBe(false);
+  });
+
+  it("multi-attr forge discount 1 accepts either printed attribute (Crosscut shape)", () => {
+    const card = exampleCard({
+      playCost: { martial: 1, wild: 1 },
+      attribute: "martial",
+      forge: { faces: 1, kind: "synthetic", attribute: "martial", target: "own-die" },
+    });
+    const martial = withForgeDiscount(
+      withAttributePool(newMatch(), P1, { martial: 1 }),
+      P1,
+      1,
+    );
+    const wild = withForgeDiscount(withAttributePool(newMatch(), P1, { wild: 1 }), P1, 1);
+    expect(canAffordForge(martial, P1, card)).toBe(true);
+    expect(canAffordForge(wild, P1, card)).toBe(true);
+    expect(canAffordPlay(martial, P1, card)).toBe(false);
+    expect(canAffordPlay(wild, P1, card)).toBe(false);
+  });
 });

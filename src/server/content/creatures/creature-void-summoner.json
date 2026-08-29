@@ -44,7 +44,7 @@
       "effects": [
         {
           "type": "generate-symbol",
-          "symbol": "arcane",
+          "symbol": "darkness",
           "amount": 1
         },
         {
@@ -84,7 +84,7 @@
         "darkness": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Gain 1 Energy]. [Draw 1].",
+      "rulesText": "[Strike 2]. [Generate 1 Darkness]. [Draw 1].",
       "effect": {
         "type": "damage",
         "amount": 2,

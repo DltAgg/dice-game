@@ -46,11 +46,6 @@
           "type": "generate-symbol",
           "symbol": "luminar",
           "amount": 1
-        },
-        {
-          "type": "generate-symbol",
-          "symbol": "luminar",
-          "amount": 1
         }
       ]
     }
@@ -85,7 +80,7 @@
         "luminar": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Gain 1 Energy]. [Generate 1 Luminar].",
+      "rulesText": "[Strike 2]. [Generate 1 Luminar].",
       "effect": {
         "type": "damage",
         "amount": 2,

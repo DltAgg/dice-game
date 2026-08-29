@@ -1,5 +1,6 @@
 import {
   getCard,
+  hasLegalReactionOffer,
   isLegalRitualReaction,
   livingCreaturesOf,
   ritualsOf,
@@ -51,7 +52,10 @@ export function Battlefield({
   const front = living.filter((c) => c.position === "frontline");
   const back = living.filter((c) => c.position === "back");
   const isActive = state.activePlayerId === playerId;
-  const inReactionWindow = state.pendingDecision?.type === "reaction-priority";
+  const pending = state.pendingDecision;
+  const inReactionWindow =
+    pending?.type === "reaction-priority" &&
+    hasLegalReactionOffer(state, pending.priorityPlayerId);
   const rituals = ritualsOf(state, playerId);
 
   const backRow = (

@@ -207,7 +207,7 @@ describe("Press the Attack", () => {
 });
 
 describe("Riposte", () => {
-  it("generates Martial and arms the defender's next attack +1", () => {
+  it("arms the defender's next attack +2", () => {
     const combat = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(combat, P1, 0);
     const target = creatureIdAt(combat, P2, 0);
@@ -234,8 +234,8 @@ describe("Riposte", () => {
     );
     const resolved = resolveOpenChain(riposted);
     expect(resolved.creatures[target]?.damage).toBe(3);
-    expect(resolved.attackBonusThisTurn).toEqual({ [P2]: 1 });
-    expect(resolved.players[P2]?.attributePool.martial ?? 0).toBeGreaterThanOrEqual(1);
+    expect(resolved.attackBonusThisTurn).toEqual({ [P2]: 2 });
+    expect(resolved.players[P2]?.attributePool.martial ?? 0).toBe(0);
     expect(usableSymbols(resolved, P2).filter((s) => s.symbol === "martial")).toHaveLength(0);
   });
 });
@@ -328,7 +328,7 @@ describe("Pounce", () => {
 });
 
 describe("Pack Surge", () => {
-  it("generates Wild and arms next attack +1", () => {
+  it("arms next attack +2", () => {
     const ready = withAttributePool(
       withHand(withPhase(newMatch(), "actions"), P1, [PACK_SURGE]),
       P1,
@@ -341,8 +341,8 @@ describe("Pack Surge", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.attackBonusThisTurn[P1]).toBe(1);
-    expect(after.players[P1]?.attributePool.wild ?? 0).toBe(1);
+    expect(after.attackBonusThisTurn[P1]).toBe(2);
+    expect(after.players[P1]?.attributePool.wild ?? 0).toBe(0);
     expect(usableSymbols(after, P1).filter((s) => s.symbol === "wild")).toHaveLength(0);
   });
 });
