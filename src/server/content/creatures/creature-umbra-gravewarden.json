@@ -50,7 +50,7 @@
             "kind": "choose-enemy"
           },
           "with": {
-            "kind": "choose-ally"
+            "kind": "most-damaged-ally"
           }
         }
       ]

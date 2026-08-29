@@ -86,11 +86,11 @@ const STEM_RULES: readonly StemRule[] = [
   },
   {
     test: (body) => /^Prevent(?:\s+\d+)?$/i.test(body),
-    reminder: "Prevent the next attack against that creature (before Shield).",
+    reminder: "Prevent the next attack against the creature under attack (before Shield). Reaction only.",
   },
   {
     test: (body) => /^Drain(?:\s+\d+)?$/i.test(body),
-    reminder: "Deal up to N to a chosen enemy; heal a chosen ally for HP lost.",
+    reminder: "Deal up to N to a chosen enemy; heal your most-damaged ally for HP lost.",
   },
   {
     test: (body) => /^Convert(?:\s+\d+)?$/i.test(body),

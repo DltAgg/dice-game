@@ -416,7 +416,7 @@ already express.
 | Equipping a card onto a creature; attack-damage bonuses; destroy-equipment; cost discounts | — |
 | Overload attachment to a die face; on-roll effects; cleared on forge | Adrenaline / Rethrow reroll `012`; Overcharge skip-next still deferred |
 | Ritual place → preparing / ready / exhausted; ACTIVATE_RITUAL | Paradox replay `012` |
-| Toxin counters; 1 damage per counter at owner's turn start | Adaptive Toxin strip→damage still deferred |
+| Toxin counters; damage equal to markers at owner's turn end, then clear; soft max 3 | Adaptive Toxin strip→damage wired `013` |
 | `[Requires: …]` attack gate; `[Spend: …]` pile burn; `[Active when: …]` on rituals | Resonance wildcard `012` |
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
 | Mill (`mill-cards`); Bury the Name / Grave Whisper | Spec `015` |

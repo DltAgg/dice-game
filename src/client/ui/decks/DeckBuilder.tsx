@@ -27,6 +27,7 @@ import {
 import { useDeckStore } from "@client/store/deckStore";
 import { CardInspectPanel } from "@client/ui/decks/CardInspectPanel";
 import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
+import { DeckCostCurveSection } from "./DeckCostCurveSection";
 import { CatalogueTab } from "./CatalogueTab";
 import { DeckRow } from "./DeckRow";
 import { FacePaintChip } from "./FacePaintChip";
@@ -406,6 +407,8 @@ export function DeckBuilder() {
           })}
         </ul>
       </section>
+
+      <DeckCostCurveSection deck={deck} />
 
       {/* Tactics (left) + preview/search (right): matched fixed height */}
       <div className="grid h-[min(62vh,680px)] grid-cols-1 gap-4 lg:grid-cols-2">

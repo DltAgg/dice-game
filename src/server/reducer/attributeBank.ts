@@ -21,6 +21,7 @@ export function bankAttributeIntoPile(
   draft: Draft,
   playerId: PlayerId,
   symbolId: SymbolInstanceId,
+  options?: { readonly deferAbsorb?: boolean },
 ): boolean {
   const symbol = draft.symbols[symbolId];
   if (symbol === undefined) return false;
@@ -56,13 +57,15 @@ export function bankAttributeIntoPile(
   });
 
   // Always player absorber — ignore any creatureId on ABSORB_SYMBOL for attributes.
-  queueAbsorbTriggers(
-    draft,
-    playerId,
-    { kind: "player", id: playerId },
-    symbol.symbol,
-    symbol.sourceDieId,
-    null,
-  );
+  if (options?.deferAbsorb !== true) {
+    queueAbsorbTriggers(
+      draft,
+      playerId,
+      { kind: "player", id: playerId },
+      symbol.symbol,
+      symbol.sourceDieId,
+      null,
+    );
+  }
   return true;
 }

@@ -60,6 +60,7 @@ export interface Draft {
     kind: FaceKind;
   }>;
   resolveNextFaceEffectTwice: Record<string, boolean>;
+  rollBankQueue: SymbolInstanceId[];
   winner: PlayerId | null;
   log: LoggedEvent[];
   rng: RngState;
@@ -78,6 +79,7 @@ export const createDraft = (state: GameState): Draft => ({
   chainStack: state.chainStack.map((link) => ({ ...link })),
   facesAppearedThisRoll: state.facesAppearedThisRoll.map((entry) => ({ ...entry })),
   resolveNextFaceEffectTwice: { ...state.resolveNextFaceEffectTwice },
+  rollBankQueue: [...state.rollBankQueue],
   log: [...state.log],
 });
 

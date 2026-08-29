@@ -246,6 +246,7 @@ export function createMatch(setup: MatchSetup): GameState {
     bladeRainArmed: {},
     facesAppearedThisRoll: [],
     resolveNextFaceEffectTwice: {},
+    rollBankQueue: [],
     winner: null,
     log: [
       { seq: 0, turn: 1, event: { type: "match-started", firstPlayerId: first.id } },

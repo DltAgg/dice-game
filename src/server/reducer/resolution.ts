@@ -835,12 +835,14 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       return false;
     }
     case "grant-attack-prevent": {
-      applyToTargets(draft, pending, effect.target, (targetId) => {
-        const creature = draft.creatures[targetId];
-        if (creature === undefined || creature.defeated) return;
-        patchCreature(draft, targetId, {
-          attackPreventCount: creature.attackPreventCount + effect.amount,
-        });
+      // Reaction-exclusive: only while a living attack is on the chain, and
+      // only onto that attack's target (Barrier / Sidestep). Proactive grants whiff.
+      const attackTargetId = resolveTarget(draft, pending, { kind: "chain-attack-target" });
+      if (attackTargetId === null) return false;
+      const creature = draft.creatures[attackTargetId];
+      if (creature === undefined || creature.defeated) return false;
+      patchCreature(draft, attackTargetId, {
+        attackPreventCount: creature.attackPreventCount + effect.amount,
       });
       return false;
     }
@@ -1703,6 +1705,9 @@ export function applyToxin(draft: Draft, creatureId: CreatureId, amount: number)
     if (cap <= 0) return;
     granted = Math.min(amount, cap);
   }
+  // Soft global max after Adaptive Toxin’s receive cap.
+  const room = Math.max(0, draft.config.maxToxinMarkers - creature.toxinMarkers);
+  granted = Math.min(granted, room);
   if (granted <= 0) return;
 
   const total = creature.toxinMarkers + granted;
@@ -1835,7 +1840,11 @@ export function clearToxinReceiveCapsForOwner(draft: Draft, ownerId: PlayerId): 
   }
 }
 
-/** At the start of a creature's owner's turn: 1 damage per Toxin counter. */
+/**
+ * End of the owner's turn: deal damage equal to current Toxin markers, then
+ * clear them. `on-toxin-damage` (Fester, Toxic Heart) runs after the clear so
+ * re-seeds apply to a future cycle.
+ */
 export function tickToxins(draft: Draft, ownerId: PlayerId): void {
   const player = draft.players[ownerId];
   if (player === undefined) return;
@@ -1843,8 +1852,10 @@ export function tickToxins(draft: Draft, ownerId: PlayerId): void {
   for (const creatureId of player.creatureIds) {
     const creature = draft.creatures[creatureId];
     if (creature === undefined || creature.defeated || creature.toxinMarkers <= 0) continue;
-    emit(draft, { type: "toxin-tick", creatureId, amount: creature.toxinMarkers });
-    const dealt = dealDamage(draft, creatureId, creature.toxinMarkers);
+    const amount = creature.toxinMarkers;
+    emit(draft, { type: "toxin-tick", creatureId, amount });
+    const dealt = dealDamage(draft, creatureId, amount);
+    patchCreature(draft, creatureId, { toxinMarkers: 0 });
     if (dealt > 0) fireOnToxinDamage(draft, creatureId);
   }
   drainResolution(draft);

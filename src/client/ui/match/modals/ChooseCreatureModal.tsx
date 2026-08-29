@@ -12,6 +12,7 @@ import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
 import {
   CausedByLine,
 } from "../tooltips/decisionSource";
+import { chooseCreaturePrompt } from "../intents/chooseCreaturePrompt";
 
 export function ChooseCreatureModal({
   state,
@@ -32,14 +33,16 @@ export function ChooseCreatureModal({
     .map((id) => state.creatures[id])
     .filter((creature): creature is CreatureState => creature !== undefined);
 
+  const prompt = chooseCreaturePrompt(state, filter);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Choose a creature
+          {prompt.title}
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Pick a legal creature below or on the board.
+          {prompt.detail}
           {optional ? " You may Decline." : ""}
         </p>
         <CausedByLine state={state} />

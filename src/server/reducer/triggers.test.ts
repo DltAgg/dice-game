@@ -238,15 +238,12 @@ describe("on-toxin-damage equipment", () => {
     const equipped = equip(base, bearerId);
     const damaged = withDamage(withToxin(equipped, bearerId, 2), bearerId, 3);
 
-    const asP2 = {
-      ...damaged,
-      activePlayerId: P2,
-      phase: "actions" as const,
-    };
-    const after = expectOk(advance(asP2, { type: "END_TURN", playerId: P2 }));
+    // Toxin detonates at end of the owner's turn (P1).
+    const after = expectOk(advance(damaged, { type: "END_TURN", playerId: P1 }));
 
-    // 2 toxin damage then heal 1 → net +1 from starting 3.
+    // 2 toxin damage then heal 1 → net +1 from starting 3; markers cleared.
     expect(after.creatures[bearerId]?.damage).toBe(4);
+    expect(after.creatures[bearerId]?.toxinMarkers).toBe(0);
     expect(eventTypes(after)).toContain("creature-healed");
   });
 });
@@ -458,22 +455,47 @@ describe("on-roll / on-absorb faces", () => {
     expect(state.players[P1]?.attributePool.corruption ?? 0).toBe(corruptionBefore + 1);
   });
 
-  it("heals on Vital Spark roll and prevents on absorb", () => {
-    const allyId = creatureIdAt(newMatch(), P1, 0);
-    let state = withDamage(installFace(newMatch(), VITAL_SPARK), allyId, 2);
+  it("Vital Spark opens separate on-roll heal and on-absorb Shield choices", () => {
+    const healTarget = creatureIdAt(newMatch(), P1, 0);
+    const shieldTarget = creatureIdAt(newMatch(), P1, 1);
+    let state = withDamage(installFace(newMatch(), VITAL_SPARK), healTarget, 2);
+    state = withDamage(state, shieldTarget, 0);
     state = rollShowingSlot(state, 0);
-    expect(state.creatures[allyId]?.damage).toBe(1);
     expect(state.players[P1]?.attributePool.luminar ?? 0).toBeGreaterThanOrEqual(1);
+    expect(state.rollBankQueue.length).toBeGreaterThan(0);
+    expect(state.creatures[healTarget]?.damage).toBe(2);
+    expect(state.creatures[shieldTarget]?.damage).toBe(0);
 
-    expect(state.pendingDecision?.type).toBe("choose-creature");
+    expect(state.pendingDecision).toMatchObject({
+      type: "choose-creature",
+      filter: "ally",
+    });
     state = expectOk(
       advance(state, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
-        creatureId: allyId,
+        creatureId: healTarget,
       }),
     );
-    expect(state.creatures[allyId]?.attackPreventCount).toBe(1);
+    expect(state.creatures[healTarget]?.damage).toBe(1);
+    expect(state.creatures[shieldTarget]?.shields ?? 0).toBe(0);
+
+    expect(state.pendingDecision).toMatchObject({
+      type: "choose-creature",
+      filter: "ally",
+    });
+    state = expectOk(
+      advance(state, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: shieldTarget,
+      }),
+    );
+    expect(state.creatures[shieldTarget]?.shields).toBe(1);
+    expect(state.creatures[shieldTarget]?.attackPreventCount ?? 0).toBe(0);
+    expect(state.creatures[healTarget]?.shields ?? 0).toBe(0);
+    expect(state.players[P1]?.attributePool.luminar ?? 0).toBeGreaterThanOrEqual(1);
+    expect(state.rollBankQueue).toEqual([]);
   });
 
   it("grants next-attack bonus when Primordial Fury is absorbed", () => {
@@ -1013,11 +1035,17 @@ describe("on-toxin-damage opponent filter", () => {
     const enemyId = creatureIdAt(base, P2, 0);
     const equipped = equip(base, bearerId);
     const poisoned = withToxin(equipped, enemyId, 2);
+    const asP2 = {
+      ...poisoned,
+      activePlayerId: P2,
+      phase: "actions" as const,
+    };
 
-    const after = expectOk(advance(poisoned, { type: "END_TURN", playerId: P1 }));
+    // Enemy (P2) detonates at end of P2's turn; clear then Fester re-seeds 1.
+    const after = expectOk(advance(asP2, { type: "END_TURN", playerId: P2 }));
 
     expect(after.creatures[enemyId]?.damage).toBe(2);
-    expect(after.creatures[enemyId]?.toxinMarkers).toBe(3);
+    expect(after.creatures[enemyId]?.toxinMarkers).toBe(1);
     expect(eventTypes(after)).toContain("toxin-applied");
   });
 
@@ -1026,14 +1054,10 @@ describe("on-toxin-damage opponent filter", () => {
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = equip(base, bearerId);
     const poisoned = withToxin(equipped, bearerId, 2);
-    const asP2 = {
-      ...poisoned,
-      activePlayerId: P2,
-      phase: "actions" as const,
-    };
 
-    const after = expectOk(advance(asP2, { type: "END_TURN", playerId: P2 }));
+    // Ally (P1) detonates at end of P1's turn; clear with no Fester re-seed.
+    const after = expectOk(advance(poisoned, { type: "END_TURN", playerId: P1 }));
 
-    expect(after.creatures[bearerId]?.toxinMarkers).toBe(2);
+    expect(after.creatures[bearerId]?.toxinMarkers).toBe(0);
   });
 });

@@ -115,7 +115,7 @@ describe("016 attribute pile-up", () => {
       advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
     );
     expect(after.players[P1]?.attributePool).toEqual({ luminar: 1 });
-    // Vital Spark onAbsorb opens choose-ally for Prevent (Phase 3 pile bank).
+    // Vital Spark onAbsorb opens choose-ally for Mark Shield (Phase 3 pile bank).
     expect(after.pendingDecision?.type).toBe("choose-creature");
     expect(after.log.some((e) => e.event.type === "symbol-absorbed")).toBe(true);
   });

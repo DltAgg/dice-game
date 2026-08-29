@@ -111,11 +111,14 @@ export function Lobby() {
           onBackToMatch={() => setView("match")}
           onChangeP1Deck={(id) => {
             clearPlayBlockReason();
-            setMatchDecks(id, p2DeckId);
+            // Seated players must re-claim so the host stores the new WireLoadout.
+            if (localPlayerId === "p1") claimSeat("p1", id);
+            else setMatchDecks(id, p2DeckId);
           }}
           onChangeP2Deck={(id) => {
             clearPlayBlockReason();
-            setMatchDecks(p1DeckId, id);
+            if (localPlayerId === "p2") claimSeat("p2", id);
+            else setMatchDecks(p1DeckId, id);
           }}
         />
       )}

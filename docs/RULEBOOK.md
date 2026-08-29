@@ -158,9 +158,10 @@ Shield absorb still names a creature (below).
 - Ritual Active-when is checked against your **pile** (Resonance wildcards may
   help; they are not spent just to stay ready). Optional Spend on activate
   burns from the pile (wildcards may cover shortfall).
-- **`[Drain]`** deals damage to a chosen enemy creature and heals a chosen ally
-  for the HP actually lost (after Prevent/Shield). Former Wild pack-feed print
-  was rewritten (Share / Den Share); unused transfer/copy stubs remain no-ops.
+- **`[Drain]`** deals damage to a chosen enemy creature and heals your
+  **most-damaged ally** for the HP actually lost (after Prevent/Shield). Former
+  Wild pack-feed print was rewritten (Share / Den Share); unused transfer/copy
+  stubs remain no-ops.
 
 An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
@@ -306,19 +307,26 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 
 ## 14. Damage extras
 
-**Prevention** (next attack, not a damage buffer):
+**Prevention** (reaction to an attack declaration — not a proactive buffer):
 
-- `[Prevent]` on a creature cancels the next **attack** against it (the whole
-  instance, before Shield). Unused prevent does **not** expire for now
-  (`preventExpiry: "none"`).
+- `[Prevent]` is **reaction-exclusive**. It grants `attackPreventCount` only
+  while a living **attack** link is on the chain, and only onto **that attack’s
+  target**. Grants with no attack on the chain whiff (no charge).
+- That charge cancels the next **attack** against the creature (the whole
+  instance, before Shield). Unused charges from a **legal** reaction grant
+  persist until consumed (`preventExpiry: "none"`) — they are not a lasting
+  “arm next attack” you set up on your turn.
 - Toxin ticks, face `[Strike]`, and other effect damage do **not** consume
   attack-prevent.
 - Prevent reactions (Prismatic Barrier, Sidestep, Luminar Judgement) answer
-  an attack on the chain.
+  an attack on the chain. Proactive Luminar absorb / attack follow-ups use
+  `[Mark N Shield]` or `[Heal]` instead.
 
-**Toxin:** counters on a creature. At the start of **that creature’s
-owner’s** turn, it takes 1 damage per counter. Counters persist until
-something removes them.
+**Toxin:** counters on a creature (soft max **3** per creature; excess from
+`[Mark]` is discarded). At the **end** of **that creature’s owner’s** turn,
+it takes damage equal to its markers, then **all** markers are cleared.
+Markers applied during the owner’s own turn detonate at that same turn’s
+end.
 
 **Stun** is implemented on dice but **deferred**: nothing applies it.
 
@@ -350,7 +358,7 @@ Legal responders: hand `reaction` cards, and ready ritual-reactions.
 |---|---|
 | Negate (top card link) | Tactic effect, ritual place/activate, equip, overload — **not** attacks |
 | Negate ritual | Ritual place or activate only |
-| Prevent | Attack / damage |
+| Prevent | Attack declaration (reaction only) |
 
 Once a link is conducting, it runs to completion. A negated card link keeps
 its costs paid and skips the body.

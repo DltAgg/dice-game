@@ -23,9 +23,9 @@
         "target": {
           "kind": "choose-enemy"
         },
-        "with": {
-          "kind": "choose-ally"
-        }
+          "with": {
+            "kind": "most-damaged-ally"
+          }
       }
     ]
   }

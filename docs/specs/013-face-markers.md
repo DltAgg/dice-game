@@ -54,7 +54,7 @@ as data — no card-id special cases in the reducer.
 
 - `CreatureState.toxinReceiveCapRemaining` — while set, `apply-toxin` grants at
   most that many markers total across applications, then reaches 0.
-- Cleared at the start of that creature’s **owner’s** turn (before toxin tick).
+- Cleared at the start of that creature’s **owner’s** turn.
 
 ### Catalyst
 

@@ -4,19 +4,19 @@
   "name": "Vital Spark",
   "kind": "synthetic",
   "symbol": "luminar",
-  "rulesText": "On roll: [Heal 1] on an allied creature.\nOn absorb, once per turn: [Prevent] on an allied creature.",
+  "rulesText": "On roll: [Heal 1] on an allied creature.\nOn absorb, once per turn: [Mark 1 Shield] on an allied creature.",
   "onRoll": [
     {
       "type": "heal",
       "amount": 1,
       "target": {
-        "kind": "most-damaged-ally"
+        "kind": "choose-ally"
       }
     }
   ],
   "onAbsorb": [
     {
-      "type": "grant-attack-prevent",
+      "type": "grant-shield",
       "amount": 1,
       "target": {
         "kind": "choose-ally"

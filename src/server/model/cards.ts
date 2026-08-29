@@ -153,9 +153,10 @@ export type StandingTrigger =
     }
   /**
    * When a player's turn begins (`finishTurn` after the incoming holder is
-   * set, after toxin ticks). Filter whose turn with `whoseTurn` (default
-   * `controller`). Do not queue `choose-*` effects — the incoming player is
-   * already active; auto selectors only (`most-damaged-enemy`, `source-creature`).
+   * set). Toxin now ticks at end of the previous owner's turn, not here.
+   * Filter whose turn with `whoseTurn` (default `controller`). Do not queue
+   * `choose-*` effects — the incoming player is already active; auto selectors
+   * only (`most-damaged-enemy`, `source-creature`).
    */
   | {
       readonly type: "on-turn-start";

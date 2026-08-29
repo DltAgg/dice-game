@@ -5,9 +5,11 @@ import {
   GLIMMER,
   LUMINAR_JUDGEMENT,
 } from "../content/cards.js";
-import { asAttackId } from "../model/ids.js";
+import { asAttackId, asEffectInstanceId } from "../model/ids.js";
 import { currentLife } from "../rules/creatures.js";
+import { createDraft } from "./draft.js";
 import { advance } from "./reduce.js";
+import { drainResolution, pushEffect } from "./resolution.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -302,5 +304,56 @@ describe("true prevent (009)", () => {
     expect(
       events.some((event) => event.type === "damage-prevented" && event.source === "shield"),
     ).toBe(true);
+  });
+
+  it("grant-attack-prevent whiffs when no attack is on the chain", () => {
+    const base = withPhase(newMatch(), "actions");
+    const allyId = creatureIdAt(base, P1, 0);
+    const draft = createDraft(base);
+    pushEffect(
+      draft,
+      P1,
+      { type: "grant-attack-prevent", amount: 1, target: { kind: "source-creature" } },
+      allyId,
+      null,
+    );
+    drainResolution(draft);
+    expect(draft.creatures[allyId]?.attackPreventCount ?? 0).toBe(0);
+  });
+
+  it("grant-attack-prevent only arms the living attack's target", () => {
+    const base = withPhase(newMatch(), "actions");
+    const underAttack = creatureIdAt(base, P1, 0);
+    const otherAlly = creatureIdAt(base, P1, 1);
+    const draft = createDraft(base);
+    draft.chainStack.push({
+      id: asEffectInstanceId("test-attack-link"),
+      kind: "attack",
+      controllerId: P2,
+      negated: false,
+      cardInstanceId: null,
+      effects: [],
+      sourceCreatureId: null,
+      declaredTargetCreatureId: underAttack,
+      equipTargetCreatureId: null,
+      overloadFaceCardId: null,
+      attackerId: creatureIdAt(base, P2, 0),
+      attackId: HEAVY_AXE,
+      attackTargetId: underAttack,
+      attackEffect: null,
+      attackFollowUpEffects: [],
+      ritualDuration: null,
+    });
+    // Selector would prefer another ally; engine still only arms the attack target.
+    pushEffect(
+      draft,
+      P1,
+      { type: "grant-attack-prevent", amount: 1, target: { kind: "source-creature" } },
+      otherAlly,
+      null,
+    );
+    drainResolution(draft);
+    expect(draft.creatures[underAttack]?.attackPreventCount).toBe(1);
+    expect(draft.creatures[otherAlly]?.attackPreventCount ?? 0).toBe(0);
   });
 });

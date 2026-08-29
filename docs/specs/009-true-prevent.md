@@ -13,20 +13,26 @@ Design cites: `docs/OPEN_DESIGN.md` — “Damage prevention”; reaction chain
 Players respond to attack links with prevent reactions. `[Prevent]` cancels
 the **next attack** against that creature (the whole instance), before Shield
 and HP. Prismatic Barrier / Sidestep grant one such charge on the ally under
-attack.
+attack. **Proactive** grants (faces, absorb passives, attack follow-ups) are
+illegal: `grant-attack-prevent` **whiffs** unless a living attack link is on
+the chain, and always applies only to that attack’s target.
 
 ## Rules
 
 1. **Attack prevent** — “prevent the next N attacks” on a creature
-   (`grant-attack-prevent`, usually N = 1). Consumed when **attack** damage
-   would be applied; the whole remaining amount of that application is 0.
+   (`grant-attack-prevent`, usually N = 1). **Reaction-exclusive:** only
+   applies while a living **attack** link exists on the chain, and only onto
+   **that attack’s target** (selector is ignored for destination). No attack
+   on the chain → whiff. Consumed when **attack** damage would be applied; the
+   whole remaining amount of that application is 0.
 2. **Not a damage buffer.** There is no prevent-next-N-damage counter.
    Shield remains the 1-for-1 absorb after prevent.
 3. **Non-attack damage** (toxin ticks, face `[Strike]`, other effect damage)
    does not consume `attackPreventCount`.
 4. **Apply order:** attack-prevent → Shield → HP.
-5. **Unused prevent expiry:** none for now; unused charges persist until
-   consumed (`preventExpiry: "none"` on `GameRulesConfig`).
+5. **Unused prevent expiry:** none for now; unused charges from **legal**
+   reaction grants persist until consumed (`preventExpiry: "none"` on
+   `GameRulesConfig`). Not a lasting proactive buffer you arm on your turn.
 6. **Attack window.** Declaring an attack opens a reaction window (`008`).
    Prevent reactions may respond; negate may not.
 7. **Prismatic Barrier / Sidestep:** reaction while top link is an **attack**;

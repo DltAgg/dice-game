@@ -6,6 +6,7 @@ import { opponentOf } from "../../rules/creatures.js";
 import { attackIgnoreShieldAmount } from "../../rules/discounts.js";
 import { emit, type Draft } from "../draft.js";
 import { drainResolution, pushEffect } from "../resolution.js";
+import { tryFlushRollBankQueue } from "../rollBank.js";
 import {
   attachEquipment,
   attachOverload,
@@ -47,6 +48,8 @@ export function passPriority(draft: Draft, playerId: PlayerId): GameError | null
 
 export function resumeAfterEffectPause(draft: Draft): GameError | null {
   drainResolution(draft);
+  if (draft.pendingDecision !== null) return null;
+  tryFlushRollBankQueue(draft);
   if (draft.pendingDecision !== null) return null;
   return drainChain(draft);
 }

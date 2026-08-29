@@ -101,8 +101,9 @@ export interface CreatureState {
    */
   readonly nextAttackBonus: number;
   /**
-   * Toxin counters. At the start of this creature's owner's turn, the creature
-   * takes 1 damage per counter. Counters persist until something removes them.
+   * Toxin counters. At the end of this creature's owner's turn, the creature
+   * takes damage equal to its markers, then all markers are cleared. Soft-capped
+   * by `GameRulesConfig.maxToxinMarkers` on apply.
    */
   readonly toxinMarkers: number;
   /** Equipment cards currently attached to this creature. */

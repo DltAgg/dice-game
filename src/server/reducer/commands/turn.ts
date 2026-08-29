@@ -3,6 +3,7 @@ import type { PlayerId, SymbolInstanceId } from "../../model/ids.js";
 import { TURN_PHASE_ORDER, type TurnPhase } from "../../model/state.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { emit, type Draft } from "../draft.js";
+import { clearRollBankQueue } from "../rollBank.js";
 import {
   checkVictory,
   clearResourceLocks,
@@ -51,8 +52,11 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   draft.bladeRainArmed = {};
   draft.facesAppearedThisRoll = [];
   draft.resolveNextFaceEffectTwice = {};
+  clearRollBankQueue(draft);
   clearResourceLocks(draft);
   tickForgeLocksForOwner(draft, playerId);
+  // Toxin detonates at end of the creature owner's turn (before the switch).
+  tickToxins(draft, playerId);
   clearTurnTriggerState(draft);
 
   emit(draft, { type: "turn-ended", playerId });
@@ -62,9 +66,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   emit(draft, { type: "turn-started", turn: draft.turn, playerId: nextPlayerId });
 
   clearToxinReceiveCapsForOwner(draft, nextPlayerId);
-  // Toxin counters tick at the start of the creature's owner's turn.
-  tickToxins(draft, nextPlayerId);
-  // Standing burn pulses after toxin ticks (auto-target only — no choose pending).
+  // Standing burn pulses at turn start (auto-target only — no choose pending).
   fireOnTurnStart(draft, nextPlayerId);
   drainResolution(draft);
   // Exhausted once-per-turn rituals come off diagonal; Active-when is re-checked

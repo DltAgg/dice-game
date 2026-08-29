@@ -12,8 +12,8 @@ import {
 import { isAttributeSymbol, type SymbolType } from "../../model/symbols.js";
 import type { RNG } from "../../rng/rng.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../../rules/dice.js";
-import { bankAttributeIntoPile } from "../attributeBank.js";
 import { emit, nextInstanceId, patchDie, type Draft } from "../draft.js";
+import { bankRolledSymbols } from "../rollBank.js";
 import { createSymbol, drainResolution, pushEffect } from "../resolution.js";
 import { fireEquipmentOnRollSymbol } from "../triggers.js";
 import { enterPhase } from "./turn.js";
@@ -123,9 +123,8 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
     applyForgeYieldGenerate(draft, playerId, liveDie.slots[slotIndex] ?? slot, face.symbol);
   }
 
-  // Fire onRoll after every inherent pip exists so "another symbol in the pool"
-  // conditions (Gear, Resonance) see the full roll before attributes bank.
-  for (const entry of rolled) {
+  // Fire onRoll in die order (later dice push on top so LIFO resolves left-to-right).
+  for (const entry of [...rolled].reverse()) {
     if (!entry.suppressInherent) {
       fireFaceOnRoll(draft, playerId, entry.dieId, entry.slotIndex);
     }
@@ -135,15 +134,14 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
 
   drainResolution(draft);
 
-  // Spec `016`: rolled attributes auto-bank into the pile (no assign click).
-  // Shield and unusable/locked pips stay in the turn pool. Effect-generated
-  // `available` symbols are not rolled here — they remain for [Requires].
-  for (const entry of rolled) {
-    bankRolledAttributeIfEligible(draft, playerId, entry.symbolId);
-  }
-  // If on-roll already opened a choice, leave On absorb effects on the stack
-  // until that choice resolves — draining here would overwrite pendingDecision.
-  if (draft.pendingDecision === null) {
+  const bankableIds = rolled
+    .filter((entry) => !entry.suppressInherent)
+    .map((entry) => entry.symbolId);
+  const deferAbsorb =
+    draft.pendingDecision !== null || draft.resolutionStack.length > 0;
+  bankRolledSymbols(draft, playerId, bankableIds, deferAbsorb);
+
+  if (!deferAbsorb) {
     drainResolution(draft);
   }
 
@@ -232,15 +230,6 @@ export function retainDie(
   patchDie(draft, dieId, { retained: false });
   emit(draft, { type: "die-released", dieId, playerId });
   return null;
-}
-
-/** After ROLL_DICE onRoll resolves: bank remaining rolled attributes. */
-function bankRolledAttributeIfEligible(
-  draft: Draft,
-  playerId: PlayerId,
-  symbolId: SymbolInstanceId,
-): void {
-  bankAttributeIntoPile(draft, playerId, symbolId);
 }
 
 /**

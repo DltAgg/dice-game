@@ -478,11 +478,16 @@ Legal response **kind** depends on the top link:
 ### Damage prevention
 
 **Status:** `DECIDED` · 2026-08-26 · attack-instance prevent in
-`docs/specs/009-true-prevent.md`
+`docs/specs/009-true-prevent.md` · **tightened 2026-08-29** (reaction-exclusive)
 
-- **`[Prevent]`** grants `attackPreventCount` on a creature (usually 1). The
-  next **attack** against that creature is cancelled whole (before Shield).
-  Unused charges persist until consumed (`preventExpiry: "none"`).
+- **`[Prevent]` / `grant-attack-prevent`** is **reaction-exclusive**. It only
+  applies while a living **attack** link is on the chain, and only onto **that
+  attack’s target**. No attack on the chain → the effect **whiffs** (no
+  charge). It is not a proactive “arm next attack” from faces, creature
+  attacks, or absorb passives.
+- A legal reaction grant adds `attackPreventCount` (usually 1). The next
+  **attack** against that creature is cancelled whole (before Shield). Unused
+  charges from legal grants persist until consumed (`preventExpiry: "none"`).
 - Damage-prevent **buffers** (`damagePreventBuffer` / `grant-damage-prevent`)
   are **gone** — they mixed with Shield at the table.
 - **Apply order when attack damage lands:** attack-prevent → Shield → HP.
@@ -490,7 +495,8 @@ Legal response **kind** depends on the top link:
   attack-prevent.
 - **Prismatic Barrier / Sidestep** — **DECIDED** 2026-08-26: `[Prevent]` on
   the **ally targeted by the attack** being responded to (`grant-attack-prevent`
-  1, `chain-attack-target`).
+  1, `chain-attack-target`). Proactive Luminar print uses `[Mark N Shield]` /
+  `[Heal]` instead.
 
 Attack chain links open a reaction window so prevent reactions can respond;
 negate effects refuse attack links.
@@ -513,13 +519,15 @@ returns to A); after Pass×2 the chain resolves and A’s turn does **not** end.
 
 ### Toxin counters
 
-**Status:** `DECIDED` · implemented
+**Status:** `DECIDED` · implemented (playtest 2026-08-29: end-of-turn clear)
 
-Toxin counters are tokens on a creature. At the start of that creature's
-owner's turn, the creature takes 1 damage per Toxin counter it holds. Counters
-persist until something removes them. Adaptive Toxin’s absorb is `[Strip 3 Toxin].
-[Strike equal]` (fixed 3, no choose-count pending) and toxin receive cap are
-wired in spec `013`.
+Toxin counters are tokens on a creature. Soft global max is
+`maxToxinMarkers` (default 3) after any Adaptive Toxin receive cap. At the
+**end** of that creature's owner's turn (before the active player switches),
+the creature takes damage equal to its current markers, then all markers are
+cleared. `on-toxin-damage` may re-seed markers after the clear for a later
+cycle. Adaptive Toxin’s absorb is `[Strip 3 Toxin]. [Strike equal]` (fixed 3,
+no choose-count pending) and toxin receive cap are wired in spec `013`.
 
 ---
 
@@ -783,9 +791,10 @@ You cannot Strip Martial/Arcane off a creature.
 
 **DECIDED (playtest, 2026-08-29).** `[Drain N]` / `drain-life` transfers life:
 deal up to N damage to a chosen enemy (normal Prevent → Shield → HP), then
-heal a chosen ally for the **HP actually lost**. Former pile-steal
-`drain-attribute-tokens` is removed. Siphon Sigil / Share the Kill / Hexbrand /
-Nightbound Adept / Nightwell prove it. Spec `011`.
+heal your **most-damaged ally** for the **HP actually lost** (auto; no second
+creature choice). Former pile-steal `drain-attribute-tokens` is removed.
+Siphon Sigil / Share the Kill / Hexbrand / Nightbound Adept / Nightwell /
+Umbra Gravewarden prove it. Spec `011`.
 
 **ASSUMED (label for homogeneous discard order on other effects).** When
 there is no mix leftover for token discards, strip uses `ATTRIBUTES` array

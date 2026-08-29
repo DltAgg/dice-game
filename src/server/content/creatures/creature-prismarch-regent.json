@@ -7,7 +7,7 @@
     "luminar"
   ],
   "legendary": true,
-  "passiveRulesText": "On absorb Luminar, once per turn: [Prevent] this creature.",
+  "passiveRulesText": "On absorb Luminar, once per turn: [Mark 1 Shield] this creature.",
   "standingAbilities": [
     {
       "type": "on-absorb",
@@ -17,7 +17,7 @@
       "absorberRelation": "ally",
       "effects": [
         {
-          "type": "grant-attack-prevent",
+          "type": "grant-shield",
           "amount": 1,
           "target": {
             "kind": "source-creature"
@@ -66,7 +66,7 @@
         "luminar": 1
       },
       "range": false,
-      "rulesText": "[Strike 3]. [Prevent] on an allied creature.",
+      "rulesText": "[Strike 3]. [Mark 1 Shield] on an allied creature.",
       "effect": {
         "type": "damage",
         "amount": 3,
@@ -76,7 +76,7 @@
       },
       "followUpEffects": [
         {
-          "type": "grant-attack-prevent",
+          "type": "grant-shield",
           "amount": 1,
           "target": {
             "kind": "choose-ally"

@@ -19,13 +19,13 @@ destruction. When more than one legal pick exists, the controller names it.
 
 ## Rules
 
-1. **`drain-life`.** Choose an enemy (`target`, usually `choose-enemy`), then
-   choose an ally (`with`, usually `choose-ally`). Deal up to `amount` damage
-   to the enemy with normal Prevent → Shield → HP. Heal the ally for the
+1. **`drain-life`.** Choose an enemy (`target`, usually `choose-enemy`). Deal
+   up to `amount` damage to the enemy with normal Prevent → Shield → HP. Heal
+   your **most-damaged ally** (`with`, usually `most-damaged-ally`) for the
    **HP actually lost** (`dealDamage` return). Emit `life-drained`. If Shields
    / Prevent absorb the whole amount, heal whiffs (no `life-drained`). Nested
-   choices stamp the source as `{ kind: "fixed", creatureId }` while choosing
-   the destination.
+   `choose-ally` on `with` remains legal for older data but catalogue Drain
+   uses the auto ally.
 2. **No token cap** in this slice — per-player / per-attribute caps stay
    `OPEN` in `OPEN_DESIGN.md`. Former pile-steal `drain-attribute-tokens` is
    removed; `choose-attribute-tokens` remains only for parked transfer/copy
@@ -53,7 +53,7 @@ destruction. When more than one legal pick exists, the controller names it.
 | Creature `damage` / `shields` | Drain damages source; heals destination for HP lost. |
 | Ritual card instance | Leaves `ritual` → `graveyard`. |
 | Equipment card instance | Leaves `equipment` → `graveyard`. |
-| `pendingDecision` | May be `choose-creature` (enemy then ally for Drain), `choose-ritual`, or `choose-equipment`. |
+| `pendingDecision` | May be `choose-creature` (enemy for Drain; ally only if `with` is still `choose-*`), `choose-ritual`, or `choose-equipment`. |
 
 ## Actions
 
@@ -89,7 +89,8 @@ None.
 
 Match-ui must:
 
-- Prompt enemy then ally creature choice for `[Drain]` (reuse choose-creature UI).
+- Prompt enemy creature choice for `[Drain]` (heal auto-targets most-damaged
+  ally; reuse choose-creature UI).
 - Prompt opposing ritual choice when `pendingDecision.type === "choose-ritual"`.
 - Prompt equipment choice when `pendingDecision.type === "choose-equipment"`.
 - Surface `life-drained`, `ritual-destroyed`, and `equipment-destroyed` in the

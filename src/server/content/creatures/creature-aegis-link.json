@@ -69,7 +69,7 @@
         "luminar": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Prevent] on an allied creature.",
+      "rulesText": "[Strike 2]. [Mark 1 Shield] on an allied creature.",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -79,7 +79,7 @@
       },
       "followUpEffects": [
         {
-          "type": "grant-attack-prevent",
+          "type": "grant-shield",
           "amount": 1,
           "target": {
             "kind": "choose-ally"

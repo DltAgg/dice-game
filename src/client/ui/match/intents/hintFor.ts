@@ -12,6 +12,7 @@ import {
 import {
   type Intent,
 } from "./types";
+import { chooseCreaturePrompt } from "./chooseCreaturePrompt";
 
 export function playDefHasOverload(state: GameState, cardInstanceId: CardInstanceId): boolean {
   const instance = state.cards[cardInstanceId];
@@ -117,10 +118,10 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
   }
   if (state.pendingDecision?.type === "choose-creature") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a creature.";
-    const filterHint = chooseCreatureFilterHint(state.pendingDecision.filter);
+    const prompt = chooseCreaturePrompt(state, state.pendingDecision.filter);
     return state.pendingDecision.optional === true
-      ? `${filterHint} Or Decline.`
-      : filterHint;
+      ? `${prompt.detail} Or Decline.`
+      : prompt.detail;
   }
   if (state.pendingDecision?.type === "choose-ritual") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a ritual.";

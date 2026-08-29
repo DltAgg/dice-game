@@ -68,7 +68,8 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 8. **On-change-position.** When a creature's position changes (shared mover
    must call this), fire `on-change-position` with `creatureRelation` filter.
 9. **On-turn-start.** When a player's turn begins (`finishTurn` after the
-   incoming holder is set, **after** toxin ticks). Filter `whoseTurn`
+   incoming holder is set). Toxin ticks at **end** of the previous owner's
+   turn, not here. Filter `whoseTurn`
    (`controller` / `opponent` / `any` vs filter owner; default `controller`).
    Print: `On start of turn:` / `On start of opponent's turn:`. Do **not**
    queue `choose-*` effects here — auto selectors only (`most-damaged-enemy`,
@@ -117,7 +118,7 @@ reducer only knows the hook kinds and passes instance ids for filtering.
       (creature **or** allied ritual assignment).
 - [x] `energy-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
 - [x] Movers fire `on-change-position` via `setCreaturePosition` (Command / War Charge / Claws).
-- [x] `on-turn-start` (Slow Burn / Smolder / Cinder Hex) after toxin ticks.
+- [x] `on-turn-start` (Slow Burn / Smolder / Cinder Hex) at turn start (toxin ticks at end of prior owner's turn).
 - [x] `on-toxin-damage` `damagedOwner: "opponent"` (Fester); Toxic Heart default controller still heals.
 
 ## Tests

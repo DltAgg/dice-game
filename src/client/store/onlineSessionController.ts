@@ -157,7 +157,13 @@ export async function hostRoom(
       ...(restoredState !== undefined ? { restoredState } : {}),
       ...(restoredRoom !== undefined ? { restoredRoom } : {}),
       onState: (state) => {
-        persistHostHint(roomCode, chosen, state.rng.seed, state, asSeatId(get().localPlayerId));
+        persistHostHint(
+          roomCode,
+          asSeatId(get().localPlayerId) === "p2" ? get().p2DeckId : get().p1DeckId,
+          state.rng.seed,
+          state,
+          asSeatId(get().localPlayerId),
+        );
         const prev = get().state;
         set({
           state,
@@ -172,7 +178,16 @@ export async function hostRoom(
       },
       onRoom: (room) => {
         const localPlayerId = playerIdFromRoom(room, clientId);
-        persistHostHint(roomCode, chosen, get().seed, room.started ? get().state : null, asSeatId(localPlayerId));
+        const seat = asSeatId(localPlayerId);
+        const deckHint =
+          seat === "p1" ? get().p1DeckId : seat === "p2" ? get().p2DeckId : get().p1DeckId;
+        persistHostHint(
+          roomCode,
+          deckHint,
+          get().seed,
+          room.started ? get().state : null,
+          seat,
+        );
         set({
           roomSnapshot: room,
           localPlayerId,
@@ -292,7 +307,10 @@ export async function joinRoom(
         observeMatch(prev, state, null, true, null);
       },
       onWelcome: (playerId, _roomCode, room) => {
-        persistClientHint(code, chosen, asSeatId(playerId));
+        const seat = asSeatId(playerId);
+        const deckHint =
+          seat === "p1" ? get().p1DeckId : seat === "p2" ? get().p2DeckId : get().p2DeckId;
+        persistClientHint(code, deckHint, seat);
         set({
           localPlayerId: playerId,
           roomSnapshot: room,
@@ -303,7 +321,10 @@ export async function joinRoom(
       },
       onRoom: (room) => {
         const localPlayerId = playerIdFromRoom(room, clientId);
-        persistClientHint(code, chosen, asSeatId(localPlayerId));
+        const seat = asSeatId(localPlayerId);
+        const deckHint =
+          seat === "p1" ? get().p1DeckId : seat === "p2" ? get().p2DeckId : get().p2DeckId;
+        persistClientHint(code, deckHint, seat);
         set({
           roomSnapshot: room,
           localPlayerId,
@@ -372,6 +393,8 @@ export function claimSeat(set: StoreSet, get: StoreGet, seat: SeatId, deckId?: S
   }
   if (mode === "client") {
     clientSession?.claimSeat(seat, loadout);
+    const code = get().roomCode;
+    if (code !== null) persistClientHint(code, chosen, seat);
   }
 }
 

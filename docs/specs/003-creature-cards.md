@@ -59,7 +59,7 @@ opponent-die `[Forge]`.
 |---|---|---|---|---|---|
 | Ironhoof Warlord | `creature-warlord-ironhoof` | Martial | 23 | Aggro | Pierce + position → Empower; Swap special |
 | Nightvault Sovereign | `creature-sovereign-nightvault` | Arcane | 22 | Control | Take damage → Draw; special Insight dig |
-| Prismarch Regent | `creature-prismarch-regent` | Luminar | 22 | Tempo | Absorb → Prevent self; special Prevent ally |
+| Prismarch Regent | `creature-prismarch-regent` | Luminar | 22 | Tempo | Absorb → Shield self; special Shield ally |
 | Forgeheart Colossus | `creature-forgeheart-colossus` | Mechanical | 22 | Combo Mechanical | Basic → Generate Mech; special Stamp + forge Discount |
 | Blightcrown Hydra | `creature-blightcrown-hydra` | Toxin | 22 | Burn | Absorb → Mark Toxin on attacks; Strip→Strike closer |
 
@@ -119,7 +119,7 @@ vocabulary.
 |---|---|---|---|---|---|
 | Prism Herald | Luminar | 13 | On absorb Luminar: next attack +1 | Gleam (Spend L) 2 dmg + heal 1 most-damaged ally | Concord (Requires L+Mech; Spend L) 2 dmg + ally next attack +1 |
 | Lens Choir | Luminar | 12 | On absorb Luminar, once per turn: generate Luminar | Focus Beam (Spend L) 1 dmg + generate Luminar | Cascade (Requires L+Wild; Spend L) 2 dmg + generate Luminar |
-| Aegis Link | Luminar | 14 | First Luminar card −1 / On attack, another ally: heal 1 most-damaged | Ward Strike (Spend L) 2 dmg + Shield 1 self | Beacon (Requires L+Mech; Spend L) 2 dmg + [Prevent] on ally |
+| Aegis Link | Luminar | 14 | First Luminar card −1 / On attack, another ally: heal 1 most-damaged | Ward Strike (Spend L) 2 dmg + Shield 1 self | Beacon (Requires L+Mech; Spend L) 2 dmg + [Mark 1 Shield] on ally |
 | Cogwork Driver | Mechanical | 14 | On absorb Mechanical: next attack +1 | Drive (Spend Mech) 2 dmg | Overclock (Requires Mech+L; Spend Mech) 3 dmg + generate Mechanical |
 | Servo Assembly | Mechanical | 13 | On absorb Mechanical: generate Mechanical | Ratchet (Spend Mech) 1 dmg + generate Mechanical | Stamp Pulse (Requires Mech 2; Spend Mech 1) 2 dmg + reapply die modifiers |
 | Clockwork Dynamo | Mechanical | 12 | On roll Mechanical: next attack +1 | Spark (Spend Mech) 2 dmg | Recalibrate (Requires Mech+L; Spend Mech) 2 dmg + next forge −1 Energy |

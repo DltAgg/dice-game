@@ -10,10 +10,11 @@ import {
   SEAL_THE_RITE,
   SIPHON_SIGIL,
 } from "../content/cards.js";
+import { MINOTAUR, UMBRA_GRAVEWARDEN, VARCOLAC } from "../content/creatures.js";
 import { CRUSH, HEXBRAND } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { CardId, DieId, FaceCardId } from "../model/ids.js";
-import { asCardInstanceId } from "../model/ids.js";
+import { asAttackId, asCardInstanceId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { graveyardOf, overloadsOnFace, ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
@@ -32,6 +33,7 @@ import {
   withAttributePool,
   withPhase,
   withDamage,
+  withTokens,
 } from "../testing/scenario.js";
 
 const actionsReady = (cards: readonly CardId[], energy = 10) =>
@@ -71,7 +73,7 @@ function withOpponentRitual(
 }
 
 describe("Siphon Sigil (drain-life)", () => {
-  it("damages a chosen enemy and heals a chosen ally for HP lost", () => {
+  it("damages a chosen enemy and heals the most-damaged ally for HP lost", () => {
     const enemyId = creatureIdAt(newMatch(), P2, 0);
     const allyId = creatureIdAt(newMatch(), P1, 0);
     const ready = withDamage(
@@ -93,25 +95,14 @@ describe("Siphon Sigil (drain-life)", () => {
     const afterChain = resolveOpenChain(opened);
     expect(afterChain.pendingDecision?.type).toBe("choose-creature");
 
-    const afterEnemy = expectOk(
+    const after = expectOk(
       advance(afterChain, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: enemyId,
       }),
     );
-    expect(afterEnemy.pendingDecision).toMatchObject({
-      type: "choose-creature",
-      filter: "ally",
-    });
-
-    const after = expectOk(
-      advance(afterEnemy, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: allyId,
-      }),
-    );
+    expect(after.pendingDecision).toBeNull();
     expect(after.creatures[enemyId]?.damage).toBe(2);
     expect(after.creatures[allyId]?.damage).toBe(2);
     expect(eventTypes(after)).toContain("life-drained");
@@ -138,7 +129,7 @@ describe("Siphon Sigil (drain-life)", () => {
         [enemyId]: { ...ready.creatures[enemyId]!, shields: 1 },
       },
     };
-    const afterEnemy = expectOk(
+    const after = expectOk(
       advance(resolveOpenChain(expectOk(
         advance(ready, {
           type: "PLAY_CARD",
@@ -149,13 +140,6 @@ describe("Siphon Sigil (drain-life)", () => {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: enemyId,
-      }),
-    );
-    const after = expectOk(
-      advance(afterEnemy, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: allyId,
       }),
     );
     expect(after.creatures[enemyId]?.shields).toBe(0);
@@ -182,7 +166,7 @@ describe("Siphon Sigil (drain-life)", () => {
         [enemyId]: { ...ready.creatures[enemyId]!, shields: 2 },
       },
     };
-    const afterEnemy = expectOk(
+    const after = expectOk(
       advance(resolveOpenChain(expectOk(
         advance(ready, {
           type: "PLAY_CARD",
@@ -193,13 +177,6 @@ describe("Siphon Sigil (drain-life)", () => {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: enemyId,
-      }),
-    );
-    const after = expectOk(
-      advance(afterEnemy, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: allyId,
       }),
     );
     expect(after.creatures[enemyId]?.damage).toBe(0);
@@ -429,28 +406,73 @@ describe("Hexbrand (drain-life)", () => {
     const afterRoll = rollShowingSlot(seeded, 0);
     expect(afterRoll.pendingDecision?.type).toBe("choose-creature");
 
-    const afterEnemy = expectOk(
+    const after = expectOk(
       advance(afterRoll, {
         type: "RESOLVE_CHOOSE_CREATURE",
         playerId: P1,
         creatureId: enemyId,
       }),
     );
-    expect(afterEnemy.pendingDecision).toMatchObject({
-      type: "choose-creature",
-      filter: "ally",
-    });
-
-    const after = expectOk(
-      advance(afterEnemy, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: allyId,
-      }),
-    );
+    // Drain auto-heals; On absorb may still open destroy-equipment choose-enemy.
     expect(after.creatures[enemyId]?.damage).toBe(1);
     expect(after.creatures[allyId]?.damage).toBe(2);
     expect(eventTypes(after)).toContain("life-drained");
+  });
+});
+
+const GRAVE_TOUCH = asAttackId("attack-umbra-gravewarden-grave-touch");
+const CONTROL_TEST_SQUAD = [UMBRA_GRAVEWARDEN, MINOTAUR, VARCOLAC] as const;
+
+describe("Umbra Gravewarden Grave Touch (drain follow-up)", () => {
+  it("after Strike, Drain damages a chosen enemy and heals most-damaged ally", () => {
+    const match = newMatch({
+      players: [
+        { id: P1, squad: CONTROL_TEST_SQUAD, deck: [] },
+        { id: P2, squad: CONTROL_TEST_SQUAD, deck: [] },
+      ],
+    });
+    const attackerId = creatureIdAt(match, P1, 0);
+    const enemyId = creatureIdAt(match, P2, 1); // frontline Minotaur
+    const allyId = creatureIdAt(match, P1, 1);
+    let state = withDamage(
+      withTokens(withPhase(match, "actions"), attackerId, { darkness: 1 }),
+      allyId,
+      4,
+    );
+    // Legendary starts back; melee needs frontline.
+    state = {
+      ...state,
+      creatures: {
+        ...state.creatures,
+        [attackerId]: { ...state.creatures[attackerId]!, position: "frontline" },
+      },
+    };
+
+    const opened = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: GRAVE_TOUCH,
+        targetId: enemyId,
+      }),
+    );
+    state = resolveOpenChain(opened);
+    expect(state.creatures[enemyId]?.damage).toBe(2); // Strike 2
+    expect(state.pendingDecision?.type).toBe("choose-creature");
+    expect(state.pendingDecision).toMatchObject({ filter: "enemy" });
+
+    state = expectOk(
+      advance(state, {
+        type: "RESOLVE_CHOOSE_CREATURE",
+        playerId: P1,
+        creatureId: enemyId,
+      }),
+    );
+    expect(state.pendingDecision).toBeNull();
+    expect(state.creatures[enemyId]?.damage).toBe(3); // + Drain 1
+    expect(state.creatures[allyId]?.damage).toBe(3); // healed 1
+    expect(eventTypes(state)).toContain("life-drained");
   });
 });
 

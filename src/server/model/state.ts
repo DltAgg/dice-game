@@ -428,6 +428,11 @@ export interface GameState {
    * twice. Spec `013`.
    */
   readonly resolveNextFaceEffectTwice: Readonly<Record<string, boolean>>;
+  /**
+   * Banked symbol ids from the active roll whose on-absorb triggers are
+   * waiting for on-roll effects (and choices) to finish first.
+   */
+  readonly rollBankQueue: readonly SymbolInstanceId[];
   readonly winner: PlayerId | null;
   readonly log: readonly LoggedEvent[];
 

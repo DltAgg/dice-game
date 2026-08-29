@@ -95,7 +95,7 @@ transfer. Do not mint Detonate / Rend as keywords.
 |---|---|
 | `[Generate N Toxin]` | A **pool symbol**, not a creature/face token. Expires at end of turn. |
 | Absorb Toxin | Banks a pool pip into your attribute pile. Grammar, not an effect keyword. |
-| `[Prevent]` | Combat step before Shield. Luminar exclusive. Not a token you Mark. |
+| `[Prevent]` | Reaction to an attack declaration. Grants attack-prevent on the attack’s target (before Shield). Luminar exclusive. Not a token you Mark. |
 | `[Empower N]` | Extra damage on an attack. Not a token. |
 | `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. |
 
@@ -111,7 +111,7 @@ Same idea, different nouns.
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` | A card on the field | Send one to its owner’s graveyard |
-| `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal a chosen ally for the **HP actually lost**. |
+| `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal your **most-damaged ally** for the **HP actually lost**. |
 
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
 opponent’s die is Corruption’s exclusive (their die). Mechanical forges
@@ -140,7 +140,7 @@ These are not tokens.
 | `[Empower N]` | The next attack this turn deals +N. Name the creature if it is not yours. |
 | `[Frenzy]` / `[Frenzy N]` | That creature may declare N extra attacks this turn (default 1). Wild exclusive. Does not clear attacks already used. |
 | `[Pierce N]` | Ignore N Shield after Prevent |
-| `[Prevent]` | Prevent the next attack against that creature (before Shield). Luminar exclusive. |
+| `[Prevent]` | Prevent the next attack against the creature under attack (before Shield). Luminar **reaction** exclusive — not a proactive arm. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
 | `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). Remaining cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
@@ -198,7 +198,7 @@ The verb may be shared. The **argument** is exclusive.
 |---|---|---|
 | **Arcane** | `[Insight]`, `[Search]` | `[Mill]`; treating `[Recall]` as exclusive |
 | **Darkness** | `[Mill N]` | `[Insight]`; discard from hand as mill |
-| **Luminar** | `[Prevent]`, prevent-and-reflect, `On prevent damage:` | `[Mark N Shield]` as if it were Prevent; `[Heal]` as Prevent |
+| **Luminar** | `[Prevent]` (attack reaction), prevent-and-reflect, `On prevent damage:` | Using `[Mark N Shield]` / `[Heal]` as if they were Prevent |
 | **Corruption** | `[Forge]` on **their** die; `[Mark N Corruption]` | `[Mark N Toxin]`; opponent-die forge on Mechanical |
 | **Toxin** | `[Mark N Toxin]` and `on attacks` | Corruption face marks; delayed damage with no Toxin token |
 | **Martial** | `[Reposition]`, `[Swap]` | Enemy push; `[Frenzy]` |
@@ -222,7 +222,7 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Next attack +N | `[Empower N]` |
 | Extra attack(s) this turn | `[Frenzy]` / `[Frenzy N]` |
 | Ignore Shield | `[Pierce N]` |
-| Stop damage (Luminar) | `[Prevent]` |
+| Stop damage (Luminar reaction) | `[Prevent]` |
 | Take life from an enemy into an ally | `[Drain N]` |
 | Hold in your pile, don’t spend | `[Requires: Martial + Wild]` or `[Requires: 2 x Martial]` |
 | Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` |

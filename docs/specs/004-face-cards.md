@@ -87,7 +87,7 @@ Named specials:
 | Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
 | Conversion Rune | 2 | On roll: convert; On absorb: generate Corruption | |
 | Resonance Rune | 2 | On roll: conditional generate Arcane; On absorb: requirement wildcard | |
-| Vital Spark | 2 | On roll: heal; On absorb: [Prevent] on choose-ally | Spec `016` pile bank |
+| Vital Spark | 2 | On roll: heal; On absorb: [Mark 1 Shield] on choose-ally | Spec `016` pile bank |
 | Aegis | 2 | On roll: generate Shield; On absorb: redirect on choose-ally | Spec `016` |
 | Revelation | 2 | On roll: generate Luminar; On absorb: heal if damage >½ life | |
 | Instinct | 2 | On roll: ally Empower 1; On absorb: ally Empower 2 | Spec `016` (optional bonus basic retired) |
