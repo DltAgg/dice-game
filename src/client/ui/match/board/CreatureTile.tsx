@@ -32,6 +32,7 @@ import {
   btnClass,
   btnPrimary,
 } from "../styles";
+import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
 import {
   CREATURE_TOOLTIP_GAP_PX,
   CREATURE_TOOLTIP_WIDTH_PX,
@@ -65,6 +66,7 @@ export function CreatureTile({
 
   const def = getCreatureDefinition(creature.definitionId);
   if (def === undefined) return null;
+  const isLegendary = def.legendary === true;
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
   const absorbSymbolId = intent.kind === "absorb" ? intent.symbolId : undefined;
@@ -110,7 +112,10 @@ export function CreatureTile({
               style={fixedTooltipPairStyle(pairPos, "primary")}
               role="tooltip"
             >
-              <p className="text-sm font-medium text-stone-100">{def.name}</p>
+              <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-stone-100">
+                <span>{def.name}</span>
+                {isLegendary && <LegendaryBadge />}
+              </p>
               <p className="mt-1 text-xs text-stone-400">
                 HP {life}/{def.life} · Shield {creature.shields}
                 {creature.attackPreventCount > 0
@@ -120,7 +125,8 @@ export function CreatureTile({
                 Toxin {creature.toxinMarkers}
               </p>
               <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-                {creature.position} · {def.attributes.join(", ")}
+                {creature.position}
+                {isLegendary ? " · Legendary" : ""} · {def.attributes.join(", ")}
               </p>
               <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 {def.passiveRulesText !== "" && (
@@ -183,7 +189,10 @@ export function CreatureTile({
         )}
 
       <button type="button" className="w-full text-left" onClick={() => onCreatureClick(creature)}>
-        <p className="font-medium text-stone-100">{def.name}</p>
+        <p className="flex flex-wrap items-center gap-2 font-medium text-stone-100">
+          <span>{def.name}</span>
+          {isLegendary && <LegendaryBadge />}
+        </p>
         <p className="mt-1 text-xs text-stone-400">
           HP {life}/{def.life} · Shield {creature.shields}
           {creature.attackPreventCount > 0
@@ -192,7 +201,8 @@ export function CreatureTile({
           · Toxin {creature.toxinMarkers}
         </p>
         <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-          {creature.position} · {def.attributes.join(", ")}
+          {creature.position}
+          {isLegendary ? " · Legendary" : ""} · {def.attributes.join(", ")}
         </p>
         {equipment.length > 0 && (
           <p className="mt-1 text-[0.65rem] text-amber-200/80">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { livingCreaturesOf } from "../rules/creatures.js";
+import { legendaryCreatureOf, livingCreaturesOf } from "../rules/creatures.js";
 import { autoplay, NEVER_ATTACK } from "../testing/autoplay.js";
 import { newMatch, P1, P2 } from "../testing/scenario.js";
 
@@ -20,13 +20,14 @@ describe("a full match through the reducer alone", () => {
     expect(turnsPlayed).toBeGreaterThan(1);
   });
 
-  it("ends with the loser having no creatures left and the winner having some", () => {
+  it("ends with the loser's legendary defeated and the winner's still standing", () => {
     const { state } = autoplay(newMatch({ seed: 8 }));
     const winnerId = state.winner;
     if (winnerId === null) throw new Error("expected a winner");
     const loserId = winnerId === P1 ? P2 : P1;
 
-    expect(livingCreaturesOf(state, loserId)).toHaveLength(0);
+    expect(legendaryCreatureOf(state, loserId)?.defeated).toBe(true);
+    expect(legendaryCreatureOf(state, winnerId)?.defeated).toBe(false);
     expect(livingCreaturesOf(state, winnerId).length).toBeGreaterThan(0);
   });
 

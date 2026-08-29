@@ -8,6 +8,7 @@ import {
   type GameState,
   type PlayerId,
 } from "@server";
+import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
 import {
   CausedByLine,
 } from "../tooltips/decisionSource";
@@ -52,8 +53,9 @@ export function ChooseCreatureModal({
                   className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
                   onClick={() => onPick(creature.id)}
                 >
-                  <p className="text-sm font-medium text-stone-100">
-                    {def?.name ?? creature.definitionId}
+                  <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-stone-100">
+                    <span>{def?.name ?? creature.definitionId}</span>
+                    {def?.legendary === true ? <LegendaryBadge /> : null}
                   </p>
                   <p className="text-xs text-stone-500">
                     HP {currentLife(creature)}/{def?.life ?? "?"} · Shield {creature.shields} ·

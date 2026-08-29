@@ -1,6 +1,7 @@
 import { ALL_CARDS, ALL_CREATURES, ALL_FACE_CARDS, BASIC_FACE_CARDS, SPECIAL_FACE_CARDS } from "@server";
 import { CreatureCard } from "./CreatureCard";
 import { FaceCard } from "./FaceCard";
+import { LegendaryBadge } from "./LegendaryBadge";
 import { TacticCard } from "./TacticCard";
 
 /**
@@ -52,13 +53,21 @@ export function CardCatalogue() {
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-400">
           English printing of the Figma Creature card page (Slow game test). Passives print in
-          full; attack costs and damage are what the engine resolves today.
+          full; attack costs and damage are what the engine resolves today. Legendaries are the
+          squad win targets — exactly one per legal loadout.
         </p>
 
         <ul className="mt-8 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6 p-0">
           {ALL_CREATURES.map((creature) => (
-            <li key={creature.id} className="flex justify-center">
+            <li key={creature.id} className="flex flex-col items-center gap-2">
               <CreatureCard creature={creature} width={260} />
+              <p className="text-center text-[0.65rem] uppercase tracking-[0.14em] text-stone-500">
+                {creature.legendary === true ? <LegendaryBadge /> : null}
+                <span className={creature.legendary === true ? "mt-1 block normal-case tracking-normal text-stone-600" : undefined}>
+                  {creature.attributes.join(" · ")}
+                  {creature.legendary === true ? " · Legendary Creature" : " · Creature"}
+                </span>
+              </p>
             </li>
           ))}
         </ul>

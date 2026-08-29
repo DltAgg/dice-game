@@ -58,6 +58,11 @@ export interface CreatureDefinition {
   readonly name: string;
   readonly life: number;
   readonly attributes: readonly Attribute[];
+  /**
+   * Commander-style win target. Omit / false = non-legendary. Every legal
+   * squad has exactly one legendary; defeating it wins the match.
+   */
+  readonly legendary?: boolean;
   /** English passive text as printed under the art. Empty when none. */
   readonly passiveRulesText: string;
   /**

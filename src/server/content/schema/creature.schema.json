@@ -10,6 +10,7 @@
     "name": { "type": "string" },
     "life": { "type": "number" },
     "attributes": { "type": "array", "items": { "type": "string" } },
+    "legendary": { "type": "boolean" },
     "passiveRulesText": { "type": "string" },
     "standingAbilities": { "type": "array" },
     "attacks": { "type": "array" }

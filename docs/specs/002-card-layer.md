@@ -126,11 +126,12 @@ reading: any matching named special (Canker, Blight, Hexbrand, …).
 > at the same time.
 >
 > Damage is **not** reserved for creature attacks (bible §§4, 24, 27; OPEN_DESIGN
-> 2026-08-20). Control attributes (Arcane, Darkness) must convert
-> their engine into enough damage to eliminate creatures — expensive, delayed,
-> or consume-based is in-identity; hoping 1-damage creature attacks close is not.
-> Toxin + Corruption are the **Burn** plan (continuous DoT), not Control’s
-> contaminate-the-die manabase.
+> 2026-08-20). You win by defeating the **enemy legendary**, not by clearing
+> the whole squad. Control attributes (Arcane, Darkness) must convert
+> their engine into enough damage to pressure that legendary — expensive,
+> delayed, or consume-based is in-identity; hoping 1-damage creature attacks
+> close is not. Toxin + Corruption are the **Burn** plan (continuous DoT onto
+> the legendary), not Control’s contaminate-the-die manabase.
 
 | Archetype | Attributes |
 |---|---|
@@ -159,9 +160,13 @@ is used.
 ### Aggro deck
 
 Builtin **Aggro** (`PROTOTYPE_*`) is **Martial / Wild only** — same two-color
-engine paradigm as Control = Arcane / Darkness. Catalogue rows below still
-include historical Toxin / splash print for reference; those Toxin cards are
-**not** on the Aggro builtin (they live on Burn / Combo).
+engine paradigm as Control = Arcane / Darkness. **Wins by** converting dice
+into immediate pressure on the **enemy legendary** (frontline peel,
+`[Reposition]` / Command lane control, Blade Rain reach, burst Strike) while
+Dress Ranks / Wild Carapace keep Ironhoof Warlord alive — not by clearing the
+whole opposing squad. Catalogue rows below still include historical Toxin /
+splash print for reference; those Toxin cards are **not** on the Aggro builtin
+(they live on Burn / Combo).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -194,10 +199,12 @@ include historical Toxin / splash print for reference; those Toxin cards are
 
 Figma print mixed Arcane / Corruption / Darkness. **Builtin Control** is now
 **Arcane / Darkness only** (no Corruption contaminate, no Luminar attack costs).
-Per bible §27 / OPEN_DESIGN 2026-08-20, Control must convert its engine into
-lethal damage — **Umbral Bolt**, **Rift Collapse**, **Umbral Brand**, and
-**Runeflare** / **Sacrifice** are that path. Corruption rows below remain
-catalogue identity for other strategies (burn sibling), not the Control builtin.
+**Wins by** converting a long engine + disruption into lethal damage on the
+**enemy legendary** — **Umbral Bolt**, **Rift Collapse**, **Umbral Brand**,
+**Siphon Sigil**, and **Runeflare** / **Sacrifice** / **Nightwell** — while
+**Warding Charm** and Fade / Seal protect Nightvault Sovereign. Not “clear the
+squad,” and not “no damage.” Corruption rows below remain catalogue identity
+for other strategies (burn sibling), not the Control builtin.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -357,9 +364,10 @@ Playtest gap-fill: splashable 2-cost tools. Look-top (Sift / Second Wind) is
 Arcane’s exclusive; prevent (Sidestep) is Luminar’s. Shield and own-die reroll
 stay shared secondaries. Printed Energy 2 — 1-Energy plays come from discounts
 (§34.5). Fully wired. Builtin **Control** runs Consult / Bury the Name /
-Grave Whisper for scry+mill and splashes Rethrow / Sidestep / Warding Charm;
-**Burn** splashes the survive package. Sift / Second Wind stay Arcane catalogue.
-Not on Aggro / Tempo / Combo Mechanical (Hunting Armour is Tempo Luminar).
+Warding Charm (legendary Shields) and may splash Grave Whisper for mill;
+**Burn** uses Toxic Heart / Mutant Spores for survive (not Martial Raise Guard).
+Sift / Second Wind stay Arcane catalogue. Not on Aggro (Hunting Armour /
+Sidestep are Tempo / Combo Luminar).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -372,11 +380,14 @@ Not on Aggro / Tempo / Combo Mechanical (Hunting Armour is Tempo Luminar).
 
 ### Toxin / Corruption continuous burn (authored)
 
-Builtin **Burn** (`BURN_DECK` / `deck-burn`): Toxin ticks + Corruption DoT.
-Fully wired. Not on Aggro / Control / Tempo / Combo lists. Great Contamination’s
-Active-when is Corruption+Corruption (no Arcane) so Burn does not need a Control
-manabase. Latent Corruption is left as an Arcane-engine leftover (deck-designer
-brief in `design.md`). Hexbrand / Blight / Canker stay off the Burn face deck.
+Builtin **Burn** (`BURN_DECK` / `deck-burn`): Toxin ticks + Corruption DoT
+stacked onto the **enemy legendary** (Slow Burn snowballs the most-damaged
+body; Extermination is the consume closer). Fully wired. Not on Aggro /
+Control / Tempo / Combo lists. Great Contamination’s Active-when is
+Corruption+Corruption (no Arcane) so Burn does not need a Control manabase.
+Latent Corruption is left as an Arcane-engine leftover (deck-designer brief in
+`design.md`). Hexbrand / Blight / Canker stay off the Burn face deck. Martial
+Survive (Raise Guard) is **not** Burn — use Toxic Heart / Mutant Spores.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -421,9 +432,11 @@ gaps are stun and empty print — see
 ### Attribute bridge cards (authored)
 
 Playtest glue for stranded pile tokens when a dual-attribute creature dies.
-Fully wired; **not** in builtin loadouts (deck-designer owns homes). Natural
-forge of the card’s primary attribute. Pattern: spend/generate across a pair,
-dual `playCost`, or standing absorb/deal-damage generate of the partner.
+Fully wired; deck-designer places homes in builtins where they support the
+legendary plan (Aggro Martial↔Wild, Control Arcane↔Darkness, Burn
+Toxin↔Corruption). Natural forge of the card’s primary attribute. Pattern:
+spend/generate across a pair, dual `playCost`, or standing absorb/deal-damage
+generate of the partner.
 
 | Pair | Cards |
 |---|---|

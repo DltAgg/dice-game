@@ -90,31 +90,33 @@ describe("builtin loadouts", () => {
     expect(CONTROL_SQUAD).toEqual([
       "creature-archmage",
       "creature-nightbound-adept",
-      "creature-void-summoner",
+      "creature-sovereign-nightvault",
     ]);
     expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
-    expect(CONTROL_FACE_DECK).toHaveLength(12);
-    expect(new Set(CONTROL_FACE_DECK).size).toBe(12);
+    expect(CONTROL_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(CONTROL_FACE_DECK).toHaveLength(6);
+    expect(new Set(CONTROL_FACE_DECK).size).toBe(6);
   });
 
   it("fields the tempo Mech/Luminar trio and a legal tactics/face pool", () => {
     expect(TEMPO_SQUAD).toEqual([
       "creature-cogwork-driver",
       "creature-prism-herald",
-      "creature-aegis-link",
+      "creature-prismarch-regent",
     ]);
     expect(TEMPO_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(TEMPO_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
-    expect(TEMPO_FACE_DECK).toHaveLength(12);
-    expect(new Set(TEMPO_FACE_DECK).size).toBe(12);
+    expect(TEMPO_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(TEMPO_FACE_DECK).toHaveLength(6);
+    expect(new Set(TEMPO_FACE_DECK).size).toBe(6);
   });
 
   it("fields the combo mechanical trio and a legal tactics/face pool", () => {
     expect(COMBO_MECHANICAL_SQUAD).toEqual([
       "creature-servo-assembly",
       "creature-clockwork-dynamo",
-      "creature-lens-choir",
+      "creature-forgeheart-colossus",
     ]);
     expect(COMBO_MECHANICAL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(COMBO_MECHANICAL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
@@ -126,7 +128,7 @@ describe("builtin loadouts", () => {
     expect(BURN_SQUAD).toEqual([
       "creature-marrow-fiend",
       "creature-cinder-wight",
-      "creature-ichor-hydra",
+      "creature-blightcrown-hydra",
     ]);
     expect(BURN_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
     expect(BURN_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);

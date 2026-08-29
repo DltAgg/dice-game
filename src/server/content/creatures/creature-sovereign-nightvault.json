@@ -1,0 +1,75 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-sovereign-nightvault",
+  "name": "Nightvault Sovereign",
+  "life": 22,
+  "attributes": [
+    "arcane"
+  ],
+  "legendary": true,
+  "passiveRulesText": "On take damage, once per turn: [Draw 1].",
+  "standingAbilities": [
+    {
+      "type": "on-take-damage",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "draw-cards",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-sovereign-nightvault-rune-lash",
+      "name": "Rune Lash",
+      "kind": "basic",
+      "discards": {
+        "arcane": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Draw 1].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "draw-cards",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "attack-sovereign-nightvault-void-edict",
+      "name": "Void Edict",
+      "kind": "special",
+      "requires": {
+        "arcane": 1,
+        "darkness": 1
+      },
+      "discards": {
+        "arcane": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Insight 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "look-top-deck",
+          "amount": 3
+        }
+      ]
+    }
+  ]
+}

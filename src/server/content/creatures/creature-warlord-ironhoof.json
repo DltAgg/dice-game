@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-warlord-ironhoof",
+  "name": "Ironhoof Warlord",
+  "life": 23,
+  "attributes": [
+    "martial"
+  ],
+  "legendary": true,
+  "passiveRulesText": "[Pierce 1].\nOn change position: [Empower 2] this creature.",
+  "standingAbilities": [
+    {
+      "type": "ignore-shield",
+      "amount": 1
+    },
+    {
+      "type": "on-change-position",
+      "creatureRelation": "self",
+      "effects": [
+        {
+          "type": "grant-next-attack-bonus",
+          "amount": 2,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-warlord-ironhoof-cleave",
+      "name": "Cleave",
+      "kind": "basic",
+      "discards": {
+        "martial": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-warlord-ironhoof-iron-mandate",
+      "name": "Iron Mandate",
+      "kind": "special",
+      "requires": {
+        "martial": 1,
+        "wild": 1
+      },
+      "discards": {
+        "martial": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 4]. [Swap] with a frontline ally.",
+      "effect": {
+        "type": "damage",
+        "amount": 4,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "swap-positions",
+          "with": {
+            "kind": "choose-allied-frontline"
+          },
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

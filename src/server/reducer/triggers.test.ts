@@ -24,7 +24,10 @@ import {
   LENS_CHOIR,
   MINOTAUR,
   PROTOTYPE_SQUAD,
+  PRISMARCH_REGENT,
+  SOVEREIGN_NIGHTVAULT,
   VOID_SUMMONER,
+  WARLORD_IRONHOOF,
 } from "../content/creatures.js";
 import {
   CONVERSION_RUNE,
@@ -634,13 +637,13 @@ describe("Void Summoner on-absorb Natural", () => {
       players: [
         {
           id: P1,
-          squad: [VOID_SUMMONER, MINOTAUR, GARUDA],
+          squad: [VOID_SUMMONER, MINOTAUR, SOVEREIGN_NIGHTVAULT],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },
         {
           id: P2,
-          squad: [MINOTAUR, GARUDA, VOID_SUMMONER],
+          squad: [MINOTAUR, GARUDA, WARLORD_IRONHOOF],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },
@@ -661,13 +664,13 @@ describe("Void Summoner on-absorb Natural", () => {
       players: [
         {
           id: P1,
-          squad: [VOID_SUMMONER, MINOTAUR, GARUDA],
+          squad: [VOID_SUMMONER, MINOTAUR, SOVEREIGN_NIGHTVAULT],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },
         {
           id: P2,
-          squad: [MINOTAUR, GARUDA, VOID_SUMMONER],
+          squad: [MINOTAUR, GARUDA, WARLORD_IRONHOOF],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },
@@ -702,13 +705,13 @@ describe("Lens Choir on-absorb Luminar once per turn", () => {
       players: [
         {
           id: P1,
-          squad: [LENS_CHOIR, MINOTAUR, GARUDA],
+          squad: [LENS_CHOIR, MINOTAUR, PRISMARCH_REGENT],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },
         {
           id: P2,
-          squad: [MINOTAUR, GARUDA, LENS_CHOIR],
+          squad: [MINOTAUR, GARUDA, WARLORD_IRONHOOF],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },
@@ -906,7 +909,7 @@ describe("control creature attack riders", () => {
     expect(usableSymbols(after, P1).filter((s) => s.symbol === "darkness")).toHaveLength(0);
   });
 
-  it("Void Summoner Rupture deals 2 and generates Arcane", () => {
+  it("Nightvault Sovereign Rune Lash deals 2 and draws when the deck has cards", () => {
     let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 2);
     const targetId = creatureIdAt(state, P2, 0);
@@ -917,14 +920,13 @@ describe("control creature attack riders", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: asAttackId("attack-void-rupture"),
+        attackId: asAttackId("attack-sovereign-nightvault-rune-lash"),
         targetId,
       }),
     );
 
     expect(after.creatures[targetId]?.damage).toBe(2);
-    expect(after.players[P1]?.attributePool.arcane ?? 0).toBeGreaterThanOrEqual(1);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "arcane")).toHaveLength(0);
+    expect(after.players[P1]?.attributePool.arcane ?? 0).toBe(0);
   });
 });
 

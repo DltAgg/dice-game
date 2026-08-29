@@ -16,7 +16,13 @@ import {
   STAMP,
   TRANSMISSION,
 } from "../content/cards.js";
-import { SERVO_ASSEMBLY, MINOTAUR, GARUDA, LENS_CHOIR } from "../content/creatures.js";
+import {
+  SERVO_ASSEMBLY,
+  MINOTAUR,
+  LENS_CHOIR,
+  FORGEHEART_COLOSSUS,
+  WARLORD_IRONHOOF,
+} from "../content/creatures.js";
 import { FLYWHEEL, GEAR, PISTON, ENGINE_TEST_FACE_DECK, faceIdForSymbol } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { CardId, DieId, FaceCardId } from "../model/ids.js";
@@ -110,13 +116,13 @@ describe("Servo Assembly on-absorb", () => {
       players: [
         {
           id: P1,
-          squad: [SERVO_ASSEMBLY, MINOTAUR, GARUDA],
+          squad: [SERVO_ASSEMBLY, MINOTAUR, FORGEHEART_COLOSSUS],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },
         {
           id: P2,
-          squad: [MINOTAUR, GARUDA, LENS_CHOIR],
+          squad: [MINOTAUR, LENS_CHOIR, WARLORD_IRONHOOF],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
         },

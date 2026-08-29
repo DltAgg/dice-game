@@ -13,8 +13,13 @@ import {
   BURN_SQUAD,
   COMBO_MECHANICAL_SQUAD,
   CONTROL_SQUAD,
+  GARUDA,
+  MINOTAUR,
   PROTOTYPE_SQUAD,
+  SOVEREIGN_NIGHTVAULT,
   TEMPO_SQUAD,
+  VARCOLAC,
+  WARLORD_IRONHOOF,
 } from "../content/creatures.js";
 import {
   BURN_FACE_DECK,
@@ -31,7 +36,8 @@ import {
   GORE,
   GREAT_SPARK,
   PESTILENT_PLAGUE,
-  PACK_SHARE,
+  COMMAND,
+  BLADE_RAIN,
   PROTOTYPE_FACE_DECK,
   AGGRO_STARTING_DICE,
   SEEP,
@@ -42,7 +48,6 @@ import {
   WASTING_BRAND,
   TEMPO_FACE_DECK,
   TEMPO_STARTING_DICE,
-  WARHORN,
   naturalFaceId,
 } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
@@ -226,6 +231,34 @@ describe("validateLoadout", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/squad/);
   });
+
+  it("refuses a squad with no legendary", () => {
+    const result = validateLoadout(
+      {
+        squad: [MINOTAUR, VARCOLAC, GARUDA],
+        deck: PROTOTYPE_DECK,
+        faceDeck: PROTOTYPE_FACE_DECK,
+        startingDice: AGGRO_STARTING_DICE,
+      },
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/legendary/);
+  });
+
+  it("refuses a squad with two legendaries", () => {
+    const result = validateLoadout(
+      {
+        squad: [WARLORD_IRONHOOF, SOVEREIGN_NIGHTVAULT, MINOTAUR],
+        deck: PROTOTYPE_DECK,
+        faceDeck: PROTOTYPE_FACE_DECK,
+        startingDice: AGGRO_STARTING_DICE,
+      },
+      DEFAULT_RULES_CONFIG,
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toMatch(/legendary/);
+  });
 });
 
 describe("validateStartingDice", () => {
@@ -270,7 +303,7 @@ describe("validateStartingDice", () => {
   it("allows two on-roll faces on one die under the default per-die cap", () => {
     const result = validateStartingDice(
       [
-        [CRUSH, WARHORN, wild, arcane, luminar, SHIELD_FACE_ID],
+        [CRUSH, COMMAND, wild, arcane, luminar, SHIELD_FACE_ID],
         basics,
       ],
       PROTOTYPE_FACE_DECK,
@@ -282,7 +315,7 @@ describe("validateStartingDice", () => {
   it("refuses three on-roll faces on one die", () => {
     const result = validateStartingDice(
       [
-        [CRUSH, WARHORN, GORE, martial, wild, SHIELD_FACE_ID],
+        [CRUSH, COMMAND, GORE, martial, wild, SHIELD_FACE_ID],
         basics,
       ],
       PROTOTYPE_FACE_DECK,
@@ -299,7 +332,7 @@ describe("validateStartingDice", () => {
   it("refuses three synthetics when the player cap is 2", () => {
     const result = validateStartingDice(
       [
-        [CRUSH, WARHORN, wild, arcane, luminar, SHIELD_FACE_ID],
+        [CRUSH, COMMAND, wild, arcane, luminar, SHIELD_FACE_ID],
         [GORE, martial, wild, arcane, luminar, SHIELD_FACE_ID],
       ],
       PROTOTYPE_FACE_DECK,
@@ -352,10 +385,10 @@ describe("leftoverFacePool", () => {
     const pool = leftoverFacePool(PROTOTYPE_FACE_DECK, AGGRO_STARTING_DICE);
     expect(pool).not.toContain(CRUSH);
     expect(pool).not.toContain(BLOODSCENT);
-    expect(pool).toContain(WARHORN);
+    expect(pool).toContain(COMMAND);
     expect(pool).toContain(CLEAVING_STRIKE);
     expect(pool).toContain(GORE);
-    expect(pool).toContain(PACK_SHARE);
+    expect(pool).toContain(BLADE_RAIN);
   });
 
   it("does not consume opening basics even when they are also listed in the face deck", () => {

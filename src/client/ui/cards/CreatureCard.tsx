@@ -8,6 +8,7 @@ import {
   type CreatureDefinition,
   type SymbolRequirement,
 } from "@server";
+import { LegendaryBadge } from "./LegendaryBadge";
 import creatureLayout from "./assets/creature-layout.png";
 import martialIcon from "./assets/attributes/martial.png";
 import wildIcon from "./assets/attributes/wild.png";
@@ -73,12 +74,20 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
   const art = CREATURE_ART[creature.id];
   const basic = basicAttackOf(creature);
   const special = specialAttackOf(creature);
+  const isLegendary = creature.legendary === true;
+  const typeLine = [
+    isLegendary ? "Legendary" : null,
+    attribute !== undefined ? attribute : null,
+    "Creature",
+  ]
+    .filter((part): part is string => part !== null)
+    .join(" · ");
 
   return (
     <article
       className="relative select-none text-black"
       style={{ width, aspectRatio: "1050 / 1498", containerType: "inline-size" }}
-      aria-label={`${creature.name}, ${String(creature.life)} HP`}
+      aria-label={`${creature.name}, ${typeLine}, ${String(creature.life)} HP`}
     >
       {art !== undefined ? (
         <div className="absolute inset-x-[6.6%] top-[12.7%] h-[56%] overflow-hidden">
@@ -116,6 +125,12 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
           ) : null}
         </div>
       </header>
+
+      {isLegendary ? (
+        <div className="pointer-events-none absolute inset-x-[6.6%] top-[12.2%] z-[1] flex justify-center">
+          <LegendaryBadge className="border-black/25 bg-black/55 text-[length:clamp(0.45rem,2.4cqw,0.65rem)] text-[var(--accent)] shadow-sm" />
+        </div>
+      ) : null}
 
       <div className="absolute inset-x-[6.6%] bottom-[7.4%] flex h-[24.1%] flex-col justify-start overflow-hidden px-[2.4%] pt-[2.2%]">
         {creature.passiveRulesText !== "" ? (

@@ -1,0 +1,88 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-prismarch-regent",
+  "name": "Prismarch Regent",
+  "life": 22,
+  "attributes": [
+    "luminar"
+  ],
+  "legendary": true,
+  "passiveRulesText": "On absorb Luminar, once per turn: [Prevent] this creature.",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "luminar"
+      ],
+      "absorberRelation": "ally",
+      "effects": [
+        {
+          "type": "grant-attack-prevent",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ],
+      "oncePerTurn": true
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-prismarch-regent-radiant-cut",
+      "name": "Radiant Cut",
+      "kind": "basic",
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Heal 1] on the most damaged ally.",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "heal",
+          "amount": 1,
+          "target": {
+            "kind": "most-damaged-ally"
+          }
+        }
+      ]
+    },
+    {
+      "id": "attack-prismarch-regent-prism-volley",
+      "name": "Prism Volley",
+      "kind": "special",
+      "requires": {
+        "luminar": 1,
+        "mechanical": 1
+      },
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3]. [Prevent] on an allied creature.",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "grant-attack-prevent",
+          "amount": 1,
+          "target": {
+            "kind": "choose-ally"
+          }
+        }
+      ]
+    }
+  ]
+}

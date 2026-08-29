@@ -234,7 +234,9 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       ? `Your reaction priority (${who}): Pass, or play a Reaction / activate a ready ritual-reaction.`
       : `${who} holds reaction priority. Waiting.`;
   }
-  if (state.status === "finished") return "Start a new match to play again.";
+  if (state.status === "finished") {
+    return "Match over — the opposing legendary was defeated. Start a new match to play again.";
+  }
 
   switch (intent.kind) {
     case "absorb": {

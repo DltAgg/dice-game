@@ -28,7 +28,7 @@ import {
   replayableGraveyardTactics,
   searchableInGraveyard,
 } from "../rules/cards.js";
-import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
+import { legendaryCreatureOf, livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import {
   countInstalledCopies,
   hasLegalForgeFacesChoice,
@@ -1992,18 +1992,16 @@ function releaseDiceHeldBy(draft: Draft, creatureId: CreatureId): void {
   }
 }
 
-/** Bible §4: eliminating every opposing creature wins the match. */
+/**
+ * Playtest DECIDED: defeating the opponent's legendary creature wins immediately.
+ * Non-legendary defeats do not end the match.
+ */
 export function checkVictory(draft: Draft): void {
   if (draft.status === "finished") return;
 
   for (const playerId of draft.playerOrder) {
-    const player = draft.players[playerId];
-    if (player === undefined || player.creatureIds.length === 0) continue;
-
-    const allDefeated = player.creatureIds.every(
-      (id) => draft.creatures[id]?.defeated === true,
-    );
-    if (!allDefeated) continue;
+    const legendary = legendaryCreatureOf(draft, playerId);
+    if (legendary === undefined || !legendary.defeated) continue;
 
     const winnerId = opponentOf(draft, playerId);
     draft.status = "finished";

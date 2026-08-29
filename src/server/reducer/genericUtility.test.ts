@@ -5,6 +5,7 @@ import {
   BURN_DECK,
   CONTROL_DECK,
   ECLIPSE,
+  MUTANT_SPORES,
   PROTOTYPE_DECK,
   RAISE_GUARD,
   RETHROW,
@@ -12,6 +13,7 @@ import {
   SIDESTEP,
   SIFT,
   TEMPO_DECK,
+  TOXIC_HEART,
   WARDING_CHARM,
 } from "../content/cards.js";
 import { faceIdForSymbol } from "../content/faces.js";
@@ -82,23 +84,32 @@ function seedDeck(state: GameState, fromHandIndexes: readonly number[]): GameSta
 }
 
 describe("generic utility toolkit", () => {
-  it("is not in Aggro, Control, Tempo, or Combo Mechanical builtins", () => {
+  it("keeps Martial Raise Guard and Arcane dig off Aggro / Tempo / Combo", () => {
     const ids = new Set([
       ...PROTOTYPE_DECK,
-      ...CONTROL_DECK,
       ...TEMPO_DECK,
       ...COMBO_MECHANICAL_DECK,
     ]);
-    for (const id of [RAISE_GUARD, SIDESTEP, RETHROW, SIFT, SECOND_WIND, WARDING_CHARM]) {
-      expect(ids.has(id), `${id} should not be in Aggro/Control/Tempo/Combo`).toBe(false);
+    for (const id of [RAISE_GUARD, RETHROW, SIFT, SECOND_WIND, WARDING_CHARM]) {
+      expect(ids.has(id), `${id} should not be in Aggro/Tempo/Combo`).toBe(false);
     }
   });
 
-  it("splashes Raise Guard into builtin Burn for combat survival", () => {
+  it("homes Warding Charm on Control and Sidestep on Tempo / Combo for legendary defense", () => {
+    expect(new Set(CONTROL_DECK).has(WARDING_CHARM)).toBe(true);
+    expect(new Set(CONTROL_DECK).has(SIDESTEP)).toBe(false);
+    expect(new Set(CONTROL_DECK).has(RAISE_GUARD)).toBe(false);
+    expect(new Set(TEMPO_DECK).has(SIDESTEP)).toBe(true);
+    expect(new Set(COMBO_MECHANICAL_DECK).has(SIDESTEP)).toBe(true);
+  });
+
+  it("uses Toxic Heart / Mutant Spores on Burn for survive (not Martial Raise Guard)", () => {
     const ids = new Set(BURN_DECK);
-    expect(ids.has(RAISE_GUARD)).toBe(true);
+    expect(ids.has(RAISE_GUARD)).toBe(false);
     expect(ids.has(SIDESTEP)).toBe(false);
     expect(ids.has(WARDING_CHARM)).toBe(false);
+    expect(ids.has(TOXIC_HEART)).toBe(true);
+    expect(ids.has(MUTANT_SPORES)).toBe(true);
   });
 });
 

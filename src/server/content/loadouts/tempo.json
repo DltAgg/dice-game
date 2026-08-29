@@ -5,7 +5,7 @@
   "squad": [
     "creature-cogwork-driver",
     "creature-prism-herald",
-    "creature-aegis-link"
+    "creature-prismarch-regent"
   ],
   "deckCounts": [
     {
@@ -69,7 +69,15 @@
       "copies": 3
     },
     {
-      "cardId": "card-untamed",
+      "cardId": "card-hunting-armour",
+      "copies": 2
+    },
+    {
+      "cardId": "card-sidestep",
+      "copies": 2
+    },
+    {
+      "cardId": "card-luminar-judgement",
       "copies": 2
     }
   ],
@@ -79,13 +87,7 @@
     "face-synthetic-flywheel",
     "face-synthetic-vital-spark",
     "face-synthetic-aegis",
-    "face-synthetic-revelation",
-    "face-synthetic-instinct",
-    "face-synthetic-pack",
-    "face-synthetic-bloodscent",
-    "face-synthetic-needle",
-    "face-synthetic-seep",
-    "face-synthetic-venom"
+    "face-synthetic-revelation"
   ],
   "startingDice": [
     [

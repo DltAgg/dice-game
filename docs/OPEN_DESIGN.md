@@ -82,7 +82,26 @@ concrete card needs the amount-as-value vocabulary.
 **Status:** `DECIDED`
 
 Two frontline slots plus a back row, from the diagram in bible §6. A squad of
-three deploys as two frontline and one back.
+three deploys as two frontline and one back. The **legendary** always opens in
+the back (definition flag); non-legendaries fill frontline first — see
+**Legendary commander victory** below.
+
+### Legendary commander victory
+
+**Status:** `DECIDED` · 2026-08-29 · playtest · `CreatureDefinition.legendary`
+
+Bible §4’s “eliminate opposing creatures” is replaced for constructed play:
+
+- Every creature definition may set `legendary: true` (omit / false otherwise).
+- Every legal loadout squad has **exactly one** legendary among
+  `creaturesPerPlayer` (3) creatures.
+- At match start the legendary is placed **back**; the other two fill
+  **frontline** first. Mid-match `[Swap]` / reposition is unrestricted.
+- When a player’s legendary is defeated (`defeated: true`), the **opponent
+  wins** immediately. Defeating the other two alone does not win.
+
+Implemented in `validateSquad`, `buildCreatures`, `checkVictory`, and
+`docs/RULEBOOK.md` §1–§3.
 
 ---
 
@@ -583,8 +602,8 @@ Open with 5 cards; draw 2 at the start of each of your own turns.
 **Status:** `DECIDED`
 
 Nothing happens. A player with an empty deck simply stops drawing. The match is
-still decided by eliminating creatures, so there is no deck-out loss and no
-reshuffle.
+still decided by defeating the opposing legendary, so there is no deck-out loss
+and no reshuffle.
 
 Worth watching: matches currently run around eighteen turns, so a twelve-card
 deck drawn at two a turn empties well before a winner emerges. That makes the
@@ -880,7 +899,7 @@ Not yet load-bearing; recorded so they are not forgotten.
 | Whether forging a card costs its Energy cost, or only playing it does | §19, §20 | Forging |
 | The keyword for the forging action | — | Card layer |
 | Overload cards allowed per face | §37 | Forging |
-| Secondary victory conditions and ties | §4, §37 | Content |
+| Secondary victory conditions and ties | §4, §37 | Content — primary win is legendary defeat (`DECIDED` 2026-08-29); secondary/ties still open |
 | Stun application and removal timing | §22 | Reopening stun |
 
 Reaction timing windows (bible §37) are **DECIDED** above

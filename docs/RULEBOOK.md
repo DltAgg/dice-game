@@ -15,9 +15,14 @@ src/server/model/config.ts (DEFAULT_RULES_CONFIG).
 
 ## 1. Object of the game
 
-Two players. You win by **eliminating the opponent’s three creatures**
-(Life reduced to 0). There is no deck-out loss, no reshuffle, and no
-secondary victory condition.
+Two players. You win by **defeating the opponent’s legendary creature**
+(Life reduced to 0). Defeating the other two creatures alone does **not**
+win. There is no deck-out loss, no reshuffle, and no secondary victory
+condition.
+
+Every legal squad has **exactly one** legendary. It opens in the **back**
+row; the other two open on the **frontline**. After the match starts, the
+legendary may `[Swap]` / reposition like any other creature.
 
 Creature attacks are **one** damage path. Tactics, rituals, faces, equipment,
 and statuses may also deal the damage that ends the match.
@@ -30,7 +35,7 @@ Each player’s loadout is:
 
 | Piece | Rule |
 |---|---|
-| Squad | Exactly **3** creatures |
+| Squad | Exactly **3** creatures, including **exactly 1** legendary |
 | Tactics deck | **40–50** cards, **≤3** copies of the same card id |
 | Face deck | **≤12** face cards, **≤3** sharing one attribute |
 | Opening dice | Two d6 layouts (`startingDice`) |
@@ -69,14 +74,17 @@ There is **no mulligan**. The opening hand of **5** is the hand you play.
 
 Each player has:
 
-- **Frontline** (2 slots) and **Back** (the third creature). Frontline
-  protects the back: a non-Range attack may hit a back-row creature only if
-  that player has **no living frontline**. Range ignores this.
+- **Frontline** (2 slots) and **Back** (the third creature at setup is the
+  legendary). Frontline protects the back: a non-Range attack may hit a
+  back-row creature only if that player has **no living frontline**. Range
+  ignores this.
 - **Engine area** for rituals.
 - **Two dice**, each with six faces that reference face cards.
 - Hand, tactics deck (top-first), graveyard, equipment, overloads.
 
-Squad order (`creatureIds`) is left-to-right on the battlefield.
+Squad order (`creatureIds`) is left-to-right on the battlefield. Opening
+rows ignore squad index for the legendary: it is always placed **back**;
+non-legendaries fill frontline first.
 
 ---
 

@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY, TEMPER } from "../content/cards.js";
 import {
   ARCANE_ECHO_FACE,
+  BLADE_RAIN,
   BLIGHT,
   BLOODSCENT,
   CANKER,
   CLEAVING_STRIKE,
   COMBO_MECHANICAL_FACE_DECK,
   BURN_FACE_DECK,
+  COMMAND,
   CONTROL_FACE_DECK,
   ENGINE_TEST_FACE_DECK,
   GEAR,
@@ -22,7 +24,6 @@ import {
   SPORES,
   NEEDLE,
   NIGHTWELL,
-  PACK_SHARE,
   PROTOTYPE_FACE_DECK,
   REKINDLE,
   RESONANCE_RUNE,
@@ -34,7 +35,6 @@ import {
   STAIN,
   TEMPO_FACE_DECK,
   VENOM,
-  WARHORN,
   naturalFaceId,
 } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
@@ -66,7 +66,7 @@ describe("face deck", () => {
     expect(PROTOTYPE_FACE_DECK).toHaveLength(6);
     expect(new Set(PROTOTYPE_FACE_DECK).size).toBe(PROTOTYPE_FACE_DECK.length);
     expect(PROTOTYPE_FACE_DECK).toEqual(
-      expect.arrayContaining([CRUSH, WARHORN, CLEAVING_STRIKE, BLOODSCENT, GORE, PACK_SHARE]),
+      expect.arrayContaining([CRUSH, COMMAND, CLEAVING_STRIKE, BLOODSCENT, GORE, BLADE_RAIN]),
     );
     expect(PROTOTYPE_FACE_DECK).not.toContain(NEEDLE);
     expect(PROTOTYPE_FACE_DECK).not.toContain(SEEP);
@@ -79,7 +79,9 @@ describe("face deck", () => {
 
   it("keeps the builtin control face deck legal under attribute caps", () => {
     expect(validateFaceDeck(CONTROL_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    expect(CONTROL_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    // Two-color Arcane/Darkness lists max out at 6 under ≤3/attr (no off-pie padding).
+    expect(CONTROL_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(CONTROL_FACE_DECK).toHaveLength(6);
     expect(new Set(CONTROL_FACE_DECK).size).toBe(CONTROL_FACE_DECK.length);
     expect(CONTROL_FACE_DECK).toEqual(
       expect.arrayContaining([NIGHTWELL, RUNEFLARE, RESONANCE_RUNE, SHADOW_ECHO]),
@@ -94,7 +96,9 @@ describe("face deck", () => {
 
   it("keeps the builtin tempo face deck legal under attribute caps", () => {
     expect(validateFaceDeck(TEMPO_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    expect(TEMPO_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    // Mech/Luminar only — ≤3/attr ⇒ 6 faces, not the 12-card ceiling.
+    expect(TEMPO_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
+    expect(TEMPO_FACE_DECK).toHaveLength(6);
     expect(new Set(TEMPO_FACE_DECK).size).toBe(TEMPO_FACE_DECK.length);
   });
 
@@ -105,7 +109,17 @@ describe("face deck", () => {
   });
 
   it("refuses a face deck over the twelve-card cap", () => {
-    const oversized = [...CONTROL_FACE_DECK, GEAR];
+    const oversized = [
+      ...CONTROL_FACE_DECK,
+      GEAR,
+      NEEDLE,
+      SEEP,
+      VENOM,
+      BLOODSCENT,
+      GORE,
+      BLADE_RAIN,
+    ];
+    expect(oversized.length).toBeGreaterThan(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
     const result = validateFaceDeck(oversized, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/max 12/);
@@ -147,7 +161,7 @@ describe("face deck", () => {
       P1,
       10,
     );
-    expect(state.players[P1]?.facePool).toContain(WARHORN);
+    expect(state.players[P1]?.facePool).toContain(COMMAND);
     expect(state.players[P1]?.facePool).not.toContain(CRUSH);
     expect(state.players[P1]?.facePool).not.toContain(BLOODSCENT);
     const dieId = state.players[P1]?.dieIds[0];
@@ -161,7 +175,7 @@ describe("face deck", () => {
     if (!forged.ok) return;
     // Temper's forge region is Natural Martial (play effect installs specials).
     expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(naturalFaceId("martial"));
-    expect(forged.state.players[P1]?.facePool).toContain(WARHORN);
+    expect(forged.state.players[P1]?.facePool).toContain(COMMAND);
     expect(eventTypes(forged.state)).toContain("card-drawn");
   });
 

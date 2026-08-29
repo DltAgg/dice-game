@@ -5,7 +5,7 @@
   "squad": [
     "creature-minotaur",
     "creature-varcolac",
-    "creature-garuda"
+    "creature-warlord-ironhoof"
   ],
   "deckCounts": [
     {
@@ -79,15 +79,31 @@
     {
       "cardId": "card-pack-law",
       "copies": 2
+    },
+    {
+      "cardId": "card-bloodline-pact",
+      "copies": 2
+    },
+    {
+      "cardId": "card-pack-drill",
+      "copies": 2
+    },
+    {
+      "cardId": "card-wild-carapace",
+      "copies": 2
+    },
+    {
+      "cardId": "card-rending-mark",
+      "copies": 1
     }
   ],
   "faceDeck": [
     "face-synthetic-crush",
-    "face-synthetic-warhorn",
+    "face-synthetic-command",
     "face-synthetic-cleaving-strike",
     "face-synthetic-bloodscent",
     "face-synthetic-gore",
-    "face-synthetic-pack-share"
+    "face-synthetic-blade-rain"
   ],
   "startingDice": [
     [

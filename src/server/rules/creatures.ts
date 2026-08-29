@@ -51,6 +51,16 @@ export const creaturesOf = (state: GameState, playerId: PlayerId): readonly Crea
 export const livingCreaturesOf = (state: GameState, playerId: PlayerId): readonly CreatureState[] =>
   creaturesOf(state, playerId).filter((creature) => !creature.defeated);
 
+/** True when the creature's definition is marked legendary. */
+export const isLegendaryCreature = (creature: CreatureState): boolean =>
+  creatureDefinitionOf(creature)?.legendary === true;
+
+/** The seat's legendary creature instance, if any (legal loadouts have exactly one). */
+export const legendaryCreatureOf = (
+  state: GameState,
+  playerId: PlayerId,
+): CreatureState | undefined => creaturesOf(state, playerId).find(isLegendaryCreature);
+
 export const findCreature = (state: GameState, id: CreatureId): CreatureState | undefined =>
   state.creatures[id];
 

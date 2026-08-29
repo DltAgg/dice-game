@@ -11,8 +11,8 @@ import {
 import {
   ARCHMAGE,
   CONTROL_SQUAD,
-  MINOTAUR,
   NIGHTBOUND_ADEPT,
+  SOVEREIGN_NIGHTVAULT,
   VOID_SUMMONER,
 } from "../content/creatures.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
@@ -248,13 +248,13 @@ describe("Umbral Brand", () => {
             players: [
               {
                 id: P1,
-                squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+                squad: [ARCHMAGE, VOID_SUMMONER, SOVEREIGN_NIGHTVAULT],
                 deck: [],
                 faceDeck: ENGINE_TEST_FACE_DECK,
               },
               {
                 id: P2,
-                squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+                squad: [ARCHMAGE, VOID_SUMMONER, SOVEREIGN_NIGHTVAULT],
                 deck: [],
                 faceDeck: ENGINE_TEST_FACE_DECK,
               },

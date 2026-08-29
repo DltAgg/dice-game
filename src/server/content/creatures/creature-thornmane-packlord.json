@@ -1,0 +1,79 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-thornmane-packlord",
+  "name": "Thornmane Packlord",
+  "life": 21,
+  "attributes": [
+    "wild"
+  ],
+  "legendary": true,
+  "passiveRulesText": "On absorb Wild, once per turn: [Frenzy] this creature.",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "wild"
+      ],
+      "absorberRelation": "ally",
+      "effects": [
+        {
+          "type": "grant-extra-attack",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ],
+      "oncePerTurn": true
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-thornmane-packlord-maul",
+      "name": "Maul",
+      "kind": "basic",
+      "discards": {
+        "wild": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-thornmane-packlord-pack-surge",
+      "name": "Pack Surge",
+      "kind": "special",
+      "requires": {
+        "wild": 1,
+        "martial": 1
+      },
+      "discards": {
+        "wild": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3]. [Frenzy] an allied creature.",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "grant-extra-attack",
+          "amount": 1,
+          "target": {
+            "kind": "choose-ally"
+          }
+        }
+      ]
+    }
+  ]
+}

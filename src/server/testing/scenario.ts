@@ -201,7 +201,7 @@ export const withEnergy = (state: GameState, playerId: PlayerId, value: number):
     darkness: value,
   });
 
-/** Creatures in deployment order: 0 and 1 are frontline, 2 is in the back. */
+/** Creatures in squad-array order (left-to-right). Legendary opens in back. */
 export function creatureAt(state: GameState, playerId: PlayerId, index: number): CreatureState {
   const player = state.players[playerId];
   const id = player?.creatureIds[index];

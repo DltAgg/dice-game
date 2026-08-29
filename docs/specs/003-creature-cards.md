@@ -31,6 +31,9 @@ Toxin / Corruption bodies support builtin Burn (`BURN_SQUAD`).
 | Name | English translation of the Portuguese layout title |
 | HP | Max life |
 | Attribute | Primary attribute icon (header) |
+| Legendary | Optional `legendary: true`. Exactly one per legal squad; defeating
+  it wins the match. Opens in the back row. Type-line / badge — not an
+  effect verb. |
 | Passive | Standing text + `standingAbilities` (`010` / `011`). Attribute absorb
   triggers use `absorberRelation: "ally"` so they fire when the **owner banks**
   into their attribute pile (spec `016`; `self` never matches a player bank). |
@@ -39,6 +42,38 @@ Toxin / Corruption bodies support builtin Burn (`BURN_SQUAD`).
   `[Spend: …]` (burned from the owner’s **attribute pile**). An attack may
   print either or both. |
 | Special Attack | Same |
+
+## Legendaries
+
+Tough signature commanders (`legendary: true`). Exactly **one** per legal
+squad; defeating the opposing legendary wins. Opens in the **back** row.
+Type-line / badge — not an effect verb. Life sits above normal beaters
+(~20–24). Attribute exclusives apply: Martial `[Swap]` / position payoffs,
+Wild `[Frenzy]`, Arcane `[Insight]`, Darkness `[Mill]`, Luminar `[Prevent]`,
+Mechanical `[Stamp]` / `[Reforge]`, Toxin `[Mark N Toxin]`, Corruption
+opponent-die `[Forge]`.
+
+### Builtin win targets
+
+| Creature | Id | Attr | HP | Builtin | Identity |
+|---|---|---|---|---|---|
+| Ironhoof Warlord | `creature-warlord-ironhoof` | Martial | 23 | Aggro | Pierce + position → Empower; Swap special |
+| Nightvault Sovereign | `creature-sovereign-nightvault` | Arcane | 22 | Control | Take damage → Draw; special Insight dig |
+| Prismarch Regent | `creature-prismarch-regent` | Luminar | 22 | Tempo | Absorb → Prevent self; special Prevent ally |
+| Forgeheart Colossus | `creature-forgeheart-colossus` | Mechanical | 22 | Combo Mechanical | Basic → Generate Mech; special Stamp + forge Discount |
+| Blightcrown Hydra | `creature-blightcrown-hydra` | Toxin | 22 | Burn | Absorb → Mark Toxin on attacks; Strip→Strike closer |
+
+### Constructed alternatives (catalogue only — not on builtins)
+
+| Creature | Id | Attr | HP | Home | Identity |
+|---|---|---|---|---|---|
+| Thornmane Packlord | `creature-thornmane-packlord` | Wild | 21 | Aggro alt | Absorb → Frenzy self; special Frenzy ally |
+| Umbra Gravewarden | `creature-umbra-gravewarden` | Darkness | 21 | Control alt | Absorb → opponent Mill; special Mill 3 |
+| Ashen Plagueking | `creature-ashen-plagueking` | Corruption | 21 | Burn alt | Opponent turn-start ping; special opponent-die Forge |
+| Aethercore Sovereign | `creature-aethercore-sovereign` | Mechanical | 21 | Combo alt | Absorb → Generate Mech; special Reforge |
+
+Deck-designer owns which (if any) constructed alternatives replace builtin
+legendaries in loadout lists.
 
 ## Catalogue (Slow game test)
 
@@ -68,15 +103,16 @@ but is **not** on `CONTROL_SQUAD`.
 |---|---|---|---|---|---|
 | Nightbound Adept | Darkness | 14 | On absorb Darkness, once per turn: [Drain 1] | Umbral Touch (Spend D) 2 dmg + generate Darkness | Eclipse Pulse (Requires A+D; Spend D) 2 dmg + opponent loses 1 Energy |
 
-On builtin Control (`CONTROL_SQUAD`: Archmage / Nightbound Adept / Void
-Summoner). Attacks stay in the 2-damage + resource-rider band.
+On builtin Control (`CONTROL_SQUAD`: Archmage / Nightbound Adept /
+Nightvault Sovereign). Attacks stay in the 2-damage + resource-rider band.
 
 ## Catalogue (Mechanical / Luminar — Tempo & Combo)
 
 Authored for builtin Tempo (`TEMPO_SQUAD`: Cogwork Driver / Prism Herald /
-Aegis Link) and Combo Mechanical (`COMBO_MECHANICAL_SQUAD`: Servo Assembly /
-Clockwork Dynamo / Lens Choir). Not on Aggro / Control squads. HP stays in the
-playtest band (~11–17). All printed clauses wired with existing `010` / `012`
+Prismarch Regent) and Combo Mechanical (`COMBO_MECHANICAL_SQUAD`: Servo
+Assembly / Clockwork Dynamo / Forgeheart Colossus). Not on Aggro / Control
+squads. Non-legendary HP stays in the playtest band (~11–17); legendaries are
+tougher win targets. All printed clauses wired with existing `010` / `012`
 vocabulary.
 
 | Creature | Attr | HP | Passive | Basic | Special |
@@ -91,9 +127,10 @@ vocabulary.
 ## Catalogue (Toxin / Corruption — Burn)
 
 Authored for builtin Burn (`BURN_SQUAD`: Marrow Fiend / Cinder Wight /
-Ichor Hydra). Not on Aggro / Control / Tempo / Combo squads. HP stays in the
-playtest band (~11–17). Attacks are modest (1–2 damage); lethality is the DoT
-engine. All printed clauses wired with existing `010` / `012` vocabulary.
+Blightcrown Hydra). Not on Aggro / Control / Tempo / Combo squads. Non-legendary
+HP stays in the playtest band (~11–17). Attacks are modest (1–2 damage);
+lethality is the DoT engine. All printed clauses wired with existing `010` /
+`012` vocabulary.
 
 | Creature | Attr | HP | Passive | Basic | Special |
 |---|---|---|---|---|---|
@@ -127,14 +164,19 @@ Energy+Arcane (`on-attack`), Elder Touch strip / Contamination generate Corrupti
 Void Rupture generate Arcane / Rift Energy+draw, Nightbound Umbral Touch generate
 Darkness / Eclipse Pulse opponent Energy loss — all wired (`010` / `012`).
 Control print is the 2-damage + resource-rider band (was 1; playtest bump).
-Builtin Control squad is Archmage + Nightbound Adept + Void Summoner.
+Builtin Control squad is Archmage + Nightbound Adept + Nightvault Sovereign
+(legendary). Aggro is Minotaur + Varcolac + Ironhoof Warlord (legendary).
 
 Prism Herald / Lens Choir / Aegis Link and Cogwork Driver / Servo Assembly /
 Clockwork Dynamo convert Luminar and Mechanical engine value into Tempo pressure
-or Combo loops without Martial beatstick ceilings.
+or Combo loops without Martial beatstick ceilings. Builtin Tempo uses Prismarch
+Regent as legendary; Combo Mechanical uses Forgeheart Colossus.
 
 Marrow Fiend / Cinder Wight / Ichor Hydra convert Toxin and Corruption engine
-value into continuous burn without Martial beatstick ceilings.
+value into continuous burn without Martial beatstick ceilings. Builtin Burn
+uses Blightcrown Hydra as legendary. Catalogue also has constructed-only
+legendaries (Thornmane Packlord, Umbra Gravewarden, Ashen Plagueking,
+Aethercore Sovereign) — not on any builtin squad.
 
 The vertical-slice engine-demo squad (Warden / Lumin Adept / Rune Binder) has
 been removed; hotseat defaults remain Aggro, with Control / Tempo / Combo

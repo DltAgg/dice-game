@@ -5,7 +5,7 @@
   "squad": [
     "creature-archmage",
     "creature-nightbound-adept",
-    "creature-void-summoner"
+    "creature-sovereign-nightvault"
   ],
   "deckCounts": [
     {
@@ -34,7 +34,7 @@
     },
     {
       "cardId": "card-eternal-darkness",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-fade",
@@ -46,7 +46,7 @@
     },
     {
       "cardId": "card-seal-the-rite",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-runic-nullification",
@@ -71,6 +71,26 @@
     {
       "cardId": "card-bury-the-name",
       "copies": 2
+    },
+    {
+      "cardId": "card-umbral-brand",
+      "copies": 2
+    },
+    {
+      "cardId": "card-warding-charm",
+      "copies": 2
+    },
+    {
+      "cardId": "card-shadow-cipher",
+      "copies": 2
+    },
+    {
+      "cardId": "card-veiled-tome",
+      "copies": 2
+    },
+    {
+      "cardId": "card-umbral-lens",
+      "copies": 1
     }
   ],
   "faceDeck": [
@@ -79,13 +99,7 @@
     "face-synthetic-shadow-echo",
     "face-synthetic-resonance-rune",
     "face-synthetic-insight-rune",
-    "face-synthetic-runeflare",
-    "face-synthetic-cleaving-strike",
-    "face-synthetic-command",
-    "face-synthetic-rending-claw",
-    "face-synthetic-aegis",
-    "face-synthetic-revelation",
-    "face-synthetic-vital-spark"
+    "face-synthetic-runeflare"
   ],
   "startingDice": [
     [

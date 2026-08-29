@@ -472,7 +472,7 @@ export function MatchBoard() {
 
   const winnerLabel =
     finished && state.winner !== null
-      ? `Winner: ${state.winner}`
+      ? `${state.winner} wins — opposing legendary defeated`
       : finished
         ? "Match finished"
         : null;

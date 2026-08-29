@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PROTOTYPE_SQUAD } from "../content/creatures.js";
+import { MINOTAUR, PROTOTYPE_SQUAD, VARCOLAC, WARLORD_IRONHOOF } from "../content/creatures.js";
 import {
   CONTROL_FACE_DECK,
   CONTROL_STARTING_DICE,
@@ -38,6 +38,40 @@ describe("match setup", () => {
     );
 
     expect(positions).toEqual(["frontline", "frontline", "back"]);
+  });
+
+  it("places the legendary in the back regardless of squad index", () => {
+    const state = createMatch({
+      matchId: "m",
+      seed: 1,
+      config: { ...DEFAULT_RULES_CONFIG, deckMinCards: 0 },
+      players: [
+        {
+          id: P1,
+          squad: [WARLORD_IRONHOOF, MINOTAUR, VARCOLAC],
+          deck: [],
+          faceDeck: [],
+          startingDice: legacyStartingLayout(),
+        },
+        {
+          id: P2,
+          squad: PROTOTYPE_SQUAD,
+          deck: [],
+          faceDeck: [],
+          startingDice: legacyStartingLayout(),
+        },
+      ],
+    });
+    const positions = state.players[P1]?.creatureIds.map((id) => ({
+      definitionId: state.creatures[id]?.definitionId,
+      position: state.creatures[id]?.position,
+    }));
+
+    expect(positions).toEqual([
+      { definitionId: WARLORD_IRONHOOF, position: "back" },
+      { definitionId: MINOTAUR, position: "frontline" },
+      { definitionId: VARCOLAC, position: "frontline" },
+    ]);
   });
 
   it("builds every die with exactly six physical faces", () => {

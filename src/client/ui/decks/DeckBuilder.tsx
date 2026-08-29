@@ -26,6 +26,7 @@ import {
 } from "@client/decks";
 import { useDeckStore } from "@client/store/deckStore";
 import { CardInspectPanel } from "@client/ui/decks/CardInspectPanel";
+import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
 import { CatalogueTab } from "./CatalogueTab";
 import { DeckRow } from "./DeckRow";
 import { FacePaintChip } from "./FacePaintChip";
@@ -234,8 +235,8 @@ export function DeckBuilder() {
           Hover any card to inspect it. Build a loadout (
           {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
           face deck ≤{cfg.faceDeckMaxCards}; opening dice ≤{cfg.startingMaxSyntheticsPerPlayer}{" "}
-          synthetics total, ≤{cfg.startingMaxSyntheticsPerDie} per die). Illegal drafts can be
-          saved; Play refuses them until they are legal.
+          synthetics total, ≤{cfg.startingMaxSyntheticsPerDie} per die; squad exactly 1 legendary).
+          Illegal drafts can be saved; Play refuses them until they are legal.
         </p>
         </div>
         <label className="flex w-full max-w-xs flex-col gap-1 text-sm sm:w-56">
@@ -269,26 +270,36 @@ export function DeckBuilder() {
 
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Squad ({squad.length}/{cfg.creaturesPerPlayer})
+          Squad ({squad.length}/{cfg.creaturesPerPlayer}) — exactly 1 legendary
         </h2>
+        <p className="mt-1 text-xs text-stone-500">
+          The legendary is your win target (opens back). Pick exactly one; legality shows the
+          engine reason if you have zero or two+.
+        </p>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
-          {squad.map((definitionId, index) => (
-            <select
-              key={`squad-${String(index)}`}
-              className="rounded border border-stone-700 bg-stone-950 px-2 py-2 text-sm text-stone-100"
-              value={definitionId}
-              disabled={readonly}
-              onChange={(event) =>
-                setSquadSlot(index, event.target.value as CreatureDefinitionId)
-              }
-            >
-              {creatureOptions.map((creature) => (
-                <option key={creature.id} value={creature.id}>
-                  {creature.name}
-                </option>
-              ))}
-            </select>
-          ))}
+          {squad.map((definitionId, index) => {
+            const slotDef = getCreatureDefinition(definitionId);
+            return (
+              <div key={`squad-${String(index)}`} className="flex flex-col gap-1">
+                <select
+                  className="rounded border border-stone-700 bg-stone-950 px-2 py-2 text-sm text-stone-100"
+                  value={definitionId}
+                  disabled={readonly}
+                  onChange={(event) =>
+                    setSquadSlot(index, event.target.value as CreatureDefinitionId)
+                  }
+                >
+                  {creatureOptions.map((creature) => (
+                    <option key={creature.id} value={creature.id}>
+                      {creature.name}
+                      {creature.legendary === true ? " · Legendary" : ""}
+                    </option>
+                  ))}
+                </select>
+                {slotDef?.legendary === true ? <LegendaryBadge className="self-start" /> : null}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -605,7 +616,13 @@ export function DeckBuilder() {
         {message !== null && <p className="text-sm text-stone-400">{message}</p>}
         <p className="w-full text-xs text-stone-600 sm:ml-auto sm:w-auto">
           Squad:{" "}
-          {squad.map((id) => getCreatureDefinition(id)?.name ?? id).join(" · ")}
+          {squad
+            .map((id) => {
+              const def = getCreatureDefinition(id);
+              if (def === undefined) return id;
+              return def.legendary === true ? `${def.name} (legendary)` : def.name;
+            })
+            .join(" · ")}
         </p>
       </div>
     </div>

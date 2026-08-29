@@ -6,7 +6,7 @@ import {
   GRAVE_WHISPER,
   WAR_AXE,
 } from "../content/cards.js";
-import { ARCHMAGE, MINOTAUR, VOID_SUMMONER } from "../content/creatures.js";
+import { ARCHMAGE, SOVEREIGN_NIGHTVAULT, VOID_SUMMONER } from "../content/creatures.js";
 import { ENGINE_TEST_FACE_DECK, legacyStartingLayout } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { asCardInstanceId, asSymbolInstanceId, type CardId, type PlayerId } from "../model/ids.js";
@@ -105,14 +105,14 @@ describe("Grave Whisper", () => {
       players: [
         {
           id: P1,
-          squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+          squad: [ARCHMAGE, VOID_SUMMONER, SOVEREIGN_NIGHTVAULT],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
           startingDice: legacyStartingLayout(),
         },
         {
           id: P2,
-          squad: [ARCHMAGE, VOID_SUMMONER, MINOTAUR],
+          squad: [ARCHMAGE, VOID_SUMMONER, SOVEREIGN_NIGHTVAULT],
           deck: [],
           faceDeck: ENGINE_TEST_FACE_DECK,
           startingDice: legacyStartingLayout(),

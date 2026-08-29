@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-forgeheart-colossus",
+  "name": "Forgeheart Colossus",
+  "life": 22,
+  "attributes": [
+    "mechanical"
+  ],
+  "legendary": true,
+  "passiveRulesText": "On basic attack: [Generate 1 Mechanical].",
+  "standingAbilities": [
+    {
+      "type": "on-attack",
+      "attackKinds": [
+        "basic"
+      ],
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-forgeheart-colossus-piston",
+      "name": "Piston",
+      "kind": "basic",
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Generate 1 Mechanical].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-forgeheart-colossus-core-slam",
+      "name": "Core Slam",
+      "kind": "special",
+      "requires": {
+        "mechanical": 2
+      },
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3]. [Stamp]. [Discount 1] forge.",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "reapply-die-modifiers"
+        },
+        {
+          "type": "arm-forge-discount",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

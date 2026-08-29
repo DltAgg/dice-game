@@ -17,11 +17,13 @@ A card that only forges with empty `rulesText` (`""`) is legal (forge-only /
 “None”) but should be rare and intentional.
 
 **Lethality is not reserved for creature attacks** (bible §§4, 24, 27, 33;
-`OPEN_DESIGN.md`). Engine-converted damage — consume, delayed, conditional,
-expensive setup — is a valid play-region payoff, and Control **must** have
-enough of it to eliminate creatures. A Control list that can only chip with
-1-damage attacks is a miss even if its disruption is excellent. Do not avoid
-authoring Control damage because “combat is supposed to close.”
+`OPEN_DESIGN.md`). The match ends when the **enemy legendary** is defeated —
+not when the whole squad is cleared. Engine-converted damage — consume,
+delayed, conditional, expensive setup — is a valid play-region payoff, and
+Control **must** have enough of it to pressure the legendary. A Control list
+that can only chip with 1-damage attacks is a miss even if its disruption is
+excellent. Do not avoid authoring Control damage because “combat is supposed
+to close.”
 
 The **or** between forge and effect is load-bearing: one use, one region.
 

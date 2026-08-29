@@ -5,7 +5,7 @@
   "squad": [
     "creature-marrow-fiend",
     "creature-cinder-wight",
-    "creature-ichor-hydra"
+    "creature-blightcrown-hydra"
   ],
   "deckCounts": [
     {
@@ -34,7 +34,7 @@
     },
     {
       "cardId": "card-ichor-sheath",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-ember-tide",
@@ -46,7 +46,7 @@
     },
     {
       "cardId": "card-virulent-rite",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-ritual-of-contamination",
@@ -58,15 +58,39 @@
     },
     {
       "cardId": "card-persistent-infection",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-black-plague",
       "copies": 2
     },
     {
-      "cardId": "card-raise-guard",
-      "copies": 3
+      "cardId": "card-venomous-fangs",
+      "copies": 2
+    },
+    {
+      "cardId": "card-blight-strike",
+      "copies": 2
+    },
+    {
+      "cardId": "card-extermination",
+      "copies": 2
+    },
+    {
+      "cardId": "card-ichor-exchange",
+      "copies": 2
+    },
+    {
+      "cardId": "card-blight-trade",
+      "copies": 2
+    },
+    {
+      "cardId": "card-toxic-heart",
+      "copies": 2
+    },
+    {
+      "cardId": "card-mutant-spores",
+      "copies": 1
     }
   ],
   "faceDeck": [
@@ -74,7 +98,8 @@
     "face-synthetic-marrow-rot",
     "face-synthetic-spores",
     "face-synthetic-cinder",
-    "face-synthetic-wasting-brand"
+    "face-synthetic-wasting-brand",
+    "face-synthetic-infection"
   ],
   "startingDice": [
     [

@@ -1,0 +1,82 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-aethercore-sovereign",
+  "name": "Aethercore Sovereign",
+  "life": 21,
+  "attributes": [
+    "mechanical"
+  ],
+  "legendary": true,
+  "passiveRulesText": "On absorb Mechanical, once per turn: [Generate 1 Mechanical].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "mechanical"
+      ],
+      "absorberRelation": "ally",
+      "effects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 1
+        }
+      ],
+      "oncePerTurn": true
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-aethercore-sovereign-flux-bolt",
+      "name": "Flux Bolt",
+      "kind": "basic",
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Generate 1 Mechanical].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "attack-aethercore-sovereign-reforge-pulse",
+      "name": "Reforge Pulse",
+      "kind": "special",
+      "requires": {
+        "mechanical": 1,
+        "luminar": 1
+      },
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Reforge] a Synthetic Mechanical face on your die.",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "replace-synthetic-face",
+          "kind": "synthetic",
+          "attribute": "mechanical"
+        }
+      ]
+    }
+  ]
+}

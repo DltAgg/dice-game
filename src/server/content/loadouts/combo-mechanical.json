@@ -5,7 +5,7 @@
   "squad": [
     "creature-servo-assembly",
     "creature-clockwork-dynamo",
-    "creature-lens-choir"
+    "creature-forgeheart-colossus"
   ],
   "deckCounts": [
     {
@@ -58,7 +58,7 @@
     },
     {
       "cardId": "card-reforge",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-luminar-prism",
@@ -70,6 +70,14 @@
     },
     {
       "cardId": "card-share-the-kill",
+      "copies": 2
+    },
+    {
+      "cardId": "card-hunting-armour",
+      "copies": 2
+    },
+    {
+      "cardId": "card-sidestep",
       "copies": 2
     }
   ],

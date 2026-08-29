@@ -22,7 +22,7 @@ import { openingSlotFromFace } from "../rules/faces.js";
 
 export interface PlayerSetup {
   readonly id: PlayerId;
-  /** Three creature definitions in deployment order (bible §4 and §8). */
+  /** Three creature definitions (exactly one legendary). Rows use the legendary flag. */
   readonly squad: readonly CreatureDefinitionId[];
   /**
    * The tactics deck, in submission order. Shuffled here off the match seed.
@@ -124,17 +124,31 @@ function buildCards(
   };
 }
 
+/**
+ * Legendary always opens in the back row (definition flag, not squad index).
+ * Non-legendaries fill frontline first (up to `frontlineSlots`), then back.
+ */
 function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly CreatureState[] {
+  let frontlineAssigned = 0;
   return setup.squad.map((definitionId, index) => {
     const definition = getCreatureDefinition(definitionId);
     if (definition === undefined) {
       throw new Error(`createMatch: unknown creature definition "${definitionId}"`);
     }
+    let position: CreatureState["position"];
+    if (definition.legendary === true) {
+      position = "back";
+    } else if (frontlineAssigned < config.frontlineSlots) {
+      position = "frontline";
+      frontlineAssigned += 1;
+    } else {
+      position = "back";
+    }
     return {
       id: creatureInstanceId(setup.id, index),
       definitionId,
       ownerId: setup.id,
-      position: index < config.frontlineSlots ? "frontline" : "back",
+      position,
       damage: 0,
       defeated: false,
       attacksUsedThisCombat: 0,

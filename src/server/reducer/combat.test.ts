@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { POUNCE } from "../content/cards.js";
+import { GARUDA, MINOTAUR, WARLORD_IRONHOOF } from "../content/creatures.js";
 import { asAttackId } from "../model/ids.js";
 import type { AttributeTokens } from "../model/symbols.js";
-import { currentLife } from "../rules/creatures.js";
+import { currentLife, legendaryCreatureOf } from "../rules/creatures.js";
 import {
   creatureIdAt,
   expectOk,
@@ -27,6 +28,8 @@ const DIVE = asAttackId("attack-garuda-dive");
 const CHARGE = asAttackId("attack-varcolac-charge");
 const COORDINATED_HUNT = asAttackId("attack-varcolac-coordinated-hunt");
 
+const RANGE_SQUAD = [MINOTAUR, GARUDA, WARLORD_IRONHOOF] as const;
+
 /**
  * Attacks are funded from the attacker's own absorbed tokens, so a combat
  * scenario begins by fuelling a creature rather than by filling the pool.
@@ -34,6 +37,18 @@ const COORDINATED_HUNT = asAttackId("attack-varcolac-coordinated-hunt");
 function combatState(creatureIndex: number, tokens: AttributeTokens) {
   const state = withPhase(newMatch(), "actions");
   return withTokens(state, creatureIdAt(state, P1, creatureIndex), tokens);
+}
+
+/** Aggro builtin no longer includes Garuda — Range tests use a legal squad with Dive. */
+function rangeCombatState() {
+  const match = newMatch({
+    players: [
+      { id: P1, squad: RANGE_SQUAD, deck: [] },
+      { id: P2, squad: RANGE_SQUAD, deck: [] },
+    ],
+  });
+  const state = withPhase(match, "actions");
+  return withTokens(state, creatureIdAt(state, P1, 1), { wild: 1 });
 }
 
 describe("attacking", () => {
@@ -412,14 +427,14 @@ describe("frontline protection", () => {
   });
 
   it("lets a Range attack ignore the frontline", () => {
-    const state = combatState(2, { wild: 1 });
+    const state = rangeCombatState();
     const backRowId = creatureIdAt(state, P2, 2);
 
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
         playerId: P1,
-        attackerId: creatureIdAt(state, P1, 2),
+        attackerId: creatureIdAt(state, P1, 1),
         attackId: DIVE,
         targetId: backRowId,
       }),
@@ -472,33 +487,55 @@ describe("creature defeat and victory", () => {
     expect(after.status).toBe("in-progress");
   });
 
-  it("ends the match when the last opposing creature falls", () => {
-    const base = combatState(1, { wild: 1, martial: 1 });
-    const [front, mid, back] = [0, 1, 2].map((index) => creatureIdAt(base, P2, index));
-    if (front === undefined || mid === undefined || back === undefined) {
-      throw new Error("expected three enemy creatures");
-    }
-
-    // Garuda (back) has 11 life; Coordinated Hunt deals 4.
-    const almostWon = withDamage(
-      withDefeatedCreature(withDefeatedCreature(base, front), mid),
-      back,
-      7,
-    );
+  it("ends the match when the opposing legendary falls", () => {
+    const base = rangeCombatState();
+    const legendary = legendaryCreatureOf(base, P2);
+    if (legendary === undefined) throw new Error("expected P2 legendary");
+    // Ironhoof Warlord has 23 life; Dive deals 2 through Range while frontline lives.
+    const almostWon = withDamage(base, legendary.id, 21);
 
     const after = expectOk(
       advance(almostWon, {
         type: "ATTACK",
         playerId: P1,
         attackerId: creatureIdAt(base, P1, 1),
-        attackId: COORDINATED_HUNT,
-        targetId: back,
+        attackId: DIVE,
+        targetId: legendary.id,
       }),
     );
 
+    expect(
+      Object.values(after.creatures).filter(
+        (creature) => creature.ownerId === P2 && !creature.defeated && creature.id !== legendary.id,
+      ),
+    ).not.toHaveLength(0);
     expect(after.status).toBe("finished");
     expect(after.winner).toBe(P1);
     expect(eventTypes(after)).toContain("match-finished");
+  });
+
+  it("does not end the match when only non-legendaries fall", () => {
+    const state = combatState(0, { martial: 2 });
+    const legendary = legendaryCreatureOf(state, P2);
+    if (legendary === undefined) throw new Error("expected P2 legendary");
+    const targetId = creatureIdAt(state, P2, 0);
+    // War Minotaur has 17 life; 14 prior + Heavy Axe 3 = lethal.
+    const nearlyDead = withDamage(state, targetId, 14);
+
+    const after = expectOk(
+      advance(nearlyDead, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creatureIdAt(state, P1, 0),
+        attackId: HEAVY_AXE,
+        targetId,
+      }),
+    );
+
+    expect(after.creatures[targetId]?.defeated).toBe(true);
+    expect(after.creatures[legendary.id]?.defeated).toBe(false);
+    expect(after.status).toBe("in-progress");
+    expect(after.winner).toBeNull();
   });
 
   it("refuses every action once the match is finished", () => {
@@ -511,3 +548,4 @@ describe("creature defeat and victory", () => {
     expect(result.state).toBe(finished);
   });
 });
+

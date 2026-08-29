@@ -70,10 +70,10 @@ in UI or comments that disagree with `GameRulesConfig`.
 
 | Archetype | Attributes | Wins by |
 |---|---|---|
-| Aggro | Martial, Wild | Converting dice into immediate creature pressure — not the best raw removal |
-| Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining — not large generic numbers |
-| Control | Arcane, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage (cards / rituals / faces / statuses). Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. Corruption is **not** Control’s future home. |
-| Burn | Toxin, Corruption | Continuous damage-over-time (markers, turn-start ticks, on-roll / on-absorb pings) that closes without cheap Aggro creature beatdown. Builtin `BURN_*` / `deck-burn`. |
+| Aggro | Martial, Wild | Converting dice into pressure on the **enemy legendary** (frontline clear, reposition / reach, burst) — not the best raw removal and not “eliminate the whole squad.” |
+| Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining engine damage onto the **enemy legendary** — not large generic numbers |
+| Control | Arcane, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage on the **enemy legendary** (cards / rituals / faces / statuses), while protecting your own. Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. Corruption is **not** Control’s future home. |
+| Burn | Toxin, Corruption | Continuous damage-over-time (markers, turn-start ticks, on-roll / on-absorb pings) stacked onto the **enemy legendary**, closing without cheap Aggro creature beatdown. Builtin `BURN_*` / `deck-burn`. |
 | Support | Arcane, Luminar, Wild, Mechanical | Splashable utility; printed costs still usually 2+ (1-Energy plays via discounts). Arcane control stays medium/high cost |
 
 | Attribute | Must still look like | Exclusive verb (do not appear on other attrs) |
