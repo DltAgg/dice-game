@@ -17,7 +17,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 
 | Request looks like | Do this |
 |---|---|
-| One card / print / JSON | `card-designer` + `author-content`. Compose existing opcodes. |
+| One card / print / JSON | `card-designer` + `author-content`. Design a unique slot first; compose existing opcodes. |
 | New verb / hook / phase | `engine-developer` + `develop-engine` or `implement-hooks`. One handler class or one `fire*`. |
 | Lobby / board / decks UI | `match-ui`. Query engine; do not copy legality. |
 | Legal lists / identity | `deck-designer`. Edit `loadouts/*.json`. |

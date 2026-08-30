@@ -1,20 +1,23 @@
 ---
 name: author-content
 description: >-
-  Create or update tactic, ritual, and face-card catalogue entries (and
-  creatures) as typed data in src/server/content. Use when designing a new card,
-  adding print/Figma/CSV text, or when the user mentions catalogue, forge,
-  overload, ritual, equipment, face deck, attribute pile, Requires/Spend, or
-  deferred effects.
+  Design then author tactic, ritual, and face-card catalogue entries (and
+  creatures) as typed data in src/server/content. Use when occupying a new
+  catalogue slot, adding print/Figma/CSV text, or when the user mentions
+  catalogue, forge, overload, ritual, equipment, face deck, attribute pile,
+  Requires/Spend, uniqueness, or deferred effects. Do not use to clone the
+  last card or to reprint Forge-1 Spend/Generate glue.
 ---
 
 # Author game content
 
-Hand-author **JSON** (one file per entity) under `src/server/content`. There is
-**no** CSV ingest — spreadsheets are worksheets, then catalogue documents.
+**Design a unique slot, then** hand-author **JSON** (one file per entity)
+under `src/server/content`. There is **no** CSV ingest — spreadsheets are
+worksheets, then catalogue documents. Do not transcribe the last file.
 
 This skill is the path for **new** ritual / tactic / face cards as well as
 translating print. Design canon: `competitive_dice_game_agent_bible.md`.
+Set craft (uniqueness, forge, bridges, generic reach): [design-craft.md](design-craft.md).
 Philosophy and attribute identities: [design.md](design.md).
 **Attribute pile (fuel, Absorb, gates):** [attribute-pile.md](attribute-pile.md) —
 read before editing rituals, `onAbsorb`, attack costs, or standing `on-absorb`.
@@ -46,8 +49,9 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    uses `[Mark N Shield]` / `[Heal]` — not `[Prevent]` on faces, absorb, or
    standing hooks. Spec `009` · `docs/KEYWORDS.md`.
 4. Effects are **data** (AST `op` nodes or legacy `type` members compiled by
-   `AstCompiler`). Prefer existing opcodes; grow the engine only with
-   [develop-engine](../develop-engine/SKILL.md) in the same change as the card.
+   `AstCompiler`). Prefer existing opcodes. Missing vocabulary → proving-card
+   brief to `engine-developer` ([develop-engine](../develop-engine/SKILL.md)).
+   Do not implement reducer/AST from this skill.
 5. `src/server` stays pure. Do not put rules in UI / store / networking.
    One entity per JSON file; do not grow `cards.ts` / `creatures.ts` / `faces.ts`
    past `module-budget.test.ts`.
@@ -66,10 +70,14 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    creature’s controller discards…”) instead of relying on owner/controller
    jargon.
 8. **Printed 1-token `playCost` is exceptional.** Do not author `playCost`
-   totaling 1 token as cheap cycle. Those cards must be narrow and niche so 2+
-   cards stay appealing. The primary way to play for 1 token is **cost
-   reduction** (discounts, next-forge, creature passives), not a roster of
-   natural 1-drops. Prefer printed 2+.
+   totaling 1 token as cheap cycle. Prefer 2+ of the card’s attribute.
+   Instant extra burn: `effect.requires`. Ritual extra burn: `ritual.spend`.
+   Natural forge does not burn `playCost`; synthetic forge does. Cheaper
+   plays come from `[Discount]`, not a roster of 1-token cards.
+9. **Do not clone the last card.** Audit live JSON first. Default
+   `forge.faces: 1` + own-attribute Natural/Synthetic with no rider is a
+   sticker, not a design. `[Spend] X, [Generate] Y` is not a bridge.
+   Craft: [design-craft.md](design-craft.md).
 
 ## Workflow
 
@@ -77,38 +85,50 @@ Copy and track:
 
 ```text
 Card Progress:
-- [ ] 1. Kind + attribute identity + exclusive mechanic (design.md)
-- [ ] 2. Pile costs / gates if relevant (attribute-pile.md)
-- [ ] 3. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
-- [ ] 4. Map clauses → existing effects / hooks OR defer
-- [ ] 5. Author catalogue entry (ids, forge, play region)
-- [ ] 6. Grow engine only if a concrete clause needs it
-- [ ] 7. Tests + decks/face-deck + DEFERRED_CATALOGUE
-- [ ] 8. DoD
+- [ ] 1. Catalogue audit (live JSON) + empty slot (design-craft.md)
+- [ ] 2. Uniqueness + dice-resonance + forge intent — reject reskins
+- [ ] 3. Kind + attribute identity + exclusive mechanic (design.md)
+- [ ] 4. Pile costs / gates if relevant (attribute-pile.md) — not a converter license
+- [ ] 5. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
+- [ ] 6. Map clauses → existing effects / hooks OR defer OR engine brief
+- [ ] 7. Author catalogue entry (ids, forge, play region)
+- [ ] 8. Grow engine only if a concrete clause needs it (brief engine-developer;
+       do not skip dual-pip / OR-cost holes)
+- [ ] 9. Tests + decks/face-deck + DEFERRED_CATALOGUE
+- [ ] 10. DoD
 ```
 
-1. Identify kind: **instant** / **reaction** / **equipment** / **overload**,
+1. Grep/read live `src/server/content/{cards,faces,creatures}/`. Name the
+   empty slot (attribute × kind × forge shape × payoff × home). Reject
+   same-kind + `forge.faces: 1` + same Spend/Generate or On-roll
+   Generate-same-attr. Craft: [design-craft.md](design-craft.md).
+2. Identify kind: **instant** / **reaction** / **equipment** / **overload**,
    **ritual** (subtypes instant / reaction / continuous), or **face**
-   (natural / synthetic / untyped).
-2. Check [design.md](design.md) — identity, **exclusive mechanic**, cost band,
+   (natural / synthetic / untyped). Design `forge.faces` (1, 2, rarely 3)
+   and natural vs synthetic **with a reason**.
+3. Check [design.md](design.md) — identity, **exclusive mechanic**, cost band,
    what the card is *for*. Do not print another attribute’s exclusive verb.
-3. Align names and attributes with English specs (`002` / `003` / `004`).
-4. Timing print → [standardize-card-effects](../standardize-card-effects/SKILL.md).
+4. Align names and attributes with English specs (`002` / `003` / `004`)
+   as **grammar / rate anchors**. Live JSON is catalogue truth; stale spec
+   tables of missing cards are not a pattern.
+5. Timing print → [standardize-card-effects](../standardize-card-effects/SKILL.md).
    Standing hooks → [implement-hooks](../implement-hooks/SKILL.md).
-5. Add exported id + definition in the right file.
-6. If vocabulary is missing → develop-engine **with** resolver + tests, then wire.
-7. Update deferred catalogue / spec tables. Add copies to a builtin deck only
+   Standardizing English is not making every card Forge-1 + one opcode.
+6. Add exported id + definition in the right file.
+7. If vocabulary is missing → proving-card brief to engine-developer, then wire.
+8. Update deferred catalogue / spec tables. Add copies to a builtin deck only
    when that is requested and the 40–50 / ≤3-copies rules still hold.
-8. New cards that only use existing effects do **not** belong in
+9. New cards that only use existing effects do **not** belong in
    `docs/RULEBOOK.md`. If this change needed a new mechanic, engine-developer
    updates the rulebook in the same engine change. New tokens or keywords
    update `docs/KEYWORDS.md` in the same change.
-9. DoD: `npm run typecheck && npm test && npm run lint` ([`TOOLS.md`](../../../TOOLS.md)).
+10. DoD: `npm run typecheck && npm test && npm run lint` ([`TOOLS.md`](../../../TOOLS.md)).
 
 ## Progressive references
 
+- **Set craft** (uniqueness, forge, bridges, generic reach): [design-craft.md](design-craft.md)
 - **Attribute pile (spec `016`):** [attribute-pile.md](attribute-pile.md)
-- Design / game goal: [design.md](design.md)
+- Design / identities / exclusive verbs: [design.md](design.md)
 - Tactics + rituals: [tactics.md](tactics.md)
 - Faces / dice: [faces.md](faces.md)
 - Creatures: [creatures.md](creatures.md)

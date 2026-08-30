@@ -16,8 +16,8 @@ alwaysApply: true
 - DoD: `npm run typecheck && npm test && npm run lint`.
 - Commit / push only when the user asks.
 - Print voice is the holder (`you` = the player whose field the card sits on; `opponent` = their opponent, including after a hand-off).
-- Printed `playCost` totaling 1 pile token is exceptional; prefer cost reduction over 1-token cards.
-- Content authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content`). New mechanics → `engine-developer`, not the parent.
+- Printed `playCost` totaling 1 pile token is exceptional; cheaper plays come from `[Discount]`, not a roster of 1-token cards.
+- Content design then authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content` + `.cursor/skills/author-content/design-craft.md`). New mechanics → `engine-developer`, not the parent.
 - Engine/reducer/hooks/resolution → subagent `.cursor/agents/engine-developer.md` (skills `develop-engine`, `implement-hooks`).
 - Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.
 - Match / lobby / deck builder / PeerJS adapters → subagent `.cursor/agents/match-ui.md` (skill `match-ui`). No rules in UI.

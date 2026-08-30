@@ -74,7 +74,7 @@ proactive: ask for the job, or say `Use the <name> subagent to …`.
 
 | Subagent | Owns | Hands off |
 |---|---|---|
-| [card-designer](.cursor/agents/card-designer.md) | Catalogue identity and print → typed data in `src/server/content` (tactics, rituals, faces, creatures) | New AST / hooks / reducer → **engine-developer**; constructed lists / identity critique → **deck-designer** |
+| [card-designer](.cursor/agents/card-designer.md) | Set craft: occupy an empty slot (attribute × kind × forge × payoff), then author print → JSON in `src/server/content` | New AST / hooks / reducer → **engine-developer**; constructed lists / identity critique → **deck-designer** |
 | [engine-developer](.cursor/agents/engine-developer.md) | Pure rules in `src/server`: hooks, `EffectDefinition`, reducer, resolution, statuses | Catalogue beyond the proving card → **card-designer**; play surface → **match-ui** |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, hotseat/online board, deck builder, catalogues, Zustand stores, `src/client/decks/`, PeerJS adapters | Cards → **card-designer**; rules / `pendingDecision` types → **engine-developer**; legal lists → **deck-designer** |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts (squad / tactics / faces) and constructed critique (orphans, attribute identity) | Card rewrites → **card-designer**; engine / legality rules → **engine-developer**; builder UI → **match-ui** |

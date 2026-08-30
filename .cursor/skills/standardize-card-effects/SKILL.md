@@ -17,6 +17,11 @@ on the right hook. Use for **new cards** and for **refactoring** existing
 catalogue entries. Never invent silent approximations. New/edited `rulesText`
 follows [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 
+**Standardizing English is not making every card the same mechanical shape.**
+`On roll:` / `On absorb:` is grammar. Forge-1 + one opcode is not. Unique
+forge riders, dual-pip faces, and bridges still use these prefixes. Do not
+flatten a unique slot into Cogtooth (`On roll: [Generate 1 SameAttr]`).
+
 Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape),
 [develop-engine](../develop-engine/SKILL.md) (new `EffectDefinition` / hooks).
 Attribute pile / bank timing: [attribute-pile.md](../author-content/attribute-pile.md).
@@ -100,7 +105,11 @@ Standardize Progress:
 
 Source of truth: Figma / `002`–`004` / user CSV / existing `rulesText`.
 Do not “improve” flavor by changing meaning. You **may** rewrite into the
-standard timing lines if meaning is preserved.
+standard timing lines if meaning is preserved. You **may not** collapse a
+unique forge shape, dual-pip Generate-other, or bridge into a Forge-1 +
+one-opcode template. Slot uniqueness is decided in
+[author-content](../author-content/SKILL.md) / [design-craft.md](../author-content/design-craft.md)
+**before** this step.
 
 ### 2. Split into timing clauses
 
@@ -124,6 +133,7 @@ Prefer members already in `src/server/model/effects.ts` and selectors already in
 |---|---|
 | `[Strike N]` / Deal N | `damage` + target |
 | `[Heal N]` | `heal` |
+| `[Discount N]` | `arm-forge-discount` / `play-cost-discount` |
 | `[Generate N X]` | `generate-symbol` |
 | `[Draw N]` / `[Discard N]` | `draw-cards` / `discard-cards` |
 | `[Empower N]` | `next-attack-bonus` |
@@ -232,6 +242,8 @@ equipment: {
 - Growing `EffectDefinition` without a concrete card + tests
 - Print that still says “Whenever…” / “When you…” for standing triggers —
   rewrite to `On …:` to match the hook
+- Treating “standardize” as “same card”: Forge-1 + one opcode, or every face
+  `On roll: [Generate 1 SameAttr]`. Timing prefixes are shared; slots are not.
 
 ## More detail
 

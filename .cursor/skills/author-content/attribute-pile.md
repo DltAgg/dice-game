@@ -11,7 +11,7 @@ Content migration notes (faces / rituals / equipment): [`docs/specs/016-content-
 | Pool | Where | Lifetime | Used for |
 |---|---|---|---|
 | **Turn symbol pool** | `GameState.symbols` | Current turn; unbanked pips expire at EOT | Roll display, manual absorb of leftovers, Shield absorb target selection |
-| **Attribute pile** | `PlayerState.attributePool` | Persists across turns until spent or removed | `[Requires]`, `[Active when]`, `[Spend]`, attack `requires` / `discards`, forge header costs |
+| **Attribute pile** | `PlayerState.attributePool` | Persists across turns until spent or removed | `[Requires]`, `[Active when]`, `[Spend]`, attack `requires` / `discards`, header `playCost` (play + synthetic forge) |
 
 Usable attribute pips from a **roll** or **effect** **auto-bank** into the pile
 after on-roll effects resolve. Manual `ABSORB_SYMBOL` on a leftover turn-pool
@@ -24,9 +24,10 @@ owned creature** (grants Shield counters — not pile fuel).
 |---|---|---|
 | Absorb (attribute) | Bank into **your attribute pile** | Keep prefix **`On absorb:`** — do not invent `On bank:` |
 | `[Requires: …]` | Gate vs pile (must hold; not spent) | Attacks, some card gates |
-| `[Spend: …]` | Burn from pile | Card `effect.requires`, ritual `spend`, attack `discards` |
+| `[Spend: …]` | Burn from pile | Header `playCost` (play + synthetic forge), `effect.requires`, ritual `spend`, attack `discards` |
 | `[Active when: …]` | Ritual gate vs **owner’s** pile | Not in `rulesText` — UI prints it from `ritual.activeWhen` |
-| Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Often equals `activeWhen` on high-swing instants |
+| Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Often equals `activeWhen` on high-swing instants. There is **no** `additionalEnergy` |
+| Header `playCost` | `CardDefinition.playCost` | Place/play cost. Natural forge does **not** burn it; synthetic forge does (`docs/RULEBOOK.md` §8) |
 
 Wildcards (`[Resonance]`) may cover shortfall on gates and spends for the turn.
 
@@ -35,8 +36,8 @@ Wildcards (`[Resonance]`) may cover shortfall on gates and spends for the turn.
 1. `PLAY_CARD` → `preparing`.
 2. Ritual becomes **`ready`** when the owner’s pile meets `activeWhen` (or
    immediately if omitted).
-3. `ACTIVATE_RITUAL` checks the gate again, burns optional `ritual.spend`, pays
-   `additionalEnergy`, resolves `ritual.effects`.
+3. `ACTIVATE_RITUAL` checks the gate again, burns optional `ritual.spend`,
+   resolves `ritual.effects`. There is no Energy / `additionalEnergy`.
 4. **`ABSORB_SYMBOL_TO_RITUAL` is removed.** Do not author “sink pips into the
    ritual card.”
 
@@ -92,6 +93,8 @@ passives. Proactive Luminar mitigation → `[Mark N Shield]` / `[Heal]`.
 - [ ] No pack feeding — Wild splash uses `[Frenzy]`, `[Generate]`, or `[Drain]`
 - [ ] `[Prevent]` only on Luminar **reactions** — not faces, absorb, or standing
 - [ ] Creature attack print says “in your pile” if editing English (not “absorbed on creature”)
+- [ ] Dual-attribute fuel is for gates/spends that **play both identities**, not
+      `[Spend] X, [Generate] Y` converters ([design-craft.md](design-craft.md))
 
 ## Deck-designer checklist
 

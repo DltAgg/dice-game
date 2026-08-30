@@ -2,6 +2,13 @@
 
 File: `src/server/content/creatures/<creature-id>.json` (add the id constant in `creatures.ts`)  
 Spec: `docs/specs/003-creature-cards.md`
+Craft: [design-craft.md](design-craft.md) — uniqueness still applies
+
+**Do not reprint** Strike 2 + `[Generate 1]` of the creature’s own attribute
+on every body. Audit live `src/server/content/creatures/` first. Dual-attribute
+`requires` on a special (Riftscribe Adept Ley Surge: Arcane+Darkness) is closer
+to a bridge than `[Spend] X, [Generate] Y`. Creatures still obey exclusive
+verbs in [design.md](design.md).
 
 ## Shape
 
@@ -44,7 +51,9 @@ export const EXAMPLE: CreatureDefinitionId =
 - Attribute identity: [design.md](design.md). Aggro/midrange creatures convert
   the engine into board pressure. Control creatures may keep weak attacks;
   lethality for those lists lives on cards / rituals / faces (bible §27). They
-  should not steal Toxin/Corruption’s continuous-burn job.
+  should not steal Toxin/Corruption’s continuous-burn job. Vary attack fuel
+  (gate vs spend, dual-requires as a true bridge) — do not clone the last
+  creature’s Strike + Generate-same.
 - Omit `effect` on an attack when only a subset is modellable — document the gap
   in `docs/DEFERRED_CATALOGUE.md` (passives, pierce, multi-target riders, etc.).
 - Squad size for matches comes from setup / loadout (typically 3 creatures), not

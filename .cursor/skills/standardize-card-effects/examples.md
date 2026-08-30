@@ -2,7 +2,11 @@
 
 ## Face print: Revelation / Instinct / Primordial Fury
 
-These are the house style for roll+absorb faces (even when still print-only):
+These are the house style for **timing lines** (even when still print-only) —
+not a mechanical template. Dual-pip faces, forge riders, and bridges still
+split into `On roll:` / `On absorb:` without becoming Cogtooth
+(`On roll: [Generate 1 SameAttr]`). Slot uniqueness is
+[design-craft.md](../author-content/design-craft.md), not this file.
 
 ```ts
 // Revelation
@@ -27,7 +31,7 @@ honest partial wiring:
 | On absorb: Basic if not attacked | Needs extra-attack effect | Keep text; `onAbsorb: []` |
 | On absorb: next Basic +1 | `onAbsorb: [{ type: "next-attack-bonus", amount: 1 }]` | Keep text; `onAbsorb: []` |
 | On roll: generate 1 Wild if attacked | Needs conditional roll effect | Keep text; `onRoll: []` |
-| On roll: generate 1 Wild | `onRoll: [{ type: "generate-symbol", symbol: "wild", amount: 1 }]` | Keep text; defer if unimplemented |
+| On roll: [Generate 1 X] | `onRoll: [{ type: "generate-symbol", symbol: "…", amount: 1 }]` | Keep text; defer |
 
 ## Before → after (face text)
 

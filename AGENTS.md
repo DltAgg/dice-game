@@ -42,7 +42,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
 | Task | Start here |
 |---|---|
 | Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
-| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — see also [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb |
+| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
@@ -60,7 +60,7 @@ invoke them separately — do not implement both layers yourself.
 
 | Subagent | Use when |
 |---|---|
-| [card-designer](.cursor/agents/card-designer.md) | New/updated catalogue cards; print → data; delegates new mechanics to engine-developer |
+| [card-designer](.cursor/agents/card-designer.md) | Set craft: occupy an empty slot, then author catalogue JSON; delegates new mechanics to engine-developer |
 | [engine-developer](.cursor/agents/engine-developer.md) | `src/server` rules: hooks, triggers, `EffectDefinition`, reducer, resolution, statuses |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, MatchBoard, deck builder, catalogues, stores, decks persistence, PeerJS adapters |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts; constructed critique (orphans, attribute identity) |
@@ -104,6 +104,6 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Grow effect AST only when a concrete card needs it; one opcode handler class + tests in the same change. No unreachable stubs.
 - Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.
 - Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
-- Printed `playCost` totaling **1 pile token** is exceptional and niche. Players should reach 1-token plays mainly via **cost reduction**, not a catalogue of 1-drops.
+- Printed `playCost` totaling **1 pile token** is exceptional and niche. Players should reach 1-token plays mainly via **cost reduction** (`[Discount]`), not a catalogue of 1-drops.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).
