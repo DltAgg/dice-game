@@ -3,7 +3,8 @@
   "id": "card-mending-light",
   "name": "Mending Light",
   "playCost": {
-    "luminar": 2
+    "luminar": 2,
+    "mechanical": 1
   },
   "type": "instant",
   "subtypes": [],
@@ -14,7 +15,7 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Heal 2] on your most damaged creature. [Generate 1 Mechanical].",
+  "rulesText": "[Heal 2] on your most damaged creature. [Discount 1] forge.",
   "effect": {
     "effects": [
       {
@@ -25,8 +26,7 @@
         }
       },
       {
-        "type": "generate-symbol",
-        "symbol": "mechanical",
+        "type": "arm-forge-discount",
         "amount": 1
       }
     ]

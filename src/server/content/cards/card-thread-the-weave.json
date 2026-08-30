@@ -10,7 +10,7 @@
   "attribute": "arcane",
   "forge": {
     "faces": 1,
-    "kind": "natural",
+    "kind": "synthetic",
     "attribute": "arcane",
     "target": "own-die"
   },

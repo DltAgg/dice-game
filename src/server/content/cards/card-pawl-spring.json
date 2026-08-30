@@ -10,7 +10,7 @@
   "attribute": "mechanical",
   "forge": {
     "faces": 1,
-    "kind": "synthetic",
+    "kind": "natural",
     "attribute": "mechanical",
     "target": "own-die"
   },

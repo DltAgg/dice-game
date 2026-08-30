@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { COG_DRAFT, MENDING_LIGHT, TOOLING_ORDER } from "../content/cards.js";
 import {
   COGTOOTH,
+  DAWNWRIGHT,
   ENGINE_TEST_FACE_DECK,
   GEAR_TRAIN,
   HALO_LAMP,
@@ -40,7 +41,7 @@ describe("face deck", () => {
     expect(TEMPO_FACE_DECK).toHaveLength(6);
     expect(new Set(TEMPO_FACE_DECK).size).toBe(TEMPO_FACE_DECK.length);
     expect(TEMPO_FACE_DECK).toEqual(
-      expect.arrayContaining([COGTOOTH, GEAR_TRAIN, MAINSPRING, HALO_LAMP, LUCENT_CHOIR, SUNWARD_LENS]),
+      expect.arrayContaining([DAWNWRIGHT, GEAR_TRAIN, MAINSPRING, HALO_LAMP, LUCENT_CHOIR, SUNWARD_LENS]),
     );
   });
 
@@ -77,7 +78,7 @@ describe("face deck", () => {
     expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(COGTOOTH);
   });
 
-  it("forges a natural Luminar face via Mending Light and generates Mechanical", () => {
+  it("forges a natural Luminar face via Mending Light without burning its dual cost", () => {
     const state = withPile(
       withHand(withPhase(newMatchWithDecks(), "actions"), P1, [MENDING_LIGHT]),
       P1,
@@ -92,7 +93,7 @@ describe("face deck", () => {
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
     expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(naturalFaceId("luminar"));
-    expect(forged.state.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(forged.state.players[P1]?.attributePool.mechanical ?? 0).toBe(10);
   });
 
   it("installs a named synthetic from the pool via Tooling Order", () => {
@@ -157,6 +158,7 @@ describe("face deck", () => {
       "Gloomwell",
       "Ossuary",
       "Pyre of Names",
+      "Dawnwright",
     ]);
   });
 });

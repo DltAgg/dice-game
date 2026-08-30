@@ -10,7 +10,15 @@ import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { SHIELD } from "../model/symbols.js";
 import { isLegalForgeKindForAttribute, validateFaceDeck } from "../rules/faces.js";
 import { ALL_CARDS } from "./cards.js";
-import { ALL_FACE_CARDS, COGTOOTH, FACE_CARDS, naturalFaceId, SHIELD_FACE_ID } from "./faces.js";
+import {
+  ALL_FACE_CARDS,
+  BASIC_FACE_CARDS,
+  COGTOOTH,
+  FACE_CARDS,
+  naturalFaceId,
+  SHIELD_FACE_ID,
+  SPECIAL_FACE_CARDS,
+} from "./faces.js";
 
 describe("attribute face-kind policy", () => {
   it("allows natural faces for every attribute", () => {
@@ -80,9 +88,22 @@ describe("card forge regions respect face-kind policy", () => {
 
 describe("listed face catalogue basics", () => {
   it("publishes natural basics for all dual-kind attributes", () => {
-    const basics = ALL_FACE_CARDS.filter((face) => face.kind === "natural");
+    const basics = BASIC_FACE_CARDS.filter((face) => face.kind === "natural");
     expect(basics.map((face) => face.symbol)).toEqual([...DUAL_KIND_ATTRIBUTES]);
     expect(basics).toHaveLength(ATTRIBUTES.length);
+    for (const face of basics) {
+      expect(face.id).toBe(naturalFaceId(face.symbol as Attribute));
+    }
+  });
+
+  it("keeps named naturals out of the opening basics", () => {
+    const named = ALL_FACE_CARDS.filter(
+      (face) => face.kind === "natural" && face.id !== naturalFaceId(face.symbol as Attribute),
+    );
+    for (const face of named) {
+      expect(BASIC_FACE_CARDS).not.toContain(face);
+      expect(SPECIAL_FACE_CARDS, `${face.name} must be packable`).toContain(face);
+    }
   });
 
   it("catalogues Shield as the untyped starting face", () => {

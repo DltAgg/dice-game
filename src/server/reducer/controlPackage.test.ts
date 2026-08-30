@@ -37,7 +37,7 @@ import {
   withActivePlayer,
   withAttributePool,
   withDamage,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
 } from "../testing/scenario.js";
@@ -82,7 +82,7 @@ function withDeck(state: GameState, playerId: PlayerId, cardIds: readonly CardId
 }
 
 const readyToPlay = (cards: readonly CardId[]): GameState =>
-  withEnergy(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, 10);
 
 /** Places a ritual from hand and forces it ready, skipping the pile ramp. */
 function placedRitualReady(state: GameState, playerId: PlayerId): GameState {
@@ -146,7 +146,7 @@ describe("Arcane Control package", () => {
 
   it("Unwrite destroys a ritual the opponent controls", () => {
     const opponentRitual = withActivePlayer(
-      withEnergy(withHand(withPhase(controlMatch(), "actions"), P2, [FORESIGHT_TITHE]), P2, 10),
+      withPile(withHand(withPhase(controlMatch(), "actions"), P2, [FORESIGHT_TITHE]), P2, 10),
       P2,
     );
     const placed = resolveOpenChain(
@@ -161,7 +161,7 @@ describe("Arcane Control package", () => {
     const ritualId = ritualsOf(placed, P2)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual was not placed");
 
-    const ready = withActivePlayer(withEnergy(withHand(placed, P1, [UNWRITE]), P1, 10), P1);
+    const ready = withActivePlayer(withPile(withHand(placed, P1, [UNWRITE]), P1, 10), P1);
     let state = expectOk(
       advanceResolvingChain(ready, {
         type: "PLAY_CARD",
@@ -180,8 +180,8 @@ describe("Arcane Control package", () => {
   });
 
   it("Sealbind Rune negates a ritual on the chain", () => {
-    const ready = withEnergy(
-      withHand(withEnergy(withHand(withPhase(controlMatch(), "actions"), P1, [NIGHTMARROW_PACT]), P1, 10), P2, [
+    const ready = withPile(
+      withHand(withPile(withHand(withPhase(controlMatch(), "actions"), P1, [NIGHTMARROW_PACT]), P1, 10), P2, [
         SEALBIND_RUNE,
       ]),
       P2,
@@ -275,7 +275,7 @@ describe("Darkness Control package", () => {
   });
 
   it("Echo of the Buried replays an Instant from the graveyard", () => {
-    const spent = withEnergy(
+    const spent = withPile(
       withHand(withPhase(controlMatch(), "actions"), P1, [HOLLOW_TIDE]),
       P1,
       10,
@@ -288,7 +288,7 @@ describe("Darkness Control package", () => {
       }),
     );
     const armed = withAttributePool(
-      placedRitualReady(withEnergy(withHand(afterMill, P1, [ECHO_OF_THE_BURIED]), P1, 10), P1),
+      placedRitualReady(withPile(withHand(afterMill, P1, [ECHO_OF_THE_BURIED]), P1, 10), P1),
       P1,
       { darkness: 2 },
     );
@@ -309,7 +309,7 @@ describe("Darkness Control package", () => {
         { id: P2, squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
       ],
     });
-    const ready = withEnergy(
+    const ready = withPile(
       withHand(withPhase(tempoHost, "actions"), P1, [CINERARY_LOCKET]),
       P1,
       10,

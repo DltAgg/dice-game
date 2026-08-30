@@ -12,11 +12,11 @@
   "attribute": "luminar",
   "forge": {
     "faces": 1,
-    "kind": "natural",
+    "kind": "synthetic",
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Mark 2 Shield] on an allied creature you choose. [Empower 2].",
+  "rulesText": "[Heal 2] on each allied frontline creature.",
   "ritual": {
     "activeWhen": {
       "luminar": 2
@@ -26,15 +26,11 @@
     },
     "effects": [
       {
-        "type": "grant-shield",
+        "type": "heal",
         "amount": 2,
         "target": {
-          "kind": "choose-ally"
+          "kind": "allied-frontline"
         }
-      },
-      {
-        "type": "next-attack-bonus",
-        "amount": 2
       }
     ]
   }

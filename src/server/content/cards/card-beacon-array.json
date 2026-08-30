@@ -15,14 +15,15 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "On absorb Luminar, once per turn: [Heal 1] on your most damaged creature.",
+  "rulesText": "On absorb Luminar or Shield, once per turn: [Heal 1] on your most damaged creature.",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
       {
         "type": "on-absorb",
         "symbols": [
-          "luminar"
+          "luminar",
+          "shield"
         ],
         "absorberRelation": "ally",
         "oncePerTurn": true,

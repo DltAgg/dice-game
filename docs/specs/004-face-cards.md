@@ -64,9 +64,9 @@ capacity 1. Shield is not an attribute and is not Natural — `On absorb Natural
 ### Specials (Synthetic) — current catalogue
 
 > **Catalogue reset (2026-08-29).** `src/server/content/faces/` holds eight
-> `face-natural-*`, `face-untyped-shield`, and the twelve named synthetics
-> below. Any special named later in this spec is **retired print with no
-> catalogue entry** — design reference only.
+> identity `face-natural-*`, `face-untyped-shield`, the twelve named synthetics
+> below, and the named naturals listed after them. Any special named later in
+> this spec is **retired print with no catalogue entry** — design reference only.
 
 Twelve synthetics — three per archetype attribute (Mechanical, Luminar, Arcane,
 Darkness) so a 12-card face deck can run either pair inside the 3-per-attribute
@@ -91,9 +91,35 @@ cap. All `maxOverloads: 2`, no forge restriction. Every `On absorb` line prints
 | `face-synthetic-augur-glass` | Augur Glass | Arcane | `[Generate 1 Arcane]` | `[Insight 2]` |
 | `face-synthetic-sigil-flare` | Sigil Flare | Arcane | `[Strike 1]` | `[Draw 1]` |
 | `face-synthetic-ward-lattice` | Ward Lattice | Arcane | `[Insight 1]` | `[Mark 1 Shield]` on an allied creature you choose |
-| `face-synthetic-gloomwell` | Gloomwell | Darkness | `[Generate 1 Darkness]` | your opponent `[Mill 2]` |
+| `face-synthetic-gloomwell` | Gloomwell | Darkness | `[Generate 1 Arcane]` | your opponent `[Mill 2]` |
 | `face-synthetic-ossuary` | Ossuary | Darkness | your opponent `[Mill 1]` | `[Recall 1]` that costs 2 or less |
 | `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | you may `[Discard 1]`; if you do, `[Strike 2]` | `[Generate 1 Darkness]` |
+
+**Dual-pip faces.** A face carries one inherent `symbol`, so a face that pays
+in two colours shows its own pip and **generates the partner** on roll.
+Gloomwell is the Synthetic version of that slot: it shows Darkness and pays
+`[Generate 1 Arcane]`, which is exactly what Control's two-colour gates
+(Graven Summons, Nightmarrow Pact, Lightless Verdict) are short of. It is
+deliberately **not** another Generate-same face — Cogtooth, Lucent Choir, and
+Augur Glass already hold that cycle.
+
+### Named naturals — current catalogue
+
+A Natural face may also be a **named special** with printed rules text. It is
+packed from the face deck like any synthetic; it is not one of the eight
+opening identity basics, so it must never appear in `BASIC_FACE_CARDS`
+(`faceKindPolicy.test.ts`).
+
+| Id | Name | Symbol | On roll | On absorb |
+|---|---|---|---|---|
+| `face-natural-dawnwright` | Dawnwright | Mechanical | `[Generate 1 Luminar]` | — |
+
+Dawnwright is the Natural half of the dual-pip slot and Tempo's mirror of
+Gloomwell: a Mechanical face that funds the Luminar half of Mending Light,
+Beacon Array, and the Radiant Accord gate. Being Natural also matters
+mechanically — Pawl Spring's natural forge installs it, and Pawl Spring and
+Idler Gear can then overload it, so one face is both the payout and the mount.
+Overload capacity stays at the Natural 1.
 
 Both halves of every face are live, which is the absorb-vs-pool decision Tempo
 is built on: roll for pool pressure, or absorb to bank and rebuild. Control

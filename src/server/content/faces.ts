@@ -14,7 +14,9 @@ import { catalogueFromModules } from "./catalogueLoader.js";
  *
  * Basics are starting-die identity faces: natural faces for all eight
  * attributes, plus untyped Shield. Synthetics are **named specials only**
- * — never blank `face-synthetic-<attr>` generics. Dual-timing print uses
+ * — never blank `face-synthetic-<attr>` generics. A natural may also be a
+ * named special (Dawnwright); it is packed from the face deck like any
+ * other special. Dual-timing print uses
  * `On roll:` / `On absorb:`; fill `onRoll` / `onAbsorb` only for clauses the
  * engine can resolve — leave the other array empty and keep the deferred
  * clause in `rulesText` (see DEFERRED_CATALOGUE).
@@ -68,10 +70,17 @@ export const AUGUR_GLASS: FaceCardId = asFaceCardId("face-synthetic-augur-glass"
 export const SIGIL_FLARE: FaceCardId = asFaceCardId("face-synthetic-sigil-flare");
 export const WARD_LATTICE: FaceCardId = asFaceCardId("face-synthetic-ward-lattice");
 
-/** Darkness: mill ticks and graveyard value. */
+/** Darkness: mill ticks and graveyard value. Gloomwell pays out in Arcane. */
 export const GLOOMWELL: FaceCardId = asFaceCardId("face-synthetic-gloomwell");
 export const OSSUARY: FaceCardId = asFaceCardId("face-synthetic-ossuary");
 export const PYRE_OF_NAMES: FaceCardId = asFaceCardId("face-synthetic-pyre-of-names");
+
+/**
+ * Named **natural** special: shows Mechanical and pays out Luminar on roll.
+ * Packable like a synthetic — it is not one of the eight opening identity
+ * basics, so it never belongs in `BASIC_FACE_CARDS`.
+ */
+export const DAWNWRIGHT: FaceCardId = asFaceCardId("face-natural-dawnwright");
 
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);
@@ -88,7 +97,10 @@ export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.sl
   DUAL_KIND_ATTRIBUTES.length + 1,
 );
 
-/** Named synthetic specials that have printed rules text. */
+/**
+ * Packable named specials that have printed rules text: the synthetics plus
+ * named naturals such as Dawnwright. Everything after the opening basics.
+ */
 export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
   DUAL_KIND_ATTRIBUTES.length + 1,
 );

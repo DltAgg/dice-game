@@ -7,6 +7,7 @@ import {
 } from "../content/creatures.js";
 import {
   COGTOOTH,
+  ENGINE_TEST_FACE_DECK,
   GEAR_TRAIN,
   MAINSPRING,
   SHIELD_FACE_ID,
@@ -27,7 +28,7 @@ import {
   TEMPO_STARTING_DICE,
 } from "../content/loadouts/index.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
-import { asCardId } from "../model/ids.js";
+import { asCardId, type CardId } from "../model/ids.js";
 import {
   leftoverFacePool,
   validateLoadout,
@@ -35,14 +36,24 @@ import {
   validateTacticsDeck,
 } from "./loadout.js";
 
+/**
+ * Generic reach: no header pile cost, so an off-pair attribute in a builtin is
+ * forge paint rather than a splash the list has to fund.
+ */
+function isGenericReach(id: CardId): boolean {
+  const cost = getCard(id)?.playCost ?? {};
+  return Object.keys(cost).length === 0;
+}
+
 describe("validateTacticsDeck", () => {
   it("accepts the exact 40-card Tempo deck", () => {
     expect(TEMPO_DECK).toHaveLength(40);
     expect(validateTacticsDeck(TEMPO_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
   });
 
-  it("keeps Tempo to Mechanical and Luminar", () => {
+  it("keeps Tempo to Mechanical and Luminar apart from generic reach", () => {
     for (const id of TEMPO_DECK) {
+      if (isGenericReach(id)) continue;
       expect(["mechanical", "luminar"], id).toContain(getCard(id)?.attribute);
     }
   });
@@ -59,6 +70,7 @@ describe("validateTacticsDeck", () => {
     expect(CONTROL_DECK).toHaveLength(40);
     expect(validateTacticsDeck(CONTROL_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
     for (const id of CONTROL_DECK) {
+      if (isGenericReach(id)) continue;
       expect(["arcane", "darkness"], id).toContain(getCard(id)?.attribute);
     }
   });
@@ -172,7 +184,7 @@ describe("validateStartingDice", () => {
         [COGTOOTH, GEAR_TRAIN, mechanical, luminar, luminar, SHIELD_FACE_ID],
         TEMPO_STARTING_DICE[1],
       ],
-      TEMPO_FACE_DECK,
+      ENGINE_TEST_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
     expect(result).toEqual({ ok: true });
@@ -184,7 +196,7 @@ describe("validateStartingDice", () => {
         [COGTOOTH, GEAR_TRAIN, MAINSPRING, mechanical, luminar, SHIELD_FACE_ID],
         TEMPO_STARTING_DICE[1],
       ],
-      TEMPO_FACE_DECK,
+      ENGINE_TEST_FACE_DECK,
       {
         ...DEFAULT_RULES_CONFIG,
         startingMaxSyntheticsPerDie: 3,
@@ -201,7 +213,7 @@ describe("validateStartingDice", () => {
         [COGTOOTH, GEAR_TRAIN, mechanical, mechanical, luminar, SHIELD_FACE_ID],
         [MAINSPRING, mechanical, mechanical, luminar, luminar, SHIELD_FACE_ID],
       ],
-      TEMPO_FACE_DECK,
+      ENGINE_TEST_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);

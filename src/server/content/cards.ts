@@ -66,6 +66,18 @@ export const ECHO_OF_THE_BURIED: CardId = asCardId("card-echo-of-the-buried");
 export const NIGHTMARROW_PACT: CardId = asCardId("card-nightmarrow-pact");
 export const LIGHTLESS_VERDICT: CardId = asCardId("card-lightless-verdict");
 
+/* ---------------------------------------------------------- generic --- */
+
+/**
+ * No header `playCost`, no attribute-exclusive verb, no Spend/Generate
+ * conversion: any constructed list can play these. Their `attribute` is
+ * forge paint only — the dice-native splash, not a ninth colourless
+ * attribute.
+ */
+
+export const RETHROW: CardId = asCardId("card-rethrow");
+export const WARD_CHIT: CardId = asCardId("card-ward-chit");
+
 const cardModules = import.meta.glob("./cards/card-*.json", { eager: true, import: "default" });
 const loadedCards = catalogueFromModules<CardDefinition>(cardModules, cardOrder);
 

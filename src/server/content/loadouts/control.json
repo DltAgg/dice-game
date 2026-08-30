@@ -10,7 +10,7 @@
   "deckCounts": [
     {
       "cardId": "card-thread-the-weave",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-oracles-margin",
@@ -54,7 +54,7 @@
     },
     {
       "cardId": "card-hollow-tide",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-gloomdraft",
@@ -95,6 +95,14 @@
     {
       "cardId": "card-lightless-verdict",
       "copies": 2
+    },
+    {
+      "cardId": "card-rethrow",
+      "copies": 1
+    },
+    {
+      "cardId": "card-ward-chit",
+      "copies": 1
     }
   ],
   "faceDeck": [

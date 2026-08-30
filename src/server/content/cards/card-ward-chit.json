@@ -1,10 +1,7 @@
 {
   "$schema": "../schema/card.schema.json",
-  "id": "card-oracles-margin",
-  "name": "Oracle's Margin",
-  "playCost": {
-    "arcane": 2
-  },
+  "id": "card-ward-chit",
+  "name": "Ward Chit",
   "type": "instant",
   "subtypes": [],
   "attribute": "arcane",
@@ -14,15 +11,15 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "[Insight 1]. [Discount 1] forge.",
+  "rulesText": "[Mark 1 Shield] on an allied creature you choose.",
   "effect": {
     "effects": [
       {
-        "type": "peek-deck-optional-bottom"
-      },
-      {
-        "type": "arm-forge-discount",
-        "amount": 1
+        "type": "grant-shield",
+        "amount": 1,
+        "target": {
+          "kind": "choose-ally"
+        }
       }
     ]
   }

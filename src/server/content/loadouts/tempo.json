@@ -10,7 +10,7 @@
   "deckCounts": [
     {
       "cardId": "card-cog-draft",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-tooling-order",
@@ -70,7 +70,7 @@
     },
     {
       "cardId": "card-mending-light",
-      "copies": 3
+      "copies": 2
     },
     {
       "cardId": "card-bright-cadence",
@@ -95,10 +95,18 @@
     {
       "cardId": "card-daybreak-rite",
       "copies": 1
+    },
+    {
+      "cardId": "card-rethrow",
+      "copies": 1
+    },
+    {
+      "cardId": "card-ward-chit",
+      "copies": 1
     }
   ],
   "faceDeck": [
-    "face-synthetic-cogtooth",
+    "face-natural-dawnwright",
     "face-synthetic-gear-train",
     "face-synthetic-mainspring",
     "face-synthetic-halo-lamp",

@@ -4,11 +4,11 @@
   "name": "Gloomwell",
   "kind": "synthetic",
   "symbol": "darkness",
-  "rulesText": "On roll: [Generate 1 Darkness].\nOn absorb, once per turn: your opponent [Mill 2].",
+  "rulesText": "On roll: [Generate 1 Arcane].\nOn absorb, once per turn: your opponent [Mill 2].",
   "onRoll": [
     {
       "type": "generate-symbol",
-      "symbol": "darkness",
+      "symbol": "arcane",
       "amount": 1
     }
   ],
