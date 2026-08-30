@@ -21,6 +21,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 | New verb / hook / phase | `engine-developer` + `develop-engine` or `implement-hooks`. One handler class or one `fire*`. |
 | Lobby / board / decks UI | `match-ui`. Query engine; do not copy legality. |
 | Legal lists / identity | `deck-designer`. Edit `loadouts/*.json`. |
+| New/rewrite agent, skill, rule, AGENTS.md routing | `prompt-engineer` + `author-interactions`. One artifact. |
 | Spans two columns above | Parent **delegates**; does not implement both. |
 | “Rewrite X”, “revamp”, “AST”, “split everything” | Spec first (`docs/specs/_TEMPLATE.md`). Strangler. Stop after one stage. |
 

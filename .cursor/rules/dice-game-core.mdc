@@ -23,3 +23,4 @@ alwaysApply: true
 - Match / lobby / deck builder / PeerJS adapters → subagent `.cursor/agents/match-ui.md` (skill `match-ui`). No rules in UI.
 - Match metrics dashboard / collector / agent export → skill `analyze-match-metrics` plus `src/client/metrics` (not the engine).
 - Constructed loadouts / “does this card have a home?” / attribute identity in builds → subagent `.cursor/agents/deck-designer.md`.
+- Human-to-AI interactions (agents, skills, rules, TOOLS.md, AGENTS.md routing) → subagent `.cursor/agents/prompt-engineer.md` (skill `author-interactions`). Do not grow specialists from the parent.
