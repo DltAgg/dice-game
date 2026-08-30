@@ -3,6 +3,7 @@ import type { CardDefinition, ForgeRegion } from "../model/cards.js";
 import { asCardId } from "../model/ids.js";
 import {
   formatEffectRegion,
+  formatInspectEffectLines,
   formatPlayCostLine,
   formatForgeLine,
   formatRequirementLine,
@@ -134,6 +135,21 @@ describe("English card printing", () => {
       "[Active when: 2 x Arcane]",
       "[Spend: 2 x Arcane]",
       "[Search 2] Instant or Ritual cards.",
+    ]);
+  });
+
+  it("inspect effect lines omit header play cost and gate already shown elsewhere", () => {
+    const card = exampleCard({
+      type: "instant",
+      attribute: "mechanical",
+      rulesText: "[Strike 2].",
+      effect: { requires: { mechanical: 2 }, effects: [] },
+    });
+    expect(formatInspectEffectLines(card)).toEqual(["[Strike 2]."]);
+    expect(formatEffectRegion(card)).toEqual([
+      "[Spend: Arcane]",
+      "[Spend: 2 x Mechanical]",
+      "[Strike 2].",
     ]);
   });
 

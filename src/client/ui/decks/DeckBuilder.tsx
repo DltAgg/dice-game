@@ -454,10 +454,16 @@ export function DeckBuilder() {
         <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-stone-800/80 bg-gradient-to-b from-[#1c1814] to-stone-950/90">
           <div className="h-1/2 min-h-0 overflow-hidden border-b border-stone-800/60 px-3 py-3">
             {previewTactic !== undefined && (
-              <CardInspectPanel subject={{ kind: "tactic", card: previewTactic }} />
+              <CardInspectPanel
+                key={`tactic-${resolvedPreview.id}`}
+                subject={{ kind: "tactic", card: previewTactic }}
+              />
             )}
             {previewFace !== undefined && (
-              <CardInspectPanel subject={{ kind: "face", face: previewFace }} />
+              <CardInspectPanel
+                key={`face-${resolvedPreview.id}`}
+                subject={{ kind: "face", face: previewFace }}
+              />
             )}
           </div>
 

@@ -142,3 +142,13 @@ export function formatEffectRegion(card: CardDefinition): readonly string[] {
   }
   return lines;
 }
+
+/**
+ * Rules body for inspect surfaces that already show play cost, gate, and ritual
+ * activate spend in dedicated rows. Omits header `[Spend]` / `[Active when]`
+ * lines that {@link formatEffectRegion} prepends for card art layout.
+ */
+export function formatInspectEffectLines(card: CardDefinition): readonly string[] {
+  if (card.rulesText.length === 0) return ["None"];
+  return card.rulesText.split("\n").filter((line) => line.length > 0);
+}

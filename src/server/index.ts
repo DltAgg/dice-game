@@ -29,10 +29,12 @@ export {
   formatEffectRegion,
   formatFaceKind,
   formatForgeLine,
+  formatInspectEffectLines,
   formatPlayCostHeader,
   formatPlayCostLine,
   formatRequirementBody,
   formatRequirementLine,
+  formatSpendLine,
   formatTypeLine,
 } from "./content/cardText.js";
 export {

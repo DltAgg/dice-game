@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { lookupKeywordReminders, splitBracketParts, type KeywordReminder } from "./reminders";
 
 function KeywordReminderList({ entries }: { entries: readonly KeywordReminder[] }) {
@@ -40,17 +40,39 @@ export function KeywordRemindersTooltip({
   );
 }
 
-/** Deck-builder inspect dossier section. */
+/** Deck-builder inspect dossier section — collapsed by default. */
 export function KeywordRemindersSection({ print }: { print: string }) {
+  const [open, setOpen] = useState(false);
   const entries = lookupKeywordReminders(print);
+
   return (
     <section>
-      <h4 className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
-        Keywords
-      </h4>
-      <div className="rounded border border-stone-800/80 bg-black/30 px-3 py-2">
-        <KeywordReminderList entries={entries} />
-      </div>
+      <button
+        type="button"
+        className="mb-1 flex w-full items-center gap-1.5 text-left text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500 hover:text-stone-400"
+        aria-expanded={open}
+        onClick={() => setOpen((expanded) => !expanded)}
+      >
+        <span
+          aria-hidden
+          className={
+            open
+              ? "inline-block rotate-90 text-[0.55rem] text-stone-600 transition-transform"
+              : "inline-block text-[0.55rem] text-stone-600 transition-transform"
+          }
+        >
+          ▶
+        </span>
+        <span>Keywords</span>
+        {entries.length > 0 && (
+          <span className="normal-case tracking-normal text-stone-600">({entries.length})</span>
+        )}
+      </button>
+      {open && (
+        <div className="rounded border border-stone-800/80 bg-black/30 px-3 py-2">
+          <KeywordReminderList entries={entries} />
+        </div>
+      )}
     </section>
   );
 }
