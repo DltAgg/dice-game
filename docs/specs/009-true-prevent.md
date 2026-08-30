@@ -60,7 +60,7 @@ No new top-level actions beyond `008`. Playing Barrier uses `PLAY_CARD` during
 
 ## Validation
 
-- Barrier: priority seat; card in hand; subtype `reaction`; Energy paid; top
+- Barrier: priority seat; card in hand; subtype `reaction`; `playCost` paid; top
   link is `attack`; attack’s target is an ally of the Barrier controller.
 - `grant-attack-prevent` and `prevent-attack-reflect` are prevent reactions.
 

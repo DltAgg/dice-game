@@ -15,7 +15,7 @@ import {
   P1,
   P2,
   resolveOpenChain,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withTokens,
@@ -50,7 +50,7 @@ function installFace(
 }
 
 function asTurn(state: GameState, playerId: typeof P1 | typeof P2): GameState {
-  return { ...withEnergy(state, playerId, 10), activePlayerId: playerId };
+  return { ...withPile(state, playerId, 10), activePlayerId: playerId };
 }
 
 /** Retain-roll so `slot` shows; other die stays on Shield (no Natural auto-bank). */
@@ -296,11 +296,11 @@ describe("pending-decision gate — non-active chooser", () => {
 });
 
 describe("pending-decision gate — reaction priority", () => {
-  const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
-    withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+  const actionsReady = (cards: Parameters<typeof withHand>[2], pileTokens = 10) =>
+    withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
   it("still lets the non-active priority seat pass and respond", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(actionsReady([ECLIPSE]), P2, [ARCANE_SILENCE]),
       P2,
       10,

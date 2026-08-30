@@ -3,13 +3,13 @@
 When the user supplies a CSV of tactics, columns are **exactly** this order:
 
 1. **Card text** — printed body (type line, forge, gates, rules; may be multiline)
-2. **Energy cost** — integer
+2. **Play cost** — pile tokens (`playCost` total or per-attribute map)
 3. **Card name** — English display name
 
 Example:
 
 ```csv
-Card text,Energy cost,Card name
+Card text,Play cost,Card name
 "Draw 2 cards and discard 1. Forge 1 synthetic Darkness face on your die.",3,Eclipse
 ```
 

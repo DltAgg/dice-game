@@ -18,7 +18,7 @@ export function topChainLinkOf(state: GameState): ChainLink | undefined {
 /**
  * Whether a response body's negate effects are legal against the current top
  * link. Mirrors the chain-target checks in `PLAY_CARD` / `ACTIVATE_RITUAL`
- * (spec `008`). Does not check energy, phase, or reaction subtype.
+ * (spec `008`). Does not check pile tokens, phase, or reaction subtype.
  */
 export function negateEffectsLegalAgainstTop(
   state: GameState,
@@ -104,7 +104,7 @@ export function preventEffectsLegalAgainstChain(
 
 /**
  * Same gate as MatchBoard `canRespond`: chain-legal hand Reaction, including
- * prevent vs the current chain (not Energy — reactions may pay without the
+ * prevent vs the current chain (reactions may pay `playCost` without the
  * marker).
  */
 export function isEnabledHandReaction(

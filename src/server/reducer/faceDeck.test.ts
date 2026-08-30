@@ -47,7 +47,7 @@ import {
   newMatch,
   newMatchWithDecks,
   P1,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
 } from "../testing/scenario.js";
@@ -138,7 +138,7 @@ describe("face deck", () => {
   });
 
   it("takes a face from the pool on first forge and leaves it out while installed", () => {
-    const state = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    const state = withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("test: no die");
 
@@ -156,7 +156,7 @@ describe("face deck", () => {
   });
 
   it("forges a leftover builtin natural via Temper and still draws", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(withPhase(newMatchWithDecks(), "actions"), P1, [TEMPER]),
       P1,
       10,
@@ -180,7 +180,7 @@ describe("face deck", () => {
   });
 
   it("installs a named synthetic when the card is not Echo-tagged", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]),
       P1,
       10,
@@ -199,7 +199,7 @@ describe("face deck", () => {
   });
 
   it("returns a displaced starting face to the pool when its last copy is gone", () => {
-    let state = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    let state = withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
     const dieIds = state.players[P1]?.dieIds ?? [];
     const shieldSlots: Array<{ dieId: DieId; slot: number }> = [];
     for (const dieId of dieIds) {
@@ -214,7 +214,7 @@ describe("face deck", () => {
     expect(shieldSlots.length).toBe(4);
 
     for (const { dieId, slot } of shieldSlots) {
-      state = withEnergy(withHand(withPhase(state, "actions"), P1, [ECLIPSE]), P1, 10);
+      state = withPile(withHand(withPhase(state, "actions"), P1, [ECLIPSE]), P1, 10);
       const result = advance(
         state,
         forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [slot]),
@@ -280,7 +280,7 @@ describe("face deck", () => {
   });
 
   it("lets only Echo-tagged tactics forge Arcane Echo", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY, ARCANE_ECHO]),
       P1,
       10,
@@ -296,7 +296,7 @@ describe("face deck", () => {
     if (!library.ok) return;
     expect(library.state.dice[dieId]?.slots[4]?.faceCardId).toBe(INSIGHT_RUNE);
 
-    const echoReady = withEnergy(
+    const echoReady = withPile(
       withHand(withPhase(library.state, "actions"), P1, [ARCANE_ECHO]),
       P1,
       10,

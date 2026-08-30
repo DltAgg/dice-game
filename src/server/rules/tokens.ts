@@ -87,7 +87,7 @@ export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeToke
   [attribute]: (tokens[attribute] ?? 0) + 1,
 });
 
-/** Adds a requirement-shaped pile (Drain / pack-feed dest). */
+/** Adds a requirement-shaped pile (Drain dest). */
 export function addTokens(
   tokens: AttributeTokens,
   added: SymbolRequirement,

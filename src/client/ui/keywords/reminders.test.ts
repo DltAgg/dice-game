@@ -85,7 +85,6 @@ describe("lookupKeywordReminders", () => {
       "[Forge 1 Synthetic Mechanical]",
       "[Negate Instant]",
       "[Destroy Ritual]",
-      "[Gain 2 Energy]",
       "[Strike 3]",
       "[Heal 1]",
       "[Draw 2]",
@@ -115,7 +114,6 @@ describe("lookupKeywordReminders", () => {
       "[Forge 1 Synthetic Mechanical]",
       "[Negate Instant]",
       "[Destroy Ritual]",
-      "[Gain 2 Energy]",
       "[Strike 3]",
       "[Heal 1]",
       "[Draw 2]",
@@ -140,7 +138,7 @@ describe("lookupKeywordReminders", () => {
     ]);
   });
 
-  it("does not treat Generate's symbol as a creature token reminder", () => {
+  it("treats Generate as a pool-symbol reminder", () => {
     const rows = lookupKeywordReminders("[Generate 1 Toxin]");
     expect(rows.map((row) => row.token)).toEqual(["[Generate 1 Toxin]"]);
   });

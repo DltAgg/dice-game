@@ -122,7 +122,7 @@ vocabulary.
 | Aegis Link | Luminar | 14 | First Luminar card −1 / On attack, another ally: heal 1 most-damaged | Ward Strike (Spend L) 2 dmg + Shield 1 self | Beacon (Requires L+Mech; Spend L) 2 dmg + [Mark 1 Shield] on ally |
 | Cogwork Driver | Mechanical | 14 | On absorb Mechanical: next attack +1 | Drive (Spend Mech) 2 dmg | Overclock (Requires Mech+L; Spend Mech) 3 dmg + generate Mechanical |
 | Servo Assembly | Mechanical | 13 | On absorb Mechanical: generate Mechanical | Ratchet (Spend Mech) 1 dmg + generate Mechanical | Stamp Pulse (Requires Mech 2; Spend Mech 1) 2 dmg + reapply die modifiers |
-| Clockwork Dynamo | Mechanical | 12 | On roll Mechanical: next attack +1 | Spark (Spend Mech) 2 dmg | Recalibrate (Requires Mech+L; Spend Mech) 2 dmg + next forge −1 Energy |
+| Clockwork Dynamo | Mechanical | 12 | On roll Mechanical: next attack +1 | Spark (Spend Mech) 2 dmg | Recalibrate (Requires Mech+L; Spend Mech) 2 dmg + next forge −1 token |
 
 ## Catalogue (Toxin / Corruption — Burn)
 

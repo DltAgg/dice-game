@@ -13,7 +13,7 @@ import {
   P2,
   resolveOpenChain,
   withActivePlayer,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
@@ -23,8 +23,8 @@ import {
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
-const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: Parameters<typeof withHand>[2], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 describe("reaction chain (008)", () => {
   it("opens a window on instant play and resolves after both Pass", () => {
@@ -51,9 +51,9 @@ describe("reaction chain (008)", () => {
   });
 
   it("lets Arcane Silence negate the top tactic link", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(
-        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+        withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
         P2,
         [ARCANE_SILENCE],
       ),
@@ -89,7 +89,7 @@ describe("reaction chain (008)", () => {
   it("reaction ritual activation spends from the responder's pile", () => {
     // P2 places Nullification earlier; P1 holds 4, plays Eclipse (2) → 2;
     // P2 activates Nullification (+2) → holder gains 2 → 4.
-    const p2Place = withEnergy(
+    const p2Place = withPile(
       withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
         RUNIC_NULLIFICATION,
       ]),
@@ -157,7 +157,7 @@ describe("reaction chain (008)", () => {
   it("P1's turn continues after reaction chain resolves", () => {
     // A holds 2, plays Eclipse (2) → marker flips to B; B Nullifies (+2 holder spend
     // toward A) → marker returns to A; after Pass×2 A’s turn continues.
-    const p2Place = withEnergy(
+    const p2Place = withPile(
       withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
         RUNIC_NULLIFICATION,
       ]),
@@ -231,7 +231,7 @@ describe("reaction chain (008)", () => {
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
-      withEnergy(withTokens(base, attacker, { martial: 2 }), P1, 10),
+      withPile(withTokens(base, attacker, { martial: 2 }), P1, 10),
       P2,
       [ARCANE_SILENCE],
     );
@@ -261,7 +261,7 @@ describe("reaction chain (008)", () => {
   });
 
   it("rejects Runic Nullification when the top link is equipment (not Instant)", () => {
-    const p2Place = withEnergy(
+    const p2Place = withPile(
       withHand(withPhase(withActivePlayer(newMatch(), P2), "actions"), P2, [
         RUNIC_NULLIFICATION,
       ]),
@@ -282,7 +282,7 @@ describe("reaction chain (008)", () => {
 
     const p1Turn = withHand(
       withSymbols(
-        withEnergy(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, 10),
+        withPile(withPhase(withActivePlayer(afterP2Place, P1), "actions"), P1, 10),
         P2,
         ["arcane", "arcane"],
       ),
@@ -325,9 +325,9 @@ describe("reaction chain (008)", () => {
   });
 
   it("lets Arcane Silence negate a non-Instant equipment attach link", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(
-        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [WAR_AXE]), P1, 10),
+        withPile(withHand(withPhase(newMatch(), "actions"), P1, [WAR_AXE]), P1, 10),
         P2,
         [ARCANE_SILENCE],
       ),
@@ -374,7 +374,7 @@ describe("reaction chain (008)", () => {
     if (ritualId === undefined) throw new Error("test: no ritual");
 
     const withEclipse = withHand(
-      withSymbols(withEnergy(withPhase(afterPlace, "actions"), P1, 10), P1, [
+      withSymbols(withPile(withPhase(afterPlace, "actions"), P1, 10), P1, [
         "arcane",
         "arcane",
       ]),
@@ -462,9 +462,9 @@ describe("reaction chain (008)", () => {
   });
 
   it("lets P2 pass and respond after a JSON round-trip of the window", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(
-        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+        withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
         P2,
         [ARCANE_SILENCE],
       ),

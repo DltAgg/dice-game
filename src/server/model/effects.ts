@@ -205,7 +205,7 @@ export type EffectDefinition =
    * this turn (Resonance / Catalyst). Consumed when used.
    */
   | { readonly type: "arm-requirement-wildcard"; readonly fromSymbol?: SymbolType }
-  /** Next `FORGE_CARD` this turn costs this much less Energy (min 0). */
+  /** Next `FORGE_CARD` this turn costs this much less from the pile (min 0). */
   | { readonly type: "arm-forge-discount"; readonly amount: number }
   /**
    * Until EOT, up to `amount` damage that would hit another allied creature is
@@ -225,7 +225,7 @@ export type EffectDefinition =
   | { readonly type: "arm-blade-rain" }
   /**
    * Pending: choose a GY tactic with an `effect` region; resolve those effects
-   * immediately without paying Energy or `[Requires]`. The card stays in the GY.
+   * immediately without paying pile cost or `[Requires]`. The card stays in the GY.
    */
   | { readonly type: "replay-graveyard-tactic" }
   /**
@@ -445,11 +445,11 @@ export type TargetSelector =
   | { readonly kind: "choose-ally-with-toxin" }
   | { readonly kind: "choose-enemy-with-toxin" }
   | { readonly kind: "choose-ally-damage-over-half" }
-  /** Pause: living ally that currently holds at least one attribute token. */
+  /** Pause: living ally whose owner currently holds at least one pile token. */
   | { readonly kind: "choose-ally-with-tokens" }
   /**
    * Pause: living `creatureIds` neighbor (±1) of the source creature.
-   * Spec `015` pack feeding.
+   * Spec `015` mill.
    */
   | { readonly kind: "choose-adjacent-ally" };
 

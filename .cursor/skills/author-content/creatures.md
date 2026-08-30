@@ -36,7 +36,7 @@ export const EXAMPLE: CreatureDefinitionId =
 
 ## Rules of thumb
 
-- Attacks spend **absorbed attribute tokens on the creature**, not the shared pool.
+- Attacks spend from the owner's **attribute pile** (`requires` gate and/or `discards` Spend).
 - Always keep full English in `rulesText` / `passiveRulesText`. Passives and
   attack text use holder voice: **you** is this creature’s controller;
   **opponent** is their opponent.

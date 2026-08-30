@@ -112,14 +112,13 @@ describe("insights", () => {
     ]);
   });
 
-  it("aggregates close timeline, Energy spend, and opening-seat wins", () => {
+  it("aggregates close timeline and opening-seat wins", () => {
     const agg = aggregateRecordings([
       fakeRecording({
         recordingId: "a",
         matchId: "m-a",
         totalTurns: 8,
         totalDamageDealt: 20,
-        totalEnergySpent: 24,
         winnerId: "p1",
         firstPlayerId: "p1",
         livingCreaturesAtEnd: { p1: 2, p2: 1 },
@@ -130,7 +129,6 @@ describe("insights", () => {
             damageDealt: 0,
             attacksDeclared: 0,
             creaturesDefeated: 0,
-            energySpent: 3,
           },
           {
             ...fakeRecording().turns[0]!,
@@ -138,7 +136,6 @@ describe("insights", () => {
             damageDealt: 6,
             attacksDeclared: 1,
             creaturesDefeated: 1,
-            energySpent: 5,
           },
         ],
       }),
@@ -147,7 +144,6 @@ describe("insights", () => {
         matchId: "m-b",
         totalTurns: 9,
         totalDamageDealt: 18,
-        totalEnergySpent: 18,
         winnerId: "p2",
         firstPlayerId: "p1",
         p1DeckName: "Aggro",
@@ -160,7 +156,6 @@ describe("insights", () => {
             damageDealt: 4,
             attacksDeclared: 1,
             creaturesDefeated: 0,
-            energySpent: 2,
           },
           {
             ...fakeRecording().turns[0]!,
@@ -168,7 +163,6 @@ describe("insights", () => {
             damageDealt: 8,
             attacksDeclared: 1,
             creaturesDefeated: 1,
-            energySpent: 4,
           },
         ],
       }),
@@ -177,7 +171,6 @@ describe("insights", () => {
     expect(agg.medianFirstAttackTurn).toBe(2.5);
     expect(agg.medianFirstDefeatTurn).toBe(5);
     expect(agg.pctNeverDefeat).toBe(0);
-    expect(agg.meanEnergySpentPerTurn).toBeCloseTo(2.5);
     expect(agg.firstPlayerWinRate).toBe(0.5);
     expect(agg.p1WinRate).toBe(0.5);
     expect(agg.deckPairs).toEqual([{ pair: "Aggro vs Control", matches: 2, p1Wins: 1, p2Wins: 1 }]);

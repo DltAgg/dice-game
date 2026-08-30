@@ -70,7 +70,7 @@ Martial, Synthetic Corruption, …).
 Every attribute may also be forged as a synthetic; those installs are always
 named specials from the owner's pool (Venom, Gear, Canker, Drain, Warhorn,
 Pack, Insight Rune, …). Enforced by `DUAL_KIND_ATTRIBUTES` (= all attributes)
-and an empty `SYNTHETIC_ONLY_ATTRIBUTES` in `src/game/model/attributes.ts`,
+and an empty `SYNTHETIC_ONLY_ATTRIBUTES` in `src/server/model/attributes.ts`,
 plus face-deck validation, forge eligibility, and catalogue consistency tests.
 There is no identity-only `face-synthetic-<attr>` card.
 
@@ -90,10 +90,10 @@ Named specials:
 | Vital Spark | 2 | On roll: heal; On absorb: [Mark 1 Shield] on choose-ally | Spec `016` pile bank |
 | Aegis | 2 | On roll: generate Shield; On absorb: redirect on choose-ally | Spec `016` |
 | Revelation | 2 | On roll: generate Luminar; On absorb: heal if damage >½ life | |
-| Instinct | 2 | On roll: ally Empower 1; On absorb: ally Empower 2 | Spec `016` (optional bonus basic retired) |
+| Instinct | 2 | On roll: ally Empower 1; On absorb: ally Empower 2 | Catalogue |
 | Primordial Fury | 2 | On roll: generate Luminar if ally attacked; On absorb: next attack +1 | Spec `016` |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: other ally next-attack +1 | |
-| Pack Share | 2 | On absorb: Generate 1 Wild | Spec `016` (was pack-feed copy) |
+| Pack Share | 2 | On absorb: Generate 1 Wild | Spec `016` |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
 | Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | Spec `016` |
 | Formation | 2 | On roll: generate Wild if controller has FL; On absorb: 1 Shield on another allied FL | Spec `016` |
@@ -170,7 +170,7 @@ helper until densified separately.
 Match-ui must show **remaining forge-lock** on Pestilent Plague slots and a
 **cannot-replace** cue on Forbidden Heritage (and locked Plague) so players do
 not target those slots for forge / Reforge. Do not hide `ACTIVATE_FACE` peel.
-Engine query: `slotCannotBeReplacedByForge` from `src/game/rules/faces.ts`.
+Engine query: `slotCannotBeReplacedByForge` from `src/server/rules/faces.ts`.
 
 - [x] Remaining forge-lock on Pestilent Plague slots (`DieSlot.forgeLockRemaining`)
 - [x] Cannot-replace cue (Heritage always; Plague while lock > 0)
@@ -184,13 +184,13 @@ Engine query: `slotCannotBeReplacedByForge` from `src/game/rules/faces.ts`.
 - [x] Crush and Rending Claw on-roll effects
 - [x] Modellable CSV / named special On roll / On absorb wired (`011`–`013`)
 - [x] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll; Instinct absorb = Empower 2 choose-ally per `016`)
-- [x] Spec `016` Phase 3: On absorb = pile bank (no creature-local absorber)
+- [x] Spec `016`: On absorb = pile bank
 - [x] Stay-on-slot (Heritage never-replace; Plague forge-lock + spread at 2)
 
 ## Tests
 
-- [x] `src/game/reducer/faceDeck.test.ts`
-- [x] `src/game/reducer/faceMarkers.test.ts`
+- [x] `src/server/reducer/faceDeck.test.ts`
+- [x] `src/server/reducer/faceMarkers.test.ts`
 - [x] Existing forge / invariant / triggers suites
 - [x] Spec `011` / `012` / `013` focused suites
-- [x] `src/game/reducer/stayOnSlot.test.ts`
+- [x] `src/server/reducer/stayOnSlot.test.ts`

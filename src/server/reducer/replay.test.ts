@@ -6,14 +6,14 @@ import {
   handCardIdAt,
   newMatch,
   P1,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: Parameters<typeof withHand>[2], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 describe("Paradox GY replay", () => {
   it("replays a GY tactic's effect without paying play cost or Requires", () => {

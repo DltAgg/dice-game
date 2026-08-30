@@ -69,7 +69,7 @@ the user explicitly asks for tooling.
 - Incomplete print: keep accurate English; leave `effect` / `abilities` / `onRoll` empty or omit; row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently (no Barrier→shields, no dropped absorb lines).
 - Do not grow `EffectDefinition`, `StandingTrigger`, `GameAction`, `reduce()`, `resolution.ts`, or `triggers.ts` yourself.
 - Do not add copies to builtin decks unless asked — or unless **deck-designer** is driving the list change.
-- Printed `?` is `variableEnergy` — many catalogue `?` cards are temporarily fixed cost 2; do not invent spend-scaling effects until that vocabulary exists.
+- Printed `?` uses a fixed `playCost` for now — true variable pile pay is DEFERRED; do not invent spend-scaling effects until that vocabulary exists.
 - Opponent-die forges: **controller** names the face from **their** pool.
 - **Print voice is the holder**, not the original owner. `rulesText` is
   written for the player who currently has the card on their field. **you**
@@ -77,11 +77,11 @@ the user explicitly asks for tooling.
   handed, forged, or equipped onto the other side of the table does not keep
   the sender’s pronouns. If both players choose or act, name who does what
   in English — never leave “who selects / who discards” ambiguous.
-- **Printed Energy 1 is exceptional.** Avoid `energyCost: 1` unless the
-  card is deliberately niche (a keyed engine piece, a tightly gated
-  overload, an install whose real tax is stay/peel). The primary 1-Energy
-  play pattern is **cost reduction** onto a 2+ printed cost, not flooding
-  the catalogue with 1-drops. Existing 1-costs are not a license to add more.
+- **Printed 1-token `playCost` is exceptional.** Avoid `playCost` totaling 1
+  token unless the card is deliberately niche (a keyed engine piece, a tightly
+  gated overload, an install whose real tax is stay/peel). The primary 1-token
+  play pattern is **cost reduction** onto a 2+ printed cost, not flooding the
+  catalogue with 1-drops. Existing 1-token cards are not a license to add more.
 - Do not commit or push unless the user asks.
 
 ## When the engine is missing a mechanic

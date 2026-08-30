@@ -11,15 +11,15 @@ import {
   handCardIdAt,
   newMatch,
   P1,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
@@ -237,7 +237,7 @@ describe("replace-synthetic-face (Reforge)", () => {
     ready = installFromPool(ready, FLYWHEEL);
     ready = withHand(ready, P1, [RATCHET, REFORGE]);
     ready = withAttributePool(ready, P1, { mechanical: 4 });
-    ready = withEnergy(ready, P1, 10);
+    ready = withPile(ready, P1, 10);
 
     const attached = expectOk(
       advance(ready, {

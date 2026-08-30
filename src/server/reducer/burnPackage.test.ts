@@ -16,7 +16,7 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
@@ -25,7 +25,7 @@ import {
 } from "../testing/scenario.js";
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];

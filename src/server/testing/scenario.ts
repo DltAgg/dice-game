@@ -189,7 +189,7 @@ export function forgeAction(
 }
 
 /** Test helper: fuel every attribute pile so any play/forge cost is affordable. */
-export const withEnergy = (state: GameState, playerId: PlayerId, value: number): GameState =>
+export const withPile = (state: GameState, playerId: PlayerId, value: number): GameState =>
   withAttributePool(state, playerId, {
     martial: value,
     wild: value,

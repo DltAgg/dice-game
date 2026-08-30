@@ -17,8 +17,6 @@ export {
   firstAttackTurn,
   firstDamageTurn,
   firstDefeatTurn,
-  energySpentOf,
-  energySpentOnTurn,
   type CloseTurnPoint,
   type DeckPairRecord,
 } from "./close.js";

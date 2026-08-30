@@ -34,24 +34,6 @@ export function defeatCloseKind(recording: MatchRecording): DefeatCloseKind {
   return "never";
 }
 
-export function energySpentOnTurn(turn: { readonly energySpent?: number }): number | null {
-  return typeof turn.energySpent === "number" ? turn.energySpent : null;
-}
-
-/** Sum of Energy spent. Null when the recording predates amount tracking. */
-export function energySpentOf(recording: MatchRecording): number | null {
-  if (typeof recording.totalEnergySpent === "number") return recording.totalEnergySpent;
-  let sum = 0;
-  let any = false;
-  for (const turn of recording.turns) {
-    const spent = energySpentOnTurn(turn);
-    if (spent === null) continue;
-    sum += spent;
-    any = true;
-  }
-  return any ? sum : null;
-}
-
 export function firstPlayerWon(recording: MatchRecording): boolean | null {
   if (recording.status !== "finished") return null;
   if (recording.winnerId === null || recording.firstPlayerId === null) return null;
@@ -62,27 +44,17 @@ export interface CloseTurnPoint {
   readonly turn: number;
   readonly meanDamage: number;
   readonly meanDeaths: number;
-  readonly meanEnergySpent: number | null;
   readonly matchCount: number;
-  readonly energySampleCount: number;
 }
 
 export function closeByTurn(recordings: readonly MatchRecording[]): CloseTurnPoint[] {
-  const byTurn = new Map<
-    number,
-    { damage: number; deaths: number; energy: number; n: number; energyN: number }
-  >();
+  const byTurn = new Map<number, { damage: number; deaths: number; n: number }>();
   for (const recording of recordings) {
     for (const row of recording.turns) {
-      const bucket = byTurn.get(row.turn) ?? { damage: 0, deaths: 0, energy: 0, n: 0, energyN: 0 };
+      const bucket = byTurn.get(row.turn) ?? { damage: 0, deaths: 0, n: 0 };
       bucket.damage += row.damageDealt;
       bucket.deaths += row.creaturesDefeated;
       bucket.n += 1;
-      const spent = energySpentOnTurn(row);
-      if (spent !== null) {
-        bucket.energy += spent;
-        bucket.energyN += 1;
-      }
       byTurn.set(row.turn, bucket);
     }
   }
@@ -92,9 +64,7 @@ export function closeByTurn(recordings: readonly MatchRecording[]): CloseTurnPoi
       turn,
       meanDamage: bucket.damage / bucket.n,
       meanDeaths: bucket.deaths / bucket.n,
-      meanEnergySpent: bucket.energyN === 0 ? null : bucket.energy / bucket.energyN,
       matchCount: bucket.n,
-      energySampleCount: bucket.energyN,
     }));
 }
 

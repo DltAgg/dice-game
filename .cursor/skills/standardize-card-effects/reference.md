@@ -17,7 +17,7 @@
 
 See `src/server/model/effects.ts`. Current members include: `damage`, `heal`,
 `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`, `search-deck`,
-`search-graveyard`, `gain-energy`, `destroy-equipment`, `apply-toxin`,
+`search-graveyard`, `destroy-equipment`, `apply-toxin`,
 `remove-shield`, `next-attack-bonus`, `negate-card`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`.
 

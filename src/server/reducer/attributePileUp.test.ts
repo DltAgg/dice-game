@@ -17,7 +17,7 @@ import {
   P1,
   P2,
   withAttributePool,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withSymbols,
@@ -115,7 +115,7 @@ describe("016 attribute pile-up", () => {
       advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
     );
     expect(after.players[P1]?.attributePool).toEqual({ luminar: 1 });
-    // Vital Spark onAbsorb opens choose-ally for Mark Shield (Phase 3 pile bank).
+    // Vital Spark onAbsorb opens choose-ally for Mark Shield.
     expect(after.pendingDecision?.type).toBe("choose-creature");
     expect(after.log.some((e) => e.event.type === "symbol-absorbed")).toBe(true);
   });
@@ -274,7 +274,7 @@ describe("016 attribute pile-up", () => {
   });
 
   it("Resonance wildcards cover ritual Active-when and Spend on activate", () => {
-    let state = withHand(withEnergy(withPhase(newMatch(), "actions"), P1, 10), P1, [
+    let state = withHand(withPile(withPhase(newMatch(), "actions"), P1, 10), P1, [
       LIVING_LIBRARY,
     ]);
     state = expectOk(

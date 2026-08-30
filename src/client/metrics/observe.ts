@@ -27,17 +27,6 @@ export interface Observation {
 
 type GameEvent = LoggedEvent["event"];
 
-function sumPileDiscarded(events: readonly GameEvent[]): number {
-  let total = 0;
-  for (const event of events) {
-    if (event.type !== "attribute-tokens-discarded") continue;
-    for (const count of Object.values(event.discarded)) {
-      if (typeof count === "number") total += count;
-    }
-  }
-  return total;
-}
-
 const emptyTurn = (
   turn: number,
   playerId: string,
@@ -50,13 +39,6 @@ const emptyTurn = (
   durationMs: null,
   actionCount: 0,
   rejectedCount: 0,
-  energyAtStart: null,
-  energyAtEnd: null,
-  energyPassCause: null,
-  energySpent: 0,
-  energyGained: 0,
-  energyLost: 0,
-  energyPassedAmount: 0,
   damageDealt: 0,
   healAmount: 0,
   damagePrevented: 0,
@@ -83,7 +65,6 @@ function applyEventsToTurn(turn: TurnRecord, events: readonly GameEvent[], state
   return {
     ...turn,
     damageDealt,
-    energySpent: (turn.energySpent ?? 0) + sumPileDiscarded(events),
     healAmount: turn.healAmount + sumField(events, "creature-healed", "amount"),
     damagePrevented: turn.damagePrevented + sumField(events, "damage-prevented", "amount"),
     attacksDeclared,
@@ -161,12 +142,10 @@ export function blankRecording(state: GameState, ctx: ObservationContext): Match
     totalAttacksDeclared: 0,
     totalCardsPlayed: 0,
     totalCardsForged: 0,
-    totalEnergySpent: 0,
     eventCounts: {},
     cardPlayCounts: {},
     cardForgeCounts: {},
     pendingDecisionCounts: {},
-    energyPassCounts: {},
     livingCreaturesAtEnd: living,
     hpRemainingAtEnd: hp,
     turns: [],
@@ -193,7 +172,6 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
   const lastAction = recording.actions[recording.actions.length - 1];
   const deltaMs = lastAction === undefined ? 0 : Math.max(0, ctx.nowMs - Date.parse(lastAction.at));
   const pending = (prevState ?? state).pendingDecision?.type ?? null;
-  const passCause = null;
 
   const sample: ActionSample = {
     seq: recording.actions.length,
@@ -316,9 +294,6 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
       (accepted ? newEvents.filter((event) => event.type === "card-played").length : 0),
     totalCardsForged:
       recording.totalCardsForged + (accepted ? uniqueForgeCardInstanceIds(newEvents).length : 0),
-    totalEnergySpent:
-      (recording.totalEnergySpent ?? 0) +
-      (accepted ? sumPileDiscarded(newEvents) : 0),
     eventCounts: accepted ? mergeCounts(recording.eventCounts, countByType(newEvents)) : recording.eventCounts,
     cardPlayCounts: accepted ? incrementCardPlays(recording.cardPlayCounts, newEvents) : recording.cardPlayCounts,
     cardForgeCounts: accepted
@@ -327,7 +302,6 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
     pendingDecisionCounts: accepted
       ? bumpCount(recording.pendingDecisionCounts, pending)
       : recording.pendingDecisionCounts,
-    energyPassCounts: accepted ? bumpCount(recording.energyPassCounts, passCause) : recording.energyPassCounts,
     livingCreaturesAtEnd: living,
     hpRemainingAtEnd: hp,
     seed: state.rng.seed,

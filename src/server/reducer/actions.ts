@@ -233,7 +233,7 @@ export type GameAction =
       readonly symbolId: SymbolInstanceId;
     }
   /**
-   * Completes Overcharge optional Energy + suppress. Spec `013`.
+   * Completes Overcharge optional symbol + suppress. Spec `013`.
    */
   | {
       readonly type: "RESOLVE_OPTIONAL_OVERCHARGE";

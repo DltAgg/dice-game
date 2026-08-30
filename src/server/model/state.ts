@@ -67,7 +67,7 @@ export interface ChainLink {
  * END_TURN action rather than a phase, because a phase offering exactly one
  * legal move is noise rather than a decision point.
  *
- * Playtest DECIDED (2026-08-17): there is no dedicated absorption phase.
+ * Turn phases are `roll` and `actions` only — banking happens during actions.
  * `ROLL_DICE` enters `actions`. Attribute pile banking, Shield absorb onto a
  * creature, `[Requires]` gates, `[Spend]` burns, attacks, plays, forges, and
  * ready-ritual activates all share that window. Unabsorbed pool symbols stay
@@ -183,15 +183,10 @@ export type PendingDecision =
       readonly type: "choose-attribute-tokens";
       readonly controllerId: PlayerId;
       readonly creatureId: CreatureId;
-      /** How many token pips must be named (already less than the creature's total). */
+      /** How many token pips must be named from the pile owner's attribute pile. */
       readonly amount: number;
-      /**
-       * `drain` (default, Siphon) takes the pips into the controller’s pile.
-       * `transfer` / `copy` move or duplicate them onto `destinationCreatureId`
-       * (spec `015`, parked).
-       */
-      readonly mode?: "drain" | "transfer" | "copy";
-      readonly destinationCreatureId?: CreatureId;
+      /** `drain` moves the named pips into the controller's pile (default). */
+      readonly mode?: "drain";
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
     }

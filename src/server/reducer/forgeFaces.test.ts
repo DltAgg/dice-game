@@ -11,15 +11,15 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function placedReadyRitual(cardId: CardId, _progress: AttributeTokens) {
   const base = actionsReady([cardId]);

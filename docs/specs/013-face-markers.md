@@ -30,7 +30,7 @@ as data — no card-id special cases in the reducer.
 ### Suppress inherent until next roll
 
 - `DieSlot.suppressInherentNextRoll`.
-- Decay On roll / Overcharge (if Energy taken): set on the chosen / source slot.
+- Decay On roll / Overcharge (if extra symbol taken): set on the chosen / source slot.
 - On the controller’s next `ROLL_DICE`, every suppress flag on rolled dice is
   cleared; if the **showing** slot had the flag, that face’s `onRoll` is skipped
   (overloads still fire).
@@ -65,7 +65,7 @@ as data — no card-id special cases in the reducer.
 
 ### Overcharge
 
-- On roll: optional gain Energy; if accepted, suppress inherent next roll on
+- On roll: optional generate 1 matching symbol; if accepted, suppress inherent next roll on
   the source slot.
 - On absorb: arm `resolveNextFaceEffectTwice` for the controller — the next
   effect with `sourceDieId` set is pushed twice then the flag clears.
@@ -130,7 +130,7 @@ Match-ui must render (hotseat + online), **in addition to `012` pendings**:
 |---|---|
 | `choose-die-slot` | Pick a legal die face/slot (Corruption target, Natural suppress, Corrupted lock/strip, Catalyst copy, Infection spread). Show Decline when `optional`. |
 | `choose-pool-symbol` | Pick an eligible synthetic pool symbol (Catalyst wildcard). |
-| `optional-overcharge` | Accept (+1 Energy, Overcharge face) or decline. |
+| `optional-overcharge` | Accept (+1 pool symbol, Overcharge face) or decline. |
 | `optional-bonus-attack` | During actions: Decline, or declare the named creature’s **basic** attack (pick target). |
 
 Also surface Corruption markers / suppress / resource-lock on die faces, and
@@ -143,10 +143,10 @@ unusable pool symbols as non-spendable.
 - [x] Infection roll spread
 - [x] Decay suppress + strip→unusable Corruption
 - [x] Catalyst wildcard + copy appeared synthetic onRoll
-- [x] Overcharge optional Energy / suppress / double next face effect
+- [x] Overcharge optional symbol / suppress / double next face effect
 - [x] Instinct optional actions-window basic
 - [x] No push; stun untouched
 
 ## Tests
 
-- [x] `src/game/reducer/faceMarkers.test.ts`
+- [x] `src/server/reducer/faceMarkers.test.ts`

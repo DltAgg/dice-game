@@ -8,7 +8,6 @@ export type GameError =
   | "NOT_ACTIVE_PLAYER"
   | "UNKNOWN_ENTITY"
   | "INVALID_TARGET"
-  | "INSUFFICIENT_ENERGY"
   | "INSUFFICIENT_SYMBOLS"
   /** The attacker has not absorbed the attributes its attack requires. */
   | "ATTACK_NOT_FUELLED"

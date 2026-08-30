@@ -10,7 +10,7 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
@@ -23,7 +23,7 @@ import {
  */
 
 const forgeReady = (cards = [ECLIPSE]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 const dieIdOf = (state: ReturnType<typeof forgeReady>, index = 0) => {
   const id = state.players[P1]?.dieIds[index];
@@ -82,7 +82,7 @@ describe("forging a face", () => {
     expect(getFaceCard(INSIGHT_RUNE)?.kind).toBe("synthetic");
   });
 
-  it("spends the card's Energy cost and sends it to the graveyard", () => {
+  it("spends the card's playCost and sends it to the graveyard", () => {
     const state = forgeReady();
     const cardInstanceId = handCardIdAt(state, P1, 0);
     const result = forge(state);
@@ -137,7 +137,7 @@ describe("forging a face", () => {
     expect(attached.ok).toBe(true);
     if (!attached.ok) return;
 
-    const forgeReadyState = withEnergy(
+    const forgeReadyState = withPile(
       withHand(withPhase(attached.state, "actions"), P1, [LIVING_LIBRARY]),
       P1,
       10,
@@ -162,7 +162,7 @@ describe("what forging refuses", () => {
   });
 
   it("refuses the same slot named twice", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]),
       P1,
       10,
@@ -246,7 +246,7 @@ describe("what forging refuses", () => {
   });
 
   it("refuses outside the actions phase", () => {
-    const state = withEnergy(withHand(withPhase(newMatch(), "roll"), P1, [ECLIPSE]), P1, 10);
+    const state = withPile(withHand(withPhase(newMatch(), "roll"), P1, [ECLIPSE]), P1, 10);
     const result = forge(state);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("INVALID_PHASE");

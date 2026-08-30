@@ -1,17 +1,13 @@
 # 016 — Attribute pile-up resource system
 
-Status: **IN PROGRESS** — track phases in
+Status: **IMPLEMENTED** · checklist
 [`016-attribute-pile-up.STATUS.md`](./016-attribute-pile-up.STATUS.md).
-
-Supersedes the Pokémon-style “absorb attributes onto creatures / rituals”
-attack and Active-when model decided 2026-08-07 (see `OPEN_DESIGN.md`).
 
 ## Intent
 
-Physical conversion was drowning in counters on individual cards. Attributes
-become a **player-held pile** that persists across turns. Creatures still hold
-Shield, Toxin, and similar creature tokens. Absorb means banking a rolled
-attribute pip into that pile (or granting Shield onto a creature).
+Attributes live in a **player-held pile** that persists across turns. Creatures
+hold Shield, Toxin, and similar **creature markers**. Absorb means banking a
+rolled attribute pip into the pile (or granting Shield onto a creature).
 
 ## Rules
 
@@ -34,47 +30,37 @@ attribute pip into that pile (or granting Shield onto a creature).
 6. **`[Requires]` / `[Spend]`.** `[Requires: …]` is a pile **gate** (must hold,
    not spent). `[Spend: …]` **burns** from the pile (card `effect.requires`,
    ritual activate `spend`, attack `discards`). Wildcards may cover shortfall.
-7. **Attacks.** `requires` is checked against the attacker’s owner’s
+7. **Attacks.** `requires` is checked against the attacker's owner's
    `attributePool` (not spent). `discards` is checked and burned. **Both may
    apply** on one attack. Same-turn absorb **can** enable an attack
-   (pile updates immediately — no EOT delay).
+   (pile updates immediately).
 8. **Rituals.** No progress counters on the ritual card.
-   - `activeWhen` (if any): the owner’s pile must meet the requirement for the
+   - `activeWhen` (if any): the owner's pile must meet the requirement for the
      ritual to be / become `ready`.
    - Optional `spend` on the ritual region: burned from the pile on
-     `ACTIVATE_RITUAL` (in addition to any `additionalEnergy`).
+     `ACTIVATE_RITUAL`.
    - Continuous standing abilities while `ready` do not spend `activeWhen` /
      `spend` unless the card activates.
-9. **Pack feeding / creature-to-creature attribute tokens.** Superseded for the
-   pile model; convert to pile move/copy or park in `DEFERRED_CATALOGUE` /
-   STATUS Phase 6.
-10. **Catalogue identity.** Card / creature / face `attribute` type-line tags
-    are unchanged (deck building and forge matching).
+9. **Catalogue identity.** Card / creature / face `attribute` type-line tags
+   are unchanged (deck building and forge matching).
 
-Cite bible §§7, 17, 26, 31, 33 for fuel vs engine split; physical token budget
-is the design driver for this supersession.
+## State
 
-## State Changes
-
-| Field | Change |
+| Field | Role |
 |---|---|
-| `PlayerState.attributePool` | **Add** — persistent `AttributeTokens` |
-| `CreatureState.attributeTokens` | **Remove** |
-| `CardInstance.ritualProgress` | **Remove** |
-| `CardInstance.ritualProgressCreditedThisTurn` | **Remove** |
-| `RitualRegion.spend?` | **Add** — optional `SymbolRequirement` burned on activate |
-| `GameState.symbols` | Unchanged turn pool |
-| Creature `shields` / toxin / markers | Unchanged |
+| `PlayerState.attributePool` | Persistent `AttributeTokens` |
+| `RitualRegion.spend?` | Optional `SymbolRequirement` burned on activate |
+| `GameState.symbols` | Turn pool |
+| Creature `shields` / toxin / markers | On creatures |
 
 ## Actions
 
-| Action | New semantics |
+| Action | Semantics |
 |---|---|
-| `ABSORB_SYMBOL` | Attribute → owner pile (no `creatureId` for attributes). Shield → requires `creatureId`. |
-| `ABSORB_SYMBOL_TO_RITUAL` | **Remove** |
-| `ACTIVATE_RITUAL` | Check pile vs `activeWhen`; burn `spend` if present; then existing chain |
+| `ABSORB_SYMBOL` | Attribute → owner pile. Shield → requires `creatureId`. |
+| `ACTIVATE_RITUAL` | Check pile vs `activeWhen`; burn `spend` if present |
 | `ATTACK` | Fuel from owner `attributePool` |
-| `END_TURN` | No creature attribute payout; pile persists; turn symbols expire |
+| `END_TURN` | Pile persists; turn symbols expire |
 
 ## Validation
 
@@ -84,7 +70,7 @@ is the design driver for this supersession.
 - Attack: owner pile meets `requires` (gate) and `discards` (Spend) when printed.
 - Ritual ready: pile meets `activeWhen` (or no gate → ready on place).
 - Ritual activate: orientation `ready`, pile still meets `activeWhen`, can pay
-  `spend` + `additionalEnergy`.
+  `spend`.
 
 ## Resolution
 
@@ -95,40 +81,26 @@ is the design driver for this supersession.
 4. Attack declare: check gate and Spend → burn discards if printed → open
    attack chain as today.
 
-## Networking
-
-Host authority only; clients send intent-shaped actions. No new protocol kinds
-beyond existing action names (ritual absorb action removed).
-
-## Persistence
-
-Loadouts / decks unchanged. Match state serialization must include
-`attributePool` and drop removed fields.
-
 ## UI
 
-- Show each seat’s attribute pile.
+- Show each seat's attribute pile.
 - Attribute absorb: select pip → bank (no creature click).
 - Shield absorb: select pip → click creature.
-- Rituals: no pip assignment; show Active-when / Spend from pile.
-- Creature panels: no attribute token chips.
+- Rituals: show Active-when / Spend from pile.
 
 ## Acceptance Criteria
 
-- [x] No `attributeTokens` on creatures; attacks use `attributePool`
-- [x] Absorbing Martial increases the player’s Martial pile immediately
+- [x] Attacks use `attributePool`
+- [x] Absorbing Martial increases the player's Martial pile immediately
 - [x] Same-turn absorb can enable an attack that requires that attribute
 - [x] Rituals ready/activate from pile; optional spend burns on activate
-- [x] `ABSORB_SYMBOL_TO_RITUAL` gone; Shield still creature-targeted
+- [x] Shield absorb still creature-targeted
 - [x] Rulebook §§6–8, 10, 13 and KEYWORDS Absorb text match play
 - [x] DoD: `npm run typecheck && npm test && npm run lint`
-- [ ] STATUS phases ticked as content converts
 
 ## Tests
 
 - [x] Bank absorb + pool increment + On absorb face fire
 - [x] Attack requires / discards against pile
-- [x] Ritual ready from pile + spend on activate
-- [x] Shield absorb still grants on creature
-- [x] Requires vs absorb mutual exclusion on turn pool
-- [x] EOT: pile persists; unabsorbed symbols expire
+- [x] Ritual Active-when / spend
+- [x] `attributePileUp.test.ts` and related reducer suites

@@ -74,12 +74,12 @@ in UI or comments that disagree with `GameRulesConfig`.
 | Combo | Luminar, Wild, Mechanical, Toxin | Sequencing / chaining engine damage onto the **enemy legendary** — not large generic numbers |
 | Control | Arcane, Darkness | Long-term engine + disruption **and** converting that engine into lethal damage on the **enemy legendary** (cards / rituals / faces / statuses), while protecting your own. Engine hate over cheap *destroy*; not “no damage.” Weak creature attacks are not a win path. Corruption is **not** Control’s future home. |
 | Burn | Toxin, Corruption | Continuous damage-over-time (markers, turn-start ticks, on-roll / on-absorb pings) stacked onto the **enemy legendary**, closing without cheap Aggro creature beatdown. Builtin `BURN_*` / `deck-burn`. |
-| Support | Arcane, Luminar, Wild, Mechanical | Splashable utility; printed costs still usually 2+ (1-Energy plays via discounts). Arcane control stays medium/high cost |
+| Support | Arcane, Luminar, Wild, Mechanical | Splashable utility; printed costs still usually 2+ (1-token plays via discounts). Arcane control stays medium/high cost |
 
 | Attribute | Must still look like | Exclusive verb (do not appear on other attrs) |
 |---|---|---|
 | Martial | Direct combat / efficient attacks | Ally creature movement |
-| Wild | Creature pressure / flexible aggression | Pack feeding (share absorbed tokens) |
+| Wild | Creature pressure / flexible aggression | Extra attacks (`[Frenzy]`) |
 | Toxin | Attrition / delayed ticks / burn stacking | Toxin counter placement |
 | Luminar | Synergy / support / combo value | Damage prevention |
 | Mechanical | Engine construction / manipulation | Own-die reconstruction |
@@ -100,7 +100,7 @@ When reviewing a card or the catalogue, answer:
 1. **Home** — which archetype(s) want this, and why (role: pressure, conversion, gate, disruption, engine piece, splash)?
 2. **Orphan** — if no list wants it at 2+ copies *or* as a 1–2 of tech, say so. Forge-only (`rulesText: ""`) is allowed but must be intentional and rare.
 3. **Identity** — does the effect still read as that attribute when played outside its main archetype? Does it steal another attribute’s **exclusive verb** (`design.md`)?
-4. **Cost / opportunity** (bible §34) — Energy, symbols, setup, deck commitment vs payoff. Removal should cost more than damage. Treat printed Energy 1 as a smell unless the card is a documented niche exception; 1-Energy turns should come from **cost reduction** on 2+ cards so heavier cards stay appealing.
+4. **Cost / opportunity** (bible §34) — pile tokens, symbols, setup, deck commitment vs payoff. Removal should cost more than damage. Treat printed 1-token `playCost` as a smell unless the card is a documented niche exception; 1-token turns should come from **cost reduction** on 2+ cards so heavier cards stay appealing.
 5. **Engine-builder test** — unflavored burn with no forge/engine touch is usually a miss (`design.md`). Engine-converted Control damage is **not** a miss.
 6. **Loadout fit** — do builtin (or proposed) face decks actually supply the forges this card’s forge region needs? Do rituals have absorbable attributes on the squad/dice plan?
 

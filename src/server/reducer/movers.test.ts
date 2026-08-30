@@ -8,14 +8,14 @@ import {
   handCardIdAt,
   newMatch,
   P1,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 function equip(state: ReturnType<typeof newMatch>, creatureId: CreatureId, handIndex = 0) {
   return expectOk(

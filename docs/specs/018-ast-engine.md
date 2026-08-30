@@ -61,7 +61,7 @@ Amounts are expressions, not only literals.
 | `min` / `max` | `{ of: ValueExpr[] }` |
 | `count` | `{ query: CountQuery }` (e.g. toxin on target) |
 | `remaining` | Result of a prior strip / consume in this effect |
-| `energyPaid` | Header pile cost actually paid — **DEFERRED** until a proving card (do not implement silently) |
+| `playCostPaid` | Header pile cost actually paid — **DEFERRED** until a proving card (do not implement silently) |
 
 Evaluator is a method on the executor/context, used by handlers.
 

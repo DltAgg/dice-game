@@ -123,7 +123,6 @@ Prefer members already in `src/server/model/effects.ts` and selectors already in
 |---|---|
 | `[Strike N]` / Deal N | `damage` + target |
 | `[Heal N]` | `heal` |
-| `[Gain N Energy]` | `gain-energy` |
 | `[Generate N X]` | `generate-symbol` |
 | `[Draw N]` / `[Discard N]` | `draw-cards` / `discard-cards` |
 | `[Empower N]` | `next-attack-bonus` |
@@ -179,11 +178,11 @@ namedSynthetic(
   EXAMPLE_FACE,
   "Example Face",
   "wild",
-  "On roll: [Gain 1 Energy].\n" +
+  "On roll: [Generate 1 Wild].\n" +
     "On absorb: [Empower 1].",
 );
 // When wiring:
-// onRoll: [{ type: "gain-energy", amount: 1 }],
+// onRoll: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
 // onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
 ```
 

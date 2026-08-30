@@ -12,7 +12,7 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
@@ -23,7 +23,7 @@ import {
  */
 
 const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], fuel = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, fuel);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, fuel);
 
 describe("playing a card for its effect", () => {
   it("resolves the effect and spends the play cost", () => {
@@ -62,7 +62,7 @@ describe("playing a card for its effect", () => {
   it("draws two and discards one for Eclipse", () => {
     // newMatch() has an empty deck, so seed two cards for the draw and leave
     // Eclipse alone in hand.
-    const ready = withEnergy(
+    const ready = withPile(
       withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE, ECLIPSE, ECLIPSE]),
       P1,
       10,
@@ -148,7 +148,7 @@ describe("play cost and the pile", () => {
   });
 
   it("keeps the turn through a discard pending decision", () => {
-    const ready = withEnergy(
+    const ready = withPile(
       withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE, ECLIPSE]),
       P1,
       10,
@@ -195,7 +195,7 @@ describe("play cost and the pile", () => {
   });
 
   it("refuses PLAY_CARD from a non-active player", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]),
       P1,
       10,
@@ -211,11 +211,7 @@ describe("play cost and the pile", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("NOT_ACTIVE_PLAYER");
   });
-});
-
-describe.skip("rituals on the field", () => {
-  it("parked — 016 Phase 4 ritual content", () => {});
-});
+  });
 
 describe("what playing refuses", () => {
   it("plays Arcane Echo and asks which die to re-apply", () => {
@@ -233,7 +229,7 @@ describe("what playing refuses", () => {
   });
 
   it("refuses outside the actions phase", () => {
-    const state = withEnergy(withHand(withPhase(newMatch(), "roll"), P1, [ECLIPSE]), P1, 10);
+    const state = withPile(withHand(withPhase(newMatch(), "roll"), P1, [ECLIPSE]), P1, 10);
 
     const result = advance(state, {
       type: "PLAY_CARD",
@@ -246,7 +242,7 @@ describe("what playing refuses", () => {
   });
 
   it("refuses another player's card", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(withHand(withPhase(newMatch(), "actions"), P2, [ECLIPSE]), P1, []),
       P1,
       10,

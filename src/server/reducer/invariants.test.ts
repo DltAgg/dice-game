@@ -117,7 +117,7 @@ describe("structural invariants across played matches", () => {
     }
   });
 
-  it.each(SAMPLE_SEEDS)("seed %i: attack fuel is absorb, spend, and pack feeding", (seed) => {
+  it.each(SAMPLE_SEEDS)("seed %i: attack fuel is absorb and spend", (seed) => {
     for (const state of everyStateOf(seed)) {
       const net = new Map<string, number>();
       for (const { event } of state.log) {

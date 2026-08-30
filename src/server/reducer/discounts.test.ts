@@ -20,7 +20,7 @@ import {
   P1,
   P2,
   withAttributePool,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
@@ -38,7 +38,7 @@ function controlMatch() {
 }
 
 const actionsReady = (cards: Parameters<typeof withHand>[2], fuel = 10) =>
-  withEnergy(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, fuel);
+  withPile(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, fuel);
 
 function withForgeDiscount(
   state: GameState,

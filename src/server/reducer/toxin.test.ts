@@ -10,7 +10,7 @@ import {
   P1,
   P2,
   withDamage,
-  withEnergy,
+  withPile,
   withPhase,
 } from "../testing/scenario.js";
 import { applyToxin } from "./resolution.js";
@@ -33,10 +33,10 @@ function withToxin(state: GameState, creatureId: CreatureId, toxinMarkers: numbe
 
 describe("toxin counters", () => {
   it("deals damage equal to markers at end of the owner's turn, then clears", () => {
-    const base = withEnergy(withPhase(newMatch(), "actions"), P2, 3);
+    const base = withPile(withPhase(newMatch(), "actions"), P2, 3);
     const creatureId = creatureIdAt(base, P2, 0);
     const poisoned = withToxin(withDamage(base, creatureId, 0), creatureId, 2);
-    const asP2 = { ...poisoned, activePlayerId: P2, energy: { holderId: P2, value: 3 } };
+    const asP2 = { ...poisoned, activePlayerId: P2 };
 
     const result = advance(asP2, { type: "END_TURN", playerId: P2 });
 
@@ -65,7 +65,7 @@ describe("toxin counters", () => {
   });
 
   it("detonates markers applied during the owner's own turn at that turn's end", () => {
-    const base = withEnergy(withPhase(newMatch(), "actions"), P1, 3);
+    const base = withPile(withPhase(newMatch(), "actions"), P1, 3);
     const creatureId = creatureIdAt(base, P1, 0);
     const poisoned = withToxin(withDamage(base, creatureId, 0), creatureId, 2);
 

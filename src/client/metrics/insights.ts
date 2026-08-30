@@ -2,7 +2,6 @@ import {
   closeByTurn,
   deckPairRecords,
   defeatCloseKind,
-  energySpentOf,
   firstAttackTurn,
   firstDamageTurn,
   firstDefeatTurn,
@@ -219,7 +218,6 @@ export interface MetricsAggregates {
   readonly actionMix: Readonly<Record<string, number>>;
   readonly eventMix: Readonly<Record<string, number>>;
   readonly pendingMix: Readonly<Record<string, number>>;
-  readonly energyPassMix: Readonly<Record<string, number>>;
   readonly cardPlayMix: Readonly<Record<string, number>>;
   readonly cardForgeMix: Readonly<Record<string, number>>;
   readonly playVsForgeMix: Readonly<Record<string, number>>;
@@ -237,8 +235,6 @@ export interface MetricsAggregates {
   readonly firstDefeatHistogram: Readonly<Record<string, number>>;
   readonly closeByTurn: readonly CloseTurnPoint[];
   readonly deathsByTurnMix: Readonly<Record<string, number>>;
-  readonly energyByTurnMix: Readonly<Record<string, number>>;
-  readonly meanEnergySpentPerTurn: number | null;
   readonly firstPlayerWinRate: number | null;
   readonly firstPlayerDecided: number;
   readonly firstPlayerWinMix: Readonly<Record<string, number>>;
@@ -319,11 +315,6 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
   const p1Wins = finished.filter((recording) => recording.winnerId === "p1").length;
   const p2Wins = finished.filter((recording) => recording.winnerId === "p2").length;
   const decidedWinners = p1Wins + p2Wins;
-  const energyPerTurn = finished.flatMap((recording) => {
-    const spent = energySpentOf(recording);
-    if (spent === null || recording.totalTurns <= 0) return [];
-    return [spent / recording.totalTurns];
-  });
   const closeSeries = closeByTurn(unique);
   const pairs = deckPairRecords(finished);
   const firstPlayerDecided = firstPlayerResults.length;
@@ -363,7 +354,6 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
     actionMix: actionTypeMix(unique),
     eventMix: mixFromRecords(unique, (recording) => recording.eventCounts),
     pendingMix: mixFromRecords(unique, (recording) => recording.pendingDecisionCounts),
-    energyPassMix: mixFromRecords(unique, (recording) => recording.energyPassCounts),
     cardPlayMix: mixFromRecords(unique, (recording) => recording.cardPlayCounts ?? {}),
     cardForgeMix: mixFromRecords(unique, (recording) => recording.cardForgeCounts ?? {}),
     playVsForgeMix: {
@@ -387,8 +377,6 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
     firstDefeatHistogram: firstDefeatHistogram(finished),
     closeByTurn: closeSeries,
     deathsByTurnMix: mixFromCloseSeries(closeSeries, (point) => point.meanDeaths),
-    energyByTurnMix: mixFromCloseSeries(closeSeries, (point) => point.meanEnergySpent),
-    meanEnergySpentPerTurn: mean(energyPerTurn),
     firstPlayerWinRate: firstPlayerDecided === 0 ? null : firstPlayerWins / firstPlayerDecided,
     firstPlayerDecided,
     firstPlayerWinMix: {
@@ -511,11 +499,12 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       id: "late-first-death",
       severity: "warn",
       title: "The board is slow to take a creature off",
-      detail: `Median first death is ${agg.medianFirstDefeatTurn?.toFixed(1) ?? "—"} (after turn ${String(FIRST_DEATH_LATE_TURN)} is late). ${agg.pctNeverDefeat?.toFixed(0) ?? "—"}% of finished matches never logged a defeat. Pair with Energy spent / turn: high spend + no deaths is conversion; low spend + no deaths is an unused clock.`,
+      detail: `Median first death is ${agg.medianFirstDefeatTurn?.toFixed(1) ?? "—"} (after turn ${String(FIRST_DEATH_LATE_TURN)} is late). ${agg.pctNeverDefeat?.toFixed(0) ?? "—"}% of finished matches never logged a defeat. Pair with damage per turn and play/forge mix to see whether the board is failing to convert setup into kills.`,
       evidence: {
         medianFirstDefeatTurn: agg.medianFirstDefeatTurn,
         pctNeverDefeat: agg.pctNeverDefeat === null ? null : Number(agg.pctNeverDefeat.toFixed(1)),
-        meanEnergySpentPerTurn: agg.meanEnergySpentPerTurn,
+        meanDamagePerTurn:
+          agg.meanDamagePerTurn === null ? null : Number(agg.meanDamagePerTurn.toFixed(2)),
       },
     });
   }
@@ -583,19 +572,6 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       title: "High illegal-action rate",
       detail: `${(agg.rejectRate * 100).toFixed(0)}% of recorded attempts were rejected. That is UI affordance / seat-gating noise, not rules duration — but it still makes the table feel sticky.`,
       evidence: { rejectRate: Number((agg.rejectRate * 100).toFixed(1)) },
-    });
-  }
-
-  const overshoot = agg.energyPassMix.overshoot ?? 0;
-  const voluntary = agg.energyPassMix["voluntary-pass"] ?? 0;
-  if (overshoot + voluntary >= 8 && overshoot / (overshoot + voluntary) >= 0.7) {
-    insights.push({
-      id: "energy-overshoot",
-      severity: "info",
-      title: "Turns usually end by energy overshoot, not a clean pass",
-      detail:
-        "Players are spending through the marker. That can mean Energy is the real clock (good) or that they cannot convert leftover Energy into a close (bad if stall rate is also high).",
-      evidence: { overshoot, voluntary },
     });
   }
 
