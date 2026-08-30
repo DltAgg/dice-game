@@ -53,7 +53,7 @@ The **or** between forge and effect is load-bearing: one use, one region.
 | Martial | Direct combat / efficient attacks | Ally creature movement (swap / reposition) | Aggro |
 | Wild | Creature pressure / flexible aggression | Extra attacks (`[Frenzy]`) | Aggro, Combo, Support |
 | Toxin | Attrition / delayed damage / **burn ticks** | Toxin counter placement | Burn, Combo |
-| Luminar | Synergy / support / combo value | Damage prevention | Combo, Support |
+| Luminar | Synergy / support / combo value | `[Prevent]` on **reactions** (attack chain) | Combo, Support |
 | Mechanical | Engine construction / manipulation | Own-die reconstruction | Combo, Support |
 | Arcane | Control / manipulation / support | See and rearrange top of deck | Control, Support |
 | Corruption | **Continuous burn** (damage over time); contaminate-dice is minor spice that feeds burn | Opponent-die manipulation | Burn |
@@ -105,7 +105,7 @@ Pairings that keep the pie readable:
 |---|---|---|---|
 | **Arcane** | See and rearrange the top of your deck | Look at top N; reorder; put some to hand / bottom / top; deck search (`search-deck`) as the heavy form | Draw without looking; mill; GY search |
 | **Darkness** | Mill | Put cards from a deck into a graveyard (yours or the opponent’s), including named-from-deck piles that land in GY | Discard from hand; return from GY; look at top without GY |
-| **Luminar** | Damage prevention | Prevent N, prevent-and-reflect, “when you prevent → …”, standing prevent buffers | Shield counters; heal; redirect (Aegis-style) unless the print is actually prevent |
+| **Luminar** | Damage prevention (`[Prevent]` on reactions) | `[Prevent]` / `grant-attack-prevent` on **`type: "reaction"`** cards only, during a living attack chain link, onto that attack’s target; prevent-and-reflect; `On prevent damage:` payoffs | Proactive `[Prevent]` on faces, On absorb, instants, equipment, or standing passives; `damagePreventBuffer` / proactive arms; Shield/Heal standing in for Prevent |
 | **Corruption** | Opponent-die manipulation | Forge / markers / lock / suppress / strip / steal overloads on **their** faces; opponent-die named specials | Own-die forge; own overloads; Toxin markers on creatures |
 | **Toxin** | Toxin counter placement | Apply / spread / arm-attack Toxin markers; payoffs that *require* those markers | Corruption face ticks; generic delayed damage with no Toxin marker |
 | **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Command) | Enemy push (banned); extra attacks (`[Frenzy]` is Wild); sharing tokens |
@@ -118,6 +118,11 @@ Pairings that keep the pie readable:
 - **Proving cards (already in catalogue):** Arcane — Insight Rune, Living Library, Consult, Sift, Second Wind. Darkness — Dark Pact, Bury the Name, Grave Whisper. Luminar — Glimmer and prevent package (spec `009`), Sidestep, Hunting Armour. Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap, Command, Dress Ranks, Predator’s Claws, Insignia of Command. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling, Arcane Echo (re-fire). Wild — Varcolac (creature Frenzy proving: ally-other / Coordinated Hunt), Instinct absorb Frenzy, Pounce (Spend + Frenzy), Den Share (On absorb Wild Frenzy). Share the Kill is `[Drain]` (shared). Pack Share is `[Generate]`.
 - **Off-pie leaks** on Sift, Second Wind, Sidestep, Hunting Armour, Safety Latch, Predator’s Claws, Insignia of Command, Hunter’s Collar, Riposte, Revelation, Pack absorb, Garuda Dive, and Arcane Echo were **fixed** (moved onto the verb’s owner or rewritten off the stolen verb). Do not reintroduce them. Adrenaline / Rethrow (own-die reroll) are not anyone’s exclusive.
 - **Wild vs Martial:** Martial moves the **body**. Wild grants **extra attacks** (`[Frenzy]`). A Wild card that swaps positions is in the wrong attribute; a Martial card that grants Frenzy is in the wrong attribute.
+- **`[Prevent]` is reaction-exclusive** (spec `009`, `OPEN_DESIGN` 2026-08-29). Only
+  Luminar **reaction** cards may print `[Prevent]` / use `grant-attack-prevent`.
+  It answers an attack declaration on the chain — no attack link → whiff. Proactive
+  Luminar mitigation uses `[Mark N Shield]` / `[Heal]`, not `[Prevent]` on faces,
+  On absorb, instants, or standing abilities.
 - **Mechanical vs Corruption:** Mechanical rebuilds **your** engine. Corruption contaminates **theirs**. An opponent-die forge on a Mechanical card is in the wrong attribute.
 
 ## Card kinds — when to use which
@@ -129,13 +134,14 @@ Pairings that keep the pie readable:
 | Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
 | Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
 | Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → pile meets Active-when → `ACTIVATE_RITUAL` → GY |
-| Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when is checked against the owner's pile |
+| Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Gate is owner’s **attribute pile** |
 | Face (natural) | Starting identity faces | All eight attrs + Shield |
 | Face (synthetic) | Named specials only | Pool → install; `onRoll` / `onAbsorb`. Never blank `face-synthetic-<attr>` |
 
-Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
-cumulative (`Arcane + Corruption + Corruption`) and is checked against the
-owner's **attribute pile** — not banked on the ritual card.
+Rituals are a **main type** (`type: "ritual"`), not a subtype. `activeWhen` is a
+**pile gate** on the owner’s `attributePool` (`Arcane + Corruption + Corruption`
+means hold those counts in the pile). Optional `ritual.spend` burns pile tokens
+on activate. See [attribute-pile.md](attribute-pile.md).
 
 Current catalogue cards **forge their own attribute**. Dual-kind cards may forge
 Natural or Synthetic of that attribute; many Toxin / Mechanical / Corruption /

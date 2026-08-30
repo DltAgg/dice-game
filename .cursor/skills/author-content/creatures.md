@@ -36,7 +36,8 @@ export const EXAMPLE: CreatureDefinitionId =
 
 ## Rules of thumb
 
-- Attacks spend from the owner's **attribute pile** (`requires` gate and/or `discards` Spend).
+- Attacks use the **owner’s attribute pile** (`requires` = gate, `discards` = Spend).
+  Same-turn banking can enable an attack that needs that attribute.
 - Always keep full English in `rulesText` / `passiveRulesText`. Passives and
   attack text use holder voice: **you** is this creature’s controller;
   **opponent** is their opponent.

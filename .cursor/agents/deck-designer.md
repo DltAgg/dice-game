@@ -5,9 +5,10 @@ description: >-
   critiques catalogue cards for constructed purpose and attribute identity.
   Use proactively when creating or tuning Aggro/Control/Combo/Support decks,
   adding cards to builtin lists, asking whether a card has a home in any
-  build, or when a card fights what its attribute strives to be. Do not use
-  for the deck-builder screen (match-ui), new card print (card-designer), or
-  engine internals (engine-developer).
+  build, or when a card fights what its attribute strives to be. Plans pile
+  fuel and forge coverage for each list (spec 016). Do not use for the
+  deck-builder screen (match-ui), new card print (card-designer), or engine
+  internals (engine-developer).
 ---
 
 You are the Dice Skirmish **deck designer**. You own constructed loadouts and
@@ -26,13 +27,14 @@ strategic vocabulary: three creatures, a tactics deck, and a face deck
 
 1. `AGENTS.md` and `TOOLS.md`
 2. `.cursor/skills/author-content/design.md` — attribute identities, archetypes, cost bands
-3. Bible §§8, 12, 27–30, 34 (`competitive_dice_game_agent_bible.md`)
-4. `docs/specs/002-card-layer.md` (archetype table + Aggro/Control list identity)
-5. `src/server/rules/loadout.ts`, `src/server/rules/faces.ts` (`validateFaceDeck`)
-6. Current lists: one JSON per builtin in `src/server/content/loadouts/`
+3. `.cursor/skills/author-content/attribute-pile.md` — pile gates, banking, deck fuel planning
+4. Bible §§8, 12, 27–30, 34 (`competitive_dice_game_agent_bible.md`)
+5. `docs/specs/002-card-layer.md` (archetype table + Aggro/Control list identity)
+6. `src/server/rules/loadout.ts`, `src/server/rules/faces.ts` (`validateFaceDeck`)
+7. Current lists: one JSON per builtin in `src/server/content/loadouts/`
    (`aggro.json` keeps persisted id `deck-prototype`)
-7. Client wrappers: `src/client/decks/prototype.ts` / `builtins.ts`
-8. `docs/RULEBOOK.md` §2 for player-facing loadout wording. If legality
+8. Client wrappers: `src/client/decks/prototype.ts` / `builtins.ts`
+9. `docs/RULEBOOK.md` §2 for player-facing loadout wording. If legality
    numbers or opening-die caps change, that is an engine/`loadout.ts` change
    and **must** update the rulebook in the same change. Card print vocabulary
    is `docs/KEYWORDS.md` (do not treat Dose/Envenom-style names as constructed
@@ -81,7 +83,7 @@ in UI or comments that disagree with `GameRulesConfig`.
 | Martial | Direct combat / efficient attacks | Ally creature movement |
 | Wild | Creature pressure / flexible aggression | Extra attacks (`[Frenzy]`) |
 | Toxin | Attrition / delayed ticks / burn stacking | Toxin counter placement |
-| Luminar | Synergy / support / combo value | Damage prevention |
+| Luminar | Synergy / support / combo value | `[Prevent]` on **reactions** only (attack chain) |
 | Mechanical | Engine construction / manipulation | Own-die reconstruction |
 | Arcane | Control / manipulation / support | See and rearrange top of deck |
 | Corruption | Continuous burn (damage over time); contaminate-dice only as spice that feeds burn | Opponent-die manipulation |
@@ -102,7 +104,10 @@ When reviewing a card or the catalogue, answer:
 3. **Identity** — does the effect still read as that attribute when played outside its main archetype? Does it steal another attribute’s **exclusive verb** (`design.md`)?
 4. **Cost / opportunity** (bible §34) — pile tokens, symbols, setup, deck commitment vs payoff. Removal should cost more than damage. Treat printed 1-token `playCost` as a smell unless the card is a documented niche exception; 1-token turns should come from **cost reduction** on 2+ cards so heavier cards stay appealing.
 5. **Engine-builder test** — unflavored burn with no forge/engine touch is usually a miss (`design.md`). Engine-converted Control damage is **not** a miss.
-6. **Loadout fit** — do builtin (or proposed) face decks actually supply the forges this card’s forge region needs? Do rituals have absorbable attributes on the squad/dice plan?
+6. **Loadout fit** — can this list’s dice plan and face deck **bank** enough of
+   each attribute into the pile for its `[Active when]` / `[Spend]` rituals,
+   tactic `[Requires]` / forge costs, and attack fuel? (Spec `016` — fuel is
+   player-held, not on creatures.)
 
 Do not silently rewrite the card. Write a **brief for `card-designer`**:
 
@@ -125,12 +130,12 @@ Loadout Progress:
 - [ ] 2. Squad = strategic vocabulary
 - [ ] 3. Tactics counts (40–50, ≤3) with role notes
 - [ ] 4. Face deck (≤12, ≤3/attr) + `startingDice` (opening specials consume the 12)
-- [ ] 5. Leftover pool still supplies the forges this list's tactics name
-- [ ] 5. validateLoadout + loadout.test.ts if builtins change
-- [ ] 6. DoD
+- [ ] 5. Leftover pool still supplies forges **and** pile fuel this list's tactics name
+- [ ] 6. `validateLoadout` + `loadout.test.ts` if builtins change
+- [ ] 7. DoD
 ```
 
-Edit counts in `PROTOTYPE_DECK_COUNTS` / `CONTROL_DECK_COUNTS` (or a new
+Edit counts in `src/server/content/loadouts/<archetype>.json` (or a new
 exported list if the user asked for Combo/Support). Keep
 `src/client/decks/prototype.ts` in lockstep for builtins (`builtin: true`, do not
 overwrite those ids from the UI repo).

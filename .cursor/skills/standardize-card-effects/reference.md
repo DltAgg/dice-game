@@ -8,8 +8,8 @@
 | on-toxin-damage | `EquipmentAbility` | `triggers.fireOnToxinDamage` |
 | on-roll-symbol | `EquipmentAbility` | `triggers.fireOnRollSymbol` |
 | on-absorb (gear) | `EquipmentAbility` | `triggers.fireOnAbsorbEquipment` |
-| on-absorb (face) | `FaceCardDefinition.onAbsorb` | absorb path in reducer + triggers |
-| on-absorb (overload) | `OverloadRegion.onAbsorb` | same |
+| on-absorb (face) | `FaceCardDefinition.onAbsorb` | attribute bank path → `queueAbsorbTriggers` (spec `016`) |
+| on-absorb (overload) | `OverloadRegion.onAbsorb` | same — fires when pip banks into owner pile |
 | on-roll (face) | `FaceCardDefinition.onRoll` | `ROLL_DICE` in `reduce.ts` |
 | on-roll (overload) | `OverloadRegion.onRoll` | after face onRoll for showing face |
 

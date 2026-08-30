@@ -83,9 +83,10 @@ card({
 }),
 ```
 
-- Place from hand (`PLAY_CARD`) → `preparing`. Ready when the owner's pile
-  meets `activeWhen` (or immediately if omitted).
-- Instant / reaction: activate → effects → GY.
+- Place from hand (`PLAY_CARD`) → `preparing`. Ready when the owner’s
+  **attribute pile** meets `activeWhen` (refreshed on any pile change), or
+  immediately if no `activeWhen`.
+- Instant / reaction: activate → optional `spend` burn → effects → GY.
 - Continuous: standing triggers while `ready`. Activate only when
   `ritual.effects` is non-empty (then exhaust until the owner's next turn).
   Readiness is re-checked against the pile each turn; standing fire does not
@@ -114,7 +115,7 @@ Read `src/server/model/effects.ts` as authority. Today:
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,
 `search-deck`, `search-graveyard`, `destroy-equipment`,
 `apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
-`arm-attack-toxin`, `negate-card`, `negate-ritual`, `discard-attribute-tokens`,
+`arm-attack-toxin`, `negate-card`, `negate-ritual`,
 `destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`,
 `mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-life`
@@ -134,3 +135,11 @@ Standing triggers live on equipment / continuous rituals — see
 | Runic Nullification | Ritual-reaction, `ritual.spend`, `negate-card` (`instant`) |
 | War Axe | Equipment `attack-damage-bonus` + `attackKinds: ["basic"]` |
 | Black Plague | Opponent equipment + `onRoll` standing |
+
+## After editing
+
+- Export the `CardId` const and add the definition to the catalogue.
+- Builtin decks: `src/server/content/loadouts/*.json` (see `deck-designer`).
+  40–50 cards, ≤3 copies. Do not auto-add 3× to both decks.
+- Consistency: `src/server/content/cards.consistency.test.ts`.
+- Wired effects need reducer tests (see `playcard.test.ts`, `forgeFaces.test.ts`).

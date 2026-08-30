@@ -18,6 +18,7 @@ filters. Do not invent coupled hook names (`on-ally-attack`,
 Companion skills: [develop-engine](../develop-engine/SKILL.md),
 [standardize-card-effects](../standardize-card-effects/SKILL.md),
 [author-content](../author-content/SKILL.md). Spec: `docs/specs/010-trigger-hooks.md`.
+Attribute bank semantics: [attribute-pile.md](../author-content/attribute-pile.md) (spec `016`).
 Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 
 ## Principles
@@ -44,7 +45,7 @@ Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 |---|---|
 | `on-attack` | `attackerId`, `attackerOwnerId`, `attackKind`, `targetId` |
 | `on-roll-symbol` | `rollingPlayerId`, `symbol` |
-| `on-absorb` | `{ kind: "player", id }` when banking into the pile; `{ kind: "creature", id }` when granting Shield |
+| `on-absorb` | `{ kind: "player", id }` when banking into the pile; `{ kind: "creature", id }` when granting Shield. Filter `absorberOwnerId`, `symbol` (+ face kind when filtering Natural) |
 | `on-deal-damage` | bearer = source; damaged creature as declared target |
 | `on-take-damage` | `damagedCreatureId`, incoming amount (pre or post prevent — document which) |
 | `on-discard` | `discardingPlayerId` |
@@ -65,9 +66,9 @@ type PlayerRelation = "controller" | "opponent" | "any";
 | `On attack, another ally:` | `on-attack` + `attackerRelation: "ally-other"` |
 | `On roll Corruption:` (host controller) | `on-roll-symbol` + `rollingPlayer: "controller"` |
 | `On opponent roll Corruption:` | `on-roll-symbol` + `rollingPlayer: "opponent"` |
-| `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "self"` |
-| `On absorb <Symbol>, once per turn:` | `on-absorb` + `oncePerTurn` (Lens Choir) |
-| `On absorb Natural:` (pile bank or Shield) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
+| `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "ally"` when gear/ritual means “you bank” (default `self` only matches Shield onto host creature) |
+| `On absorb <Symbol>, once per turn:` | `on-absorb` + `oncePerTurn` + usually `ally` (Lens Choir) |
+| `On absorb Natural:` (any bank on your side) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
 | `On start of turn:` | `on-turn-start` + `whoseTurn: "controller"` (default) |
 | `On start of opponent's turn:` | `on-turn-start` + `whoseTurn: "opponent"` |
 
@@ -92,7 +93,7 @@ Hook Progress:
 |---|---|
 | Attack declared | `attack()` in `reduce.ts` after costs / before or with chain push |
 | Symbol shown on roll | existing `ROLL_DICE` path (pass `rollingPlayerId`) |
-| Absorb | `queueAbsorbTriggers` |
+| Absorb (attribute bank / Shield) | `bankAttributeIntoPile` / Shield path in `commands/absorb.ts` → `queueAbsorbTriggers` |
 | HP dealt | `dealDamage` / attack damage path |
 | Incoming damage modify | inside `dealDamage` **before** prevent/shield when `reduceBy` |
 | Discard | `discardSpecificCards` (and any other discard entry) |

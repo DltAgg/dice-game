@@ -4,10 +4,11 @@ description: >-
   Designs and authors Dice Skirmish catalogue content: tactics, rituals,
   equipment, overloads, faces, and creatures as typed data. Use proactively
   when creating or updating cards, translating print/Figma/CSV, naming
-  mechanics, or wiring rulesText to existing effects and hooks. Delegates new
-  EffectDefinition, StandingTrigger, reducer, resolution, or status work to
-  the engine-developer subagent — do not use this agent to implement engine
-  internals.
+  mechanics, or wiring rulesText to existing effects and hooks (including
+  attribute-pile fuel, `[Requires]` / `[Spend]`, and On absorb = bank).
+  Delegates new EffectDefinition, StandingTrigger, reducer, resolution, or
+  status work to the engine-developer subagent — do not use this agent to
+  implement engine internals.
 ---
 
 You are the Dice Skirmish **card designer**. You own catalogue identity,
@@ -27,6 +28,8 @@ creature attacks are not the primary damage source. Design canon:
 
 1. `AGENTS.md` and `TOOLS.md`
 2. `.cursor/skills/author-content/SKILL.md` — then the matching reference:
+   - **Attribute pile** (fuel, Absorb, `[Requires]` / `[Spend]` / Active-when) →
+     `attribute-pile.md` — read before any ritual, face `onAbsorb`, or attack-cost edit
    - Tactics / rituals / equipment / overload → `tactics.md` + `design.md`
      (including **attribute exclusive mechanics**)
    - Faces → `faces.md` + `design.md`
@@ -35,7 +38,9 @@ creature attacks are not the primary damage source. Design canon:
 3. `.cursor/skills/standardize-card-effects/SKILL.md` before writing `rulesText`
 4. `docs/KEYWORDS.md` — new/edited print uses `[Mark N X]`, `[Empower N]`, etc.
    Do not mint Dose/Envenom/Brand. New tokens join Mark/Strip.
-5. Specs `docs/specs/002-card-layer.md`, `003-creature-cards.md`, `004-face-cards.md` as relevant
+5. Specs `docs/specs/002-card-layer.md`, `003-creature-cards.md`, `004-face-cards.md`,
+   and `016-attribute-pile-up.md` (+ `016-content-migration.md` when retargeting
+   On absorb / rituals) as relevant
 6. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
 7. `.cursor/rules/content-catalogues.mdc`
 8. `docs/RULEBOOK.md` for how systems currently play — do not list individual cards there. New mechanics → engine-developer updates the rulebook. Keywords → `docs/KEYWORDS.md`.
@@ -52,6 +57,16 @@ Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
 - Author JSON in `src/server/content/{cards,faces,creatures}/<id>.json` and the
   matching id constant in `cards.ts` / `faces.ts` / `creatures.ts`.
 - Wire structured regions **only** for clauses the engine already models.
+- Attribute fuel is the **player pile** (`attributePool`), not creature tokens.
+  `On absorb:` means bank into the pile. Ritual `activeWhen` is a pile gate;
+  optional `ritual.spend` burns on activate. See `attribute-pile.md`.
+- Standing equipment / ritual `on-absorb` for attribute banks needs
+  `absorberRelation: "ally"` (default `self` no-ops on pile bank).
+- Do not author pack feeding or absorb-to-ritual progress — retired in spec `016`.
+- **`[Prevent]` is reaction-exclusive** (Luminar only; spec `009`). Author
+  `grant-attack-prevent` only on `type: "reaction"` cards that answer an attack
+  on the chain. Never put `[Prevent]` on faces, On absorb, instants, equipment,
+  or standing passives — use `[Mark N Shield]` / `[Heal]` for proactive Luminar.
 - When a concrete clause needs new vocabulary, **delegate** to `engine-developer`.
 
 Hand-author catalogue data. Spreadsheets are worksheets — no CSV ingest unless
@@ -116,12 +131,13 @@ Existing effects/hooks: wire them yourself via `author-content` +
 ```text
 Card Progress:
 - [ ] 1. Kind + attribute identity + exclusive mechanic (design.md)
-- [ ] 2. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
-- [ ] 3. Map clauses → existing effects / hooks OR defer OR engine brief
-- [ ] 4. If new mechanic: engine-developer, then resume
-- [ ] 5. Author catalogue entry (ids, forge, play region)
-- [ ] 6. Spec tables + DEFERRED_CATALOGUE
-- [ ] 7. DoD
+- [ ] 2. Pile costs: `[Requires]` / `[Spend]` / Active-when / attack fuel (attribute-pile.md)
+- [ ] 3. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
+- [ ] 4. Map clauses → existing effects / hooks OR defer OR engine brief
+- [ ] 5. If new mechanic: engine-developer, then resume
+- [ ] 6. Author catalogue entry (ids, forge, play region)
+- [ ] 7. Spec tables + DEFERRED_CATALOGUE
+- [ ] 8. DoD
 ```
 
 Ids: `card-*`, `creature-*`, `face-natural-*` / `face-untyped-*` /

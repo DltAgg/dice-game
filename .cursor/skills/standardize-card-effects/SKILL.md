@@ -19,6 +19,7 @@ follows [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 
 Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape),
 [develop-engine](../develop-engine/SKILL.md) (new `EffectDefinition` / hooks).
+Attribute pile / bank timing: [attribute-pile.md](../author-content/attribute-pile.md).
 
 ## Gold-standard print shape
 
@@ -64,11 +65,11 @@ Qualifiers use a comma before the colon (`On take damage, once per turn:`), neve
 | Print cue | Catalogue field | Fires when |
 |---|---|---|
 | `On roll:` | Face `onRoll[]` or Overload `onRoll[]` | Die shows that face after `ROLL_DICE` |
-| `On absorb:` | Face `onAbsorb[]` or Overload `onAbsorb[]` | Symbol from that face is absorbed |
+| `On absorb:` | Face `onAbsorb[]` or Overload `onAbsorb[]` | Symbol from that face is **banked into the owner’s attribute pile** |
 | `On deal damage:` | `on-deal-damage` | Bearer deals **HP** damage |
 | `On toxin damage:` | `on-toxin-damage` | Toxin tick deals HP |
 | `On roll <Symbol>:` | `on-roll-symbol` + `symbol` | Matching roll (filter `rollingPlayer`) |
-| `On absorb <Symbol>:` | `on-absorb` (+ filters) | Matching absorb |
+| `On absorb <Symbol>:` | `on-absorb` (+ filters; use `ally` on gear when “you bank”) | Matching attribute bank |
 | `On attack:` / `On basic attack:` / … | `on-attack` | Attack declared |
 | `On take damage:` | `on-take-damage` | Incoming damage |
 | `On discard:` | `on-discard` | Hand discard |
@@ -126,6 +127,7 @@ Prefer members already in `src/server/model/effects.ts` and selectors already in
 | `[Generate N X]` | `generate-symbol` |
 | `[Draw N]` / `[Discard N]` | `draw-cards` / `discard-cards` |
 | `[Empower N]` | `next-attack-bonus` |
+| `[Prevent]` | `grant-attack-prevent` on **`type: "reaction"`** only (Luminar; attack chain) |
 | `[Mark N Toxin]` | `apply-toxin` |
 | `[Mark N Toxin on attacks]` | `arm-attack-toxin` |
 | `[Mark N Shield]` | `grant-shield` |
@@ -223,6 +225,8 @@ equipment: {
 ## Anti-patterns
 
 - Approximating (Barrier → shields) without OPEN_DESIGN
+- `[Prevent]` on faces, On absorb, instants, equipment, or standing passives —
+  reaction-exclusive; proactive Luminar uses `[Mark N Shield]` / `[Heal]`
 - Putting trigger logic in UI / networking
 - Wiring `onRoll` while absorb clause is silently dropped from `rulesText`
 - Growing `EffectDefinition` without a concrete card + tests

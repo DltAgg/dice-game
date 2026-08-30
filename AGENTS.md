@@ -42,7 +42,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
 | Task | Start here |
 |---|---|
 | Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
-| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) |
+| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — see also [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
@@ -77,6 +77,7 @@ invoke them separately — do not implement both layers yourself.
 | `docs/specs/006-deck-persistence.md` | Deck builder / loadouts |
 | `docs/specs/007-peerjs.md` | Online host authority |
 | `docs/specs/014-match-metrics.md` | Observer telemetry, dashboard, agent export |
+| `docs/specs/016-attribute-pile-up.md` | Player attribute pile; `[Requires]` / `[Spend]` / ritual gates |
 | `docs/specs/017-layer-split.md` | `src/server` vs `src/client` import rules |
 | `docs/specs/018-ast-engine.md` | Opcode AST, validator / compiler / executor |
 | `docs/specs/019-content-json.md` | Per-entity / per-loadout JSON catalogues |

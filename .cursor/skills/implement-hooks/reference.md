@@ -19,7 +19,7 @@ are that union; creatures/rituals reuse it).
 | `on-deal-damage` | After bearer deals HP | Shield-only hits do not fire |
 | `on-toxin-damage` | After toxin HP | Listeners on controller’s creatures’ gear |
 | `on-roll-symbol` | Die shows symbol | Filter `rollingPlayer` |
-| `on-absorb` | Attribute banked into pile or Shield onto creature | Filter `absorberRelation` / `symbols` / `faceKinds` |
+| `on-absorb` | Attribute banked into pile (`player` absorber) or Shield onto creature (`creature` absorber) | Filter `absorberRelation` / `symbols` / `faceKinds`; see `attribute-pile.md` |
 | `on-attack` | Attack declared | Filter `attackerRelation` / `attackKinds` |
 | `on-take-damage` | Incoming damage | `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
 | `on-discard` | Cards discarded | Filter `discardingPlayer` |
@@ -41,15 +41,15 @@ are that union; creatures/rituals reuse it).
 | Void Summoner | `on-attack` self + basic/special | generate Arcane / draw |
 | Hunting Armour | `on-take-damage` reduceBy 1 oncePerTurn | Modifier path |
 | Abyssal Sacrifice | `on-discard` controller | generate Darkness |
-| Hunter's Collar | `on-absorb` Wild | generate Martial |
+| Hunter's Collar | `on-absorb` Wild + `ally` | generate Martial |
 | Slow Burn | `on-turn-start` opponent | apply-toxin most-damaged-enemy |
 | Smolder | `on-turn-start` opponent | damage most-damaged-enemy |
 | Cinder Hex | `on-turn-start` controller (bearer) | damage source-creature |
 | Fester | `on-toxin-damage` damagedOwner opponent | apply-toxin declared-target |
-| Predator's Claws | `on-absorb` Martial | `reposition-creature` → source-creature |
-| Mirrored Rune | `on-absorb` self | Need copy effect |
+| Predator's Claws | `on-absorb` Martial + `ally` | `reposition-creature` → choose-ally |
+| Mirrored Rune | `on-absorb` Arcane + `ally` | copy / generate (pile-safe) |
 | Void Summoner | `on-absorb` any + Natural | Natural face filter (not untyped Shield) |
-| Lens Choir | `on-absorb` Luminar + oncePerTurn | Generate Luminar; no self-loop |
+| Lens Choir | `on-absorb` Luminar + `ally` + oncePerTurn | Generate Luminar; no self-loop |
 | Garuda Dive | attack Range 2 damage | Wild-legal; swap lives on War Charge (Martial) |
 | War Minotaur War Charge | attack `followUpEffects` + conditional | back-row ally swap |
 

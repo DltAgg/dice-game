@@ -4,7 +4,8 @@ description: >-
   Create or update tactic, ritual, and face-card catalogue entries (and
   creatures) as typed data in src/server/content. Use when designing a new card,
   adding print/Figma/CSV text, or when the user mentions catalogue, forge,
-  overload, ritual, equipment, face deck, or deferred effects.
+  overload, ritual, equipment, face deck, attribute pile, Requires/Spend, or
+  deferred effects.
 ---
 
 # Author game content
@@ -15,6 +16,8 @@ Hand-author **JSON** (one file per entity) under `src/server/content`. There is
 This skill is the path for **new** ritual / tactic / face cards as well as
 translating print. Design canon: `competitive_dice_game_agent_bible.md`.
 Philosophy and attribute identities: [design.md](design.md).
+**Attribute pile (fuel, Absorb, gates):** [attribute-pile.md](attribute-pile.md) —
+read before editing rituals, `onAbsorb`, attack costs, or standing `on-absorb`.
 Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) — new/edited
 `rulesText` uses `[Mark N X]`, `[Empower N]`, etc. Do not mint Dose/Envenom-style
 verbs for a new token.
@@ -38,18 +41,22 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    Write `rulesText` with keywords from [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md)
    (`On roll: [Mark 1 Toxin].`). Park gaps in `docs/DEFERRED_CATALOGUE.md`.
    Never approximate silently.
-3. Effects are **data** (AST `op` nodes or legacy `type` members compiled by
+3. **`[Prevent]`** is **Luminar + reaction-exclusive** (`grant-attack-prevent`
+   on `type: "reaction"` only, during an attack chain). Proactive mitigation
+   uses `[Mark N Shield]` / `[Heal]` — not `[Prevent]` on faces, absorb, or
+   standing hooks. Spec `009` · `docs/KEYWORDS.md`.
+4. Effects are **data** (AST `op` nodes or legacy `type` members compiled by
    `AstCompiler`). Prefer existing opcodes; grow the engine only with
    [develop-engine](../develop-engine/SKILL.md) in the same change as the card.
-4. `src/server` stays pure. Do not put rules in UI / store / networking.
+5. `src/server` stays pure. Do not put rules in UI / store / networking.
    One entity per JSON file; do not grow `cards.ts` / `creatures.ts` / `faces.ts`
    past `module-budget.test.ts`.
-5. Forge the card’s own attribute. Natural forges are legal for every
+6. Forge the card’s own attribute. Natural forges are legal for every
    attribute; synthetic forges still name a special from the pool (never
    blank `face-synthetic-<attr>`). Keep splash in overload/equip gates or
    generated symbols, not in a mismatched forge, unless a future card
    explicitly needs a forge splash.
-6. **Print voice is the holder.** Write `rulesText` from the player who
+7. **Print voice is the holder.** Write `rulesText` from the player who
    currently has the card on their field (their die, creature, ritual row,
    or equipment). **you** / **your** = that holder. **opponent** /
    **opposing** / **enemy** = *their* opponent. If you forge, equip, or
@@ -58,7 +65,7 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    players must act, name the actors in print (“you choose…”, “that
    creature’s controller discards…”) instead of relying on owner/controller
    jargon.
-7. **Printed 1-token `playCost` is exceptional.** Do not author `playCost`
+8. **Printed 1-token `playCost` is exceptional.** Do not author `playCost`
    totaling 1 token as cheap cycle. Those cards must be narrow and niche so 2+
    cards stay appealing. The primary way to play for 1 token is **cost
    reduction** (discounts, next-forge, creature passives), not a roster of
@@ -71,12 +78,13 @@ Copy and track:
 ```text
 Card Progress:
 - [ ] 1. Kind + attribute identity + exclusive mechanic (design.md)
-- [ ] 2. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
-- [ ] 3. Map clauses → existing effects / hooks OR defer
-- [ ] 4. Author catalogue entry (ids, forge, play region)
-- [ ] 5. Grow engine only if a concrete clause needs it
-- [ ] 6. Tests + decks/face-deck + DEFERRED_CATALOGUE
-- [ ] 7. DoD
+- [ ] 2. Pile costs / gates if relevant (attribute-pile.md)
+- [ ] 3. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
+- [ ] 4. Map clauses → existing effects / hooks OR defer
+- [ ] 5. Author catalogue entry (ids, forge, play region)
+- [ ] 6. Grow engine only if a concrete clause needs it
+- [ ] 7. Tests + decks/face-deck + DEFERRED_CATALOGUE
+- [ ] 8. DoD
 ```
 
 1. Identify kind: **instant** / **reaction** / **equipment** / **overload**,
@@ -99,6 +107,7 @@ Card Progress:
 
 ## Progressive references
 
+- **Attribute pile (spec `016`):** [attribute-pile.md](attribute-pile.md)
 - Design / game goal: [design.md](design.md)
 - Tactics + rituals: [tactics.md](tactics.md)
 - Faces / dice: [faces.md](faces.md)
