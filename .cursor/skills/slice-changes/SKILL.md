@@ -21,6 +21,8 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 | New verb / hook / phase | `engine-developer` + `develop-engine` or `implement-hooks`. One handler class or one `fire*`. |
 | Lobby / board / decks UI | `match-ui`. Query engine; do not copy legality. |
 | Legal lists / identity | `deck-designer`. Edit `loadouts/*.json`. |
+| Playtest debrief (notes ± metrics, wrong-archetype feel) | `post-playtest` + `review-playtest`. Update `docs/MECHANIC_ARCHETYPES.md`; brief owners; do not implement. |
+| Playtest “felt like the wrong archetype” (already debriefed) | `card-designer` (print) / `engine-developer` (physics) / `deck-designer` (list). |
 | New/rewrite agent, skill, rule, AGENTS.md routing | `prompt-engineer` + `author-interactions`. One artifact. |
 | Spans two columns above | Parent **delegates**; does not implement both. |
 | “Rewrite X”, “revamp”, “AST”, “split everything” | Spec first (`docs/specs/_TEMPLATE.md`). Strangler. Stop after one stage. |

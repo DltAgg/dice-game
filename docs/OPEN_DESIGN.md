@@ -6,6 +6,10 @@ leaves unresolved is tracked here rather than being answered silently in code.
 Engine code lives in `src/server`. Catalogue print lives in
 `src/server/content/{cards,creatures,faces}/*.json`.
 
+Mechanic × archetype **feel** (playtest “this played like Aggro”) is
+[`docs/MECHANIC_ARCHETYPES.md`](./MECHANIC_ARCHETYPES.md), not this register.
+Put unresolved **rules** questions here; put window/feel leaks there.
+
 **A prototype assumption must never quietly become a game rule.** Anything
 marked `ASSUMED` below is reachable from a single place — usually
 `GameRulesConfig` or content data — so that settling the question is an edit to

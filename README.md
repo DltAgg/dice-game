@@ -78,6 +78,7 @@ proactive: ask for the job, or say `Use the <name> subagent to …`.
 | [engine-developer](.cursor/agents/engine-developer.md) | Pure rules in `src/server`: hooks, `EffectDefinition`, reducer, resolution, statuses | Catalogue beyond the proving card → **card-designer**; play surface → **match-ui** |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, hotseat/online board, deck builder, catalogues, Zustand stores, `src/client/decks/`, PeerJS adapters | Cards → **card-designer**; rules / `pendingDecision` types → **engine-developer**; legal lists → **deck-designer** |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts (squad / tactics / faces) and constructed critique (orphans, attribute identity) | Card rewrites → **card-designer**; engine / legality rules → **engine-developer**; builder UI → **match-ui** |
+| [post-playtest](.cursor/agents/post-playtest.md) | Playtest debrief: notes + metrics → `docs/MECHANIC_ARCHETYPES.md` + specialist briefs | Print → **card-designer**; fuel physics → **engine-developer**; lists → **deck-designer**; board friction → **match-ui** |
 | [prompt-engineer](.cursor/agents/prompt-engineer.md) | Cursor subagents, skills, rules, `TOOLS.md`, and routing docs so specialists stay in lane | Cards → **card-designer**; rules engine → **engine-developer**; play surface → **match-ui**; loadouts → **deck-designer** |
 
 Workflows those agents load: [`.cursor/skills/`](./.cursor/skills/)

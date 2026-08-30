@@ -5,7 +5,8 @@ Spec: `docs/specs/003-creature-cards.md`
 Craft: [design-craft.md](design-craft.md) — uniqueness still applies
 
 **Do not reprint** Strike 2 + `[Generate 1]` of the creature’s own attribute
-on every body. Audit live `src/server/content/creatures/` first. Dual-attribute
+on every body (`docs/MECHANIC_ARCHETYPES.md` MA-01 — that shape **feels Aggro**
+even on Control). Audit live `src/server/content/creatures/` first. Dual-attribute
 `requires` on a special (Riftscribe Adept Ley Surge: Arcane+Darkness) is closer
 to a bridge than `[Spend] X, [Generate] Y`. Creatures still obey exclusive
 verbs in [design.md](design.md).

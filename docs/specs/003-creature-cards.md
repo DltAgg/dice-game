@@ -107,14 +107,16 @@ lives on the tactics, rituals, and faces (bible §27). Every special gates on
 
 | Id | Name | Life | Attributes | Passive | Basic | Special |
 |---|---|---|---|---|---|---|
-| `creature-riftscribe-adept` | Riftscribe Adept | 14 | Arcane | On absorb Arcane, once per turn: `[Insight 1]`. | Rune Lash — `[Strike 2]`. `[Draw 1]`. | Ley Surge — `[Strike 2]`. `[Generate 1 Arcane]`. |
-| `creature-gravemarrow-shade` | Gravemarrow Shade | 13 | Darkness | On absorb Darkness, once per turn: your opponent `[Mill 2]`. | Grave Reach — `[Strike 2]`. `[Generate 1 Darkness]`. | Ebb of Names — `[Strike 2]`. Your opponent `[Mill 3]`. |
+| `creature-riftscribe-adept` | Riftscribe Adept | 14 | Arcane | On absorb Arcane, once per turn: `[Insight 1]`. | Rune Lash — `[Strike 2]`. `[Draw 1]`. | Ley Surge — `[Strike 2]`. `[Insight 2]`. |
+| `creature-gravemarrow-shade` | Gravemarrow Shade | 13 | Darkness | On absorb Darkness, once per turn: your opponent `[Mill 2]`. | Grave Reach — `[Strike 2]`. Your opponent `[Mill 2]`. | Ebb of Names — `[Strike 2]`. Your opponent `[Mill 3]`. |
 | `creature-duskthrone-oracle` | Duskthrone Oracle **(legendary)** | 21 | Arcane / Darkness | On absorb Arcane, once per turn: `[Drain 1]`. | Nightward Bolt — `[Strike 2]`. `[Insight 1]`. | Verdict of Dusk — `[Strike 2]`. `[Drain 2]`. |
 
 Duskthrone Oracle is the win target and the reason Control can close: the
 passive turns Arcane banking into reach plus sustain every turn, and Verdict of
 Dusk is a four-point swing at the enemy legendary out of one attack.
-Riftscribe draws and generates; Gravemarrow drives the mill clock.
+Riftscribe draws and Insights; Gravemarrow drives the mill clock. Spending
+pile on a Control attack is a real cost — basics and specials do **not**
+`[Generate]` the attribute they `[Spend]`.
 
 ## Catalogue (Slow game test)
 

@@ -89,6 +89,11 @@ Do not dump a new card into Aggro and Control without an identity reason; Mech
 homes are Tempo / Combo Mechanical. Legal constructed: 40–50 tactics, ≤3 copies
 per id; face deck ≤12, ≤3 per attribute.
 
+**Feel vs pie:** exclusive verbs stay in this file. Shared mechanics (`[Generate]`,
+Strike, `[Discount]`) still **feel like a deck style** depending on window —
+attack-spend refund plays as Aggro even on Control. Track and update
+[`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md) from playtests.
+
 ## Attribute exclusive mechanics (`DECIDED`)
 
 Canon pointer: bible §29 · `OPEN_DESIGN.md` (2026-08-21). Card-designer

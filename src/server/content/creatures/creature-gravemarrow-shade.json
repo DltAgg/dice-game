@@ -33,7 +33,7 @@
         "darkness": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Generate 1 Darkness].",
+      "rulesText": "[Strike 2]. Your opponent [Mill 2].",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -43,9 +43,9 @@
       },
       "followUpEffects": [
         {
-          "type": "generate-symbol",
-          "symbol": "darkness",
-          "amount": 1
+          "type": "mill-cards",
+          "amount": 2,
+          "player": "opponent"
         }
       ]
     },

@@ -20,7 +20,7 @@ import {
 } from "../content/creatures.js";
 import { ENGINE_TEST_FACE_DECK } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
-import { asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
+import { asAttackId, asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { graveyardOf, ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
@@ -340,5 +340,55 @@ describe("Darkness Control package", () => {
     );
     expect(legendary).toBeDefined();
     expect(legendary?.position).toBe("back");
+  });
+
+  it("Grave Reach and Ley Surge spend pile without refunding the spent attribute", () => {
+    const GRAVE_REACH = asAttackId("attack-gravemarrow-shade-grave-reach");
+    const LEY_SURGE = asAttackId("attack-riftscribe-adept-ley-surge");
+    let state = withAttributePool(withPhase(controlMatch(), "actions"), P1, {
+      arcane: 1,
+      darkness: 2,
+    });
+    state = withDeck(state, P2, [GLOOMDRAFT, PALL_OF_ASH, HOLLOW_TIDE]);
+    state = withDeck(state, P1, [THREAD_THE_WEAVE, HOLLOW_TIDE, PALL_OF_ASH]);
+
+    const shade = Object.values(state.creatures).find(
+      (creature) => creature.definitionId === GRAVEMARROW_SHADE && creature.ownerId === P1,
+    );
+    const adept = Object.values(state.creatures).find(
+      (creature) => creature.definitionId === RIFTSCRIBE_ADEPT && creature.ownerId === P1,
+    );
+    const target = Object.values(state.creatures).find(
+      (creature) => creature.ownerId === P2 && creature.position === "frontline",
+    );
+    if (shade === undefined || adept === undefined || target === undefined) {
+      throw new Error("expected Control frontline attackers and a frontline target");
+    }
+
+    state = expectOk(
+      advanceResolvingChain(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: shade.id,
+        attackId: GRAVE_REACH,
+        targetId: target.id,
+      }),
+    );
+    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
+    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(1);
+    expect(state.players[P2]?.deck).toHaveLength(1);
+
+    state = expectOk(
+      advanceResolvingChain(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: adept.id,
+        attackId: LEY_SURGE,
+        targetId: target.id,
+      }),
+    );
+    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(0);
+    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
+    expect(state.pendingDecision?.type).toBe("look-top-deck");
   });
 });

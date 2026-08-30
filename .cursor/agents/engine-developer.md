@@ -7,7 +7,8 @@ description: >-
   shields, prevent), attribute pile (spec 016), RNG, and phases. Use
   proactively for engine, reducer, trigger, resolution, new hooks, new
   GameAction, or wiring deferred catalogue clauses that need new AST. Do not
-  use for match UI, lobby, deck persistence, or PeerJS.
+  use for match UI, lobby, deck persistence, PeerJS, or a playtest debrief
+  (post-playtest).
 ---
 
 You are the Dice Skirmish **engine developer**. You own the pure rules layer
@@ -36,6 +37,8 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
    - Effect AST, actions, phases, RNG, resolution, statuses → `.cursor/skills/develop-engine/SKILL.md`.
    - Timing English on a proving card (`On roll:` / `On absorb:` / `On …:`) → `.cursor/skills/standardize-card-effects/SKILL.md`.
 5. When the change touches undecided or parked print: `docs/OPEN_DESIGN.md` and `docs/DEFERRED_CATALOGUE.md`.
+   When a fuel / attack / generate change would shift **deck feel**, read and
+   update `docs/MECHANIC_ARCHETYPES.md` (do not reintroduce `RETARGETED` leaks).
 
 Design canon: `competitive_dice_game_agent_bible.md`. Cite sections. If the
 bible is silent and `OPEN_DESIGN.md` is `OPEN` / `DEFERRED`, **stop and ask**

@@ -36,20 +36,24 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
    [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 7. Print, tokens, hooks, and new mechanics use
    [`docs/KEYWORDS.md`](./docs/KEYWORDS.md) — prefer `[Mark N X]` over a new verb.
+8. Playtest “this felt like the wrong deck” →
+   [`docs/MECHANIC_ARCHETYPES.md`](./docs/MECHANIC_ARCHETYPES.md) (mechanic ×
+   window × archetype). Update that catalogue in the same change as any retarget.
 
 ## Content vs engine
 
 | Task | Start here |
 |---|---|
 | Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
-| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb |
+| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb; [MECHANIC_ARCHETYPES.md](docs/MECHANIC_ARCHETYPES.md) for mechanic × deck-style feel |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
 | Match UI / lobby / decks | Subagent: [match-ui](.cursor/agents/match-ui.md) + skill [match-ui](.cursor/skills/match-ui/SKILL.md) — do not put rules there |
 | Builtin / constructed loadouts, card-has-no-home, attribute identity in builds | Subagent: [deck-designer](.cursor/agents/deck-designer.md) |
 | New or tuned agents, skills, rules, TOOLS.md, AGENTS.md routing | Subagent: [prompt-engineer](.cursor/agents/prompt-engineer.md) + skill [author-interactions](.cursor/skills/author-interactions/SKILL.md) |
-| Match metrics, pacing charts, agent export of playtest recordings | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`) |
+| After a playtest (notes ± metrics, “felt like the wrong deck”) | Subagent: [post-playtest](.cursor/agents/post-playtest.md) + skill [review-playtest](.cursor/skills/review-playtest/SKILL.md) — updates `docs/MECHANIC_ARCHETYPES.md`, briefs owners; does not author JSON or reducer |
+| Match metrics dump with **no** playtest narrative (pace, drag, stall) | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`) |
 | PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/client/networking` + `docs/specs/007-peerjs.md` |
 
 ## Subagents
@@ -64,6 +68,7 @@ invoke them separately — do not implement both layers yourself.
 | [engine-developer](.cursor/agents/engine-developer.md) | `src/server` rules: hooks, triggers, `EffectDefinition`, reducer, resolution, statuses |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, MatchBoard, deck builder, catalogues, stores, decks persistence, PeerJS adapters |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts; constructed critique (orphans, attribute identity) |
+| [post-playtest](.cursor/agents/post-playtest.md) | After a playtest: reconstruct, update `MECHANIC_ARCHETYPES.md`, brief owners |
 | [prompt-engineer](.cursor/agents/prompt-engineer.md) | Human-to-AI interactions: subagents, skills, rules, TOOLS.md, routing |
 
 ## Specs & design trackers
@@ -85,6 +90,7 @@ invoke them separately — do not implement both layers yourself.
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
+| `docs/MECHANIC_ARCHETYPES.md` | Mechanic × window × deck-style feel (playtest tracker) |
 | `docs/DEFERRED_CATALOGUE.md` | Print clauses not fully modelled |
 
 ## Definition of Done

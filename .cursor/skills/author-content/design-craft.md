@@ -187,6 +187,8 @@ requirement and no exclusive verb.
 - [ ] Play region and forge region (or On roll / On absorb) work together
 - [ ] One focus; exclusive verb stays on its owner
 - [ ] Touches roll / absorb / pile / forge / yield / overload
+- [ ] Window × feel checked in [`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md)
+      (do not reprint a `RETARGETED` / `ANTI` leak)
 - [ ] Bridge = both identities at once, not Spend/Generate
 - [ ] Generic reach ≠ Support-colored ≠ ninth attribute
 - [ ] Missing vocabulary → proving-card brief, not a skipped hole

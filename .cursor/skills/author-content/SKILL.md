@@ -5,8 +5,9 @@ description: >-
   creatures) as typed data in src/server/content. Use when occupying a new
   catalogue slot, adding print/Figma/CSV text, or when the user mentions
   catalogue, forge, overload, ritual, equipment, face deck, attribute pile,
-  Requires/Spend, uniqueness, or deferred effects. Do not use to clone the
-  last card or to reprint Forge-1 Spend/Generate glue.
+  Requires/Spend, uniqueness, deferred effects, or playtest “felt like the
+  wrong archetype.” Do not use to clone the last card or to reprint Forge-1
+  Spend/Generate glue.
 ---
 
 # Author game content
@@ -24,6 +25,9 @@ read before editing rituals, `onAbsorb`, attack costs, or standing `on-absorb`.
 Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) — new/edited
 `rulesText` uses `[Mark N X]`, `[Empower N]`, etc. Do not mint Dose/Envenom-style
 verbs for a new token.
+Mechanic × archetype feel (playtest tracker): [`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md)
+— same opcode, different **window**, different deck style. Update it when a
+playtest retargets a leak.
 
 ## Choose the catalogue
 
@@ -88,6 +92,7 @@ Card Progress:
 - [ ] 1. Catalogue audit (live JSON) + empty slot (design-craft.md)
 - [ ] 2. Uniqueness + dice-resonance + forge intent — reject reskins
 - [ ] 3. Kind + attribute identity + exclusive mechanic (design.md)
+- [ ] 3b. Window/feel (`docs/MECHANIC_ARCHETYPES.md`) — reject `RETARGETED` / `ANTI`
 - [ ] 4. Pile costs / gates if relevant (attribute-pile.md) — not a converter license
 - [ ] 5. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
 - [ ] 6. Map clauses → existing effects / hooks OR defer OR engine brief

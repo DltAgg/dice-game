@@ -58,7 +58,7 @@
         "arcane": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Generate 1 Arcane].",
+      "rulesText": "[Strike 2]. [Insight 2].",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -68,9 +68,8 @@
       },
       "followUpEffects": [
         {
-          "type": "generate-symbol",
-          "symbol": "arcane",
-          "amount": 1
+          "type": "look-top-deck",
+          "amount": 2
         }
       ]
     }

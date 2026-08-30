@@ -37,6 +37,8 @@ Rules:
   on non-reactions, opponent-die, toxin markers, ally swap, own-die reconstruction,
   `[Frenzy]`). `[Prevent]` / `grant-attack-prevent` is **reaction-only** (spec `009`).
   Attribute fuel is the **player pile** — see `attribute-pile.md`.
+  Mechanic × archetype feel: `docs/MECHANIC_ARCHETYPES.md` (do not reprint
+  `RETARGETED` leaks such as attack-spend `[Generate]`).
 - **Live JSON** in `src/server/content/{cards,faces,creatures}/` is catalogue
   truth. Spec `002` tables of missing cards are not a pattern. Do not clone
   `forge.faces: 1` stickers or `[Spend] X, [Generate] Y` converter slots

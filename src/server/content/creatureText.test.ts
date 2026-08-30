@@ -68,6 +68,24 @@ describe("creature catalogue", () => {
       }
     }
   });
+
+  it("Control attacks that Spend an attribute do not Generate that attribute", () => {
+    const control = new Set<string>(CONTROL_IDS);
+    for (const creature of ALL_CREATURES) {
+      if (!control.has(creature.id)) continue;
+      for (const attack of creature.attacks) {
+        const spent = attack.discards ?? {};
+        for (const effect of attack.followUpEffects ?? []) {
+          if (effect.type !== "generate-symbol") continue;
+          if (effect.symbol === "shield") continue;
+          expect(
+            spent[effect.symbol] ?? 0,
+            `${creature.name} ${attack.name} refunds spent ${effect.symbol}`,
+          ).toBe(0);
+        }
+      }
+    }
+  });
 });
 
 describe("English creature printing", () => {

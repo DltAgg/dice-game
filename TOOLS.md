@@ -46,6 +46,7 @@ npm run typecheck && npm test && npm run lint
 | Module budget | `src/architecture/module-budget.test.ts` (no megamodules / freeze) |
 | Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
 | Keyword glossary | `docs/KEYWORDS.md` (update when print vocabulary / tokens change; Rules tab) |
+| Mechanic × archetype feel | `docs/MECHANIC_ARCHETYPES.md` (post-playtest agent updates this; same change as a later retarget) |
 | Match store | `src/client/store/matchStore.ts` |
 | Deck store / localStorage | `src/client/store/deckStore.ts`, `src/client/decks/` |
 | Match metrics / IndexedDB | `src/client/metrics/`, `src/client/ui/metrics/`, `src/client/store/metricsStore.ts` |

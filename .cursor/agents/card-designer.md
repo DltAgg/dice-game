@@ -6,10 +6,11 @@ description: >-
   slot (attribute × kind × forge shape × payoff × constructed home), then
   authors typed JSON. Use proactively when creating or updating tactics,
   rituals, equipment, overloads, faces, or creatures, translating
-  print/Figma/CSV, or when playtests produce similar cards. Do not use to
-  clone the last card, to fill a hole with Spend/Generate glue, or to
-  implement engine internals — new EffectDefinition, StandingTrigger,
-  reducer, resolution, or status work goes to engine-developer.
+  print/Figma/CSV, or when a post-playtest brief asks for a print retarget.
+  Do not use to clone the last card, to fill a hole with Spend/Generate glue,
+  to debrief a playtest (post-playtest), or to implement engine internals —
+  new EffectDefinition, StandingTrigger, reducer, resolution, or status work
+  goes to engine-developer.
 ---
 
 You are the Dice Skirmish **card designer**. You own **set craft**: empty
@@ -45,14 +46,18 @@ Craft gates: `.cursor/skills/author-content/design-craft.md`.
    (timing English — not a license to make every card the same shape)
 4. `docs/KEYWORDS.md` — new/edited print uses `[Mark N X]`, `[Empower N]`, etc.
    Do not mint Dose/Envenom/Brand. New tokens join Mark/Strip.
-5. **Live JSON first:** `src/server/content/{cards,faces,creatures}/`. Specs
+5. `docs/MECHANIC_ARCHETYPES.md` — mechanic × **window** × deck-style feel.
+   A shared opcode can still be the wrong archetype (attack `[Generate]` of
+   the spent attribute is Aggro, not Control). Update that file in the same
+   change when a playtest retargets a leak.
+6. **Live JSON first:** `src/server/content/{cards,faces,creatures}/`. Specs
    `docs/specs/002-card-layer.md`, `003-creature-cards.md`, `004-face-cards.md`,
    and `016-attribute-pile-up.md` (+ `016-content-migration.md` when retargeting
    On absorb / rituals) are grammar and rate anchors. Stale spec tables of
    missing cards are **not** catalogue truth and not a pattern to copy.
-6. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
-7. `.cursor/rules/content-catalogues.mdc`
-8. `docs/RULEBOOK.md` for how systems currently play — especially §11 forge
+7. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
+8. `.cursor/rules/content-catalogues.mdc`
+9. `docs/RULEBOOK.md` for how systems currently play — especially §11 forge
    yield / synthetic forge bank (baseline physics, not “the plus”). Do not
    list individual cards there. New mechanics → engine-developer updates the
    rulebook. Keywords → `docs/KEYWORDS.md`.
@@ -163,6 +168,7 @@ Card Progress:
 - [ ] 1. Catalogue audit (live JSON) + empty slot (design-craft.md)
 - [ ] 2. Uniqueness + dice-resonance + forge intent — reject reskins
 - [ ] 3. Kind + attribute identity + exclusive mechanic (design.md)
+       + window/feel (`docs/MECHANIC_ARCHETYPES.md` — no `RETARGETED` / `ANTI` leaks)
 - [ ] 4. Pile costs: `[Requires]` / `[Spend]` / Active-when / attack fuel
        (attribute-pile.md) — not a converter license
 - [ ] 5. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
@@ -198,6 +204,7 @@ npm run typecheck && npm test && npm run lint
 Report: slot occupied (attribute × kind × forge shape × payoff × home);
 why it is not a reskin of live JSON; forge intent vs baseline physics;
 clauses wired vs deferred; whether `engine-developer` was invoked and what
-it added; DoD. Ask rather than assume on identity, cost, OPEN design,
+it added; `docs/MECHANIC_ARCHETYPES.md` row added/updated if feel changed;
+DoD. Ask rather than assume on identity, cost, OPEN design,
 incomplete print, and whether a proving dual-attribute face needs a second
 `symbol` field.

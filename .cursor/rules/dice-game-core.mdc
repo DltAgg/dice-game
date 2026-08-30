@@ -13,14 +13,15 @@ alwaysApply: true
 - Incomplete printed clauses → `docs/DEFERRED_CATALOGUE.md`, not approximate silent effects.
 - Player-facing how-it-plays: `docs/RULEBOOK.md`. Update it in the same change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
 - Print / token / mechanic keywords: `docs/KEYWORDS.md` (`.cursor/rules/keywords.mdc`). New and edited print uses the glossary; new tokens join `[Mark]` / `[Strip]`, they do not get a new verb.
+- Mechanic × archetype feel (playtests): `docs/MECHANIC_ARCHETYPES.md`. After a session, subagent `.cursor/agents/post-playtest.md` (skill `review-playtest`) updates it and briefs owners. Same opcode, different window, different deck style.
 - DoD: `npm run typecheck && npm test && npm run lint`.
 - Commit / push only when the user asks.
 - Print voice is the holder (`you` = the player whose field the card sits on; `opponent` = their opponent, including after a hand-off).
 - Printed `playCost` totaling 1 pile token is exceptional; cheaper plays come from `[Discount]`, not a roster of 1-token cards.
-- Content design then authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content` + `.cursor/skills/author-content/design-craft.md`). New mechanics → `engine-developer`, not the parent.
+- Content design then authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content` + `.cursor/skills/author-content/design-craft.md`). Playtest debrief → `.cursor/agents/post-playtest.md` first. New mechanics → `engine-developer`, not the parent.
 - Engine/reducer/hooks/resolution → subagent `.cursor/agents/engine-developer.md` (skills `develop-engine`, `implement-hooks`).
 - Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.
 - Match / lobby / deck builder / PeerJS adapters → subagent `.cursor/agents/match-ui.md` (skill `match-ui`). No rules in UI.
-- Match metrics dashboard / collector / agent export → skill `analyze-match-metrics` plus `src/client/metrics` (not the engine).
+- Match metrics dump with no playtest notes → skill `analyze-match-metrics` plus `src/client/metrics` (spec `014`). Full debrief (notes + feel) → `post-playtest`.
 - Constructed loadouts / “does this card have a home?” / attribute identity in builds → subagent `.cursor/agents/deck-designer.md`.
 - Human-to-AI interactions (agents, skills, rules, TOOLS.md, AGENTS.md routing) → subagent `.cursor/agents/prompt-engineer.md` (skill `author-interactions`). Do not grow specialists from the parent.
