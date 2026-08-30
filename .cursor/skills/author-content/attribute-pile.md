@@ -26,7 +26,7 @@ owned creature** (grants Shield counters — not pile fuel).
 | `[Requires: …]` | Gate vs pile (must hold; not spent) | Attacks, some card gates |
 | `[Spend: …]` | Burn from pile | Header `playCost` (play + synthetic forge), `effect.requires`, ritual `spend`, attack `discards` |
 | `[Active when: …]` | Ritual gate vs **owner’s** pile | Not in `rulesText` — UI prints it from `ritual.activeWhen` |
-| Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Often equals `activeWhen` on high-swing instants. There is **no** `additionalEnergy` |
+| Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Often equals `activeWhen` on high-swing instants |
 | Header `playCost` | `CardDefinition.playCost` | Place/play cost. Natural forge does **not** burn it; synthetic forge does (`docs/RULEBOOK.md` §8) |
 
 Wildcards (`[Resonance]`) may cover shortfall on gates and spends for the turn.
@@ -37,9 +37,8 @@ Wildcards (`[Resonance]`) may cover shortfall on gates and spends for the turn.
 2. Ritual becomes **`ready`** when the owner’s pile meets `activeWhen` (or
    immediately if omitted).
 3. `ACTIVATE_RITUAL` checks the gate again, burns optional `ritual.spend`,
-   resolves `ritual.effects`. There is no Energy / `additionalEnergy`.
-4. **`ABSORB_SYMBOL_TO_RITUAL` is removed.** Do not author “sink pips into the
-   ritual card.”
+   resolves `ritual.effects`.
+4. Do not bank pips onto the ritual card — the gate is the owner’s pile.
 
 Standing `on-absorb` on continuous rituals fires when the **owner banks** a
 matching attribute (see below).
@@ -77,20 +76,13 @@ attack chain, onto that attack’s target. No attack on the chain → whiff. Do 
 author `[Prevent]` on faces, On absorb, instants, equipment, or standing
 passives. Proactive Luminar mitigation → `[Mark N Shield]` / `[Heal]`.
 
-## Retired (do not author or reintroduce)
-
-- `CreatureState.attributeTokens` / creature-held attribute fuel
-- `CardInstance.ritualProgress` / absorb-to-ritual progress
-- `transfer-attribute-tokens` / `copy-attribute-tokens` / pack feeding (`[Feed]`)
-- Wild exclusive **was** pack feeding — now **`[Frenzy]`** (`grant-extra-attack`)
-
 ## Authoring checklist (card-designer)
 
 - [ ] Header / attack costs use pile grammar (`requires` gate vs `discards` spend)
 - [ ] Ritual `activeWhen` is a pile gate; add `spend` only when activate should burn fuel
 - [ ] `On absorb:` clauses assume **bank**, not “put token on creature”
 - [ ] Equipment / continuous ritual `on-absorb` uses `ally` when the clause is “when you bank”
-- [ ] No pack feeding — Wild splash uses `[Frenzy]`, `[Generate]`, or `[Drain]`
+- [ ] Wild splash uses `[Frenzy]`, `[Generate]`, or `[Drain]`
 - [ ] `[Prevent]` only on Luminar **reactions** — not faces, absorb, or standing
 - [ ] Creature attack print says “in your pile” if editing English (not “absorbed on creature”)
 - [ ] Dual-attribute fuel is for gates/spends that **play both identities**, not

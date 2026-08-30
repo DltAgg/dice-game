@@ -69,9 +69,8 @@ Implement engine requirements so content can stay data-driven:
 - **Attribute pile (spec `016`).** Fuel lives on `PlayerState.attributePool`.
   Attribute absorb banks via `attributeBank.ts`; On absorb uses absorber
   `{ kind: "player" }`. Shield absorb keeps `{ kind: "creature" }`. Ritual
-  `activeWhen` / optional `spend` are pile gates — no `ritualProgress` or
-  `ABSORB_SYMBOL_TO_RITUAL`. Pack feeding / creature attribute tokens are
-  retired — do not reintroduce without an explicit design reopen.
+  `activeWhen` / optional `spend` are pile gates. Attribute fuel is the
+  player pile, not creature-held tokens.
 - Filters live on ability data (`self` | `ally` | `ally-other` | `any`, `controller` | `opponent` | `any`), not in reducer branch names.
 - Hosts share one trigger union: equipment, creature standing passives, ready continuous rituals. Walk all hosts the same way.
 - Stun is `DEFERRED` in `OPEN_DESIGN.md`. Do not design or build stun unless the user reopens it.

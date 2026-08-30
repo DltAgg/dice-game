@@ -81,7 +81,6 @@ Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
   Pile fuel is **not** a license to print `[Spend] X, [Generate] Y` converters.
 - Standing equipment / ritual `on-absorb` for attribute banks needs
   `absorberRelation: "ally"` (default `self` no-ops on pile bank).
-- Do not author pack feeding or absorb-to-ritual progress — retired in spec `016`.
 - **`[Prevent]` is reaction-exclusive** (Luminar only; spec `009`). Author
   `grant-attack-prevent` only on `type: "reaction"` cards that answer an attack
   on the chain. Never put `[Prevent]` on faces, On absorb, instants, equipment,

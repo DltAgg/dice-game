@@ -13,7 +13,7 @@ Card text,Play cost,Card name
 "Draw 2 cards and discard 1. Forge 1 synthetic Darkness face on your die.",3,Eclipse
 ```
 
-Author as `"playCost": { "darkness": 3 }` (card attribute), never `"energyCost": 3`.
+Author as `"playCost": { "darkness": 3 }` for the card’s attribute.
 
 If headers or order differ, **stop and confirm** before mass-authoring.
 

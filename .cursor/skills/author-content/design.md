@@ -225,8 +225,6 @@ vocabulary exists. If a card needs a resource plus, use `[Generate]`,
   a failure mode — live JSON is truth).
 - Cloning Cogtooth (`On roll: [Generate 1 SameAttr]`) to fill the dual-pip hole.
 - Copying vanilla `002` baselines into constructed.
-- Authoring `energyCost`, `variableEnergy`, `additionalEnergy`, or `gain-energy`
-  — there is no Energy track; use `playCost` / `[Generate]` / `[Discount]`.
 - Rules logic in React / Zustand / PeerJS.
 - Growing AST without a concrete card + resolver + tests in the same change.
 
