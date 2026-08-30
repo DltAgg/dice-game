@@ -22,7 +22,7 @@ when it is a token, symbol, card type, or target. A new token reuses
 `[Mark]` / `[Strip]`; it does not get its own word.
 
 Catalogue print uses these keywords. Rare unique sequences (Exterminate, Mind
-Control, Aegis redirect, Overcharge, Lock/Suppress/Hex) stay spelled. The
+Control, Aegis redirect, Lock/Suppress/Hex) stay spelled. The
 meaning is the same.
 
 Anyone may print `[Mark]`. Only Toxin may print `[Mark N Toxin]`. The verb is
@@ -30,7 +30,7 @@ shared; the argument follows attribute exclusives.
 
 | Layer | What belongs here | Example |
 |---|---|---|
-| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
+| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]` |
 | **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Prevent]`, `[Convert N]` |
 
@@ -109,6 +109,7 @@ Same idea, different nouns.
 |---|---|---|
 | `[Generate N X]` | A symbol (Martial, Shield, …) | Add N of X to your pool this turn |
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
+| `[Overcharge]` | A natural own-die forge card from hand | Spend that card onto one attribute slot on **your** die; that slot `[Generate]`s +1 of the card’s forge attribute when rolled |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` | A card on the field | Send one to its owner’s graveyard |
 | `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal your **most-damaged ally** for the **HP actually lost**. |
@@ -117,13 +118,20 @@ Same idea, different nouns.
 opponent’s die is Corruption’s exclusive (their die). Mechanical forges
 **your** die.
 
+`[Overcharge]` is the master-rule spend of a **natural own-die** forge card
+(not a line on every such card). It is **not** spec `013`’s Mechanical
+face-marker opcode (`optional-overcharge` / suppress inherent / double next
+face effect). That opcode stays on the faces that still use it.
+
 `[Negate Ritual]` answers a ritual on the chain. `[Destroy Ritual]` answers a
 ritual already on the field.
 
 <!--
-Engine: generate-symbol | FORGE_CARD / forge-faces | negate-card / negate-ritual |
+Engine: generate-symbol | FORGE_CARD / forge-faces | OVERCHARGE_CARD (`[Overcharge]`) |
+negate-card / negate-ritual |
 destroy-equipment / destroy-ritual | drain-life |
 No Contaminate / Seal / Disarm / Unmake / Siphon keywords.
+Spec `013` `optional-overcharge` is the face-marker opcode, not this keyword.
 -->
 
 ---
@@ -166,7 +174,7 @@ arm-requirement-wildcard | arm-wildcard-from-synthetic-pool | optional-reroll-di
 retain-die | grant-extra-attack (`[Frenzy]`).
 Peek is [Insight 1]. Prime is [Empower N] on that creature.
 Spell until they recur: Aegis, Rain, Expose, Tough, Might, Lock, Suppress, Hex,
-Copy Face, Mirror, Overcharge, Exterminate, Mind Control.
+Copy Face, Mirror, Exterminate, Mind Control.
 Push is banned. Stun and Scale are deferred — do not print.
 Wild's exclusive extra-attack verb is `[Frenzy]`.
 -->
@@ -180,6 +188,7 @@ These are not effect replacements.
 | Print | Role |
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
+| `[Overcharge]` | Third exclusive use of a natural own-die forge card: spend it onto an attribute slot on your die |
 | `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent) |
 | `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
 | `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate) |
@@ -227,6 +236,7 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` |
 | Pool pip | `[Generate N Arcane]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
+| Overcharge a kept face | `[Overcharge]` (natural own-die forge spend) |
 | Install on them | `[Forge 1 Synthetic Corruption]` on the opponent’s die |
 | Extra attack damage | `[Empower]`, never `[Mark N Damage]` |
 | Unique consume/split closer | Spell it |

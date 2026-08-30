@@ -52,14 +52,7 @@ export function activateFace(
   const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
   const slots = die.slots.map((candidate) =>
     candidate.index === slotIndex
-      ? {
-          ...candidate,
-          faceCardId: SHIELD_FACE_ID,
-          faceCardOwnerId: playerId,
-          pestilenceCounters: 0,
-          forgeLockRemaining: 0,
-          forgeYield: false,
-        }
+      ? overwrittenSlot(candidate, SHIELD_FACE_ID, playerId)
       : candidate,
   );
   patchDie(draft, dieId, { slots });

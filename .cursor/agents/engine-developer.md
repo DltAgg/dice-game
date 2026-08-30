@@ -121,6 +121,7 @@ If the user asks for engine **and** UI in one request: implement engine + spec U
 | State | `src/server/model/state.ts`, `creatures.ts`, `dice.ts` |
 | Attribute pile | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
 | Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md`, `016-attribute-pile-up.md` |
+| Tactic Overcharge (`021`) | `commands/overcharge.ts`, `rules/overcharge.ts` — `OVERCHARGE_CARD`, `DieSlot.overcharge`, `canOvercharge` / `legalOverchargeSlots`. **Not** spec `013` `optional-overcharge` (face-marker opcode; `RESOLVE_OPTIONAL_OVERCHARGE`) |
 | Tests / scenarios | `src/server/reducer/*.test.ts`, `src/server/testing/scenario.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 
@@ -133,6 +134,10 @@ ritual) is legal throughout actions on the same unabsorbed pool as `[Requires]`.
 New rules behavior updates `008` / `009` / `010` or adds a spec from
 `docs/specs/_TEMPLATE.md`. Spec **UI** and **Networking** sections are
 instructions for other layers — you do not implement those layers.
+
+Spec `013` `optional-overcharge` (Mechanical face marker) ≠ spec `021`
+tactic `[Overcharge]` (`OVERCHARGE_CARD`, already shipped). Do not
+reimplement `021` or treat them as one opcode.
 
 ## Verify
 

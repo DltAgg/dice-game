@@ -1573,14 +1573,7 @@ export function consumeSyntheticCorruptionOnDie(
     if (face?.kind !== "synthetic" || face.symbol !== "corruption") return slot;
     consumed += 1;
     displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
-    return {
-      ...slot,
-      faceCardId: SHIELD_FACE_ID,
-      faceCardOwnerId: die.ownerId,
-      pestilenceCounters: 0,
-      forgeLockRemaining: 0,
-      forgeYield: false,
-    };
+    return overwrittenSlot(slot, SHIELD_FACE_ID, die.ownerId);
   });
   if (consumed === 0) return 0;
   patchDie(draft, dieId, { slots });
@@ -1782,11 +1775,7 @@ export function stripFaceToShield(
   const slots = die.slots.map((candidate) =>
     candidate.index === slotIndex
       ? {
-          ...candidate,
-          faceCardId: SHIELD_FACE_ID,
-          faceCardOwnerId: shieldOwnerId,
-          pestilenceCounters: 0,
-          forgeLockRemaining: 0,
+          ...overwrittenSlot(candidate, SHIELD_FACE_ID, shieldOwnerId),
           corruptionMarkers: 0,
           suppressInherentNextRoll: false,
           resourceLockedThisTurn: false,

@@ -190,3 +190,19 @@ export function applyForgeYieldGenerate(
     createSymbol(draft, dieOwnerId, symbol, "available", "effect");
   }
 }
+
+/**
+ * When an Overcharged slot shows after a roll, generate 1 effect pip per
+ * stored attribute (spec `021`). Same Generate path as forge yield.
+ */
+export function applyOverchargeGenerate(
+  draft: Draft,
+  dieOwnerId: PlayerId,
+  slot: Pick<DieSlot, "overcharge">,
+): void {
+  const pips = slot.overcharge;
+  if (pips === undefined || pips.length === 0) return;
+  for (const attribute of pips) {
+    createSymbol(draft, dieOwnerId, attribute, "available", "effect");
+  }
+}

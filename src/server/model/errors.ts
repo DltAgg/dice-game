@@ -17,6 +17,8 @@ export type GameError =
   | "FACE_NOT_AVAILABLE"
   | "CREATURE_DEFEATED"
   | "ATTACK_ALREADY_USED"
+  /** A once-per-turn action (tactic Overcharge) was already used this turn. */
+  | "ALREADY_USED"
   | "DIE_STUNNED"
   | "CARD_NOT_AVAILABLE"
   /** The card forges but its effect region is empty, or vice versa. */

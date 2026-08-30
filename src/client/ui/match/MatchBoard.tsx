@@ -3,7 +3,6 @@ import {
   attackIsFuelled,
   basicAttackOf,
   canAbsorbSymbol,
-  diceOf,
   formatForgeLine,
   getCard,
   getCreatureDefinition,
@@ -14,7 +13,6 @@ import {
   hasLegalReactionOffer,
   legalCreaturesForFilter,
   legalTargetsFor,
-  opponentOf,
   slotCannotBeReplacedByForge,
   TURN_PHASE_ORDER,
   type CardInstance,
@@ -40,7 +38,7 @@ import { SymbolPool } from "./board/SymbolPool";
 import { ZoneDocks } from "./board/ZoneDocks";
 import { collectAttackArrows, creatureHasArmedAttack } from "./intents/attack";
 import { hintFor } from "./intents/hintFor";
-import { type Intent } from "./intents/types";
+import { selectedHandCardId, type Intent } from "./intents/types";
 import { ChooseAttributeTokensModal } from "./modals/ChooseAttributeTokensModal";
 import { ChooseCreatureModal } from "./modals/ChooseCreatureModal";
 import { ChooseDieModal } from "./modals/ChooseDieModal";
@@ -51,15 +49,16 @@ import { ChooseRitualModal } from "./modals/ChooseRitualModal";
 import { ConvertSymbolsModal } from "./modals/ConvertSymbolsModal";
 import { CopyPoolSymbolModal } from "./modals/CopyPoolSymbolModal";
 import { DarkPactModal } from "./modals/DarkPactModal";
-import { DieSlotPickModal } from "./modals/DieSlotPickModal";
 import { DiscardModal } from "./modals/DiscardModal";
 import { FacePickModal } from "./modals/FacePickModal";
 import { ForgeFacesPrompt } from "./modals/ForgeFacesPrompt";
+import { ForgeSlotPick } from "./modals/ForgeSlotPick";
 import { LookTopDeckModal } from "./modals/LookTopDeckModal";
 import { MindControlModal } from "./modals/MindControlModal";
 import { OptionalBonusAttackModal } from "./modals/OptionalBonusAttackModal";
 import { OptionalOverchargeModal } from "./modals/OptionalOverchargeModal";
 import { OptionalRerollModal } from "./modals/OptionalRerollModal";
+import { OverchargeSlotPick } from "./modals/OverchargeSlotPick";
 import { OverloadFacePickModal } from "./modals/OverloadFacePickModal";
 import { PeekDeckModal } from "./modals/PeekDeckModal";
 import { ReplaceSyntheticFacePrompt } from "./modals/ReplaceSyntheticFacePrompt";
@@ -388,10 +387,10 @@ export function MatchBoard() {
     tryDispatch({ type: "PASS_PRIORITY", playerId: actingId });
   };
 
-  const beginForge = (card: CardInstance) => {
+  const beginForgeOrOvercharge = (kind: "forge" | "overcharge", card: CardInstance) => {
     if (!canAct) return;
     if (card.ownerId !== activeId || finished || pending !== null || phase !== "actions") return;
-    setIntent({ kind: "forge", cardInstanceId: card.id });
+    setIntent({ kind, cardInstanceId: card.id });
   };
 
   const confirmForgeFace = (faceCardId: FaceCardId) => {
@@ -422,41 +421,6 @@ export function MatchBoard() {
       : undefined;
 
   const forgeFacesNeeded = forgeDef?.forge.faces ?? 1;
-  const forgeTarget = forgeDef?.forge.target ?? null;
-
-  useEffect(() => {
-    if (intent.kind !== "forge" || intent.dieId !== undefined || forgeDef === undefined) return;
-    const ownerId =
-      forgeDef.forge.target === "own-die" ? activeId : opponentOf(state, activeId);
-    const needed = forgeDef.forge.faces;
-    const legal = diceOf(state, ownerId).filter((die) => {
-      const replaceable = die.slots.filter((slot) => !slotCannotBeReplacedByForge(slot));
-      return replaceable.length >= needed;
-    });
-    if (legal.length !== 1) return;
-    const die = legal[0];
-    if (die === undefined) return;
-    const replaceable = die.slots.filter((slot) => !slotCannotBeReplacedByForge(slot));
-    if (needed === 1 && replaceable.length === 1 && replaceable[0] !== undefined) {
-      setIntent({
-        kind: "forge",
-        cardInstanceId: intent.cardInstanceId,
-        dieId: die.id,
-        slotIndexes: [replaceable[0].index],
-      });
-      return;
-    }
-    setIntent({
-      kind: "forge",
-      cardInstanceId: intent.cardInstanceId,
-      dieId: die.id,
-      slotIndexes: [],
-    });
-  }, [intent, forgeDef, activeId, state]);
-
-  const forgeNeedsDieOrSlots =
-    intent.kind === "forge" &&
-    (intent.dieId === undefined || (intent.slotIndexes?.length ?? 0) < forgeFacesNeeded);
 
   const forgeFacePrompt =
     intent.kind === "forge" &&
@@ -1135,7 +1099,7 @@ export function MatchBoard() {
         />
       )}
       {pending?.type === "optional-overcharge" && !isPendingChooser && (
-        <WaitingBanner>Opponent is deciding on Overcharge.</WaitingBanner>
+        <WaitingBanner>Opponent is deciding whether to accept an extra symbol.</WaitingBanner>
       )}
 
       {pending?.type === "optional-bonus-attack" && isPendingChooser && (
@@ -1170,65 +1134,29 @@ export function MatchBoard() {
         </WaitingBanner>
       )}
 
-      {forgeNeedsDieOrSlots && intent.kind === "forge" && forgeTarget !== null && (
-        <DieSlotPickModal
+      {intent.kind === "forge" && (
+        <ForgeSlotPick
           state={state}
-          title={
-            forgeFacesNeeded === 1
-              ? "Forge — pick one face to overwrite"
-              : `Forge — pick ${String(forgeFacesNeeded)} faces on one die`
-          }
-          subtitle={
-            forgeDef !== undefined
-              ? `${forgeDef.name} forges ${formatForgeLine(forgeDef.forge)}. ${
-                  forgeFacesNeeded === 1
-                    ? "Click a legal face; then choose what it becomes from your pool."
-                    : `Choose a die, then exactly ${String(forgeFacesNeeded)} faces to overwrite.`
-                }`
-              : "Pick which physical die and faces to overwrite."
-          }
-          dieOwnerId={forgeTarget === "own-die" ? activeId : opponentOf(state, activeId)}
-          facesNeeded={forgeFacesNeeded}
-          forgeAttribute={forgeDef?.forge.attribute}
-          pickMode={forgeFacesNeeded === 1 ? "single-slot" : "die-then-slots"}
-          selectedDieId={intent.dieId}
-          selectedSlots={intent.slotIndexes ?? []}
-          onSelectDie={(dieId) =>
-            setIntent({
-              kind: "forge",
+          activeId={activeId}
+          intent={intent}
+          onUpdate={setIntent}
+          onCancel={clearIntent}
+        />
+      )}
+      {intent.kind === "overcharge" && (
+        <OverchargeSlotPick
+          state={state}
+          playerId={activeId}
+          cardInstanceId={intent.cardInstanceId}
+          onPick={(dieId, slotIndex) =>
+            tryDispatch({
+              type: "OVERCHARGE_CARD",
+              playerId: activeId,
               cardInstanceId: intent.cardInstanceId,
               dieId,
-              slotIndexes: [],
+              slotIndex,
             })
           }
-          onPickSingleSlot={(dieId, slotIndex) =>
-            setIntent({
-              kind: "forge",
-              cardInstanceId: intent.cardInstanceId,
-              dieId,
-              slotIndexes: [slotIndex],
-            })
-          }
-          onClearDie={() =>
-            setIntent({ kind: "forge", cardInstanceId: intent.cardInstanceId })
-          }
-          onToggleSlot={(slotIndex) => {
-            if (intent.dieId === undefined) return;
-            const slot = state.dice[intent.dieId]?.slots[slotIndex];
-            if (slot !== undefined && slotCannotBeReplacedByForge(slot)) return;
-            const current = intent.slotIndexes ?? [];
-            const next = current.includes(slotIndex)
-              ? current.filter((index) => index !== slotIndex)
-              : current.length < forgeFacesNeeded
-                ? [...current, slotIndex]
-                : current;
-            setIntent({
-              kind: "forge",
-              cardInstanceId: intent.cardInstanceId,
-              dieId: intent.dieId,
-              slotIndexes: next,
-            });
-          }}
           onCancel={clearIntent}
         />
       )}
@@ -1472,11 +1400,10 @@ export function MatchBoard() {
                 phase={phase}
                 canAct={canAct}
                 reactionWindow={reactionPriorityLive}
-                selected={
-                  intent.kind === "play" || intent.kind === "forge" ? intent.cardInstanceId : null
-                }
+                selected={selectedHandCardId(intent)}
                 onPlay={beginPlay}
-                onForge={beginForge}
+                onForge={(card) => beginForgeOrOvercharge("forge", card)}
+                onOvercharge={(card) => beginForgeOrOvercharge("overcharge", card)}
                 onCancel={clearIntent}
               />
             </div>

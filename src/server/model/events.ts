@@ -292,6 +292,14 @@ export type GameEvent =
       readonly faceCardId: FaceCardId;
     }
   | {
+      readonly type: "face-overcharged";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+      readonly dieId: DieId;
+      readonly slotIndex: number;
+      readonly attribute: Attribute;
+    }
+  | {
       readonly type: "forge-faces-started";
       readonly playerId: PlayerId;
       readonly faces: number;

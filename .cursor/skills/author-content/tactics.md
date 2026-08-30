@@ -12,7 +12,13 @@ occupy a Forge-2 **region** slot.
 ## Shape
 
 Every hand card has a forge region. Play uses **at most one** of: `effect`,
-`equipment`, `overload`, `ritual` (`playCard` in `reduce.ts`).
+`equipment`, `overload`, `ritual` (`playCard` in `reduce.ts`). The player
+chooses **play**, **forge**, or (natural own-die forge only) **`[Overcharge]`**
+— mutually exclusive on the same use. `[Overcharge]` is a **master rule**
+(once per turn): spend that card onto an attribute slot on your die instead of
+forging (`docs/specs/021-overcharge.md`, [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md)
+§11). Do **not** print `[Overcharge]` on each natural-forge card. Spec `013`
+`optional-overcharge` is a Mechanical face-marker opcode, not this keyword.
 
 ```ts
 export const EXAMPLE: CardId = asCardId("card-example");

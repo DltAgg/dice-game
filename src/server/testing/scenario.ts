@@ -193,6 +193,22 @@ export function forgeAction(
   };
 }
 
+/** Test helper: spend a natural own-die forge card as Overcharge (spec `021`). */
+export function overchargeAction(
+  playerId: PlayerId,
+  cardInstanceId: CardInstanceId,
+  dieId: DieId,
+  slotIndex: number,
+): GameAction {
+  return {
+    type: "OVERCHARGE_CARD",
+    playerId,
+    cardInstanceId,
+    dieId,
+    slotIndex,
+  };
+}
+
 /** Test helper: fuel every attribute pile so any play/forge cost is affordable. */
 export const withPile = (state: GameState, playerId: PlayerId, value: number): GameState =>
   withAttributePool(state, playerId, {

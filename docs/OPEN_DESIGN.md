@@ -684,8 +684,27 @@ Assumption: **install is affordable; stay and peel are the expense.** Stick come
 | **Decay unusable symbol** | Strip face → Shield (like `ACTIVATE_FACE`); create Corruption in **Decay controller’s** pool with `usable: false` (not the face owner’s). |
 | **Toxin receive cap** | At most `amount` markers **gained** while the cap remains (remaining counter), until that creature’s owner’s next turn starts. |
 | **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this controller’s last `ROLL_DICE` (`facesAppearedThisRoll`). Not overloads. |
-| **Overcharge double** | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. |
+| **Overcharge double** (spec `013` face marker, `optional-overcharge`) | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. **Not** the tactic `[Overcharge]` master rule (spec `021`). |
 | **Instinct absorb** | Optional actions-window basic via `optional-bonus-attack` (see row above). |
+
+---
+
+## Prototype assumptions — tactic Overcharge (2026-08-30)
+
+**Status:** `ASSUMED` · implemented · spec [`021-overcharge.md`](./specs/021-overcharge.md)
+
+Bible is silent. Player-facing **Overcharge** is this master rule. Spec `013`’s
+Mechanical face-marker opcode (`optional-overcharge`, suppress inherent,
+`resolveNextFaceEffectTwice`) stays for catalogue faces that still use it.
+
+| Topic | Assumption coded |
+|---|---|
+| **Slot-based pips** | `DieSlot.overcharge` is `readonly Attribute[]` on the physical slot. Copies of the same face on different slots do not share pips. |
+| **Persist until overwrite** | Pips stay until overwrite / peel (`overwrittenSlot` / `ACTIVATE_FACE` / unforge). Not consumed after the first generate. |
+| **Own-die natural only** | `forge.kind === "natural"` and `forge.target === "own-die"`. Synthetic and opponent-die cannot Overcharge. |
+| **Always +1** | One pip of `forge.attribute` regardless of `forge.faces`. |
+| **No reaction window** | Same as `FORGE_CARD`. |
+| **No GameState bag** | Once-per-turn uses `spentOncePerTurnKeys` key `"overcharge"`. `state.ts` stays frozen. |
 
 ---
 

@@ -83,6 +83,14 @@ ninth pie.
 the **default sticker**. Stop using it unless that *is* the designed
 choice and the play region sequences with it.
 
+Natural own-die forge is no longer sticker-only: the player may **forge** or
+**`[Overcharge]`** (spec `021` / RULEBOOK §11) — spend the card onto a kept
+attribute face so that slot `[Generate]`s +1 of this card’s `forge.attribute`
+on roll. That is a real alternative (keep a named synthetic, splash this
+card’s color). Still do **not** clone Forge-1 stickers as the whole identity,
+and do **not** reprint `[Overcharge]` on the card. Spec `013`
+`optional-overcharge` is a face-marker opcode, not this spend.
+
 ### Vary the region (slots — not cards to author now)
 
 | Slot | What it occupies |
@@ -90,7 +98,7 @@ choice and the play region sequences with it.
 | `faces: 1` | The common install. Needs a **rider** or play-text synergy, or it is empty craft. |
 | `faces: 2` | Count as the plus. Rare; costs and pie must justify two installs. |
 | `faces: 3` | Exceptional. Ritual-scale or keyed engine piece, not a habit. |
-| `kind: "natural"` | Free install + draw + yield. Identity face / density. Reason required. |
+| `kind: "natural"` | Free install + draw + yield, **or** `[Overcharge]` onto a kept attribute face (master rule — do not print it). Identity face / density. Reason required. |
 | `kind: "synthetic"` | Named special + synthetic bank. Reason required (the special, not “Mechanical cards forge synthetic”). |
 | Named-face install | Play or rider names a **specific** special, not “any of this attribute.” |
 | Forge rider | Extra generate, discount, draw, yield synergy, lock, or a trigger that cares the face was forged. |

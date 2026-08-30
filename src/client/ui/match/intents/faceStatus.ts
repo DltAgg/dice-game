@@ -1,7 +1,9 @@
 import {
+  attributeLabel,
   diceOf,
   getFaceCard,
   slotCannotBeReplacedByForge,
+  type Attribute,
   type DieId,
   type DieSlot,
   type FaceCardId,
@@ -22,8 +24,28 @@ export function forgeLockStatusLabel(remaining: number | undefined): string | nu
   return `Forge-lock ${String(remaining)}`;
 }
 
+/** Attribute counts on a physical slot's Overcharge pips (spec `021`). */
+export function overchargePipLabel(
+  pips: readonly Attribute[] | undefined,
+): string | null {
+  if (pips === undefined || pips.length === 0) return null;
+  const counts = new Map<Attribute, number>();
+  for (const attribute of pips) {
+    counts.set(attribute, (counts.get(attribute) ?? 0) + 1);
+  }
+  const bits: string[] = [];
+  for (const [attribute, count] of counts) {
+    const name = attributeLabel(attribute);
+    bits.push(count === 1 ? name : `${name} ×${String(count)}`);
+  }
+  return `Overcharge ${bits.join(" · ")}`;
+}
+
 export function slotStatusLine(slot: DieSlot): string | null {
   const parts: string[] = [];
+  if (slot.forgeYield === true) parts.push("Forge yield");
+  const overcharge = overchargePipLabel(slot.overcharge);
+  if (overcharge !== null) parts.push(overcharge);
   if ((slot.corruptionMarkers ?? 0) > 0) {
     parts.push(`Corruption ×${String(slot.corruptionMarkers)}`);
   }
@@ -35,6 +57,36 @@ export function slotStatusLine(slot: DieSlot): string | null {
   if (slot.suppressInherentNextRoll === true) parts.push("Suppress next roll");
   if (slot.resourceLockedThisTurn === true) parts.push("Resource locked");
   return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+/**
+ * Per-slot Overcharge pips for one installed face. Does not merge copies —
+ * two Darkness Naturals keep separate pip lines.
+ */
+export function overchargeStatusForFace(
+  state: GameState,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+): string | null {
+  const dice = diceOf(state, playerId);
+  const charged: { readonly where: string; readonly label: string }[] = [];
+  let copies = 0;
+  for (const [dieIndex, die] of dice.entries()) {
+    for (const slot of die.slots) {
+      if (slot.faceCardId !== faceCardId) continue;
+      copies += 1;
+      const label = overchargePipLabel(slot.overcharge);
+      if (label === null) continue;
+      const where =
+        dice.length > 1
+          ? `Die ${String(dieIndex + 1)} slot ${String(slot.index + 1)}`
+          : `Slot ${String(slot.index + 1)}`;
+      charged.push({ where, label });
+    }
+  }
+  if (charged.length === 0) return null;
+  if (copies === 1) return charged[0]?.label ?? null;
+  return charged.map((row) => `${row.where}: ${row.label}`).join(" · ");
 }
 
 /** Aggregated stay-on-slot cues for a unique installed face card. */

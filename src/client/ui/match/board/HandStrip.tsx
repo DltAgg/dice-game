@@ -11,10 +11,12 @@ import {
   formatTypeLine,
   canAffordForge,
   canAffordPlay,
+  canOvercharge,
   getCard,
   handOf,
   hasPlayableEffect,
   isEnabledHandReaction,
+  isOverchargeLegalCard,
   type CardInstance,
   type CardInstanceId,
   type GameState,
@@ -28,6 +30,8 @@ import {
 } from "../intents/format";
 import {
   btnClass,
+  btnHand,
+  btnHandPrimary,
   btnPrimary,
 } from "../styles";
 import {
@@ -47,6 +51,7 @@ export function HandStrip({
   selected,
   onPlay,
   onForge,
+  onOvercharge,
   onCancel,
   idleLabel,
 }: {
@@ -58,6 +63,7 @@ export function HandStrip({
   selected: CardInstanceId | null;
   onPlay: (card: CardInstance) => void;
   onForge: (card: CardInstance) => void;
+  onOvercharge: (card: CardInstance) => void;
   onCancel: () => void;
   idleLabel?: string;
 }) {
@@ -128,7 +134,7 @@ export function HandStrip({
       ? " · respond or pass"
       : !actionsPhase
         ? " · wait for actions"
-        : " · play or forge";
+        : " · play, forge, or Overcharge";
 
   return (
     <section className="rounded-lg border border-stone-800/80 bg-black/30 p-3">
@@ -156,6 +162,9 @@ export function HandStrip({
             hasPlayableEffect(def) &&
             canAffordPlay(state, playerId, def);
           const canForge = actionsLive && canAffordForge(state, playerId, def);
+          const showOvercharge = isOverchargeLegalCard(def);
+          const overchargeEnabled =
+            showOvercharge && canOvercharge(state, playerId, card.id);
           const canRespond =
             reactionsLive &&
             isEnabledHandReaction(state, playerId, def) &&
@@ -170,8 +179,8 @@ export function HandStrip({
               }}
               className={
                 isSelected
-                  ? "h-[7.25rem] w-48 shrink-0 snap-start snap-always rounded border border-[var(--accent)] bg-stone-900 p-3"
-                  : "h-[7.25rem] w-48 shrink-0 snap-start snap-always rounded border border-stone-700 bg-stone-950 p-3"
+                  ? "h-[7.25rem] w-52 shrink-0 snap-start snap-always rounded border border-[var(--accent)] bg-stone-900 p-3"
+                  : "h-[7.25rem] w-52 shrink-0 snap-start snap-always rounded border border-stone-700 bg-stone-950 p-3"
               }
               onMouseEnter={() => setHoveredId(card.id)}
               onMouseLeave={() => setHoveredId((current) => (current === card.id ? null : current))}
@@ -180,12 +189,12 @@ export function HandStrip({
               <p className="mt-1 text-xs text-stone-500">
                 {formatPlayCostCompact(def)} · {def.subtypes.join("/")}
               </p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-nowrap gap-1.5">
                 {actionsLive && (
                   <>
                     <button
                       type="button"
-                      className={canPlay ? btnPrimary : `${btnClass} opacity-40`}
+                      className={canPlay ? btnHandPrimary : `${btnHand} opacity-40`}
                       disabled={!canPlay}
                       onClick={() => onPlay(card)}
                     >
@@ -193,12 +202,22 @@ export function HandStrip({
                     </button>
                     <button
                       type="button"
-                      className={canForge ? btnClass : `${btnClass} opacity-40`}
+                      className={canForge ? btnHand : `${btnHand} opacity-40`}
                       disabled={!canForge}
                       onClick={() => onForge(card)}
                     >
                       Forge
                     </button>
+                    {showOvercharge && (
+                      <button
+                        type="button"
+                        className={overchargeEnabled ? btnHand : `${btnHand} opacity-40`}
+                        disabled={!overchargeEnabled}
+                        onClick={() => onOvercharge(card)}
+                      >
+                        Overcharge
+                      </button>
+                    )}
                   </>
                 )}
                 {reactionsLive && (

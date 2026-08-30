@@ -1,4 +1,5 @@
 import {
+  attributeLabel,
   formatFaceKind,
   getCard,
   hasLegalReactionOffer,
@@ -216,8 +217,8 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
   }
   if (state.pendingDecision?.type === "optional-overcharge") {
     return isPendingChooser
-      ? `Accept Overcharge (+${String(state.pendingDecision.amount)} pool symbol, suppress inherent next roll) or Decline.`
-      : "Waiting for the opponent to decide on Overcharge.";
+      ? `Accept +${String(state.pendingDecision.amount)} pool symbol and suppress this face's inherent next roll, or Decline.`
+      : "Waiting for the opponent to decide on an extra symbol (suppress inherent).";
   }
   if (state.pendingDecision?.type === "optional-bonus-attack") {
     return isPendingChooser
@@ -264,6 +265,13 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
         return `Forge: pick ${String(left)} more face${left === 1 ? "" : "s"} on that die (highlighted).`;
       }
       return "Forge: choose which face card from your pool represents the new face.";
+    case "overcharge": {
+      const instance = state.cards[intent.cardInstanceId];
+      const def = instance !== undefined ? getCard(instance.cardId) : undefined;
+      const attribute =
+        def !== undefined ? attributeLabel(def.forge.attribute) : "attribute";
+      return `Choose a face on your die to Overcharge (+1 ${attribute} on roll).`;
+    }
     default:
       break;
   }
@@ -272,6 +280,6 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
     case "roll":
       return "Dice roll automatically. Overloads on showing faces fire immediately, once per die that shows them. Rituals cannot activate during roll.";
     case "actions":
-      return "Bank attribute pips into your pile (one click), grant Shield onto a creature, spend, attack, play tactics, forge, and activate ready rituals. End turn from the phase bar when finished.";
+      return "Bank attribute pips into your pile (one click), grant Shield onto a creature, spend, attack, play tactics, forge, Overcharge, and activate ready rituals. End turn from the phase bar when finished.";
   }
 }

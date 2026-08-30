@@ -49,6 +49,11 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Install matching faces (your or opponent's die as printed).",
   },
   {
+    test: (body) => /^Overcharge$/i.test(body),
+    reminder:
+      "Spend a natural own-die forge card onto one attribute slot on your die; that slot Generates +1 of the card's forge attribute when rolled.",
+  },
+  {
     test: (body) => /^Negate(?:\s+(?:Instant|Ritual))?$/i.test(body),
     reminder: "Negate top matching card chain link.",
   },

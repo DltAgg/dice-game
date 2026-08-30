@@ -295,8 +295,8 @@ export function withForgeLockResetOnInstall(
 
 /**
  * Overwrite a slot with a new face, clearing slot-local pestilence /
- * forge-lock / forge yield. Callers that install onto the owner's die re-set
- * `forgeYield` after this (see `installFacesOnDie`).
+ * forge-lock / forge yield / Overcharge pips. Callers that install onto the
+ * owner's die re-set `forgeYield` after this (see `installFacesOnDie`).
  */
 export function overwrittenSlot(
   slot: DieSlot,
@@ -310,6 +310,7 @@ export function overwrittenSlot(
     pestilenceCounters: 0,
     forgeLockRemaining: 0,
     forgeYield: false,
+    overcharge: [],
   };
 }
 

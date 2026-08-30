@@ -87,6 +87,7 @@ invoke them separately — do not implement both layers yourself.
 | `docs/specs/018-ast-engine.md` | Opcode AST, validator / compiler / executor |
 | `docs/specs/019-content-json.md` | Per-entity / per-loadout JSON catalogues |
 | `docs/specs/020-module-split.md` | Reducer commands + MatchBoard carve |
+| `docs/specs/021-overcharge.md` | Tactic `[Overcharge]` (natural-forge spend). Not spec `013` `optional-overcharge`. |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |

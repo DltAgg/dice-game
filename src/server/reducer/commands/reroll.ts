@@ -11,6 +11,7 @@ import { resumeAfterEffectPause } from "./priority.js";
 import {
   appendFaceAppeared,
   applyForgeYieldGenerate,
+  applyOverchargeGenerate,
   fireShownFaceRollHooks,
   replaceOrCreateRolledResult,
 } from "./shownFace.js";
@@ -54,6 +55,7 @@ export function resolveOptionalReroll(
     );
     appendFaceAppeared(draft, dieId, slotIndex, slot.faceCardId, face.kind);
     applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
+    applyOverchargeGenerate(draft, playerId, slot);
     fireShownFaceRollHooks(
       draft,
       playerId,

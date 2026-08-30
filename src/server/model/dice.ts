@@ -1,3 +1,4 @@
+import type { Attribute } from "./attributes.js";
 import type {
   CreatureId,
   DieId,
@@ -131,7 +132,8 @@ export interface DieSlot {
   readonly corruptionMarkers?: number;
   /**
    * Skip this slot's face `onRoll` on the controller's next `ROLL_DICE`, then
-   * clear (Decay suppress / Overcharge). Spec `013`.
+   * clear (Decay suppress / spec `013` face-marker Overcharge). Not tactic
+   * `[Overcharge]` (spec `021`).
    */
   readonly suppressInherentNextRoll?: boolean;
   /**
@@ -146,6 +148,12 @@ export interface DieSlot {
    * by overwrite / peel unless re-set. OPEN_DESIGN DECIDED 2026-08-29.
    */
   readonly forgeYield?: boolean;
+  /**
+   * Tactic Overcharge pips on this physical slot (spec `021`). One entry per
+   * spent natural own-die forge card, in spend order. On roll, generate 1
+   * effect pip per entry. Omit or `[]` when none. Cleared on overwrite / peel.
+   */
+  readonly overcharge?: readonly Attribute[];
 }
 
 export interface DieState {

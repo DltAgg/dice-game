@@ -83,6 +83,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-12](#ma-12-combat-reforge-stamp) | `[Reforge]` / `[Stamp]` on a **paid** attack | Creature special | Tempo (Mechanical exclusive) | Engine during combat, not pile refund | `HOME` |
 | [MA-13](#ma-13-legendary-strike-band) | Strike 3 vs Strike 2 on legendaries | Creature attack | Tempo hits harder; Control chips | Tempo closer vs Control engine | `WATCH` |
 | [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
+| [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` natural own-die forge spend | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
 
 ---
 
@@ -303,6 +304,34 @@ shape).
 
 **Status:** `RETARGETED` · engine: skip synthetic bank when the install
 consumed `forgeDiscountThisTurn`. Undiscounted synthetic still banks.
+
+### MA-15 Tactic Overcharge
+
+**Mechanic:** `[Overcharge]` — spend a **natural own-die** forge card from
+hand onto one physical attribute slot; that slot `[Generate]`s +1 of the
+card’s forge attribute when it shows after a roll (overload-style generate,
+persists until overwrite / peel). Spec `021`.
+
+**Window:** Actions, once per turn, instead of play or forge. Not On roll
+print and not an attack follow-up.
+
+**Intended home:** Tempo (keep a dense synthetic, splash another attribute)
+and Control (Scholar's Lien piggybacks Arcane onto Darkness Natural /
+Pyre of Names instead of installing a blank Arcane natural).
+
+**Playtest feel:** Untested.
+
+**Why:** Natural forge was sticker-only. This is not MA-02 (the face’s own
+On roll `[Generate]` of the same attribute) and not MA-03 (`[Spend] X,
+[Generate] Y` in the play region — `ANTI`).
+
+**Evidence:** Design example 2026-08-30 · Control · `card-scholars-lien` +
+`face-natural-darkness` / `face-synthetic-pyre-of-names`.
+
+**Status:** `WATCH`
+
+**Follow-up:** post-playtest after a session that actually Overcharges; do
+not reprint `[Overcharge]` on every natural-forge card.
 
 ---
 
