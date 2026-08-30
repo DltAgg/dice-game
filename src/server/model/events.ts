@@ -295,8 +295,7 @@ export type GameEvent =
       readonly type: "face-overcharged";
       readonly playerId: PlayerId;
       readonly cardInstanceId: CardInstanceId;
-      readonly dieId: DieId;
-      readonly slotIndex: number;
+      readonly faceCardId: FaceCardId;
       readonly attribute: Attribute;
     }
   | {

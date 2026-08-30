@@ -1,27 +1,27 @@
 import { getCard } from "../../content/cards.js";
 import { getFaceCard } from "../../content/faces.js";
 import type { GameError } from "../../model/errors.js";
-import type { CardInstanceId, DieId, PlayerId } from "../../model/ids.js";
+import type { CardInstanceId, FaceCardId, PlayerId } from "../../model/ids.js";
 import { isAttributeSymbol } from "../../model/symbols.js";
+import { diceOf } from "../../rules/dice.js";
 import {
   isOverchargeLegalCard,
   OVERCHARGE_ONCE_PER_TURN_KEY,
 } from "../../rules/overcharge.js";
-import { emit, patchDie, type Draft } from "../draft.js";
+import { emit, patchPlayer, type Draft } from "../draft.js";
 import { isPlayerSpent, markPlayerSpent } from "../triggerSpent.js";
 import { moveCard } from "../zones.js";
 
 /**
  * Spend a natural own-die forge card from hand to Overcharge one attribute
- * slot on the actor's die (spec `021`). No pile cost, draw, yield, or
- * reaction window.
+ * face card on the actor's dice (spec `021`). No pile cost, draw, yield, or
+ * reaction window. Pips are player-scoped and shared across copies.
  */
 export function overchargeCard(
   draft: Draft,
   playerId: PlayerId,
   cardInstanceId: CardInstanceId,
-  dieId: DieId,
-  slotIndex: number,
+  faceCardId: FaceCardId,
 ): GameError | null {
   if (draft.phase !== "actions") return "INVALID_PHASE";
 
@@ -37,29 +37,30 @@ export function overchargeCard(
     return "ALREADY_USED";
   }
 
-  const die = draft.dice[dieId];
-  if (die === undefined) return "UNKNOWN_ENTITY";
-  if (die.ownerId !== playerId) return "INVALID_TARGET";
-
-  const slot = die.slots[slotIndex];
-  if (slot === undefined) return "INVALID_FACE";
-  const face = getFaceCard(slot.faceCardId);
+  const face = getFaceCard(faceCardId);
   if (face === undefined || !isAttributeSymbol(face.symbol)) return "INVALID_FACE";
 
-  const attribute = definition.forge.attribute;
-  const nextOvercharge = [...(slot.overcharge ?? []), attribute];
-  const slots = die.slots.map((candidate) =>
-    candidate.index === slotIndex ? { ...candidate, overcharge: nextOvercharge } : candidate,
+  const onOwnDie = diceOf(draft, playerId).some((die) =>
+    die.slots.some((slot) => slot.faceCardId === faceCardId),
   );
-  patchDie(draft, dieId, { slots });
+  if (!onOwnDie) return "INVALID_TARGET";
+
+  const player = draft.players[playerId];
+  if (player === undefined) return "UNKNOWN_ENTITY";
+  const attribute = definition.forge.attribute;
+  patchPlayer(draft, playerId, {
+    overchargeByFace: {
+      ...player.overchargeByFace,
+      [faceCardId]: [...(player.overchargeByFace[faceCardId] ?? []), attribute],
+    },
+  });
   markPlayerSpent(draft, playerId, OVERCHARGE_ONCE_PER_TURN_KEY);
   moveCard(draft, cardInstanceId, "graveyard");
   emit(draft, {
     type: "face-overcharged",
     playerId,
     cardInstanceId,
-    dieId,
-    slotIndex,
+    faceCardId,
     attribute,
   });
   return null;

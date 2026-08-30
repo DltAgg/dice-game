@@ -149,7 +149,7 @@ describe("lookupKeywordReminders", () => {
     const rows = lookupKeywordReminders("[Overcharge]");
     expect(rows).toHaveLength(1);
     expect(rows[0]?.token).toBe("[Overcharge]");
-    expect(rows[0]?.reminder).toMatch(/attribute slot on your die/i);
+    expect(rows[0]?.reminder).toMatch(/attribute face card/i);
   });
 });
 

@@ -21,8 +21,9 @@ description: >-
    to `GameState` or catalogue documents.
 5. **Intent actions** — players declare choices (`PLAY_CARD`, `ATTACK`,
    `OVERCHARGE_CARD`, …); amounts and legality are derived by the host/engine.
-   Spec `021` tactic `[Overcharge]` (`DieSlot.overcharge`, queries
-   `canOvercharge` / `legalOverchargeSlots`) is **not** spec `013`
+   Spec `021` tactic `[Overcharge]` (`OVERCHARGE_CARD` + `faceCardId`,
+   `PlayerState.overchargeByFace`, queries `canOvercharge` /
+   `legalOverchargeFaces`) is **not** spec `013`
    `optional-overcharge` (Mechanical face-marker opcode).
 6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
 7. **Proving cards** — print uses holder voice and
@@ -55,7 +56,7 @@ Prefer composing existing opcodes + `ValueExpr` + `Duration` in catalogue JSON
 | Setup | `src/server/setup/createMatch.ts` |
 | Attribute pile | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
 | Queries | `src/server/rules/*` |
-| Tactic Overcharge (`021`) | `OVERCHARGE_CARD`, `DieSlot.overcharge`, `src/server/rules/overcharge.ts` (`canOvercharge` / `legalOverchargeSlots`). **Not** spec `013` `optional-overcharge`. |
+| Tactic Overcharge (`021`) | `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `src/server/rules/overcharge.ts` (`canOvercharge` / `legalOverchargeFaces`). **Not** spec `013` `optional-overcharge`. |
 | Scenario helpers | `src/server/testing/*` |
 
 ## Networking boundary

@@ -17,6 +17,7 @@ import {
   type CardInstanceId,
   type CreatureId,
   type DieId,
+  type FaceCardId,
   type PlayerId,
 } from "../model/ids.js";
 import type { ReduceResult } from "../model/result.js";
@@ -197,15 +198,13 @@ export function forgeAction(
 export function overchargeAction(
   playerId: PlayerId,
   cardInstanceId: CardInstanceId,
-  dieId: DieId,
-  slotIndex: number,
+  faceCardId: FaceCardId,
 ): GameAction {
   return {
     type: "OVERCHARGE_CARD",
     playerId,
     cardInstanceId,
-    dieId,
-    slotIndex,
+    faceCardId,
   };
 }
 

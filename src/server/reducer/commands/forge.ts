@@ -18,7 +18,7 @@ import {
 import { addTokens } from "../../rules/tokens.js";
 import { emit, patchDie, patchPlayer, type Draft } from "../draft.js";
 import { payForgeCost, payPileSpend } from "../payments.js";
-import { clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
+import { clearOverchargeOnFace, clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
 
 export function activateFace(
   draft: Draft,
@@ -59,6 +59,7 @@ export function activateFace(
   returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
   if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
     clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
   }
 
   return null;
@@ -113,6 +114,7 @@ export function installFacesOnDie(
     returnFaceToPoolIfOrphaned(draft, old.faceCardId, old.ownerId);
     if (countInstalledCopies(draft, old.faceCardId, old.ownerId) === 0) {
       clearOverloadsOnFace(draft, old.faceCardId, old.ownerId);
+      clearOverchargeOnFace(draft, old.faceCardId, old.ownerId);
     }
   }
 

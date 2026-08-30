@@ -58,7 +58,7 @@ import { MindControlModal } from "./modals/MindControlModal";
 import { OptionalBonusAttackModal } from "./modals/OptionalBonusAttackModal";
 import { OptionalOverchargeModal } from "./modals/OptionalOverchargeModal";
 import { OptionalRerollModal } from "./modals/OptionalRerollModal";
-import { OverchargeSlotPick } from "./modals/OverchargeSlotPick";
+import { OverchargeFacePick } from "./modals/OverchargeFacePick";
 import { OverloadFacePickModal } from "./modals/OverloadFacePickModal";
 import { PeekDeckModal } from "./modals/PeekDeckModal";
 import { ReplaceSyntheticFacePrompt } from "./modals/ReplaceSyntheticFacePrompt";
@@ -1144,17 +1144,16 @@ export function MatchBoard() {
         />
       )}
       {intent.kind === "overcharge" && (
-        <OverchargeSlotPick
+        <OverchargeFacePick
           state={state}
           playerId={activeId}
           cardInstanceId={intent.cardInstanceId}
-          onPick={(dieId, slotIndex) =>
+          onPick={(faceCardId) =>
             tryDispatch({
               type: "OVERCHARGE_CARD",
               playerId: activeId,
               cardInstanceId: intent.cardInstanceId,
-              dieId,
-              slotIndex,
+              faceCardId,
             })
           }
           onCancel={clearIntent}

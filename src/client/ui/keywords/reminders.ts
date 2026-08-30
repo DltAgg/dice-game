@@ -51,7 +51,7 @@ const STEM_RULES: readonly StemRule[] = [
   {
     test: (body) => /^Overcharge$/i.test(body),
     reminder:
-      "Spend a natural own-die forge card onto one attribute slot on your die; that slot Generates +1 of the card's forge attribute when rolled.",
+      "Spend a natural own-die forge card onto an attribute face card; all dice showing it Generate +1 of the spent card's attribute.",
   },
   {
     test: (body) => /^Negate(?:\s+(?:Instant|Ritual))?$/i.test(body),

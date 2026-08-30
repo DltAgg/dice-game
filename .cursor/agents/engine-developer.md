@@ -121,7 +121,7 @@ If the user asks for engine **and** UI in one request: implement engine + spec U
 | State | `src/server/model/state.ts`, `creatures.ts`, `dice.ts` |
 | Attribute pile | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
 | Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md`, `016-attribute-pile-up.md` |
-| Tactic Overcharge (`021`) | `commands/overcharge.ts`, `rules/overcharge.ts` — `OVERCHARGE_CARD`, `DieSlot.overcharge`, `canOvercharge` / `legalOverchargeSlots`. **Not** spec `013` `optional-overcharge` (face-marker opcode; `RESOLVE_OPTIONAL_OVERCHARGE`) |
+| Tactic Overcharge (`021`) | `commands/overcharge.ts`, `rules/overcharge.ts` — `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `canOvercharge` / `legalOverchargeFaces`. **Not** spec `013` `optional-overcharge` (face-marker opcode; `RESOLVE_OPTIONAL_OVERCHARGE`) |
 | Tests / scenarios | `src/server/reducer/*.test.ts`, `src/server/testing/scenario.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 

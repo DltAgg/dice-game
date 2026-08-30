@@ -55,7 +55,7 @@ export function resolveOptionalReroll(
     );
     appendFaceAppeared(draft, dieId, slotIndex, slot.faceCardId, face.kind);
     applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
-    applyOverchargeGenerate(draft, playerId, slot);
+    applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
     fireShownFaceRollHooks(
       draft,
       playerId,

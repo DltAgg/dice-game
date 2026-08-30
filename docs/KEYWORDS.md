@@ -109,7 +109,7 @@ Same idea, different nouns.
 |---|---|---|
 | `[Generate N X]` | A symbol (Martial, Shield, …) | Add N of X to your pool this turn |
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
-| `[Overcharge]` | A natural own-die forge card from hand | Spend that card onto one attribute slot on **your** die; that slot `[Generate]`s +1 of the card’s forge attribute when rolled |
+| `[Overcharge]` | A natural own-die forge card from hand | Spend that card onto one attribute **face card** on **your** dice; every die that shows that face `[Generate]`s +1 of the card’s forge attribute when rolled |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` | A card on the field | Send one to its owner’s graveyard |
 | `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal your **most-damaged ally** for the **HP actually lost**. |
@@ -188,7 +188,7 @@ These are not effect replacements.
 | Print | Role |
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
-| `[Overcharge]` | Third exclusive use of a natural own-die forge card: spend it onto an attribute slot on your die |
+| `[Overcharge]` | Third exclusive use of a natural own-die forge card: spend it onto an attribute face card on your dice |
 | `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent) |
 | `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
 | `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate) |

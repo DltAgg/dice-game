@@ -217,6 +217,7 @@ export function createMatch(setup: MatchSetup): GameState {
       ritual: [],
       attributePool: {},
       spentOncePerTurnKeys: [],
+      overchargeByFace: {},
     };
   }
 

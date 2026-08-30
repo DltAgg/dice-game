@@ -166,8 +166,7 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         draft,
         action.playerId,
         action.cardInstanceId,
-        action.dieId,
-        action.slotIndex,
+        action.faceCardId,
       );
     case "PLAY_CARD":
       return playCard(

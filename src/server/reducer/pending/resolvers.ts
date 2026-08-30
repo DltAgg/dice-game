@@ -53,6 +53,7 @@ import {
   pushEffect,
 } from "../resolution.js";
 import {
+  clearOverchargeOnFace,
   clearOverloadsOnFace,
   destroyEquipment,
   destroyOverload,
@@ -444,6 +445,7 @@ export function resolveReplaceSyntheticFace(
   returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
   if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
     clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
   }
 
   draft.pendingDecision = null;

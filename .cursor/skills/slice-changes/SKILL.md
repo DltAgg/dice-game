@@ -20,7 +20,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 | One card / print / JSON | `card-designer` + `author-content`. Design a unique slot first; compose existing opcodes. |
 | New verb / hook / phase | `engine-developer` + `develop-engine` or `implement-hooks`. One handler class or one `fire*`. |
 | Lobby / board / decks UI | `match-ui`. Query engine; do not copy legality. |
-| Overcharge (spec `021`) | Rules already shipped (`engine-developer`). UI → `match-ui` (`canOvercharge` / `legalOverchargeSlots`). Not spec `013` `optional-overcharge`. |
+| Overcharge (spec `021`) | Rules already shipped (`engine-developer`). UI → `match-ui` (`canOvercharge` / `legalOverchargeFaces`; face-card picker like overload, not `DieSlotPickModal`). Not spec `013` `optional-overcharge`. |
 | Legal lists / identity | `deck-designer`. Edit `loadouts/*.json`. |
 | Playtest debrief (notes ± metrics, wrong-archetype feel) | `post-playtest` + `review-playtest`. Update `docs/MECHANIC_ARCHETYPES.md`; brief owners; do not implement. |
 | Playtest “felt like the wrong archetype” (already debriefed) | `card-designer` (print) / `engine-developer` (physics) / `deck-designer` (list). |

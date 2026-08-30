@@ -352,6 +352,12 @@ export interface PlayerState {
    * Player-scoped once-per-turn keys (Adrenaline reroll, etc.). Cleared on END_TURN.
    */
   readonly spentOncePerTurnKeys: readonly string[];
+  /**
+   * Tactic Overcharge pips keyed by face card (spec `021`). One entry per
+   * spent natural own-die forge card, in spend order. Shared across copies
+   * on this player's dice. Cleared when the last owned copy leaves.
+   */
+  readonly overchargeByFace: Readonly<Record<string, readonly Attribute[]>>;
 }
 
 export interface GameState {

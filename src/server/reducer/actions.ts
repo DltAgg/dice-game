@@ -52,15 +52,14 @@ export type GameAction =
       readonly faceCardId: FaceCardId;
     }
   /**
-   * Spend a natural own-die forge card to Overcharge one attribute slot on
-   * your die (spec `021`). Attribute is derived from the card's forge region.
+   * Spend a natural own-die forge card to Overcharge one attribute face card
+   * on your dice (spec `021`). Attribute is derived from the card's forge region.
    */
   | {
       readonly type: "OVERCHARGE_CARD";
       readonly playerId: PlayerId;
       readonly cardInstanceId: CardInstanceId;
-      readonly dieId: DieId;
-      readonly slotIndex: number;
+      readonly faceCardId: FaceCardId;
     }
   /** The card's effect region — Instant resolve, Equipment attach, Overload attach, or Ritual place. */
   | {

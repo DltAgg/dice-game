@@ -192,15 +192,17 @@ export function applyForgeYieldGenerate(
 }
 
 /**
- * When an Overcharged slot shows after a roll, generate 1 effect pip per
- * stored attribute (spec `021`). Same Generate path as forge yield.
+ * When a die you own shows an Overcharged face card after a roll, generate
+ * 1 effect pip per stored attribute (spec `021`). Once per showing die, like
+ * overloads. Looks up `die.ownerId`'s map — opponent copies of the same id
+ * do not share your pips. Same Generate path as forge yield.
  */
 export function applyOverchargeGenerate(
   draft: Draft,
   dieOwnerId: PlayerId,
-  slot: Pick<DieSlot, "overcharge">,
+  faceCardId: FaceCardId,
 ): void {
-  const pips = slot.overcharge;
+  const pips = draft.players[dieOwnerId]?.overchargeByFace[faceCardId];
   if (pips === undefined || pips.length === 0) return;
   for (const attribute of pips) {
     createSymbol(draft, dieOwnerId, attribute, "available", "effect");

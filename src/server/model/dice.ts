@@ -1,4 +1,3 @@
-import type { Attribute } from "./attributes.js";
 import type {
   CreatureId,
   DieId,
@@ -148,12 +147,6 @@ export interface DieSlot {
    * by overwrite / peel unless re-set. OPEN_DESIGN DECIDED 2026-08-29.
    */
   readonly forgeYield?: boolean;
-  /**
-   * Tactic Overcharge pips on this physical slot (spec `021`). One entry per
-   * spent natural own-die forge card, in spend order. On roll, generate 1
-   * effect pip per entry. Omit or `[]` when none. Cleared on overwrite / peel.
-   */
-  readonly overcharge?: readonly Attribute[];
 }
 
 export interface DieState {

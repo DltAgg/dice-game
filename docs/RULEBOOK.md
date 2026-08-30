@@ -286,18 +286,21 @@ Some faces **stay locked** on a slot for printed turns after install
 (forge-lock). That is not retain.
 
 **Overcharge.** Once per turn during actions, you may spend a **natural**
-forge card that targets **your** die from hand to Overcharge one physical
-**attribute** face on your die (not Shield / untyped). That slot gains +1 of
-the card’s forge attribute. The next time that slot shows after a roll
-(including a retained keep or an actions-window reroll), it also
-`[Generate]`s that pip — the same on-roll Generate path as forge yield /
-overload. Overcharge does **not** pay pile cost, does **not** draw, does
+forge card that targets **your** die from hand to Overcharge one **attribute
+face card** installed on your dice (not Shield / untyped). That face card
+gains +1 of the card’s forge attribute. The next time **any** of your dice
+show that face after a roll (including a retained keep or an actions-window
+reroll), **each** showing die also `[Generate]`s that pip — the same on-roll
+Generate path as forge yield / overload. One spend covers every copy you
+have showing. Overcharge does **not** pay pile cost, does **not** draw, does
 **not** set forge yield, and does **not** open a reaction window.
 
-Pips sit on the **physical slot** until that face is overwritten or peeled.
-Stay / cannot-replace does not block Overcharge (you are not replacing the
-face). Synthetic forge and opponent-die forge cannot Overcharge. Multiple
-Overcharges on the same slot stack across turns.
+Pips sit on the **face card** until the last copy you own leaves the dice
+(overwrite or peel) — the same moment overloads detach. Overwriting one of
+two copies keeps the Overcharge on the remaining copy. Stay / cannot-replace
+does not block Overcharge (you are not replacing the face). Synthetic forge
+and opponent-die forge cannot Overcharge. Multiple Overcharges on the same
+face card stack across turns.
 
 ---
 

@@ -101,7 +101,7 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
     // (DECIDED 2026-08-29). Same auto-bank path as effect Generate.
     const showingSlot = draft.dice[die.id]?.slots[slotIndex] ?? slot;
     applyForgeYieldGenerate(draft, playerId, showingSlot, face.symbol);
-    applyOverchargeGenerate(draft, playerId, showingSlot);
+    applyOverchargeGenerate(draft, die.ownerId, showingSlot.faceCardId);
   }
 
   // Fire onRoll in die order (later dice push on top so LIFO resolves left-to-right).

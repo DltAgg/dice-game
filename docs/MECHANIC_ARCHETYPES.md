@@ -308,9 +308,9 @@ consumed `forgeDiscountThisTurn`. Undiscounted synthetic still banks.
 ### MA-15 Tactic Overcharge
 
 **Mechanic:** `[Overcharge]` — spend a **natural own-die** forge card from
-hand onto one physical attribute slot; that slot `[Generate]`s +1 of the
-card’s forge attribute when it shows after a roll (overload-style generate,
-persists until overwrite / peel). Spec `021`.
+hand onto one attribute **face card**; every die showing that face
+`[Generate]`s +1 of the card’s forge attribute on roll (overload-style
+host, persists until the last owned copy leaves). Spec `021`.
 
 **Window:** Actions, once per turn, instead of play or forge. Not On roll
 print and not an attack follow-up.
