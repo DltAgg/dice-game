@@ -12,7 +12,7 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withTokens,
@@ -108,7 +108,7 @@ function openedAttackOnP2(hand: Parameters<typeof withHand>[2]): GameState {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
-  const combat = withHand(withEnergy(withTokens(base, attacker, { martial: 2 }), P2, 10), P2, hand);
+  const combat = withHand(withPile(withTokens(base, attacker, { martial: 2 }), P2, 10), P2, hand);
   return expectOk(
     advance(combat, {
       type: "ATTACK",
@@ -143,7 +143,7 @@ describe("hasLegalReactionOffer (query)", () => {
 
   it("does not treat Barrier as an offer when the top link is not an attack", () => {
     const ready = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
       P2,
       [BARRIER_OF_LIGHT],
     );
@@ -162,7 +162,7 @@ describe("hasLegalReactionOffer (query)", () => {
 
   it("waits when Arcane Silence can negate a tactic on the chain", () => {
     const ready = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
       P2,
       [ARCANE_SILENCE],
     );

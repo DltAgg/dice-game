@@ -58,9 +58,9 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    players must act, name the actors in print (“you choose…”, “that
    creature’s controller discards…”) instead of relying on owner/controller
    jargon.
-7. **Printed Energy 1 is exceptional.** Do not author `energyCost: 1` as
-   cheap cycle. 1-cost cards must be narrow and niche so 2+ cards stay
-   appealing. The primary way to play something for 1 Energy is **cost
+7. **Printed 1-token `playCost` is exceptional.** Do not author `playCost`
+   totaling 1 token as cheap cycle. Those cards must be narrow and niche so 2+
+   cards stay appealing. The primary way to play for 1 token is **cost
    reduction** (discounts, next-forge, creature passives), not a roster of
    natural 1-drops. Prefer printed 2+.
 

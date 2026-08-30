@@ -134,7 +134,7 @@ export function activateRitual(
  * ready as soon as they hit the field. Implementation lives in `zones.ts` so
  * resolution can refresh too.
  */
-function ritualProgressMeets(
+function pileMeetsActiveWhen(
   progress: AttributeTokens,
   requirement: SymbolRequirement,
   wildcardCount = 0,
@@ -161,7 +161,7 @@ export function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
       const ready =
         region === undefined ||
         region.activeWhen === undefined ||
-        ritualProgressMeets(pile, region.activeWhen, wildcards);
+        pileMeetsActiveWhen(pile, region.activeWhen, wildcards);
       const orientation = ready ? "ready" : "preparing";
       draft.cards[cardInstanceId] = {
         ...card,

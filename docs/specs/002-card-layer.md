@@ -40,16 +40,16 @@ has the card on their field. `you` is that holder; `opponent` is their
 opponent. A card handed, forged, or equipped onto the other side keeps this
 voice — it does not stay in the sender’s second person.
 
-**Printed Energy 1 is exceptional.** Catalogue cards should generally cost 2+.
-The intended 1-Energy play pattern is cost reduction on a heavier card, not a
-band of 1-drops. Niche 1-costs need a design reason beyond “cheap support.”
+**Printed 1-token `playCost` is exceptional.** Catalogue cards should generally cost 2+.
+The intended 1-token play pattern is cost reduction on a heavier card, not a
+band of 1-drops. Niche 1-token costs need a design reason beyond “cheap support.”
 
 Six fields, in the order the layout presents them:
 
 | Field | Where | Notes |
 |---|---|---|
 | Name | header, left | |
-| Energy cost | header, right | Integer, or `?` = variable pay-at-least-1 (see OPEN_DESIGN) |
+| Play cost | header, right | Pile tokens in `playCost` (`SymbolRequirement`), or `?` = variable (DEFERRED; fixed `playCost` for now) |
 | Type line | text box, first line | `[Instant\|Reaction\|Equipment\|Overload / <attribute>]` or `[Ritual / <subtype…> / <attribute>]` — Ritual subtypes are Instant, Continuous, Reaction |
 | Forge region | text box | how many faces, of which kind and attribute, on which die |
 | Requirements | text box, bracketed | optional, and specific to the type / ritual subtype |
@@ -81,7 +81,7 @@ overload an Arcane face).
 | **Overload** (main type) | Attaches to an existing die face and modifies it. |
 | **Ritual** (main type) | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. Subtypes below. |
 | Ritual / Instant | Leaves for the GY after one activation. |
-| Ritual / Continuous | Stays in play. Standing triggers while ready. Activate (then exhaust) only when print has an activate body. Banked Active-when symbols persist unless an effect discards them. |
+| Ritual / Continuous | Stays in play. Standing triggers while ready. Activate (then exhaust) only when print has an activate body. Active-when is checked against the owner's pile each turn. |
 | Ritual / Reaction | May respond in a reaction window from the field; leaves for the GY after activation — same fate as Ritual / Instant; the difference is *when* it can be used. |
 
 ### Requirement forms
@@ -94,11 +94,10 @@ overload an Arcane face).
 | `[Spend: Martial]` | Burn from the owner’s attribute pile (attack `discards`, instant extra cost, ritual activate) | Attack / Instant / Ritual |
 | `[Can only overload a Toxin face]` | Restricts the overload target | Overload |
 | `[This card may be equipped to a Martial creature]` | Restricts the equip target | Equipment |
-| `Pay 3 Energy` | An extra cost inside the effect, on top of the header cost | Instant |
+| `Pay 3` (pile tokens) | An extra `[Spend: …]` inside the effect, on top of header `playCost` | Instant |
 
-That last one matters: *Runic Nullification* costs 2 in its header and then asks
-for 2 more Energy in its effect (4 Energy to actually negate), so the header
-cost is what it costs to place the card and an effect may demand more.
+*Runic Nullification* has `playCost` 2 Arcane in the header, then `[Spend: 2 x
+Arcane]` on activate (4 pile tokens total to negate).
 
 ### Forge region forms
 
@@ -153,9 +152,9 @@ DoT). Do not dump Mech into Aggro/Control without an identity reason.
 
 ## The catalogue, translated
 
-Costs shown as `?` are **variable**: pay 1 or more Energy (`variableEnergy` in
-content). Where the frame name and the printed name disagree, the printed name
-is used.
+Costs shown as `?` are **variable** pile pay (DEFERRED). Catalogue `?` cards
+currently use a fixed `playCost` until variable spend UX ships. Where the frame
+name and the printed name disagree, the printed name is used.
 
 ### Aggro deck
 
@@ -322,8 +321,7 @@ named Synthetic Toxin).
 
 ### Attribute exclusive signatures (authored)
 
-On-pie proving cards for exclusive verbs (spec `015` mill; Wild pack feeding
-retired under `016` — Share the Kill / Den Share / Pack Share are pile-era).
+On-pie proving cards for exclusive verbs (spec `015` mill; Wild `[Frenzy]`).
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -350,7 +348,7 @@ catalogue-only until deck-designer places it.
 
 Builtin Control manabase is **exactly Arcane + Darkness**. These cards close
 and generate Darkness without Corruption installs or Toxin ticks. Fully wired.
-Printed Energy 3–4 on damage / peel; Gloom Resonance / Umbral Brand at 2.
+Printed `playCost` 3–4 on damage / peel; Gloom Resonance / Umbral Brand at 2.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
@@ -364,7 +362,7 @@ Printed Energy 3–4 on damage / peel; Gloom Resonance / Umbral Brand at 2.
 
 Playtest gap-fill: splashable 2-cost tools. Look-top (Sift / Second Wind) is
 Arcane’s exclusive; prevent (Sidestep) is Luminar’s. Shield and own-die reroll
-stay shared secondaries. Printed Energy 2 — 1-Energy plays come from discounts
+stay shared secondaries. Printed `playCost` 2 — 1-token plays come from discounts
 (§34.5). Fully wired. Builtin **Control** runs Consult / Bury the Name /
 Warding Charm (legendary Shields) and may splash Grave Whisper for mill;
 **Burn** uses Toxic Heart / Mutant Spores for survive (not Martial Raise Guard).
@@ -412,7 +410,7 @@ already express.
 | Card model: name, cost (fixed or `?` / variable), type, subtypes, attribute, forge region, requirements, effect, equipment, English `rulesText` | — |
 | Deck, hand, graveyard, equipment, overload, ritual; opening 5; draw 2 per turn | — (no mulligan) |
 | Forging a Natural or Synthetic face onto your own die **or an opponent's**; **draw 1 per face forged** | — |
-| Playing an Instant for its effect, paying Energy | Reaction chain `008`; discounts `012` |
+| Playing an Instant for its effect, paying `playCost` / `[Spend]` | Reaction chain `008`; discounts `012` |
 | Equipping a card onto a creature; attack-damage bonuses; destroy-equipment; cost discounts | — |
 | Overload attachment to a die face; on-roll effects; cleared on forge | Adrenaline / Rethrow reroll `012`; Overcharge skip-next still deferred |
 | Ritual place → preparing / ready / exhausted; ACTIVATE_RITUAL | Paradox replay `012` |
@@ -420,8 +418,8 @@ already express.
 | `[Requires: …]` attack gate; `[Spend: …]` pile burn; `[Active when: …]` on rituals | Resonance wildcard `012` |
 | Deck search (`search-deck` + `RESOLVE_SEARCH`); Living Library | — |
 | Mill (`mill-cards`); Bury the Name / Grave Whisper | Spec `015` |
-| Pack feeding (`transfer` / `copy` stubs unused) | Spec `015` superseded by `016` — Share/Den pile-rewritten |
-| Damage, heal, shield, symbol generation, draw, discard, Energy gain, destroy equipment, apply-toxin, convert, retain-from-effect, GY replay, movers | Stun / empty print — see DEFERRED_CATALOGUE |
+| `[Drain]` life transfer; `[Frenzy]` extra attacks | Spec `011` / `016` |
+| Damage, heal, shield, symbol generation, draw, discard, destroy equipment, apply-toxin, convert, retain-from-effect, GY replay, movers | Stun / empty print — see DEFERRED_CATALOGUE |
 
 Equipment, Overload and Ritual are wired as board regions (main types for
 equipment/overload; ritual is main type with subtypes). Remaining catalogue

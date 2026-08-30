@@ -27,13 +27,12 @@ destruction. When more than one legal pick exists, the controller names it.
    `choose-ally` on `with` remains legal for older data but catalogue Drain
    uses the auto ally.
 2. **No token cap** in this slice — per-player / per-attribute caps stay
-   `OPEN` in `OPEN_DESIGN.md`. Former pile-steal `drain-attribute-tokens` is
-   removed; `choose-attribute-tokens` remains only for parked transfer/copy
-   (spec `015`).
+   `OPEN` in `OPEN_DESIGN.md`. `choose-attribute-tokens` is for pile discard
+   when an effect names specific pips.
 3. **`destroy-ritual`.** Choose one opposing card in `zone === "ritual"`
    (preparing, ready, or exhausted). Always opens `choose-ritual` when at least
    one opposing ritual exists (including exactly one). Move it to its owner's
-   graveyard; orientation / progress clear via `moveCard`. Emit
+   graveyard; orientation resets via `moveCard`. Emit
    `ritual-destroyed`.
 4. **No opposing ritual** → legal whiff (no pending choice). Own rituals are
    never legal targets for `choose-opponent-ritual`.
@@ -95,8 +94,7 @@ Match-ui must:
 - Prompt equipment choice when `pendingDecision.type === "choose-equipment"`.
 - Surface `life-drained`, `ritual-destroyed`, and `equipment-destroyed` in the
   log / toast if other destroy events are shown.
-- Token-pip `choose-attribute-tokens` UI may remain for parked pack-feed; it is
-  not used by Drain anymore.
+- Token-pip `choose-attribute-tokens` UI supports pile discard only.
 
 ## Acceptance Criteria
 

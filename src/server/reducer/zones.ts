@@ -269,8 +269,8 @@ export function destroyOverload(draft: Draft, cardInstanceId: CardInstanceId): v
 }
 
 /**
- * Sends a field ritual to its owner's graveyard (orientation / progress cleared
- * by `moveCard`). Spec `011` — Dispel Circle.
+ * Sends a field ritual to its owner's graveyard (orientation reset by `moveCard`).
+ * Spec `011` — Dispel Circle.
  */
 export function destroyRitual(draft: Draft, cardInstanceId: CardInstanceId): void {
   const card = draft.cards[cardInstanceId];

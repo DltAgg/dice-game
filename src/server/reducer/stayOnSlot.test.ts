@@ -19,15 +19,15 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: Parameters<typeof withHand>[2], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function dieIdOf(state: GameState, playerId: PlayerId = P1, index = 0) {
   const id = state.players[playerId]?.dieIds[index];
@@ -41,8 +41,8 @@ function withDie(state: GameState, dieId: ReturnType<typeof dieIdOf>, patch: Par
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function asActive(state: GameState, playerId: PlayerId, energy = 10): GameState {
-  return { ...withEnergy(state, playerId, energy), activePlayerId: playerId };
+function asActive(state: GameState, playerId: PlayerId, pileTokens = 10): GameState {
+  return { ...withPile(state, playerId, pileTokens), activePlayerId: playerId };
 }
 
 /** Install a pool face onto a die, keeping the pool xor-installed ledger. */

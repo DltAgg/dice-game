@@ -8,7 +8,7 @@ Every turn the dice produce symbols and the player splits them two ways, which
 is the decision the whole game is built around:
 
 ```text
-absorb  → the attribute arms that creature's attacks, permanently
+absorb  → bank the attribute into your pile (or grant Shield onto a creature)
 resolve → the symbol feeds engine abilities and cards, this turn only
 ```
 
@@ -20,7 +20,7 @@ The design lives in [`competitive_dice_game_agent_bible.md`](./competitive_dice_
 
 | Layer | State |
 |---|---|
-| Game engine | Dice, symbols, absorption, engine resolution, energy, shields, combat, cards (play/forge), face deck, victory |
+| Game engine | Dice, symbols, attribute pile, engine resolution, shields, combat, cards (play/forge), face deck, victory |
 | Content | Faces, Figma creatures + prototype squad, tactic subset + English printings |
 | UI | **M3** hotseat + **M4** deck builder + Figma catalogues |
 | Persistence | **M4** — `DeckRepository` over localStorage; tactics 40–50 / ≤3 copies |

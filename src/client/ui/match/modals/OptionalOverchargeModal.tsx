@@ -35,13 +35,13 @@ export function OptionalOverchargeModal({
           Overcharge
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Gain +{String(amount)} Energy from {face?.name ?? "this face"}? Accepting suppresses
-          that face&apos;s inherent effect on the next roll.
+          Generate +{String(amount)} pool symbol from {face?.name ?? "this face"}? Accepting
+          suppresses that face&apos;s inherent effect on the next roll.
         </p>
         <CausedByLine state={state} />
         <div className="mt-4 flex flex-col gap-2">
           <button type="button" className={btnPrimary} onClick={() => onResolve(true)}>
-            Accept (+{String(amount)}E)
+            Accept
           </button>
           <button type="button" className={btnClass} onClick={() => onResolve(false)}>
             Decline

@@ -28,7 +28,7 @@ import {
   P2,
   resolveOpenChain,
   withActivePlayer,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
@@ -36,8 +36,8 @@ import {
   withTokens,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: readonly CardId[], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly CardId[], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 /** Places a ritual on P2's field without opening a live chain window. */
 function withOpponentRitual(
@@ -282,9 +282,9 @@ describe("Dispel Circle (destroy-ritual)", () => {
 
 describe("Seal the Rite (negate-ritual)", () => {
   it("negates an opposing ritual place", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(
-        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]), P1, 10),
+        withPile(withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]), P1, 10),
         P2,
         [SEAL_THE_RITE],
       ),
@@ -317,7 +317,7 @@ describe("Seal the Rite (negate-ritual)", () => {
 
   it("refuses when the top link is a tactic effect", () => {
     const state = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
       P2,
       [SEAL_THE_RITE],
     );
@@ -340,9 +340,9 @@ describe("Seal the Rite (negate-ritual)", () => {
 
 describe("Fade (negate-card any)", () => {
   it("negates the top card link from hand", () => {
-    const state = withEnergy(
+    const state = withPile(
       withHand(
-        withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+        withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
         P2,
         [FADE],
       ),
@@ -479,7 +479,7 @@ describe("Umbra Gravewarden Grave Touch (drain follow-up)", () => {
 describe("Mind Control (choose among attached overloads)", () => {
   it("requires naming which overload to strip when a face has two", () => {
     let state = installFace(newMatch(), CRUSH);
-    state = withEnergy(
+    state = withPile(
       withHand(withPhase(state, "actions"), P1, [LUMINAR_PRISM, MARTIAL_BLESSING]),
       P1,
       10,
@@ -509,7 +509,7 @@ describe("Mind Control (choose among attached overloads)", () => {
     const keepId = attached[0]!;
     const stripId = attached[1]!;
 
-    const p2Turn = withEnergy(
+    const p2Turn = withPile(
       withHand(withPhase(withActivePlayer(state, P2), "actions"), P2, [MIND_CONTROL]),
       P2,
       10,

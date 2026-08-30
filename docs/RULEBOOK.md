@@ -159,9 +159,7 @@ Shield absorb still names a creature (below).
   help; they are not spent just to stay ready). Optional Spend on activate
   burns from the pile (wildcards may cover shortfall).
 - **`[Drain]`** deals damage to a chosen enemy creature and heals your
-  **most-damaged ally** for the HP actually lost (after Prevent/Shield). Former
-  Wild pack-feed print was rewritten (Share / Den Share); unused transfer/copy
-  stubs remain no-ops.
+  **most-damaged ally** for the HP actually lost (after Prevent/Shield).
 
 An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 
@@ -184,7 +182,7 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   forge (natural is already free and does not consume that discount).
 - Attacks, optional effect `[Spend]` lines, and ritual Active-when / activate
   burns also draw from the pile (see §6).
-- Reactions pay pile costs during a reaction window — there is no Energy track.
+- Reactions pay pile costs during a reaction window.
 - Turn end is voluntary (`END_TURN`) or from effects that say so.
 
 ---
@@ -400,5 +398,4 @@ Related docs (agents):
 - docs/ARCHITECTURE.md — software advance path
 - src/server/model/config.ts — numeric knobs
 - specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill
-  (pack feeding retired; Wild exclusive is `[Frenzy]`)
 -->

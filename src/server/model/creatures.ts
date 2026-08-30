@@ -31,7 +31,7 @@ export interface AttackDefinition {
   readonly requires?: SymbolRequirement;
   /**
    * Pile burn (`[Spend: …]`): removed from the owner's pile on declare.
-   * May accompany `requires` (Pokémon-style gate + pay).
+   * May accompany `requires` (gate + pay from the same pile).
    */
   readonly discards?: SymbolRequirement;
   /** Bible §6: Range lets an attack ignore the frontline restriction. */

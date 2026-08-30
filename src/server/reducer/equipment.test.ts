@@ -19,7 +19,7 @@ import {
   P2,
   withActivePlayer,
   withDamage,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withTokens,
@@ -29,10 +29,10 @@ import {
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 const forgeReady = (cards: Parameters<typeof withHand>[2]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 describe("opponent-die forging", () => {
   it("installs a face on an opposing die when the card asks for it", () => {
@@ -147,7 +147,7 @@ describe("equipment", () => {
     );
 
     const combat = withTokens(
-      withEnergy(withPhase(equipped, "actions"), P1, 10),
+      withPile(withPhase(equipped, "actions"), P1, 10),
       attackerId,
       { martial: 2 },
     );
@@ -179,7 +179,7 @@ describe("equipment", () => {
       }),
     );
 
-    const p2Turn = withEnergy(
+    const p2Turn = withPile(
       withHand(withPhase(withActivePlayer(equipped, P2), "actions"), P2, [CALCULATED_SACRIFICE]),
       P2,
       10,
@@ -233,7 +233,7 @@ describe("equipment", () => {
     const keepId = gear[0]!;
     const destroyId = gear[1]!;
 
-    const p2Turn = withEnergy(
+    const p2Turn = withPile(
       withHand(withPhase(withActivePlayer(equipped, P2), "actions"), P2, [CALCULATED_SACRIFICE]),
       P2,
       10,
@@ -298,7 +298,7 @@ describe("equipment", () => {
     );
 
     const combat = withTokens(
-      withEnergy(
+      withPile(
         withPhase(withActivePlayer(withDamage(equipped, hostId, 14), P2), "actions"),
         P2,
         10,

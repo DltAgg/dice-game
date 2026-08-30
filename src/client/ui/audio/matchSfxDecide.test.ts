@@ -12,7 +12,7 @@ import {
   creatureIdAt,
   expectOk,
   newMatch,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withTokens,
@@ -47,7 +47,7 @@ function openedEmptyPriority(): GameState {
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
   const combat = withHand(
-    withEnergy(withTokens(base, attacker, { martial: 2 }), P2, 10),
+    withPile(withTokens(base, attacker, { martial: 2 }), P2, 10),
     P2,
     [],
   );

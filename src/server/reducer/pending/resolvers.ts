@@ -128,7 +128,7 @@ export function resolveSearch(
 /**
  * Completes a pending discard. The controller names exactly the pending amount
  * of cards currently in hand; those move to the graveyard, then resolution
- * resumes (and a deferred Energy overshoot may end the turn).
+ * resumes (and any deferred turn-end effects may fire).
  */
 export function resolveDiscard(
   draft: Draft,
@@ -296,10 +296,7 @@ export function resolveChooseAttributeTokens(
   }
 
   const mode = pending.mode ?? "drain";
-  if (mode === "transfer" || mode === "copy") {
-    // Pack-feed creature↔creature is parked for Phase 6 (spec `016`).
-    return "INVALID_CHOICE";
-  }
+  if (mode !== "drain") return "INVALID_CHOICE";
 
   const next = removeTokens(pile, discarded);
   const controllerPile = draft.players[playerId]?.attributePool ?? {};
@@ -914,8 +911,8 @@ export function resolveOptionalBonusAttack(
   if (attackDefinition.kind !== "basic") return "INVALID_CHOICE";
   if (attackDefinition.effect === undefined) return "CARD_HAS_NO_EFFECT";
 
-  // Instinct optional basic shares the combined actions window (no dedicated
-  // absorption phase). Same pending type; no extra action.
+  // Instinct optional basic shares the combined actions window. Same pending
+  // type; no extra action.
   const error = attack(draft, playerId, pending.creatureId, attackId, targetId);
   if (error !== null) return error;
   return resumeAfterEffectPause(draft);

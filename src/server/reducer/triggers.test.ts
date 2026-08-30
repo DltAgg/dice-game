@@ -63,7 +63,7 @@ import {
   P1,
   P2,
   withDamage,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
@@ -77,7 +77,7 @@ import {
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
@@ -284,7 +284,7 @@ describe("on-absorb equipment", () => {
 
   it("draws and asks to discard when Archmage's Grimoire absorbs Arcane", () => {
     // Control squad: Archmage (index 0) is Arcane.
-    const base = withEnergy(
+    const base = withPile(
       withHand(
         withPhase(
           newMatch({
@@ -595,7 +595,7 @@ describe("on-take-damage reduce", () => {
 
 describe("on-discard continuous ritual", () => {
   it("generates Darkness when Abyssal Sacrifice's controller discards", () => {
-    const base = withEnergy(
+    const base = withPile(
       withHand(withPhase(newMatchWithDecks(), "actions"), P1, [ABYSSAL_SACRIFICE]),
       P1,
       10,
@@ -773,10 +773,6 @@ describe("Lens Choir on-absorb Luminar once per turn", () => {
   });
 });
 
-describe.skip("ritual absorb shares on-absorb hooks", () => {
-  it("parked — 016 Phase 6 / ritual absorb removed", () => {});
-});
-
 describe("Toxic Blessing arm-attack-toxin", () => {
   it("applies toxin on attacks after the overloaded face is rolled", () => {
     const toxinFace = SPORES;
@@ -867,7 +863,7 @@ describe("control creature attack riders", () => {
     });
 
   it("Archmage Arcane Burst deals 2, draws 1, and burns the Arcane token", () => {
-    let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
+    let state = withPile(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const deckCardId = asCardInstanceId("deck-burst-draw");
@@ -911,7 +907,7 @@ describe("control creature attack riders", () => {
   });
 
   it("Nightbound Adept Umbral Touch deals 2 and generates Darkness", () => {
-    let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
+    let state = withPile(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 1);
     const targetId = creatureIdAt(state, P2, 0);
     state = withTokens(state, attackerId, { darkness: 1 });
@@ -932,7 +928,7 @@ describe("control creature attack riders", () => {
   });
 
   it("Nightvault Sovereign Rune Lash deals 2 and draws when the deck has cards", () => {
-    let state = withEnergy(withPhase(controlMatch(), "actions"), P1, 5);
+    let state = withPile(withPhase(controlMatch(), "actions"), P1, 5);
     const attackerId = creatureIdAt(state, P1, 2);
     const targetId = creatureIdAt(state, P2, 0);
     state = withTokens(state, attackerId, { arcane: 1 });

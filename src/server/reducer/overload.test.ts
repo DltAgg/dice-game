@@ -19,7 +19,7 @@ import {
   newMatch,
   P1,
   withDamage,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   creatureIdAt,
@@ -30,8 +30,8 @@ import {
  * die showing the overloaded face card fires it on roll.
  */
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 const luminarSlot = 3;
 const luminarFace = faceIdForSymbol("luminar");
@@ -197,7 +197,7 @@ describe("forging and face-card overloads", () => {
     expect(attached.ok).toBe(true);
     if (!attached.ok) return;
 
-    const forgeReady = withEnergy(
+    const forgeReady = withPile(
       withHand(withPhase(attached.state, "actions"), P1, [ECLIPSE]),
       P1,
       10,
@@ -232,7 +232,7 @@ describe("forging and face-card overloads", () => {
     const overloadId = overloadsOf(attached.state, P1)[0]?.id;
     if (overloadId === undefined) throw new Error("test: no overload");
 
-    let forgeReady = withEnergy(
+    let forgeReady = withPile(
       withHand(withPhase(attached.state, "actions"), P1, [ECLIPSE, ECLIPSE]),
       P1,
       10,
@@ -245,7 +245,7 @@ describe("forging and face-card overloads", () => {
     expect(first.ok).toBe(true);
     if (!first.ok) return;
 
-    forgeReady = withEnergy(
+    forgeReady = withPile(
       withHand(withPhase(first.state, "actions"), P1, [ECLIPSE]),
       P1,
       10,
@@ -264,7 +264,7 @@ describe("forging and face-card overloads", () => {
   });
 });
 
-describe("former variable Energy costs (? → fixed play cost)", () => {
+describe("fixed play costs (former ? cards)", () => {
   it("pays the fixed catalogue play cost of 1 Martial for Martial Blessing", () => {
     const state = actionsReady([MARTIAL_BLESSING]);
     const result = advance(state, {

@@ -200,9 +200,8 @@ function fight(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): Ga
 /* --------------------------------------------------------------- cards --- */
 
 /**
- * Plays cards it can pay for outright. Deliberately refuses to spend past zero:
- * overshooting would end the turn before the driver reached the forge phase, so
- * that path is exercised by the scenario tests instead of at random here.
+ * Plays cards it can pay for from the pile. Refuses plays that would leave
+ * the driver without pile for later forge steps in scripted scenarios.
  */
 function playCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): GameState {
   if (!policy.playCards) return state;
@@ -302,8 +301,7 @@ function shieldSlotsFor(
 /* ---------------------------------------------------------------- turn --- */
 
 /**
- * A card can end the turn by pushing Energy past zero, so every step in the
- * actions window has to check that the turn is still the one it started.
+ * Every step in the actions window checks that the turn is still the one it started.
  */
 const stillActive = (state: GameState, playerId: PlayerId): boolean =>
   state.status === "in-progress" && state.activePlayerId === playerId;

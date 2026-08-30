@@ -18,7 +18,7 @@ import {
   handCardIdAt,
   newMatch,
   P1,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
@@ -26,8 +26,8 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: readonly CardId[], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly CardId[], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function moveHandCardsToGraveyard(
   state: GameState,

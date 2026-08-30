@@ -44,7 +44,7 @@ Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 |---|---|
 | `on-attack` | `attackerId`, `attackerOwnerId`, `attackKind`, `targetId` |
 | `on-roll-symbol` | `rollingPlayerId`, `symbol` |
-| `on-absorb` | absorber instance (creature id or ritual card instance id), `absorberOwnerId`, `symbol` (+ face kind when filtering Natural) |
+| `on-absorb` | `{ kind: "player", id }` when banking into the pile; `{ kind: "creature", id }` when granting Shield |
 | `on-deal-damage` | bearer = source; damaged creature as declared target |
 | `on-take-damage` | `damagedCreatureId`, incoming amount (pre or post prevent — document which) |
 | `on-discard` | `discardingPlayerId` |
@@ -67,7 +67,7 @@ type PlayerRelation = "controller" | "opponent" | "any";
 | `On opponent roll Corruption:` | `on-roll-symbol` + `rollingPlayer: "opponent"` |
 | `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "self"` |
 | `On absorb <Symbol>, once per turn:` | `on-absorb` + `oncePerTurn` (Lens Choir) |
-| `On absorb Natural:` (any creature / ritual) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
+| `On absorb Natural:` (pile bank or Shield) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
 | `On start of turn:` | `on-turn-start` + `whoseTurn: "controller"` (default) |
 | `On start of opponent's turn:` | `on-turn-start` + `whoseTurn: "opponent"` |
 

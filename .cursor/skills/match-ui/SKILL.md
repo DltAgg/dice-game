@@ -35,7 +35,7 @@ description: >-
 ## QoL already in the board
 
 - Auto-roll on entering `roll` for the active seat.
-- Phase bar on the energy strip: skip ahead / end turn; disabled when `!canAct`.
+- Phase bar on the pile strip: skip ahead / end turn; disabled when `!canAct`.
 
 ## Specs
 

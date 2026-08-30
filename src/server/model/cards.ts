@@ -174,10 +174,9 @@ export type StandingTrigger =
       readonly effects: readonly EffectDefinition[];
     }
   /**
-   * When a creature or ritual absorbs a symbol. Default absorber is the host
-   * (`self`). Optional `symbols` / `faceKinds` filters; omit to fire on any
-   * absorb. Ritual assignment shares this event; identity is instance id.
-   * `oncePerTurn` spends a host key (Lens Choir).
+   * When a pip is banked into the owner's pile or Shield is granted on absorb.
+   * Default absorber is the host (`self`). Optional `symbols` / `faceKinds`
+   * filters; omit to fire on any absorb. `oncePerTurn` spends a host key.
    */
   | {
       readonly type: "on-absorb";
@@ -273,8 +272,8 @@ export interface RitualRegion {
    */
   readonly activeWhen?: SymbolRequirement;
   /**
-   * Optional pile burn on `ACTIVATE_RITUAL` (in addition to
-   * `additionalEnergy`). Does not apply to standing-only fire while ready.
+   * Optional pile burn on `ACTIVATE_RITUAL` (printed `[Spend: …]`). Does not
+   * apply to standing-only fire while ready.
    */
   readonly spend?: SymbolRequirement;
   readonly effects: readonly EffectDefinition[];

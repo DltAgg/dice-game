@@ -15,7 +15,7 @@ export const EXAMPLE: CardId = asCardId("card-example");
 card({
   id: EXAMPLE,
   name: "Example",
-  energyCost: 2,
+  playCost: { arcane: 2 },
   type: "instant", // "reaction" | "equipment" | "overload" | "ritual"
   subtypes: [], // ritual only: "instant" | "continuous" | "reaction"
   attribute: "arcane",
@@ -33,14 +33,15 @@ card({
 
 Print is the **holder’s** voice: `you` is the player whose field this card
 is on; `opponent` is *their* opponent. A card given, forged, or equipped to
-the other player does not keep the sender’s pronouns. Header `energyCost: 1`
-is exceptional — prefer 2+ and let discounts create 1-Energy plays.
+the other player does not keep the sender’s pronouns. Header `playCost`
+totaling **1 pile token** is exceptional — prefer 2+ and let discounts create
+1-token plays.
 
 ## Region mapping
 
 | Print | Structured field |
 |---|---|
-| Instant one-shot | `type: "instant"` + `effect: { requires?, additionalEnergy?, effects }` |
+| Instant one-shot | `type: "instant"` + `effect: { requires?, effects }` |
 | Reaction from hand | `type: "reaction"` + `effect: …` |
 | Equipment | `type: "equipment"` + `equipment: { mayTargetOpponent, creatureAttributes?, abilities }` |
 | Overload | `type: "overload"` + `overload: { faceSymbols?, faceKinds?, onRoll, onAbsorb? }` |
@@ -58,7 +59,7 @@ should work and the clause is deferred.
 card({
   id: EXAMPLE_RITUAL,
   name: "Example Ritual",
-  energyCost: 5,
+  playCost: { corruption: 3, arcane: 2 },
   type: "ritual",
   subtypes: ["instant"], // or "reaction" | "continuous"
   attribute: "corruption",
@@ -68,7 +69,6 @@ card({
   ritual: {
     activeWhen: { arcane: 1, corruption: 2 }, // omit if print has no Active when
     // spend?: { arcane: 1, corruption: 2 }, // pile burn on activate (often = gate)
-    // additionalEnergy?: 3,
     effects: [
       {
         type: "forge-faces",
@@ -83,20 +83,20 @@ card({
 }),
 ```
 
-- Place from hand (`PLAY_CARD`) → `preparing`. Ready when Active-when is met
-  via `ABSORB_SYMBOL_TO_RITUAL` (or immediately if no `activeWhen`).
+- Place from hand (`PLAY_CARD`) → `preparing`. Ready when the owner's pile
+  meets `activeWhen` (or immediately if omitted).
 - Instant / reaction: activate → effects → GY.
 - Continuous: standing triggers while `ready`. Activate only when
   `ritual.effects` is non-empty (then exhaust until the owner's next turn).
-  Banked Active-when symbols persist through exhaust unless an effect
-  discards them; next turn the ritual is ready again if the gate is still met.
+  Readiness is re-checked against the pile each turn; standing fire does not
+  spend Active-when / Spend.
 - Ready rituals may activate in any phase **except roll** (and in reaction
   windows if subtype includes `reaction`).
 
 `forge-faces`: the **controller** picks a matching **named special** from
 **their** pool (or an owned installed copy) and the die/slots. Same install
-rules as `FORGE_CARD` (attribute cap, copy rule, draw 1 per face). No extra
-Energy; ritual already paid.
+rules as `FORGE_CARD` (attribute cap, copy rule, draw 1 per face). Header
+`playCost` already paid on place.
 
 Print like “Forge 3 synthetic Corruption faces” means **any Corruption named
 special** in the pool (`kind: "synthetic"`, `symbol: "corruption"`: Canker,
@@ -112,7 +112,7 @@ Print those effects with [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md)
 Read `src/server/model/effects.ts` as authority. Today:
 
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,
-`search-deck`, `search-graveyard`, `gain-energy`, `destroy-equipment`,
+`search-deck`, `search-graveyard`, `destroy-equipment`,
 `apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
 `arm-attack-toxin`, `negate-card`, `negate-ritual`, `discard-attribute-tokens`,
 `destroy-ritual`, `grant-damage-prevent`,
@@ -128,28 +128,9 @@ Standing triggers live on equipment / continuous rituals — see
 
 ## In-repo patterns to copy
 
-| Card | Why |
+| Card | Pattern |
 |---|---|
-| Eclipse | Instant `effect` draw + discard |
-| Ritual of Contamination | Instant `forge-faces` onto opponent (`Requires: Corruption`; stay is on the named face) |
 | Living Library | Ritual + `search-deck`; Active-when Arcane + Arcane |
-| Great Contamination | Ritual + `forge-faces` (3 Corruption on opponent die) |
-| Eternal Darkness | Ritual + `search-graveyard` |
-| Runic Nullification | Ritual-reaction, `additionalEnergy`, `negate-card` (`instant`) |
-| Luminar Prism | Overload `onRoll` heal |
-| Persistent Infection | Overload + `faceSymbols: ["corruption"]` |
-| War Axe | Equipment `attack-damage-bonus` |
-| Black Plague | Equipment `mayTargetOpponent` + `on-roll-symbol`; forge `opponent-die` |
-| Abyssal Sacrifice | Continuous ritual `standingAbilities` on discard |
-| Siphon Sigil | Instant `drain-life` — choose enemy then ally; heal = HP lost |
-| Dispel Circle | Instant `destroy-ritual` + choose-opponent-ritual |
-| Seal the Rite | Reaction `negate-ritual` |
-| Fade | Reaction `negate-card` (`"any"`) (cheaper Darkness Silence) |
-
-## After editing
-
-- Export the `CardId` const and add the `card({…})` to `DEFINITIONS`.
-- Builtin decks: `PROTOTYPE_DECK_COUNTS` (aggro) / `CONTROL_DECK_COUNTS`.
-  40–50 cards, ≤3 copies. Do not auto-add 3× to both decks.
-- Consistency: `src/server/content/cards.consistency.test.ts`.
-- Wired effects need reducer tests (see `playcard.test.ts`, `forgeFaces.test.ts`).
+| Runic Nullification | Ritual-reaction, `ritual.spend`, `negate-card` (`instant`) |
+| War Axe | Equipment `attack-damage-bonus` + `attackKinds: ["basic"]` |
+| Black Plague | Opponent equipment + `onRoll` standing |

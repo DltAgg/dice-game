@@ -31,15 +31,15 @@ import {
   P1,
   P2,
   withActivePlayer,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: readonly CardId[], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly CardId[], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
@@ -167,7 +167,7 @@ describe("Unmake", () => {
         declaredTargetCreatureId: hostId,
       }),
     );
-    const p2Turn = withEnergy(
+    const p2Turn = withPile(
       withHand(withPhase(withActivePlayer(equipped, P2), "actions"), P2, [UNMAKE]),
       P2,
       10,
@@ -194,7 +194,7 @@ describe("Unmake", () => {
 
 describe("Gloom Resonance", () => {
   it("generates Darkness when the overloaded Darkness face is rolled", () => {
-    const ready = withEnergy(
+    const ready = withPile(
       withHand(
         withPhase(
           newMatch({
@@ -241,7 +241,7 @@ describe("Umbral Brand", () => {
   it("deals 1 once per Darkness absorb", () => {
     // Squad without Nightbound — its ally On absorb Darkness would also open
     // choose-creature (discard from pile) and steal the pending window.
-    const ready = withEnergy(
+    const ready = withPile(
       withHand(
         withPhase(
           newMatch({

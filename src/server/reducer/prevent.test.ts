@@ -19,7 +19,7 @@ import {
   P1,
   P2,
   resolveOpenChain,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withShields,
@@ -94,7 +94,7 @@ describe("true prevent (009)", () => {
 
   it("Prismatic Barrier prevents the next attack on the attack target", () => {
     const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
-    const withBarrier = withHand(withEnergy(combat, P2, 10), P2, [BARRIER_OF_LIGHT]);
+    const withBarrier = withHand(withPile(combat, P2, 10), P2, [BARRIER_OF_LIGHT]);
 
     const opened = expectOk(
       advance(withBarrier, {
@@ -121,7 +121,7 @@ describe("true prevent (009)", () => {
 
   it("rejects Barrier when the top link is not an attack", () => {
     const ready = withHand(
-      withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
       P2,
       [BARRIER_OF_LIGHT],
     );
@@ -145,7 +145,7 @@ describe("true prevent (009)", () => {
   it("Luminar Judgement prevents the attack and reflects to the attacker", () => {
     const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
     const lifeBefore = currentLife(combat.creatures[attacker]!);
-    const withJudgement = withHand(withEnergy(combat, P2, 10), P2, [LUMINAR_JUDGEMENT]);
+    const withJudgement = withHand(withPile(combat, P2, 10), P2, [LUMINAR_JUDGEMENT]);
 
     const opened = expectOk(
       advance(withJudgement, {
@@ -172,7 +172,7 @@ describe("true prevent (009)", () => {
 
   it("Glimmer draws when prevent resolves after Barrier", () => {
     const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
-    const seeded = withHand(withEnergy(combat, P2, 10), P2, [
+    const seeded = withHand(withPile(combat, P2, 10), P2, [
       BARRIER_OF_LIGHT,
       GLIMMER,
       ECLIPSE,

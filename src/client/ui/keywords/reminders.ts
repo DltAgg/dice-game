@@ -57,10 +57,6 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Send one matching field card to GY.",
   },
   {
-    test: (body) => /^(?:Gain|Lose|Move)(?:\s+\d+)?\s+Energy$/i.test(body),
-    reminder: "Move shared Energy marker.",
-  },
-  {
     test: (body) => /^Strike(?:\s+\d+)?$/i.test(body),
     reminder: "Deal N damage (default chosen enemy).",
   },

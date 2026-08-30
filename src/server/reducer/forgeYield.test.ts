@@ -19,14 +19,14 @@ import {
   P1,
   P2,
   withAttributePool,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
 const forgeReady = (cards: Parameters<typeof withHand>[2]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
@@ -96,7 +96,7 @@ describe("forge yield and synthetic forge bank", () => {
   it("own-die synthetic FORGE_CARD sets forgeYield and banks 1 of the face attribute", () => {
     const state = forgeReady([ECLIPSE]);
     const dieId = dieIdOf(state);
-    // withEnergy(10): pay darkness 2, then bank forgeBankPerFace (1) → 9.
+    // withPile(10): pay darkness 2, then bank forgeBankPerFace (1) → 9.
     const result = expectOk(
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
     );
@@ -123,7 +123,7 @@ describe("forge yield and synthetic forge bank", () => {
     const forgeCardId = handCardIdAt(state, P1, 0);
     const seeded = withHand(state, P1, [BLACK_PLAGUE, ECLIPSE]);
     const deckPlayer = seeded.players[P1]!;
-    state = withEnergy(
+    state = withPile(
       {
         ...seeded,
         cards: Object.fromEntries(

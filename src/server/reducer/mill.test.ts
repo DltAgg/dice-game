@@ -20,14 +20,14 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
 function withDeck(state: GameState, playerId: PlayerId, cardIds: readonly CardId[]): GameState {
   const player = state.players[playerId];
@@ -119,7 +119,7 @@ describe("Grave Whisper", () => {
         },
       ],
     });
-    const base = withEnergy(withHand(withPhase(match, "actions"), P1, [GRAVE_WHISPER]), P1, 10);
+    const base = withPile(withHand(withPhase(match, "actions"), P1, [GRAVE_WHISPER]), P1, 10);
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = expectOk(
       advance(base, {

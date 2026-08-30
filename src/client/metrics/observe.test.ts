@@ -7,7 +7,7 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
 } from "@server/testing/scenario.js";
@@ -108,8 +108,6 @@ describe("applyObservation", () => {
     const first = recording.turns.find((turn) => turn.turn === 1);
     expect(first?.endedAt).not.toBeNull();
     expect(first?.durationMs).toBe(7_000);
-    expect(first?.energyPassCause).toBeNull();
-    expect(recording.energyPassCounts["voluntary-pass"] ?? 0).toBe(0);
     expect(ended.state.turn).toBe(2);
     expect(recording.totalTurns).toBe(2);
   });
@@ -168,7 +166,7 @@ describe("applyObservation", () => {
   });
 
   it("counts PLAY_CARD toward effect plays, not forge", () => {
-    const start = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    const start = withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
     let { recording } = applyObservation(
       null,
       { prevState: null, state: start, action: null, accepted: true, error: null },
@@ -199,7 +197,7 @@ describe("applyObservation", () => {
   });
 
   it("counts a forged tactic once even when it installs two faces", () => {
-    const start = withEnergy(
+    const start = withPile(
       withHand(withPhase(newMatch(), "actions"), P1, [ARCANE_SILENCE]),
       P1,
       10,
@@ -231,32 +229,5 @@ describe("applyObservation", () => {
     expect(turn?.cardsForged).toBe(1);
     expect(turn?.forges).toBe(2);
     expect(turn?.cardsPlayed).toBe(0);
-  });
-
-  it("sums energy-spent amounts onto the turn and recording", () => {
-    const start = withEnergy(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
-    let { recording } = applyObservation(
-      null,
-      { prevState: null, state: start, action: null, accepted: true, error: null },
-      ctx(1_000),
-    );
-
-    const action: GameAction = {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(start, P1, 0),
-    };
-    const played = advance(start, action);
-    expect(played.ok).toBe(true);
-
-    recording = applyObservation(
-      recording,
-      { prevState: start, state: played.state, action, accepted: true, error: null },
-      ctx(2_000),
-    ).recording;
-
-    expect(recording.totalEnergySpent).toBe(2);
-    const spentTurn = recording.turns.find((turn) => (turn.energySpent ?? 0) > 0);
-    expect(spentTurn?.energySpent).toBe(2);
   });
 });

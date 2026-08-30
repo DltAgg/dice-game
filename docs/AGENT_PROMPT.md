@@ -1,7 +1,7 @@
 # Agent prompt — Asymmetric start (constructed opening dice)
 
 Paste-ready brief for a parallel agent in this worktree. Do not implement
-Energy surcharge, forge-riders, or a full tactics rebalance here.
+Pile-cost surcharge, forge-riders, or a full tactics rebalance here.
 
 ---
 
@@ -41,7 +41,7 @@ Do not commit unless the user asks. DoD: `npm run typecheck && npm test && npm r
 
 ## Out of scope
 
-- Energy surcharge / split header costs
+- Pile-cost surcharge / split header costs
 - Forge-rider negate split
 - Removing draw-on-forge
 - Same-turn absorb → attack

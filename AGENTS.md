@@ -103,6 +103,6 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Grow effect AST only when a concrete card needs it; one opcode handler class + tests in the same change. No unreachable stubs.
 - Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.
 - Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
-- Printed `energyCost: 1` is exceptional and niche. Players should reach 1-Energy plays mainly via **cost reduction**, not a catalogue of 1-drops.
+- Printed `playCost` totaling **1 pile token** is exceptional and niche. Players should reach 1-token plays mainly via **cost reduction**, not a catalogue of 1-drops.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).

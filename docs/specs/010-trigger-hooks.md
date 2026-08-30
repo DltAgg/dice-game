@@ -43,19 +43,13 @@ reducer only knows the hook kinds and passes instance ids for filtering.
    (`controller` = **bearer's** owner for equipment, creature owner for
    passives, ritual owner for rituals; `opponent` / `any` likewise). Default
    `controller`.
-4. **On-absorb.** When a creature **or ritual** absorbs symbol `S`
-   (`ABSORB_SYMBOL` / `ABSORB_SYMBOL_TO_RITUAL`), fire `on-absorb` abilities
-   whose `absorberRelation` matches (`self` default, `ally`, `ally-other`,
-   `any`) and optional `symbols` / `faceKinds` / `oncePerTurn` filters. Absorber identity is
-   the creature id or ritual **card instance** id (not a definition id).
-   `self` matches that host instance; `ally` is same owner (includes self).
-   Fire **after** ritual Active-when credit and orientation refresh, so a
-   ritual that becomes `ready` from this assignment may listen (`ally`
-   includes self). Face/overload `onAbsorb` still fire only when a **creature**
-   absorbs the showing face (`sourceCreatureId` = absorbing creature; bible §7
-   die marker). Ritual assignment does not place the die or delay tokens —
-   `ritualProgress` is present as soon as the assign action succeeds.
-   Creature attribute tokens still pay out at `END_TURN` (bible §7).
+4. **On-absorb.** When an attribute pip is **banked** into the owner's pile
+   (`ABSORB_SYMBOL` for attributes, or auto-bank after roll/effects), fire
+   `on-absorb` abilities whose `absorberRelation` matches (`self` default,
+   `ally`, `ally-other`, `any`) and optional `symbols` / `faceKinds` /
+   `oncePerTurn` filters. Shield absorb onto a creature also fires triggers
+   that listen for Shield banking. Face/overload `onAbsorb` fire when a showing
+   face banks a pip (`sourceCreatureId` when Shield targets a creature).
 5. **On-attack.** When an attack is declared (costs paid, link pushed), fire
    `on-attack` abilities whose `attackerRelation` / `attackKinds` /
    `oncePerTurn` match. Context: attacker id + owner, kind, target id.
@@ -91,11 +85,13 @@ reducer only knows the hook kinds and passes instance ids for filtering.
 ## State Changes
 
 - `StandingTrigger` union on equipment / creature / continuous ritual.
-- Absorber context is `AbsorbAbsorber` (`creature` + creature id, or `ritual`
-  + card instance id) — not `CreatureId` alone.
+- Absorber context is `AbsorbAbsorber`: `{ kind: "player", id }` when an
+  attribute is banked into the pile, or `{ kind: "creature", id }` when Shield
+  is granted onto a creature — not `CreatureId` alone.
+- Face `onAbsorb` / overload `onAbsorb` fire on the banking player (pile) or
+  Shield grant onto a creature, per spec `016`.
 - `CreatureState.nextAttackBonus`, `spentOncePerTurnTriggers`.
 - Effect `grant-next-attack-bonus` (creature-scoped).
-- Face `onAbsorb` / overload `onAbsorb` unchanged (creature absorb only).
 
 ## Acceptance Criteria
 
@@ -110,18 +106,16 @@ reducer only knows the hook kinds and passes instance ids for filtering.
   ally special → toxin).
 - [x] Toxic Blessing: roll → `arm-attack-toxin`; attacks apply toxin.
 - [x] Hunter's Collar: absorb Wild → Martial.
-- [x] Void Summoner: any Natural absorb → generate Arcane (creature or ritual).
-      Untyped Shield absorb does not count.
+- [x] Void Summoner: any Natural absorb → generate Arcane (pile bank or Shield).
 - [x] Lens Choir: On absorb Luminar, once per turn → generate Luminar (no self-loop).
 - [x] War Axe: Basic-only `attack-damage-bonus` via `attackKinds`.
-- [x] Foundry: ready continuous ritual, controller absorb Mechanical → Energy
-      (creature **or** allied ritual assignment).
-- [x] `energy-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
+- [x] Foundry: ready continuous ritual, owner banks Mechanical → generate Mechanical.
+- [x] `play-cost-discount` / `ignore-shield` / War Banner `left-ally` (`012`).
 - [x] Movers fire `on-change-position` via `setCreaturePosition` (Command / War Charge / Claws).
 - [x] `on-turn-start` (Slow Burn / Smolder / Cinder Hex) at turn start (toxin ticks at end of prior owner's turn).
 - [x] `on-toxin-damage` `damagedOwner: "opponent"` (Fester); Toxic Heart default controller still heals.
 
 ## Tests
 
-- [x] `src/game/reducer/triggers.test.ts`
-- [x] `src/game/reducer/movers.test.ts` (Claws reposition)
+- [x] `src/server/reducer/triggers.test.ts`
+- [x] `src/server/reducer/movers.test.ts` (Claws reposition)

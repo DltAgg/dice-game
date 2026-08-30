@@ -14,7 +14,7 @@ These are the house style for roll+absorb faces (even when still print-only):
   "On absorb: this creature may perform a Basic Attack if it has not attacked this turn."
 
 // Primordial Fury
-"On roll: if an allied creature has attacked this turn, gain 1 Energy.\n" +
+"On roll: if an allied creature has attacked this turn, [Generate 1 Wild].\n" +
   "On absorb: this creature's next Basic Attack deals +1 damage."
 ```
 
@@ -26,8 +26,8 @@ honest partial wiring:
 | On roll: ally next-attack +1 | `onRoll: [{ type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } }]` | Keep text; `onRoll: []` |
 | On absorb: Basic if not attacked | Needs extra-attack effect | Keep text; `onAbsorb: []` |
 | On absorb: next Basic +1 | `onAbsorb: [{ type: "next-attack-bonus", amount: 1 }]` | Keep text; `onAbsorb: []` |
-| On roll: gain 1 Energy if attacked | Needs conditional roll effect | Keep text; `onRoll: []` |
-| On roll: gain 1 Energy | `onRoll: [{ type: "gain-energy", amount: 1 }]` | Keep text; defer |
+| On roll: generate 1 Wild if attacked | Needs conditional roll effect | Keep text; `onRoll: []` |
+| On roll: generate 1 Wild | `onRoll: [{ type: "generate-symbol", symbol: "wild", amount: 1 }]` | Keep text; defer if unimplemented |
 
 ## Before → after (face text)
 
@@ -73,7 +73,7 @@ overload: {
 
 ## New card from CSV (process sketch)
 
-1. Columns: Card text, Energy cost, Card name (see author-content `csv-tactics.md`).
+1. Columns: Card text, Play cost, Card name (see author-content `csv-tactics.md`).
 2. Rewrite text into timing lines / regions.
 3. Classify type (`tactic` | `ritual`) + subtypes.
 4. For each clause: existing effect? → wire. Else → DEFERRED row.

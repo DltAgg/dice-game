@@ -93,7 +93,7 @@ transfer. Do not mint Detonate / Rend as keywords.
 
 | Print | Why it is a different word |
 |---|---|
-| `[Generate N Toxin]` | A **pool symbol**, not a creature/face token. Expires at end of turn. |
+| `[Generate N Toxin]` | A **pool symbol** for this turn. Expires at end of turn. |
 | Absorb Toxin | Banks a pool pip into your attribute pile. Grammar, not an effect keyword. |
 | `[Prevent]` | Reaction to an attack declaration. Grants attack-prevent on the attack’s target (before Shield). Luminar exclusive. Not a token you Mark. |
 | `[Empower N]` | Extra damage on an attack. Not a token. |
@@ -168,8 +168,7 @@ Peek is [Insight 1]. Prime is [Empower N] on that creature.
 Spell until they recur: Aegis, Rain, Expose, Tough, Might, Lock, Suppress, Hex,
 Copy Face, Mirror, Overcharge, Exterminate, Mind Control.
 Push is banned. Stun and Scale are deferred — do not print.
-Former pack feeding (`[Feed]` / transfer-copy stubs) is retired; Wild exclusive
-is `[Frenzy]`.
+Wild's exclusive extra-attack verb is `[Frenzy]`.
 -->
 
 ---

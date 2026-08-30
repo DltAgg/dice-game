@@ -30,7 +30,7 @@ import {
   P1,
   P2,
   resolveOpenChain,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withTokens,
@@ -39,8 +39,8 @@ import {
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
@@ -141,7 +141,7 @@ describe("Sidestep", () => {
     const combat = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(combat, P1, 0);
     const target = creatureIdAt(combat, P2, 0);
-    const armed = withHand(withEnergy(withTokens(combat, attacker, { martial: 1 }), P2, 10), P2, [
+    const armed = withHand(withPile(withTokens(combat, attacker, { martial: 1 }), P2, 10), P2, [
       SIDESTEP,
     ]);
     const opened = expectOk(
@@ -169,7 +169,7 @@ describe("Sidestep", () => {
 describe("Rethrow", () => {
   it("opens a rolled-die choice then an optional reroll with no same-face damage", () => {
     const rolled = expectOk(advance(newMatch(), { type: "ROLL_DICE", playerId: P1 }));
-    const ready = withEnergy(withHand(rolled, P1, [RETHROW]), P1, 10);
+    const ready = withPile(withHand(rolled, P1, [RETHROW]), P1, 10);
     const dieId = dieIdOf(ready);
     const played = expectOk(
       play(ready, {
@@ -197,7 +197,7 @@ describe("Rethrow", () => {
 
   it("lets the controller decline the reroll", () => {
     const rolled = expectOk(advance(newMatch(), { type: "ROLL_DICE", playerId: P1 }));
-    const ready = withEnergy(withHand(rolled, P1, [RETHROW]), P1, 10);
+    const ready = withPile(withHand(rolled, P1, [RETHROW]), P1, 10);
     const dieId = dieIdOf(ready);
     const slotBefore = ready.dice[dieId]?.rolledSlotIndex;
     const played = expectOk(

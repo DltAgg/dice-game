@@ -46,7 +46,7 @@ import {
   P1,
   P2,
   resolveOpenChain,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
@@ -57,8 +57,8 @@ import {
 
 const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];

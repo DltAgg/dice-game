@@ -19,7 +19,7 @@ are that union; creatures/rituals reuse it).
 | `on-deal-damage` | After bearer deals HP | Shield-only hits do not fire |
 | `on-toxin-damage` | After toxin HP | Listeners on controller’s creatures’ gear |
 | `on-roll-symbol` | Die shows symbol | Filter `rollingPlayer` |
-| `on-absorb` | Symbol absorbed by a creature or ritual | Filter `absorberRelation` / `symbols` / `faceKinds`; absorber is instance id |
+| `on-absorb` | Attribute banked into pile or Shield onto creature | Filter `absorberRelation` / `symbols` / `faceKinds` |
 | `on-attack` | Attack declared | Filter `attackerRelation` / `attackKinds` |
 | `on-take-damage` | Incoming damage | `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
 | `on-discard` | Cards discarded | Filter `discardingPlayer` |
@@ -37,8 +37,8 @@ are that union; creatures/rituals reuse it).
 | Serrated Stinger | `on-attack` ally + special | apply-toxin on attack target |
 | Black Plague | `on-roll-symbol` controller | Already wired |
 | Corrupting Elder | `on-roll-symbol` opponent | choose-enemy damage |
-| Archmage of the Runes | `on-attack` self + basic/special | draw / Energy+Arcane |
-| Void Summoner | `on-attack` self + basic/special | generate Arcane / Energy+draw |
+| Archmage of the Runes | `on-attack` self + basic/special | draw / generate Arcane |
+| Void Summoner | `on-attack` self + basic/special | generate Arcane / draw |
 | Hunting Armour | `on-take-damage` reduceBy 1 oncePerTurn | Modifier path |
 | Abyssal Sacrifice | `on-discard` controller | generate Darkness |
 | Hunter's Collar | `on-absorb` Wild | generate Martial |

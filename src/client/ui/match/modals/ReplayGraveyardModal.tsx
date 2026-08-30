@@ -32,8 +32,8 @@ export function ReplayGraveyardModal({
           Replay from graveyard
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Choose an Instant or Ritual with playable effects. It stays in the graveyard; no Energy /
-          Requires.
+          Choose an Instant or Ritual with playable effects. It stays in the graveyard; no pile cost
+          or Requires gate.
         </p>
         <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">

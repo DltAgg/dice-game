@@ -133,12 +133,6 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       : "Waiting for the opponent to choose equipment to destroy.";
   }
   if (state.pendingDecision?.type === "choose-attribute-tokens") {
-    const mode = state.pendingDecision.mode ?? "discard";
-    if (mode === "transfer" || mode === "copy") {
-      return isPendingChooser
-        ? "Pack-feed move/copy is deferred — this choice cannot be completed yet."
-        : "Waiting on a deferred pack-feed choice.";
-    }
     return isPendingChooser
       ? `Choose ${String(state.pendingDecision.amount)} pip(s) from that creature owner's attribute pile to discard.`
       : "Waiting for the opponent to discard from an attribute pile.";
@@ -177,7 +171,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
   }
   if (state.pendingDecision?.type === "replay-graveyard-tactic") {
     return isPendingChooser
-      ? "Choose an Instant or Ritual from your graveyard to replay (no Energy / Requires)."
+      ? "Choose an Instant or Ritual from your graveyard to replay (no pile cost or Requires gate)."
       : "Waiting for the opponent to replay a graveyard tactic.";
   }
   if (state.pendingDecision?.type === "look-top-deck") {
@@ -222,7 +216,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
   }
   if (state.pendingDecision?.type === "optional-overcharge") {
     return isPendingChooser
-      ? `Accept Overcharge (+${String(state.pendingDecision.amount)} Energy, suppress inherent next roll) or Decline.`
+      ? `Accept Overcharge (+${String(state.pendingDecision.amount)} pool symbol, suppress inherent next roll) or Decline.`
       : "Waiting for the opponent to decide on Overcharge.";
   }
   if (state.pendingDecision?.type === "optional-bonus-attack") {

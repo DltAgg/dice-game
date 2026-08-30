@@ -23,7 +23,7 @@ who may act; the inactive side is read-only until the turn passes.
 |---|---|
 | Zustand store owning `GameState` + last reject error | PeerJS / host authority |
 | New match (seeded) with prototype squads / decks / face decks | Deck builder |
-| Board: creatures, dice faces, symbols, energy, phase, hand | Fancy card art on the board (catalogue remains separate) |
+| Board: creatures, dice faces, symbols, attribute pile, phase, hand | Fancy card art on the board (catalogue remains separate) |
 | Actions: roll, then **actions** for absorb / attack / play / forge / activate ritual (any order), retain, resolve search, skip to actions from roll, end turn | Reaction chain UI |
 | Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
 | Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge), `choose-equipment`, and `choose-attribute-tokens` | Second legality engine in React |
@@ -47,28 +47,27 @@ Notable Reforge UX (`replace-synthetic-face`):
 3. Dispatch `RESOLVE_REPLACE_SYNTHETIC_FACE` (engine handles uninstall / install;
    no forge-draw).
 
-## UI — two-phase turn (playtest 2026-08-17)
+## UI — two-phase turn
 
-Engine: `TurnPhase` is `roll` | `actions` only (`OPEN_DESIGN.md` DECIDED). Match-ui
-must not keep an Absorb phase chrome or gate absorb clicks on `phase === "absorption"`.
+Engine: `TurnPhase` is `roll` | `actions` only. No absorb phase — banking and
+Shield absorb happen during **actions** via `ABSORB_SYMBOL`.
 
 | Surface | Behavior |
 |---|---|
-| Phase bar | **Roll \| Actions** only. Highlight `state.phase`. From roll, skip/advance enters actions (or `ROLL_DICE` auto-enters actions). Last phase left only via **End turn**. Do not show or dispatch a middle Absorb step. |
-| Symbol pool | During **actions**, the unabsorbed pool is both **absorb-target** and **`[Requires]` spend**. Clicking a pool pip can select it for absorb onto a creature or ritual. Effect-generated (`available`) and die (`rolled`) pips are the same pool — labels should not imply “rolled = absorb only, available = spend only”. |
-| Absorb UX | Creature / ritual absorb click targets are legal whenever `phase === "actions"` (and `canAct`). After a mid-turn generate-symbol, those new pips must be absorbable without changing phase. |
-| Instinct | Optional bonus basic copy is “during this turn’s actions”, not “during absorption”. Same `optional-bonus-attack` pending. |
-| Lobby / help | Any three-step “Roll → Absorb → Act” copy becomes Roll → Actions. |
+| Phase bar | **Roll \| Actions** only. Highlight `state.phase`. From roll, skip/advance enters actions (or `ROLL_DICE` auto-enters actions). Last phase left only via **End turn**. |
+| Symbol pool | During **actions**, the unabsorbed pool is for banking and `[Requires]` spend. Clicking a pool pip can select it for absorb (attribute → pile, Shield → creature). Effect-generated (`available`) and die (`rolled`) pips share the same pool. |
+| Absorb UX | Banking and Shield absorb are legal whenever `phase === "actions"` (and `canAct`). Mid-turn generated pips must be absorbable without changing phase. |
+| Lobby / help | Two-step flow: Roll → Actions. |
 
-Do not reimplement absorb legality in React. Query `usableSymbols` / dispatch
-`ABSORB_SYMBOL` / `ABSORB_SYMBOL_TO_RITUAL`; let `advance()` reject.
+Do not reimplement absorb legality in React. Dispatch `ABSORB_SYMBOL`; let
+`advance()` reject.
 
 ## Acceptance criteria
 
 - [x] `npm run dev` opens a playable hotseat match
 - [x] Illegal actions leave state unchanged and surface the `GameError` code
 - [x] A match can be played to victory through the UI (manual smoke; reducer autoplay covers rules)
-- [x] Engine purity guard still green; store/UI never imported by `src/game`
+- [x] Engine purity guard still green; store/UI never imported by `src/server`
 - [x] `replace-synthetic-face` pending has chooser + waiting UI
 - [x] Stay-on-slot UI: pestilence uses catalogue `pestilenceSpreadAt`; remaining forge-lock and cannot-replace shown; forge / forge-faces / Reforge omit locked slots; Activate peel stays
 

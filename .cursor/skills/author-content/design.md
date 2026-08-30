@@ -32,12 +32,12 @@ The **or** between forge and effect is load-bearing: one use, one region.
 - The player is making a **tradeoff** (forge now vs play now; absorb vs leave
   the symbol in the pool; stack another burn tick vs build your die).
 - The attribute’s **primary identity** is still recognizable (bible §28–29).
-- Costs match role: support and combat tricks still want a real Energy
-  number (usually 2+); Arcane control generally medium/high. **Printed
-  Energy 1 is exceptional** — niche only, so heavier cards stay appealing.
-  The primary way to spend 1 Energy on a card is **cost reduction**, not a
-  1-cost card. Corruption **install** remains a rare 1-cost exception
-  (Ritual of Contamination: Energy 1 + Requires Corruption; Great
+- Costs match role: support and combat tricks still want a real pile cost
+  (usually 2+ tokens); Arcane control generally medium/high. **Printed
+  1-token `playCost` is exceptional** — niche only, so heavier cards stay appealing.
+  The primary way to spend 1 token on a card is **cost reduction**, not a
+  1-token card. Corruption **install** remains a rare 1-token exception
+  (Ritual of Contamination: `playCost` 1 + Requires Corruption; Great
   Contamination 3) because the expense is **stay** (cannot-overwrite /
   forge-lock) plus a paid peel, not the header. See `OPEN_DESIGN.md`
   Corruption install tempo. Do not treat that exception as a band for new
@@ -51,7 +51,7 @@ The **or** between forge and effect is load-bearing: one use, one region.
 | Attribute | Primary identity | Exclusive mechanic | Typical home |
 |---|---|---|---|
 | Martial | Direct combat / efficient attacks | Ally creature movement (swap / reposition) | Aggro |
-| Wild | Creature pressure / flexible aggression | Pack feeding (share absorbed tokens) | Aggro, Combo, Support |
+| Wild | Creature pressure / flexible aggression | Extra attacks (`[Frenzy]`) | Aggro, Combo, Support |
 | Toxin | Attrition / delayed damage / **burn ticks** | Toxin counter placement | Burn, Combo |
 | Luminar | Synergy / support / combo value | Damage prevention | Combo, Support |
 | Mechanical | Engine construction / manipulation | Own-die reconstruction | Combo, Support |
@@ -70,7 +70,7 @@ hits). That is not the same as becoming Aggro.
 Archetypes (002): Aggro = Martial/Wild; Combo = Luminar/Wild/Mechanical/Toxin;
 Control = Arcane/Darkness; **Burn** (builtin `BURN_DECK`) =
 Toxin/Corruption; Support = Arcane/Luminar/Wild/Mechanical
-(utility may splash; printed Energy 1 remains exceptional — splash via
+(utility may splash; printed 1-token `playCost` remains exceptional — splash via
 discounts, not 1-drops). Toxin is **not** builtin Aggro — it lives on Burn
 (and Combo splash). Corruption is **not** Control’s future home and must not
 require an Arcane/Darkness manabase. Do not turn Corruption into generic
@@ -109,13 +109,13 @@ Pairings that keep the pie readable:
 | **Corruption** | Opponent-die manipulation | Forge / markers / lock / suppress / strip / steal overloads on **their** faces; opponent-die named specials | Own-die forge; own overloads; Toxin markers on creatures |
 | **Toxin** | Toxin counter placement | Apply / spread / arm-attack Toxin markers; payoffs that *require* those markers | Corruption face ticks; generic delayed damage with no Toxin marker |
 | **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Command) | Enemy push (banned); extra attacks (`[Frenzy]` is Wild); sharing tokens |
-| **Mechanical** | Own-die reconstruction | Extra forge on **your** die; replace your faces without a forge-draw (Reforge); reapply / copy / double **your** face and overload modifiers (Stamp, Coupling); move your overloads between **your** faces | Opponent-die (Corruption); deck order (Arcane); generating symbols; Energy; GY recursion |
-| **Wild** | Extra attacks (`[Frenzy]`) | Grant a creature additional attacks this turn beyond the usual one (`grant-extra-attack`); may combine with `[Spend]` / absorb timing per card | Absorbing onto yourself (universal); generating pool symbols; ally reposition (Martial); pack feeding (retired) |
+| **Mechanical** | Own-die reconstruction | Extra forge on **your** die; replace your faces without a forge-draw (Reforge); reapply / copy / double **your** face and overload modifiers (Stamp, Coupling); move your overloads between **your** faces | Opponent-die (Corruption); deck order (Arcane); generating symbols; pile tokens; GY recursion |
+| **Wild** | Extra attacks (`[Frenzy]`) | Grant a creature additional attacks this turn beyond the usual one (`grant-extra-attack`); may combine with `[Spend]` / absorb timing per card | Absorbing onto yourself (universal); generating pool symbols; ally reposition (Martial) |
 
 ### Authoring notes
 
 - **One verb, many cards.** Vary cost, timing (`On roll` / `On absorb` / instant / standing), amount, and gate — do not invent a second exclusive for the same attribute.
-- **Proving cards (already in catalogue):** Arcane — Insight Rune, Living Library, Consult, Sift, Second Wind. Darkness — Dark Pact, Bury the Name, Grave Whisper. Luminar — Glimmer and prevent package (spec `009`), Sidestep, Hunting Armour. Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap, Command, Dress Ranks, Predator’s Claws, Insignia of Command. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling, Arcane Echo (re-fire). Wild — Varcolac (creature Frenzy proving: ally-other / Coordinated Hunt), Instinct absorb Frenzy, Pounce (Spend + Frenzy), Den Share (On absorb Wild Frenzy). Share the Kill is `[Drain]` (shared). Pack Share is Generate. Do not print pack feeding.
+- **Proving cards (already in catalogue):** Arcane — Insight Rune, Living Library, Consult, Sift, Second Wind. Darkness — Dark Pact, Bury the Name, Grave Whisper. Luminar — Glimmer and prevent package (spec `009`), Sidestep, Hunting Armour. Corruption — Great Contamination, Wasting Brand, face-marker suite. Toxin — Dose / Venom / apply-toxin package. Martial — War Charge swap, Command, Dress Ranks, Predator’s Claws, Insignia of Command. Mechanical — Assembly Line, Die Press, Reforge, Stamp, Coupling, Arcane Echo (re-fire). Wild — Varcolac (creature Frenzy proving: ally-other / Coordinated Hunt), Instinct absorb Frenzy, Pounce (Spend + Frenzy), Den Share (On absorb Wild Frenzy). Share the Kill is `[Drain]` (shared). Pack Share is `[Generate]`.
 - **Off-pie leaks** on Sift, Second Wind, Sidestep, Hunting Armour, Safety Latch, Predator’s Claws, Insignia of Command, Hunter’s Collar, Riposte, Revelation, Pack absorb, Garuda Dive, and Arcane Echo were **fixed** (moved onto the verb’s owner or rewritten off the stolen verb). Do not reintroduce them. Adrenaline / Rethrow (own-die reroll) are not anyone’s exclusive.
 - **Wild vs Martial:** Martial moves the **body**. Wild grants **extra attacks** (`[Frenzy]`). A Wild card that swaps positions is in the wrong attribute; a Martial card that grants Frenzy is in the wrong attribute.
 - **Mechanical vs Corruption:** Mechanical rebuilds **your** engine. Corruption contaminates **theirs**. An opponent-die forge on a Mechanical card is in the wrong attribute.
@@ -128,14 +128,14 @@ Pairings that keep the pie readable:
 | Reaction | Window response from hand | Same, only in reaction window |
 | Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
 | Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
-| Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → absorb Active-when → `ACTIVATE_RITUAL` → GY |
-| Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when symbols persist unless an effect discards them |
+| Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → pile meets Active-when → `ACTIVATE_RITUAL` → GY |
+| Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when is checked against the owner's pile |
 | Face (natural) | Starting identity faces | All eight attrs + Shield |
 | Face (synthetic) | Named specials only | Pool → install; `onRoll` / `onAbsorb`. Never blank `face-synthetic-<attr>` |
 
 Rituals are a **main type** (`type: "ritual"`), not a subtype. Active-when is
-cumulative (`Arcane + Corruption + Corruption`), absorbed onto the ritual during
-actions — not auto-from the pool.
+cumulative (`Arcane + Corruption + Corruption`) and is checked against the
+owner's **attribute pile** — not banked on the ritual card.
 
 Current catalogue cards **forge their own attribute**. Dual-kind cards may forge
 Natural or Synthetic of that attribute; many Toxin / Mechanical / Corruption /
@@ -154,24 +154,22 @@ needs a true forge splash.
 - Never author generic identity synthetics (`face-synthetic-martial`,
   `face-synthetic-corruption`, Forged Martial, Synthetic Arcane, …).
 
-## Cost and Energy
+## Cost and pile spend
 
-Header `energyCost` is paid on **either** forge or play (OPEN_DESIGN assumption).
-Rituals pay the header on **place**; `ritual.additionalEnergy` is extra on
-activate (Runic Nullification). Instants may use `effect.requires` (symbol gate)
-and `effect.additionalEnergy`.
+Header `playCost` is burned from the owner's attribute pile on **either** forge
+(synthetic) or play. Rituals pay `playCost` on **place**; optional `ritual.spend`
+is extra pile burn on activate (Runic Nullification). Instants may use
+`effect.requires` (symbol gate from the turn pool) and print `[Spend: …]` for
+pile burn on the effect body.
 
-**Default printed cost is 2 or more.** `energyCost: 1` is a last-resort niche
-tool, not the cheap-support band. Players should reach a 1-Energy play mainly
-through discounts (next-forge, standing cost reduction, on-roll reduction),
-which makes medium/high cards worth holding. A 1-cost that is just “the same
-effect, cheaper” makes the 3–5s feel unplayable.
+**Default printed cost is 2+ pile tokens.** `playCost` totaling 1 token is a
+last-resort niche tool, not the cheap-support band. Players should reach a
+1-token play mainly through discounts (next-forge, standing cost reduction,
+on-roll reduction), which makes medium/high cards worth holding.
 
-Printed `?` is `variableEnergy: true` with minimum `energyCost` — currently many
-catalogue `?` cards are temporarily authored as fixed 2 (see `cards.ts` header
-comment / OPEN_DESIGN). Do not invent scaling-off-spend effects until that
-vocabulary exists. A `?` card’s *minimum* should still follow the 1-cost
-caution (prefer minimum 2 unless the card is the rare niche exception).
+Printed `?` is variable pile pay (DEFERRED) — currently many catalogue `?` cards
+use a fixed `playCost` of 2 (see `cards.ts` / OPEN_DESIGN). Do not invent
+scaling-off-spend effects until that vocabulary exists.
 
 ## Print English
 

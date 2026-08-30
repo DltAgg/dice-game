@@ -40,7 +40,7 @@ import {
   newMatch,
   P1,
   P2,
-  withEnergy,
+  withPile,
   withHand,
   withAttributePool,
   withPhase,
@@ -48,8 +48,8 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
-  withEnergy(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], pileTokens = 10) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
@@ -421,10 +421,6 @@ describe("Foundry", () => {
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(before + 1);
   });
 
-  it.skip("gains Energy when an allied ritual absorbs Mechanical", () => {
-    // Parked: ABSORB_SYMBOL_TO_RITUAL removed (spec 016).
-  });
-
   it("does not generate extra Mechanical when the opponent absorbs Mechanical", () => {
     const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
     const before = state.players[P1]?.attributePool.mechanical ?? 0;
@@ -590,7 +586,7 @@ describe("Mechanical combo wave 2", () => {
     const { state } = placedReadyRitual(CLOCKWORK, { mechanical: 2 });
     const seeded = installFace(state, mechanicalFace);
     const afterRoll = rollShowingSlot(seeded, 0);
-    // Ritual progress (2) + face bank + Clockwork generate.
+    // Active-when pile (2) + face bank + Clockwork generate.
     expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(4);
     expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
   });

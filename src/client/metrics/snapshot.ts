@@ -195,13 +195,6 @@ export function sumField(events: readonly GameEvent[], type: GameEvent["type"], 
   return total;
 }
 
-export function energyPassCause(
-  events: readonly GameEvent[],
-): "overshoot" | "voluntary-pass" | null {
-  void events;
-  return null;
-}
-
 export function firstPlayerFromLog(state: GameState): string | null {
   for (const entry of state.log) {
     if (entry.event.type === "match-started") return entry.event.firstPlayerId;

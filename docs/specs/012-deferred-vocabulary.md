@@ -9,7 +9,7 @@ clauses in `002` / `003` / `004` resolve as data. Assumptions live in
 Face markers / Instinct absorb: [`013-face-markers.md`](./013-face-markers.md).
 
 Design cites: bible §6 (frontline), §7 (absorb / retain), §16 (phases),
-§18 (Energy track), §19–20 (play vs forge). Push / enemy move **banned**; ally
+§19–20 (play vs forge). Push / enemy move **banned**; ally
 swap/reposition modelled. Stun stays `DEFERRED`.
 
 ## Intent
@@ -32,7 +32,7 @@ engine can resolve the clause honestly. Movers always go through
 
 ### Cost discounts
 
-- `energy-cost-discount` standing ability on creatures and equipment.
+- `play-cost-discount` standing ability on creatures and equipment.
 - Applies to `PLAY_CARD` (effect, ritual place, equip, overload). **Not**
   `FORGE_CARD`.
 - Filters: `cardTypes`, `subtypes`, `attributes`. `oncePerTurn` spends a host
@@ -44,7 +44,7 @@ engine can resolve the clause honestly. Movers always go through
 - `replay-graveyard-tactic`: choose a GY Instant (`effect`) or Ritual
   (`ritual`) with playable effects.
 - Resolve those effects immediately. Ignore `[Requires]` / Active-when. Do not
-  pay that card’s Energy. Card stays in GY.
+  pay that card's pile cost. Card stays in GY.
 
 ### Pierce / ignore Shield
 
@@ -60,14 +60,13 @@ engine can resolve the clause honestly. Movers always go through
 - Blade Rain: next attack this turn opens `split-damage` among living enemies
   in range of the attacker (assignments must sum to the damage amount).
 
-### Energy track riders
+### Pile riders
 
-- `lose-energy` / `transfer-energy`: opponent-held value only; no-op at 0.
 - `draw-cards.player`: `"controller"` (default) or `"opponent"`.
 
 ### Faces
 
-- `ACTIVATE_FACE` (actions): pay `energyBase + energyPerCorruptionOnDie ×`
+- `ACTIVATE_FACE` (actions): pay `spendBase + spendPerCorruptionOnDie ×`
   synthetic Corruption faces on that die; strip the showing Corruption face
   back to pool; slot becomes natural Shield. Not a forge (no draw).
 - Pestilent Plague: +1 counter on roll; at `pestilenceSpreadAt` (2), reset and
@@ -131,7 +130,7 @@ Illegal moves return `GameError` + original state.
   Reaction windows still use `NOT_PRIORITY_PLAYER` / the priority allow-list
   (`008`).
 - `ACTIVATE_FACE`: actions phase, owned die, showing slot, face has
-  `activated`, holder has Energy for the computed cost.
+  `activated`, holder can pay the computed pile cost.
 - Convert replacements: eligible ids, Natural attributes, count ≤ pending
   amount.
 - Split-damage assignments: living legal targets, sum equals `amount`.
@@ -181,7 +180,7 @@ Match-ui must render these pendings (hotseat + online):
 | `replace-synthetic-face` | Pick owned Synthetic Mechanical slot + different matching pool face |
 
 Also: **Activate** control on a showing Forbidden Heritage / Pestilent Plague
-face during actions (`ACTIVATE_FACE`). Display Energy cost
+face during actions (`ACTIVATE_FACE`). Display pile cost
 `2 + Corruption faces on that die`. Show pestilence counters **and remaining
 forge-lock** on Plague slots. Surface **cannot-replace-by-forge** on Heritage
 and on Plague while lock > 0 (forbid targeting those slots for
@@ -199,7 +198,7 @@ UI dispatches the matching resolve.
 
 - [x] Reposition/swap uses `setCreaturePosition` (`on-change-position` fires)
 - [x] Archmage / Tome discount first matching play; forge not discounted; stack
-- [x] Paradox replays a GY Instant/Ritual without paying Requires/Energy; card stays GY
+- [x] Paradox replays a GY Instant/Ritual without paying Requires/pile cost; card stays GY
 - [x] Minotaur pierce ignores 1 Shield without spending it
 - [x] Attack follow-ups (Burst draw, Overload shields, Bombardment strip Shield, …)
 - [x] Push clauses remain unwired with accurate print
@@ -207,10 +206,10 @@ UI dispatches the matching resolve.
 
 ## Tests
 
-- [x] `src/game/reducer/movers.test.ts`
-- [x] `src/game/reducer/discounts.test.ts`
-- [x] `src/game/reducer/replay.test.ts`
-- [x] `src/game/reducer/pierce.test.ts`
-- [x] `src/game/reducer/replaceSyntheticFace.test.ts` (Reforge)
-- [x] `src/game/reducer/stayOnSlot.test.ts` (Heritage / Plague stay + spread)
+- [x] `src/server/reducer/movers.test.ts`
+- [x] `src/server/reducer/discounts.test.ts`
+- [x] `src/server/reducer/replay.test.ts`
+- [x] `src/server/reducer/pierce.test.ts`
+- [x] `src/server/reducer/replaceSyntheticFace.test.ts` (Reforge)
+- [x] `src/server/reducer/stayOnSlot.test.ts` (Heritage / Plague stay + spread)
 - [x] Existing combat / prevent / playcard / triggers / autoplay suites

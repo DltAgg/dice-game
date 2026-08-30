@@ -54,8 +54,8 @@ conducts, its body cannot be interrupted.
      so prevent can plug in).
 9. **Negate** targets the **top** chain link only. (`OPEN_DESIGN`; print:
    Runic Nullification, Arcane Silence, Fade — `002`; Seal the Rite — ritual-only.)
-10. **Runic Nullification.** Place as ritual (header Energy). `[Active when:
-    Arcane + Arcane]` (cumulative) → ready. Activation pays **+2 Energy**, then
+10. **Runic Nullification.** Place as ritual (`playCost` 2 Arcane). `[Active when:
+    Arcane + Arcane]` → ready. Activation pays **`[Spend: 2 x Arcane]`**, then
     negates the top link if its source card is an **Instant**
     (`negate-card` / `cardTypes: ["instant"]`).
 11. **Arcane Silence.** Hand reaction; header cost 3; negate top card link
@@ -79,12 +79,9 @@ conducts, its body cannot be interrupted.
 | `pendingDecision` | `reaction-window`: `priorityPlayerId`, pass tracking. Priority seat may Pass, play legal reaction, or activate legal ritual-reaction. |
 | Events | `chain-link-added`, `reaction-window-opened`, `priority-passed`, `chain-link-negated`, `chain-link-resolved` (names flexible). |
 
-Energy overshoot may flip the marker when a link’s cost is paid, but **turn
-end is evaluated only after the chain (and nested choices) fully finish**. If
-a later reaction has returned the marker to the turn player, the turn
-continues. The overshoot-pass bonus (`energyOnOvershootBonus`) is added only
-when that evaluation actually ends the turn, not when the marker first
-crosses.
+Turn end is evaluated only after the chain (and nested choices) fully finish.
+Voluntary `END_TURN` or effect-driven turn end is unchanged.
+
 
 ## Actions
 
@@ -168,7 +165,7 @@ None.
 ## Tests
 
 - [ ] Instant play → Pass ×2 → effect resolves
-- [ ] Nullification negates top tactic link; Energy accounted
+- [ ] Nullification negates top tactic link; pile spend accounted
 - [ ] Silence from hand negates top tactic link
 - [ ] Negate rejected when top is `attack`
 - [ ] Seal the Rite negates ritual place / activate; refused against tactic top

@@ -17,7 +17,7 @@ import {
   expectOk,
   handCardIdAt,
   newMatch,
-  withEnergy,
+  withPile,
   withHand,
   withPhase,
   withTokens,
@@ -772,8 +772,8 @@ describe("host/client reaction-priority (P2 guest)", () => {
       P2,
       [ARCANE_SILENCE],
     );
-    ready = withEnergy(ready, P1, 10);
-    ready = withEnergy(ready, P2, 10);
+    ready = withPile(ready, P1, 10);
+    ready = withPile(ready, P2, 10);
     const opened = expectOk(
       advance(ready, {
         type: "PLAY_CARD",

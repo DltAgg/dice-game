@@ -22,7 +22,7 @@ description: >-
 6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
 7. **Proving cards** — print uses holder voice and
    [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md); do not default new proving
-   cards to Energy 1 when 2+ is enough (bible §34.5). A new token joins Mark/Strip
+   cards to 1-token `playCost` when 2+ is enough (bible §34.5). A new token joins Mark/Strip
    X — do not add Dose-style verbs. New tokens are Mark/Strip arguments, not new opcodes.
 
 ## Typical change: new effect kind

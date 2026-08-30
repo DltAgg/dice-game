@@ -22,7 +22,7 @@ import {
   P1,
   P2,
   withDamage,
-  withEnergy,
+  withPile,
   withAttributePool,
   withPhase,
   withTokens,
@@ -157,7 +157,7 @@ describe("face markers / suppress / lock (013)", () => {
     }
     expect(state.creatures[enemyId]?.toxinMarkers).toBe(1);
 
-    state = withEnergy(withPhase(state, "actions"), P1, 5);
+    state = withPile(withPhase(state, "actions"), P1, 5);
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
     expect(state.activePlayerId).toBe(P2);
     expect(state.creatures[enemyId]?.toxinReceiveCapRemaining ?? null).toBeNull();
