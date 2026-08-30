@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-idler-gear",
+  "name": "Idler Gear",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Mechanical face.\nOn roll: [Generate 1 Mechanical].",
+  "overload": {
+    "faceSymbols": [
+      "mechanical"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "mechanical",
+        "amount": 1
+      }
+    ]
+  }
+}

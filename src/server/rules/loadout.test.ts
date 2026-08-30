@@ -1,146 +1,90 @@
 import { describe, expect, it } from "vitest";
+import { ALL_CARDS, COG_DRAFT, getCard } from "../content/cards.js";
 import {
-  ALL_CARDS,
-  BURN_DECK,
-  COMBO_MECHANICAL_DECK,
-  CONTROL_DECK,
-  ECLIPSE,
-  PROTOTYPE_DECK,
-  TEMPO_DECK,
-  getCard,
-} from "../content/cards.js";
-import {
-  BURN_SQUAD,
-  COMBO_MECHANICAL_SQUAD,
-  CONTROL_SQUAD,
-  GARUDA,
-  MINOTAUR,
-  PROTOTYPE_SQUAD,
-  SOVEREIGN_NIGHTVAULT,
-  TEMPO_SQUAD,
-  VARCOLAC,
-  WARLORD_IRONHOOF,
+  DAWN_WARDEN,
+  LODESTAR_ARTIFICER,
+  TORQUE_WRIGHT,
 } from "../content/creatures.js";
 import {
-  BURN_FACE_DECK,
-  BURN_STARTING_DICE,
-  BLOODSCENT,
-  CLEAVING_STRIKE,
-  COMBO_MECHANICAL_FACE_DECK,
-  COMBO_MECHANICAL_STARTING_DICE,
-  CONTROL_FACE_DECK,
-  CONTROL_STARTING_DICE,
-  CRUSH,
-  FORBIDDEN_HERITAGE,
-  ARCANE_ECHO_FACE,
-  GORE,
-  GREAT_SPARK,
-  PESTILENT_PLAGUE,
-  COMMAND,
-  BLADE_RAIN,
-  PROTOTYPE_FACE_DECK,
-  AGGRO_STARTING_DICE,
-  SEEP,
+  COGTOOTH,
+  GEAR_TRAIN,
+  MAINSPRING,
   SHIELD_FACE_ID,
-  MARROW_ROT,
-  SPORES,
-  CINDER,
-  WASTING_BRAND,
-  TEMPO_FACE_DECK,
-  TEMPO_STARTING_DICE,
   naturalFaceId,
 } from "../content/faces.js";
+import {
+  AGGRO_LOADOUT,
+  ALL_BUILTIN_LOADOUTS,
+  BURN_LOADOUT,
+  COMBO_MECHANICAL_LOADOUT,
+  CONTROL_LOADOUT,
+  PROTOTYPE_DECK,
+  TEMPO_DECK,
+  TEMPO_FACE_DECK,
+  TEMPO_LOADOUT,
+  TEMPO_SQUAD,
+  TEMPO_STARTING_DICE,
+} from "../content/loadouts/index.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { asCardId } from "../model/ids.js";
-import { leftoverFacePool, validateLoadout, validateStartingDice, validateTacticsDeck } from "./loadout.js";
+import {
+  leftoverFacePool,
+  validateLoadout,
+  validateStartingDice,
+  validateTacticsDeck,
+} from "./loadout.js";
 
 describe("validateTacticsDeck", () => {
-  it("accepts the prototype aggro deck", () => {
-    expect(validateTacticsDeck(PROTOTYPE_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
-    expect(PROTOTYPE_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
-    expect(PROTOTYPE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
-  });
-
-  it("accepts the control deck", () => {
-    expect(validateTacticsDeck(CONTROL_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
-    expect(CONTROL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
-    expect(CONTROL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
-  });
-
-  it("keeps builtin Aggro to Martial and Wild", () => {
-    for (const id of PROTOTYPE_DECK) {
-      const attribute = getCard(id)?.attribute;
-      expect(["martial", "wild"], id).toContain(attribute);
-    }
-  });
-
-  it("keeps builtin Control free of Corruption cards", () => {
-    for (const id of CONTROL_DECK) {
-      expect(getCard(id)?.attribute, id).not.toBe("corruption");
-    }
-  });
-
-  it("accepts the tempo deck", () => {
+  it("accepts the exact 40-card Tempo deck", () => {
+    expect(TEMPO_DECK).toHaveLength(40);
     expect(validateTacticsDeck(TEMPO_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
-    expect(TEMPO_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
-    expect(TEMPO_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
   });
 
-  it("accepts the combo mechanical deck", () => {
-    expect(validateTacticsDeck(COMBO_MECHANICAL_DECK, DEFAULT_RULES_CONFIG)).toEqual({
-      ok: true,
-    });
-    expect(COMBO_MECHANICAL_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
-    expect(COMBO_MECHANICAL_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+  it("keeps Tempo to Mechanical and Luminar", () => {
+    for (const id of TEMPO_DECK) {
+      expect(["mechanical", "luminar"], id).toContain(getCard(id)?.attribute);
+    }
   });
 
-  it("accepts the burn deck", () => {
-    expect(validateTacticsDeck(BURN_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
-    expect(BURN_DECK.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
-    expect(BURN_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+  it("keeps retired builtin names as aliases of Tempo", () => {
+    expect(AGGRO_LOADOUT).toBe(TEMPO_LOADOUT);
+    expect(CONTROL_LOADOUT).toBe(TEMPO_LOADOUT);
+    expect(COMBO_MECHANICAL_LOADOUT).toBe(TEMPO_LOADOUT);
+    expect(BURN_LOADOUT).toBe(TEMPO_LOADOUT);
+    expect(PROTOTYPE_DECK).toBe(TEMPO_DECK);
+    expect(ALL_BUILTIN_LOADOUTS).toEqual([TEMPO_LOADOUT]);
   });
 
   it("refuses a deck below the minimum", () => {
-    const short = PROTOTYPE_DECK.slice(0, DEFAULT_RULES_CONFIG.deckMinCards - 1);
-    const result = validateTacticsDeck(short, DEFAULT_RULES_CONFIG);
+    const result = validateTacticsDeck(
+      TEMPO_DECK.slice(0, DEFAULT_RULES_CONFIG.deckMinCards - 1),
+      DEFAULT_RULES_CONFIG,
+    );
     expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.reason).toMatch(new RegExp(`min ${String(DEFAULT_RULES_CONFIG.deckMinCards)}`));
-    }
+    if (!result.ok) expect(result.reason).toMatch(/min 40/);
   });
 
   it("refuses a deck above the maximum", () => {
-    const overflow =
-      DEFAULT_RULES_CONFIG.deckMaxCards - PROTOTYPE_DECK.length + 1;
-    const oversized = [
-      ...PROTOTYPE_DECK,
-      ...Array.from({ length: overflow }, () => ECLIPSE),
-    ];
+    const oversized = ALL_CARDS.flatMap((card) => [card.id, card.id, card.id]).slice(
+      0,
+      DEFAULT_RULES_CONFIG.deckMaxCards + 1,
+    );
+    expect(oversized).toHaveLength(51);
     const result = validateTacticsDeck(oversized, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.reason).toMatch(new RegExp(`max ${String(DEFAULT_RULES_CONFIG.deckMaxCards)}`));
-    }
+    if (!result.ok) expect(result.reason).toMatch(/max 50/);
   });
 
   it("refuses one copy over the per-id cap", () => {
-    const cap = DEFAULT_RULES_CONFIG.deckMaxCopiesPerCard;
-    const withoutEclipse = ALL_CARDS.filter((card) => card.id !== ECLIPSE).flatMap((card) =>
-      Array.from({ length: cap }, () => card.id),
-    );
-    const over = [
-      ...withoutEclipse.slice(0, DEFAULT_RULES_CONFIG.deckMinCards - cap),
-      ...Array.from({ length: cap + 1 }, () => ECLIPSE),
-    ];
-    expect(over.length).toBeGreaterThanOrEqual(DEFAULT_RULES_CONFIG.deckMinCards);
-    expect(over.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.deckMaxCards);
+    const withoutCogDraft = TEMPO_DECK.filter((id) => id !== COG_DRAFT);
+    const over = [...withoutCogDraft, COG_DRAFT, COG_DRAFT, COG_DRAFT, COG_DRAFT];
     const result = validateTacticsDeck(over, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/copies/);
   });
 
   it("refuses an unknown card id", () => {
-    const deck = [...PROTOTYPE_DECK.slice(0, DEFAULT_RULES_CONFIG.deckMinCards), asCardId("card-not-real")];
+    const deck = [...TEMPO_DECK, asCardId("card-not-real")];
     const result = validateTacticsDeck(deck, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/unknown card/);
@@ -148,84 +92,13 @@ describe("validateTacticsDeck", () => {
 });
 
 describe("validateLoadout", () => {
-  it("accepts the prototype aggro loadout", () => {
-    expect(
-      validateLoadout(
-        {
-          squad: PROTOTYPE_SQUAD,
-          deck: PROTOTYPE_DECK,
-          faceDeck: PROTOTYPE_FACE_DECK,
-          startingDice: AGGRO_STARTING_DICE,
-        },
-        DEFAULT_RULES_CONFIG,
-      ),
-    ).toEqual({ ok: true });
-  });
-
-  it("accepts the control loadout", () => {
-    expect(
-      validateLoadout(
-        {
-          squad: CONTROL_SQUAD,
-          deck: CONTROL_DECK,
-          faceDeck: CONTROL_FACE_DECK,
-          startingDice: CONTROL_STARTING_DICE,
-        },
-        DEFAULT_RULES_CONFIG,
-      ),
-    ).toEqual({ ok: true });
-  });
-
-  it("accepts the tempo loadout", () => {
-    expect(
-      validateLoadout(
-        {
-          squad: TEMPO_SQUAD,
-          deck: TEMPO_DECK,
-          faceDeck: TEMPO_FACE_DECK,
-          startingDice: TEMPO_STARTING_DICE,
-        },
-        DEFAULT_RULES_CONFIG,
-      ),
-    ).toEqual({ ok: true });
-  });
-
-  it("accepts the combo mechanical loadout", () => {
-    expect(
-      validateLoadout(
-        {
-          squad: COMBO_MECHANICAL_SQUAD,
-          deck: COMBO_MECHANICAL_DECK,
-          faceDeck: COMBO_MECHANICAL_FACE_DECK,
-          startingDice: COMBO_MECHANICAL_STARTING_DICE,
-        },
-        DEFAULT_RULES_CONFIG,
-      ),
-    ).toEqual({ ok: true });
-  });
-
-  it("accepts the burn loadout", () => {
-    expect(
-      validateLoadout(
-        {
-          squad: BURN_SQUAD,
-          deck: BURN_DECK,
-          faceDeck: BURN_FACE_DECK,
-          startingDice: BURN_STARTING_DICE,
-        },
-        DEFAULT_RULES_CONFIG,
-      ),
-    ).toEqual({ ok: true });
+  it("accepts the Tempo loadout", () => {
+    expect(validateLoadout(TEMPO_LOADOUT, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
   });
 
   it("refuses a short squad", () => {
     const result = validateLoadout(
-      {
-        squad: PROTOTYPE_SQUAD.slice(0, 2),
-        deck: PROTOTYPE_DECK,
-        faceDeck: PROTOTYPE_FACE_DECK,
-        startingDice: AGGRO_STARTING_DICE,
-      },
+      { ...TEMPO_LOADOUT, squad: TEMPO_SQUAD.slice(0, 2) },
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
@@ -234,12 +107,7 @@ describe("validateLoadout", () => {
 
   it("refuses a squad with no legendary", () => {
     const result = validateLoadout(
-      {
-        squad: [MINOTAUR, VARCOLAC, GARUDA],
-        deck: PROTOTYPE_DECK,
-        faceDeck: PROTOTYPE_FACE_DECK,
-        startingDice: AGGRO_STARTING_DICE,
-      },
+      { ...TEMPO_LOADOUT, squad: [TORQUE_WRIGHT, DAWN_WARDEN, TORQUE_WRIGHT] },
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
@@ -248,12 +116,7 @@ describe("validateLoadout", () => {
 
   it("refuses a squad with two legendaries", () => {
     const result = validateLoadout(
-      {
-        squad: [WARLORD_IRONHOOF, SOVEREIGN_NIGHTVAULT, MINOTAUR],
-        deck: PROTOTYPE_DECK,
-        faceDeck: PROTOTYPE_FACE_DECK,
-        startingDice: AGGRO_STARTING_DICE,
-      },
+      { ...TEMPO_LOADOUT, squad: [LODESTAR_ARTIFICER, LODESTAR_ARTIFICER, TORQUE_WRIGHT] },
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
@@ -262,51 +125,42 @@ describe("validateLoadout", () => {
 });
 
 describe("validateStartingDice", () => {
-  const martial = naturalFaceId("martial");
-  const wild = naturalFaceId("wild");
-  const arcane = naturalFaceId("arcane");
+  const mechanical = naturalFaceId("mechanical");
   const luminar = naturalFaceId("luminar");
-  const basics = [martial, wild, arcane, luminar, SHIELD_FACE_ID, SHIELD_FACE_ID] as const;
 
-  it("refuses five Martial faces on one die", () => {
+  it("refuses five faces of one attribute on a die", () => {
     const result = validateStartingDice(
-      [[martial, martial, martial, martial, martial, SHIELD_FACE_ID], basics],
-      PROTOTYPE_FACE_DECK,
+      [
+        [mechanical, mechanical, mechanical, mechanical, mechanical, SHIELD_FACE_ID],
+        TEMPO_STARTING_DICE[1],
+      ],
+      TEMPO_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/martial/);
+    if (!result.ok) expect(result.reason).toMatch(/mechanical/);
   });
 
   it("refuses a die with no Shield", () => {
     const result = validateStartingDice(
-      [[martial, wild, arcane, luminar, martial, wild], basics],
-      PROTOTYPE_FACE_DECK,
+      [
+        [mechanical, mechanical, mechanical, luminar, luminar, luminar],
+        TEMPO_STARTING_DICE[1],
+      ],
+      TEMPO_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/Shield/);
   });
 
-  it("allows two synthetics on one die under the default per-die cap", () => {
+  it("allows two opening synthetics when both are in the face deck", () => {
     const result = validateStartingDice(
       [
-        [CRUSH, GREAT_SPARK, wild, arcane, luminar, SHIELD_FACE_ID],
-        basics,
+        [COGTOOTH, GEAR_TRAIN, mechanical, luminar, luminar, SHIELD_FACE_ID],
+        TEMPO_STARTING_DICE[1],
       ],
-      [...PROTOTYPE_FACE_DECK, GREAT_SPARK],
-      DEFAULT_RULES_CONFIG,
-    );
-    expect(result).toEqual({ ok: true });
-  });
-
-  it("allows two on-roll faces on one die under the default per-die cap", () => {
-    const result = validateStartingDice(
-      [
-        [CRUSH, COMMAND, wild, arcane, luminar, SHIELD_FACE_ID],
-        basics,
-      ],
-      PROTOTYPE_FACE_DECK,
+      TEMPO_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
     expect(result).toEqual({ ok: true });
@@ -315,10 +169,10 @@ describe("validateStartingDice", () => {
   it("refuses three on-roll faces on one die", () => {
     const result = validateStartingDice(
       [
-        [CRUSH, COMMAND, GORE, martial, wild, SHIELD_FACE_ID],
-        basics,
+        [COGTOOTH, GEAR_TRAIN, MAINSPRING, mechanical, luminar, SHIELD_FACE_ID],
+        TEMPO_STARTING_DICE[1],
       ],
-      PROTOTYPE_FACE_DECK,
+      TEMPO_FACE_DECK,
       {
         ...DEFAULT_RULES_CONFIG,
         startingMaxSyntheticsPerDie: 3,
@@ -329,81 +183,50 @@ describe("validateStartingDice", () => {
     if (!result.ok) expect(result.reason).toMatch(/on-roll/);
   });
 
-  it("refuses three synthetics when the player cap is 2", () => {
+  it("refuses three synthetics under the default player cap", () => {
     const result = validateStartingDice(
       [
-        [CRUSH, COMMAND, wild, arcane, luminar, SHIELD_FACE_ID],
-        [GORE, martial, wild, arcane, luminar, SHIELD_FACE_ID],
+        [COGTOOTH, GEAR_TRAIN, mechanical, mechanical, luminar, SHIELD_FACE_ID],
+        [MAINSPRING, mechanical, mechanical, luminar, luminar, SHIELD_FACE_ID],
       ],
-      PROTOTYPE_FACE_DECK,
+      TEMPO_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/synthetics/);
   });
 
-  it("refuses Arcane Echo on an opening slot", () => {
+  it("refuses a named special missing from the face deck", () => {
     const result = validateStartingDice(
-      [[ARCANE_ECHO_FACE, martial, wild, arcane, luminar, SHIELD_FACE_ID], basics],
-      [...PROTOTYPE_FACE_DECK, ARCANE_ECHO_FACE],
+      [
+        [COGTOOTH, mechanical, mechanical, luminar, luminar, SHIELD_FACE_ID],
+        TEMPO_STARTING_DICE[1],
+      ],
+      TEMPO_FACE_DECK.filter((id) => id !== COGTOOTH),
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/Echo/);
-  });
-
-  it("refuses Forbidden Heritage and Pestilent Plague on opening slots", () => {
-    const heritage = validateStartingDice(
-      [[FORBIDDEN_HERITAGE, martial, wild, arcane, luminar, SHIELD_FACE_ID], basics],
-      [...PROTOTYPE_FACE_DECK, FORBIDDEN_HERITAGE],
-      DEFAULT_RULES_CONFIG,
-    );
-    const plague = validateStartingDice(
-      [[PESTILENT_PLAGUE, martial, wild, arcane, luminar, SHIELD_FACE_ID], basics],
-      [...PROTOTYPE_FACE_DECK, PESTILENT_PLAGUE],
-      DEFAULT_RULES_CONFIG,
-    );
-    expect(heritage.ok).toBe(false);
-    expect(plague.ok).toBe(false);
-    if (!heritage.ok) expect(heritage.reason).toMatch(/stay|lock/i);
-    if (!plague.ok) expect(plague.reason).toMatch(/stay|lock/i);
-  });
-
-  it("refuses a named special that is not in the face deck", () => {
-    const result = validateStartingDice(
-      AGGRO_STARTING_DICE,
-      PROTOTYPE_FACE_DECK.filter((id) => id !== CRUSH),
-      DEFAULT_RULES_CONFIG,
-    );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/crush/i);
+    if (!result.ok) expect(result.reason).toMatch(/cogtooth/i);
   });
 });
 
 describe("leftoverFacePool", () => {
-  it("removes installed Crush and Bloodscent from the pool and leaves unused specials", () => {
-    const pool = leftoverFacePool(PROTOTYPE_FACE_DECK, AGGRO_STARTING_DICE);
-    expect(pool).not.toContain(CRUSH);
-    expect(pool).not.toContain(BLOODSCENT);
-    expect(pool).toContain(COMMAND);
-    expect(pool).toContain(CLEAVING_STRIKE);
-    expect(pool).toContain(GORE);
-    expect(pool).toContain(BLADE_RAIN);
+  const mechanical = naturalFaceId("mechanical");
+  const luminar = naturalFaceId("luminar");
+
+  it("removes installed specials and keeps uninstalled Tempo faces", () => {
+    const startingDice = [
+      [COGTOOTH, mechanical, mechanical, luminar, luminar, SHIELD_FACE_ID],
+      TEMPO_STARTING_DICE[1],
+    ] as const;
+    const pool = leftoverFacePool(TEMPO_FACE_DECK, startingDice);
+    expect(pool).not.toContain(COGTOOTH);
+    expect(pool).toContain(GEAR_TRAIN);
+    expect(pool).toContain(MAINSPRING);
   });
 
-  it("does not consume opening basics even when they are also listed in the face deck", () => {
-    const martial = naturalFaceId("martial");
-    const deck = [...PROTOTYPE_FACE_DECK.slice(0, 5), martial];
-    const pool = leftoverFacePool(deck, AGGRO_STARTING_DICE);
-    expect(pool).toContain(martial);
-  });
-
-  it("burn leftover pool keeps Marrow Rot, Spores, and Wasting Brand", () => {
-    const pool = leftoverFacePool(BURN_FACE_DECK, BURN_STARTING_DICE);
-    expect(pool).not.toContain(SEEP);
-    expect(pool).not.toContain(CINDER);
-    expect(pool).toContain(MARROW_ROT);
-    expect(pool).toContain(SPORES);
-    expect(pool).toContain(WASTING_BRAND);
+  it("does not consume opening basics even when listed in the face deck", () => {
+    const pool = leftoverFacePool([...TEMPO_FACE_DECK, mechanical], TEMPO_STARTING_DICE);
+    expect(pool).toContain(mechanical);
   });
 });

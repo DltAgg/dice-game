@@ -1,0 +1,87 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-dawn-warden",
+  "name": "Dawn Warden",
+  "life": 13,
+  "attributes": [
+    "luminar"
+  ],
+  "passiveRulesText": "On absorb Luminar, once per turn: [Mark 1 Shield] on your most damaged creature.",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "luminar"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "grant-shield",
+          "amount": 1,
+          "target": {
+            "kind": "most-damaged-ally"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-dawn-warden-kindle",
+      "name": "Kindle",
+      "kind": "basic",
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Heal 1] on your most damaged creature.",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "heal",
+          "amount": 1,
+          "target": {
+            "kind": "most-damaged-ally"
+          }
+        }
+      ]
+    },
+    {
+      "id": "attack-dawn-warden-vigil",
+      "name": "Vigil",
+      "kind": "special",
+      "requires": {
+        "luminar": 1,
+        "mechanical": 1
+      },
+      "discards": {
+        "luminar": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Mark 2 Shield] on an allied creature you choose.",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "grant-shield",
+          "amount": 2,
+          "target": {
+            "kind": "choose-ally"
+          }
+        }
+      ]
+    }
+  ]
+}

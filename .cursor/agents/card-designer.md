@@ -1,5 +1,6 @@
 ---
 name: card-designer
+model: claude-opus-5-thinking-high
 description: >-
   Designs and authors Dice Skirmish catalogue content: tactics, rituals,
   equipment, overloads, faces, and creatures as typed data. Use proactively

@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-glint-veil",
+  "name": "Glint Veil",
+  "playCost": {
+    "luminar": 2
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Prevent 1] on the waiting attack.",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-attack-prevent",
+        "amount": 1,
+        "target": {
+          "kind": "chain-attack-target"
+        }
+      }
+    ]
+  }
+}

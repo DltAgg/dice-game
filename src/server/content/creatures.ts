@@ -3,32 +3,16 @@ import { asCreatureDefinitionId, type CreatureDefinitionId } from "../model/ids.
 import creatureOrder from "./creatures/_order.json";
 import { catalogueFromModules } from "./catalogueLoader.js";
 
-/** Figma Slow-game-test six + Tempo/Combo/Burn/Control bodies + legendaries (JSON). */
-export const MINOTAUR = asCreatureDefinitionId("creature-minotaur");
-export const VARCOLAC = asCreatureDefinitionId("creature-varcolac");
-export const GARUDA = asCreatureDefinitionId("creature-garuda");
-export const WARLORD_IRONHOOF = asCreatureDefinitionId("creature-warlord-ironhoof");
-export const THORNMANE_PACKLORD = asCreatureDefinitionId("creature-thornmane-packlord");
-export const ARCHMAGE = asCreatureDefinitionId("creature-archmage");
-export const CORRUPTING_ELDER = asCreatureDefinitionId("creature-corrupting-elder");
-export const VOID_SUMMONER = asCreatureDefinitionId("creature-void-summoner");
-export const SOVEREIGN_NIGHTVAULT = asCreatureDefinitionId("creature-sovereign-nightvault");
-export const UMBRA_GRAVEWARDEN = asCreatureDefinitionId("creature-umbra-gravewarden");
-export const PRISM_HERALD = asCreatureDefinitionId("creature-prism-herald");
-export const LENS_CHOIR = asCreatureDefinitionId("creature-lens-choir");
-export const AEGIS_LINK = asCreatureDefinitionId("creature-aegis-link");
-export const PRISMARCH_REGENT = asCreatureDefinitionId("creature-prismarch-regent");
-export const COGWORK_DRIVER = asCreatureDefinitionId("creature-cogwork-driver");
-export const SERVO_ASSEMBLY = asCreatureDefinitionId("creature-servo-assembly");
-export const CLOCKWORK_DYNAMO = asCreatureDefinitionId("creature-clockwork-dynamo");
-export const FORGEHEART_COLOSSUS = asCreatureDefinitionId("creature-forgeheart-colossus");
-export const AETHERCORE_SOVEREIGN = asCreatureDefinitionId("creature-aethercore-sovereign");
-export const NIGHTBOUND_ADEPT = asCreatureDefinitionId("creature-nightbound-adept");
-export const MARROW_FIEND = asCreatureDefinitionId("creature-marrow-fiend");
-export const CINDER_WIGHT = asCreatureDefinitionId("creature-cinder-wight");
-export const ICHOR_HYDRA = asCreatureDefinitionId("creature-ichor-hydra");
-export const BLIGHTCROWN_HYDRA = asCreatureDefinitionId("creature-blightcrown-hydra");
-export const ASHEN_PLAGUEKING = asCreatureDefinitionId("creature-ashen-plagueking");
+/**
+ * Creature catalogue (spec `003`). Current roster is the Mechanical + Luminar
+ * Tempo squad: two bodies plus one legendary win target.
+ */
+export const TORQUE_WRIGHT: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-torque-wright");
+export const DAWN_WARDEN: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-dawn-warden");
+export const LODESTAR_ARTIFICER: CreatureDefinitionId =
+  asCreatureDefinitionId("creature-lodestar-artificer");
 
 const creatureModules = import.meta.glob("./creatures/creature-*.json", {
   eager: true,
@@ -41,11 +25,14 @@ export const getCreatureDefinition = (id: CreatureDefinitionId): CreatureDefinit
   CREATURES[id];
 export const ALL_CREATURES: readonly CreatureDefinition[] = loadedCreatures.list;
 
+/** Re-export loadout squads so tests can import creatures + squad from one module. */
 export {
   AGGRO_SQUAD,
-  BURN_SQUAD,
-  COMBO_MECHANICAL_SQUAD,
+  AGGRO_STARTING_DICE,
   CONTROL_SQUAD,
   PROTOTYPE_SQUAD,
   TEMPO_SQUAD,
+  TEMPO_DECK,
+  TEMPO_FACE_DECK,
+  TEMPO_STARTING_DICE,
 } from "./loadouts/index.js";

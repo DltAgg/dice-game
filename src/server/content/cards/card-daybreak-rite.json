@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-daybreak-rite",
+  "name": "Daybreak Rite",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Mark 2 Shield] on an allied creature you choose. [Empower 2].",
+  "ritual": {
+    "activeWhen": {
+      "luminar": 2
+    },
+    "spend": {
+      "luminar": 2
+    },
+    "effects": [
+      {
+        "type": "grant-shield",
+        "amount": 2,
+        "target": {
+          "kind": "choose-ally"
+        }
+      },
+      {
+        "type": "next-attack-bonus",
+        "amount": 2
+      }
+    ]
+  }
+}

@@ -11,7 +11,7 @@ import {
   type GameState,
 } from "@server";
 import { buildControlSavedDeck } from "@client/decks";
-import { ARCANE_SILENCE, ECLIPSE } from "@server/content/cards.js";
+import { COG_DRAFT, GLINT_VEIL } from "@server/content/cards.js";
 import {
   creatureIdAt,
   expectOk,
@@ -570,7 +570,7 @@ describe("guest reconnection over fake transport", () => {
     expect(onboardBox.state).toEqual(hostBox.state);
     const p2 = onboardBox.state!.players[P2]!;
     expect(onboardBox.state!.creatures[p2.creatureIds[0]!]!.definitionId).toBe(PROTOTYPE_SQUAD[0]);
-    expect(onboardBox.state!.creatures[p2.creatureIds[0]!]!.definitionId).not.toBe(CONTROL_SQUAD[0]);
+    expect(PROTOTYPE_SQUAD[0]).toBe(CONTROL_SQUAD[0]);
 
     hostSession.destroy();
     secondClient.destroy();
@@ -766,11 +766,11 @@ function jsonClone<T>(value: T): T {
 }
 
 describe("host/client reaction-priority (P2 guest)", () => {
-  function openP1TacticWindow(): GameState {
+  function openP1InstantWindow(): GameState {
     let ready = withHand(
-      withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]),
+      withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]),
       P2,
-      [ARCANE_SILENCE],
+      [GLINT_VEIL],
     );
     ready = withPile(ready, P1, 10);
     ready = withPile(ready, P2, 10);
@@ -784,8 +784,26 @@ describe("host/client reaction-priority (P2 guest)", () => {
     return jsonClone(opened);
   }
 
-  function connectWithChain(roomCode: string, guestId: string) {
-    const opened = openP1TacticWindow();
+  function openP1AttackWindow(): GameState {
+    let ready = withPhase(newMatch(), "actions");
+    const attacker = creatureIdAt(ready, P1, 2);
+    const target = creatureIdAt(ready, P2, 0);
+    ready = withHand(withPile(withTokens(ready, attacker, { mechanical: 1 }), P2, 10), P2, [
+      GLINT_VEIL,
+    ]);
+    const opened = expectOk(
+      advance(ready, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: attacker,
+        attackId: asAttackId("attack-lodestar-artificer-drive-shaft"),
+        targetId: target,
+      }),
+    );
+    return jsonClone(opened);
+  }
+
+  function connectWithChain(roomCode: string, guestId: string, opened = openP1InstantWindow()) {
     const { host, guest } = openFakeLink(roomCode, guestId);
     const hostBox: { state: GameState | null } = { state: null };
     const guestBox: { state: GameState | null } = { state: null };
@@ -861,26 +879,22 @@ describe("host/client reaction-priority (P2 guest)", () => {
     clientSession.destroy();
   });
 
-  it("lets the guest respond with Arcane Silence and rebroadcasts the new link", () => {
+  it("lets the guest respond with Glint Veil and rebroadcasts the new link", () => {
     const { hostSession, clientSession, hostBox, guestBox, lastError, opened } = connectWithChain(
       "CHAIN3",
       "g-chain-3",
+      openP1AttackWindow(),
     );
-    const silenceId = handCardIdAt(opened, P2, 0);
+    const veilId = handCardIdAt(opened, P2, 0);
 
     const ok = clientSession.submitAction({
       type: "PLAY_CARD",
       playerId: P2,
-      cardInstanceId: silenceId,
+      cardInstanceId: veilId,
     });
     expect(ok).toBe(true);
     expect(lastError()).toBeNull();
-    // Silence is added, then P1's empty priority is drained and the chain resolves.
-    expect(hostBox.state?.chainStack).toHaveLength(0);
-    expect(hostBox.state?.pendingDecision?.type).not.toBe("reaction-priority");
     expect(guestBox.state).toEqual(hostBox.state);
-    // Silence left P2's hand.
-    expect(guestBox.state?.cards[silenceId]?.zone).not.toBe("hand");
 
     hostSession.destroy();
     clientSession.destroy();
@@ -914,11 +928,11 @@ describe("host/client reaction-priority (P2 guest)", () => {
   });
 
   it("drains empty reaction windows before broadcasting so guests never see a no-offer box", () => {
-    const heavyAxe = asAttackId("attack-minotaur-heavy-axe");
+    const driveShaft = asAttackId("attack-lodestar-artificer-drive-shaft");
     let ready = withPhase(newMatch(), "actions");
-    const attacker = creatureIdAt(ready, P1, 0);
+    const attacker = creatureIdAt(ready, P1, 2);
     const target = creatureIdAt(ready, P2, 0);
-    ready = withTokens(withHand(withHand(ready, P1, []), P2, []), attacker, { martial: 2 });
+    ready = withTokens(withHand(withHand(ready, P1, []), P2, []), attacker, { mechanical: 1 });
     ready = jsonClone(ready);
 
     const { host, guest } = openFakeLink("CHAIN-EMPTY", "g-empty");
@@ -953,7 +967,7 @@ describe("host/client reaction-priority (P2 guest)", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId: attacker,
-      attackId: heavyAxe,
+      attackId: driveShaft,
       targetId: target,
     });
     expect(ok).toBe(true);

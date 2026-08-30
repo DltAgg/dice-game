@@ -1,5 +1,6 @@
 ---
 name: engine-developer
+model: inherit
 description: >-
   Implements Dice Skirmish rules in src/server: EffectDefinition vocabulary,
   StandingTrigger hooks, reducer/advance, resolution stack, statuses (toxin,

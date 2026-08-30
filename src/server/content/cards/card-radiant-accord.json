@@ -1,0 +1,46 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-radiant-accord",
+  "name": "Radiant Accord",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Luminar, once per turn: [Mark 1 Shield] on your most damaged creature.",
+  "ritual": {
+    "activeWhen": {
+      "luminar": 1,
+      "mechanical": 1
+    },
+    "effects": [],
+    "standingAbilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "luminar"
+        ],
+        "absorberRelation": "ally",
+        "oncePerTurn": true,
+        "effects": [
+          {
+            "type": "grant-shield",
+            "amount": 1,
+            "target": {
+              "kind": "most-damaged-ally"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

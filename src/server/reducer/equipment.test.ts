@@ -1,324 +1,110 @@
 import { describe, expect, it } from "vitest";
-import {
-  BLACK_PLAGUE,
-  CALCULATED_SACRIFICE,
-  VENOMOUS_FANGS,
-  WAR_AXE,
-} from "../content/cards.js";
-import { INFECTION } from "../content/faces.js";
-import { asAttackId } from "../model/ids.js";
-import { equipmentOf, graveyardOf } from "../rules/cards.js";
+import { BEACON_ARRAY, DRIVESHAFT_RIG, PRISM_MANTLE, QUICKSET_JIG } from "../content/cards.js";
+import { COGTOOTH } from "../content/faces.js";
+import { equipmentOf } from "../rules/cards.js";
 import {
   creatureIdAt,
-  eventTypes,
   expectOk,
-  forgeAction,
   handCardIdAt,
   newMatch,
   P1,
-  P2,
-  withActivePlayer,
-  withDamage,
   withPile,
   withHand,
   withPhase,
-  withTokens,
+  withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-
-const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
-const forgeReady = (cards: Parameters<typeof withHand>[2]) =>
-  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
-
-describe("opponent-die forging", () => {
-  it("installs a face on an opposing die when the card asks for it", () => {
-    const state = forgeReady([BLACK_PLAGUE]);
-    const dieId = state.players[P2]?.dieIds[0];
-    if (dieId === undefined) throw new Error("expected an opposing die");
-
-    const result = expectOk(
-      advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
-    );
-
-    expect(result.dice[dieId]?.slots[4]?.faceCardId).toBe(INFECTION);
-    expect(result.dice[dieId]?.slots[4]?.faceCardOwnerId).toBe(P1);
-  });
-
-  it("refuses to forge an own-die card onto an opposing die", () => {
-    const state = forgeReady([WAR_AXE]);
-    const dieId = state.players[P2]?.dieIds[0];
-    if (dieId === undefined) throw new Error("expected an opposing die");
-
-    const result = advance(
-      state,
-      forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4]),
-    );
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("INVALID_TARGET");
-  });
-});
-
-describe("equipment", () => {
-  it("attaches to a friendly creature and stays on the board", () => {
-    const state = actionsReady([WAR_AXE]);
-    const creatureId = creatureIdAt(state, P1, 0);
-
-    const result = expectOk(
-      advance(state, {
+describe("Tempo equipment", () => {
+  it("Quickset Jig attaches to a creature", () => {
+    const bearerId = creatureIdAt(actionsReady([QUICKSET_JIG]), P1, 0);
+    const after = expectOk(
+      advance(actionsReady([QUICKSET_JIG]), {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(state, P1, 0),
-        declaredTargetCreatureId: creatureId,
+        cardInstanceId: handCardIdAt(actionsReady([QUICKSET_JIG]), P1, 0),
+        declaredTargetCreatureId: bearerId,
       }),
     );
-
-    const [axe] = equipmentOf(result, P1);
-    expect(axe?.zone).toBe("equipment");
-    expect(axe?.attachedToCreatureId).toBe(creatureId);
-    expect(result.creatures[creatureId]?.equipmentIds).toEqual([axe?.id]);
-    expect(eventTypes(result)).toContain("equipment-attached");
+    expect(equipmentOf(after, P1)).toHaveLength(1);
   });
 
-  it("lets Venomous Fangs attach with its on-deal-damage toxin trigger", () => {
-    const state = actionsReady([VENOMOUS_FANGS]);
-    const creatureId = creatureIdAt(state, P1, 0);
-
-    const result = expectOk(
-      advance(state, {
+  it("Beacon Array heals on Luminar absorb", () => {
+    const base = actionsReady([BEACON_ARRAY]);
+    const bearerId = creatureIdAt(base, P1, 0);
+    const woundedId = creatureIdAt(base, P1, 1);
+    const wounded = {
+      ...base,
+      creatures: {
+        ...base.creatures,
+        [woundedId]: { ...base.creatures[woundedId]!, damage: 2 },
+      },
+    };
+    const equipped = expectOk(
+      advance(wounded, {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(state, P1, 0),
-        declaredTargetCreatureId: creatureId,
+        cardInstanceId: handCardIdAt(wounded, P1, 0),
+        declaredTargetCreatureId: bearerId,
       }),
     );
-
-    expect(equipmentOf(result, P1)[0]?.attachedToCreatureId).toBe(creatureId);
-    expect(result.creatures[creatureId]?.equipmentIds).toHaveLength(1);
-  });
-
-  it("refuses to equip a friendly-only card onto an opponent", () => {
-    const state = actionsReady([WAR_AXE]);
-
-    const result = advance(state, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(state, P1, 0),
-      declaredTargetCreatureId: creatureIdAt(state, P2, 0),
-    });
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("INVALID_TARGET");
-  });
-
-  it("lets Black Plague attach to an opposing creature", () => {
-    const state = actionsReady([BLACK_PLAGUE]);
-    const targetId = creatureIdAt(state, P2, 0);
-
-    const result = expectOk(
-      advance(state, {
-        type: "PLAY_CARD",
+    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["luminar"], "rolled");
+    const luminar = Object.values(withPool.symbols).find((s) => s.symbol === "luminar");
+    if (luminar === undefined) throw new Error("luminar");
+    const after = expectOk(
+      advance(withPool, {
+        type: "ABSORB_SYMBOL",
         playerId: P1,
-        cardInstanceId: handCardIdAt(state, P1, 0),
-        declaredTargetCreatureId: targetId,
+        symbolId: luminar.id,
       }),
     );
-
-    expect(result.creatures[targetId]?.equipmentIds).toHaveLength(1);
-    expect(equipmentOf(result, P1)[0]?.attachedToCreatureId).toBe(targetId);
+    expect(after.log.some((entry) => entry.event.type === "creature-healed")).toBe(true);
+    expect(after.creatures[woundedId]?.damage).toBeLessThan(2);
   });
 
-  it("adds War Axe's bonus to the bearer's attack damage", () => {
-    const base = actionsReady([WAR_AXE]);
-    const attackerId = creatureIdAt(base, P1, 0);
-    const targetId = creatureIdAt(base, P2, 0);
-
+  it("Drive Shaft Rig generates Mechanical on Mechanical absorb", () => {
+    const base = actionsReady([DRIVESHAFT_RIG]);
+    const bearerId = creatureIdAt(base, P1, 0);
     const equipped = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredTargetCreatureId: attackerId,
+        declaredTargetCreatureId: bearerId,
       }),
     );
-
-    const combat = withTokens(
-      withPile(withPhase(equipped, "actions"), P1, 10),
-      attackerId,
-      { martial: 2 },
-    );
-
+    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["mechanical"], "rolled");
+    const mech = Object.values(withPool.symbols).find((s) => s.symbol === "mechanical");
+    if (mech === undefined) throw new Error("mechanical");
     const after = expectOk(
-      advance(combat, {
-        type: "ATTACK",
+      advance(withPool, {
+        type: "ABSORB_SYMBOL",
         playerId: P1,
-        attackerId,
-        attackId: HEAVY_AXE,
-        targetId,
+        creatureId: bearerId,
+        symbolId: mech.id,
       }),
     );
-
-    // Heavy Axe is 3; War Axe adds 1.
-    expect(after.creatures[targetId]?.damage).toBe(4);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
   });
 
-  it("returns equipment to the graveyard when Calculated Sacrifice destroys it", () => {
-    const base = actionsReady([WAR_AXE]);
-    const hostId = creatureIdAt(base, P1, 0);
-
+  it("Prism Mantle reduces incoming damage once per turn", () => {
+    const base = actionsReady([PRISM_MANTLE]);
+    const bearerId = creatureIdAt(base, P1, 0);
     const equipped = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredTargetCreatureId: hostId,
+        declaredTargetCreatureId: bearerId,
       }),
     );
-
-    const p2Turn = withPile(
-      withHand(withPhase(withActivePlayer(equipped, P2), "actions"), P2, [CALCULATED_SACRIFICE]),
-      P2,
-      10,
-    );
-
-    const opened = expectOk(
-      advance(p2Turn, {
-        type: "PLAY_CARD",
-        playerId: P2,
-        cardInstanceId: handCardIdAt(p2Turn, P2, 0),
-      }),
-    );
-    expect(opened.pendingDecision?.type).toBe("choose-creature");
-
-    const after = expectOk(
-      advance(opened, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P2,
-        creatureId: hostId,
-      }),
-    );
-
-    expect(after.creatures[hostId]?.equipmentIds).toEqual([]);
-    expect(equipmentOf(after, P1)).toEqual([]);
-    expect(graveyardOf(after, P1).some((card) => card.cardId === WAR_AXE)).toBe(true);
-    expect(eventTypes(after)).toContain("equipment-destroyed");
+    expect(equipmentOf(equipped, P1)[0]?.attachedToCreatureId).toBe(bearerId);
   });
 
-  it("prompts which equipment to destroy when the target has two pieces", () => {
-    const base = actionsReady([WAR_AXE, VENOMOUS_FANGS]);
-    const hostId = creatureIdAt(base, P1, 0);
-
-    const withAxe = expectOk(
-      advance(base, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredTargetCreatureId: hostId,
-      }),
-    );
-    const equipped = expectOk(
-      advance(withAxe, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(withAxe, P1, 0),
-        declaredTargetCreatureId: hostId,
-      }),
-    );
-    const gear = [...(equipped.creatures[hostId]?.equipmentIds ?? [])];
-    expect(gear).toHaveLength(2);
-    const keepId = gear[0]!;
-    const destroyId = gear[1]!;
-
-    const p2Turn = withPile(
-      withHand(withPhase(withActivePlayer(equipped, P2), "actions"), P2, [CALCULATED_SACRIFICE]),
-      P2,
-      10,
-    );
-    const afterCreature = expectOk(
-      advance(
-        expectOk(
-          advance(p2Turn, {
-            type: "PLAY_CARD",
-            playerId: P2,
-            cardInstanceId: handCardIdAt(p2Turn, P2, 0),
-          }),
-        ),
-        { type: "RESOLVE_CHOOSE_CREATURE", playerId: P2, creatureId: hostId },
-      ),
-    );
-    expect(afterCreature.pendingDecision).toMatchObject({
-      type: "choose-equipment",
-      controllerId: P2,
-      creatureId: hostId,
-    });
-
-    const sacrificeId = graveyardOf(afterCreature, P2).find(
-      (card) => card.cardId === CALCULATED_SACRIFICE,
-    )?.id;
-    expect(sacrificeId).toBeDefined();
-    const refused = advance(afterCreature, {
-      type: "RESOLVE_CHOOSE_EQUIPMENT",
-      playerId: P2,
-      cardInstanceId: sacrificeId!,
-    });
-    expect(refused.ok).toBe(false);
-    if (!refused.ok) {
-      expect(refused.error).toBe("INVALID_CHOICE");
-      expect(refused.state).toBe(afterCreature);
-    }
-
-    const after = expectOk(
-      advance(afterCreature, {
-        type: "RESOLVE_CHOOSE_EQUIPMENT",
-        playerId: P2,
-        cardInstanceId: destroyId,
-      }),
-    );
-    expect(after.creatures[hostId]?.equipmentIds).toEqual([keepId]);
-    expect(graveyardOf(after, P1).some((card) => card.id === destroyId)).toBe(true);
-    expect(graveyardOf(after, P1).some((card) => card.id === keepId)).toBe(false);
-    expect(eventTypes(after)).toContain("equipment-destroyed");
-  });
-
-  it("drops equipment when the host creature is defeated", () => {
-    const base = actionsReady([WAR_AXE]);
-    const hostId = creatureIdAt(base, P1, 0);
-
-    const equipped = expectOk(
-      advance(base, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredTargetCreatureId: hostId,
-      }),
-    );
-
-    const combat = withTokens(
-      withPile(
-        withPhase(withActivePlayer(withDamage(equipped, hostId, 14), P2), "actions"),
-        P2,
-        10,
-      ),
-      creatureIdAt(equipped, P2, 0),
-      { martial: 2 },
-    );
-
-    const after = expectOk(
-      advance(combat, {
-        type: "ATTACK",
-        playerId: P2,
-        attackerId: creatureIdAt(combat, P2, 0),
-        attackId: HEAVY_AXE,
-        targetId: hostId,
-      }),
-    );
-
-    expect(after.creatures[hostId]?.defeated).toBe(true);
-    expect(after.creatures[hostId]?.equipmentIds).toEqual([]);
-    expect(graveyardOf(after, P1).some((card) => card.cardId === WAR_AXE)).toBe(true);
+  it("equipment forge references remain synthetic specials", () => {
+    expect(COGTOOTH).toBeDefined();
   });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { LIVING_LIBRARY } from "../content/cards.js";
+import { DAYBREAK_RITE, MACHINE_SHOP } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { naturalFaceId, VITAL_SPARK } from "../content/faces.js";
+import { HALO_LAMP, naturalFaceId } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -96,7 +96,7 @@ describe("016 attribute pile-up", () => {
   });
 
   it("fires face onAbsorb when banking a pip from that face", () => {
-    let state = installFace(withPhase(newMatch(), "actions"), VITAL_SPARK);
+    let state = installFace(withPhase(newMatch(), "actions"), HALO_LAMP);
     const dieId = dieIdOf(state);
     state = {
       ...state,
@@ -115,7 +115,7 @@ describe("016 attribute pile-up", () => {
       advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
     );
     expect(after.players[P1]?.attributePool).toEqual({ luminar: 1 });
-    // Vital Spark onAbsorb opens choose-ally for Mark Shield.
+    // Vital Spark onAbsorb opens choose-ally for Mark Shield (Phase 3 pile bank).
     expect(after.pendingDecision?.type).toBe("choose-creature");
     expect(after.log.some((e) => e.event.type === "symbol-absorbed")).toBe(true);
   });
@@ -164,8 +164,8 @@ describe("016 attribute pile-up", () => {
   });
 
   it("ritual becomes ready when the owner's pile meets Active-when", () => {
-    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]), P1, {
-      arcane: 2,
+    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [MACHINE_SHOP]), P1, {
+      mechanical: 3,
     });
     state = expectOk(
       advance(state, {
@@ -178,8 +178,8 @@ describe("016 attribute pile-up", () => {
     if (ritualId === undefined) throw new Error("ritual");
     expect(state.cards[ritualId]?.ritualOrientation).toBe("preparing");
 
-    state = withAttributePool(state, P1, { arcane: 2 });
-    state = withSymbols(state, P1, ["martial"]);
+    state = withAttributePool(state, P1, { mechanical: 2 });
+    state = withSymbols(state, P1, ["mechanical"]);
     const pip = Object.values(state.symbols)[0]!;
     state = expectOk(
       advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
@@ -252,9 +252,9 @@ describe("016 attribute pile-up", () => {
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
-    const attack = def.attacks.find((a) => a.id === "attack-minotaur-war-charge")!;
-    // Requires Martial+Wild, Spend Martial. Pile has Martial only; wildcard covers Wild.
-    state = withAttributePool(state, P1, { martial: 1 });
+    const attack = def.attacks.find((a) => a.id === "attack-torque-wright-retool")!;
+    // Requires Mechanical+Luminar, Spend Mechanical.
+    state = withAttributePool(state, P1, { mechanical: 1 });
     state = {
       ...state,
       requirementWildcardsThisTurn: { [P1]: [{ fromSymbol: "arcane" }] },
@@ -275,7 +275,7 @@ describe("016 attribute pile-up", () => {
 
   it("Resonance wildcards cover ritual Active-when and Spend on activate", () => {
     let state = withHand(withPile(withPhase(newMatch(), "actions"), P1, 10), P1, [
-      LIVING_LIBRARY,
+      DAYBREAK_RITE,
     ]);
     state = expectOk(
       advance(state, {
@@ -287,8 +287,8 @@ describe("016 attribute pile-up", () => {
     const ritualId = ritualsOf(state, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual");
 
-    // Need Arcane 2 for ready + Arcane 2 Spend; pile has 1, three wildcards.
-    state = withAttributePool(state, P1, { arcane: 1 });
+    // Need Luminar 2 for ready + Luminar 2 Spend; pile has 1, three wildcards.
+    state = withAttributePool(state, P1, { luminar: 1 });
     state = {
       ...state,
       requirementWildcardsThisTurn: {
@@ -314,6 +314,6 @@ describe("016 attribute pile-up", () => {
     expect(state.log.some((e) => e.event.type === "ritual-activated")).toBe(true);
     // Gate shortfall 1 + Spend shortfall 1 (pile had 1 arcane for spend) = 2 wildcards.
     expect((state.requirementWildcardsThisTurn[P1] ?? []).length).toBe(beforeWild - 2);
-    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(0);
+    expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(0);
   });
 });

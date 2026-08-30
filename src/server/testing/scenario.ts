@@ -1,6 +1,11 @@
-import { getCard, PROTOTYPE_DECK } from "../content/cards.js";
-import { PROTOTYPE_SQUAD } from "../content/creatures.js";
-import { ENGINE_TEST_FACE_DECK, PROTOTYPE_FACE_DECK, AGGRO_STARTING_DICE, legacyStartingLayout } from "../content/faces.js";
+import { getCard } from "../content/cards.js";
+import { ENGINE_TEST_FACE_DECK, legacyStartingLayout } from "../content/faces.js";
+import {
+  TEMPO_DECK,
+  TEMPO_FACE_DECK,
+  TEMPO_SQUAD,
+  TEMPO_STARTING_DICE,
+} from "../content/loadouts/index.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
@@ -58,14 +63,14 @@ export function newMatch(
   const defaultPlayers: readonly [PlayerSetup, PlayerSetup] = [
     {
       id: P1,
-      squad: PROTOTYPE_SQUAD,
+      squad: TEMPO_SQUAD,
       deck: [],
       faceDeck: ENGINE_TEST_FACE_DECK,
       startingDice: legacyStartingLayout(),
     },
     {
       id: P2,
-      squad: PROTOTYPE_SQUAD,
+      squad: TEMPO_SQUAD,
       deck: [],
       faceDeck: ENGINE_TEST_FACE_DECK,
       startingDice: legacyStartingLayout(),
@@ -94,8 +99,8 @@ export const newMatchWithDecks = (overrides: Partial<MatchSetup> = {}): GameStat
   newMatch({
     config: DEFAULT_RULES_CONFIG,
     players: [
-      { id: P1, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: AGGRO_STARTING_DICE },
-      { id: P2, squad: PROTOTYPE_SQUAD, deck: PROTOTYPE_DECK, faceDeck: PROTOTYPE_FACE_DECK, startingDice: AGGRO_STARTING_DICE },
+      { id: P1, squad: TEMPO_SQUAD, deck: TEMPO_DECK, faceDeck: TEMPO_FACE_DECK, startingDice: TEMPO_STARTING_DICE },
+      { id: P2, squad: TEMPO_SQUAD, deck: TEMPO_DECK, faceDeck: TEMPO_FACE_DECK, startingDice: TEMPO_STARTING_DICE },
     ],
     ...overrides,
   });

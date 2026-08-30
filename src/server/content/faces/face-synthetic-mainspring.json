@@ -1,0 +1,23 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-mainspring",
+  "name": "Mainspring",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll: [Empower 1].\nOn absorb, once per turn: [Reforge] a Synthetic Mechanical face on your die.",
+  "onRoll": [
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "replace-synthetic-face",
+      "kind": "synthetic",
+      "attribute": "mechanical"
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

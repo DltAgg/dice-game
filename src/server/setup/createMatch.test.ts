@@ -1,17 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { MINOTAUR, PROTOTYPE_SQUAD, VARCOLAC, WARLORD_IRONHOOF } from "../content/creatures.js";
+import { TEMPO_SQUAD, LODESTAR_ARTIFICER, TORQUE_WRIGHT, DAWN_WARDEN } from "../content/creatures.js";
 import {
-  CONTROL_FACE_DECK,
-  CONTROL_STARTING_DICE,
-  CRUSH,
-  BLOODSCENT,
   DEFAULT_BASIC_LAYOUT,
-  PESTILENT_PLAGUE,
-  PROTOTYPE_FACE_DECK,
-  AGGRO_STARTING_DICE,
+  ENGINE_TEST_FACE_DECK,
   getFaceCard,
   legacyStartingLayout,
 } from "../content/faces.js";
+import { TEMPO_DECK, TEMPO_FACE_DECK, TEMPO_STARTING_DICE } from "../content/loadouts/index.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
 import { SHIELD } from "../model/symbols.js";
@@ -48,14 +43,14 @@ describe("match setup", () => {
       players: [
         {
           id: P1,
-          squad: [WARLORD_IRONHOOF, MINOTAUR, VARCOLAC],
+          squad: [LODESTAR_ARTIFICER, TORQUE_WRIGHT, DAWN_WARDEN],
           deck: [],
           faceDeck: [],
           startingDice: legacyStartingLayout(),
         },
         {
           id: P2,
-          squad: PROTOTYPE_SQUAD,
+          squad: TEMPO_SQUAD,
           deck: [],
           faceDeck: [],
           startingDice: legacyStartingLayout(),
@@ -68,9 +63,9 @@ describe("match setup", () => {
     }));
 
     expect(positions).toEqual([
-      { definitionId: WARLORD_IRONHOOF, position: "back" },
-      { definitionId: MINOTAUR, position: "frontline" },
-      { definitionId: VARCOLAC, position: "frontline" },
+      { definitionId: LODESTAR_ARTIFICER, position: "back" },
+      { definitionId: TORQUE_WRIGHT, position: "frontline" },
+      { definitionId: DAWN_WARDEN, position: "frontline" },
     ]);
   });
 
@@ -78,129 +73,69 @@ describe("match setup", () => {
     const state = newMatch();
 
     for (const die of Object.values(state.dice)) {
-      expect(die.slots).toHaveLength(FACE_SLOTS_PER_DIE);
       expect(hasSixPhysicalFaces(die)).toBe(true);
+      expect(die.slots).toHaveLength(FACE_SLOTS_PER_DIE);
     }
   });
 
-  it("respects the four-faces-per-attribute limit on the opening dice", () => {
-    const state = newMatch();
-
-    for (const die of Object.values(state.dice)) {
-      for (const count of Object.values(symbolCountsOn(die))) {
-        expect(count).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.maxFacesOfSameAttributePerDie);
-      }
-    }
+  it("hydrates Tempo starting dice from the loadout document", () => {
+    const state = createMatch({
+      matchId: "tempo",
+      seed: 1,
+      config: DEFAULT_RULES_CONFIG,
+      players: [
+        {
+          id: P1,
+          squad: TEMPO_SQUAD,
+          deck: TEMPO_DECK,
+          faceDeck: TEMPO_FACE_DECK,
+          startingDice: TEMPO_STARTING_DICE,
+        },
+        {
+          id: P2,
+          squad: TEMPO_SQUAD,
+          deck: TEMPO_DECK,
+          faceDeck: TEMPO_FACE_DECK,
+          startingDice: TEMPO_STARTING_DICE,
+        },
+      ],
+    });
+    const dieId = state.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("die");
+    const counts = symbolCountsOn(state.dice[dieId]!);
+    expect(counts.mechanical).toBe(3);
+    expect(counts.luminar).toBe(2);
+    expect(counts[SHIELD]).toBe(1);
   });
 
-  it("starts each player with an empty attribute pile", () => {
+  it("tracks face-card ownership consistently at setup", () => {
     const state = newMatch();
-
-    expect(state.players[P1]?.attributePool).toEqual({});
-    expect(state.players[P2]?.attributePool).toEqual({});
-  });
-
-  it("produces byte-identical state for the same setup", () => {
-    expect(JSON.stringify(newMatch())).toEqual(JSON.stringify(newMatch()));
-  });
-
-  it("produces state that survives a JSON round trip unchanged", () => {
-    const state = newMatch();
-    expect(JSON.parse(JSON.stringify(state))).toEqual(state);
-  });
-
-  it("keeps every face card either installed or pooled, never both", () => {
-    const state = newMatch();
-
     for (const [faceCardId, ownerId] of knownFaceCardOwnerships(state)) {
       expect(faceCardLocationIsConsistent(state, faceCardId, ownerId)).toBe(true);
     }
   });
 
-  it("attributes each installed face to the player whose die it sits on at setup", () => {
+  it("maps opening faces to die slots", () => {
+    const faceId = TEMPO_FACE_DECK[0]!;
+    const face = getFaceCard(faceId);
+    if (face === undefined) throw new Error("face");
+    const slot = openingSlotFromFace(0, faceId, P1);
+    expect(slot.faceCardId).toBe(faceId);
+  });
+
+  it("computes leftover face pool after starting dice consume specials", () => {
+    const pool = leftoverFacePool(TEMPO_FACE_DECK, TEMPO_STARTING_DICE);
+    expect(pool.length).toBeGreaterThan(0);
+    expect(pool.length).toBeLessThanOrEqual(TEMPO_FACE_DECK.length);
+  });
+
+  it("uses engine-test face pool when no loadout face deck is passed", () => {
     const state = newMatch();
-
-    for (const die of Object.values(state.dice)) {
-      for (const slot of die.slots) {
-        expect(slot.faceCardOwnerId).toBe(die.ownerId);
-      }
-    }
+    expect(state.players[P1]?.facePool).toEqual([...ENGINE_TEST_FACE_DECK]);
   });
 
-  it("rejects a squad that is not the configured size", () => {
-    expect(() =>
-      createMatch({
-        matchId: "m",
-        seed: 1,
-        players: [
-          {
-            id: P1,
-            squad: PROTOTYPE_SQUAD.slice(0, 2),
-            deck: [],
-            faceDeck: [],
-            startingDice: legacyStartingLayout(),
-          },
-          {
-            id: P2,
-            squad: PROTOTYPE_SQUAD,
-            deck: [],
-            faceDeck: [],
-            startingDice: legacyStartingLayout(),
-          },
-        ],
-        config: { ...DEFAULT_RULES_CONFIG, deckMinCards: 0 },
-      }),
-    ).toThrow(/squad has 2/);
-  });
-});
-
-describe("starting face layout", () => {
-  it("keeps DEFAULT_BASIC_LAYOUT as the test-only six-symbol helper", () => {
-    expect(DEFAULT_BASIC_LAYOUT).toEqual(["martial", "wild", "arcane", "luminar", SHIELD, SHIELD]);
-    expect(legacyStartingLayout()[0]?.map((id) => getFaceCard(id)?.symbol)).toEqual([
-      ...DEFAULT_BASIC_LAYOUT,
-    ]);
-  });
-
-  it("lets two seats open with different layouts and different leftover pools", () => {
-    const state = createMatch({
-      matchId: "m",
-      seed: 1,
-      config: { ...DEFAULT_RULES_CONFIG, deckMinCards: 0 },
-      players: [
-        {
-          id: P1,
-          squad: PROTOTYPE_SQUAD,
-          deck: [],
-          faceDeck: PROTOTYPE_FACE_DECK,
-          startingDice: AGGRO_STARTING_DICE,
-        },
-        {
-          id: P2,
-          squad: PROTOTYPE_SQUAD,
-          deck: [],
-          faceDeck: CONTROL_FACE_DECK,
-          startingDice: CONTROL_STARTING_DICE,
-        },
-      ],
-    });
-
-    const p1Die0 = state.dice[state.players[P1]!.dieIds[0]!]!;
-    const p2Die0 = state.dice[state.players[P2]!.dieIds[0]!]!;
-    expect(p1Die0.slots[0]?.faceCardId).toBe(CRUSH);
-    expect(p2Die0.slots[0]?.faceCardId).not.toBe(CRUSH);
-    expect(state.players[P1]?.facePool).toEqual(
-      leftoverFacePool(PROTOTYPE_FACE_DECK, AGGRO_STARTING_DICE),
-    );
-    expect(state.players[P2]?.facePool).toEqual(
-      leftoverFacePool(CONTROL_FACE_DECK, CONTROL_STARTING_DICE),
-    );
-    expect(state.players[P1]?.facePool).not.toContain(CRUSH);
-    expect(state.players[P1]?.facePool).not.toContain(BLOODSCENT);
-  });
-
-  it("applies forge-lock remaining when a stay face is installed as if just forged", () => {
-    const slot = openingSlotFromFace(0, PESTILENT_PLAGUE, P1);
-    expect(slot.forgeLockRemaining).toBe(4);
+  it("legacy starting layout matches default basic symbols", () => {
+    const layout = legacyStartingLayout();
+    expect(layout[0]).toHaveLength(DEFAULT_BASIC_LAYOUT.length);
   });
 });

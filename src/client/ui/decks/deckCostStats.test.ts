@@ -1,14 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { asCardId } from "@server";
+import { COG_DRAFT, GLINT_VEIL, LANTERN_OATH } from "@server/content/cards.js";
 import { summarizeDeckCosts } from "./deckCostStats.js";
-
-const DOSE = asCardId("card-dose");
-const SIPHON_SIGIL = asCardId("card-siphon-sigil");
-const SIDESTEP = asCardId("card-sidestep");
 
 describe("summarizeDeckCosts", () => {
   it("groups copies into cost buckets with type breakdown", () => {
-    const summary = summarizeDeckCosts([DOSE, DOSE, SIPHON_SIGIL, SIDESTEP]);
+    const summary = summarizeDeckCosts([COG_DRAFT, COG_DRAFT, GLINT_VEIL, LANTERN_OATH]);
     expect(summary.cardCount).toBe(4);
     expect(summary.uniqueCards).toBe(3);
 
@@ -19,7 +15,7 @@ describe("summarizeDeckCosts", () => {
 
     const threeCost = summary.buckets.find((row) => row.bucket === 3);
     expect(threeCost?.total).toBe(1);
-    expect(threeCost?.byType.instant).toBe(1);
+    expect(threeCost?.byType.reaction).toBe(1);
   });
 
   it("returns empty-friendly summary for an empty deck", () => {

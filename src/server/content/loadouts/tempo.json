@@ -1,0 +1,126 @@
+{
+  "$schema": "../schema/loadout.schema.json",
+  "id": "deck-tempo",
+  "name": "Tempo",
+  "squad": [
+    "creature-torque-wright",
+    "creature-dawn-warden",
+    "creature-lodestar-artificer"
+  ],
+  "deckCounts": [
+    {
+      "cardId": "card-cog-draft",
+      "copies": 3
+    },
+    {
+      "cardId": "card-tooling-order",
+      "copies": 3
+    },
+    {
+      "cardId": "card-shim-kit",
+      "copies": 2
+    },
+    {
+      "cardId": "card-quickset-jig",
+      "copies": 2
+    },
+    {
+      "cardId": "card-die-punch",
+      "copies": 1
+    },
+    {
+      "cardId": "card-recast",
+      "copies": 1
+    },
+    {
+      "cardId": "card-twin-cam",
+      "copies": 2
+    },
+    {
+      "cardId": "card-idler-gear",
+      "copies": 2
+    },
+    {
+      "cardId": "card-pawl-spring",
+      "copies": 1
+    },
+    {
+      "cardId": "card-driveshaft-rig",
+      "copies": 2
+    },
+    {
+      "cardId": "card-machine-shop",
+      "copies": 2
+    },
+    {
+      "cardId": "card-tempering-line",
+      "copies": 1
+    },
+    {
+      "cardId": "card-glint-veil",
+      "copies": 2
+    },
+    {
+      "cardId": "card-mirrorward",
+      "copies": 2
+    },
+    {
+      "cardId": "card-lantern-oath",
+      "copies": 2
+    },
+    {
+      "cardId": "card-mending-light",
+      "copies": 3
+    },
+    {
+      "cardId": "card-bright-cadence",
+      "copies": 3
+    },
+    {
+      "cardId": "card-prism-mantle",
+      "copies": 2
+    },
+    {
+      "cardId": "card-beacon-array",
+      "copies": 1
+    },
+    {
+      "cardId": "card-choirlight",
+      "copies": 1
+    },
+    {
+      "cardId": "card-radiant-accord",
+      "copies": 1
+    },
+    {
+      "cardId": "card-daybreak-rite",
+      "copies": 1
+    }
+  ],
+  "faceDeck": [
+    "face-synthetic-cogtooth",
+    "face-synthetic-gear-train",
+    "face-synthetic-mainspring",
+    "face-synthetic-halo-lamp",
+    "face-synthetic-lucent-choir",
+    "face-synthetic-sunward-lens"
+  ],
+  "startingDice": [
+    [
+      "face-natural-mechanical",
+      "face-natural-mechanical",
+      "face-natural-mechanical",
+      "face-natural-luminar",
+      "face-natural-luminar",
+      "face-untyped-shield"
+    ],
+    [
+      "face-natural-mechanical",
+      "face-natural-mechanical",
+      "face-natural-mechanical",
+      "face-natural-luminar",
+      "face-natural-luminar",
+      "face-untyped-shield"
+    ]
+  ]
+}

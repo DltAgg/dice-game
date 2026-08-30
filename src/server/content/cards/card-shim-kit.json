@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-shim-kit",
+  "name": "Shim Kit",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Discount 2] forge.",
+  "effect": {
+    "effects": [
+      {
+        "type": "arm-forge-discount",
+        "amount": 2
+      }
+    ]
+  }
+}

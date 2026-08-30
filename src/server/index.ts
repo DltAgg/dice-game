@@ -23,18 +23,7 @@ export * from "./rules/targeting.js";
 export * from "./rules/targets.js";
 export * from "./rules/tokens.js";
 
-export {
-  ALL_CARDS,
-  AGGRO_DECK,
-  BURN_DECK,
-  BURN_DECK_COUNTS,
-  CARDS,
-  COMBO_MECHANICAL_DECK,
-  CONTROL_DECK,
-  PROTOTYPE_DECK,
-  TEMPO_DECK,
-  getCard,
-} from "./content/cards.js";
+export { ALL_CARDS, CARDS, getCard } from "./content/cards.js";
 export {
   attributeLabel,
   formatEffectRegion,
@@ -48,13 +37,7 @@ export {
 } from "./content/cardText.js";
 export {
   ALL_CREATURES,
-  AGGRO_SQUAD,
-  BURN_SQUAD,
-  COMBO_MECHANICAL_SQUAD,
-  CONTROL_SQUAD,
   CREATURES,
-  PROTOTYPE_SQUAD,
-  TEMPO_SQUAD,
   getCreatureDefinition,
 } from "./content/creatures.js";
 export {
@@ -68,36 +51,57 @@ export {
 } from "./content/creatureText.js";
 export {
   ALL_FACE_CARDS,
-  ARCANE_ECHO_FACE,
   BASIC_FACE_CARDS,
-  BLADE_RAIN,
-  BURN_FACE_DECK,
-  BURN_STARTING_DICE,
-  COMBO_MECHANICAL_FACE_DECK,
-  COMBO_MECHANICAL_STARTING_DICE,
-  CONTROL_FACE_DECK,
-  CONTROL_STARTING_DICE,
-  CRUSH,
+  COGTOOTH,
   DEFAULT_BASIC_LAYOUT,
-  FACE_CARDS,
-  FORBIDDEN_HERITAGE,
-  GREAT_SPARK,
-  PESTILENT_PLAGUE,
-  PROTOTYPE_FACE_DECK,
-  PROTOTYPE_STARTING_DICE,
-  AGGRO_STARTING_DICE,
   ENGINE_TEST_FACE_DECK,
-  REKINDLE,
-  RENDING_CLAW,
-  SPECIAL_FACE_CARDS,
+  FACE_CARDS,
+  GEAR_TRAIN,
+  HALO_LAMP,
+  LUCENT_CHOIR,
+  MAINSPRING,
   SHIELD_FACE_ID,
+  SPECIAL_FACE_CARDS,
   STARTING_DIE_SYMBOLS,
-  TEMPO_FACE_DECK,
-  TEMPO_STARTING_DICE,
+  SUNWARD_LENS,
   faceIdFor,
   faceIdForSymbol,
   getFaceCard,
   legacyStartingLayout,
   naturalFaceId,
 } from "./content/faces.js";
-export { ALL_BUILTIN_LOADOUTS } from "./content/loadouts/index.js";
+
+/**
+ * Builtin loadouts are owned by `content/loadouts` (deck-designer). The
+ * catalogue loaders above no longer re-export deck lists.
+ */
+export {
+  AGGRO_DECK,
+  AGGRO_FACE_DECK,
+  AGGRO_SQUAD,
+  AGGRO_STARTING_DICE,
+  ALL_BUILTIN_LOADOUTS,
+  BURN_DECK,
+  BURN_DECK_COUNTS,
+  BURN_FACE_DECK,
+  BURN_SQUAD,
+  BURN_STARTING_DICE,
+  COMBO_MECHANICAL_DECK,
+  COMBO_MECHANICAL_FACE_DECK,
+  COMBO_MECHANICAL_SQUAD,
+  COMBO_MECHANICAL_STARTING_DICE,
+  CONTROL_DECK,
+  CONTROL_FACE_DECK,
+  CONTROL_SQUAD,
+  CONTROL_STARTING_DICE,
+  PROTOTYPE_DECK,
+  PROTOTYPE_FACE_DECK,
+  PROTOTYPE_SQUAD,
+  PROTOTYPE_STARTING_DICE,
+  TEMPO_DECK,
+  TEMPO_DECK_COUNTS,
+  TEMPO_FACE_DECK,
+  TEMPO_LOADOUT,
+  TEMPO_SQUAD,
+  TEMPO_STARTING_DICE,
+} from "./content/loadouts/index.js";

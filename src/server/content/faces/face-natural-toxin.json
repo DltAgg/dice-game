@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-toxin",
+  "name": "Toxin",
+  "kind": "natural",
+  "symbol": "toxin",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

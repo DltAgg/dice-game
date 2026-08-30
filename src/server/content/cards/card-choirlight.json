@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-choirlight",
+  "name": "Choirlight",
+  "playCost": {
+    "luminar": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Luminar face.\nOn roll: [Heal 1] on your most damaged creature.",
+  "overload": {
+    "faceSymbols": [
+      "luminar"
+    ],
+    "onRoll": [
+      {
+        "type": "heal",
+        "amount": 1,
+        "target": {
+          "kind": "most-damaged-ally"
+        }
+      }
+    ]
+  }
+}

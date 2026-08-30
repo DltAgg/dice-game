@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-lucent-choir",
+  "name": "Lucent Choir",
+  "kind": "synthetic",
+  "symbol": "luminar",
+  "rulesText": "On roll: [Generate 1 Luminar].\nOn absorb, once per turn: [Empower 1] on an allied creature.",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "luminar",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "grant-next-attack-bonus",
+      "amount": 1,
+      "target": {
+        "kind": "choose-ally"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

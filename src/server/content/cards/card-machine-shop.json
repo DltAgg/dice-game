@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-machine-shop",
+  "name": "Machine Shop",
+  "playCost": {
+    "mechanical": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "On roll Mechanical: [Generate 1 Mechanical].",
+  "ritual": {
+    "activeWhen": {
+      "mechanical": 2
+    },
+    "effects": [],
+    "standingAbilities": [
+      {
+        "type": "on-roll-symbol",
+        "symbol": "mechanical",
+        "rollingPlayer": "controller",
+        "effects": [
+          {
+            "type": "generate-symbol",
+            "symbol": "mechanical",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  }
+}

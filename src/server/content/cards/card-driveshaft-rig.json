@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-driveshaft-rig",
+  "name": "Driveshaft Rig",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Mechanical, once per turn: [Generate 1 Mechanical].",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "mechanical"
+        ],
+        "absorberRelation": "ally",
+        "oncePerTurn": true,
+        "effects": [
+          {
+            "type": "generate-symbol",
+            "symbol": "mechanical",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  }
+}

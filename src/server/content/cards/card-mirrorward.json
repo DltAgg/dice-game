@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-mirrorward",
+  "name": "Mirrorward",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Prevent] the waiting attack; [Strike] the attacking creature for the damage prevented.",
+  "effect": {
+    "effects": [
+      {
+        "type": "prevent-attack-reflect"
+      }
+    ]
+  }
+}

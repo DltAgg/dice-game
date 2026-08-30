@@ -156,6 +156,55 @@ Costs shown as `?` are **variable** pile pay (DEFERRED). Catalogue `?` cards
 currently use a fixed `playCost` until variable spend UX ships. Where the frame
 name and the printed name disagree, the printed name is used.
 
+> **Catalogue reset (2026-08-29).** `src/server/content/cards/` now holds a
+> single archetype set: the Mechanical + Luminar **Tempo** catalogue below.
+> Every `### … deck` / `### … (authored)` table *after* it names **retired
+> print with no catalogue entry** — read those as role/design reference for
+> vocabulary decisions, never as a list of live cards.
+
+### Mechanical + Luminar Tempo catalogue (authored)
+
+Tempo **wins by** sequencing pile → forge → pressure on the enemy legendary.
+Mechanical rebuilds and discounts **its own** dice; Luminar sustains and buys
+tempo back with reaction `[Prevent]`. Every row serves forge or play.
+
+`playCost` is the attribute pile, not generic Energy. All 22 print 2+.
+
+**Mechanical — own-die reconstruction, generation, forge discounts**
+
+| Cost | Name | Type line | Printed play region | Role in Tempo |
+|---|---|---|---|---|
+| 2 M | Cog Draft | Instant / Mechanical | `[Generate 2 Mechanical]. [Draw 1].` | Opener. Converts a turn into pile + a card. |
+| 2 M | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. `[Forge 2 Synthetic Mechanical]` on your die. | Pile → die assembly; the main pile sink. |
+| 2 M | Shim Kit | Instant / Mechanical | `[Discount 2]` forge. | One-shot discount that turns a forge into a tempo turn. |
+| 3 M | Quickset Jig | Equipment / Mechanical | On roll Mechanical: `[Discount 1]` forge. | Standing discount engine — rolls, not pile. |
+| 2 M | Die Punch | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Stamp]`. | Own-die reconstruction: reapply your die modifiers. |
+| 2 M | Recast | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Reforge]` a Synthetic Mechanical face. | Swaps a stale synthetic without a fresh forge. |
+| 2 M | Twin Cam | Instant / Mechanical | `[Requires 2 x Mechanical]`. `[Double]`. | Payoff for a stacked die: next face effect twice. |
+| 2 M | Idler Gear | Overload / Mechanical | Mechanical face only. On roll: `[Generate 1 Mechanical]`. | Cheap recurring bank on a face you already want. |
+| 2 M | Pawl Spring | Overload / Mechanical | Mechanical face only. On absorb, once per turn: `[Discount 1]` forge. | The absorb-vs-pool tension: absorbing still buys forges. |
+| 2 M | Driveshaft Rig | Equipment / Mechanical | On absorb Mechanical (`ally`), once per turn: `[Generate 1 Mechanical]`. | Standing pile growth off your own banking. |
+| 3 M | Machine Shop | Ritual / Continuous / Mechanical | `[Active when: 2 x Mechanical]`. On roll Mechanical: `[Generate 1 Mechanical]`. | The engine's compounding loop while the pile holds. |
+| 3 M | Tempering Line | Ritual / Instant / Mechanical | `[Active when: 2 x Mechanical]`. `[Spend: 2 x Mechanical]`. `[Forge 2 Synthetic Mechanical]`. `[Discount 1]` forge. | Cashes the pile into two faces plus a discount. |
+
+**Luminar — heal, `[Mark N Shield]`, reaction `[Prevent]` only**
+
+| Cost | Name | Type line | Printed play region | Role in Tempo |
+|---|---|---|---|---|
+| 2 L | Glint Veil | Reaction / Luminar | `[Prevent 1]` on the waiting attack. | Cheapest chain answer; buys a turn of assembly. |
+| 3 L | Lantern Oath | Reaction / Luminar | `[Prevent 2]`. On prevent damage: `[Draw 1]`. | Prevent that refuels — reaction-exclusive `[Prevent]`. |
+| 3 L | Mirrorward | Reaction / Luminar | `[Prevent]` the waiting attack; `[Strike]` the attacker for the damage prevented. | Turns the opponent's swing into pressure. |
+| 2 L | Mending Light | Instant / Luminar | `[Heal 2]` on your most damaged creature. `[Generate 1 Mechanical]`. | The two-color bridge: sustain that pays the Mechanical half. |
+| 3 L | Bright Cadence | Instant / Luminar | `[Mark 2 Shield]` on an allied creature you choose. `[Empower 1]`. | Proactive Luminar — shields, never `[Prevent]`. |
+| 2 L | Prism Mantle | Equipment / Luminar | On take damage, once per turn: reduce it by 1. | Makes the legendary hard to race without printing Prevent. |
+| 2 L + 1 M | Beacon Array | Equipment / Luminar | On absorb Luminar (`ally`), once per turn: `[Heal 1]`. | Pile banking pays for sustain. |
+| 2 L | Choirlight | Overload / Luminar | Luminar face only. On roll: `[Heal 1]`. | Sustain welded to a face the deck already rolls. |
+| 3 L | Radiant Accord | Ritual / Continuous / Luminar | `[Active when: 1 x Luminar, 1 x Mechanical]`. On absorb Luminar (`ally`), once per turn: `[Mark 1 Shield]`. | Two-color gate; standing Shield while the pile holds. |
+| 3 L | Daybreak Rite | Ritual / Instant / Luminar | `[Active when: 2 x Luminar]`. `[Spend: 2 x Luminar]`. `[Mark 2 Shield]` on an allied creature you choose. `[Empower 2]`. | The tempo turn: stabilize and swing in one activation. |
+
+Faces (spec `004`) and the Tempo squad (spec `003`) carry the same split:
+Mechanical faces bank and rebuild, Luminar faces shield and sustain.
+
 ### Aggro deck
 
 Builtin **Aggro** (`PROTOTYPE_*`) is **Martial / Wild only** — same two-color

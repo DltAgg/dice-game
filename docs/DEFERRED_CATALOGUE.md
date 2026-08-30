@@ -9,6 +9,22 @@ are now data-driven. This file lists only what is still honestly unfinished.
 
 ---
 
+## Catalogue reset (2026-08-29)
+
+The catalogue was wiped and reauthored as a Mechanical + Luminar **Tempo** set
+(22 tactics, 3 creatures, 9 naturals + Shield + 6 named synthetics). Rows below
+that name retired print (Drain / Infection faces, Great Spark, Rekindle, Alpha's
+Hide, Reforge, Share the Kill, Den Share) describe **cards that no longer have
+catalogue entries**. They stay as design reference for the vocabulary decisions,
+not as open work.
+
+**Nothing in the current Tempo catalogue is deferred.** Every printed clause on
+the 22 tactics, 3 creatures, and 6 synthetic faces is wired to existing
+`EffectDefinition` / `StandingTrigger` vocabulary. No `engine-developer` brief
+was needed.
+
+---
+
 ## Intentionally not modelled
 
 | Item | Needed for | Why |

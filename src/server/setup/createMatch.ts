@@ -1,5 +1,5 @@
 import { getCreatureDefinition } from "../content/creatures.js";
-import { PROTOTYPE_FACE_DECK } from "../content/faces.js";
+import { PROTOTYPE_FACE_DECK } from "../content/loadouts/index.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG, type GameRulesConfig } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";

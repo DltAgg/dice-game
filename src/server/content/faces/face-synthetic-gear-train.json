@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-gear-train",
+  "name": "Gear Train",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll: if you have another Synthetic symbol in the Pool, [Generate 1 Mechanical].\nOn absorb, once per turn: [Double].",
+  "onRoll": [
+    {
+      "type": "conditional",
+      "when": {
+        "type": "has-other-symbol",
+        "faceKind": "synthetic"
+      },
+      "then": [
+        {
+          "type": "generate-symbol",
+          "symbol": "mechanical",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "arm-resolve-next-face-effect-twice"
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

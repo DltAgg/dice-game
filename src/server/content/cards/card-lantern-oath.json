@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-lantern-oath",
+  "name": "Lantern Oath",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Prevent 2] on the waiting attack. On prevent damage: [Draw 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-attack-prevent",
+        "amount": 2,
+        "target": {
+          "kind": "chain-attack-target"
+        }
+      },
+      {
+        "type": "arm-prevent-draw",
+        "amount": 1
+      }
+    ]
+  }
+}

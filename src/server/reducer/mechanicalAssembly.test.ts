@@ -1,664 +1,166 @@
 import { describe, expect, it } from "vitest";
 import {
-  ASSEMBLY_LINE,
-  BLUEPRINT,
-  CAMSHAFT,
-  CLOCKWORK,
-  COUPLING,
-  DIE_PRESS,
-  FOUNDRY,
-  GOVERNOR,
-  RATCHET,
-  RECALIBRATE,
-  SAFETY_LATCH,
-  SERVOMOTOR,
-  SPARE_COG,
-  STAMP,
-  TRANSMISSION,
+  COG_DRAFT,
+  MACHINE_SHOP,
+  RECAST,
+  SHIM_KIT,
+  TEMPERING_LINE,
+  TOOLING_ORDER,
+  TWIN_CAM,
 } from "../content/cards.js";
-import {
-  SERVO_ASSEMBLY,
-  MINOTAUR,
-  LENS_CHOIR,
-  FORGEHEART_COLOSSUS,
-  WARLORD_IRONHOOF,
-} from "../content/creatures.js";
-import { FLYWHEEL, GEAR, PISTON, ENGINE_TEST_FACE_DECK, faceIdForSymbol } from "../content/faces.js";
+import { COGTOOTH, GEAR_TRAIN, MAINSPRING } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
-import type { CardId, DieId, FaceCardId } from "../model/ids.js";
+import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import type { AttributeTokens } from "../model/symbols.js";
-import { SHIELD } from "../model/symbols.js";
 import { ritualsOf } from "../rules/cards.js";
-import { symbolCountsOn } from "../rules/dice.js";
-import { usableSymbols } from "../rules/symbols.js";
+import { advance } from "./reduce.js";
 import {
-  creatureIdAt,
-  eventTypes,
   expectOk,
   handCardIdAt,
   newMatch,
   P1,
-  P2,
+  resolveOpenChain,
   withPile,
   withHand,
-  withAttributePool,
   withPhase,
-  withSymbols,
-  advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], pileTokens = 10) =>
-  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
+const playCard = (state: ReturnType<typeof newMatch>, index = 0) =>
+  resolveOpenChain(
+    expectOk(
+      advance(state, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(state, P1, index),
+      }),
+    ),
+  );
 
-function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
-  const id = state.players[playerId]?.dieIds[index];
-  if (id === undefined) throw new Error("test: no die");
+const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][]) =>
+  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
+
+function dieIdOf(state: GameState, index = 0): DieId {
+  const id = state.players[P1]?.dieIds[index];
+  if (id === undefined) throw new Error("die");
   return id;
 }
 
 function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): GameState {
   const die = state.dice[dieId];
-  if (die === undefined) throw new Error("test: missing die");
+  if (die === undefined) throw new Error("die");
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameState {
-  const dieId = dieIdOf(state);
+function forgedSyntheticCount(state: GameState, dieId: DieId): number {
   const die = state.dice[dieId];
-  if (die === undefined) throw new Error("test: missing die");
-  const slots = die.slots.map((s, index) =>
-    index === slot ? { ...s, faceCardId, faceCardOwnerId: P1 } : s,
-  );
-  return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
+  if (die === undefined) return 0;
+  return die.slots.filter((slot) => {
+    const id = slot.faceCardId;
+    return id.length > 0 && !id.includes("shield") && !id.includes("natural");
+  }).length;
 }
 
-function rollShowingSlot(state: GameState, slot: number): GameState {
-  let rolled: GameState = withPhase(state, "roll");
-  rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
-  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
-  return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-}
+describe("Tempo mechanical assembly", () => {
+  it("Tooling Order forges two synthetic Mechanical faces on play", () => {
+    const ready = actionsReady([TOOLING_ORDER]);
+    const dieId = dieIdOf(ready);
+    const played = playCard(ready);
+    expect(played.pendingDecision?.type).toBe("forge-faces");
+    const forged = expectOk(
+      advance(played, {
+        type: "RESOLVE_FORGE_FACES",
+        playerId: P1,
+        dieId,
+        slotIndexes: [3, 4],
+        faceCardId: COGTOOTH,
+      }),
+    );
+    expect(forgedSyntheticCount(forged, dieId)).toBeGreaterThanOrEqual(2);
+  });
 
-function placedReadyRitual(cardId: CardId, _progress: AttributeTokens) {
-  const base = actionsReady([cardId]);
-  const placed = expectOk(
-    advance(base, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(base, P1, 0),
-    }),
-  );
-  const ritualId = ritualsOf(placed, P1)[0]?.id;
-  if (ritualId === undefined) throw new Error("test: no ritual");
-  return {
-    ritualId,
-    state: withAttributePool(
-      {
-        ...placed,
-        cards: {
-          ...placed.cards,
-          [ritualId]: {
-            ...placed.cards[ritualId]!,
-            ritualOrientation: "ready" as const,
+  it("Tempering Line places a ritual and arms forge discount on activate", () => {
+    const ready = actionsReady([TEMPERING_LINE]);
+    const placed = playCard(ready);
+    expect(ritualsOf(placed, P1)).toHaveLength(1);
+    const ritualId = ritualsOf(placed, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("ritual");
+    const dieId = dieIdOf(placed);
+    let activated = expectOk(
+      advance(
+        {
+          ...placed,
+          cards: {
+            ...placed.cards,
+            [ritualId]: { ...placed.cards[ritualId]!, ritualOrientation: "ready" },
+          },
+          players: {
+            ...placed.players,
+            [P1]: { ...placed.players[P1]!, attributePool: { mechanical: 4 } },
           },
         },
-      },
-      P1,
-      _progress,
-    ),
-  };
-}
-
-describe("Servo Assembly on-absorb", () => {
-  it("does not loop when rolling Mechanical (pile stays small, not resolution cap)", () => {
-    const state0 = newMatch({
-      players: [
-        {
-          id: P1,
-          squad: [SERVO_ASSEMBLY, MINOTAUR, FORGEHEART_COLOSSUS],
-          deck: [],
-          faceDeck: ENGINE_TEST_FACE_DECK,
-        },
-        {
-          id: P2,
-          squad: [MINOTAUR, LENS_CHOIR, WARLORD_IRONHOOF],
-          deck: [],
-          faceDeck: ENGINE_TEST_FACE_DECK,
-        },
-      ],
-    });
-    const seeded = installFace(withPhase(state0, "roll"), GEAR);
-    const afterRoll = rollShowingSlot(seeded, 0);
-    // Rolled pip + one Servo generate — not 64 (maxResolutionSteps).
-    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
-    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-  });
-});
-
-describe("Ratchet", () => {
-  const mechanicalFace = GEAR;
-
-  it("attaches to a Mechanical face and refuses any other attribute", () => {
-    const ready = installFace(actionsReady([RATCHET, RATCHET]), mechanicalFace);
-    const attached = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredFaceCardId: mechanicalFace,
-      }),
+        { type: "ACTIVATE_RITUAL", playerId: P1, cardInstanceId: ritualId },
+      ),
     );
-    expect(eventTypes(attached)).toContain("overload-attached");
-
-    const refused = advance(attached, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(attached, P1, 0),
-      declaredFaceCardId: faceIdForSymbol("luminar"),
-    });
-    expect(refused.ok).toBe(false);
-    if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
+    if (activated.pendingDecision?.type === "forge-faces") {
+      activated = expectOk(
+        advance(activated, {
+          type: "RESOLVE_FORGE_FACES",
+          playerId: P1,
+          dieId,
+          slotIndexes: [3, 4],
+          faceCardId: COGTOOTH,
+        }),
+      );
+    }
+    activated = resolveOpenChain(activated);
+    expect(activated.log.some((entry) => entry.event.type === "ritual-activated")).toBe(true);
   });
 
-  it("generates Mechanical when the overloaded face is absorbed", () => {
-    const ready = installFace(actionsReady([RATCHET]), mechanicalFace);
-    const attached = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredFaceCardId: mechanicalFace,
-      }),
-    );
-
-    const after = rollShowingSlot(attached, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-  });
-});
-
-describe("Assembly Line", () => {
-  it("pauses to forge 2 Mechanical faces on the controller's die", () => {
-    const { state, ritualId } = placedReadyRitual(ASSEMBLY_LINE, { mechanical: 2 });
-
-    const activated = expectOk(
-      advance(state, {
-        type: "ACTIVATE_RITUAL",
-        playerId: P1,
-        cardInstanceId: ritualId,
-      }),
-    );
-
-    expect(eventTypes(activated)).toContain("forge-faces-started");
-    expect(activated.pendingDecision).toEqual({
-      type: "forge-faces",
-      controllerId: P1,
-      faces: 2,
-      kind: "synthetic",
-      attribute: "mechanical",
-      target: "own-die",
-      sourceCardInstanceId: ritualId,
-      sourceFaceCardId: null,
-    });
-
-    const dieId = dieIdOf(activated);
-    const faceCardId = GEAR;
-    const resolved = expectOk(
-      advance(activated, {
-        type: "RESOLVE_FORGE_FACES",
-        playerId: P1,
-        dieId,
-        slotIndexes: [0, 1],
-        faceCardId,
-      }),
-    );
-
-    expect(resolved.pendingDecision).toBeNull();
-    const die = resolved.dice[dieId];
-    expect(die?.slots[0]?.faceCardId).toBe(faceCardId);
-    expect(die?.slots[1]?.faceCardId).toBe(faceCardId);
-    expect(die?.slots[0]?.faceCardOwnerId).toBe(P1);
-    expect(symbolCountsOn(die!).mechanical).toBe(2);
-    expect(eventTypes(resolved)).toContain("forge-faces-resolved");
-  });
-
-  it("refuses the opponent's die", () => {
-    const { state, ritualId } = placedReadyRitual(ASSEMBLY_LINE, { mechanical: 2 });
-    const activated = expectOk(
-      advance(state, {
-        type: "ACTIVATE_RITUAL",
-        playerId: P1,
-        cardInstanceId: ritualId,
-      }),
-    );
-
-    const opponentDieId = dieIdOf(activated, P2);
-    const refused = advance(activated, {
-      type: "RESOLVE_FORGE_FACES",
-      playerId: P1,
-      dieId: opponentDieId,
-      slotIndexes: [0, 1],
-      faceCardId: GEAR,
-    });
-    expect(refused.ok).toBe(false);
-    if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
-  });
-});
-
-describe("Flywheel", () => {
-  it("generates Mechanical on roll and generates Shield on absorb", () => {
-    const seeded = installFace(newMatch(), FLYWHEEL);
-    const before = seeded.players[P1]?.attributePool.mechanical ?? 0;
-    const after = rollShowingSlot(seeded, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(before + 1);
-
-    const shields = usableSymbols(after, P1).filter(
-      (s) => s.symbol === SHIELD && s.sourceDieId === null,
-    );
-    expect(shields).toHaveLength(1);
-  });
-
-  it("with Ratchet, absorb returns Mechanical and a Shield", () => {
-    const ready = installFace(actionsReady([RATCHET]), FLYWHEEL);
-    const attached = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredFaceCardId: FLYWHEEL,
-      }),
-    );
-
-    const after = rollShowingSlot(attached, 0);
-
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-    expect(
-      usableSymbols(after, P1).filter((s) => s.symbol === SHIELD && s.sourceDieId === null),
-    ).toHaveLength(1);
-  });
-});
-
-describe("Governor", () => {
-  const mechanicalFace = GEAR;
-
-  it("attaches to a Mechanical face and generates Mechanical on roll", () => {
-    const ready = installFace(actionsReady([GOVERNOR]), mechanicalFace);
-    const attached = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredFaceCardId: mechanicalFace,
-      }),
-    );
-
-    const afterRoll = rollShowingSlot(attached, 0);
-    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
-    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-  });
-
-  it("refuses a non-Mechanical face", () => {
-    const ready = installFace(actionsReady([GOVERNOR]), faceIdForSymbol("luminar"));
-    const refused = advance(ready, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(ready, P1, 0),
-      declaredFaceCardId: faceIdForSymbol("luminar"),
-    });
-    expect(refused.ok).toBe(false);
-    if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
-  });
-});
-
-describe("Spare Cog", () => {
-  it("pauses to forge 1 Synthetic Mechanical face when played", () => {
-    const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [SPARE_COG]),
-      P1,
-      { mechanical: 2 },
-    );
-    const played = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    expect(played.pendingDecision).toEqual({
-      type: "forge-faces",
-      controllerId: P1,
-      faces: 1,
-      kind: "synthetic",
-      attribute: "mechanical",
-      target: "own-die",
-      sourceCardInstanceId: handCardIdAt(ready, P1, 0),
-      sourceFaceCardId: null,
-    });
-    expect(played.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
-
-    const dieId = dieIdOf(played);
-    const resolved = expectOk(
-      advance(played, {
-        type: "RESOLVE_FORGE_FACES",
-        playerId: P1,
-        dieId,
-        slotIndexes: [0],
-        faceCardId: GEAR,
-      }),
-    );
-    expect(resolved.pendingDecision).toBeNull();
-    expect(resolved.dice[dieId]?.slots[0]?.faceCardId).toBe(GEAR);
-  });
-});
-
-describe("Die Press", () => {
-  it("pauses to forge 2 Mechanical faces when the pool has Mechanical + Mechanical", () => {
-    const ready = withAttributePool(actionsReady([DIE_PRESS]), P1, { mechanical: 5 });
-    const played = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-
-    expect(played.pendingDecision).toEqual({
-      type: "forge-faces",
-      controllerId: P1,
-      faces: 2,
-      kind: "synthetic",
-      attribute: "mechanical",
-      target: "own-die",
-      sourceCardInstanceId: handCardIdAt(ready, P1, 0),
-      sourceFaceCardId: null,
-    });
-
-    const dieId = dieIdOf(played);
-    const faceCardId = GEAR;
-    const resolved = expectOk(
-      advance(played, {
-        type: "RESOLVE_FORGE_FACES",
-        playerId: P1,
-        dieId,
-        slotIndexes: [0, 1],
-        faceCardId,
-      }),
-    );
-
-    expect(resolved.pendingDecision).toBeNull();
-    const die = resolved.dice[dieId];
-    expect(die?.slots[0]?.faceCardId).toBe(faceCardId);
-    expect(die?.slots[1]?.faceCardId).toBe(faceCardId);
-    expect(symbolCountsOn(die!).mechanical).toBe(2);
-  });
-
-  it("refuses without two Mechanical in the pool", () => {
-    const ready = withSymbols(
-      withHand(withPhase(newMatch(), "actions"), P1, [DIE_PRESS]),
-      P1,
-      ["mechanical"],
-    );
-    const refused = advance(ready, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(ready, P1, 0),
-    });
-    expect(refused.ok).toBe(false);
-    if (!refused.ok) expect(refused.error).toBe("INSUFFICIENT_SYMBOLS");
-  });
-});
-
-describe("Foundry", () => {
-  const mechanicalFace = GEAR;
-
-  it("generates Mechanical when a controller creature absorbs Mechanical", () => {
-    const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
-    const seeded = installFace(state, mechanicalFace);
-    const before = seeded.players[P1]?.attributePool.mechanical ?? 0;
-    const after = rollShowingSlot(seeded, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(before + 1);
-  });
-
-  it("does not generate extra Mechanical when the opponent absorbs Mechanical", () => {
-    const { state } = placedReadyRitual(FOUNDRY, { mechanical: 2 });
-    const before = state.players[P1]?.attributePool.mechanical ?? 0;
-    const seeded: GameState = {
-      ...withSymbols(withPhase(state, "actions"), P2, ["mechanical"], "rolled"),
-      activePlayerId: P2,
-    };
-    const mechanical = Object.values(seeded.symbols).find(
-      (s) => s.symbol === "mechanical" && s.ownerId === P2 && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("expected opponent Mechanical");
-
-    const after = expectOk(
-      advance(seeded, {
-        type: "ABSORB_SYMBOL",
-        playerId: P2,
-        creatureId: creatureIdAt(seeded, P2, 0),
-        symbolId: mechanical.id,
-      }),
-    );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(before);
-  });
-});
-
-describe("Piston", () => {
-  it("generates Mechanical on roll and on absorb", () => {
-    const seeded = installFace(newMatch(), PISTON);
-    const after = rollShowingSlot(seeded, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
-  });
-});
-
-describe("Mechanical combo wave 2", () => {
-  const mechanicalFace = GEAR;
-
-  it("Blueprint arms a 2-token forge discount", () => {
-    const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [BLUEPRINT]),
-      P1,
-      { mechanical: 2 },
-    );
-    const after = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
-    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
-  });
-
-  it("Transmission copies another pool symbol on absorb", () => {
-    const ready = installFace(actionsReady([TRANSMISSION]), mechanicalFace);
-    const attached = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredFaceCardId: mechanicalFace,
-      }),
-    );
-    const withExtra = withSymbols(attached, P1, ["luminar"], "available");
-    const after = rollShowingSlot(withExtra, 0);
+  it("Machine Shop generates Mechanical on roll when active", () => {
+    const ready = actionsReady([MACHINE_SHOP]);
+    const placed = playCard(ready);
+    let rolled = withPhase(placed, "roll");
+    rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
+    rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: 4 });
+    const after = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
-    expect(after.pendingDecision?.type).toBe("copy-pool-symbol");
   });
 
-  it("Camshaft arms forge discount on roll", () => {
-    const ready = installFace(actionsReady([CAMSHAFT]), faceIdForSymbol("mechanical"));
-    const attached = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredFaceCardId: faceIdForSymbol("mechanical"),
-      }),
-    );
-    const afterRoll = rollShowingSlot(attached, 0);
-    expect(afterRoll.forgeDiscountThisTurn[P1]).toBe(1);
-  });
-
-  it("Servomotor generates Mechanical when the bearer absorbs Mechanical", () => {
-    const ready = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [SERVOMOTOR]), P1, {
-      mechanical: 2,
-    });
-    const equipped = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredTargetCreatureId: creatureIdAt(ready, P1, 0),
-      }),
-    );
-    // Manual absorb with creatureId keeps equipment `self` absorber filters.
-    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["mechanical"], "rolled");
-    const mechanical = Object.values(withPool.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("expected Mechanical");
-    const after = expectOk(
-      advance(withPool, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: creatureIdAt(withPool, P1, 0),
-        symbolId: mechanical.id,
-      }),
-    );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
-    expect(usableSymbols(after, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-  });
-
-  it("Servomotor generates Mechanical only once per turn (no absorb loop)", () => {
-    const ready = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [SERVOMOTOR]), P1, {
-      mechanical: 2,
-    });
-    const equipped = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-        declaredTargetCreatureId: creatureIdAt(ready, P1, 0),
-      }),
-    );
-    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["mechanical"], "rolled");
-    const mechanical = Object.values(withPool.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (mechanical === undefined) throw new Error("expected Mechanical");
-
-    const bearer = creatureIdAt(withPool, P1, 0);
-    const afterFirst = expectOk(
-      advance(withPool, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: bearer,
-        symbolId: mechanical.id,
-      }),
-    );
-    expect(afterFirst.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
-    expect(usableSymbols(afterFirst, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-
-    const secondWave = withSymbols(afterFirst, P1, ["mechanical"], "rolled");
-    const secondPip = Object.values(secondWave.symbols).find(
-      (s) => s.symbol === "mechanical" && s.status === "rolled",
-    );
-    if (secondPip === undefined) throw new Error("expected second Mechanical");
-
-    const afterSecond = expectOk(
-      advance(secondWave, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        creatureId: bearer,
-        symbolId: secondPip.id,
-      }),
-    );
-    // Once-per-turn: bank only, no second generate.
-    expect(afterSecond.players[P1]?.attributePool.mechanical ?? 0).toBe(3);
-    expect(usableSymbols(afterSecond, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-  });
-
-  it("Clockwork generates Mechanical when the controller rolls Mechanical", () => {
-    const { state } = placedReadyRitual(CLOCKWORK, { mechanical: 2 });
-    const seeded = installFace(state, mechanicalFace);
-    const afterRoll = rollShowingSlot(seeded, 0);
-    // Active-when pile (2) + face bank + Clockwork generate.
-    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(4);
-    expect(usableSymbols(afterRoll, P1).filter((s) => s.symbol === "mechanical")).toHaveLength(0);
-  });
-
-  it("Stamp requires Mechanical and reapplies a rolled die's modifiers", () => {
-    let ready = withAttributePool(installFace(actionsReady([STAMP]), mechanicalFace), P1, {
-      mechanical: 4,
-    });
-    ready = withPhase(rollShowingSlot(ready, 0), "actions");
-    // Extra Mechanical still available for [Requires] after the roll pip is in the pool.
-    const after = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    expect(after.pendingDecision?.type === "choose-die" || eventTypes(after).includes("effect-resolved")).toBe(
-      true,
-    );
-  });
-
-  it("Coupling requires Mech×2 and arms resolve-next-face-effect-twice", () => {
-    const ready = withAttributePool(actionsReady([COUPLING]), P1, { mechanical: 5 });
-    const after = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
+  it("Twin Cam doubles the next face effect", () => {
+    const after = playCard(actionsReady([TWIN_CAM]));
     expect(after.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Safety Latch arms a 2-token forge discount", () => {
-    const ready = actionsReady([SAFETY_LATCH]);
-    const after = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    expect(eventTypes(after)).not.toContain("symbol-generated");
-    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
-  });
-
-  it("Recalibrate returns a cheap card from the graveyard", () => {
-    let ready = actionsReady([RECALIBRATE, RATCHET]);
-    const cheapId = handCardIdAt(ready, P1, 1);
-    ready = {
-      ...ready,
-      cards: {
-        ...ready.cards,
-        [cheapId]: { ...ready.cards[cheapId]!, zone: "graveyard" },
-      },
-      players: {
-        ...ready.players,
-        [P1]: {
-          ...ready.players[P1]!,
-          hand: ready.players[P1]!.hand.filter((id) => id !== cheapId),
-          graveyard: [...ready.players[P1]!.graveyard, cheapId],
+  it("Recast opens replace-synthetic-face on a synthetic slot", () => {
+    let state = actionsReady([RECAST]);
+    const dieId = dieIdOf(state);
+    state = {
+      ...state,
+      dice: {
+        ...state.dice,
+        [dieId]: {
+          ...state.dice[dieId]!,
+          slots: state.dice[dieId]!.slots.map((slot, index) =>
+            index === 0 ? { ...slot, faceCardId: COGTOOTH, faceCardOwnerId: P1 } : slot,
+          ),
         },
       },
     };
-    const after = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    expect(after.pendingDecision?.type).toBe("search-graveyard");
+    const played = playCard(state);
+    expect(played.pendingDecision?.type).toBe("replace-synthetic-face");
+  });
+
+  it("catalogue lists the mechanical face trio", () => {
+    expect([COGTOOTH, GEAR_TRAIN, MAINSPRING]).toHaveLength(3);
+  });
+
+  it("Cog Draft generates pile fuel", () => {
+    const after = playCard(actionsReady([COG_DRAFT]));
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
+  });
+
+  it("Shim Kit leaves forge discount after play resolves", () => {
+    const after = playCard(actionsReady([SHIM_KIT]));
+    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
   });
 });

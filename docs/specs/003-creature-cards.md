@@ -75,6 +75,26 @@ opponent-die `[Forge]`.
 Deck-designer owns which (if any) constructed alternatives replace builtin
 legendaries in loadout lists.
 
+## Catalogue (current — Mechanical + Luminar Tempo squad)
+
+> **Catalogue reset (2026-08-29).** `src/server/content/creatures/` holds only
+> the three creatures below. Every `## Catalogue (…)` section *after* this one
+> names **retired print with no catalogue entry** — design reference only.
+
+All three attacks pay the pile: basics `discards`, specials `requires` **and**
+`discards`. Standing passives are `on-absorb` with `absorberRelation: "ally"`
+so player-pile banking (not creature tokens) drives the engine.
+
+| Id | Name | Life | Attributes | Passive | Basic | Special |
+|---|---|---|---|---|---|---|
+| `creature-torque-wright` | Torque Wright | 14 | Mechanical | On absorb Mechanical, once per turn: `[Discount 1]` forge. | Crank — `[Strike 2]` | Retool — `[Strike 2]`. `[Reforge]` a Synthetic Mechanical face. |
+| `creature-dawn-warden` | Dawn Warden | 13 | Luminar | On absorb Luminar, once per turn: `[Mark 1 Shield]` on your most damaged creature. | Kindle — `[Strike 2]`. `[Heal 1]`. | Vigil — `[Strike 2]`. `[Mark 2 Shield]` on an allied creature you choose. |
+| `creature-lodestar-artificer` | Lodestar Artificer **(legendary)** | 22 | Mechanical / Luminar | On absorb Mechanical, once per turn: `[Empower 1]` this creature. | Drive Shaft — `[Strike 3]` | Overdrive — `[Strike 3]`. `[Stamp]`. |
+
+Lodestar Artificer is the win target: the passive converts pile banking into
+pressure on the **enemy** legendary, and Overdrive rebuilds the die on the same
+swing — the Tempo loop of pile → forge → pressure in one body.
+
 ## Catalogue (Slow game test)
 
 HP is a **uniform +4** over the original Figma Slow print (playtest 2026-08-14:
