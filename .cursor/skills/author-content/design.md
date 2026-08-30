@@ -176,14 +176,18 @@ cards” JSON is gone; do not recreate Spend/Generate glue.
 Header `playCost` is a `SymbolRequirement` burned from the **attribute pile**.
 Match live JSON (`card-shim-kit.json`: `"playCost": { "mechanical": 2 }`).
 
-| When | What burns |
+| When | Engine |
 |---|---|
-| Play (instant / reaction / equip / overload) | Header `playCost` |
+| Play (instant / reaction / equip / overload) | Header `playCost` (`[Spend]`; burns) |
 | Ritual **place** | Header `playCost` |
-| Ritual **activate** extra | `ritual.spend` (optional). Gate is `ritual.activeWhen` |
-| Instant extra burn | `effect.requires` (prints `[Spend]`) |
+| Ritual **activate** extra | `ritual.spend` (optional, `[Spend]`). Gate is `ritual.activeWhen` (`[Active when]`; no burn) |
+| Play-region / instant **gate** | `effect.requires` — prints `[Requires]`; **does not burn** |
 | **Natural** forge | Nothing from `playCost` |
 | **Synthetic** forge | Header `playCost` (`docs/RULEBOOK.md` §8) |
+
+Extra burn that is not a gate → raise header `playCost`. Do not mint
+`effect.spend`. `[Discount]` cuts header Spend only. Fuel grammar:
+[attribute-pile.md](attribute-pile.md).
 
 **Default printed cost is 2+ pile tokens.** `playCost` totaling 1 token is a
 last-resort niche tool, not the cheap-support band. Cheaper plays come from
@@ -212,8 +216,11 @@ vocabulary exists. If a card needs a resource plus, use `[Generate]`,
   hook names (see standardize-card-effects).
 - Ritual gate: stored in `ritual.activeWhen`; UI prints `[Active when: …]`.
   Do not also put that line in `rulesText`.
-- Instant extra pile cost: `effect.requires`; UI prints `[Spend: …]` (it burns).
-  Attack gates print `[Requires: …]` on `AttackDefinition.requires`.
+- Play-region gate: `effect.requires`; UI prints `[Requires: …]` (hold, no
+  burn). Twin Cam / Tooling Order / Die Punch / Recast stay gates. Extra
+  burn that is not a gate → raise `playCost`. Attack specials: `requires`
+  = `[Requires]` gate, `discards` = `[Spend]` — do not fake a gate in
+  `discards`. See [attribute-pile.md](attribute-pile.md).
 
 ## Anti-patterns
 

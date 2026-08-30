@@ -75,9 +75,11 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    jargon.
 8. **Printed 1-token `playCost` is exceptional.** Do not author `playCost`
    totaling 1 token as cheap cycle. Prefer 2+ of the card’s attribute.
-   Instant extra burn: `effect.requires`. Ritual extra burn: `ritual.spend`.
-   Natural forge does not burn `playCost`; synthetic forge does. Cheaper
-   plays come from `[Discount]`, not a roster of 1-token cards.
+   Gates are `[Requires]` only (`effect.requires` holds; it does not burn).
+   Extra burn: raise `playCost`, `ritual.spend`, or attack `discards` — see
+   [attribute-pile.md](attribute-pile.md). `[Discount]` cuts header Spend
+   only. Natural forge does not burn `playCost`; synthetic forge does.
+   Cheaper plays come from `[Discount]`, not a roster of 1-token cards.
 9. **Do not clone the last card.** Audit live JSON first. Default
    `forge.faces: 1` + own-attribute Natural/Synthetic with no rider is a
    sticker, not a design. `[Spend] X, [Generate] Y` is not a bridge.

@@ -1,7 +1,6 @@
 import { getCard } from "../../content/cards.js";
 import { getCreatureDefinition } from "../../content/creatures.js";
 import { getFaceCard } from "../../content/faces.js";
-import { FACE_SLOTS_PER_DIE } from "../../model/dice.js";
 import type { GameError } from "../../model/errors.js";
 import { NATURAL_CONVERT_SYMBOLS } from "../../model/effects.js";
 import type {
@@ -771,48 +770,6 @@ function isLegalSplitTarget(
     if (front.length > 0) return false;
   }
   return true;
-}
-
-export function resolveOptionalReroll(
-  draft: Draft,
-  playerId: PlayerId,
-  accept: boolean,
-  rng: RNG,
-): GameError | null {
-  const pending = draft.pendingDecision;
-  if (pending === null || pending.type !== "optional-reroll") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "PENDING_DECISION";
-
-  const dieId = pending.dieId;
-  const originalFace = pending.faceCardId;
-  draft.pendingDecision = null;
-
-  if (!accept) return resumeAfterEffectPause(draft);
-
-  const die = draft.dice[dieId];
-  if (die === undefined) return "UNKNOWN_ENTITY";
-  const slotIndex = rng.integer(0, FACE_SLOTS_PER_DIE - 1);
-  patchDie(draft, dieId, { rolledSlotIndex: slotIndex });
-  const slot = draft.dice[dieId]?.slots[slotIndex];
-  const face = slot === undefined ? undefined : getFaceCard(slot.faceCardId);
-  if (face !== undefined) {
-    emit(draft, { type: "die-rolled", dieId, slotIndex, symbol: face.symbol });
-    for (const symbol of Object.values(draft.symbols)) {
-      if (symbol.sourceDieId !== dieId) continue;
-      if (symbol.status !== "rolled" && symbol.status !== "available") continue;
-      draft.symbols[symbol.id] = { ...symbol, symbol: face.symbol };
-      break;
-    }
-  }
-
-  if (slot?.faceCardId === originalFace && pending.sameFaceAllyDamage !== undefined) {
-    const allies = livingCreaturesOf(draft, playerId);
-    for (const ally of allies.slice(0, 2)) {
-      dealDamage(draft, ally.id, pending.sameFaceAllyDamage);
-    }
-  }
-
-  return resumeAfterEffectPause(draft);
 }
 
 export function resolveChooseDieSlot(

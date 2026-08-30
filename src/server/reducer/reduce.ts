@@ -8,6 +8,7 @@ import { attack } from "./commands/attack.js";
 import { forgeCard, activateFace } from "./commands/forge.js";
 import { playCard } from "./commands/playCard.js";
 import { passPriority } from "./commands/priority.js";
+import { resolveOptionalReroll } from "./commands/reroll.js";
 import { retainDie, rollDice } from "./commands/rollDice.js";
 import { activateRitual } from "./commands/ritual.js";
 import { advancePhase, endTurn } from "./commands/turn.js";
@@ -29,7 +30,6 @@ import {
   resolveMindControl,
   resolveOptionalBonusAttack,
   resolveOptionalOvercharge,
-  resolveOptionalReroll,
   resolvePeekDeck,
   resolveReplayGraveyard,
   resolveReplaceSyntheticFace,

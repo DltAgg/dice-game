@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, DIE_PUNCH } from "../content/cards.js";
+import { COG_DRAFT, DIE_PUNCH, TWIN_CAM } from "../content/cards.js";
 import { TEMPO_DECK } from "../content/loadouts/index.js";
 import { handOf, graveyardOf } from "../rules/cards.js";
 import {
@@ -9,6 +9,7 @@ import {
   newMatch,
   P1,
   P2,
+  withAttributePool,
   withPile,
   withHand,
   withPhase,
@@ -131,6 +132,77 @@ describe("play cost and the pile", () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("NOT_ACTIVE_PLAYER");
+  });
+
+  it("Twin Cam play with exactly 2 Mechanical holds the gate and spends the header once", () => {
+    const state = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [TWIN_CAM]),
+      P1,
+      { mechanical: 2 },
+    );
+
+    const result = advance(state, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(state, P1, 0),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+  });
+
+  it("Twin Cam Requires gate does not burn a third Mechanical", () => {
+    const state = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [TWIN_CAM]),
+      P1,
+      { mechanical: 3 },
+    );
+
+    const result = advance(state, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(state, P1, 0),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.players[P1]?.attributePool.mechanical).toBe(1);
+  });
+
+  it("Twin Cam play fails when the Requires gate is unmet", () => {
+    const state = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [TWIN_CAM]),
+      P1,
+      { mechanical: 1 },
+    );
+
+    const result = advance(state, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(state, P1, 0),
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("INSUFFICIENT_SYMBOLS");
+  });
+
+  it("Die Punch spends header 2 Mechanical, not an extra Requires pip", () => {
+    const state = withAttributePool(
+      withHand(withPhase(newMatch(), "actions"), P1, [DIE_PUNCH]),
+      P1,
+      { mechanical: 2 },
+    );
+
+    const result = advance(state, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(state, P1, 0),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
   });
 });
 

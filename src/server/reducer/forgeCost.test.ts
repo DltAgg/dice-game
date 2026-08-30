@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, MENDING_LIGHT } from "../content/cards.js";
+import { COG_DRAFT, MENDING_LIGHT, TWIN_CAM } from "../content/cards.js";
 import type { PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { advance } from "./reduce.js";
@@ -69,8 +69,33 @@ describe("FORGE_CARD pile cost", () => {
     const forged = expectOk(
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
-    expect(forged.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
+    expect(forged.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
     expect(forged.forgeDiscountThisTurn[P1]).toBeUndefined();
+  });
+
+  it("Twin Cam with Discount 1 spends the last Mechanical (no synthetic-bank refund)", () => {
+    const ready = withForgeDiscount(
+      withAttributePool(
+        withHand(withPhase(newMatch(), "actions"), P1, [TWIN_CAM]),
+        P1,
+        { mechanical: 1 },
+      ),
+      P1,
+      1,
+    );
+    const dieId = ready.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("expected a die");
+    const forged = expectOk(
+      advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
+    );
+    expect(forged.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    expect(
+      forged.log.some(
+        (entry) =>
+          entry.event.type === "attribute-tokens-discarded" &&
+          entry.event.discarded.mechanical === 1,
+      ),
+    ).toBe(true);
   });
 
   it("natural forge leaves forgeDiscountThisTurn for a later synthetic", () => {
@@ -93,6 +118,6 @@ describe("FORGE_CARD pile cost", () => {
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
     );
     expect(state.forgeDiscountThisTurn[P1]).toBeUndefined();
-    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
+    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
   });
 });

@@ -190,6 +190,12 @@ export function forgeCard(
     return "INVALID_TARGET";
   }
 
+  // Capture before payForgeCost consumes forgeDiscountThisTurn. Discount and
+  // the immediate synthetic bank do not stack on the same install: otherwise a
+  // 2-cost Mechanical synthetic with Discount 1 and 1 pip nets zero (spend 1,
+  // bank 1) and looks like the pile was never charged.
+  const consumedForgeDiscount =
+    forge.kind === "synthetic" && (draft.forgeDiscountThisTurn[playerId] ?? 0) > 0;
   const forgeCostError = payForgeCost(draft, playerId, definition);
   if (forgeCostError !== null) return forgeCostError;
 
@@ -215,7 +221,7 @@ export function forgeCard(
   // Own-die synthetic FORGE_CARD: immediate pile bank per face (DECIDED
   // 2026-08-29). Natural and opponent-die forge stay install + draw (+ yield
   // when own-die) only.
-  if (forge.target === "own-die" && forge.kind === "synthetic") {
+  if (forge.target === "own-die" && forge.kind === "synthetic" && !consumedForgeDiscount) {
     bankSyntheticForgeReward(draft, playerId, faceCardId, slotIndexes.length);
   }
 

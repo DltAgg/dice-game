@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
+import { SCHOLARS_LIEN, TWIN_CAM, getCard } from "../content/cards.js";
 import { TEMPO_SQUAD } from "../content/creatures.js";
 import type { CardDefinition } from "../model/cards.js";
-import { asCardId, type PlayerId } from "../model/ids.js";
+import { asCardId, asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { newMatch, P1, P2, withAttributePool } from "../testing/scenario.js";
+import {
+  creatureAt,
+  newMatch,
+  P1,
+  P2,
+  withAttributePool,
+} from "../testing/scenario.js";
 import { canAffordForge, canAffordPlay } from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
@@ -105,4 +112,53 @@ describe("canAffordPlay / canAffordForge", () => {
     expect(canAffordPlay(mechanical, P1, card)).toBe(false);
     expect(canAffordPlay(luminar, P1, card)).toBe(false);
   });
+
+  it("Twin Cam gate is unmet even when Discount 1 would cover the header", () => {
+    const twinCam = getCard(TWIN_CAM);
+    if (twinCam === undefined) throw new Error("Twin Cam");
+    const state = withEquipped(
+      withAttributePool(newMatch(), P1, { mechanical: 1 }),
+      P1,
+      SCHOLARS_LIEN,
+    );
+    // Scholar's Lien discounts Arcane Instants; keep Twin Cam costs/requires.
+    const discounted = { ...twinCam, attribute: "arcane" as const };
+    expect(canAffordPlay(state, P1, discounted)).toBe(false);
+    expect(
+      canAffordForge(withForgeDiscount(state, P1, 1), P1, twinCam),
+    ).toBe(true);
+  });
 });
+
+function withEquipped(state: GameState, playerId: PlayerId, cardId: CardId): GameState {
+  const creature = creatureAt(state, playerId, 0);
+  const instanceId = asCardInstanceId(`test-equip-${cardId}`);
+  const player = state.players[playerId];
+  if (player === undefined) throw new Error("player");
+  return {
+    ...state,
+    cards: {
+      ...state.cards,
+      [instanceId]: {
+        id: instanceId,
+        cardId,
+        ownerId: playerId,
+        zone: "equipment",
+        attachedToCreatureId: creature.id,
+        attachedToFaceCardId: null,
+        ritualOrientation: null,
+      },
+    },
+    creatures: {
+      ...state.creatures,
+      [creature.id]: {
+        ...creature,
+        equipmentIds: [...creature.equipmentIds, instanceId],
+      },
+    },
+    players: {
+      ...state.players,
+      [playerId]: { ...player, equipment: [...player.equipment, instanceId] },
+    },
+  };
+}

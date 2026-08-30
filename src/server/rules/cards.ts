@@ -18,7 +18,7 @@ import {
   discountedRequirementNeed,
   matchingPlayCostDiscounts,
 } from "./discounts.js";
-import { isNonEmptyRequirement } from "./tokens.js";
+import { cardPlayIsFuelled, isNonEmptyRequirement } from "./tokens.js";
 
 /**
  * Reading helpers for the card zones, and the one rule forging has to enforce
@@ -132,24 +132,32 @@ export const playCostTotal = (definition: CardDefinition): number =>
   definition.playCost === undefined ? 0 : requirementTotal(definition.playCost);
 
 /**
- * Whether the player can pay the header pile cost to play / attach this card
- * (mirrors `payHeaderCost` with play-cost discounts applied). Free / empty
- * cost → true. Does not mutate state.
+ * Whether the player can meet the `[Requires]` gate and pay discounted header
+ * `[Spend]` to play this card (same pile, not additive — like `attackIsFuelled`).
+ * `[Discount]` cuts header Spend only, never the gate. Forge ignores the gate
+ * (`canAffordForge`). Does not mutate state.
  */
 export function canAffordPlay(
   state: GameState,
   playerId: PlayerId,
   definition: CardDefinition,
 ): boolean {
-  const base = definition.playCost;
-  if (base === undefined || !isNonEmptyRequirement(base)) return true;
-  const matches = matchingPlayCostDiscounts(state, playerId, definition);
-  const discount = matches.reduce((sum, match) => sum + match.amount, 0);
-  const need = discountedRequirementNeed(base, discount);
-  if (need <= 0) return true;
   const pile = state.players[playerId]?.attributePool ?? {};
   const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
-  return canAffordUnderCaps(pile, base, need, wildcards);
+  const base = definition.playCost;
+  const hasSpend = isNonEmptyRequirement(base);
+  const matches = hasSpend ? matchingPlayCostDiscounts(state, playerId, definition) : [];
+  const discount = matches.reduce((sum, match) => sum + match.amount, 0);
+  const spendNeed = hasSpend ? discountedRequirementNeed(base, discount) : 0;
+  const requires = definition.effect?.requires;
+  return cardPlayIsFuelled(
+    pile,
+    {
+      ...(isNonEmptyRequirement(requires) ? { requires } : {}),
+      ...(hasSpend ? { spend: base, spendNeed } : {}),
+    },
+    wildcards,
+  );
 }
 
 /**

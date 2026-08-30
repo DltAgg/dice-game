@@ -67,17 +67,25 @@ export function payForgeCost(
 /* ------------------------------------------------------------ shared --- */
 
 /**
- * Card `[Spend]` path (print on Instant/Equipment/… as `region.requires` /
- * `effect.requires`). Burns from the attribute pile; Resonance wildcards cover
- * shortfall. Name kept for call-site stability — this is Spend, not a Requires
- * gate (attack `requires` / ritual `activeWhen` are gates).
+ * Card `[Requires]` gate (`effect.requires`). The pile must hold it; tokens
+ * are not burned. Resonance wildcards cover shortfall only (same as attack
+ * `requires`). Header `[Spend]` is `payHeaderCost`. Name kept for call-site
+ * stability.
  */
 export function payCardRequires(
   draft: Draft,
   playerId: PlayerId,
   requirement: SymbolRequirement,
 ): GameError | null {
-  return payPileSpend(draft, playerId, requirement);
+  if (!isNonEmptyRequirement(requirement)) return null;
+  const player = draft.players[playerId];
+  if (player === undefined) return "UNKNOWN_ENTITY";
+  const pile = player.attributePool;
+  const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
+  const shortfall = pileRequirementShortfall(pile, requirement);
+  if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
+  if (shortfall > 0) consumeRequirementWildcards(draft, playerId, shortfall);
+  return null;
 }
 
 /**

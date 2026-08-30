@@ -75,6 +75,7 @@ export function playCard(
     if (target.defeated) return "CREATURE_DEFEATED";
   }
 
+  // `[Requires]` gate first (hold, not burn), then header `[Spend]`.
   if (region.requires !== undefined) {
     const requiresError = payCardRequires(draft, playerId, region.requires);
     if (requiresError !== null) return requiresError;

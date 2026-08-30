@@ -112,6 +112,15 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    `[Spend]` from your pile (and meet `[Requires]` gates), attack, play, forge,
    activate a **ready** ritual, retain/release dice, or end the turn.
 
+`[Reroll]` rolls **that one die** again during **actions** (you do not return
+to the roll phase). The **new** showing face fires On roll (and overloads on
+that face), then a usable attribute pip **auto-banks** (On absorb). The
+previous roll of that die is not undone: a token already in your pile stays,
+and an unabsorbed leftover (Shield, locked) is replaced by the new result
+rather than sitting beside it. `[Stamp]` is different: it re-fires the
+**current** showing face’s On roll and overloads without changing the face or
+generating a new pip.
+
 There is no dedicated absorb phase and no leftover-rolled flip. The turn
 pool mainly holds **Shield** (and locked/unusable pips). Attributes live in
 your pile.
@@ -179,9 +188,14 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   `1 Arcane + 1 Corruption` with discount 1 needs **one** token: either Arcane
   or Corruption. Play-cost discounts do not apply to forge; forge has a
   separate one-turn discount from some gear that applies only to synthetic
-  forge (natural is already free and does not consume that discount).
-- Attacks, optional effect `[Spend]` lines, and ritual Active-when / activate
-  burns also draw from the pile (see §6).
+  forge (natural is already free and does not consume that discount). A
+  synthetic install that **consumes** that forge discount does **not** also
+  get the immediate synthetic forge bank (§11) — Discount 1 on a 2-cost
+  Mechanical synthetic with 1 pip in the pile spends that pip.
+  `[Discount]` never reduces a `[Requires]` gate.
+- Attacks (`[Requires]` gate and `[Spend]` discards) and ritual Active-when /
+  activate Spend also use the pile (see §6). A card may print header
+  `[Spend]` **and** a `[Requires]` gate; tokens stay unless Spend also names them.
 - Reactions pay pile costs during a reaction window.
 - Turn end is voluntary (`END_TURN`) or from effects that say so.
 
@@ -193,15 +207,17 @@ During actions (or as a legal reaction — §15):
 
 | Kind | What happens |
 |---|---|
-| Instant | Pays header `[Spend]` (and any extra `[Spend]` on the effect), then resolves. |
+| Instant | Must meet any `[Requires]` gate, then pays header `[Spend]`, then resolves. |
 | Reaction | From hand, only while a reaction window is open and the response is legal. |
 | Equipment | Attaches to a creature; stays until destroyed or the host dies. Friendly vs opponent targeting is printed. |
 | Overload | Attaches to a **face card** (shared definition), not a physical die slot. Capacity is per face card. |
 | Ritual | Enters the engine area (see §10). |
 
 `[Spend]` burns from your **attribute pile** (wildcards may cover shortfall).
-`[Requires]` on an attack is a gate: the pile must hold it (wildcards may
-cover), and those tokens stay unless a `[Spend]` also names them.
+`[Requires]` on an attack **or on a card’s effect** is a gate: the pile must
+hold it (wildcards may cover), and those tokens stay unless a `[Spend]` also
+names them. `[Discount]` reduces header Spend only — never the Requires gate.
+Forge does not check a card’s effect `[Requires]` (play vs forge is exclusive).
 
 Discard-from-hand effects **draw first**, then the player **names** which
 cards to discard. The engine never auto-discards the front of the hand.
@@ -260,8 +276,9 @@ re-sets it.
 
 **Synthetic forge bank:** On a successful own-die **synthetic** `FORGE_CARD`
 only, you also bank one of the forged face’s attribute into your pile **per
-face installed** (immediate payoff). Natural forge stays free install + draw +
-yield with no immediate bank.
+face installed** (immediate payoff), **unless this install consumed a forge
+discount**. Natural forge stays free install + draw + yield with no immediate
+bank. Discount and the bank do not stack on the same card.
 
 Some faces **stay locked** on a slot for printed turns after install
 (forge-lock). That is not retain.

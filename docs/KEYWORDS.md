@@ -152,7 +152,7 @@ These are not tokens.
 | `[Stamp]` | Re-fire a showing face’s On roll and its overloads. Mechanical exclusive. |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
 | `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
-| `[Reroll]` | You may reroll a rolled die |
+| `[Reroll]` | Roll that die again during actions: On roll fires for the **new** face, then a usable attribute auto-banks (On absorb). Not `[Stamp]` (same showing face, no new pip). |
 | `[Retain]` | Keep a retainable die across the next roll |
 
 <!--
@@ -182,7 +182,7 @@ These are not effect replacements.
 | `[Forge]` | Play/forge region **and** the install verb |
 | `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent) |
 | `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
-| `[Spend: …]` | Burn from your attribute pile (attack `discards`, card extra cost, ritual activate) |
+| `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate) |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | `On roll:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…” |

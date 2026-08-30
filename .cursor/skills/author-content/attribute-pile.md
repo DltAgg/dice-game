@@ -20,14 +20,16 @@ owned creature** (grants Shield counters — not pile fuel).
 
 ## Print vocabulary
 
-| Printed | Engine | Notes |
+| Printed | Engine | Burns? |
 |---|---|---|
-| Absorb (attribute) | Bank into **your attribute pile** | Keep prefix **`On absorb:`** — do not invent `On bank:` |
-| `[Requires: …]` | Gate vs pile (must hold; not spent) | Attacks, some card gates |
-| `[Spend: …]` | Burn from pile | Header `playCost` (play + synthetic forge), `effect.requires`, ritual `spend`, attack `discards` |
-| `[Active when: …]` | Ritual gate vs **owner’s** pile | Not in `rulesText` — UI prints it from `ritual.activeWhen` |
-| Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Often equals `activeWhen` on high-swing instants |
-| Header `playCost` | `CardDefinition.playCost` | Place/play cost. Natural forge does **not** burn it; synthetic forge does (`docs/RULEBOOK.md` §8) |
+| Absorb (attribute) | Bank into **your attribute pile** | No — keep prefix **`On absorb:`** (do not invent `On bank:`) |
+| `[Requires: …]` | Attack `requires` **and** card `effect.requires` | **No** — hold-gate (must hold). Spec `002` Twin Cam / Tooling Order / Die Punch / Recast stay gates |
+| `[Active when: …]` | Ritual `activeWhen` | **No** — owner’s pile. Not in `rulesText`; UI prints it from the field |
+| `[Spend: …]` | Header `playCost` (play + synthetic forge), attack `discards`, ritual `spend` | **Yes** |
+| Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Yes — often equals `activeWhen` on high-swing instants |
+| Header `playCost` | `CardDefinition.playCost` | Yes on play/place and synthetic forge; natural forge does **not** burn it (`docs/RULEBOOK.md` §8) |
+
+**Gates are never Spend.** `[Discount]` cuts header Spend only — never a Requires / Active-when gate. Extra burn that is not a gate → raise `playCost`, or use `ritual.spend` / attack `discards`. Do **not** mint `effect.spend` or a new opcode. Attack specials: `requires` = gate, `discards` = Spend — do not put a dual-color mix in `discards` as a fake gate.
 
 Wildcards (`[Resonance]`) may cover shortfall on gates and spends for the turn.
 
@@ -78,7 +80,7 @@ passives. Proactive Luminar mitigation → `[Mark N Shield]` / `[Heal]`.
 
 ## Authoring checklist (card-designer)
 
-- [ ] Header / attack costs use pile grammar (`requires` gate vs `discards` spend)
+- [ ] Header / attack costs use pile grammar (`requires` / `effect.requires` = `[Requires]` gate; `playCost` / `discards` / `ritual.spend` = `[Spend]`)
 - [ ] Ritual `activeWhen` is a pile gate; add `spend` only when activate should burn fuel
 - [ ] `On absorb:` clauses assume **bank**, not “put token on creature”
 - [ ] Equipment / continuous ritual `on-absorb` uses `ally` when the clause is “when you bank”

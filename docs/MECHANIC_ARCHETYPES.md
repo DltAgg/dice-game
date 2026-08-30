@@ -82,6 +82,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-11](#ma-11-discount) | `[Discount]` | Next forge / play | Tempo, Support, Control sequencing | Makes 2+ cards playable; not Aggro refund | `HOME` |
 | [MA-12](#ma-12-combat-reforge-stamp) | `[Reforge]` / `[Stamp]` on a **paid** attack | Creature special | Tempo (Mechanical exclusive) | Engine during combat, not pile refund | `HOME` |
 | [MA-13](#ma-13-legendary-strike-band) | Strike 3 vs Strike 2 on legendaries | Creature attack | Tempo hits harder; Control chips | Tempo closer vs Control engine | `WATCH` |
+| [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
 
 ---
 
@@ -279,6 +280,30 @@ closer (MA-06) or as Aggro combat (MA-04). Special still **spends** Darkness.
 
 **Status:** `WATCH`. Revisit if Control still feels like beatdown after MA-01.
 
+### MA-14 Discount plus synthetic bank
+
+**Mechanic:** `[Discount N]` forge (Torque Wright / Shim Kit / …) on the same
+own-die synthetic `FORGE_CARD` as the immediate synthetic forge bank
+(`forgeBankPerFace`).
+
+**Window:** One `FORGE_CARD` install.
+
+**Intended home:** Tempo gets **either** the cheaper header **or** the bank,
+not both on the same card.
+
+**Playtest feel:** Twin Cam (`playCost` 2 Mechanical, synthetic forge) with
+Torque Wright Discount 1 and 1 Mechanical in the pile: spend 1, bank 1, pile
+unchanged — looked like the token was never spent (same-action refund, MA-01
+shape).
+
+**Why:** Discounted remainder equals the bank of the same attribute.
+
+**Evidence:** 2026-08-30 playtest · Tempo · `card-twin-cam` +
+`creature-torque-wright`.
+
+**Status:** `RETARGETED` · engine: skip synthetic bank when the install
+consumed `forgeDiscountThisTurn`. Undiscounted synthetic still banks.
+
 ---
 
 ## By archetype (what to print / what leaks)
@@ -286,7 +311,7 @@ closer (MA-06) or as Aggro combat (MA-04). Special still **spends** Darkness.
 | Archetype | Signature feel to protect | Do not steal |
 |---|---|---|
 | Aggro | Paid efficient attacks, `[Frenzy]`, Martial movement | Control mill/Insight as the **plan**; Burn ticks; infinite refunds are a **leak even here** if they erase the spend decision |
-| Tempo | Forge sequencing, on-roll generate, Reforge/Stamp, Discount | Attack refunds (MA-01); Control stall as the win |
+| Tempo | Forge sequencing, on-roll generate, Reforge/Stamp, Discount | Attack refunds (MA-01); Discount + synthetic bank on the same install (MA-14); Control stall as the win |
 | Control | Insight, mill, negate, engine damage, **attacks that tax pile** | MA-01 refunds; Frenzy; Toxin/Corruption DoT; Strike-3 beatstick legendary |
 | Combo | Chains, Frenzy, Prevent reactions, Mechanical reconstruction | Cheap Aggro without a combo; Control “no clock” |
 | Burn | Toxin + Corruption ticks onto the legendary | Creature beatdown; Arcane negate as the identity |

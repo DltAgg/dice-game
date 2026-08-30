@@ -9,6 +9,7 @@ import {
   formatRequirementLine,
   formatTypeLine,
 } from "./cardText.js";
+import { TWIN_CAM, getCard } from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
   const attribute = overrides.attribute ?? "arcane";
@@ -91,14 +92,20 @@ describe("English card printing", () => {
     expect(formatRequirementLine(card)).toBe("[Active when: Arcane + Corruption]");
   });
 
-  it("prints Spend for non-ritual pile costs", () => {
+  it("prints Requires for non-ritual pile gates", () => {
     const card = exampleCard({
       type: "instant",
       attribute: "mechanical",
       effect: { requires: { mechanical: 2 }, effects: [] },
     });
     expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
-    expect(formatRequirementLine(card)).toBe("[Spend: 2 x Mechanical]");
+    expect(formatRequirementLine(card)).toBe("[Requires: 2 x Mechanical]");
+  });
+
+  it("prints Twin Cam effect.requires as a Requires gate", () => {
+    const twinCam = getCard(TWIN_CAM);
+    if (twinCam === undefined) throw new Error("Twin Cam");
+    expect(formatRequirementLine(twinCam)).toBe("[Requires: 2 x Mechanical]");
   });
 
   it("prints None when the card forges only", () => {
@@ -148,7 +155,7 @@ describe("English card printing", () => {
     expect(formatInspectEffectLines(card)).toEqual(["[Strike 2]."]);
     expect(formatEffectRegion(card)).toEqual([
       "[Spend: Arcane]",
-      "[Spend: 2 x Mechanical]",
+      "[Requires: 2 x Mechanical]",
       "[Strike 2].",
     ]);
   });

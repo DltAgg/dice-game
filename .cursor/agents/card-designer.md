@@ -110,10 +110,14 @@ the user explicitly asks for tooling.
 - Incomplete print: keep accurate English; leave `effect` / `abilities` / `onRoll` empty or omit; row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently (no Barrier→shields, no dropped absorb lines).
 - Do not grow `EffectDefinition`, `StandingTrigger`, `GameAction`, `reduce()`, `resolution.ts`, or `triggers.ts` yourself.
 - Do not add copies to builtin decks unless asked — or unless **deck-designer** is driving the list change.
-- Header cost is `playCost` (pile). Instant extra burn is `effect.requires`
-  (`[Spend]`). Ritual extra burn is `ritual.spend`. Natural forge does not
-  burn `playCost`; synthetic forge does (`docs/RULEBOOK.md` §8). Printed `?`
-  uses a fixed `playCost` for now — true variable pile pay is DEFERRED.
+- Header cost is `playCost` (pile, `[Spend]`). Gates are `[Requires]` only
+  (`effect.requires` and attack `requires` hold; they do not burn). Rituals
+  keep `[Active when]`; extra activate burn is `ritual.spend`. Extra burn
+  that is not a gate → raise `playCost` or use `ritual.spend` / attack
+  `discards` — do not mint `effect.spend`. Fuel grammar: `attribute-pile.md`.
+  Natural forge does not burn `playCost`; synthetic forge does
+  (`docs/RULEBOOK.md` §8). Printed `?` uses a fixed `playCost` for now —
+  true variable pile pay is DEFERRED.
 - Opponent-die forges: **controller** names the face from **their** pool.
 - **Print voice is the holder**, not the original owner. `rulesText` is
   written for the player who currently has the card on their field. **you**
