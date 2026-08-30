@@ -2,11 +2,11 @@ import { ALL_BUILTIN_LOADOUTS } from "@server";
 import { DECK_SCHEMA_VERSION, type SavedDeck, type SavedDeckId } from "./types.js";
 
 export const TEMPO_SAVED_DECK_ID: SavedDeckId = "deck-tempo";
+export const CONTROL_SAVED_DECK_ID: SavedDeckId = "deck-control";
 
-/** Temporary exported-name aliases while Tempo is the only builtin loadout. */
+/** Temporary exported-name aliases while the other builtin loadouts are rebuilt. */
 export const PROTOTYPE_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
 export const AGGRO_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
-export const CONTROL_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
 export const COMBO_MECHANICAL_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
 export const BURN_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
 
@@ -44,7 +44,7 @@ export function buildAggroSavedDeck(): SavedDeck {
 export const buildPrototypeSavedDeck = buildAggroSavedDeck;
 
 export function buildControlSavedDeck(): SavedDeck {
-  return savedDeckFromLoadout(TEMPO_SAVED_DECK_ID);
+  return savedDeckFromLoadout(CONTROL_SAVED_DECK_ID);
 }
 
 export function buildTempoSavedDeck(): SavedDeck {
@@ -59,7 +59,7 @@ export function buildBurnSavedDeck(): SavedDeck {
   return savedDeckFromLoadout(TEMPO_SAVED_DECK_ID);
 }
 
-/** Builtin loadouts in catalogue order (currently Tempo only). */
+/** Builtin loadouts in catalogue order. */
 export function buildBuiltinDecks(): readonly SavedDeck[] {
   return ALL_BUILTIN_LOADOUTS.map((loadout) => savedDeckFromLoadout(loadout.id));
 }

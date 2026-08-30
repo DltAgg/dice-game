@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  CONTROL_SQUAD,
   PROTOTYPE_DECK,
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
@@ -570,7 +569,6 @@ describe("guest reconnection over fake transport", () => {
     expect(onboardBox.state).toEqual(hostBox.state);
     const p2 = onboardBox.state!.players[P2]!;
     expect(onboardBox.state!.creatures[p2.creatureIds[0]!]!.definitionId).toBe(PROTOTYPE_SQUAD[0]);
-    expect(PROTOTYPE_SQUAD[0]).toBe(CONTROL_SQUAD[0]);
 
     hostSession.destroy();
     secondClient.destroy();

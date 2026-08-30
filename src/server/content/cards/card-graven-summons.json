@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-graven-summons",
+  "name": "Graven Summons",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Recall 2].",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 1,
+      "darkness": 1
+    },
+    "spend": {
+      "darkness": 2
+    },
+    "effects": [
+      {
+        "type": "search-graveyard",
+        "amount": 2
+      }
+    ]
+  }
+}

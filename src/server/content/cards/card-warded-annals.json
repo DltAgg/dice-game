@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-warded-annals",
+  "name": "Warded Annals",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Arcane, once per turn: [Mark 1 Shield] on this creature.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "arcane"
+        ],
+        "absorberRelation": "ally",
+        "oncePerTurn": true,
+        "effects": [
+          {
+            "type": "grant-shield",
+            "amount": 1,
+            "target": {
+              "kind": "source-creature"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -17,6 +17,7 @@ import {
   ALL_BUILTIN_LOADOUTS,
   BURN_LOADOUT,
   COMBO_MECHANICAL_LOADOUT,
+  CONTROL_DECK,
   CONTROL_LOADOUT,
   PROTOTYPE_DECK,
   TEMPO_DECK,
@@ -46,13 +47,20 @@ describe("validateTacticsDeck", () => {
     }
   });
 
-  it("keeps retired builtin names as aliases of Tempo", () => {
+  it("keeps unreconstructed builtin names as aliases of Tempo", () => {
     expect(AGGRO_LOADOUT).toBe(TEMPO_LOADOUT);
-    expect(CONTROL_LOADOUT).toBe(TEMPO_LOADOUT);
     expect(COMBO_MECHANICAL_LOADOUT).toBe(TEMPO_LOADOUT);
     expect(BURN_LOADOUT).toBe(TEMPO_LOADOUT);
     expect(PROTOTYPE_DECK).toBe(TEMPO_DECK);
-    expect(ALL_BUILTIN_LOADOUTS).toEqual([TEMPO_LOADOUT]);
+    expect(ALL_BUILTIN_LOADOUTS).toEqual([TEMPO_LOADOUT, CONTROL_LOADOUT]);
+  });
+
+  it("accepts the exact 40-card Arcane and Darkness Control deck", () => {
+    expect(CONTROL_DECK).toHaveLength(40);
+    expect(validateTacticsDeck(CONTROL_DECK, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
+    for (const id of CONTROL_DECK) {
+      expect(["arcane", "darkness"], id).toContain(getCard(id)?.attribute);
+    }
   });
 
   it("refuses a deck below the minimum", () => {
@@ -94,6 +102,10 @@ describe("validateTacticsDeck", () => {
 describe("validateLoadout", () => {
   it("accepts the Tempo loadout", () => {
     expect(validateLoadout(TEMPO_LOADOUT, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
+  });
+
+  it("accepts the Control loadout", () => {
+    expect(validateLoadout(CONTROL_LOADOUT, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
   });
 
   it("refuses a short squad", () => {

@@ -64,13 +64,16 @@ capacity 1. Shield is not an attribute and is not Natural — `On absorb Natural
 ### Specials (Synthetic) — current catalogue
 
 > **Catalogue reset (2026-08-29).** `src/server/content/faces/` holds eight
-> `face-natural-*`, `face-untyped-shield`, and the six named synthetics below.
-> Any special named later in this spec is **retired print with no catalogue
-> entry** — design reference only.
+> `face-natural-*`, `face-untyped-shield`, and the twelve named synthetics
+> below. Any special named later in this spec is **retired print with no
+> catalogue entry** — design reference only.
 
-Six Tempo synthetics, three Mechanical and three Luminar, `maxOverloads: 2`, no
-forge restriction. Every `On absorb` line prints `once per turn`
-(`onAbsorbPrintPolicy.test.ts`).
+Twelve synthetics — three per archetype attribute (Mechanical, Luminar, Arcane,
+Darkness) so a 12-card face deck can run either pair inside the 3-per-attribute
+cap. All `maxOverloads: 2`, no forge restriction. Every `On absorb` line prints
+`once per turn` (`onAbsorbPrintPolicy.test.ts`).
+
+**Tempo (Mechanical + Luminar)**
 
 | Id | Name | Symbol | On roll | On absorb |
 |---|---|---|---|---|
@@ -81,9 +84,23 @@ forge restriction. Every `On absorb` line prints `once per turn`
 | `face-synthetic-lucent-choir` | Lucent Choir | Luminar | `[Generate 1 Luminar]` | `[Empower 1]` on an allied creature |
 | `face-synthetic-sunward-lens` | Sunward Lens | Luminar | `[Heal 1]` on your most damaged creature | `[Generate 1 Mechanical]` |
 
+**Control (Arcane + Darkness)**
+
+| Id | Name | Symbol | On roll | On absorb |
+|---|---|---|---|---|
+| `face-synthetic-augur-glass` | Augur Glass | Arcane | `[Generate 1 Arcane]` | `[Insight 2]` |
+| `face-synthetic-sigil-flare` | Sigil Flare | Arcane | `[Strike 1]` | `[Draw 1]` |
+| `face-synthetic-ward-lattice` | Ward Lattice | Arcane | `[Insight 1]` | `[Mark 1 Shield]` on an allied creature you choose |
+| `face-synthetic-gloomwell` | Gloomwell | Darkness | `[Generate 1 Darkness]` | your opponent `[Mill 2]` |
+| `face-synthetic-ossuary` | Ossuary | Darkness | your opponent `[Mill 1]` | `[Recall 1]` that costs 2 or less |
+| `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | you may `[Discard 1]`; if you do, `[Strike 2]` | `[Generate 1 Darkness]` |
+
 Both halves of every face are live, which is the absorb-vs-pool decision Tempo
-is built on: roll for pool pressure, or absorb to bank and rebuild. No
-`[Prevent]` appears on any face — that stays reaction-exclusive.
+is built on: roll for pool pressure, or absorb to bank and rebuild. Control
+faces make the same trade on a slower axis — Sigil Flare and Pyre of Names are
+the face-sourced damage Control needs to threaten the enemy legendary, and
+Ossuary turns the mill plan back into cards. No `[Prevent]` appears on any
+face — that stays reaction-exclusive.
 
 **Authoring:** only **named specials**. Never add blank/generic identity
 synthetics (`face-synthetic-martial`, `face-synthetic-corruption`, Forged

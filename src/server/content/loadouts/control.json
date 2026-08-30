@@ -1,0 +1,126 @@
+{
+  "$schema": "../schema/loadout.schema.json",
+  "id": "deck-control",
+  "name": "Control",
+  "squad": [
+    "creature-riftscribe-adept",
+    "creature-gravemarrow-shade",
+    "creature-duskthrone-oracle"
+  ],
+  "deckCounts": [
+    {
+      "cardId": "card-thread-the-weave",
+      "copies": 3
+    },
+    {
+      "cardId": "card-oracles-margin",
+      "copies": 2
+    },
+    {
+      "cardId": "card-glyph-of-refusal",
+      "copies": 2
+    },
+    {
+      "cardId": "card-sealbind-rune",
+      "copies": 2
+    },
+    {
+      "cardId": "card-unwrite",
+      "copies": 1
+    },
+    {
+      "cardId": "card-riftmark",
+      "copies": 2
+    },
+    {
+      "cardId": "card-scholars-lien",
+      "copies": 2
+    },
+    {
+      "cardId": "card-runewatch-lens",
+      "copies": 2
+    },
+    {
+      "cardId": "card-archivists-summons",
+      "copies": 1
+    },
+    {
+      "cardId": "card-foresight-tithe",
+      "copies": 1
+    },
+    {
+      "cardId": "card-warded-annals",
+      "copies": 1
+    },
+    {
+      "cardId": "card-hollow-tide",
+      "copies": 3
+    },
+    {
+      "cardId": "card-gloomdraft",
+      "copies": 3
+    },
+    {
+      "cardId": "card-pall-of-ash",
+      "copies": 2
+    },
+    {
+      "cardId": "card-sable-tithe",
+      "copies": 2
+    },
+    {
+      "cardId": "card-swallowed-whole",
+      "copies": 2
+    },
+    {
+      "cardId": "card-cinerary-locket",
+      "copies": 2
+    },
+    {
+      "cardId": "card-nightglass-rune",
+      "copies": 2
+    },
+    {
+      "cardId": "card-graven-summons",
+      "copies": 1
+    },
+    {
+      "cardId": "card-echo-of-the-buried",
+      "copies": 1
+    },
+    {
+      "cardId": "card-nightmarrow-pact",
+      "copies": 1
+    },
+    {
+      "cardId": "card-lightless-verdict",
+      "copies": 2
+    }
+  ],
+  "faceDeck": [
+    "face-synthetic-augur-glass",
+    "face-synthetic-sigil-flare",
+    "face-synthetic-ward-lattice",
+    "face-synthetic-gloomwell",
+    "face-synthetic-ossuary",
+    "face-synthetic-pyre-of-names"
+  ],
+  "startingDice": [
+    [
+      "face-natural-arcane",
+      "face-natural-arcane",
+      "face-natural-arcane",
+      "face-natural-darkness",
+      "face-natural-darkness",
+      "face-untyped-shield"
+    ],
+    [
+      "face-natural-arcane",
+      "face-natural-arcane",
+      "face-natural-darkness",
+      "face-natural-darkness",
+      "face-natural-darkness",
+      "face-untyped-shield"
+    ]
+  ]
+}

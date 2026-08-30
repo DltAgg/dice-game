@@ -35,11 +35,20 @@ const TEMPO_SQUAD_IDS = [
   "creature-lodestar-artificer",
 ] as const;
 
+const CONTROL_SQUAD_IDS = [
+  "creature-riftscribe-adept",
+  "creature-gravemarrow-shade",
+  "creature-duskthrone-oracle",
+] as const;
+
 describe("memory DeckRepository", () => {
-  it("lists the Tempo builtin loadout", () => {
+  it("lists the Tempo and Control builtin loadouts", () => {
     const repo = createMemoryDeckRepository();
     const listed = repo.list();
-    expect(listed.map((deck) => deck.id)).toEqual([TEMPO_SAVED_DECK_ID]);
+    expect(listed.map((deck) => deck.id)).toEqual([
+      TEMPO_SAVED_DECK_ID,
+      CONTROL_SAVED_DECK_ID,
+    ]);
     expect(listed.every((deck) => deck.builtin === true)).toBe(true);
   });
 
@@ -53,7 +62,7 @@ describe("memory DeckRepository", () => {
       startingDice: PROTOTYPE_STARTING_DICE,
     });
     expect(repo.get(saved.id)?.name).toBe("My deck");
-    expect(repo.list()).toHaveLength(2);
+    expect(repo.list()).toHaveLength(3);
   });
 
   it("persists an illegal draft for later editing", () => {
@@ -71,7 +80,8 @@ describe("memory DeckRepository", () => {
   it("cannot delete builtins", () => {
     const repo = createMemoryDeckRepository();
     expect(repo.remove(TEMPO_SAVED_DECK_ID)).toBe(false);
-    expect(repo.list()).toHaveLength(1);
+    expect(repo.remove(CONTROL_SAVED_DECK_ID)).toBe(false);
+    expect(repo.list()).toHaveLength(2);
   });
 });
 
@@ -82,12 +92,13 @@ describe("builtin loadouts", () => {
     }
   });
 
-  it("aliases Control to the Tempo squad and pools", () => {
-    expect(CONTROL_SQUAD).toEqual(TEMPO_SQUAD);
-    expect(CONTROL_SQUAD).toEqual(TEMPO_SQUAD_IDS);
-    expect(CONTROL_DECK).toEqual(TEMPO_DECK);
-    expect(CONTROL_FACE_DECK).toEqual(TEMPO_FACE_DECK);
+  it("fields the Control Arcane/Darkness trio and legal pools", () => {
+    expect(CONTROL_SQUAD).toEqual(CONTROL_SQUAD_IDS);
+    expect(CONTROL_SQUAD).not.toEqual(TEMPO_SQUAD);
+    expect(CONTROL_DECK).not.toEqual(TEMPO_DECK);
+    expect(CONTROL_FACE_DECK).not.toEqual(TEMPO_FACE_DECK);
     expect(CONTROL_DECK.length).toBe(40);
+    expect(CONTROL_FACE_DECK).toHaveLength(6);
   });
 
   it("fields the tempo Mech/Luminar trio and a legal tactics/face pool", () => {
@@ -113,9 +124,9 @@ describe("builtin loadouts", () => {
     expect(new Set(BURN_FACE_DECK).size).toBe(BURN_FACE_DECK.length);
   });
 
-  it("keeps legacy saved-deck ids pointed at Tempo", () => {
+  it("keeps unreconstructed saved-deck ids pointed at Tempo", () => {
     expect(PROTOTYPE_SAVED_DECK_ID).toBe(TEMPO_SAVED_DECK_ID);
-    expect(CONTROL_SAVED_DECK_ID).toBe(TEMPO_SAVED_DECK_ID);
+    expect(CONTROL_SAVED_DECK_ID).toBe("deck-control");
     expect(COMBO_MECHANICAL_SAVED_DECK_ID).toBe(TEMPO_SAVED_DECK_ID);
     expect(BURN_SAVED_DECK_ID).toBe(TEMPO_SAVED_DECK_ID);
   });

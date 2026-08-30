@@ -6,7 +6,8 @@ import { catalogueFromModules } from "./catalogueLoader.js";
 /**
  * Header play/forge costs use the attribute pile (`playCost`). See docs/RULEBOOK.md §6.
  *
- * Current catalogue is the Mechanical + Luminar Tempo set (spec `002`).
+ * Current catalogue holds two archetype sets (spec `002`): the Mechanical +
+ * Luminar Tempo package and the Arcane + Darkness Control package.
  */
 
 /* ------------------------------------------------------- Mechanical --- */
@@ -36,6 +37,34 @@ export const BEACON_ARRAY: CardId = asCardId("card-beacon-array");
 export const CHOIRLIGHT: CardId = asCardId("card-choirlight");
 export const RADIANT_ACCORD: CardId = asCardId("card-radiant-accord");
 export const DAYBREAK_RITE: CardId = asCardId("card-daybreak-rite");
+
+/* ----------------------------------------------------------- Arcane --- */
+
+export const THREAD_THE_WEAVE: CardId = asCardId("card-thread-the-weave");
+export const ORACLES_MARGIN: CardId = asCardId("card-oracles-margin");
+export const GLYPH_OF_REFUSAL: CardId = asCardId("card-glyph-of-refusal");
+export const SEALBIND_RUNE: CardId = asCardId("card-sealbind-rune");
+export const UNWRITE: CardId = asCardId("card-unwrite");
+export const RIFTMARK: CardId = asCardId("card-riftmark");
+export const SCHOLARS_LIEN: CardId = asCardId("card-scholars-lien");
+export const RUNEWATCH_LENS: CardId = asCardId("card-runewatch-lens");
+export const ARCHIVISTS_SUMMONS: CardId = asCardId("card-archivists-summons");
+export const FORESIGHT_TITHE: CardId = asCardId("card-foresight-tithe");
+export const WARDED_ANNALS: CardId = asCardId("card-warded-annals");
+
+/* --------------------------------------------------------- Darkness --- */
+
+export const HOLLOW_TIDE: CardId = asCardId("card-hollow-tide");
+export const GLOOMDRAFT: CardId = asCardId("card-gloomdraft");
+export const PALL_OF_ASH: CardId = asCardId("card-pall-of-ash");
+export const SABLE_TITHE: CardId = asCardId("card-sable-tithe");
+export const SWALLOWED_WHOLE: CardId = asCardId("card-swallowed-whole");
+export const CINERARY_LOCKET: CardId = asCardId("card-cinerary-locket");
+export const NIGHTGLASS_RUNE: CardId = asCardId("card-nightglass-rune");
+export const GRAVEN_SUMMONS: CardId = asCardId("card-graven-summons");
+export const ECHO_OF_THE_BURIED: CardId = asCardId("card-echo-of-the-buried");
+export const NIGHTMARROW_PACT: CardId = asCardId("card-nightmarrow-pact");
+export const LIGHTLESS_VERDICT: CardId = asCardId("card-lightless-verdict");
 
 const cardModules = import.meta.glob("./cards/card-*.json", { eager: true, import: "default" });
 const loadedCards = catalogueFromModules<CardDefinition>(cardModules, cardOrder);

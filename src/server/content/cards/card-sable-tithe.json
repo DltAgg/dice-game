@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-sable-tithe",
+  "name": "Sable Tithe",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Your opponent [Mill 2]. [Strike 2].",
+  "effect": {
+    "effects": [
+      {
+        "type": "mill-cards",
+        "amount": 2,
+        "player": "opponent"
+      },
+      {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

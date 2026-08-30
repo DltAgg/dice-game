@@ -19,7 +19,9 @@ import { catalogueFromModules } from "./catalogueLoader.js";
  * engine can resolve — leave the other array empty and keep the deferred
  * clause in `rulesText` (see DEFERRED_CATALOGUE).
  *
- * The current special pool is the Mechanical + Luminar Tempo set.
+ * The special pool holds the Mechanical + Luminar Tempo set and the
+ * Arcane + Darkness Control set (3 named specials per attribute, so a face
+ * deck can run either pair inside the 3-per-attribute cap).
  */
 
 export const naturalFaceId = (attribute: Attribute): FaceCardId =>
@@ -60,6 +62,16 @@ export const MAINSPRING: FaceCardId = asFaceCardId("face-synthetic-mainspring");
 export const HALO_LAMP: FaceCardId = asFaceCardId("face-synthetic-halo-lamp");
 export const LUCENT_CHOIR: FaceCardId = asFaceCardId("face-synthetic-lucent-choir");
 export const SUNWARD_LENS: FaceCardId = asFaceCardId("face-synthetic-sunward-lens");
+
+/** Arcane: deck-top manipulation and face-sourced chip damage. */
+export const AUGUR_GLASS: FaceCardId = asFaceCardId("face-synthetic-augur-glass");
+export const SIGIL_FLARE: FaceCardId = asFaceCardId("face-synthetic-sigil-flare");
+export const WARD_LATTICE: FaceCardId = asFaceCardId("face-synthetic-ward-lattice");
+
+/** Darkness: mill ticks and graveyard value. */
+export const GLOOMWELL: FaceCardId = asFaceCardId("face-synthetic-gloomwell");
+export const OSSUARY: FaceCardId = asFaceCardId("face-synthetic-ossuary");
+export const PYRE_OF_NAMES: FaceCardId = asFaceCardId("face-synthetic-pyre-of-names");
 
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);

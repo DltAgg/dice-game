@@ -5,12 +5,16 @@ import { isNonEmptyRequirement } from "../rules/tokens.js";
 import {
   ALL_CREATURES,
   DAWN_WARDEN,
+  DUSKTHRONE_ORACLE,
+  GRAVEMARROW_SHADE,
   LODESTAR_ARTIFICER,
+  RIFTSCRIBE_ADEPT,
   TORQUE_WRIGHT,
 } from "./creatures.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine, primaryAttribute } from "./creatureText.js";
 
 const TEMPO_IDS = [DAWN_WARDEN, LODESTAR_ARTIFICER, TORQUE_WRIGHT] as const;
+const CONTROL_IDS = [RIFTSCRIBE_ADEPT, GRAVEMARROW_SHADE, DUSKTHRONE_ORACLE] as const;
 
 describe("creature catalogue", () => {
   it("includes the Mechanical / Luminar Tempo squad", () => {
@@ -20,9 +24,19 @@ describe("creature catalogue", () => {
     }
   });
 
+  it("includes the Arcane / Darkness Control squad", () => {
+    const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
+    for (const id of CONTROL_IDS) {
+      expect(ids.has(id)).toBe(true);
+    }
+  });
+
   it("catalogues exactly one legendary win target per attribute pairing", () => {
     const legendaries = ALL_CREATURES.filter((creature) => creature.legendary === true);
-    expect(legendaries.map((creature) => creature.id)).toEqual([LODESTAR_ARTIFICER]);
+    expect(legendaries.map((creature) => creature.id)).toEqual([
+      LODESTAR_ARTIFICER,
+      DUSKTHRONE_ORACLE,
+    ]);
   });
 
   it("gives every catalogue creature a passive, a basic and a special", () => {

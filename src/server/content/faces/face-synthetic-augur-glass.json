@@ -1,0 +1,23 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-augur-glass",
+  "name": "Augur Glass",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "On roll: [Generate 1 Arcane].\nOn absorb, once per turn: [Insight 2].",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "arcane",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "look-top-deck",
+      "amount": 2
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-oracles-margin",
+  "name": "Oracle's Margin",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Insight 1]. [Draw 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "peek-deck-optional-bottom"
+      },
+      {
+        "type": "draw-cards",
+        "amount": 1
+      }
+    ]
+  }
+}

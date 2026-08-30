@@ -2,9 +2,8 @@
 
 Status: **IMPLEMENTED DEPTH** — Figma catalogue + English UI; passives and
 attack riders wired in `011`–`012` (Hunt push rewritten to next-attack bonus).
-Mechanical / Luminar Tempo–Combo creatures authored (fully wired). Toxin /
-Corruption Burn squad authored (fully wired). Fast-game HP/cost variants are
-not encoded.
+Mechanical / Luminar Tempo squad and Arcane / Darkness Control squad authored
+(both fully wired). Fast-game HP/cost variants are not encoded.
 
 Derived from the `Creature card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, page `0:1`). The Slow game test section is the
@@ -75,11 +74,14 @@ opponent-die `[Forge]`.
 Deck-designer owns which (if any) constructed alternatives replace builtin
 legendaries in loadout lists.
 
-## Catalogue (current — Mechanical + Luminar Tempo squad)
+## Catalogue (current — Tempo and Control squads)
 
 > **Catalogue reset (2026-08-29).** `src/server/content/creatures/` holds only
-> the three creatures below. Every `## Catalogue (…)` section *after* this one
-> names **retired print with no catalogue entry** — design reference only.
+> the six creatures in this section and the next. Every `## Catalogue (…)`
+> section *after* those names **retired print with no catalogue entry** —
+> design reference only.
+
+### Mechanical + Luminar Tempo squad
 
 All three attacks pay the pile: basics `discards`, specials `requires` **and**
 `discards`. Standing passives are `on-absorb` with `absorberRelation: "ally"`
@@ -94,6 +96,25 @@ so player-pile banking (not creature tokens) drives the engine.
 Lodestar Artificer is the win target: the passive converts pile banking into
 pressure on the **enemy** legendary, and Overdrive rebuilds the die on the same
 swing — the Tempo loop of pile → forge → pressure in one body.
+
+### Arcane + Darkness Control squad
+
+Same fuel shape as Tempo: basics `discards`, specials `requires` **and**
+`discards`, standing passives on `on-absorb` with `absorberRelation: "ally"`.
+Attacks stay in the Control **2-damage + resource-rider** band — the lethality
+lives on the tactics, rituals, and faces (bible §27). Every special gates on
+**Arcane + Darkness**, so the squad needs no third attack color.
+
+| Id | Name | Life | Attributes | Passive | Basic | Special |
+|---|---|---|---|---|---|---|
+| `creature-riftscribe-adept` | Riftscribe Adept | 14 | Arcane | On absorb Arcane, once per turn: `[Insight 1]`. | Rune Lash — `[Strike 2]`. `[Draw 1]`. | Ley Surge — `[Strike 2]`. `[Generate 1 Arcane]`. |
+| `creature-gravemarrow-shade` | Gravemarrow Shade | 13 | Darkness | On absorb Darkness, once per turn: your opponent `[Mill 2]`. | Grave Reach — `[Strike 2]`. `[Generate 1 Darkness]`. | Ebb of Names — `[Strike 2]`. Your opponent `[Mill 3]`. |
+| `creature-duskthrone-oracle` | Duskthrone Oracle **(legendary)** | 21 | Arcane / Darkness | On absorb Arcane, once per turn: `[Drain 1]`. | Nightward Bolt — `[Strike 2]`. `[Insight 1]`. | Verdict of Dusk — `[Strike 2]`. `[Drain 2]`. |
+
+Duskthrone Oracle is the win target and the reason Control can close: the
+passive turns Arcane banking into reach plus sustain every turn, and Verdict of
+Dusk is a four-point swing at the enemy legendary out of one attack.
+Riftscribe draws and generates; Gravemarrow drives the mill clock.
 
 ## Catalogue (Slow game test)
 

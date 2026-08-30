@@ -1,5 +1,6 @@
 import type { StartingDiceLayout } from "../../model/dice.js";
 import { asCardId, asCreatureDefinitionId, asFaceCardId, type CardId } from "../../model/ids.js";
+import controlDoc from "./control.json";
 import tempoDoc from "./tempo.json";
 
 export interface LoadoutDeckCount {
@@ -59,12 +60,19 @@ export const TEMPO_DECK_COUNTS = TEMPO_LOADOUT.deckCounts;
 export const TEMPO_FACE_DECK = TEMPO_LOADOUT.faceDeck;
 export const TEMPO_STARTING_DICE = TEMPO_LOADOUT.startingDice;
 
+export const CONTROL_LOADOUT = hydrate(controlDoc as unknown as BuiltinLoadoutDocument);
+
+export const CONTROL_SQUAD = CONTROL_LOADOUT.squad;
+export const CONTROL_DECK = CONTROL_LOADOUT.deck;
+export const CONTROL_DECK_COUNTS = CONTROL_LOADOUT.deckCounts;
+export const CONTROL_FACE_DECK = CONTROL_LOADOUT.faceDeck;
+export const CONTROL_STARTING_DICE = CONTROL_LOADOUT.startingDice;
+
 /**
  * Temporary compatibility aliases while the other builtin catalogues are
- * rebuilt. Every alias intentionally references the one hydrated Tempo value.
+ * rebuilt. Every remaining alias intentionally references the hydrated Tempo value.
  */
 export const AGGRO_LOADOUT = TEMPO_LOADOUT;
-export const CONTROL_LOADOUT = TEMPO_LOADOUT;
 export const COMBO_MECHANICAL_LOADOUT = TEMPO_LOADOUT;
 export const BURN_LOADOUT = TEMPO_LOADOUT;
 
@@ -80,12 +88,6 @@ export const PROTOTYPE_DECK_COUNTS = TEMPO_DECK_COUNTS;
 export const PROTOTYPE_FACE_DECK = TEMPO_FACE_DECK;
 export const PROTOTYPE_STARTING_DICE = TEMPO_STARTING_DICE;
 
-export const CONTROL_SQUAD = TEMPO_SQUAD;
-export const CONTROL_DECK = TEMPO_DECK;
-export const CONTROL_DECK_COUNTS = TEMPO_DECK_COUNTS;
-export const CONTROL_FACE_DECK = TEMPO_FACE_DECK;
-export const CONTROL_STARTING_DICE = TEMPO_STARTING_DICE;
-
 export const COMBO_MECHANICAL_SQUAD = TEMPO_SQUAD;
 export const COMBO_MECHANICAL_DECK = TEMPO_DECK;
 export const COMBO_MECHANICAL_DECK_COUNTS = TEMPO_DECK_COUNTS;
@@ -98,4 +100,4 @@ export const BURN_DECK_COUNTS = TEMPO_DECK_COUNTS;
 export const BURN_FACE_DECK = TEMPO_FACE_DECK;
 export const BURN_STARTING_DICE = TEMPO_STARTING_DICE;
 
-export const ALL_BUILTIN_LOADOUTS = [TEMPO_LOADOUT] as const;
+export const ALL_BUILTIN_LOADOUTS = [TEMPO_LOADOUT, CONTROL_LOADOUT] as const;

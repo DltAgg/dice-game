@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-thread-the-weave",
+  "name": "Thread the Weave",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Insight 2].",
+  "effect": {
+    "effects": [
+      {
+        "type": "look-top-deck",
+        "amount": 2
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-gloomwell",
+  "name": "Gloomwell",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll: [Generate 1 Darkness].\nOn absorb, once per turn: your opponent [Mill 2].",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "darkness",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "mill-cards",
+      "amount": 2,
+      "player": "opponent"
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

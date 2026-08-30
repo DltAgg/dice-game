@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-nightglass-rune",
+  "name": "Nightglass Rune",
+  "playCost": {
+    "darkness": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Darkness face.\nOn roll: [Generate 1 Darkness].\nOn absorb, once per turn: your opponent [Mill 1].",
+  "overload": {
+    "faceSymbols": [
+      "darkness"
+    ],
+    "onRoll": [
+      {
+        "type": "generate-symbol",
+        "symbol": "darkness",
+        "amount": 1
+      }
+    ],
+    "onAbsorb": [
+      {
+        "type": "mill-cards",
+        "amount": 1,
+        "player": "opponent"
+      }
+    ]
+  }
+}

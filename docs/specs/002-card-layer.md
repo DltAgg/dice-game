@@ -156,9 +156,10 @@ Costs shown as `?` are **variable** pile pay (DEFERRED). Catalogue `?` cards
 currently use a fixed `playCost` until variable spend UX ships. Where the frame
 name and the printed name disagree, the printed name is used.
 
-> **Catalogue reset (2026-08-29).** `src/server/content/cards/` now holds a
-> single archetype set: the Mechanical + Luminar **Tempo** catalogue below.
-> Every `### … deck` / `### … (authored)` table *after* it names **retired
+> **Catalogue reset (2026-08-29).** `src/server/content/cards/` holds two
+> archetype sets: the Mechanical + Luminar **Tempo** catalogue and the
+> Arcane + Darkness **Control** catalogue, both below. Every
+> `### … deck` / `### … (authored)` table *after* those two names **retired
 > print with no catalogue entry** — read those as role/design reference for
 > vocabulary decisions, never as a list of live cards.
 
@@ -204,6 +205,59 @@ tempo back with reaction `[Prevent]`. Every row serves forge or play.
 
 Faces (spec `004`) and the Tempo squad (spec `003`) carry the same split:
 Mechanical faces bank and rebuild, Luminar faces shield and sustain.
+
+### Arcane + Darkness Control catalogue (authored)
+
+Control **wins by** stretching the game with deck manipulation, negates, and
+ritual/equipment removal, then converting that long engine into **lethal
+damage on the enemy legendary** — Pall of Ash, Sable Tithe, Lightless Verdict,
+Riftmark, Sigil Flare ticks, and Duskthrone Oracle's `[Drain]`. It is not
+creature beatdown and it is not a damage-free prison: the closers are the plan.
+
+Arcane owns **`[Insight]` / `[Search]`** (deck top and deck dig), the negates,
+ritual destroy, and cost reduction on its own Instants. Darkness owns
+**`[Mill]`**, graveyard recursion (`[Recall]` / replay), discard-for-fuel, and
+the drain/strike closers. No Corruption opponent-die, no Luminar `[Prevent]`,
+no Toxin markers, no Martial `[Swap]`, no Wild `[Frenzy]`, and Mechanical
+`[Stamp]` / `[Reforge]` stay out.
+
+`playCost` is the attribute pile, not generic Energy. All 22 print 2+.
+
+**Arcane — deck-top manipulation, negates, ritual answers, discounts**
+
+| Cost | Name | Type line | Printed play region | Role in Control |
+|---|---|---|---|---|
+| 2 A | Thread the Weave | Instant / Arcane | `[Insight 2].` | Cheapest dig; sets up the closer you need. |
+| 2 A | Oracle's Margin | Instant / Arcane | `[Insight 1]. [Draw 1].` | Filter plus a card — smooths the long game. |
+| 3 A | Glyph of Refusal | Reaction / Arcane | `[Negate].` | The catch-all answer; taxes their best turn. |
+| 2 A | Sealbind Rune | Reaction / Arcane | `[Negate Ritual].` | Narrow, cheap answer to ritual engines. |
+| 3 A | Unwrite | Instant / Arcane | `[Destroy Ritual]` your opponent controls. | Cleans up a ritual that already landed. |
+| 3 A | Riftmark | Instant / Arcane | `[Spend: Arcane]`. `[Drain 2].` | Arcane's closer: reach plus sustain in one card. |
+| 3 A | Scholar's Lien | Equipment / Arcane | `[Discount 1]` on the first Arcane Instant you play each turn. | Makes the answer suite cheap enough to hold up. |
+| 2 A | Runewatch Lens | Overload / Arcane | Arcane face only. On roll: `[Generate 1 Arcane]`. On absorb, once per turn: `[Insight 1]`. | Both halves live — the absorb-vs-pool decision on a face you already roll. |
+| 3 A | Archivist's Summons | Ritual / Instant / Arcane | `[Active when: 2 x Arcane]`. `[Spend: 2 x Arcane]`. `[Search 2]` Instant or Ritual cards. | Turns a banked pile into the exact two answers. |
+| 3 A | Foresight Tithe | Ritual / Continuous / Arcane | `[Active when: 2 x Arcane]`. On roll Arcane: `[Insight 1]`. | Compounding selection while the pile holds. |
+| 2 A | Warded Annals | Equipment / Arcane | On absorb Arcane, once per turn: `[Mark 1 Shield]` on this creature. | Keeps the legendary alive without printing `[Prevent]`. |
+
+**Darkness — `[Mill]`, graveyard recursion, discard fuel, closers**
+
+| Cost | Name | Type line | Printed play region | Role in Control |
+|---|---|---|---|---|
+| 2 D | Hollow Tide | Instant / Darkness | Your opponent `[Mill 3]`. | The mill clock and Darkness's cheapest play. |
+| 2 D | Gloomdraft | Instant / Darkness | `[Draw 2]. [Discard 1].` | Card flow that also feeds Nightmarrow Pact. |
+| 3 D | Pall of Ash | Instant / Darkness | `[Spend: Darkness]`. `[Strike 3].` | The clean burn on the enemy legendary. |
+| 3 D | Sable Tithe | Instant / Darkness | Your opponent `[Mill 2]`. `[Strike 2]`. | Splits the two clocks onto one card. |
+| 3 D | Swallowed Whole | Reaction / Darkness | `[Negate]`. Your opponent `[Mill 2]`. | Darkness's answer — it advances the mill plan too. |
+| 2 D | Cinerary Locket | Equipment / Darkness | Arcane or Darkness creatures only. On absorb Darkness, once per turn: your opponent `[Mill 2]`. | Standing mill off your own banking. |
+| 2 D | Nightglass Rune | Overload / Darkness | Darkness face only. On roll: `[Generate 1 Darkness]`. On absorb, once per turn: your opponent `[Mill 1]`. | Cheap recurring fuel with a mill tick attached. |
+| 3 D | Graven Summons | Ritual / Instant / Darkness | `[Active when: Arcane + Darkness]`. `[Spend: 2 x Darkness]`. `[Recall 2]`. | Two-color gate; rebuys spent answers. |
+| 3 D | Echo of the Buried | Ritual / Instant / Darkness | `[Active when: 2 x Darkness]`. Choose an Instant or Ritual card in your graveyard and resolve its effect, ignoring its costs. It stays in your graveyard. | Replays the best card in the yard — Darkness recursion. |
+| 3 D | Nightmarrow Pact | Ritual / Continuous / Darkness | `[Active when: Arcane + Darkness]`. On discard: `[Generate 1 Darkness]`. | Converts every discard into pile fuel. |
+| 4 D | Lightless Verdict | Ritual / Instant / Darkness | `[Active when: Arcane + 2 x Darkness]`. `[Spend: 2 x Darkness]`. `[Strike 4].` | The top-end closer the long game is built to reach. |
+
+Faces (spec `004`) and the Control squad (spec `003`) carry the same split:
+Arcane faces see and chip, Darkness faces mill and buy back.
+`src/server/reducer/controlPackage.test.ts` covers the wiring.
 
 ### Aggro deck
 

@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-pall-of-ash",
+  "name": "Pall of Ash",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3].",
+  "effect": {
+    "requires": {
+      "darkness": 1
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

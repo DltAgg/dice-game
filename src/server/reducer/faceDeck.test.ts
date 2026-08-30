@@ -143,7 +143,7 @@ describe("face deck", () => {
     expect(state.players[P1]?.facePool.some((id) => id.includes("shield"))).toBe(true);
   });
 
-  it("catalogues every printed Tempo special face", () => {
+  it("catalogues every printed Tempo and Control special face", () => {
     expect(SPECIAL_FACE_CARDS.map((face) => face.name)).toEqual([
       "Cogtooth",
       "Gear Train",
@@ -151,6 +151,12 @@ describe("face deck", () => {
       "Halo Lamp",
       "Lucent Choir",
       "Sunward Lens",
+      "Augur Glass",
+      "Sigil Flare",
+      "Ward Lattice",
+      "Gloomwell",
+      "Ossuary",
+      "Pyre of Names",
     ]);
   });
 });
