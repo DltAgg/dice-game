@@ -81,14 +81,14 @@ overload an Arcane face).
 | **Overload** (main type) | Attaches to an existing die face and modifies it. |
 | **Ritual** (main type) | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. Subtypes below. |
 | Ritual / Instant | Retired from play. Leftover copies still leave for the GY after one activation. Author Instant cards instead. |
-| Ritual / Continuous | Stays in play. Standing triggers while ready. Activate (then exhaust) only when print has an activate body. Active-when is checked against the owner's pile each turn. |
+| Ritual / Continuous | Stays in play. Standing triggers while ready. Activate (then exhaust) only when print has an activate body. Active-when is a one-time unlock from the owner's pile. |
 | Ritual / Reaction | May respond in a reaction window from the field while ready. Stays and exhausts (once per turn) — not GY. |
 
 ### Requirement forms
 
 | Form | Meaning | Appears on |
 |---|---|---|
-| `[Active when: Arcane + Arcane]` | Gate vs the owner’s **attribute pile** (spec `016`). When met, the ritual is / becomes `ready`. Standing fire while ready does not burn the gate. | Ritual |
+| `[Active when: Arcane + Arcane]` | One-time unlock vs the owner’s **attribute pile** (spec `016`). When met, the ritual becomes `ready` and stays ready unless an effect says otherwise. Standing fire while ready does not burn the gate. | Ritual |
 | `[Spend: Arcane + Arcane]` | Optional burn from the owner’s attribute pile on `ACTIVATE_RITUAL` (often the same counts as Active-when for strong instants). Continuous standing rituals usually omit Spend. | Ritual |
 | `[Requires: Martial + Wild]` | Attack **gate** vs the owner’s attribute pile (must hold; not spent) | Creature attack |
 | `[Spend: Martial]` | Burn from the owner’s attribute pile (attack `discards`, instant extra cost, ritual activate) | Attack / Instant / Ritual |

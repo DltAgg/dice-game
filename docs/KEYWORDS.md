@@ -190,7 +190,7 @@ These are not effect replacements.
 | `[Forge]` | Play/forge region **and** the install verb |
 | `[Overcharge]` | Third exclusive use of a natural own-die forge card: spend it onto an attribute face card on your dice |
 | `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent) |
-| `[Active when: …]` | Ritual gate vs owner’s attribute pile (not repeated in the effect box) |
+| `[Active when: …]` | One-time ritual unlock vs owner’s attribute pile (not repeated in the effect box) |
 | `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate) |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |

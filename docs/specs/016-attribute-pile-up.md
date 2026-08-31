@@ -37,8 +37,9 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
    apply** on one attack. Same-turn absorb **can** enable an attack
    (pile updates immediately).
 8. **Rituals.** No progress counters on the ritual card.
-   - `activeWhen` (if any): the owner's pile must meet the requirement for the
-     ritual to be / become `ready`.
+   - `activeWhen` (if any): the owner's pile must meet the requirement **once**
+     for the ritual to become `ready` (one-time unlock; does not drop back to
+     `preparing` when the pile changes unless an effect says so).
    - Optional `spend` on the ritual region: burned from the pile on
      `ACTIVATE_RITUAL`.
    - Continuous standing abilities while `ready` do not spend `activeWhen` /
@@ -60,7 +61,7 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
 | Action | Semantics |
 |---|---|
 | `ABSORB_SYMBOL` | Attribute → owner pile. Shield → requires `creatureId`. |
-| `ACTIVATE_RITUAL` | Check pile vs `activeWhen`; burn `spend` if present |
+| `ACTIVATE_RITUAL` | Orientation `ready`; burn `spend` if present |
 | `ATTACK` | Fuel from owner `attributePool` |
 | `END_TURN` | Pile persists; turn symbols expire |
 
@@ -72,16 +73,15 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
 - Attack: owner pile meets `requires` (gate) and `discards` (Spend) when printed.
 - Play: pile meets `effect.requires` (gate) and discounted header `playCost`
   (Spend) against the **same** pile (not additive). Forge ignores `effect.requires`.
-- Ritual ready: pile meets `activeWhen` (or no gate → ready on place).
-- Ritual activate: orientation `ready`, pile still meets `activeWhen`, can pay
-  `spend`.
+- Ritual ready: pile meets `activeWhen` once (or no gate → ready on place).
+- Ritual activate: orientation `ready`; can pay `spend` when printed.
 
 ## Resolution
 
 1. Attribute absorb: mark symbol absorbed; `attributePool[attr] += 1`; queue
    face / overload / standing `on-absorb` (bank context).
 2. Shield absorb: grant shield; queue triggers that apply.
-3. Ritual orientation refresh whenever the pile changes (absorb, spend, effects).
+3. Ritual orientation refresh on pile change: `preparing` → `ready` when Active-when is met (one-time unlock).
 4. Attack declare: check gate and Spend → burn discards if printed → open
    attack chain as today.
 

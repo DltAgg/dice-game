@@ -273,7 +273,33 @@ describe("016 attribute pile-up", () => {
     expect(after.requirementWildcardsThisTurn[P1] ?? []).toHaveLength(0);
   });
 
-  it("Resonance wildcards cover ritual Active-when and Spend on activate", () => {
+  it("ritual stays ready after pile spend once Active-when was unlocked", () => {
+    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [MACHINE_SHOP]), P1, {
+      mechanical: 3,
+    });
+    state = expectOk(
+      advance(state, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(state, P1, 0),
+      }),
+    );
+    const ritualId = ritualsOf(state, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("ritual");
+
+    state = withAttributePool(state, P1, { mechanical: 2 });
+    state = withSymbols(state, P1, ["mechanical"]);
+    const pip = Object.values(state.symbols)[0]!;
+    state = expectOk(
+      advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
+    );
+    expect(state.cards[ritualId]?.ritualOrientation).toBe("ready");
+
+    state = withAttributePool(state, P1, {});
+    expect(state.cards[ritualId]?.ritualOrientation).toBe("ready");
+  });
+
+  it("Resonance wildcards cover ritual Spend on activate", () => {
     let state = withHand(withPile(withPhase(newMatch(), "actions"), P1, 10), P1, [
       DAYBREAK_RITE,
     ]);
@@ -312,8 +338,8 @@ describe("016 attribute pile-up", () => {
       }),
     );
     expect(state.log.some((e) => e.event.type === "ritual-activated")).toBe(true);
-    // Gate shortfall 1 + Spend shortfall 1 (pile had 1 arcane for spend) = 2 wildcards.
-    expect((state.requirementWildcardsThisTurn[P1] ?? []).length).toBe(beforeWild - 2);
+    // Spend shortfall 1 (pile had 1 luminar for spend 2) = 1 wildcard.
+    expect((state.requirementWildcardsThisTurn[P1] ?? []).length).toBe(beforeWild - 1);
     expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(0);
   });
 });

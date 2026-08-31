@@ -24,7 +24,7 @@ owned creature** (grants Shield counters — not pile fuel).
 |---|---|---|
 | Absorb (attribute) | Bank into **your attribute pile** | No — keep prefix **`On absorb:`** (do not invent `On bank:`) |
 | `[Requires: …]` | Attack `requires` **and** card `effect.requires` | **No** — hold-gate (must hold). Spec `002` Twin Cam / Tooling Order / Die Punch / Recast stay gates |
-| `[Active when: …]` | Ritual `activeWhen` | **No** — owner’s pile. Not in `rulesText`; UI prints it from the field |
+| `[Active when: …]` | Ritual `activeWhen` | **No** — one-time unlock from owner’s pile. Not in `rulesText`; UI prints it from the field |
 | `[Spend: …]` | Header `playCost` (play + synthetic forge), attack `discards`, ritual `spend` | **Yes** |
 | Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Yes — often equals `activeWhen` on high-swing instants |
 | Header `playCost` | `CardDefinition.playCost` | Yes on play/place and synthetic forge; natural forge does **not** burn it (`docs/RULEBOOK.md` §8) |
@@ -36,10 +36,10 @@ Wildcards (`[Resonance]`) may cover shortfall on gates and spends for the turn.
 ## Rituals (pile gates — no progress counters)
 
 1. `PLAY_CARD` → `preparing`.
-2. Ritual becomes **`ready`** when the owner’s pile meets `activeWhen` (or
-   immediately if omitted).
-3. `ACTIVATE_RITUAL` checks the gate again, burns optional `ritual.spend`,
-   resolves `ritual.effects`.
+2. Ritual becomes **`ready`** when the owner’s pile meets `activeWhen` **once**
+   (or immediately if omitted). Stays ready when pile tokens are spent elsewhere
+   unless an effect says otherwise.
+3. `ACTIVATE_RITUAL` burns optional `ritual.spend`, resolves `ritual.effects`.
 4. Do not bank pips onto the ritual card — the gate is the owner’s pile.
 
 Standing `on-absorb` on continuous rituals fires when the **owner banks** a

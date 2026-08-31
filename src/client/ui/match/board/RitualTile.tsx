@@ -112,8 +112,14 @@ export function RitualTile({
                 {orientation}
                 {durationLabel !== null ? ` · ${durationLabel}` : ""}
               </p>
-              {gateVsPile !== null && gateVsPile !== "" && (
+              {gateVsPile !== null && gateVsPile !== "" && preparing && (
                 <p className="mt-1 text-xs text-amber-200/80">Active-when vs pile: {gateVsPile}</p>
+              )}
+              {ready && def.ritual?.activeWhen !== undefined && (
+                <p className="mt-1 text-xs text-[var(--accent)]/80">Ready</p>
+              )}
+              {exhausted && (
+                <p className="mt-1 text-xs text-stone-400">Exhausted</p>
               )}
               {spendLine !== null && (
                 <p className="mt-0.5 text-xs text-amber-200/70">{spendLine} (from pile on activate)</p>
@@ -175,8 +181,14 @@ export function RitualTile({
         {activeWhen !== null && (
           <p className="mt-1 truncate text-[0.65rem] text-stone-400">{activeWhen}</p>
         )}
-        {gateVsPile !== null && gateVsPile !== "" && (
+        {gateVsPile !== null && gateVsPile !== "" && preparing && (
           <p className="mt-0.5 truncate text-[0.6rem] text-amber-200/70">Pile {gateVsPile}</p>
+        )}
+        {ready && def.ritual?.activeWhen !== undefined && (
+          <p className="mt-0.5 truncate text-[0.6rem] text-[var(--accent)]/70">Ready</p>
+        )}
+        {exhausted && (
+          <p className="mt-0.5 truncate text-[0.6rem] text-stone-500">Exhausted</p>
         )}
         {spendLine !== null && (
           <p className="mt-0.5 truncate text-[0.6rem] text-stone-500">{spendLine}</p>

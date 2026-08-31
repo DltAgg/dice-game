@@ -11,7 +11,7 @@ import {
  * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
  * spec `016`). Attacks and card `[Requires]` gates check (not burn) from there;
  * `[Spend]` (header `playCost`, attack `discards`, ritual `spend`) burns.
- * Ritual Active-when reads the same pile. Creature Shield / Toxin stay on
+ * Ritual Active-when is a one-time pile unlock. Creature Shield / Toxin stay on
  * creatures.
  */
 

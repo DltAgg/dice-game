@@ -1,3 +1,4 @@
+import { getCard } from "../../content/cards.js";
 import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";

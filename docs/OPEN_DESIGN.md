@@ -347,18 +347,18 @@ A Ritual is played onto the engine area, not resolved from hand like an Instant:
 
 | Orientation | Visual | Meaning |
 |---|---|---|
-| `preparing` | tapped | Waiting for owner’s attribute pile to meet Active-when |
-| `ready` | untapped | Gate met; standing abilities on; may activate if print has an activate body |
+| `preparing` | tapped | Waiting for owner’s attribute pile to meet Active-when (one-time unlock) |
+| `ready` | untapped | Active-when unlocked once; standing abilities on; may activate if print has an activate body |
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
-Rituals are placed without progress counters on the card. `activeWhen` is
-checked against the owner’s **attribute pile**. Rituals with no
+Rituals are placed without progress counters on the card. `activeWhen` is a
+**one-time unlock** checked against the owner’s **attribute pile**. Rituals with no
 `[Active when: …]` become ready as soon as they hit the field. Optional
 `spend` on activate burns from the pile (decision sink). Requirement wildcards
 may still help meet Active-when when banking / checking as specified in `016`.
 
-At the start of your turn, exhausted rituals come off diagonal. If the pile
-still meets Active-when the ritual returns to ready, otherwise preparing.
+At the start of your turn, exhausted rituals come off diagonal and return to
+ready (already unlocked). Only `preparing` rituals still need the pile gate.
 Continuous and reaction rituals stay and exhaust. Leftover instant-subtype
 rituals still leave for the graveyard after one activation. Ritual / Instant
 is retired from play. Standing triggers fire while ready and do not spend

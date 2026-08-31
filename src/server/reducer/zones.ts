@@ -343,8 +343,10 @@ export function setRitualOrientation(
 
 /**
  * Flip preparing → ready when the owner's attribute pile (plus Resonance
- * wildcards) meets Active-when (spec `016`). Wildcards are not consumed here —
- * only when a Spend or activate gate actually uses them.
+ * wildcards) meets Active-when (spec `016`). Active-when is a one-time unlock:
+ * once ready, orientation does not drop back to preparing when the pile
+ * changes unless an effect says so. Rituals with no Active-when are ready as
+ * soon as they hit the field.
  */
 export function refreshRitualOrientations(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];

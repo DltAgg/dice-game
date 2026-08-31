@@ -69,8 +69,8 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   // Standing burn pulses at turn start (auto-target only — no choose pending).
   fireOnTurnStart(draft, nextPlayerId);
   drainResolution(draft);
-  // Exhausted once-per-turn rituals come off diagonal; Active-when is re-checked
-  // against the owner's attribute pile.
+  // Exhausted once-per-turn rituals come off diagonal; Active-when is a
+  // one-time unlock so they return to ready.
   resetExhaustedRituals(draft, nextPlayerId);
 
   // Drawn on entering your own turn, so the opening hand is not topped up

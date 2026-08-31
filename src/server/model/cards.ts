@@ -271,9 +271,10 @@ export interface OverloadRegion {
  */
 export interface RitualRegion {
   /**
-   * Attribute gate checked against the owner's attribute pile (spec `016`).
-   * When met (or absent), the ritual is / becomes `ready`. Absent when the
-   * print has no `[Active when: …]` (e.g. Paradox) — ready on place.
+   * One-time unlock vs the owner's attribute pile (spec `016`). When met (or
+   * absent), the ritual becomes `ready` and does not return to `preparing` when
+   * the pile changes unless an effect says so. Absent when the print has no
+   * `[Active when: …]` (e.g. Paradox) — ready on place.
    */
   readonly activeWhen?: SymbolRequirement;
   /**
