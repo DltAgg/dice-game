@@ -84,6 +84,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-13](#ma-13-legendary-strike-band) | Strike 3 vs Strike 2 on legendaries | Creature attack | Tempo hits harder; Control chips | Tempo closer vs Control engine | `WATCH` |
 | [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
 | [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` natural own-die forge spend | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
+| [MA-16](#ma-16-instant-rituals) | Ritual / Instant (place → Active-when → activate → GY) | Ritual place + activate | None as a band | Worthless vs equipment / overload / continuous | `RETARGETED` |
 
 ---
 
@@ -332,6 +333,39 @@ On roll `[Generate]` of the same attribute) and not MA-03 (`[Spend] X,
 
 **Follow-up:** post-playtest after a session that actually Overcharges; do
 not reprint `[Overcharge]` on every natural-forge card.
+
+### MA-16 Instant rituals
+
+**Mechanic:** Ritual / Instant — pay to place, wait for Active-when, spend
+again (often), resolve once, GY.
+
+**Window:** Ritual place + activate (not hand Instant, not Continuous OPT
+activate).
+
+**Intended home:** None as a band. Engines belong on Continuous (activate
+body, exhaust = once per turn). Closers and paradox one-shots belong on
+hand Instant.
+
+**Playtest feel:** Worthless. Players never chose them over equipment,
+overload, or standing continuous rituals.
+
+**Why:** Double tax (playCost then Active-when / Spend) plus a one-shot
+leave made the slot strictly worse than a Continuous engine or a hand
+Instant dump.
+
+**Evidence:** 2026-08-31 playtest.
+
+- Engines → Continuous, keep activate body: `card-archivists-summons`,
+  `card-tempering-line`, `card-graven-summons`, `card-daybreak-rite`
+- Closers / paradox → hand Instant: `card-lightless-verdict`,
+  `card-echo-of-the-buried`
+
+**Status:** `RETARGETED` · 2026-08-31
+
+**Do not:** Author new Ritual / Instant one-shots. Recurring Strike or free
+GY replay as Continuous activate is warped.
+
+**Follow-up:** none (catalogue conversion). Deck-designer places copies.
 
 ---
 

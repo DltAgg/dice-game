@@ -228,8 +228,9 @@ equipment: {
 2. **Reuse hooks** — prefer `on-absorb` / `onRoll` over a new reducer branch.
 3. **Auto vs choose** — use `most-*-*` selectors when print does not ask the
    player to pick; otherwise `choose-ally` / `choose-enemy`.
-4. **Ritual Instant vs Reaction** — both leave to GY after activate; Reaction
-   only changes *when* it can fire (`008`). Continuous stays / exhausts.
+4. **Ritual Instant vs Reaction** — Instant subtype is retired (leftover GY
+   after activate). Reaction stays on the field and exhausts (once per turn);
+   it only changes *when* it can fire (`008`). Continuous stays / exhausts.
 5. **Same meaning, shorter text** — OK; new mechanics — not OK without design.
 
 ## Anti-patterns

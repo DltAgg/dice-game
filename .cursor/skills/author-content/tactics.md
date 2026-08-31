@@ -79,7 +79,7 @@ card({
   name: "Example Ritual",
   playCost: { corruption: 3, arcane: 2 },
   type: "ritual",
-  subtypes: ["instant"], // or "reaction" | "continuous"
+  subtypes: ["continuous"], // or "reaction"; "instant" is retired
   attribute: "corruption",
   forge: { faces: 1, kind: "synthetic", attribute: "corruption", target: "own-die" },
   // Print "Synthetic Corruption" = kind+attribute, not a card named Synthetic Corruption.
@@ -105,7 +105,10 @@ card({
 - Place from hand (`PLAY_CARD`) → `preparing`. Ready when the owner’s
   **attribute pile** meets `activeWhen` (refreshed on any pile change), or
   immediately if no `activeWhen`.
-- Instant / reaction: activate → optional `spend` burn → effects → GY.
+- Instant subtype (retired): leftover copies activate → optional `spend` burn
+  → effects → GY. Prefer a hand Instant instead.
+- Reaction: may activate in a reaction window from the field while ready;
+  stays and exhausts until the owner's next turn (once per turn).
 - Continuous: standing triggers while `ready`. Activate only when
   `ritual.effects` is non-empty (then exhaust until the owner's next turn).
   Readiness is re-checked against the pile each turn; standing fire does not

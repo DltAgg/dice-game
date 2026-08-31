@@ -7,7 +7,7 @@
   },
   "type": "ritual",
   "subtypes": [
-    "instant"
+    "continuous"
   ],
   "attribute": "arcane",
   "forge": {

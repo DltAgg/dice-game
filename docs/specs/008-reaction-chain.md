@@ -67,8 +67,8 @@ conducts, its body cannot be interrupted.
     no reaction window — those choices are part of conducting.
 13. **Negated card link.** Costs stay paid; body skipped. Ritual place:
     card never sits preparing (ends in GY). Equip/overload: attach does not
-    land. Ritual activate: continuous rituals exhaust; Instant / Reaction
-    rituals leave for the graveyard after resolving.
+    land. Ritual activate: continuous and reaction rituals stay and exhaust;
+    leftover instant-subtype rituals leave for the graveyard after resolving.
     apply after the activation attempt (costs paid).
 
 ## State Changes

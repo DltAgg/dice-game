@@ -167,9 +167,11 @@ Shield absorb still names a creature (below).
   (1 Shield prevents 1 damage, once). Shields stack and persist until spent.
 - Absorbing a Shield is **not** absorbing a Natural; `On absorb Natural`
   does not fire.
-- Ritual Active-when is checked against your **pile** (Resonance wildcards may
-  help; they are not spent just to stay ready). Optional Spend on activate
-  burns from the pile (wildcards may cover shortfall).
+- Ritual `[Active when: …]` is a **one-time unlock** against your **pile**
+  (Resonance wildcards may help the first time). Once the ritual is **ready**,
+  spending pile tokens elsewhere does not put it back to preparing unless an
+  effect says so. Optional **Spend** on activate still burns from the pile
+  (wildcards may cover shortfall).
 - **`[Drain]`** deals damage to a chosen enemy creature and heals your
   **most-damaged ally** for the HP actually lost (after Prevent/Shield).
 
@@ -239,20 +241,26 @@ Played onto the engine area, not resolved from hand like an Instant.
 
 | Orientation | Meaning |
 |---|---|
-| Preparing | Owner’s attribute pile does not yet meet Active-when |
-| Ready | Gate met (or no Active-when); standing abilities on; may activate if print has an activate body |
+| Preparing | Owner’s attribute pile has not yet met Active-when (one-time unlock) |
+| Ready | Active-when unlocked once (or no Active-when); standing abilities on; may activate if print has an activate body |
 | Exhausted | Used this turn (once-per-turn rituals) |
 
 Rituals with no Active-when become ready on place. Otherwise the owner’s
-**attribute pile** must meet the printed Active-when. Optional **Spend** on
-activate burns from that pile only.
+**attribute pile** must meet the printed Active-when **once** to unlock ready.
+Optional **Spend** on activate burns from that pile only.
 
-At the start of your turn, exhausted rituals come off exhausted. Ready vs
-preparing is re-checked against your pile.
+At the start of your turn, exhausted rituals come off exhausted and return to
+**ready** (they were already unlocked). Only rituals still in **preparing**
+need the pile gate.
 
-Instant and reaction rituals go to the graveyard after one activation.
-**Continuous** rituals stay and exhaust. Standing triggers fire while
-**ready** and do not spend Active-when / Spend.
+**Continuous** and **Reaction** rituals stay on the field. Activating (if they
+have an activate body) exhausts them until the owner's next turn.
+**Ritual / Instant** is retired from play; a leftover instant-subtype ritual
+still leaves for the graveyard after one activation.
+
+Reaction rituals may still respond in a reaction window from the field while
+**ready**. Standing triggers fire while **ready** and do not spend Active-when
+/ Spend.
 
 Destroying an opposing field ritual is not negate. Negate answers chain
 links; destroy answers a card already on the field.

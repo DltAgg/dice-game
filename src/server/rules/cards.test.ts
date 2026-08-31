@@ -11,7 +11,7 @@ import {
   P2,
   withAttributePool,
 } from "../testing/scenario.js";
-import { canAffordForge, canAffordPlay } from "./cards.js";
+import { canAffordForge, canAffordPlay, isReactionCard, ritualDurationOf } from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
   return {
@@ -127,6 +127,32 @@ describe("canAffordPlay / canAffordForge", () => {
     expect(
       canAffordForge(withForgeDiscount(state, P1, 1), P1, twinCam),
     ).toBe(true);
+  });
+});
+
+describe("ritualDurationOf", () => {
+  const ritualBase: Partial<CardDefinition> = {
+    type: "ritual",
+  };
+
+  it("returns null for non-rituals", () => {
+    expect(ritualDurationOf(exampleCard({ type: "instant" }))).toBeNull();
+    expect(ritualDurationOf(exampleCard({ type: "reaction", subtypes: [] }))).toBeNull();
+  });
+
+  it("maps continuous and reaction subtypes to stay/exhaust", () => {
+    const continuous = exampleCard({ ...ritualBase, subtypes: ["continuous"] });
+    const reaction = exampleCard({ ...ritualBase, subtypes: ["reaction"] });
+    expect(ritualDurationOf(continuous)).toBe("continuous");
+    expect(ritualDurationOf(reaction)).toBe("continuous");
+    expect(isReactionCard(reaction)).toBe(true);
+    expect(isReactionCard(continuous)).toBe(false);
+  });
+
+  it("maps leftover instant subtype to GY", () => {
+    const leftover = exampleCard({ ...ritualBase, subtypes: ["instant"] });
+    expect(ritualDurationOf(leftover)).toBe("instant");
+    expect(isReactionCard(leftover)).toBe(false);
   });
 });
 

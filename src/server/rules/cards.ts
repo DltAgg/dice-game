@@ -55,12 +55,14 @@ export const ritualsOf = (state: GameState, playerId: PlayerId): readonly CardIn
 
 /**
  * Post-activation fate for a Ritual, read from subtypes.
- * - `continuous` → stay on the field, exhausted until the owner's next turn
- * - anything else (`instant`, `reaction`, …) → leave for the graveyard
+ * - `continuous` or `reaction` → stay on the field, exhausted until the owner's next turn
+ * - leftover `instant` (retired) → leave for the graveyard
  */
 export function ritualDurationOf(card: CardDefinition): CardDuration | null {
   if (card.type !== "ritual") return null;
-  if (card.subtypes.includes("continuous")) return "continuous";
+  if (card.subtypes.includes("continuous") || card.subtypes.includes("reaction")) {
+    return "continuous";
+  }
   return "instant";
 }
 
@@ -222,14 +224,18 @@ export function searchableInGraveyard(
 }
 
 /**
- * GY tactics Paradox may replay: Instant or Ritual cards that have modelled
- * effect arrays. Preserves graveyard order.
+ * GY tactics Paradox / Echo may replay: Instant or Ritual cards that have
+ * modelled effect arrays. Preserves graveyard order. Pass `excludeInstanceId`
+ * (the replaying source) so a hand Instant that already moved to GY cannot
+ * choose itself.
  */
 export function replayableGraveyardTactics(
   state: Pick<GameState, "players" | "cards">,
   playerId: PlayerId,
+  excludeInstanceId?: CardInstanceId | null,
 ): readonly CardInstanceId[] {
   return (state.players[playerId]?.graveyard ?? []).filter((id) => {
+    if (id === excludeInstanceId) return false;
     const card = state.cards[id];
     if (card === undefined) return false;
     const definition = getCard(card.cardId);

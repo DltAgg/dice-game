@@ -114,6 +114,8 @@ describe("Tempo mechanical assembly", () => {
     }
     activated = resolveOpenChain(activated);
     expect(activated.log.some((entry) => entry.event.type === "ritual-activated")).toBe(true);
+    expect(ritualsOf(activated, P1)).toHaveLength(1);
+    expect(ritualsOf(activated, P1)[0]?.ritualOrientation).toBe("exhausted");
   });
 
   it("Machine Shop generates Mechanical on roll when active", () => {

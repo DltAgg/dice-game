@@ -1023,7 +1023,11 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       return false;
     }
     case "replay-graveyard-tactic": {
-      const eligible = replayableGraveyardTactics(draft, pending.controllerId);
+      const eligible = replayableGraveyardTactics(
+        draft,
+        pending.controllerId,
+        pending.sourceCardInstanceId,
+      );
       if (eligible.length === 0) return false;
       draft.pendingDecision = {
         type: "replay-graveyard-tactic",

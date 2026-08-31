@@ -4,14 +4,19 @@ import {
   opponentOf,
   replayableGraveyardTactics,
   type CardInstance,
+  type CardInstanceId,
   type CreatureId,
   type FaceCardId,
   type GameState,
   type PlayerId,
 } from "@server";
 
-export function replayableGyCards(state: GameState, playerId: PlayerId): readonly CardInstance[] {
-  return replayableGraveyardTactics(state, playerId).flatMap((id) => {
+export function replayableGyCards(
+  state: GameState,
+  playerId: PlayerId,
+  excludeInstanceId?: CardInstanceId | null,
+): readonly CardInstance[] {
+  return replayableGraveyardTactics(state, playerId, excludeInstanceId).flatMap((id) => {
     const card = state.cards[id];
     return card === undefined ? [] : [card];
   });

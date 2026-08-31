@@ -42,7 +42,8 @@ engine can resolve the clause honestly. Movers always go through
 ### GY replay (Paradox)
 
 - `replay-graveyard-tactic`: choose a GY Instant (`effect`) or Ritual
-  (`ritual`) with playable effects.
+  (`ritual`) with playable effects. The replaying source card cannot choose
+  itself (a hand Instant is already in GY when the choice opens).
 - Resolve those effects immediately. Ignore `[Requires]` / Active-when. Do not
   pay that card's pile cost. Card stays in GY.
 

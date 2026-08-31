@@ -23,7 +23,10 @@ export function ReplayGraveyardModal({
   controllerId: PlayerId;
   onPick: (cardInstanceId: CardInstanceId) => void;
 }) {
-  const cards = replayableGyCards(state, controllerId);
+  const pending = state.pendingDecision;
+  const excludeInstanceId =
+    pending?.type === "replay-graveyard-tactic" ? pending.sourceCardInstanceId : undefined;
+  const cards = replayableGyCards(state, controllerId, excludeInstanceId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">

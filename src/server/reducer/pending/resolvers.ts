@@ -545,7 +545,7 @@ export function resolveReplayGraveyard(
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "replay-graveyard-tactic") return "INVALID_PHASE";
   if (pending.controllerId !== playerId) return "PENDING_DECISION";
-  if (!replayableGraveyardTactics(draft, playerId).includes(cardInstanceId)) {
+  if (!replayableGraveyardTactics(draft, playerId, pending.sourceCardInstanceId).includes(cardInstanceId)) {
     return "INVALID_CHOICE";
   }
 

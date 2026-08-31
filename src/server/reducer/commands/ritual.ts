@@ -1,13 +1,8 @@
-import { getCard } from "../../content/cards.js";
 import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
-import type { AttributeTokens, SymbolRequirement } from "../../model/symbols.js";
 import { isReactionCard, ritualDurationOf } from "../../rules/cards.js";
-import {
-  holdsTokensWithWildcards,
-  pileRequirementShortfall,
-} from "../../rules/tokens.js";
+import { pileRequirementShortfall } from "../../rules/tokens.js";
 import {
   buildEffectLink,
   cardCommittedToChain,
@@ -18,15 +13,16 @@ import {
   topChainLink,
 } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
-import { consumeRequirementWildcards, payPileSpend } from "../payments.js";
+import { payPileSpend } from "../payments.js";
 import { moveCard, setRitualOrientation } from "../zones.js";
 
 /**
  * Activates a ready Ritual that has an activate body (`ritual.effects`).
- * Standing-only continuous rituals cannot be activated. Non-continuous rituals
- * (Instant / Reaction) leave for the graveyard after resolving; continuous
- * ones with an activate body exhaust until the owner's next turn (banked
- * Active-when symbols stay).
+ * Standing-only continuous rituals cannot be activated. Continuous and
+ * reaction rituals with an activate body stay and exhaust until the owner's
+ * next turn. Active-when is a one-time unlock — ready rituals do not re-check
+ * the pile gate on activate. Leftover instant-subtype rituals still leave for
+ * the graveyard after resolving.
  */
 export function activateRitual(
   draft: Draft,
@@ -55,26 +51,10 @@ export function activateRitual(
     return "CARD_NOT_AVAILABLE";
   }
 
-  if (
-    region.activeWhen !== undefined &&
-    !holdsTokensWithWildcards(
-      draft.players[playerId]?.attributePool ?? {},
-      region.activeWhen,
-      draft.requirementWildcardsThisTurn[playerId]?.length ?? 0,
-    )
-  ) {
-    return "INSUFFICIENT_SYMBOLS";
-  }
-
   if (region.spend !== undefined) {
     const pile = draft.players[playerId]?.attributePool ?? {};
-    const activeWhenShort =
-      region.activeWhen === undefined
-        ? 0
-        : pileRequirementShortfall(pile, region.activeWhen);
     const wildcards = draft.requirementWildcardsThisTurn[playerId]?.length ?? 0;
-    const remaining = wildcards - activeWhenShort;
-    if (pileRequirementShortfall(pile, region.spend) > remaining) {
+    if (pileRequirementShortfall(pile, region.spend) > wildcards) {
       return "INSUFFICIENT_SYMBOLS";
     }
   }
@@ -97,12 +77,6 @@ export function activateRitual(
     if (top === undefined || top.negated || !isRitualNegatableLinkKind(top.kind)) {
       return "INVALID_CHAIN_TARGET";
     }
-  }
-
-  if (region.activeWhen !== undefined) {
-    const pile = draft.players[playerId]?.attributePool ?? {};
-    const short = pileRequirementShortfall(pile, region.activeWhen);
-    if (short > 0) consumeRequirementWildcards(draft, playerId, short);
   }
 
   if (region.spend !== undefined) {
@@ -129,50 +103,19 @@ export function activateRitual(
 }
 
 /**
- * Flip preparing → ready when the owner's attribute pile (plus Resonance
- * wildcards) meets Active-when (spec `016`). Rituals with no Active-when are
- * ready as soon as they hit the field. Implementation lives in `zones.ts` so
- * resolution can refresh too.
- */
-function pileMeetsActiveWhen(
-  progress: AttributeTokens,
-  requirement: SymbolRequirement,
-  wildcardCount = 0,
-): boolean {
-  return holdsTokensWithWildcards(progress, requirement, wildcardCount);
-}
-
-/**
  * Once-per-turn rituals come off diagonal at the start of the owner's turn.
- * Ready vs preparing is re-checked against the owner's attribute pile.
+ * Active-when is a one-time unlock: exhausted rituals that were already ready
+ * return to ready; only `preparing` rituals still need the pile gate (via
+ * `refreshRitualOrientations`).
  */
 export function resetExhaustedRituals(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
-  const pile = player.attributePool;
-  const wildcards = draft.requirementWildcardsThisTurn[playerId]?.length ?? 0;
 
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
-    if (card === undefined) continue;
-
-    if (card.ritualOrientation === "exhausted") {
-      const region = getCard(card.cardId)?.ritual;
-      const ready =
-        region === undefined ||
-        region.activeWhen === undefined ||
-        pileMeetsActiveWhen(pile, region.activeWhen, wildcards);
-      const orientation = ready ? "ready" : "preparing";
-      draft.cards[cardInstanceId] = {
-        ...card,
-        ritualOrientation: orientation,
-      };
-      emit(draft, {
-        type: "ritual-orientation-changed",
-        cardInstanceId,
-        orientation,
-      });
-    }
+    if (card === undefined || card.ritualOrientation !== "exhausted") continue;
+    setRitualOrientation(draft, cardInstanceId, "ready");
   }
 }
 
@@ -184,7 +127,7 @@ export function finishRitualActivation(draft: Draft, link: ChainLink): void {
   if (link.ritualDuration === "continuous") {
     setRitualOrientation(draft, link.cardInstanceId, "exhausted");
   } else {
-    // Instant, reaction, or unspecified → one-shot: leave the field.
+    // Leftover instant subtype or unspecified → one-shot: leave the field.
     moveCard(draft, link.cardInstanceId, "graveyard");
   }
 }

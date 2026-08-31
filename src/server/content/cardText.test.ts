@@ -9,7 +9,16 @@ import {
   formatRequirementLine,
   formatTypeLine,
 } from "./cardText.js";
-import { TWIN_CAM, getCard } from "./cards.js";
+import {
+  ARCHIVISTS_SUMMONS,
+  DAYBREAK_RITE,
+  ECHO_OF_THE_BURIED,
+  GRAVEN_SUMMONS,
+  LIGHTLESS_VERDICT,
+  TEMPERING_LINE,
+  TWIN_CAM,
+  getCard,
+} from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
   const attribute = overrides.attribute ?? "arcane";
@@ -106,6 +115,32 @@ describe("English card printing", () => {
     const twinCam = getCard(TWIN_CAM);
     if (twinCam === undefined) throw new Error("Twin Cam");
     expect(formatRequirementLine(twinCam)).toBe("[Requires: 2 x Mechanical]");
+  });
+
+  it("prints converted engine rituals as Continuous and closers as Instant", () => {
+    const archivists = getCard(ARCHIVISTS_SUMMONS);
+    const tempering = getCard(TEMPERING_LINE);
+    const graven = getCard(GRAVEN_SUMMONS);
+    const daybreak = getCard(DAYBREAK_RITE);
+    const verdict = getCard(LIGHTLESS_VERDICT);
+    const echo = getCard(ECHO_OF_THE_BURIED);
+    if (
+      archivists === undefined ||
+      tempering === undefined ||
+      graven === undefined ||
+      daybreak === undefined ||
+      verdict === undefined ||
+      echo === undefined
+    ) {
+      throw new Error("converted ritual set");
+    }
+    expect(formatTypeLine(archivists)).toBe("[Ritual / Continuous / Arcane]");
+    expect(formatTypeLine(tempering)).toBe("[Ritual / Continuous / Mechanical]");
+    expect(formatTypeLine(graven)).toBe("[Ritual / Continuous / Darkness]");
+    expect(formatTypeLine(daybreak)).toBe("[Ritual / Continuous / Luminar]");
+    expect(formatTypeLine(verdict)).toBe("[Instant / Darkness]");
+    expect(formatRequirementLine(verdict)).toBe("[Requires: Arcane]");
+    expect(formatTypeLine(echo)).toBe("[Instant / Darkness]");
   });
 
   it("prints None when the card forges only", () => {

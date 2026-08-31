@@ -145,7 +145,8 @@ Pairings that keep the pie readable:
 | Reaction | Window response from hand | Same, only in reaction window |
 | Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
 | Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
-| Ritual / Instant or Reaction | Delayed, gated engine play | Place `preparing` → pile meets Active-when → `ACTIVATE_RITUAL` → GY |
+| Ritual / Instant | Retired; leftover copies still GY after activate | Prefer a hand Instant. Place → activate → GY if any leftover |
+| Ritual / Reaction | Delayed field responder, once per turn | Place `preparing` → pile meets Active-when → `ACTIVATE_RITUAL` in a window → stay, exhaust |
 | Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Gate is owner’s **attribute pile** |
 | Face (natural) | Starting identity faces | All eight attrs + Shield |
 | Face (synthetic) | Named specials only | Pool → install; `onRoll` / `onAbsorb`. Never blank `face-synthetic-<attr>` |

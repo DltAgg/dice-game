@@ -5,10 +5,8 @@
   "playCost": {
     "darkness": 3
   },
-  "type": "ritual",
-  "subtypes": [
-    "instant"
-  ],
+  "type": "instant",
+  "subtypes": [],
   "attribute": "darkness",
   "forge": {
     "faces": 1,
@@ -17,10 +15,7 @@
     "target": "own-die"
   },
   "rulesText": "Choose an Instant or Ritual card in your graveyard and resolve its effect, ignoring its costs. It stays in your graveyard.",
-  "ritual": {
-    "activeWhen": {
-      "darkness": 2
-    },
+  "effect": {
     "effects": [
       {
         "type": "replay-graveyard-tactic"

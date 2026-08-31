@@ -5,10 +5,8 @@
   "playCost": {
     "darkness": 4
   },
-  "type": "ritual",
-  "subtypes": [
-    "instant"
-  ],
+  "type": "instant",
+  "subtypes": [],
   "attribute": "darkness",
   "forge": {
     "faces": 2,
@@ -17,13 +15,9 @@
     "target": "own-die"
   },
   "rulesText": "[Strike 4].",
-  "ritual": {
-    "activeWhen": {
-      "arcane": 1,
-      "darkness": 2
-    },
-    "spend": {
-      "darkness": 2
+  "effect": {
+    "requires": {
+      "arcane": 1
     },
     "effects": [
       {

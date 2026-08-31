@@ -359,9 +359,10 @@ may still help meet Active-when when banking / checking as specified in `016`.
 
 At the start of your turn, exhausted rituals come off diagonal. If the pile
 still meets Active-when the ritual returns to ready, otherwise preparing.
-Instant and reaction rituals leave for the graveyard after one activation;
-only `continuous` rituals stay and exhaust. Standing triggers fire while ready
-and do not spend Active-when / Spend unless the card activates.
+Continuous and reaction rituals stay and exhaust. Leftover instant-subtype
+rituals still leave for the graveyard after one activation. Ritual / Instant
+is retired from play. Standing triggers fire while ready and do not spend
+Active-when / Spend unless the card activates.
 
 ### Reactions use a Yu-Gi-Oh style chain
 
@@ -605,7 +606,7 @@ is a data / spec edit, not a silent reducer rewrite.
 | **playCost discounts** | Apply to `PLAY_CARD` / ritual place / equip / overload, **not** `FORGE_CARD`. “Used” = played for its play region. Min cost 0. |
 | **Archmage** | First Arcane **card** (any main type) the controller plays that turn costs 1 pile token less from `playCost`. |
 | **Tome of Interdiction** | First Instant Arcane that turn costs 1 less from `playCost`. Stacks with Archmage (Instant Arcane can be −2). Spent keys on the host creature / gear; cleared `END_TURN`. |
-| **Paradox GY replay** | Choose 1 Instant or Ritual in the controller’s GY; resolve that card’s play effects (`effect.effects` or `ritual.effects`) immediately; ignore `[Requires: …]` / Active-when; do not pay that card’s `playCost` / Spend; the card **stays in the GY**. Creature-target effects open the usual choose pending. Cards without a playable effect body cannot be chosen. |
+| **Paradox GY replay** | Choose 1 Instant or Ritual in the controller’s GY; resolve that card’s play effects (`effect.effects` or `ritual.effects`) immediately; ignore `[Requires: …]` / Active-when; do not pay that card’s `playCost` / Spend; the card **stays in the GY**. The replaying source cannot choose itself (Echo as a hand Instant is already in GY). Creature-target effects open the usual choose pending. Cards without a playable effect body cannot be chosen. |
 | **Ignore N Shield / pierce** | When the attacker deals attack damage: prevent buffers first (`009`), then skip up to N Shield (those shields are **not** spent), then remaining shields, then HP. War Minotaur: `ignore-shield` 1 standing. Rust: arm `ignoreShieldThisTurn` 2, clear `END_TURN`. |
 | **Attack follow-ups** | `AttackDefinition.followUpEffects` queues extra `EffectDefinition`s after the damage link. Existing cards omit the field. |
 | **Garuda Dive** | Range 2-damage basic. The optional swap rider was removed (Wild must not print Martial movement). |

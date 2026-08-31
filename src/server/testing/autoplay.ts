@@ -578,7 +578,11 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "replay-graveyard-tactic") {
-    const [cardInstanceId] = replayableGraveyardTactics(state, pending.controllerId);
+    const [cardInstanceId] = replayableGraveyardTactics(
+      state,
+      pending.controllerId,
+      pending.sourceCardInstanceId,
+    );
     if (cardInstanceId === undefined) {
       throw new Error("autoplay: no GY tactic to replay");
     }

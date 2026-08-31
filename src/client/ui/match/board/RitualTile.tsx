@@ -10,7 +10,6 @@ import {
   formatRequirementLine,
   formatTypeLine,
   getCard,
-  ritualDurationOf,
   type CardInstance,
   type GameState,
 } from "@server";
@@ -19,6 +18,7 @@ import { tacticPrintText } from "@client/ui/keywords/reminders";
 import {
   formatPlayCostCompact,
   formatPlayCostHover,
+  ritualStayLabel,
 } from "../intents/format";
 import {
   btnClass,
@@ -58,9 +58,7 @@ export function RitualTile({
   if (def === undefined) return null;
 
   const orientation = card.ritualOrientation ?? "—";
-  const duration = ritualDurationOf(def);
-  const durationLabel =
-    duration === "continuous" ? "Continuous (stays)" : duration === "instant" ? "Leaves after activate" : null;
+  const durationLabel = ritualStayLabel(def);
   const activeWhen = formatRequirementLine(def);
   const spend = def.ritual?.spend;
   const spendLine =

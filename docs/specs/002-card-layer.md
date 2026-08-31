@@ -80,9 +80,9 @@ overload an Arcane face).
 | **Equipment** (main type) | Attaches to a creature and grants a standing ability. |
 | **Overload** (main type) | Attaches to an existing die face and modifies it. |
 | **Ritual** (main type) | Goes to the field and waits. `[Active when: …]` names the attributes that switch it on. Subtypes below. |
-| Ritual / Instant | Leaves for the GY after one activation. |
+| Ritual / Instant | Retired from play. Leftover copies still leave for the GY after one activation. Author Instant cards instead. |
 | Ritual / Continuous | Stays in play. Standing triggers while ready. Activate (then exhaust) only when print has an activate body. Active-when is checked against the owner's pile each turn. |
-| Ritual / Reaction | May respond in a reaction window from the field; leaves for the GY after activation — same fate as Ritual / Instant; the difference is *when* it can be used. |
+| Ritual / Reaction | May respond in a reaction window from the field while ready. Stays and exhausts (once per turn) — not GY. |
 
 ### Requirement forms
 
@@ -186,7 +186,7 @@ tempo back with reaction `[Prevent]`. Every row serves forge or play.
 | 2 M | Pawl Spring | Overload / Mechanical | Mechanical face only. On absorb, once per turn: `[Discount 1]` forge. | The absorb-vs-pool tension. Its natural forge paints the Mechanical face it can later overload. |
 | 2 M | Driveshaft Rig | Equipment / Mechanical | On absorb Mechanical (`ally`), once per turn: `[Generate 1 Mechanical]`. | Standing pile growth off your own banking. |
 | 3 M | Machine Shop | Ritual / Continuous / Mechanical | `[Active when: 2 x Mechanical]`. On roll Mechanical: `[Generate 1 Mechanical]`. | The engine's compounding loop while the pile holds. **Forge region installs two** synthetic Mechanical faces — the workshop either runs or gets scrapped for parts. |
-| 3 M | Tempering Line | Ritual / Instant / Mechanical | `[Active when: 2 x Mechanical]`. `[Spend: 2 x Mechanical]`. `[Forge 2 Synthetic Mechanical]`. `[Discount 1]` forge. | Cashes the pile into two faces plus a discount. |
+| 3 M | Tempering Line | Ritual / Continuous / Mechanical | `[Active when: 2 x Mechanical]`. `[Spend: 2 x Mechanical]`. `[Forge 2 Synthetic Mechanical]`. `[Discount 1]` forge. | Construction engine: recurring Forge 2 while the pile holds; Spend 2 each activate. |
 
 **Luminar — heal, `[Mark N Shield]`, reaction `[Prevent]` only**
 
@@ -201,7 +201,7 @@ tempo back with reaction `[Prevent]`. Every row serves forge or play.
 | 2 L + 1 M | Beacon Array | Equipment / Luminar | On absorb Luminar **or Shield** (`ally`), once per turn: `[Heal 1]`. | The only card that pays off a Shield absorb, so opening Shield faces stop being dead sustain. |
 | 2 L | Choirlight | Overload / Luminar | Luminar face only. On roll: `[Heal 1]`. | Sustain welded to a face the deck already rolls. |
 | 3 L | Radiant Accord | Ritual / Continuous / Luminar | `[Active when: 1 x Luminar, 1 x Mechanical]`. On absorb Luminar (`ally`), once per turn: `[Mark 1 Shield]`. | Two-color gate; standing Shield while the pile holds. |
-| 3 L | Daybreak Rite | Ritual / Instant / Luminar | `[Active when: 2 x Luminar]`. `[Spend: 2 x Luminar]`. `[Heal 2]` on each allied frontline creature. | The mass-stabilize turn. The single-target shield-and-swing stays on Bright Cadence; this is the board-wide reset the pile pays for. |
+| 3 L | Daybreak Rite | Ritual / Continuous / Luminar | `[Active when: 2 x Luminar]`. `[Spend: 2 x Luminar]`. `[Heal 2]` on each allied frontline creature. | Named Rite: Luminar sustain engine, not a one-shot stabilize. Spend 2 each activate. |
 
 Faces (spec `004`) and the Tempo squad (spec `003`) carry the same split:
 Mechanical faces bank and rebuild, Luminar faces shield and sustain.
@@ -235,7 +235,7 @@ no Toxin markers, no Martial `[Swap]`, no Wild `[Frenzy]`, and Mechanical
 | 3 A | Riftmark | Instant / Arcane | `[Spend: Arcane]`. `[Drain 2].` | Arcane's closer: reach plus sustain in one card. |
 | 3 A | Scholar's Lien | Equipment / Arcane | `[Discount 1]` on the first Arcane Instant you play each turn. | Makes the answer suite cheap enough to hold up. |
 | 2 A | Runewatch Lens | Overload / Arcane | Arcane face only. On roll: `[Generate 1 Arcane]`. On absorb, once per turn: `[Insight 1]`. | Both halves live — the absorb-vs-pool decision on a face you already roll. |
-| 3 A | Archivist's Summons | Ritual / Instant / Arcane | `[Active when: 2 x Arcane]`. `[Spend: 2 x Arcane]`. `[Search 2]` Instant or Ritual cards. | Turns a banked pile into the exact two answers. |
+| 3 A | Archivist's Summons | Ritual / Continuous / Arcane | `[Active when: 2 x Arcane]`. `[Spend: 2 x Arcane]`. `[Search 2]` Instant or Ritual cards. | Control tutor engine: recurring search while you hold the pile. Spend 2 each activate. |
 | 3 A | Foresight Tithe | Ritual / Continuous / Arcane | `[Active when: 2 x Arcane]`. On roll Arcane: `[Insight 1]`. | Compounding selection while the pile holds. |
 | 2 A | Warded Annals | Equipment / Arcane | On absorb Arcane, once per turn: `[Mark 1 Shield]` on this creature. | Keeps the legendary alive without printing `[Prevent]`. |
 
@@ -250,10 +250,10 @@ no Toxin markers, no Martial `[Swap]`, no Wild `[Frenzy]`, and Mechanical
 | 3 D | Swallowed Whole | Reaction / Darkness | `[Negate]`. Your opponent `[Mill 2]`. | Darkness's answer — it advances the mill plan too. |
 | 2 D | Cinerary Locket | Equipment / Darkness | Arcane or Darkness creatures only. On absorb Darkness, once per turn: your opponent `[Mill 2]`. | Standing mill off your own banking. |
 | 2 D | Nightglass Rune | Overload / Darkness | Darkness face only. On roll: `[Generate 1 Darkness]`. On absorb, once per turn: your opponent `[Mill 1]`. | Cheap recurring fuel with a mill tick attached. |
-| 3 D | Graven Summons | Ritual / Instant / Darkness | `[Active when: Arcane + Darkness]`. `[Spend: 2 x Darkness]`. `[Recall 2]`. | Two-color gate; rebuys spent answers. |
-| 3 D | Echo of the Buried | Ritual / Instant / Darkness | `[Active when: 2 x Darkness]`. Choose an Instant or Ritual card in your graveyard and resolve its effect, ignoring its costs. It stays in your graveyard. | Replays the best card in the yard — Darkness recursion. |
+| 3 D | Graven Summons | Ritual / Continuous / Darkness | `[Active when: Arcane + Darkness]`. `[Spend: 2 x Darkness]`. `[Recall 2]`. | Darkness recursion engine; Spend 2 each activate. |
+| 3 D | Echo of the Buried | Instant / Darkness | Choose an Instant or Ritual card in your graveyard and resolve its effect, ignoring its costs. It stays in your graveyard. | Paradox-style one-shot. Recurring free replay is broken. |
 | 3 D | Nightmarrow Pact | Ritual / Continuous / Darkness | `[Active when: Arcane + Darkness]`. On discard: `[Generate 1 Darkness]`. | Converts every discard into pile fuel. |
-| 4 D | Lightless Verdict | Ritual / Instant / Darkness | `[Active when: Arcane + 2 x Darkness]`. `[Spend: 2 x Darkness]`. `[Strike 4].` | The top-end closer the long game is built to reach. **Forge region installs two** synthetic Darkness faces, so an early copy is engine instead of a dead finisher. |
+| 4 D | Lightless Verdict | Instant / Darkness | `[Requires: Arcane]`. `[Strike 4].` | The top-end closer — dump it from hand for the kill. Recurring Strike 4 is warped. **Forge region installs two** synthetic Darkness faces, so an early copy is engine instead of a dead finisher. |
 
 Faces (spec `004`) and the Control squad (spec `003`) carry the same split:
 Arcane faces see and chip, Darkness faces mill and buy back.
@@ -332,6 +332,8 @@ Figma print mixed Arcane / Corruption / Darkness. **Builtin Control** is now
 squad,” and not “no damage.” Corruption rows below remain catalogue identity
 for other strategies (burn sibling), not the Control builtin.
 
+Live replacements of this table’s Ritual Instant tutors: Archivist's Summons is Ritual / Continuous; Echo of the Buried (Paradox) is Instant / Darkness; Tempering Line (Assembly Line) is Ritual / Continuous.
+
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|
 | 3 | Great Contamination | Ritual / Instant / Corruption | 1 Synthetic Corruption, your die | *Active when: Corruption + Corruption.* [Forge 3 Synthetic Corruption] on one of the opponent's dice. |
@@ -380,7 +382,8 @@ Corruption in that dump and are now Wild / Wild / Martial.
 First Mechanical engine-construction package (absorb-vs-pool: Ratchet / Foundry
 want absorb; Governor / Die Press want the pool; Spare Cog installs a face). Not
 dumped into Aggro / Control; featured in builtin **Tempo** and **Combo
-Mechanical** lists.
+Mechanical** lists. Live replacement of this table’s Ritual Instant Assembly
+Line: Tempering Line is Ritual / Continuous.
 
 | Cost | Name | Type line | Forge | Effect |
 |---|---|---|---|---|

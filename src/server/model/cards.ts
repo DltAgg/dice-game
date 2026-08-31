@@ -40,16 +40,20 @@ export type CardType =
  * Instant / Reaction / Equipment / Overload are main `CardType` values.
  */
 export type CardSubtype =
-  /** Leaves after activation (rituals). */
+  /** Retired ritual subtype. Leftover copies still leave for GY after activation. */
   | "instant"
   /** Stays in play after activation (rituals); exhausts until the owner's next turn. */
   | "continuous"
-  /** Resolves in response to something else (ritual reactions). */
+  /**
+   * May respond from the field in a reaction window; stays and exhausts
+   * (once per turn) like continuous.
+   */
   | "reaction";
 
 /**
- * How a Ritual behaves after activation. Derived from subtypes (`instant` /
- * `continuous`); kept as its own alias because the resolution chain stores it.
+ * How a Ritual behaves after activation. Derived from subtypes: `continuous`
+ * or `reaction` → stay/exhaust; leftover `instant` → GY. Kept as its own alias
+ * because the resolution chain stores it.
  */
 export type CardDuration = "instant" | "continuous";
 
@@ -280,7 +284,8 @@ export interface RitualRegion {
   readonly effects: readonly EffectDefinition[];
   /**
    * Standing triggers while this continuous ritual is `ready` on the field
-   * (Abyssal Sacrifice, Serrated Stinger). Instant/reaction rituals ignore.
+   * (Abyssal Sacrifice, Serrated Stinger). Instant leftover and reaction
+   * rituals ignore — reaction stays/exhausts for activate, not standing fire.
    * Standing fire does not spend Active-when / Spend or exhaust the ritual.
    */
   readonly standingAbilities?: readonly StandingTrigger[];

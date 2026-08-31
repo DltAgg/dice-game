@@ -4,7 +4,7 @@ import { TEMPO_SQUAD } from "../content/creatures.js";
 import { TEMPO_FACE_DECK, TEMPO_STARTING_DICE } from "../content/loadouts/index.js";
 import { HALO_LAMP, LUCENT_CHOIR } from "../content/faces.js";
 import type { GameState } from "../model/state.js";
-import { graveyardOf, ritualsOf } from "../rules/cards.js";
+import { ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
 import {
   creatureIdAt,
@@ -14,6 +14,7 @@ import {
   P1,
   P2,
   resolveOpenChain,
+  withDamage,
   withPile,
   withHand,
   withPhase,
@@ -46,6 +47,7 @@ describe("Tempo luminar control surface", () => {
     );
     const ritualId = ritualsOf(placed, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual");
+    const allyId = creatureIdAt(placed, P1, 0);
     const armed = {
       ...placed,
       cards: {
@@ -57,9 +59,9 @@ describe("Tempo luminar control surface", () => {
         [P1]: { ...placed.players[P1]!, attributePool: { luminar: 2 } },
       },
     };
-    const allyId = creatureIdAt(armed, P1, 0);
+    const wounded = withDamage(armed, allyId, 4);
     let activated = expectOk(
-      advance(armed, {
+      advance(wounded, {
         type: "ACTIVATE_RITUAL",
         playerId: P1,
         cardInstanceId: ritualId,
@@ -75,10 +77,9 @@ describe("Tempo luminar control surface", () => {
       );
     }
     activated = resolveOpenChain(activated);
-    expect(
-      graveyardOf(activated, P1).some((card) => card.id === ritualId) ||
-        (activated.creatures[allyId]?.shields ?? 0) >= 2,
-    ).toBe(true);
+    expect(ritualsOf(activated, P1).some((card) => card.id === ritualId)).toBe(true);
+    expect(activated.cards[ritualId]?.ritualOrientation).toBe("exhausted");
+    expect(activated.creatures[allyId]?.damage).toBe(2);
   });
 
   it("Radiant Accord stays on field as a continuous ritual", () => {

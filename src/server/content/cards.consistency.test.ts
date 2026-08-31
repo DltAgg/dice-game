@@ -71,4 +71,13 @@ describe("card type ↔ region consistency", () => {
     expect(Object.keys(known).sort()).toEqual(["continuous", "instant", "reaction"]);
     expect(ATTACHMENT_TYPES.every((type) => !(type in known))).toBe(true);
   });
+
+  it.each(ALL_CARDS)("$name: live rituals are not Instant subtype", (card) => {
+    if (card.type === "ritual") {
+      expect(
+        card.subtypes.includes("instant"),
+        `${card.name} is type ritual but still has Instant subtype`,
+      ).toBe(false);
+    }
+  });
 });

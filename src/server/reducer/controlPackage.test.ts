@@ -22,7 +22,7 @@ import { ENGINE_TEST_FACE_DECK } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { asAttackId, asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { graveyardOf, ritualsOf } from "../rules/cards.js";
+import { graveyardOf, replayableGraveyardTactics, ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
 import {
   advanceResolvingChain,
@@ -287,19 +287,22 @@ describe("Darkness Control package", () => {
         cardInstanceId: handCardIdAt(spent, P1, 0),
       }),
     );
-    const armed = withAttributePool(
-      placedRitualReady(withPile(withHand(afterMill, P1, [ECHO_OF_THE_BURIED]), P1, 10), P1),
-      P1,
-      { darkness: 2 },
+    const ready = withPile(withHand(afterMill, P1, [ECHO_OF_THE_BURIED]), P1, 10);
+    const played = expectOk(
+      advanceResolvingChain(ready, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+      }),
     );
-    const ritual = ritualsOf(armed, P1)[0];
-    if (ritual === undefined) throw new Error("ritual was not placed");
-    const activated = resolveOpenChain(
-      expectOk(
-        advance(armed, { type: "ACTIVATE_RITUAL", playerId: P1, cardInstanceId: ritual.id }),
-      ),
-    );
-    expect(activated.pendingDecision?.type).toBe("replay-graveyard-tactic");
+    expect(played.pendingDecision?.type).toBe("replay-graveyard-tactic");
+    const echo = graveyardOf(played, P1).find((card) => card.cardId === ECHO_OF_THE_BURIED);
+    const source =
+      played.pendingDecision?.type === "replay-graveyard-tactic"
+        ? played.pendingDecision.sourceCardInstanceId
+        : null;
+    expect(echo?.id).toBe(source);
+    expect(replayableGraveyardTactics(played, P1, source)).not.toContain(echo?.id);
   });
 
   it("Cinerary Locket only equips Arcane or Darkness creatures", () => {
