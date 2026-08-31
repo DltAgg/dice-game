@@ -127,7 +127,7 @@ const STEM_RULES: readonly StemRule[] = [
   },
   {
     test: (body) => /^Stamp$/i.test(body),
-    reminder: "Re-fire showing face On roll + overloads.",
+    reminder: "Re-fire showing face roll effects (no new rolled pip).",
   },
   {
     test: (body) => /^Double$/i.test(body),

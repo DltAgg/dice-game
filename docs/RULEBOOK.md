@@ -120,8 +120,9 @@ that face), then a usable attribute pip **auto-banks** (On absorb). The
 previous roll of that die is not undone: a token already in your pile stays,
 and an unabsorbed leftover (Shield, locked) is replaced by the new result
 rather than sitting beside it. `[Stamp]` is different: it re-fires the
-**current** showing face’s On roll and overloads without changing the face or
-generating a new pip.
+**current** showing face’s roll effects — On roll, overloads on that face,
+Overcharge pips, forge-yield extra Generate, and equipment on-roll-symbol —
+without changing the face or creating a new rolled pip.
 
 There is no dedicated absorb phase and no leftover-rolled flip. The turn
 pool mainly holds **Shield** (and locked/unusable pips). Attributes live in

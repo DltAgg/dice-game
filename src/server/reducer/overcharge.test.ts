@@ -210,6 +210,25 @@ describe("tactic Overcharge", () => {
     expect(second.state).toBe(charged);
   });
 
+  it("stacks two Overcharges on the same face: next roll Generates +2", () => {
+    const ready = actionsReady([SCHOLARS_LIEN, SCHOLARS_LIEN]);
+    const firstId = handCardIdAt(ready, P1, 0);
+    const secondId = handCardIdAt(ready, P1, 1);
+    const once = expectOk(advance(ready, overchargeAction(P1, firstId, DARKNESS_NATURAL)));
+    const p2Turn = expectOk(advance(once, { type: "END_TURN", playerId: P1 }));
+    const p1Again = withPhase(
+      expectOk(advance(p2Turn, { type: "END_TURN", playerId: P2 })),
+      "actions",
+    );
+    expect(canOvercharge(p1Again, P1, secondId)).toBe(true);
+    const twice = expectOk(advance(p1Again, overchargeAction(P1, secondId, DARKNESS_NATURAL)));
+    expect(twice.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toEqual(["arcane", "arcane"]);
+
+    const rolled = rollShowingSlot(twice, DARKNESS_SLOT);
+    expect(rolled.players[P1]?.attributePool.darkness).toBe(1);
+    expect(rolled.players[P1]?.attributePool.arcane).toBe(2);
+  });
+
   it("synthetic-forge card cannot Overcharge", () => {
     const ready = actionsReady([TWIN_CAM]);
     const cardId = handCardIdAt(ready, P1, 0);

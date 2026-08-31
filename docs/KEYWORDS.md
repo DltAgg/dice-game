@@ -157,7 +157,7 @@ These are not tokens.
 | `[Mill N]` | Put cards from a deck into a graveyard. Darkness exclusive. |
 | `[Reposition]` / `[Swap]` | Move an ally frontline ↔ back / swap with an ally. Martial exclusive. |
 | `[Reforge]` | Replace one of your matching synthetic faces (no forge-draw). Mechanical exclusive. |
-| `[Stamp]` | Re-fire a showing face’s On roll and its overloads. Mechanical exclusive. |
+| `[Stamp]` | Re-fire a showing face’s roll effects (On roll, overloads, Overcharge, forge yield, equipment on-roll-symbol). No new rolled pip. Mechanical exclusive. |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
 | `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
 | `[Reroll]` | Roll that die again during actions: On roll fires for the **new** face, then a usable attribute auto-banks (On absorb). Not `[Stamp]` (same showing face, no new pip). |

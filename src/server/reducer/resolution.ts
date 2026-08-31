@@ -60,6 +60,7 @@ import { AstCompiler } from "../ast/compiler.js";
 import { AstExecutor } from "../ast/executor.js";
 import { AstValidator } from "../ast/validator.js";
 import { createGenericRegistry } from "../ast/opcodes/generic.js";
+import { refireShownFaceRollEffects } from "./commands/shownFace.js";
 
 /**
  * Effect resolution (SPDD §17). Effects are drained from an explicit stack
@@ -1453,36 +1454,7 @@ export function fireDieModifiers(
   const die = draft.dice[dieId];
   const slotIndex = die?.rolledSlotIndex;
   if (die === undefined || slotIndex === null || slotIndex === undefined) return;
-  const slot = die.slots[slotIndex];
-  if (slot === undefined) return;
-  const face = getFaceCard(slot.faceCardId);
-  if (face !== undefined) {
-    for (const effect of [...face.onRoll].reverse()) {
-      pushEffect(draft, controllerId, effect, null, null, null, dieId, slotIndex);
-    }
-  }
-  const player = draft.players[controllerId];
-  if (player === undefined) return;
-  for (const cardInstanceId of player.overload) {
-    const card = draft.cards[cardInstanceId];
-    if (card?.attachedToFaceCardId !== slot.faceCardId) continue;
-    const region = getCard(card.cardId)?.overload;
-    if (region === undefined) continue;
-    for (const effect of [...region.onRoll].reverse()) {
-      pushEffect(
-        draft,
-        controllerId,
-        effect,
-        null,
-        null,
-        null,
-        dieId,
-        slotIndex,
-        0,
-        cardInstanceId,
-      );
-    }
-  }
+  refireShownFaceRollEffects(draft, controllerId, dieId, slotIndex);
 }
 
 function applyCopyOtherDieFace(draft: Draft, pending: PendingEffect): void {

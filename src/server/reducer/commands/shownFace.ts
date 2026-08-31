@@ -155,6 +155,35 @@ export function fireOverloadsForShownFace(
   }
 }
 
+/**
+ * Re-fire the showing face's roll hooks without changing the face or creating a
+ * new rolled pip (`[Stamp]`, `reapply-die-modifiers`). Same generate + hook
+ * order as `ROLL_DICE` / `[Reroll]` after the pip exists.
+ */
+export function refireShownFaceRollEffects(
+  draft: Draft,
+  controllerId: PlayerId,
+  dieId: DieId,
+  slotIndex: number,
+): void {
+  const die = draft.dice[dieId];
+  const slot = die?.slots[slotIndex];
+  if (die === undefined || slot === undefined) return;
+  const face = getFaceCard(slot.faceCardId);
+  if (face === undefined) return;
+
+  applyForgeYieldGenerate(draft, controllerId, slot, face.symbol);
+  applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
+  fireShownFaceRollHooks(
+    draft,
+    controllerId,
+    dieId,
+    slotIndex,
+    slot.faceCardId,
+    face.symbol,
+  );
+}
+
 /** On roll → overloads on that face → equipment on-roll-symbol (`ROLL_DICE` order). */
 export function fireShownFaceRollHooks(
   draft: Draft,
