@@ -2,17 +2,45 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dice-skirmish.local/schema/creature.schema.json",
   "title": "CreatureDefinition",
+  "description": "One creature JSON document (src/server/content/creatures/<creature-id>.json). Creatures have no ATK/DEF — an attack is a pile cost plus an effect. Every legal squad has exactly one legendary.",
   "type": "object",
+  "additionalProperties": false,
   "required": ["id", "name", "life", "attributes", "passiveRulesText", "attacks"],
   "properties": {
     "$schema": { "type": "string" },
-    "id": { "type": "string" },
-    "name": { "type": "string" },
-    "life": { "type": "number" },
-    "attributes": { "type": "array", "items": { "type": "string" } },
-    "legendary": { "type": "boolean" },
-    "passiveRulesText": { "type": "string" },
-    "standingAbilities": { "type": "array" },
-    "attacks": { "type": "array" }
+    "id": { "$ref": "defs.schema.json#/$defs/creatureId" },
+    "name": { "type": "string", "minLength": 1 },
+    "life": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Max life. Damage lives on CreatureState so the definition never desyncs."
+    },
+    "attributes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "defs.schema.json#/$defs/attribute" },
+      "description": "One attribute, or two for dual-colour legendaries / bridges."
+    },
+    "legendary": {
+      "type": "boolean",
+      "description": "Commander-style win target. Omit / false = non-legendary. Defeating the opposing legendary wins the match."
+    },
+    "passiveRulesText": {
+      "type": "string",
+      "description": "English passive text as printed under the art. Empty string when none."
+    },
+    "standingAbilities": {
+      "description": "Data-driven standing passives (spec 010). Prefer relation filters on shared hooks (on-absorb, on-attack, …) over special-cased reducer branches.",
+      "type": "array",
+      "items": { "$ref": "defs.schema.json#/$defs/standingTrigger" }
+    },
+    "attacks": {
+      "description": "Printed attacks. Typically one basic and one special. Each has kind, optional requires / discards, range, rulesText, optional effect and followUpEffects.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "defs.schema.json#/$defs/attackDefinition" }
+    }
   }
 }

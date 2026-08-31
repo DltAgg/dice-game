@@ -2,36 +2,48 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dice-skirmish.local/schema/loadout.schema.json",
   "title": "BuiltinLoadout",
+  "description": "One builtin deck JSON document (src/server/content/loadouts/<archetype>.json). Structural shape only — rules legality (known ids, 40–50 cards, ≤3 copies, face-deck cap 12, opening dice) is validateLoadout.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "name", "squad", "deckCounts", "faceDeck", "startingDice"],
   "properties": {
     "$schema": { "type": "string" },
-    "id": { "type": "string" },
-    "name": { "type": "string" },
+    "id": { "$ref": "defs.schema.json#/$defs/loadoutId" },
+    "name": { "type": "string", "minLength": 1 },
     "squad": {
+      "description": "Three creature definition ids, deployment order. Exactly one must be legendary (checked by validateLoadout, not this schema).",
       "type": "array",
       "minItems": 3,
       "maxItems": 3,
-      "items": { "type": "string" }
+      "uniqueItems": true,
+      "items": { "$ref": "defs.schema.json#/$defs/creatureId" }
     },
     "deckCounts": {
+      "description": "Tactics/ritual copies expanded to a 40–50 card list. At most 3 copies per cardId.",
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": ["cardId", "copies"],
         "properties": {
-          "cardId": { "type": "string" },
-          "copies": { "type": "integer", "minimum": 1, "maximum": 3 }
+          "cardId": { "$ref": "defs.schema.json#/$defs/cardId" },
+          "copies": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          }
         }
       }
     },
     "faceDeck": {
+      "description": "Named specials (and dual-kind naturals that occupy the 12). Untyped Shield and opening naturals do not consume the face-deck cap when used as startingDice basics.",
       "type": "array",
-      "items": { "type": "string" }
+      "maxItems": 12,
+      "items": { "$ref": "defs.schema.json#/$defs/faceId" }
     },
     "startingDice": {
+      "description": "Two opening d6 of six face ids each (already expanded naturals + Shield). dicePerPlayer is 2; FACE_SLOTS_PER_DIE is 6.",
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
@@ -39,7 +51,7 @@
         "type": "array",
         "minItems": 6,
         "maxItems": 6,
-        "items": { "type": "string" }
+        "items": { "$ref": "defs.schema.json#/$defs/faceId" }
       }
     }
   }

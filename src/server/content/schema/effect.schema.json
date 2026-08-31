@@ -1,0 +1,830 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dice-skirmish.local/schema/effect.schema.json",
+  "title": "Effect",
+  "description": "Catalogue effect node. New JSON should prefer AST (op). Legacy type members are compiled by AstCompiler. Both are valid.",
+  "$ref": "#/$defs/effect",
+  "$defs": {
+    "effect": {
+      "title": "Effect",
+      "oneOf": [
+        { "$ref": "#/$defs/astEffect" },
+        { "$ref": "#/$defs/legacyEffect" }
+      ]
+    },
+    "effectList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/effect" }
+    },
+    "negateCardTypes": {
+      "description": "Which card links negate-card can hit. any = any card-sourced chain link (not attacks; forge never opens the chain).",
+      "oneOf": [
+        { "const": "any" },
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "defs.schema.json#/$defs/cardType" }
+        }
+      ]
+    },
+    "astOp": {
+      "type": "string",
+      "enum": [
+        "damage",
+        "heal",
+        "mark",
+        "strip",
+        "draw",
+        "discard",
+        "search",
+        "mill",
+        "forge",
+        "reposition",
+        "swap",
+        "negate",
+        "modify",
+        "generate-symbol",
+        "convert-symbols",
+        "sequence",
+        "branch",
+        "prompt",
+        "prevent-attack-reflect",
+        "replace-synthetic-face",
+        "retain-die",
+        "replay-graveyard-tactic",
+        "copy-pool-symbol",
+        "look-top-deck",
+        "peek-deck-optional-bottom",
+        "dark-pact",
+        "mind-control",
+        "extermination",
+        "reapply-die-modifiers",
+        "copy-other-die-face",
+        "optional-reroll-die",
+        "remove-toxin-deal-damage",
+        "lock-corrupted-face-resource",
+        "spread-corruption-marker",
+        "suppress-opposing-natural-inherent",
+        "strip-corrupted-face-unusable-symbol",
+        "arm-wildcard-from-synthetic-pool",
+        "copy-appeared-synthetic-onroll",
+        "optional-overcharge",
+        "optional-bonus-basic-attack",
+        "destroy-equipment",
+        "destroy-ritual",
+        "drain-life",
+        "search-graveyard"
+      ]
+    },
+    "astEffect": {
+      "title": "AST EffectNode",
+      "description": "Spec 018 opcode tree. Prefer mark / strip / modify / sequence / branch over minting a new type. mark requires token; branch requires when; modify requires stat.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op"],
+      "properties": {
+        "op": { "$ref": "#/$defs/astOp" },
+        "amount": { "$ref": "defs.schema.json#/$defs/valueExpr" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "token": { "$ref": "defs.schema.json#/$defs/tokenKind" },
+        "player": { "$ref": "defs.schema.json#/$defs/playerSide" },
+        "optional": { "type": "boolean" },
+        "then": { "$ref": "#/$defs/effectList" },
+        "else": { "$ref": "#/$defs/effectList" },
+        "when": { "$ref": "defs.schema.json#/$defs/conditionExpr" },
+        "effects": { "$ref": "#/$defs/effectList" },
+        "filter": {
+          "type": "array",
+          "items": { "$ref": "defs.schema.json#/$defs/cardType" }
+        },
+        "maxPlayCost": { "$ref": "defs.schema.json#/$defs/amount" },
+        "symbol": { "$ref": "defs.schema.json#/$defs/symbolType" },
+        "fromSymbol": { "$ref": "defs.schema.json#/$defs/symbolType" },
+        "stat": { "$ref": "defs.schema.json#/$defs/modifyStat" },
+        "duration": { "$ref": "defs.schema.json#/$defs/duration" },
+        "cardTypes": { "$ref": "#/$defs/negateCardTypes" },
+        "scope": { "type": "string", "enum": ["card", "ritual"] },
+        "faces": { "$ref": "defs.schema.json#/$defs/positiveAmount" },
+        "kind": { "$ref": "defs.schema.json#/$defs/forgeableFaceKind" },
+        "attribute": { "$ref": "defs.schema.json#/$defs/attribute" },
+        "forgeTarget": { "$ref": "defs.schema.json#/$defs/forgeTarget" },
+        "with": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "sourceOnly": { "type": "boolean" },
+        "oncePerTurn": { "type": "boolean" },
+        "sameFaceAllyDamage": { "$ref": "defs.schema.json#/$defs/amount" },
+        "searchZone": { "type": "string", "enum": ["deck", "graveyard"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "op": { "const": "mark" } }, "required": ["op"] },
+          "then": {
+            "required": ["token"],
+            "properties": { "token": { "$ref": "defs.schema.json#/$defs/tokenKind" } }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "branch" } }, "required": ["op"] },
+          "then": {
+            "required": ["when"],
+            "properties": { "when": { "$ref": "defs.schema.json#/$defs/conditionExpr" } }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "modify" } }, "required": ["op"] },
+          "then": {
+            "required": ["stat"],
+            "properties": { "stat": { "$ref": "defs.schema.json#/$defs/modifyStat" } }
+          }
+        }
+      ]
+    },
+    "legacyEffect": {
+      "title": "Legacy EffectDefinition",
+      "description": "type-discriminated union the engine interprets today. Prefer AST op nodes for newly edited cards.",
+      "oneOf": [
+        { "$ref": "#/$defs/damage" },
+        { "$ref": "#/$defs/heal" },
+        { "$ref": "#/$defs/grantShield" },
+        { "$ref": "#/$defs/generateSymbol" },
+        { "$ref": "#/$defs/drawCards" },
+        { "$ref": "#/$defs/discardCards" },
+        { "$ref": "#/$defs/searchDeck" },
+        { "$ref": "#/$defs/searchGraveyard" },
+        { "$ref": "#/$defs/destroyEquipment" },
+        { "$ref": "#/$defs/applyToxin" },
+        { "$ref": "#/$defs/removeShield" },
+        { "$ref": "#/$defs/nextAttackBonus" },
+        { "$ref": "#/$defs/grantNextAttackBonus" },
+        { "$ref": "#/$defs/armAttackToxin" },
+        { "$ref": "#/$defs/negateCard" },
+        { "$ref": "#/$defs/negateRitual" },
+        { "$ref": "#/$defs/drainLife" },
+        { "$ref": "#/$defs/destroyRitual" },
+        { "$ref": "#/$defs/grantAttackPrevent" },
+        { "$ref": "#/$defs/preventAttackReflect" },
+        { "$ref": "#/$defs/armPreventDraw" },
+        { "$ref": "#/$defs/forgeFaces" },
+        { "$ref": "#/$defs/replaceSyntheticFace" },
+        { "$ref": "#/$defs/repositionCreature" },
+        { "$ref": "#/$defs/swapPositions" },
+        { "$ref": "#/$defs/conditional" },
+        { "$ref": "#/$defs/retainDie" },
+        { "$ref": "#/$defs/convertSymbols" },
+        { "$ref": "#/$defs/armIgnoreShield" },
+        { "$ref": "#/$defs/armRequirementWildcard" },
+        { "$ref": "#/$defs/armForgeDiscount" },
+        { "$ref": "#/$defs/armRedirectDamage" },
+        { "$ref": "#/$defs/armNextIncomingBonus" },
+        { "$ref": "#/$defs/armBladeRain" },
+        { "$ref": "#/$defs/replayGraveyardTactic" },
+        { "$ref": "#/$defs/copyPoolSymbol" },
+        { "$ref": "#/$defs/lookTopDeck" },
+        { "$ref": "#/$defs/peekDeckOptionalBottom" },
+        { "$ref": "#/$defs/darkPact" },
+        { "$ref": "#/$defs/mindControl" },
+        { "$ref": "#/$defs/extermination" },
+        { "$ref": "#/$defs/reapplyDieModifiers" },
+        { "$ref": "#/$defs/copyOtherDieFace" },
+        { "$ref": "#/$defs/optionalRerollDie" },
+        { "$ref": "#/$defs/addPestilenceCounter" },
+        { "$ref": "#/$defs/armToxinReceiveCap" },
+        { "$ref": "#/$defs/removeToxinDealDamage" },
+        { "$ref": "#/$defs/addCorruptionMarker" },
+        { "$ref": "#/$defs/lockCorruptedFaceResource" },
+        { "$ref": "#/$defs/spreadCorruptionMarker" },
+        { "$ref": "#/$defs/suppressOpposingNaturalInherent" },
+        { "$ref": "#/$defs/stripCorruptedFaceUnusableSymbol" },
+        { "$ref": "#/$defs/armWildcardFromSyntheticPool" },
+        { "$ref": "#/$defs/copyAppearedSyntheticOnroll" },
+        { "$ref": "#/$defs/optionalOvercharge" },
+        { "$ref": "#/$defs/armResolveNextFaceEffectTwice" },
+        { "$ref": "#/$defs/optionalBonusBasicAttack" },
+        { "$ref": "#/$defs/grantExtraAttack" },
+        { "$ref": "#/$defs/millCards" }
+      ]
+    },
+    "damage": {
+      "title": "damage",
+      "description": "[Strike N] / deal damage to a creature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "damage" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "heal": {
+      "title": "heal",
+      "description": "[Heal N] on a creature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "heal" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "grantShield": {
+      "title": "grant-shield",
+      "description": "[Mark N Shield] on a creature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "grant-shield" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "generateSymbol": {
+      "title": "generate-symbol",
+      "description": "[Generate N Attribute] into the controller's unabsorbed pool.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "symbol", "amount"],
+      "properties": {
+        "type": { "const": "generate-symbol" },
+        "symbol": { "$ref": "defs.schema.json#/$defs/symbolType" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "drawCards": {
+      "title": "draw-cards",
+      "description": "[Draw N]. Default player is controller.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "draw-cards" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "player": { "$ref": "defs.schema.json#/$defs/playerSide" }
+      }
+    },
+    "discardCards": {
+      "title": "discard-cards",
+      "description": "[Discard N] from hand. optional allows fewer (including 0). then queues after a successful discard of at least one card.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "discard-cards" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "optional": { "type": "boolean" },
+        "then": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "searchDeck": {
+      "title": "search-deck",
+      "description": "[Search N]: look through the controller's deck, choose up to amount cards whose main CardType is in filter, add them to hand, then shuffle.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "filter"],
+      "properties": {
+        "type": { "const": "search-deck" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "filter": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "defs.schema.json#/$defs/cardType" }
+        }
+      }
+    },
+    "searchGraveyard": {
+      "title": "search-graveyard",
+      "description": "[Recall N]: choose up to amount cards in the controller's graveyard and return them to hand. Optional maxPlayCost.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "search-graveyard" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "maxPlayCost": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "destroyEquipment": {
+      "title": "destroy-equipment",
+      "description": "Send one equipment on the target creature to its owner's graveyard. 2+ pieces open choose-equipment.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target"],
+      "properties": {
+        "type": { "const": "destroy-equipment" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "applyToxin": {
+      "title": "apply-toxin",
+      "description": "[Mark N Toxin] on a creature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "apply-toxin" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "removeShield": {
+      "title": "remove-shield",
+      "description": "[Strip N Shield] from a creature.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "remove-shield" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "nextAttackBonus": {
+      "title": "next-attack-bonus",
+      "description": "[Empower N] on the controller's next attack this turn (cleared at EOT).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "next-attack-bonus" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "grantNextAttackBonus": {
+      "title": "grant-next-attack-bonus",
+      "description": "[Empower N] on a named creature's next attack.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "grant-next-attack-bonus" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "armAttackToxin": {
+      "title": "arm-attack-toxin",
+      "description": "Controller's attacks this turn apply this many Toxin markers to the attack target.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "arm-attack-toxin" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "negateCard": {
+      "title": "negate-card",
+      "description": "[Negate]. Hits the top chain link when it is a card-sourced link. cardTypes any = any card; or a list of main types (e.g. [instant]).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "cardTypes"],
+      "properties": {
+        "type": { "const": "negate-card" },
+        "cardTypes": { "$ref": "#/$defs/negateCardTypes" }
+      }
+    },
+    "negateRitual": {
+      "title": "negate-ritual",
+      "description": "[Negate Ritual]. Whiffs unless the top chain link is ritual-place or ritual-activate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "negate-ritual" } }
+    },
+    "drainLife": {
+      "title": "drain-life",
+      "description": "[Drain N]: deal up to amount damage to target, then heal with for the HP actually lost.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target", "with"],
+      "properties": {
+        "type": { "const": "drain-life" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "with": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "destroyRitual": {
+      "title": "destroy-ritual",
+      "description": "Send one opposing field ritual to its owner's graveyard.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target"],
+      "properties": {
+        "type": { "const": "destroy-ritual" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "grantAttackPrevent": {
+      "title": "grant-attack-prevent",
+      "description": "[Prevent N] — Luminar reaction-exclusive. Amount is incoming attack instances to cancel before Shields.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "grant-attack-prevent" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "preventAttackReflect": {
+      "title": "prevent-attack-reflect",
+      "description": "Cancel damage on the waiting attack chain link and deal that amount to the attacker.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "prevent-attack-reflect" } }
+    },
+    "armPreventDraw": {
+      "title": "arm-prevent-draw",
+      "description": "Arm \"when you next prevent damage, draw N\".",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "arm-prevent-draw" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "forgeFaces": {
+      "title": "forge-faces",
+      "description": "[Forge N] as an effect: the controller forges faces copies of one matching face card onto a single die. Same install rules as the PLAY forge region, without spending a tactic from hand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "faces", "kind", "attribute", "target"],
+      "properties": {
+        "type": { "const": "forge-faces" },
+        "faces": { "$ref": "defs.schema.json#/$defs/positiveAmount" },
+        "kind": { "$ref": "defs.schema.json#/$defs/forgeableFaceKind" },
+        "attribute": { "$ref": "defs.schema.json#/$defs/attribute" },
+        "target": { "$ref": "defs.schema.json#/$defs/forgeTarget" }
+      }
+    },
+    "replaceSyntheticFace": {
+      "title": "replace-synthetic-face",
+      "description": "[Reforge]: choose an owned die slot whose installed face matches kind+attribute, return that face to the pool, then install a different matching face onto the same slot. Not a forge — no forge-draw.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "kind", "attribute"],
+      "properties": {
+        "type": { "const": "replace-synthetic-face" },
+        "kind": { "$ref": "defs.schema.json#/$defs/forgeableFaceKind" },
+        "attribute": { "$ref": "defs.schema.json#/$defs/attribute" }
+      }
+    },
+    "repositionCreature": {
+      "title": "reposition-creature",
+      "description": "Toggle an ally between frontline and back. Opposing targets whiff.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target"],
+      "properties": {
+        "type": { "const": "reposition-creature" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "optional": { "type": "boolean" }
+      }
+    },
+    "swapPositions": {
+      "title": "swap-positions",
+      "description": "Swap the source creature with an ally with. Opposing targets whiff (push banned).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "with"],
+      "properties": {
+        "type": { "const": "swap-positions" },
+        "with": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "optional": { "type": "boolean" }
+      }
+    },
+    "conditional": {
+      "title": "conditional",
+      "description": "Run then only when when holds. Compiles to AST branch.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "when", "then"],
+      "properties": {
+        "type": { "const": "conditional" },
+        "when": { "$ref": "defs.schema.json#/$defs/effectCondition" },
+        "then": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "retainDie": {
+      "title": "retain-die",
+      "description": "Pending: choose an owned retainable die and mark it retained.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "retain-die" } }
+    },
+    "convertSymbols": {
+      "title": "convert-symbols",
+      "description": "Pending: convert up to amount rolled/available symbols into Natural attributes. sourceOnly limits the choice to the symbol generated by the source die this roll.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "convert-symbols" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "sourceOnly": { "type": "boolean" }
+      }
+    },
+    "armIgnoreShield": {
+      "title": "arm-ignore-shield",
+      "description": "Controller's attacks this turn ignore this many Shield.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "arm-ignore-shield" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "armRequirementWildcard": {
+      "title": "arm-requirement-wildcard",
+      "description": "One-shot: may pay any [Spend] / [Requires] / [Active when] attribute this turn. Consumed when used.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "arm-requirement-wildcard" },
+        "fromSymbol": { "$ref": "defs.schema.json#/$defs/symbolType" }
+      }
+    },
+    "armForgeDiscount": {
+      "title": "arm-forge-discount",
+      "description": "[Discount N] forge: next FORGE_CARD this turn costs this much less from the pile (min 0).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "arm-forge-discount" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "armRedirectDamage": {
+      "title": "arm-redirect-damage",
+      "description": "Until EOT, up to amount damage that would hit another allied creature is dealt to target instead (Aegis).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "arm-redirect-damage" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "armNextIncomingBonus": {
+      "title": "arm-next-incoming-bonus",
+      "description": "Next incoming damage on target is increased by amount.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "arm-next-incoming-bonus" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "armBladeRain": {
+      "title": "arm-blade-rain",
+      "description": "Next attack this turn: distribute that attack's damage among living enemies in range of the attacker.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "arm-blade-rain" } }
+    },
+    "replayGraveyardTactic": {
+      "title": "replay-graveyard-tactic",
+      "description": "Pending: choose a GY tactic with an effect region; resolve those effects immediately without paying pile cost or [Requires]. The card stays in the GY.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "replay-graveyard-tactic" } }
+    },
+    "copyPoolSymbol": {
+      "title": "copy-pool-symbol",
+      "description": "Pending: choose another symbol type currently in the controller's rolled/available pool and generate 1 of that type.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "copy-pool-symbol" } }
+    },
+    "lookTopDeck": {
+      "title": "look-top-deck",
+      "description": "[Insight N]: look at the top amount of the deck; choose 1 to hand, rest to bottom.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "look-top-deck" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "peekDeckOptionalBottom": {
+      "title": "peek-deck-optional-bottom",
+      "description": "[Insight 1] variant: peek the top of the deck; optionally put it on the bottom.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "peek-deck-optional-bottom" } }
+    },
+    "darkPact": {
+      "title": "dark-pact",
+      "description": "Pending: send 2 different-attribute tactics from deck to GY, then shuffle.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "dark-pact" } }
+    },
+    "mindControl": {
+      "title": "mind-control",
+      "description": "Pending: strip all overloads from 1 opposing face, or 1 overload from each of up to 2 opposing faces.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "mind-control" } }
+    },
+    "extermination": {
+      "title": "extermination",
+      "description": "Pending: consume every synthetic Corruption face on one die; deal 2 * consumed split across up to 2 creatures. No forge-draw.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "extermination" } }
+    },
+    "reapplyDieModifiers": {
+      "title": "reapply-die-modifiers",
+      "description": "[Stamp]: choose an owned showing die and re-fire its face onRoll plus overload onRoll (no second inherent pip).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "reapply-die-modifiers" } }
+    },
+    "copyOtherDieFace": {
+      "title": "copy-other-die-face",
+      "description": "Re-fire the controller's other die's showing face onRoll and that face's overloads.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "copy-other-die-face" } }
+    },
+    "optionalRerollDie": {
+      "title": "optional-reroll-die",
+      "description": "[Reroll]. With sourceDieId (on-roll) that die; otherwise opens owned-rolled. oncePerTurn spends a player key. sameFaceAllyDamage is Adrenaline's same-face self-hit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "optional-reroll-die" },
+        "oncePerTurn": { "type": "boolean" },
+        "sameFaceAllyDamage": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "addPestilenceCounter": {
+      "title": "add-pestilence-counter",
+      "description": "Add 1 pestilence counter on the source slot; at the showing face's pestilenceSpreadAt, reset and try an adjacent forge of that face.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "add-pestilence-counter" } }
+    },
+    "armToxinReceiveCap": {
+      "title": "arm-toxin-receive-cap",
+      "description": "Until the target's owner's next turn, further apply-toxin applications may grant at most amount markers total.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "arm-toxin-receive-cap" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "removeToxinDealDamage": {
+      "title": "remove-toxin-deal-damage",
+      "description": "Remove up to amount Toxin markers from the target and deal that much damage.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "remove-toxin-deal-damage" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "addCorruptionMarker": {
+      "title": "add-corruption-marker",
+      "description": "[Mark N Corruption] on an opposing synthetic face slot (pending).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "add-corruption-marker" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "lockCorruptedFaceResource": {
+      "title": "lock-corrupted-face-resource",
+      "description": "Pending: lock an opposing Corrupted face so its symbols cannot pay costs this turn.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "lock-corrupted-face-resource" } }
+    },
+    "spreadCorruptionMarker": {
+      "title": "spread-corruption-marker",
+      "description": "If the opponent has a Corrupted face, pending: put 1 Corruption marker on another face of the same die.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "spread-corruption-marker" } }
+    },
+    "suppressOpposingNaturalInherent": {
+      "title": "suppress-opposing-natural-inherent",
+      "description": "Pending: choose an opposing Natural face; suppress its inherent onRoll until the next roll.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "suppress-opposing-natural-inherent" } }
+    },
+    "stripCorruptedFaceUnusableSymbol": {
+      "title": "strip-corrupted-face-unusable-symbol",
+      "description": "Pending: strip an opposing Corrupted face to Shield and put an unusable Corruption symbol in the controller's pool.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "strip-corrupted-face-unusable-symbol" } }
+    },
+    "armWildcardFromSyntheticPool": {
+      "title": "arm-wildcard-from-synthetic-pool",
+      "description": "Pending: choose a Synthetic symbol in the controller's pool; arm a requirement wildcard from that symbol.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "arm-wildcard-from-synthetic-pool" } }
+    },
+    "copyAppearedSyntheticOnroll": {
+      "title": "copy-appeared-synthetic-onroll",
+      "description": "Pending: re-queue onRoll of a Synthetic face that appeared this roll for the controller.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "copy-appeared-synthetic-onroll" } }
+    },
+    "optionalOvercharge": {
+      "title": "optional-overcharge",
+      "description": "Spec 013 face-marker opcode (not tactic [Overcharge] / spec 021). Pending optional: bank amount of symbol and mark the source slot Overcharged.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "symbol", "amount"],
+      "properties": {
+        "type": { "const": "optional-overcharge" },
+        "symbol": { "$ref": "defs.schema.json#/$defs/symbolType" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" }
+      }
+    },
+    "armResolveNextFaceEffectTwice": {
+      "title": "arm-resolve-next-face-effect-twice",
+      "description": "[Double]: the next face-sourced effect the controller resolves this turn is applied twice.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "arm-resolve-next-face-effect-twice" } }
+    },
+    "optionalBonusBasicAttack": {
+      "title": "optional-bonus-basic-attack",
+      "description": "Pending optional: the absorbing creature may declare a basic attack now during the actions window if it has not attacked this turn. Prefer [Frenzy] / grant-extra-attack for Wild exclusive multi-attack.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": { "type": { "const": "optional-bonus-basic-attack" } }
+    },
+    "grantExtraAttack": {
+      "title": "grant-extra-attack",
+      "description": "Wild [Frenzy]: the target may declare amount additional attacks this turn.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "grant-extra-attack" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "millCards": {
+      "title": "mill-cards",
+      "description": "[Mill N]: put the top amount cards of player's deck into that player's graveyard. Not discard-from-hand and does not fire on-discard.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "player"],
+      "properties": {
+        "type": { "const": "mill-cards" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "player": { "$ref": "defs.schema.json#/$defs/playerSide" }
+      }
+    }
+  }
+}

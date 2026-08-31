@@ -13,6 +13,13 @@ Author definitions as JSON documents (one file per entity):
 - Faces → `src/server/content/faces/<face-id>.json`
 - Builtin loadouts → `src/server/content/loadouts/<archetype>.json`
 
+JSON documents must satisfy `src/server/content/schema/*.schema.json`
+(editor `$schema` plus `catalogue.schema.test.ts`). Those schemas spell out
+region fields (`ritual.activeWhen` / `spend` / `effects` /
+`standingAbilities`, `equipment.mayTargetOpponent` / `abilities`, overload
+`onRoll` / `onAbsorb`, attack `requires` / `discards`) and both AST `op`
+nodes and legacy `type` effects.
+
 Id constants and loaders stay in `cards.ts` / `creatures.ts` / `faces.ts`.
 Effects use the AST (`op` nodes) or legacy `type` members compiled by `AstCompiler`.
 

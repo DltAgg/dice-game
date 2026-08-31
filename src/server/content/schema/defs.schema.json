@@ -1,0 +1,1088 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dice-skirmish.local/schema/defs.schema.json",
+  "title": "Dice Skirmish catalogue primitives",
+  "description": "Shared vocabulary for card, creature, face, and loadout JSON. Effects live in effect.schema.json.",
+  "$defs": {
+    "attribute": {
+      "title": "Attribute",
+      "description": "The eight attributes (bible §26). Used as a card's identity, forge colour, and named pile tokens.",
+      "type": "string",
+      "enum": [
+        "martial",
+        "wild",
+        "toxin",
+        "arcane",
+        "luminar",
+        "mechanical",
+        "corruption",
+        "darkness"
+      ]
+    },
+    "symbolType": {
+      "title": "SymbolType",
+      "description": "What a face can produce: an attribute, or Shield (untyped starting face only).",
+      "type": "string",
+      "enum": [
+        "martial",
+        "wild",
+        "toxin",
+        "arcane",
+        "luminar",
+        "mechanical",
+        "corruption",
+        "darkness",
+        "shield"
+      ]
+    },
+    "cardType": {
+      "title": "CardType",
+      "description": "Main kind on the type line. Instant / reaction / equipment / overload are first-class. Rituals use type ritual plus a subtype.",
+      "type": "string",
+      "enum": ["instant", "reaction", "equipment", "overload", "ritual"]
+    },
+    "cardSubtype": {
+      "title": "CardSubtype",
+      "description": "Ritual type-line modifier only. Instant subtype is retired (leftover copies still leave for GY after activation). Prefer continuous or reaction.",
+      "type": "string",
+      "enum": ["instant", "continuous", "reaction"]
+    },
+    "faceKind": {
+      "title": "FaceKind",
+      "description": "Natural and synthetic are bible §10. Untyped is Shield only.",
+      "type": "string",
+      "enum": ["natural", "synthetic", "untyped"]
+    },
+    "forgeableFaceKind": {
+      "title": "ForgeableFaceKind",
+      "description": "Attribute-keyed faces that can be forged. Shield/untyped is never a forge target.",
+      "type": "string",
+      "enum": ["natural", "synthetic"]
+    },
+    "forgeTarget": {
+      "title": "ForgeTarget",
+      "description": "Which player's die a forge installs onto.",
+      "type": "string",
+      "enum": ["own-die", "opponent-die"]
+    },
+    "attackKind": {
+      "type": "string",
+      "enum": ["basic", "special"]
+    },
+    "playerRelation": {
+      "description": "Whose turn / roll / discard / damaged owner. Default is usually controller.",
+      "type": "string",
+      "enum": ["controller", "opponent", "any"]
+    },
+    "creatureRelation": {
+      "description": "Which creature relative to the host. self = the equipped/passive bearer.",
+      "type": "string",
+      "enum": ["self", "ally", "ally-other", "any"]
+    },
+    "bearerRelation": {
+      "description": "Who receives an attack-damage-bonus. Default self. left-ally is the previous living creature in the owner's order (War Banner).",
+      "type": "string",
+      "enum": ["self", "left-ally"]
+    },
+    "playerSide": {
+      "type": "string",
+      "enum": ["controller", "opponent"]
+    },
+    "cardId": {
+      "type": "string",
+      "pattern": "^card-[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Hand-card / ritual id, e.g. card-daybreak-rite."
+    },
+    "creatureId": {
+      "type": "string",
+      "pattern": "^creature-[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Creature definition id, e.g. creature-dawn-warden."
+    },
+    "faceId": {
+      "type": "string",
+      "pattern": "^face-(?:natural|synthetic|untyped)-[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Face card id, e.g. face-synthetic-ossuary or face-untyped-shield."
+    },
+    "attackId": {
+      "type": "string",
+      "pattern": "^attack-[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Attack id, conventionally attack-<creature-kebab>-<attack-kebab>."
+    },
+    "loadoutId": {
+      "type": "string",
+      "pattern": "^deck-[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Builtin loadout id, e.g. deck-tempo. Aggro historically uses deck-prototype."
+    },
+    "amount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "positiveAmount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "symbolRequirement": {
+      "title": "SymbolRequirement",
+      "description": "Pile cost or gate, e.g. { \"arcane\": 2, \"any\": 1 }. Named keys are attributes; any is a generic count of pile tokens. Shield is unrepresentable. Used for playCost, effect.requires, ritual.activeWhen / spend, and attack requires / discards.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "martial": { "$ref": "#/$defs/positiveAmount" },
+        "wild": { "$ref": "#/$defs/positiveAmount" },
+        "toxin": { "$ref": "#/$defs/positiveAmount" },
+        "arcane": { "$ref": "#/$defs/positiveAmount" },
+        "luminar": { "$ref": "#/$defs/positiveAmount" },
+        "mechanical": { "$ref": "#/$defs/positiveAmount" },
+        "corruption": { "$ref": "#/$defs/positiveAmount" },
+        "darkness": { "$ref": "#/$defs/positiveAmount" },
+        "any": { "$ref": "#/$defs/positiveAmount" }
+      }
+    },
+    "targetSelector": {
+      "title": "TargetSelector",
+      "description": "How an effect names a creature or ritual. choose-* opens a pending decision. Auto selectors (most-damaged-ally, source-creature, …) do not prompt.",
+      "oneOf": [
+        {
+          "title": "source-creature",
+          "description": "The creature whose ability or attack produced the effect (the host / attacker).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "source-creature" } }
+        },
+        {
+          "title": "declared-target",
+          "description": "The creature named by the action that started this resolution (the attack target).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "declared-target" } }
+        },
+        {
+          "title": "fixed",
+          "description": "Runtime-stamped creature id between nested choices. Catalogue JSON never uses this.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "creatureId"],
+          "properties": {
+            "kind": { "const": "fixed" },
+            "creatureId": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "title": "most-damaged-ally",
+          "description": "Controller's living creature with the most damage (ties: earliest id). Silent pick for on-roll heals.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "most-damaged-ally" } }
+        },
+        {
+          "title": "most-shielded-enemy",
+          "description": "Opposing living creature with the most Shield (ties: earliest id).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "most-shielded-enemy" } }
+        },
+        {
+          "title": "most-damaged-enemy",
+          "description": "Opposing living creature with the most damage. Used by turn-start pulses so END_TURN stays atomic.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "most-damaged-enemy" } }
+        },
+        {
+          "title": "choose-ally",
+          "description": "Pause: controller names one of their living creatures.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-ally" } }
+        },
+        {
+          "title": "choose-enemy",
+          "description": "Pause: controller names one opposing living creature.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-enemy" } }
+        },
+        {
+          "title": "choose-opponent-ritual",
+          "description": "Pause: controller names one opposing field ritual (preparing / ready / exhausted).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-opponent-ritual" } }
+        },
+        {
+          "title": "declared-ritual",
+          "description": "Ritual named by a completed choose-ritual decision (after rewrite).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "declared-ritual" } }
+        },
+        {
+          "title": "chain-attack-target",
+          "description": "The creature targeted by the waiting attack chain link ([Prevent] reactions).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "chain-attack-target" } }
+        },
+        {
+          "title": "allied-frontline",
+          "description": "Every living allied frontline creature.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "allied-frontline" } }
+        },
+        {
+          "title": "enemy-frontline",
+          "description": "Every living enemy frontline creature.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "enemy-frontline" } }
+        },
+        {
+          "title": "choose-ally-other",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-ally-other" } }
+        },
+        {
+          "title": "choose-allied-frontline",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-allied-frontline" } }
+        },
+        {
+          "title": "choose-allied-frontline-other",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-allied-frontline-other" } }
+        },
+        {
+          "title": "choose-ally-with-toxin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-ally-with-toxin" } }
+        },
+        {
+          "title": "choose-enemy-with-toxin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-enemy-with-toxin" } }
+        },
+        {
+          "title": "choose-ally-damage-over-half",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-ally-damage-over-half" } }
+        },
+        {
+          "title": "choose-ally-with-tokens",
+          "description": "Pause: living ally whose owner currently holds at least one pile token.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-ally-with-tokens" } }
+        },
+        {
+          "title": "choose-adjacent-ally",
+          "description": "Pause: living creatureIds neighbor (±1) of the source creature.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-adjacent-ally" } }
+        }
+      ]
+    },
+    "effectCondition": {
+      "title": "EffectCondition",
+      "description": "Legacy condition on type: conditional. New AST uses conditionExpr (kind) instead.",
+      "oneOf": [
+        {
+          "title": "source-position",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "position"],
+          "properties": {
+            "type": { "const": "source-position" },
+            "position": { "type": "string", "enum": ["frontline", "back"] }
+          }
+        },
+        {
+          "title": "any-enemy-has-toxin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "any-enemy-has-toxin" } }
+        },
+        {
+          "title": "any-ally-attacked-this-turn",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "any-ally-attacked-this-turn" } }
+        },
+        {
+          "title": "has-other-symbol",
+          "description": "Another symbol is in the controller's rolled/available pool. Optional symbol / faceKind filters.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "has-other-symbol" },
+            "symbol": { "$ref": "#/$defs/symbolType" },
+            "faceKind": { "$ref": "#/$defs/faceKind" }
+          }
+        },
+        {
+          "title": "has-adjacent-ally",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "has-adjacent-ally" } }
+        },
+        {
+          "title": "controller-has-frontline",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "controller-has-frontline" } }
+        },
+        {
+          "title": "source-is-frontline",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "source-is-frontline" } }
+        }
+      ]
+    },
+    "valueExpr": {
+      "title": "ValueExpr",
+      "description": "AST amount. Prefer { kind: literal, value: N } over a bare number.",
+      "oneOf": [
+        {
+          "title": "literal",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "literal" },
+            "value": { "type": "number" }
+          }
+        },
+        {
+          "title": "min",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "of"],
+          "properties": {
+            "kind": { "const": "min" },
+            "of": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/valueExpr" }
+            }
+          }
+        },
+        {
+          "title": "max",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "of"],
+          "properties": {
+            "kind": { "const": "max" },
+            "of": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/valueExpr" }
+            }
+          }
+        },
+        {
+          "title": "count",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "query"],
+          "properties": {
+            "kind": { "const": "count" },
+            "query": { "$ref": "#/$defs/countQuery" }
+          }
+        },
+        {
+          "title": "remaining",
+          "description": "Result of a prior strip / consume in this effect.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "remaining" } }
+        }
+      ]
+    },
+    "countQuery": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["of", "on"],
+          "properties": {
+            "of": { "const": "toxin" },
+            "on": { "const": "target" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["of", "on"],
+          "properties": {
+            "of": { "const": "shield" },
+            "on": { "const": "target" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["of", "on"],
+          "properties": {
+            "of": { "const": "attribute-tokens" },
+            "on": { "const": "target-controller" }
+          }
+        }
+      ]
+    },
+    "duration": {
+      "title": "Duration",
+      "description": "When a modify / standing bonus lasts.",
+      "oneOf": [
+        {
+          "title": "immediate",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "immediate" } }
+        },
+        {
+          "title": "end-of-turn",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "end-of-turn" } }
+        },
+        {
+          "title": "until-consumed",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "until-consumed" } }
+        },
+        {
+          "title": "until-owners-next-turn",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "until-owners-next-turn" } }
+        },
+        {
+          "title": "while-attached",
+          "description": "Standing passives while equipment / continuous ritual is eligible.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "while-attached" } }
+        }
+      ]
+    },
+    "tokenKind": {
+      "title": "TokenKind",
+      "description": "Closed [Mark N X] / [Strip N X] set. Stun is DEFERRED.",
+      "type": "string",
+      "enum": ["toxin", "shield", "corruption", "pestilence"]
+    },
+    "modifyStat": {
+      "title": "ModifyStat",
+      "description": "Which bag a modify opcode writes.",
+      "type": "string",
+      "enum": [
+        "attack-damage",
+        "next-attack-damage",
+        "ignore-shield",
+        "attack-toxin",
+        "prevent-draw",
+        "requirement-wildcard",
+        "forge-discount",
+        "redirect-damage",
+        "next-incoming-damage",
+        "blade-rain",
+        "attack-prevent",
+        "extra-attacks",
+        "toxin-receive-cap",
+        "resolve-next-face-effect-twice"
+      ]
+    },
+    "conditionExpr": {
+      "title": "ConditionExpr",
+      "description": "AST condition (kind). Combinators all / any / not plus the legacy atoms.",
+      "oneOf": [
+        {
+          "title": "all",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "of"],
+          "properties": {
+            "kind": { "const": "all" },
+            "of": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/conditionExpr" }
+            }
+          }
+        },
+        {
+          "title": "any",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "of"],
+          "properties": {
+            "kind": { "const": "any" },
+            "of": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/conditionExpr" }
+            }
+          }
+        },
+        {
+          "title": "not",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "of"],
+          "properties": {
+            "kind": { "const": "not" },
+            "of": { "$ref": "#/$defs/conditionExpr" }
+          }
+        },
+        {
+          "title": "source-position",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "position"],
+          "properties": {
+            "kind": { "const": "source-position" },
+            "position": { "type": "string", "enum": ["frontline", "back"] }
+          }
+        },
+        {
+          "title": "any-enemy-has-toxin",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "any-enemy-has-toxin" } }
+        },
+        {
+          "title": "any-ally-attacked-this-turn",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "any-ally-attacked-this-turn" } }
+        },
+        {
+          "title": "has-other-symbol",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "has-other-symbol" },
+            "symbol": { "$ref": "#/$defs/symbolType" },
+            "faceKind": { "$ref": "#/$defs/faceKind" }
+          }
+        },
+        {
+          "title": "has-adjacent-ally",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "has-adjacent-ally" } }
+        },
+        {
+          "title": "controller-has-frontline",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "controller-has-frontline" } }
+        },
+        {
+          "title": "source-is-frontline",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "source-is-frontline" } }
+        }
+      ]
+    },
+    "effectList": {
+      "type": "array",
+      "items": { "$ref": "effect.schema.json#/$defs/effect" }
+    },
+    "standingTrigger": {
+      "title": "StandingTrigger",
+      "description": "Standing ability while attached / while a creature passive or continuous ritual is eligible (spec 010). Prefer relation filters on shared events. Also accepts the AST trigger form { when, effects?, modifiers? }.",
+      "oneOf": [
+        { "$ref": "#/$defs/triggerAttackDamageBonus" },
+        { "$ref": "#/$defs/triggerPlayCostDiscount" },
+        { "$ref": "#/$defs/triggerIgnoreShield" },
+        { "$ref": "#/$defs/triggerOnDealDamage" },
+        { "$ref": "#/$defs/triggerOnToxinDamage" },
+        { "$ref": "#/$defs/triggerOnTurnStart" },
+        { "$ref": "#/$defs/triggerOnRollSymbol" },
+        { "$ref": "#/$defs/triggerOnAbsorb" },
+        { "$ref": "#/$defs/triggerOnAttack" },
+        { "$ref": "#/$defs/triggerOnTakeDamage" },
+        { "$ref": "#/$defs/triggerOnDiscard" },
+        { "$ref": "#/$defs/triggerOnChangePosition" },
+        { "$ref": "#/$defs/astTrigger" }
+      ]
+    },
+    "triggerAttackDamageBonus": {
+      "title": "attack-damage-bonus",
+      "description": "Adds to attack damage the bearer deals. Optional attackKinds (War Axe: Basic only).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "attack-damage-bonus" },
+        "amount": { "$ref": "#/$defs/amount" },
+        "attackKinds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/attackKind" }
+        },
+        "bearerRelation": { "$ref": "#/$defs/bearerRelation" }
+      }
+    },
+    "triggerPlayCostDiscount": {
+      "title": "play-cost-discount",
+      "description": "[Discount N] on PLAY_CARD / ritual place / equip / overload pile cost (not FORGE). Min cost 0. oncePerTurn spends a host key on the first matching play.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "play-cost-discount" },
+        "amount": { "$ref": "#/$defs/amount" },
+        "oncePerTurn": { "type": "boolean" },
+        "cardTypes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/cardType" }
+        },
+        "subtypes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/cardSubtype" }
+        },
+        "attributes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/attribute" }
+        }
+      }
+    },
+    "triggerIgnoreShield": {
+      "title": "ignore-shield",
+      "description": "Attacker ignores this many Shield on the attack target.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": { "const": "ignore-shield" },
+        "amount": { "$ref": "#/$defs/amount" }
+      }
+    },
+    "triggerOnDealDamage": {
+      "title": "on-deal-damage",
+      "description": "After the bearer deals HP damage.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "effects"],
+      "properties": {
+        "type": { "const": "on-deal-damage" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnToxinDamage": {
+      "title": "on-toxin-damage",
+      "description": "After a toxin tick deals HP damage. Default damagedOwner controller (an ally of the filter owner took the tick). Burn listeners use opponent.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "effects"],
+      "properties": {
+        "type": { "const": "on-toxin-damage" },
+        "damagedOwner": { "$ref": "#/$defs/playerRelation" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnTurnStart": {
+      "title": "on-turn-start",
+      "description": "When a player's turn begins. Filter whoseTurn (default controller). Do not queue choose-* — auto selectors only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "effects"],
+      "properties": {
+        "type": { "const": "on-turn-start" },
+        "whoseTurn": { "$ref": "#/$defs/playerRelation" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnRollSymbol": {
+      "title": "on-roll-symbol",
+      "description": "When a player rolls a die showing this symbol. Filter rollingPlayer (default controller).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "symbol", "effects"],
+      "properties": {
+        "type": { "const": "on-roll-symbol" },
+        "symbol": { "$ref": "#/$defs/symbolType" },
+        "rollingPlayer": { "$ref": "#/$defs/playerRelation" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnAbsorb": {
+      "title": "on-absorb",
+      "description": "When a pip is banked into the owner's pile or Shield is granted on absorb. Default absorber is the host (self). Omit symbols / faceKinds to fire on any absorb.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "effects"],
+      "properties": {
+        "type": { "const": "on-absorb" },
+        "symbols": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/symbolType" }
+        },
+        "faceKinds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/faceKind" }
+        },
+        "absorberRelation": { "$ref": "#/$defs/creatureRelation" },
+        "oncePerTurn": { "type": "boolean" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnAttack": {
+      "title": "on-attack",
+      "description": "When a creature declares an attack. Default attacker is the host (self).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "effects"],
+      "properties": {
+        "type": { "const": "on-attack" },
+        "attackKinds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/attackKind" }
+        },
+        "attackerRelation": { "$ref": "#/$defs/creatureRelation" },
+        "oncePerTurn": { "type": "boolean" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnTakeDamage": {
+      "title": "on-take-damage",
+      "description": "Incoming damage on the host. reduceBy applies inside dealDamage before prevent/Shields; optional effects queue after HP is dealt. effects may be omitted (reduce-only).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "on-take-damage" },
+        "reduceBy": { "$ref": "#/$defs/amount" },
+        "oncePerTurn": { "type": "boolean" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnDiscard": {
+      "title": "on-discard",
+      "description": "When a player discards cards. Default discardingPlayer controller.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "effects"],
+      "properties": {
+        "type": { "const": "on-discard" },
+        "discardingPlayer": { "$ref": "#/$defs/playerRelation" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "triggerOnChangePosition": {
+      "title": "on-change-position",
+      "description": "When a creature changes battlefield position (ally swap / reposition). Default creatureRelation self. Enemy push is banned.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "effects"],
+      "properties": {
+        "type": { "const": "on-change-position" },
+        "creatureRelation": { "$ref": "#/$defs/creatureRelation" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "astTrigger": {
+      "title": "AST trigger",
+      "description": "Spec 018 form: { when: { event, filters }, effects?, modifiers? }. Face onRoll / onAbsorb compile to when.event on-roll | on-absorb. Passives can be modifiers with duration while-attached.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["when"],
+      "properties": {
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["event"],
+          "properties": {
+            "event": {
+              "type": "string",
+              "enum": [
+                "on-roll",
+                "on-absorb",
+                "on-deal-damage",
+                "on-toxin-damage",
+                "on-turn-start",
+                "on-roll-symbol",
+                "on-attack",
+                "on-take-damage",
+                "on-discard",
+                "on-change-position"
+              ]
+            },
+            "symbol": { "$ref": "#/$defs/symbolType" },
+            "symbols": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/symbolType" }
+            },
+            "faceKinds": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/faceKind" }
+            },
+            "attackKinds": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/attackKind" }
+            },
+            "rollingPlayer": { "$ref": "#/$defs/playerRelation" },
+            "whoseTurn": { "$ref": "#/$defs/playerRelation" },
+            "damagedOwner": { "$ref": "#/$defs/playerRelation" },
+            "discardingPlayer": { "$ref": "#/$defs/playerRelation" },
+            "absorberRelation": { "$ref": "#/$defs/creatureRelation" },
+            "attackerRelation": { "$ref": "#/$defs/creatureRelation" },
+            "creatureRelation": { "$ref": "#/$defs/creatureRelation" },
+            "oncePerTurn": { "type": "boolean" },
+            "reduceBy": { "$ref": "#/$defs/amount" }
+          }
+        },
+        "effects": { "$ref": "#/$defs/effectList" },
+        "modifiers": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "forgeRegion": {
+      "title": "ForgeRegion",
+      "description": "Every hand card has a forge region. The player chooses play, forge, or (natural own-die only) Overcharge — never two on the same use. faces (1, 2, rarely 3) and natural vs synthetic are designed choices, not a default sticker.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["faces", "kind", "attribute", "target"],
+      "properties": {
+        "faces": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "description": "How many copies of one matching face to install on a single die."
+        },
+        "kind": { "$ref": "#/$defs/forgeableFaceKind" },
+        "attribute": { "$ref": "#/$defs/attribute" },
+        "target": { "$ref": "#/$defs/forgeTarget" }
+      }
+    },
+    "effectRegion": {
+      "title": "EffectRegion",
+      "description": "Instant / reaction one-shot. requires is [Requires: …] (must hold, not spent). Resonance wildcards may cover shortfall. [Discount] never reduces this gate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effects"],
+      "properties": {
+        "requires": { "$ref": "#/$defs/symbolRequirement" },
+        "effects": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "equipmentRegion": {
+      "title": "EquipmentRegion",
+      "description": "Present on type equipment. PLAY_CARD installs onto a creature rather than resolving effect. Black Plague-style curses set mayTargetOpponent true.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mayTargetOpponent", "abilities"],
+      "properties": {
+        "mayTargetOpponent": {
+          "type": "boolean",
+          "description": "When true, the equipment may sit on an opposing creature. Most equipment is false."
+        },
+        "creatureAttributes": {
+          "description": "Host must share at least one of these attributes (\"Martial creatures only\").",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/attribute" }
+        },
+        "abilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/standingTrigger" }
+        }
+      }
+    },
+    "overloadRegion": {
+      "title": "OverloadRegion",
+      "description": "Present on type overload. PLAY_CARD installs onto a face card. Every die showing that face fires onRoll / onAbsorb.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["onRoll"],
+      "properties": {
+        "faceSymbols": {
+          "description": "When set, only faces producing these symbols may host the overload.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/symbolType" }
+        },
+        "faceKinds": {
+          "description": "When set, only faces of these kinds may host the overload.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/faceKind" }
+        },
+        "onRoll": {
+          "description": "Fired when any die face showing this face card is rolled. Empty array when the overload is absorb-only.",
+          "type": "array",
+          "items": { "$ref": "effect.schema.json#/$defs/effect" }
+        },
+        "onAbsorb": {
+          "description": "Fired when a symbol is absorbed from a die showing this face card. Omit or leave empty when deferred.",
+          "type": "array",
+          "items": { "$ref": "effect.schema.json#/$defs/effect" }
+        }
+      }
+    },
+    "ritualRegion": {
+      "title": "RitualRegion",
+      "description": "Present on type ritual. PLAY_CARD places the card in preparing. Ready when the owner's pile meets activeWhen (or immediately if omitted). ACTIVATE_RITUAL fires effects (and optional spend). Standing abilities fire while a continuous ritual is ready without exhausting it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effects"],
+      "properties": {
+        "activeWhen": {
+          "description": "[Active when: …] — one-time unlock vs the owner's attribute pile. Omit when the print has no Active-when (ready on place).",
+          "$ref": "#/$defs/symbolRequirement"
+        },
+        "spend": {
+          "description": "[Spend: …] pile burn on ACTIVATE_RITUAL. Does not apply to standing-only fire while ready.",
+          "$ref": "#/$defs/symbolRequirement"
+        },
+        "effects": {
+          "description": "Activate payload. Empty when the ritual is standing-only (continuous with standingAbilities).",
+          "$ref": "#/$defs/effectList"
+        },
+        "standingAbilities": {
+          "description": "Standing triggers while this continuous ritual is ready. Instant leftover and reaction rituals ignore this (reaction stays/exhausts for activate, not standing fire).",
+          "type": "array",
+          "items": { "$ref": "#/$defs/standingTrigger" }
+        }
+      }
+    },
+    "attackDefinition": {
+      "title": "AttackDefinition",
+      "description": "Creature attack. Fuel is the attacker's owner's attribute pile. requires holds; discards burns. range ignores the frontline restriction. Omit effect when the attack prints but cannot be declared yet.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "kind", "range", "rulesText"],
+      "properties": {
+        "id": { "$ref": "#/$defs/attackId" },
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/attackKind" },
+        "requires": {
+          "description": "[Requires: …] pile gate — must hold, not spent.",
+          "$ref": "#/$defs/symbolRequirement"
+        },
+        "discards": {
+          "description": "[Spend: …] removed from the owner's pile on declare.",
+          "$ref": "#/$defs/symbolRequirement"
+        },
+        "range": {
+          "type": "boolean",
+          "description": "When true, the attack may target a back-row enemy through a living frontline."
+        },
+        "rulesText": {
+          "type": "string",
+          "description": "English attack body after the name. Kept even when effect only models a subset."
+        },
+        "effect": {
+          "description": "The subset the engine can resolve today (usually the [Strike] link).",
+          "$ref": "effect.schema.json#/$defs/effect"
+        },
+        "followUpEffects": {
+          "description": "Queued after the damage link (draw, mill, heal, …).",
+          "$ref": "#/$defs/effectList"
+        }
+      }
+    },
+    "faceStayPolicy": {
+      "title": "FaceStayPolicy",
+      "description": "Whether forging (or other overwrite-installs) may replace a slot showing this face. Omitted means the slot may be overwritten. Peel via ACTIVATE_FACE / unforge / consume is never this restriction.",
+      "oneOf": [
+        {
+          "title": "cannot-replace-by-forge",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "cannot-replace-by-forge" } }
+        },
+        {
+          "title": "forge-lock",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "turns"],
+          "properties": {
+            "kind": { "const": "forge-lock" },
+            "turns": { "$ref": "#/$defs/positiveAmount" }
+          }
+        }
+      ]
+    },
+    "faceActivatedAbility": {
+      "title": "Face activated ability",
+      "description": "Player-activated face ability (Forbidden Heritage / Pestilent Plague). Paid with ACTIVATE_FACE during the actions phase.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "spendBase", "spendPerCorruptionOnDie"],
+      "properties": {
+        "kind": { "const": "remove-corruption-face" },
+        "spendBase": { "$ref": "#/$defs/amount" },
+        "spendPerCorruptionOnDie": { "$ref": "#/$defs/amount" }
+      }
+    }
+  }
+}

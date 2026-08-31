@@ -2,22 +2,131 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dice-skirmish.local/schema/card.schema.json",
   "title": "CardDefinition",
+  "description": "One hand-card / ritual JSON document (src/server/content/cards/<card-id>.json). Every card has a forge region. Play uses at most one of effect, equipment, overload, or ritual — locked to type. Print (rulesText) is player-facing authority; structured regions are engine authority.",
   "type": "object",
+  "additionalProperties": false,
   "required": ["id", "name", "type", "subtypes", "attribute", "forge", "rulesText"],
   "properties": {
     "$schema": { "type": "string" },
-    "id": { "type": "string" },
-    "name": { "type": "string" },
-    "type": { "type": "string" },
-    "subtypes": { "type": "array", "items": { "type": "string" } },
-    "attribute": { "type": "string" },
-    "forge": { "type": "object" },
-    "rulesText": { "type": "string" },
-    "playCost": { "type": "object" },
-    "effect": { "type": "object" },
-    "equipment": { "type": "object" },
-    "overload": { "type": "object" },
-    "ritual": { "type": "object" },
-    "forgeTags": { "type": "array" }
-  }
+    "id": { "$ref": "defs.schema.json#/$defs/cardId" },
+    "name": { "type": "string", "minLength": 1 },
+    "playCost": {
+      "description": "Header [Spend: …] burned from the attribute pile when playing or forging (synthetic forge burns; natural forge does not). 1-token totals are exceptional — prefer 2+ of the card's attribute.",
+      "$ref": "defs.schema.json#/$defs/symbolRequirement"
+    },
+    "type": { "$ref": "defs.schema.json#/$defs/cardType" },
+    "subtypes": {
+      "description": "Ritual type-line modifiers only (continuous / reaction; instant is retired). Empty for instant, reaction, equipment, and overload.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "defs.schema.json#/$defs/cardSubtype" }
+    },
+    "attribute": { "$ref": "defs.schema.json#/$defs/attribute" },
+    "forge": { "$ref": "defs.schema.json#/$defs/forgeRegion" },
+    "forgeTags": {
+      "description": "Tags that satisfy face forge restrictions (echo for Arcane Echo).",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "const": "echo" }
+    },
+    "rulesText": {
+      "type": "string",
+      "description": "English effect-region print below \"or\". Empty string means forge-only (\"Does not have\"). Use KEYWORDS timing prefixes: On roll: [Mark 1 Toxin]."
+    },
+    "effect": {
+      "description": "Instant / reaction one-shot. Absent when unimplemented, forge-only, or when the playable region is equipment / overload / ritual.",
+      "$ref": "defs.schema.json#/$defs/effectRegion"
+    },
+    "equipment": {
+      "description": "Required when type is equipment. mayTargetOpponent, optional creatureAttributes, abilities (standing triggers).",
+      "$ref": "defs.schema.json#/$defs/equipmentRegion"
+    },
+    "overload": {
+      "description": "Required when type is overload. Optional faceSymbols / faceKinds gates; onRoll (required, may be empty); optional onAbsorb.",
+      "$ref": "defs.schema.json#/$defs/overloadRegion"
+    },
+    "ritual": {
+      "description": "Required when type is ritual. activeWhen ([Active when]), spend ([Spend] on activate), effects (activate payload, may be empty), standingAbilities (continuous while ready).",
+      "$ref": "defs.schema.json#/$defs/ritualRegion"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "type": { "const": "equipment" } },
+        "required": ["type"]
+      },
+      "then": {
+        "required": ["equipment"],
+        "properties": {
+          "equipment": { "$ref": "defs.schema.json#/$defs/equipmentRegion" },
+          "effect": false,
+          "overload": false,
+          "ritual": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "type": { "const": "overload" } },
+        "required": ["type"]
+      },
+      "then": {
+        "required": ["overload"],
+        "properties": {
+          "overload": { "$ref": "defs.schema.json#/$defs/overloadRegion" },
+          "effect": false,
+          "equipment": false,
+          "ritual": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "type": { "const": "ritual" } },
+        "required": ["type"]
+      },
+      "then": {
+        "required": ["ritual"],
+        "properties": {
+          "ritual": { "$ref": "defs.schema.json#/$defs/ritualRegion" },
+          "effect": false,
+          "equipment": false,
+          "overload": false,
+          "subtypes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1,
+            "items": { "$ref": "defs.schema.json#/$defs/cardSubtype" }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "type": { "enum": ["instant", "reaction"] } },
+        "required": ["type"]
+      },
+      "then": {
+        "properties": {
+          "equipment": false,
+          "overload": false,
+          "ritual": false,
+          "subtypes": { "type": "array", "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "type": { "enum": ["equipment", "overload"] } },
+        "required": ["type"]
+      },
+      "then": {
+        "properties": {
+          "subtypes": { "type": "array", "maxItems": 0 }
+        }
+      }
+    }
+  ]
 }

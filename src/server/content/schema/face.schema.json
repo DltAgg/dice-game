@@ -2,21 +2,93 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dice-skirmish.local/schema/face.schema.json",
   "title": "FaceCardDefinition",
+  "description": "One face-card JSON document (src/server/content/faces/<face-id>.json). Several physical die slots may point at the same face (1:N). Overloads attach to the face card, not a slot. Synthetic faces are named specials only — never blank face-synthetic-<attr> generics.",
   "type": "object",
-  "required": ["id", "name", "kind", "symbol", "rulesText", "onRoll", "onAbsorb", "maxOverloads"],
+  "additionalProperties": false,
+  "required": ["id", "name", "kind", "symbol", "rulesText", "onRoll", "onAbsorb", "maxOverloads", "forgeRestriction"],
   "properties": {
     "$schema": { "type": "string" },
-    "id": { "type": "string" },
-    "name": { "type": "string" },
-    "kind": { "type": "string" },
-    "symbol": { "type": "string" },
-    "rulesText": { "type": "string" },
-    "onRoll": { "type": "array" },
-    "onAbsorb": { "type": "array" },
-    "maxOverloads": { "type": "number" },
-    "forgeRestriction": {},
-    "stayPolicy": {},
-    "activated": {},
-    "pestilenceSpreadAt": { "type": "number" }
-  }
+    "id": { "$ref": "defs.schema.json#/$defs/faceId" },
+    "name": { "type": "string", "minLength": 1 },
+    "kind": { "$ref": "defs.schema.json#/$defs/faceKind" },
+    "symbol": {
+      "description": "Attribute this face produces, or shield for the untyped starting face.",
+      "$ref": "defs.schema.json#/$defs/symbolType"
+    },
+    "rulesText": {
+      "type": "string",
+      "description": "English inherent-effect region. Empty on identity faces (+1 Attribute is the footer, not rules text). Dual-timing faces use On roll: / On absorb: prefixes."
+    },
+    "onRoll": {
+      "description": "Fired when this face is showing after a roll (bible §14). Empty until every printed On-roll clause is modelled. Legacy type members or AST op nodes.",
+      "type": "array",
+      "items": { "$ref": "effect.schema.json#/$defs/effect" }
+    },
+    "onAbsorb": {
+      "description": "Fired when a symbol produced by a die showing this face is absorbed. Empty until On-absorb print is wired.",
+      "type": "array",
+      "items": { "$ref": "effect.schema.json#/$defs/effect" }
+    },
+    "maxOverloads": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Capacity for overloads attached to this face card (shared across all slots showing it)."
+    },
+    "forgeRestriction": {
+      "description": "When echo-cards, only tactics tagged forgeTags: [echo] may install this face. null = no extra install gate.",
+      "type": ["string", "null"],
+      "enum": ["echo-cards", null]
+    },
+    "activated": {
+      "description": "Player-activated face ability paid with ACTIVATE_FACE during the actions phase.",
+      "$ref": "defs.schema.json#/$defs/faceActivatedAbility"
+    },
+    "stayPolicy": {
+      "description": "Stay-on-slot while installed. Distinct from forgeRestriction (who may install this type).",
+      "$ref": "defs.schema.json#/$defs/faceStayPolicy"
+    },
+    "pestilenceSpreadAt": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Pestilent Plague: after this many counters on the physical slot, reset them and try to forge another copy onto an adjacent slot."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "kind": { "const": "untyped" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "symbol": { "const": "shield" },
+          "id": { "type": "string", "pattern": "^face-untyped-" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "natural" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "symbol": { "$ref": "defs.schema.json#/$defs/attribute" },
+          "id": { "type": "string", "pattern": "^face-natural-" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "synthetic" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "symbol": { "$ref": "defs.schema.json#/$defs/attribute" },
+          "id": { "type": "string", "pattern": "^face-synthetic-" }
+        }
+      }
+    }
+  ]
 }

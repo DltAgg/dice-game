@@ -27,6 +27,8 @@ Play, ids, costs, and print do not change.
 src/server/content/cards/<card-id>.json
 src/server/content/creatures/<creature-id>.json
 src/server/content/faces/<face-id>.json
+src/server/content/schema/defs.schema.json
+src/server/content/schema/effect.schema.json
 src/server/content/schema/card.schema.json
 src/server/content/schema/creature.schema.json
 src/server/content/schema/face.schema.json
@@ -35,6 +37,21 @@ src/server/content/schema/loadout.schema.json
 
 Each document may include `"$schema"` pointing at the matching schema file
 (relative) for editor validation.
+
+Schemas describe the live grammar, not a bag of strings:
+
+- **Card** — `type` locks the play region (`effect` / `equipment` / `overload` /
+  `ritual`). Rituals require `activeWhen?`, `spend?`, `effects`,
+  `standingAbilities?`. Equipment requires `mayTargetOpponent` and `abilities`.
+  Overloads require `onRoll` (optional `faceSymbols` / `faceKinds` / `onAbsorb`).
+- **Effect** — legacy `type` members (`damage`, `heal`, `mill-cards`, …) or AST
+  `op` nodes (`mark`, `strip`, `modify`, `branch`, …) per spec `018`.
+- **Creature** — `standingAbilities`, attacks with `requires` / `discards` /
+  `effect` / `followUpEffects`.
+- **Face** — `onRoll` / `onAbsorb` effect lists; untyped faces are Shield only.
+
+`src/server/content/schema/catalogue.schema.test.ts` validates every catalogue
+JSON file against these schemas.
 
 `src/server/content/catalogues.ts` eager-loads JSON (`import.meta.glob`) and
 exposes `getCard`, `ALL_CARDS`, `getCreatureDefinition`, `ALL_CREATURES`,
@@ -102,7 +119,8 @@ None.
 
 ## Validation
 
-- JSON matches schema; unknown ids in loadouts fail `validateLoadout`.
+- JSON matches schema (regions, effect `type`/`op`, standing triggers); unknown
+  ids in loadouts fail `validateLoadout`.
 - Attachment type ↔ region lockstep (existing consistency tests).
 - Loadout sizes 40–50, ≤3 copies, known ids.
 
