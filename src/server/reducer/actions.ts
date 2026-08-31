@@ -51,6 +51,16 @@ export type GameAction =
       /** Face card chosen from the owner's pool or an already-installed copy. */
       readonly faceCardId: FaceCardId;
     }
+  /**
+   * Spend a natural own-die forge card to Overcharge one attribute face card
+   * on your dice (spec `021`). Attribute is derived from the card's forge region.
+   */
+  | {
+      readonly type: "OVERCHARGE_CARD";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+      readonly faceCardId: FaceCardId;
+    }
   /** The card's effect region — Instant resolve, Equipment attach, Overload attach, or Ritual place. */
   | {
       readonly type: "PLAY_CARD";

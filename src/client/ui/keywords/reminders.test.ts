@@ -83,6 +83,7 @@ describe("lookupKeywordReminders", () => {
       "[Strip 3 Shield]",
       "[Generate 1 Arcane]",
       "[Forge 1 Synthetic Mechanical]",
+      "[Overcharge]",
       "[Negate Instant]",
       "[Destroy Ritual]",
       "[Strike 3]",
@@ -112,6 +113,7 @@ describe("lookupKeywordReminders", () => {
       "[Strip 3 Shield]",
       "[Generate 1 Arcane]",
       "[Forge 1 Synthetic Mechanical]",
+      "[Overcharge]",
       "[Negate Instant]",
       "[Destroy Ritual]",
       "[Strike 3]",
@@ -141,6 +143,13 @@ describe("lookupKeywordReminders", () => {
   it("treats Generate as a pool-symbol reminder", () => {
     const rows = lookupKeywordReminders("[Generate 1 Toxin]");
     expect(rows.map((row) => row.token)).toEqual(["[Generate 1 Toxin]"]);
+  });
+
+  it("looks up [Overcharge] as the natural-forge spend", () => {
+    const rows = lookupKeywordReminders("[Overcharge]");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.token).toBe("[Overcharge]");
+    expect(rows[0]?.reminder).toMatch(/attribute face card/i);
   });
 });
 

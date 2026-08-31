@@ -6,6 +6,10 @@ leaves unresolved is tracked here rather than being answered silently in code.
 Engine code lives in `src/server`. Catalogue print lives in
 `src/server/content/{cards,creatures,faces}/*.json`.
 
+Mechanic × archetype **feel** (playtest “this played like Aggro”) is
+[`docs/MECHANIC_ARCHETYPES.md`](./MECHANIC_ARCHETYPES.md), not this register.
+Put unresolved **rules** questions here; put window/feel leaks there.
+
 **A prototype assumption must never quietly become a game rule.** Anything
 marked `ASSUMED` below is reachable from a single place — usually
 `GameRulesConfig` or content data — so that settling the question is an edit to
@@ -293,7 +297,7 @@ every deck can use:
 |---|---|
 | **Forge yield** | `installFacesOnDie` onto a die you own marks each overwritten slot `forgeYield: true`. Opponent-die installs do not. Opening slots have no yield. Overwrite / peel clears yield unless re-set. |
 | **On roll** | When a `forgeYield` slot is showing after `ROLL_DICE`, generate `forgeYieldGenerate` (default **1**) extra of that face’s attribute for the die owner (effect Generate / auto-bank). Skip Shield / untyped. |
-| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed. Natural forge: install + draw + yield only (no immediate bank). |
+| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed, **unless the install consumed `forgeDiscountThisTurn`**. Natural forge: install + draw + yield only (no immediate bank). Discount + bank on the same install was a playtest leak (Twin Cam / Torque Wright: spend 1, bank 1, pile unchanged). |
 
 Config knobs: `GameRulesConfig.forgeYieldGenerate`, `forgeBankPerFace`. See
 `docs/RULEBOOK.md` §11. Not a print keyword — forge rules like draw-on-forge.
@@ -680,8 +684,27 @@ Assumption: **install is affordable; stay and peel are the expense.** Stick come
 | **Decay unusable symbol** | Strip face → Shield (like `ACTIVATE_FACE`); create Corruption in **Decay controller’s** pool with `usable: false` (not the face owner’s). |
 | **Toxin receive cap** | At most `amount` markers **gained** while the cap remains (remaining counter), until that creature’s owner’s next turn starts. |
 | **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this controller’s last `ROLL_DICE` (`facesAppearedThisRoll`). Not overloads. |
-| **Overcharge double** | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. |
+| **Overcharge double** (spec `013` face marker, `optional-overcharge`) | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. **Not** the tactic `[Overcharge]` master rule (spec `021`). |
 | **Instinct absorb** | Optional actions-window basic via `optional-bonus-attack` (see row above). |
+
+---
+
+## Prototype assumptions — tactic Overcharge (2026-08-30)
+
+**Status:** `ASSUMED` · implemented · spec [`021-overcharge.md`](./specs/021-overcharge.md)
+
+Bible is silent. Player-facing **Overcharge** is this master rule. Spec `013`’s
+Mechanical face-marker opcode (`optional-overcharge`, suppress inherent,
+`resolveNextFaceEffectTwice`) stays for catalogue faces that still use it.
+
+| Topic | Assumption coded |
+|---|---|
+| **Face-card pips** | `PlayerState.overchargeByFace` is `Readonly<Record<string, readonly Attribute[]>>`, keyed by face card. Copies of the same face on this player’s dice share pips. Opponent copies of the same id use that opponent’s map (`die.ownerId`). |
+| **Persist until last copy leaves** | Pips stay until `countInstalledCopies === 0` for that owner, then `clearOverchargeOnFace` deletes the key — same moment as `clearOverloadsOnFace`. Not consumed after the first generate. Overwriting one of two copies keeps the Overcharge. |
+| **Own-die natural only** | `forge.kind === "natural"` and `forge.target === "own-die"`. Synthetic and opponent-die cannot Overcharge. |
+| **Always +1** | One pip of `forge.attribute` regardless of `forge.faces`. |
+| **No reaction window** | Same as `FORGE_CARD`. |
+| **No GameState bag** | Once-per-turn uses `spentOncePerTurnKeys` key `"overcharge"`. `state.ts` stays frozen. |
 
 ---
 
@@ -742,6 +765,35 @@ effect resolves on the chain). Optional `swap-positions` still supports a
 decline. Garuda Dive no longer swaps.
 
 **Banned forever:** any effect that moves an **enemy** creature (push).
+
+---
+
+### Whether a named Natural face is free on opening dice
+
+**Status:** `OPEN` · 2026-08-30 · raised by `face-natural-dawnwright`
+
+**Why it matters.** `isOpeningBasicFace` (`src/server/rules/loadout.ts`) treats
+**any** face whose `kind` is `natural` as an opening basic, so it neither
+consumes a face-deck row nor counts against
+`startingMaxSyntheticsPerDie` / `startingMaxSyntheticsPerPlayer`. That was
+written when every Natural was one of the eight identity blanks. Dawnwright is
+a **named** Natural with printed `On roll: [Generate 1 Luminar]`, so a
+constructed layout can currently paint it onto opening slots for free and get a
+strictly better basic than `face-natural-mechanical`.
+
+**The question.** Is "basic" defined by `kind === "natural"`, or by being an
+identity face (`id === face-natural-<its own symbol>`)?
+
+**Design intent (card-designer, not yet implemented).** Identity. A named
+Natural should be packed and capped like any other named special; only the
+eight blanks and Shield stay free. The catalogue side of that is already
+asserted (`faceKindPolicy.test.ts` keeps named naturals out of
+`BASIC_FACE_CARDS` and inside `SPECIAL_FACE_CARDS`), but loadout legality is
+engine work and is **not** done — an `engine-developer` change to
+`isOpeningBasicFace` plus `validateStartingDice` coverage is required before
+named Naturals are safe in constructed.
+
+**Decision.** TBD.
 
 ---
 

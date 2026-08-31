@@ -21,6 +21,7 @@ pending-decision gate, `createDraft`, dispatch, write RNG snapshot.
 | `commands/attack.ts` | `ATTACK` |
 | `commands/playCard.ts` | `PLAY_CARD` (effect / equip / overload / ritual place) |
 | `commands/forge.ts` | `FORGE_CARD`, `ACTIVATE_FACE`, install helpers |
+| `commands/overcharge.ts` | `OVERCHARGE_CARD` (spec `021`) |
 | `commands/ritual.ts` | `ACTIVATE_RITUAL`, exhaust reset |
 | `commands/turn.ts` | `ADVANCE_PHASE`, `END_TURN`, finish-turn cleanup |
 | `commands/priority.ts` | `PASS_PRIORITY`, chain drain, conduct link |

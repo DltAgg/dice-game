@@ -131,7 +131,8 @@ export interface DieSlot {
   readonly corruptionMarkers?: number;
   /**
    * Skip this slot's face `onRoll` on the controller's next `ROLL_DICE`, then
-   * clear (Decay suppress / Overcharge). Spec `013`.
+   * clear (Decay suppress / spec `013` face-marker Overcharge). Not tactic
+   * `[Overcharge]` (spec `021`).
    */
   readonly suppressInherentNextRoll?: boolean;
   /**

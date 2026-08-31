@@ -77,14 +77,15 @@ export interface ForgeRegion {
 }
 
 /**
- * The effect region. `requires` is the bracketed gate the layouts print before
- * the effect text; it is checked against the player's symbol pool, the same
- * supply engine abilities draw on.
+ * The effect region. `requires` is the `[Requires: …]` hold-gate vs the
+ * owner's attribute pile (must hold; not spent). Resonance wildcards may cover
+ * shortfall. Header `[Spend]` is `playCost` (`payHeaderCost`); `[Discount]`
+ * never reduces this gate. Forge does not check `effect.requires`.
  *
- * How the extra cost prints: Rituals say `[Active when: …]` for the gate and
- * `[Spend: …]` for activate burn. Instants print `[Spend: …]` for
- * `effect.requires` (it burns from the pile). Attack `[Requires: …]` is a
- * separate hold-gate and lives on `AttackDefinition.requires`.
+ * Rituals print `[Active when: …]` for `ritual.activeWhen` and `[Spend: …]`
+ * for `ritual.spend`. Attack `[Requires: …]` is the same kind of gate on
+ * `AttackDefinition.requires`. Extra burn that is not a gate belongs in
+ * `playCost` / attack `discards` / `ritual.spend`.
  */
 export interface EffectRegion {
   readonly requires?: SymbolRequirement;

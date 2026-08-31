@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-prism-mantle",
+  "name": "Prism Mantle",
+  "playCost": {
+    "luminar": 2
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "On take damage, once per turn: reduce it by 1.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-take-damage",
+        "reduceBy": 1,
+        "oncePerTurn": true
+      }
+    ]
+  }
+}

@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  CONCENTRATE,
-  EMBER_TIDE,
-  ICHOR_SHEATH,
-  VENOM_FONT,
+  BEACON_ARRAY,
+  IDLER_GEAR,
+  MACHINE_SHOP,
 } from "../content/cards.js";
-import { BLIGHT, SEEP } from "../content/faces.js";
+import { COGTOOTH } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { CreatureId, DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -15,10 +14,8 @@ import {
   handCardIdAt,
   newMatch,
   P1,
-  P2,
   withPile,
   withHand,
-  withAttributePool,
   withPhase,
   withSymbols,
   advanceResolvingChain as advance,
@@ -39,12 +36,12 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function withToxin(state: GameState, creatureId: CreatureId, toxinMarkers: number): GameState {
+function withDamage(state: GameState, creatureId: CreatureId, damage: number): GameState {
   const creature = state.creatures[creatureId];
   if (creature === undefined) throw new Error("expected creature");
   return {
     ...state,
-    creatures: { ...state.creatures, [creatureId]: { ...creature, toxinMarkers } },
+    creatures: { ...state.creatures, [creatureId]: { ...creature, damage } },
   };
 }
 
@@ -64,134 +61,67 @@ function showingFace(state: GameState, faceCardId: FaceCardId): GameState {
   return next;
 }
 
-describe("Concentrate", () => {
-  it("applies 2 extra Toxin to a chosen enemy that already has Toxin", () => {
-    const enemyId = creatureIdAt(actionsReady([CONCENTRATE]), P2, 0);
-    const ready = withToxin(withAttributePool(actionsReady([CONCENTRATE]), P1, { toxin: 4 }), enemyId, 1);
-    const played = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    const after = expectOk(
-      advance(played, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: enemyId,
-      }),
-    );
-    expect(after.creatures[enemyId]?.toxinMarkers).toBe(3);
-  });
-
-  it("whiffs when no enemy has Toxin", () => {
-    const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [CONCENTRATE]),
-      P1,
-      { toxin: 4 },
-    );
-    const after = expectOk(
-      advance(ready, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    expect(after.pendingDecision).toBeNull();
-    const enemyId = creatureIdAt(after, P2, 0);
-    expect(after.creatures[enemyId]?.toxinMarkers).toBe(0);
-  });
-});
-
-describe("Venom Font", () => {
-  it("applies Toxin to a chosen enemy when the bearer absorbs Toxin", () => {
-    const base = actionsReady([VENOM_FONT]);
+describe("Beacon Array", () => {
+  it("heals the most damaged ally when the bearer absorbs Luminar", () => {
+    const base = actionsReady([BEACON_ARRAY]);
     const bearerId = creatureIdAt(base, P1, 0);
+    const woundedId = creatureIdAt(base, P1, 1);
     const equipped = expectOk(
-      advance(base, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredTargetCreatureId: bearerId,
-      }),
+      advance(
+        withDamage(base, woundedId, 3),
+        {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(base, P1, 0),
+          declaredTargetCreatureId: bearerId,
+        },
+      ),
     );
-    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["toxin"], "rolled");
-    const toxin = Object.values(withPool.symbols).find(
-      (symbol) => symbol.symbol === "toxin" && symbol.status === "rolled",
+    const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["luminar"], "rolled");
+    const luminar = Object.values(withPool.symbols).find(
+      (symbol) => symbol.symbol === "luminar" && symbol.status === "rolled",
     );
-    if (toxin === undefined) throw new Error("expected rolled toxin");
+    if (luminar === undefined) throw new Error("expected rolled luminar");
 
-    const absorbed = expectOk(
+    const after = expectOk(
       advance(withPool, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
         creatureId: bearerId,
-        symbolId: toxin.id,
+        symbolId: luminar.id,
       }),
     );
-    expect(absorbed.pendingDecision?.type).toBe("choose-creature");
-    const enemyId = creatureIdAt(absorbed, P2, 0);
-    const after = expectOk(
-      advance(absorbed, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: enemyId,
-      }),
-    );
-    expect(after.creatures[enemyId]?.toxinMarkers).toBe(1);
+    expect(after.creatures[woundedId]?.damage).toBe(2);
   });
 });
 
-describe("Ichor Sheath", () => {
-  it("deals 1 on absorb from an overloaded Toxin face", () => {
-    const base = showingFace(actionsReady([ICHOR_SHEATH]), SEEP);
+describe("Idler Gear", () => {
+  it("generates Mechanical on roll from an overloaded Mechanical face", () => {
+    const base = showingFace(actionsReady([IDLER_GEAR]), COGTOOTH);
     const attached = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: SEEP,
+        declaredFaceCardId: COGTOOTH,
       }),
     );
     const afterRoll = expectOk(advance(withPhase(attached, "roll"), { type: "ROLL_DICE", playerId: P1 }));
-    expect(afterRoll.players[P1]?.attributePool.toxin ?? 0).toBeGreaterThanOrEqual(1);
-    expect(afterRoll.pendingDecision?.type).toBe("choose-creature");
-    const enemyId = creatureIdAt(afterRoll, P2, 0);
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: enemyId,
-      }),
-    );
-    expect(after.creatures[enemyId]?.damage).toBe(1);
+    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
   });
 });
 
-describe("Ember Tide", () => {
-  it("deals 1 on roll from an overloaded Corruption face", () => {
-    const base = showingFace(actionsReady([EMBER_TIDE]), BLIGHT);
-    const attached = expectOk(
-      advance(base, {
+describe("Machine Shop", () => {
+  it("generates Mechanical on roll while the continuous ritual is active", () => {
+    const ready = actionsReady([MACHINE_SHOP]);
+    const placed = expectOk(
+      advance(ready, {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: BLIGHT,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    const afterRoll = expectOk(
-      advance(withPhase(attached, "roll"), { type: "ROLL_DICE", playerId: P1 }),
-    );
-    expect(afterRoll.pendingDecision?.type).toBe("choose-creature");
-    const enemyId = creatureIdAt(afterRoll, P2, 0);
-    const after = expectOk(
-      advance(afterRoll, {
-        type: "RESOLVE_CHOOSE_CREATURE",
-        playerId: P1,
-        creatureId: enemyId,
-      }),
-    );
-    expect(after.creatures[enemyId]?.damage).toBe(1);
+    const afterRoll = expectOk(advance(withPhase(placed, "roll"), { type: "ROLL_DICE", playerId: P1 }));
+    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
   });
 });

@@ -18,7 +18,7 @@ import {
 import { addTokens } from "../../rules/tokens.js";
 import { emit, patchDie, patchPlayer, type Draft } from "../draft.js";
 import { payForgeCost, payPileSpend } from "../payments.js";
-import { clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
+import { clearOverchargeOnFace, clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
 
 export function activateFace(
   draft: Draft,
@@ -52,20 +52,14 @@ export function activateFace(
   const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
   const slots = die.slots.map((candidate) =>
     candidate.index === slotIndex
-      ? {
-          ...candidate,
-          faceCardId: SHIELD_FACE_ID,
-          faceCardOwnerId: playerId,
-          pestilenceCounters: 0,
-          forgeLockRemaining: 0,
-          forgeYield: false,
-        }
+      ? overwrittenSlot(candidate, SHIELD_FACE_ID, playerId)
       : candidate,
   );
   patchDie(draft, dieId, { slots });
   returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
   if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
     clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
   }
 
   return null;
@@ -120,6 +114,7 @@ export function installFacesOnDie(
     returnFaceToPoolIfOrphaned(draft, old.faceCardId, old.ownerId);
     if (countInstalledCopies(draft, old.faceCardId, old.ownerId) === 0) {
       clearOverloadsOnFace(draft, old.faceCardId, old.ownerId);
+      clearOverchargeOnFace(draft, old.faceCardId, old.ownerId);
     }
   }
 
@@ -190,6 +185,12 @@ export function forgeCard(
     return "INVALID_TARGET";
   }
 
+  // Capture before payForgeCost consumes forgeDiscountThisTurn. Discount and
+  // the immediate synthetic bank do not stack on the same install: otherwise a
+  // 2-cost Mechanical synthetic with Discount 1 and 1 pip nets zero (spend 1,
+  // bank 1) and looks like the pile was never charged.
+  const consumedForgeDiscount =
+    forge.kind === "synthetic" && (draft.forgeDiscountThisTurn[playerId] ?? 0) > 0;
   const forgeCostError = payForgeCost(draft, playerId, definition);
   if (forgeCostError !== null) return forgeCostError;
 
@@ -215,7 +216,7 @@ export function forgeCard(
   // Own-die synthetic FORGE_CARD: immediate pile bank per face (DECIDED
   // 2026-08-29). Natural and opponent-die forge stay install + draw (+ yield
   // when own-die) only.
-  if (forge.target === "own-die" && forge.kind === "synthetic") {
+  if (forge.target === "own-die" && forge.kind === "synthetic" && !consumedForgeDiscount) {
     bankSyntheticForgeReward(draft, playerId, faceCardId, slotIndexes.length);
   }
 

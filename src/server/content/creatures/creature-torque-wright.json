@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-torque-wright",
+  "name": "Torque Wright",
+  "life": 14,
+  "attributes": [
+    "mechanical"
+  ],
+  "passiveRulesText": "On absorb Mechanical, once per turn: [Discount 1] forge.",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "mechanical"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "arm-forge-discount",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-torque-wright-crank",
+      "name": "Crank",
+      "kind": "basic",
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-torque-wright-retool",
+      "name": "Retool",
+      "kind": "special",
+      "requires": {
+        "mechanical": 1,
+        "luminar": 1
+      },
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Reforge] a Synthetic Mechanical face on your die.",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "replace-synthetic-face",
+          "kind": "synthetic",
+          "attribute": "mechanical"
+        }
+      ]
+    }
+  ]
+}

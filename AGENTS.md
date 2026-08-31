@@ -36,20 +36,24 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
    [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 7. Print, tokens, hooks, and new mechanics use
    [`docs/KEYWORDS.md`](./docs/KEYWORDS.md) — prefer `[Mark N X]` over a new verb.
+8. Playtest “this felt like the wrong deck” →
+   [`docs/MECHANIC_ARCHETYPES.md`](./docs/MECHANIC_ARCHETYPES.md) (mechanic ×
+   window × archetype). Update that catalogue in the same change as any retarget.
 
 ## Content vs engine
 
 | Task | Start here |
 |---|---|
 | Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
-| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) |
+| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb; [MECHANIC_ARCHETYPES.md](docs/MECHANIC_ARCHETYPES.md) for mechanic × deck-style feel |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
 | Match UI / lobby / decks | Subagent: [match-ui](.cursor/agents/match-ui.md) + skill [match-ui](.cursor/skills/match-ui/SKILL.md) — do not put rules there |
 | Builtin / constructed loadouts, card-has-no-home, attribute identity in builds | Subagent: [deck-designer](.cursor/agents/deck-designer.md) |
 | New or tuned agents, skills, rules, TOOLS.md, AGENTS.md routing | Subagent: [prompt-engineer](.cursor/agents/prompt-engineer.md) + skill [author-interactions](.cursor/skills/author-interactions/SKILL.md) |
-| Match metrics, pacing charts, agent export of playtest recordings | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`) |
+| After a playtest (notes ± metrics, “felt like the wrong deck”) | Subagent: [post-playtest](.cursor/agents/post-playtest.md) + skill [review-playtest](.cursor/skills/review-playtest/SKILL.md) — updates `docs/MECHANIC_ARCHETYPES.md`, briefs owners; does not author JSON or reducer |
+| Match metrics dump with **no** playtest narrative (pace, drag, stall) | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`) |
 | PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/client/networking` + `docs/specs/007-peerjs.md` |
 
 ## Subagents
@@ -60,10 +64,11 @@ invoke them separately — do not implement both layers yourself.
 
 | Subagent | Use when |
 |---|---|
-| [card-designer](.cursor/agents/card-designer.md) | New/updated catalogue cards; print → data; delegates new mechanics to engine-developer |
+| [card-designer](.cursor/agents/card-designer.md) | Set craft: occupy an empty slot, then author catalogue JSON; delegates new mechanics to engine-developer |
 | [engine-developer](.cursor/agents/engine-developer.md) | `src/server` rules: hooks, triggers, `EffectDefinition`, reducer, resolution, statuses |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, MatchBoard, deck builder, catalogues, stores, decks persistence, PeerJS adapters |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts; constructed critique (orphans, attribute identity) |
+| [post-playtest](.cursor/agents/post-playtest.md) | After a playtest: reconstruct, update `MECHANIC_ARCHETYPES.md`, brief owners |
 | [prompt-engineer](.cursor/agents/prompt-engineer.md) | Human-to-AI interactions: subagents, skills, rules, TOOLS.md, routing |
 
 ## Specs & design trackers
@@ -77,13 +82,16 @@ invoke them separately — do not implement both layers yourself.
 | `docs/specs/006-deck-persistence.md` | Deck builder / loadouts |
 | `docs/specs/007-peerjs.md` | Online host authority |
 | `docs/specs/014-match-metrics.md` | Observer telemetry, dashboard, agent export |
+| `docs/specs/016-attribute-pile-up.md` | Player attribute pile; `[Requires]` / `[Spend]` / ritual gates |
 | `docs/specs/017-layer-split.md` | `src/server` vs `src/client` import rules |
 | `docs/specs/018-ast-engine.md` | Opcode AST, validator / compiler / executor |
 | `docs/specs/019-content-json.md` | Per-entity / per-loadout JSON catalogues |
 | `docs/specs/020-module-split.md` | Reducer commands + MatchBoard carve |
+| `docs/specs/021-overcharge.md` | Tactic `[Overcharge]` (natural-forge spend). Not spec `013` `optional-overcharge`. |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
+| `docs/MECHANIC_ARCHETYPES.md` | Mechanic × window × deck-style feel (playtest tracker) |
 | `docs/DEFERRED_CATALOGUE.md` | Print clauses not fully modelled |
 
 ## Definition of Done
@@ -103,6 +111,6 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Grow effect AST only when a concrete card needs it; one opcode handler class + tests in the same change. No unreachable stubs.
 - Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.
 - Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
-- Printed `playCost` totaling **1 pile token** is exceptional and niche. Players should reach 1-token plays mainly via **cost reduction**, not a catalogue of 1-drops.
+- Printed `playCost` totaling **1 pile token** is exceptional and niche. Players should reach 1-token plays mainly via **cost reduction** (`[Discount]`), not a catalogue of 1-drops.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).

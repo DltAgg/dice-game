@@ -1,0 +1,91 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-duskthrone-oracle",
+  "name": "Duskthrone Oracle",
+  "life": 21,
+  "attributes": [
+    "arcane",
+    "darkness"
+  ],
+  "legendary": true,
+  "passiveRulesText": "On absorb Arcane, once per turn: [Drain 1].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "arcane"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "drain-life",
+          "amount": 1,
+          "target": {
+            "kind": "choose-enemy"
+          },
+          "with": {
+            "kind": "most-damaged-ally"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-duskthrone-oracle-nightward-bolt",
+      "name": "Nightward Bolt",
+      "kind": "basic",
+      "discards": {
+        "darkness": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Insight 1].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "peek-deck-optional-bottom"
+        }
+      ]
+    },
+    {
+      "id": "attack-duskthrone-oracle-verdict-of-dusk",
+      "name": "Verdict of Dusk",
+      "kind": "special",
+      "requires": {
+        "arcane": 1,
+        "darkness": 1
+      },
+      "discards": {
+        "darkness": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Drain 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "drain-life",
+          "amount": 2,
+          "target": {
+            "kind": "choose-enemy"
+          },
+          "with": {
+            "kind": "most-damaged-ally"
+          }
+        }
+      ]
+    }
+  ]
+}

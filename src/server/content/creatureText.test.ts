@@ -3,70 +3,40 @@ import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js
 import { asAttackId, asCreatureDefinitionId } from "../model/ids.js";
 import { isNonEmptyRequirement } from "../rules/tokens.js";
 import {
-  AEGIS_LINK,
   ALL_CREATURES,
-  ARCHMAGE,
-  CINDER_WIGHT,
-  CLOCKWORK_DYNAMO,
-  COGWORK_DRIVER,
-  CORRUPTING_ELDER,
-  GARUDA,
-  ICHOR_HYDRA,
-  LENS_CHOIR,
-  MARROW_FIEND,
-  MINOTAUR,
-  NIGHTBOUND_ADEPT,
-  PRISM_HERALD,
-  SERVO_ASSEMBLY,
-  VARCOLAC,
-  VOID_SUMMONER,
+  DAWN_WARDEN,
+  DUSKTHRONE_ORACLE,
+  GRAVEMARROW_SHADE,
+  LODESTAR_ARTIFICER,
+  RIFTSCRIBE_ADEPT,
+  TORQUE_WRIGHT,
 } from "./creatures.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine, primaryAttribute } from "./creatureText.js";
 
-const FIGMA_IDS = [
-  ARCHMAGE,
-  CORRUPTING_ELDER,
-  GARUDA,
-  MINOTAUR,
-  VARCOLAC,
-  VOID_SUMMONER,
-] as const;
-
-const TEMPO_COMBO_IDS = [
-  AEGIS_LINK,
-  CLOCKWORK_DYNAMO,
-  COGWORK_DRIVER,
-  LENS_CHOIR,
-  PRISM_HERALD,
-  SERVO_ASSEMBLY,
-] as const;
-
-const BURN_IDS = [CINDER_WIGHT, ICHOR_HYDRA, MARROW_FIEND] as const;
+const TEMPO_IDS = [DAWN_WARDEN, LODESTAR_ARTIFICER, TORQUE_WRIGHT] as const;
+const CONTROL_IDS = [RIFTSCRIBE_ADEPT, GRAVEMARROW_SHADE, DUSKTHRONE_ORACLE] as const;
 
 describe("creature catalogue", () => {
-  it("includes the six Slow-game-test creatures", () => {
+  it("includes the Mechanical / Luminar Tempo squad", () => {
     const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
-    for (const id of FIGMA_IDS) {
+    for (const id of TEMPO_IDS) {
       expect(ids.has(id)).toBe(true);
     }
   });
 
-  it("includes Mechanical / Luminar Tempo–Combo creatures", () => {
+  it("includes the Arcane / Darkness Control squad", () => {
     const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
-    for (const id of TEMPO_COMBO_IDS) {
+    for (const id of CONTROL_IDS) {
       expect(ids.has(id)).toBe(true);
     }
   });
 
-  it("includes Nightbound Adept for two-color Control", () => {
-    expect(ALL_CREATURES.some((creature) => creature.id === NIGHTBOUND_ADEPT)).toBe(true);
-  });
-
-  it("includes Toxin / Corruption Burn creatures", () => {
-    const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
-    for (const id of BURN_IDS) {
-      expect(ids.has(id)).toBe(true);
-    }
+  it("catalogues exactly one legendary win target per attribute pairing", () => {
+    const legendaries = ALL_CREATURES.filter((creature) => creature.legendary === true);
+    expect(legendaries.map((creature) => creature.id)).toEqual([
+      LODESTAR_ARTIFICER,
+      DUSKTHRONE_ORACLE,
+    ]);
   });
 
   it("gives every catalogue creature a passive, a basic and a special", () => {
@@ -94,6 +64,24 @@ describe("creature catalogue", () => {
             true,
           );
           expect(hasDiscards, `${creature.name} ${attack.name} special Spends`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("Control attacks that Spend an attribute do not Generate that attribute", () => {
+    const control = new Set<string>(CONTROL_IDS);
+    for (const creature of ALL_CREATURES) {
+      if (!control.has(creature.id)) continue;
+      for (const attack of creature.attacks) {
+        const spent = attack.discards ?? {};
+        for (const effect of attack.followUpEffects ?? []) {
+          if (effect.type !== "generate-symbol") continue;
+          if (effect.symbol === "shield") continue;
+          expect(
+            spent[effect.symbol] ?? 0,
+            `${creature.name} ${attack.name} refunds spent ${effect.symbol}`,
+          ).toBe(0);
         }
       }
     }

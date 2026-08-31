@@ -9,8 +9,10 @@ import {
 
 /**
  * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
- * spec `016`). Attacks check/burn from there; ritual Active-when / Spend read
- * the same pile. Creature Shield / Toxin stay on creatures.
+ * spec `016`). Attacks and card `[Requires]` gates check (not burn) from there;
+ * `[Spend]` (header `playCost`, attack `discards`, ritual `spend`) burns.
+ * Ritual Active-when reads the same pile. Creature Shield / Toxin stay on
+ * creatures.
  */
 
 export const holdsTokens = (
@@ -80,6 +82,46 @@ export function attackIsFuelled(
     if (short > remaining) return false;
   }
   return true;
+}
+
+/**
+ * Card play fuel: the pile must hold `effect.requires` (gate, not spent) and
+ * can pay header `[Spend]` (`spend` / `spendNeed` after `[Discount]`). Gate
+ * shortfall reserves wildcards first so Spend still sees remaining wildcards.
+ * `[Discount]` never reduces the Requires gate. Forge does not use this —
+ * it checks header Spend only (`canAffordForge` / `payForgeCost`).
+ */
+export function cardPlayIsFuelled(
+  tokens: AttributeTokens,
+  play: {
+    readonly requires?: SymbolRequirement;
+    readonly spend?: SymbolRequirement;
+    readonly spendNeed?: number;
+  },
+  wildcardCount = 0,
+): boolean {
+  let remaining = wildcardCount;
+  if (isNonEmptyRequirement(play.requires)) {
+    const short = pileRequirementShortfall(tokens, play.requires);
+    if (short > remaining) return false;
+    remaining -= short;
+  }
+
+  const caps = play.spend;
+  const need =
+    play.spendNeed !== undefined
+      ? play.spendNeed
+      : isNonEmptyRequirement(caps)
+        ? requirementTotal(caps)
+        : 0;
+  if (need <= 0) return true;
+  if (!isNonEmptyRequirement(caps)) return need <= remaining;
+
+  let fromPile = 0;
+  for (const [attribute, cap] of requirementEntries(caps)) {
+    fromPile += Math.min(tokens[attribute] ?? 0, cap);
+  }
+  return need - fromPile <= remaining;
 }
 
 export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({

@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import {
   attributeLabel,
-  formatEffectRegion,
-  formatPlayCostLine,
   formatForgeLine,
+  formatInspectEffectLines,
+  formatPlayCostLine,
   formatRequirementLine,
+  formatSpendLine,
   formatTypeLine,
   type CardDefinition,
   type FaceCardDefinition,
@@ -56,7 +57,8 @@ export function CardInspectPanel({
 
 function TacticDossier({ card }: { card: CardDefinition }) {
   const gate = formatRequirementLine(card);
-  const effectLines = formatEffectRegion(card);
+  const activateSpend = formatSpendLine(card);
+  const effectLines = formatInspectEffectLines(card);
   const playRegion = playRegionLabel(card);
 
   return (
@@ -103,6 +105,13 @@ function TacticDossier({ card }: { card: CardDefinition }) {
             <Dd>{gate}</Dd>
           </>
         )}
+
+        {activateSpend !== null && (
+          <>
+            <Dt>Activate spend</Dt>
+            <Dd>{activateSpend}</Dd>
+          </>
+        )}
       </dl>
 
       <section>
@@ -110,9 +119,9 @@ function TacticDossier({ card }: { card: CardDefinition }) {
           Effect / rules
         </h4>
         <div className="space-y-1 rounded border border-stone-800/80 bg-black/30 px-3 py-2 text-sm leading-relaxed text-stone-200">
-          {effectLines.map((line) => (
+          {effectLines.map((line, index) => (
             <p
-              key={line}
+              key={`${card.id}:${String(index)}`}
               className={line.startsWith("[") ? "font-semibold text-amber-100/90" : undefined}
             >
               <KeywordRichText text={line} />
@@ -170,8 +179,8 @@ function FaceDossier({ face }: { face: FaceCardDefinition }) {
         </h4>
         <div className="space-y-1 rounded border border-stone-800/80 bg-black/30 px-3 py-2 text-sm leading-relaxed text-stone-200">
           {face.rulesText.length > 0 ? (
-            face.rulesText.split("\n").map((line) => (
-              <p key={line}>
+            face.rulesText.split("\n").map((line, index) => (
+              <p key={`${face.id}:${String(index)}`}>
                 <KeywordRichText text={line} />
               </p>
             ))

@@ -28,8 +28,10 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
    `on-absorb` filters stay; absorber relation is the banking player / their
    field as appropriate.
 6. **`[Requires]` / `[Spend]`.** `[Requires: …]` is a pile **gate** (must hold,
-   not spent). `[Spend: …]` **burns** from the pile (card `effect.requires`,
-   ritual activate `spend`, attack `discards`). Wildcards may cover shortfall.
+   not spent) — attack `requires` **and** card `effect.requires`. `[Spend: …]`
+   **burns** from the pile (header `playCost`, ritual activate `spend`, attack
+   `discards`). Wildcards may cover shortfall. `[Discount]` reduces header Spend
+   only, never a Requires gate. Forge does not check `effect.requires`.
 7. **Attacks.** `requires` is checked against the attacker's owner's
    `attributePool` (not spent). `discards` is checked and burned. **Both may
    apply** on one attack. Same-turn absorb **can** enable an attack
@@ -68,6 +70,8 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
   pip, no creature id required.
 - Shield absorb: same plus living owned creature target.
 - Attack: owner pile meets `requires` (gate) and `discards` (Spend) when printed.
+- Play: pile meets `effect.requires` (gate) and discounted header `playCost`
+  (Spend) against the **same** pile (not additive). Forge ignores `effect.requires`.
 - Ritual ready: pile meets `activeWhen` (or no gate → ready on place).
 - Ritual activate: orientation `ready`, pile still meets `activeWhen`, can pay
   `spend`.

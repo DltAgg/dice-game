@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-sunward-lens",
+  "name": "Sunward Lens",
+  "kind": "synthetic",
+  "symbol": "luminar",
+  "rulesText": "On roll: [Heal 1] on your most damaged creature.\nOn absorb, once per turn: [Generate 1 Mechanical].",
+  "onRoll": [
+    {
+      "type": "heal",
+      "amount": 1,
+      "target": {
+        "kind": "most-damaged-ally"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "generate-symbol",
+      "symbol": "mechanical",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

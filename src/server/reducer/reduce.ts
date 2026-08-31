@@ -6,8 +6,10 @@ import type { GameAction } from "./actions.js";
 import { absorbSymbol } from "./commands/absorb.js";
 import { attack } from "./commands/attack.js";
 import { forgeCard, activateFace } from "./commands/forge.js";
+import { overchargeCard } from "./commands/overcharge.js";
 import { playCard } from "./commands/playCard.js";
 import { passPriority } from "./commands/priority.js";
+import { resolveOptionalReroll } from "./commands/reroll.js";
 import { retainDie, rollDice } from "./commands/rollDice.js";
 import { activateRitual } from "./commands/ritual.js";
 import { advancePhase, endTurn } from "./commands/turn.js";
@@ -29,7 +31,6 @@ import {
   resolveMindControl,
   resolveOptionalBonusAttack,
   resolveOptionalOvercharge,
-  resolveOptionalReroll,
   resolvePeekDeck,
   resolveReplayGraveyard,
   resolveReplaceSyntheticFace,
@@ -158,6 +159,13 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.cardInstanceId,
         action.dieId,
         action.slotIndexes,
+        action.faceCardId,
+      );
+    case "OVERCHARGE_CARD":
+      return overchargeCard(
+        draft,
+        action.playerId,
+        action.cardInstanceId,
         action.faceCardId,
       );
     case "PLAY_CARD":

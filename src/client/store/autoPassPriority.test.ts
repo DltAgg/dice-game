@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { advance, asAttackId } from "@server";
-import { BARRIER_OF_LIGHT } from "@server/content/cards.js";
+import { LANTERN_OATH } from "@server/content/cards.js";
 import {
   creatureIdAt,
   expectOk,
@@ -14,19 +14,19 @@ import {
 } from "@server/testing/scenario.js";
 import { autoPassPriorityAction, drainEmptyReactionPriority, tryAutoPassPriority } from "./autoPassPriority.js";
 
-const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
+const DRIVE_SHAFT = asAttackId("attack-lodestar-artificer-drive-shaft");
 
 function openedAttack(hand: Parameters<typeof withHand>[2]) {
   const base = withPhase(newMatch(), "actions");
-  const attacker = creatureIdAt(base, P1, 0);
+  const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
-  const combat = withHand(withPile(withTokens(base, attacker, { martial: 2 }), P2, 10), P2, hand);
+  const combat = withHand(withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10), P2, hand);
   return expectOk(
     advance(combat, {
       type: "ATTACK",
       playerId: P1,
       attackerId: attacker,
-      attackId: HEAVY_AXE,
+      attackId: DRIVE_SHAFT,
       targetId: target,
     }),
   );
@@ -50,8 +50,8 @@ describe("autoPassPriorityAction", () => {
     ).toEqual({ type: "PASS_PRIORITY", playerId: P2 });
   });
 
-  it("does not skip a window when Barrier is a legal prevent", () => {
-    const state = openedAttack([BARRIER_OF_LIGHT]);
+  it("does not skip a window when Lantern Oath is a legal prevent", () => {
+    const state = openedAttack([LANTERN_OATH]);
     expect(
       autoPassPriorityAction({
         state,
@@ -103,7 +103,7 @@ describe("autoPassPriorityAction", () => {
   });
 
   it("drainEmptyReactionPriority stops when a seat has a legal Respond", () => {
-    const opened = openedAttack([BARRIER_OF_LIGHT]);
+    const opened = openedAttack([LANTERN_OATH]);
     const drained = drainEmptyReactionPriority(opened);
     expect(drained.pendingDecision).toEqual({
       type: "reaction-priority",

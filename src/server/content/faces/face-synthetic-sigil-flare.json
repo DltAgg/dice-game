@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-sigil-flare",
+  "name": "Sigil Flare",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "On roll: [Strike 1].\nOn absorb, once per turn: [Draw 1].",
+  "onRoll": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "draw-cards",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

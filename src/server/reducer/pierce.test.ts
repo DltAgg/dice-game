@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { asAttackId } from "../model/ids.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -12,21 +11,22 @@ import {
   withTokens,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-
-const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
-const CHARGE = asAttackId("attack-varcolac-charge");
+import { DRIVE_SHAFT, KINDLE } from "../testing/tempoCatalogue.js";
 
 describe("ignore Shield / pierce", () => {
-  it("lets War Minotaur skip 1 Shield without spending it", () => {
-    const base = withTokens(withPhase(newMatch(), "actions"), creatureIdAt(newMatch(), P1, 0), {
-      martial: 2,
+  it("skips one Shield without spending it when ignore-shield is armed", () => {
+    const base = withTokens(withPhase(newMatch(), "actions"), creatureIdAt(newMatch(), P1, 2), {
+      mechanical: 1,
     });
-    const attackerId = creatureIdAt(base, P1, 0);
+    const attackerId = creatureIdAt(base, P1, 2);
     const targetId = creatureIdAt(base, P2, 0);
-    const state = withShields(base, targetId, 1);
+    const state = {
+      ...withShields(base, targetId, 1),
+      ignoreShieldThisTurn: { [P1]: 1 },
+    };
 
     const after = expectOk(
-      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: HEAVY_AXE, targetId }),
+      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: DRIVE_SHAFT, targetId }),
     );
 
     expect(after.creatures[targetId]?.damage).toBe(3);
@@ -34,15 +34,18 @@ describe("ignore Shield / pierce", () => {
   });
 
   it("still spends remaining Shield after the ignored point", () => {
-    const base = withTokens(withPhase(newMatch(), "actions"), creatureIdAt(newMatch(), P1, 0), {
-      martial: 2,
+    const base = withTokens(withPhase(newMatch(), "actions"), creatureIdAt(newMatch(), P1, 2), {
+      mechanical: 1,
     });
-    const attackerId = creatureIdAt(base, P1, 0);
+    const attackerId = creatureIdAt(base, P1, 2);
     const targetId = creatureIdAt(base, P2, 0);
-    const state = withShields(base, targetId, 2);
+    const state = {
+      ...withShields(base, targetId, 2),
+      ignoreShieldThisTurn: { [P1]: 1 },
+    };
 
     const after = expectOk(
-      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: HEAVY_AXE, targetId }),
+      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: DRIVE_SHAFT, targetId }),
     );
 
     expect(after.creatures[targetId]?.damage).toBe(2);
@@ -54,10 +57,10 @@ describe("ignore Shield / pierce", () => {
     const match = withPhase(newMatch(), "actions");
     const attackerId = creatureIdAt(match, P1, 1);
     const targetId = creatureIdAt(match, P2, 0);
-    const state = withShields(withTokens(match, attackerId, { wild: 1 }), targetId, 1);
+    const state = withShields(withTokens(match, attackerId, { luminar: 1 }), targetId, 1);
 
     const after = expectOk(
-      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: CHARGE, targetId }),
+      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: KINDLE, targetId }),
     );
 
     expect(after.creatures[targetId]?.damage).toBe(1);

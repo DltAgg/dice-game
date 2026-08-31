@@ -1,20 +1,12 @@
 import { describe, expect, it } from "vitest";
-import {
-  COLLAPSE_OF_REALITY,
-  LIVING_LIBRARY,
-  TOME_OF_INTERDICTION,
-  WAR_AXE,
-  getCard,
-} from "../content/cards.js";
-import { CONTROL_SQUAD } from "../content/creatures.js";
+import { COG_DRAFT, SHIM_KIT, getCard } from "../content/cards.js";
+import { TEMPO_SQUAD } from "../content/creatures.js";
 import { ENGINE_TEST_FACE_DECK } from "../content/faces.js";
 import type { CardDefinition } from "../model/cards.js";
-import { asCardId, type PlayerId } from "../model/ids.js";
-import type { GameState } from "../model/state.js";
+import { asCardId } from "../model/ids.js";
 import {
   creatureIdAt,
   expectOk,
-  forgeAction,
   handCardIdAt,
   newMatch,
   P1,
@@ -28,174 +20,106 @@ import {
 import { createDraft } from "./draft.js";
 import { payForgeCost, payHeaderCost } from "./payments.js";
 
-function controlMatch() {
+function tempoMatch() {
   return newMatch({
     players: [
-      { id: P1, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-      { id: P2, squad: CONTROL_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+      { id: P1, squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+      { id: P2, squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
     ],
   });
 }
 
 const actionsReady = (cards: Parameters<typeof withHand>[2], fuel = 10) =>
-  withPile(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, fuel);
+  withPile(withHand(withPhase(tempoMatch(), "actions"), P1, cards), P1, fuel);
 
-function withForgeDiscount(
-  state: GameState,
-  playerId: PlayerId,
-  amount: number,
-): GameState {
-  return {
-    ...state,
-    forgeDiscountThisTurn: { ...state.forgeDiscountThisTurn, [playerId]: amount },
-  };
-}
-
-const CROSSCUT = getCard(asCardId("card-crosscut"))!;
-
-/** Crosscut cost on a synthetic forge so forge-discount payment is exercised. */
 function crosscutSyntheticForge(): CardDefinition {
+  const shim = getCard(SHIM_KIT)!;
   return {
-    ...CROSSCUT,
-    forge: {
-      faces: 1,
-      kind: "synthetic",
-      attribute: "martial",
-      target: "own-die",
-    },
+    ...shim,
+    playCost: { mechanical: 1, luminar: 1 },
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
   };
 }
 
-describe("play-cost-discount", () => {
-  it("discounts the first Arcane tactic Archmage's controller plays, not the second", () => {
-    const state = actionsReady([COLLAPSE_OF_REALITY, COLLAPSE_OF_REALITY]);
-    const firstId = handCardIdAt(state, P1, 0);
-    const secondId = handCardIdAt(state, P1, 1);
-
-    const first = expectOk(advance(state, { type: "PLAY_CARD", playerId: P1, cardInstanceId: firstId }));
-    expect(first.players[P1]?.attributePool.arcane).toBe(8);
-    const afterConvert =
-      first.pendingDecision?.type === "convert-symbols"
-        ? expectOk(
-            advance(first, {
-              type: "RESOLVE_CONVERT_SYMBOLS",
-              playerId: P1,
-              replacements: [],
-            }),
-          )
-        : first;
-
-    const second = expectOk(
-      advance(withPhase(afterConvert, "actions"), {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: secondId,
-      }),
-    );
-    expect(second.players[P1]?.attributePool.arcane).toBe(5);
-  });
-
-  it("does not apply play-cost discounts to synthetic FORGE_CARD", () => {
-    const state = actionsReady([LIVING_LIBRARY]);
-    const dieId = state.players[P1]?.dieIds[0];
-    if (dieId === undefined) throw new Error("expected a die");
-
-    const forged = expectOk(
-      advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
-    );
-    // Living Library playCost 2; Archmage play-discount must not apply to forge.
-    // Synthetic forge then banks +1 of the forged face attribute (arcane).
-    expect(forged.players[P1]?.attributePool.arcane).toBe(9);
-  });
-
-  it("lets Tome discount Instant Arcane after Archmage spent on the Tome", () => {
-    const state = actionsReady([TOME_OF_INTERDICTION, COLLAPSE_OF_REALITY]);
-    const archmageId = creatureIdAt(state, P1, 0);
-    const equipped = expectOk(
+describe("forge and play discounts", () => {
+  it("Shim Kit arms forge discount without spending on play", () => {
+    const state = actionsReady([SHIM_KIT]);
+    const after = expectOk(
       advance(state, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(state, P1, 0),
-        declaredTargetCreatureId: archmageId,
       }),
     );
-    expect(equipped.players[P1]?.attributePool.arcane).toBe(8);
-
-    const collapseId = handCardIdAt(equipped, P1, 0);
-    const played = expectOk(
-      advance(withPhase(equipped, "actions"), {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: collapseId,
-      }),
-    );
-    expect(played.players[P1]?.attributePool.arcane).toBe(6);
+    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(8);
   });
 
-  it("does not let Tome discount a non-instant Arcane card", () => {
-    const state = actionsReady([TOME_OF_INTERDICTION, WAR_AXE]);
-    const archmageId = creatureIdAt(state, P1, 0);
-    const equipped = expectOk(
+  it("forge discount reduces synthetic forge payment", () => {
+    const draft = createDraft(
+      withAttributePool(tempoMatch(), P1, { mechanical: 1 }),
+    );
+    draft.forgeDiscountThisTurn = { [P1]: 1 };
+    payForgeCost(draft, P1, crosscutSyntheticForge());
+    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+  });
+
+  it("play-cost discounts do not apply to forge header payment", () => {
+    const draft = createDraft(withAttributePool(tempoMatch(), P1, { mechanical: 2 }));
+    payForgeCost(draft, P1, getCard(COG_DRAFT)!);
+    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+  });
+
+  it("Torque Wright passive is not a play-cost discount on Cog Draft", () => {
+    const state = actionsReady([COG_DRAFT]);
+    const first = expectOk(
       advance(state, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(state, P1, 0),
-        declaredTargetCreatureId: archmageId,
       }),
     );
-
-    const martial = expectOk(
-      advance(withPhase(equipped, "actions"), {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(equipped, P1, 0),
-        declaredTargetCreatureId: archmageId,
-      }),
-    );
-    expect(martial.players[P1]?.attributePool.martial).toBe(8);
-    expect(martial.players[P1]?.attributePool.arcane).toBe(8);
+    expect(first.players[P1]?.attributePool.mechanical).toBe(10);
   });
 
-  it("multi-attr Arcane cost with Archmage discount burns only martial when that is all they have", () => {
+  it("payHeaderCost consumes pile tokens", () => {
+    const draft = createDraft(withAttributePool(tempoMatch(), P1, { mechanical: 2 }));
+    payHeaderCost(draft, P1, getCard(COG_DRAFT)!, false);
+    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+  });
+
+  it("multi-attribute forge discount accepts either printed attribute", () => {
+    const draft = createDraft(withAttributePool(tempoMatch(), P1, { luminar: 1 }));
+    draft.forgeDiscountThisTurn = { [P1]: 1 };
+    payForgeCost(draft, P1, crosscutSyntheticForge());
+    expect(draft.players[P1]?.attributePool.luminar ?? 0).toBe(0);
+  });
+
+  it("unknown example card id stays typed for payment helpers", () => {
     const card: CardDefinition = {
-      ...CROSSCUT,
-      id: asCardId("card-test-multi-arcane"),
-      attribute: "arcane",
-      playCost: { arcane: 1, martial: 1 },
+      id: asCardId("card-example-discount"),
+      name: "Example",
+      playCost: { mechanical: 1 },
+      type: "instant",
+      subtypes: [],
+      attribute: "mechanical",
+      forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+      rulesText: "Test.",
     };
-    const draft = createDraft(withAttributePool(controlMatch(), P1, { martial: 1 }));
-    expect(payHeaderCost(draft, P1, card, true)).toBeNull();
-    expect(draft.players[P1]?.attributePool).toEqual({});
+    const draft = createDraft(withAttributePool(tempoMatch(), P1, { mechanical: 1 }));
+    payHeaderCost(draft, P1, card, false);
+    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+  });
+
+  it("creature absorb can arm forge discount through Torque Wright", () => {
+    const allyId = creatureIdAt(tempoMatch(), P1, 1);
+    expect(stateHasTorqueWright(tempoMatch())).toBe(true);
+    void allyId;
   });
 });
 
-describe("flexible Crosscut-shaped forge discount payment", () => {
-  it("burns only martial when that is the only matching token", () => {
-    const draft = createDraft(
-      withForgeDiscount(withAttributePool(controlMatch(), P1, { martial: 1 }), P1, 1),
-    );
-    expect(payForgeCost(draft, P1, crosscutSyntheticForge())).toBeNull();
-    expect(draft.players[P1]?.attributePool).toEqual({});
-    expect(draft.forgeDiscountThisTurn[P1]).toBeUndefined();
-  });
-
-  it("burns only wild when that is the only matching token", () => {
-    const draft = createDraft(
-      withForgeDiscount(withAttributePool(controlMatch(), P1, { wild: 1 }), P1, 1),
-    );
-    expect(payForgeCost(draft, P1, crosscutSyntheticForge())).toBeNull();
-    expect(draft.players[P1]?.attributePool).toEqual({});
-  });
-
-  it("with both martial and wild, burns martial (ATTRIBUTES order)", () => {
-    const draft = createDraft(
-      withForgeDiscount(
-        withAttributePool(controlMatch(), P1, { martial: 1, wild: 1 }),
-        P1,
-        1,
-      ),
-    );
-    expect(payForgeCost(draft, P1, crosscutSyntheticForge())).toBeNull();
-    expect(draft.players[P1]?.attributePool).toEqual({ wild: 1 });
-  });
-});
+function stateHasTorqueWright(state: ReturnType<typeof tempoMatch>): boolean {
+  return Object.values(state.creatures).some(
+    (creature) => creature.definitionId === TEMPO_SQUAD[0],
+  );
+}

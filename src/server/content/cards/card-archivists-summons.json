@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-archivists-summons",
+  "name": "Archivist's Summons",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Search 2] Instant or Ritual cards.",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 2
+    },
+    "spend": {
+      "arcane": 2
+    },
+    "effects": [
+      {
+        "type": "search-deck",
+        "amount": 2,
+        "filter": [
+          "instant",
+          "ritual"
+        ]
+      }
+    ]
+  }
+}

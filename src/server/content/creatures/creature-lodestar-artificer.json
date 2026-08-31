@@ -1,0 +1,76 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-lodestar-artificer",
+  "name": "Lodestar Artificer",
+  "life": 22,
+  "attributes": [
+    "mechanical",
+    "luminar"
+  ],
+  "legendary": true,
+  "passiveRulesText": "On absorb Mechanical, once per turn: [Empower 1] this creature.",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "mechanical"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "grant-next-attack-bonus",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-lodestar-artificer-drive-shaft",
+      "name": "Drive Shaft",
+      "kind": "basic",
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      }
+    },
+    {
+      "id": "attack-lodestar-artificer-overdrive",
+      "name": "Overdrive",
+      "kind": "special",
+      "requires": {
+        "mechanical": 1,
+        "luminar": 1
+      },
+      "discards": {
+        "mechanical": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 3]. [Stamp].",
+      "effect": {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "reapply-die-modifiers"
+        }
+      ]
+    }
+  ]
+}

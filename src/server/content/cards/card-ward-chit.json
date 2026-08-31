@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-ward-chit",
+  "name": "Ward Chit",
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Mark 1 Shield] on an allied creature you choose.",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-shield",
+        "amount": 1,
+        "target": {
+          "kind": "choose-ally"
+        }
+      }
+    ]
+  }
+}

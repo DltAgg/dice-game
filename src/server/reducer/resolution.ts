@@ -53,12 +53,14 @@ import {
   searchableDeckCards,
   setCreaturePosition,
   swapCreaturePositions,
+  clearOverchargeOnFace,
   clearOverloadsOnFace,
 } from "./zones.js";
 import { AstCompiler } from "../ast/compiler.js";
 import { AstExecutor } from "../ast/executor.js";
 import { AstValidator } from "../ast/validator.js";
 import { createGenericRegistry } from "../ast/opcodes/generic.js";
+import { refireShownFaceRollEffects } from "./commands/shownFace.js";
 
 /**
  * Effect resolution (SPDD §17). Effects are drained from an explicit stack
@@ -1452,36 +1454,7 @@ export function fireDieModifiers(
   const die = draft.dice[dieId];
   const slotIndex = die?.rolledSlotIndex;
   if (die === undefined || slotIndex === null || slotIndex === undefined) return;
-  const slot = die.slots[slotIndex];
-  if (slot === undefined) return;
-  const face = getFaceCard(slot.faceCardId);
-  if (face !== undefined) {
-    for (const effect of [...face.onRoll].reverse()) {
-      pushEffect(draft, controllerId, effect, null, null, null, dieId, slotIndex);
-    }
-  }
-  const player = draft.players[controllerId];
-  if (player === undefined) return;
-  for (const cardInstanceId of player.overload) {
-    const card = draft.cards[cardInstanceId];
-    if (card?.attachedToFaceCardId !== slot.faceCardId) continue;
-    const region = getCard(card.cardId)?.overload;
-    if (region === undefined) continue;
-    for (const effect of [...region.onRoll].reverse()) {
-      pushEffect(
-        draft,
-        controllerId,
-        effect,
-        null,
-        null,
-        null,
-        dieId,
-        slotIndex,
-        0,
-        cardInstanceId,
-      );
-    }
-  }
+  refireShownFaceRollEffects(draft, controllerId, dieId, slotIndex);
 }
 
 function applyCopyOtherDieFace(draft: Draft, pending: PendingEffect): void {
@@ -1546,6 +1519,7 @@ function applyPestilenceCounter(draft: Draft, pending: PendingEffect): void {
       returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.faceCardOwnerId);
       if (countInstalledCopies(draft, displaced.faceCardId, displaced.faceCardOwnerId) === 0) {
         clearOverloadsOnFace(draft, displaced.faceCardId, displaced.faceCardOwnerId);
+        clearOverchargeOnFace(draft, displaced.faceCardId, displaced.faceCardOwnerId);
       }
     }
     emit(draft, {
@@ -1573,14 +1547,7 @@ export function consumeSyntheticCorruptionOnDie(
     if (face?.kind !== "synthetic" || face.symbol !== "corruption") return slot;
     consumed += 1;
     displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
-    return {
-      ...slot,
-      faceCardId: SHIELD_FACE_ID,
-      faceCardOwnerId: die.ownerId,
-      pestilenceCounters: 0,
-      forgeLockRemaining: 0,
-      forgeYield: false,
-    };
+    return overwrittenSlot(slot, SHIELD_FACE_ID, die.ownerId);
   });
   if (consumed === 0) return 0;
   patchDie(draft, dieId, { slots });
@@ -1588,6 +1555,7 @@ export function consumeSyntheticCorruptionOnDie(
     returnFaceToPoolIfOrphaned(draft, old.faceCardId, old.ownerId);
     if (countInstalledCopies(draft, old.faceCardId, old.ownerId) === 0) {
       clearOverloadsOnFace(draft, old.faceCardId, old.ownerId);
+      clearOverchargeOnFace(draft, old.faceCardId, old.ownerId);
     }
   }
   return consumed;
@@ -1782,11 +1750,7 @@ export function stripFaceToShield(
   const slots = die.slots.map((candidate) =>
     candidate.index === slotIndex
       ? {
-          ...candidate,
-          faceCardId: SHIELD_FACE_ID,
-          faceCardOwnerId: shieldOwnerId,
-          pestilenceCounters: 0,
-          forgeLockRemaining: 0,
+          ...overwrittenSlot(candidate, SHIELD_FACE_ID, shieldOwnerId),
           corruptionMarkers: 0,
           suppressInherentNextRoll: false,
           resourceLockedThisTurn: false,
@@ -1797,6 +1761,7 @@ export function stripFaceToShield(
   returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
   if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
     clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
   }
 }
 

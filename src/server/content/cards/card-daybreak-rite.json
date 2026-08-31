@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-daybreak-rite",
+  "name": "Daybreak Rite",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Heal 2] on each allied frontline creature.",
+  "ritual": {
+    "activeWhen": {
+      "luminar": 2
+    },
+    "spend": {
+      "luminar": 2
+    },
+    "effects": [
+      {
+        "type": "heal",
+        "amount": 2,
+        "target": {
+          "kind": "allied-frontline"
+        }
+      }
+    ]
+  }
+}

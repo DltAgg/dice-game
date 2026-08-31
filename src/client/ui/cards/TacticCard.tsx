@@ -64,8 +64,12 @@ export function TacticCard({ card, width = 280 }: TacticCardProps) {
         <ForgeEffectSplit />
 
         <div className="mx-[6.4%] px-[2.5%]">
-          {effectLines.map((line) => (
-            <KeywordLine key={line} text={line} bold={line.startsWith("[")} />
+          {effectLines.map((line, index) => (
+            <KeywordLine
+              key={`${card.id}:${String(index)}`}
+              text={line}
+              bold={line.startsWith("[")}
+            />
           ))}
         </div>
       </div>

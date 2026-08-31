@@ -13,8 +13,11 @@ print:
 
 1. Read `docs/KEYWORDS.md` first.
 2. Prefer an existing operator + argument over a new verb — `[Mark N Toxin]`,
-   `[Mark N Toxin on attacks]`, `[Forge N]` on their die. Do **not** mint
-   Dose / Envenom / Brand / Contaminate for a slightly different window.
+   `[Mark N Toxin on attacks]`, `[Forge N]` on their die, `[Overcharge]`
+   (spec `021` grammar / master rule — do **not** reprint on every
+   natural-forge card). Do **not** mint Dose / Envenom / Brand / Contaminate
+   for a slightly different window. Spec `013` `optional-overcharge` is a
+   Mechanical face-marker opcode, not this keyword.
 3. A new **token** (creature counter, Shield, face marker) gets a rulebook
    paragraph and joins **X** on `[Mark]` / `[Strip]`. It does not get its own
    keyword. Attribute exclusives still gate the **argument**, not the verb.

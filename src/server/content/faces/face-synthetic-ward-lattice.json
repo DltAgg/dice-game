@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-ward-lattice",
+  "name": "Ward Lattice",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "On roll: [Insight 1].\nOn absorb, once per turn: [Mark 1 Shield] on an allied creature you choose.",
+  "onRoll": [
+    {
+      "type": "peek-deck-optional-bottom"
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "grant-shield",
+      "amount": 1,
+      "target": {
+        "kind": "choose-ally"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

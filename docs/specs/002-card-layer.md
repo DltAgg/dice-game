@@ -156,6 +156,133 @@ Costs shown as `?` are **variable** pile pay (DEFERRED). Catalogue `?` cards
 currently use a fixed `playCost` until variable spend UX ships. Where the frame
 name and the printed name disagree, the printed name is used.
 
+> **Catalogue reset (2026-08-29).** `src/server/content/cards/` holds two
+> archetype sets: the Mechanical + Luminar **Tempo** catalogue and the
+> Arcane + Darkness **Control** catalogue, both below. Every
+> `### … deck` / `### … (authored)` table *after* those two names **retired
+> print with no catalogue entry** — read those as role/design reference for
+> vocabulary decisions, never as a list of live cards.
+
+### Mechanical + Luminar Tempo catalogue (authored)
+
+Tempo **wins by** sequencing pile → forge → pressure on the enemy legendary.
+Mechanical rebuilds and discounts **its own** dice; Luminar sustains and buys
+tempo back with reaction `[Prevent]`. Every row serves forge or play.
+
+`playCost` is the attribute pile, not generic Energy. All 22 print 2+.
+
+**Mechanical — own-die reconstruction, generation, forge discounts**
+
+| Cost | Name | Type line | Printed play region | Role in Tempo |
+|---|---|---|---|---|
+| 2 M | Cog Draft | Instant / Mechanical | `[Generate 2 Mechanical]. [Draw 1].` | Opener. Converts a turn into pile + a card. |
+| 2 M | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. `[Forge 2 Synthetic Mechanical]` on your die. | Pile → die assembly; the main pile sink. |
+| 2 M | Shim Kit | Instant / Mechanical | `[Discount 2]` forge. | One-shot discount that turns a forge into a tempo turn. |
+| 3 M | Quickset Jig | Equipment / Mechanical | On roll Mechanical: `[Discount 1]` forge. | Standing discount engine — rolls, not pile. |
+| 2 M | Die Punch | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Stamp]`. | Own-die reconstruction: reapply your die modifiers. |
+| 2 M | Recast | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Reforge]` a Synthetic Mechanical face. | Swaps a stale synthetic without a fresh forge. |
+| 2 M | Twin Cam | Instant / Mechanical | `[Requires 2 x Mechanical]`. `[Double]`. | Payoff for a stacked die: next face effect twice. |
+| 2 M | Idler Gear | Overload / Mechanical | Mechanical face only. On roll: `[Generate 1 Mechanical]`. `[Generate 1 Luminar]`. | The two-color bridge welded to the die — Mechanical face, Luminar payout. |
+| 2 M | Pawl Spring | Overload / Mechanical | Mechanical face only. On absorb, once per turn: `[Discount 1]` forge. | The absorb-vs-pool tension. Its natural forge paints the Mechanical face it can later overload. |
+| 2 M | Driveshaft Rig | Equipment / Mechanical | On absorb Mechanical (`ally`), once per turn: `[Generate 1 Mechanical]`. | Standing pile growth off your own banking. |
+| 3 M | Machine Shop | Ritual / Continuous / Mechanical | `[Active when: 2 x Mechanical]`. On roll Mechanical: `[Generate 1 Mechanical]`. | The engine's compounding loop while the pile holds. **Forge region installs two** synthetic Mechanical faces — the workshop either runs or gets scrapped for parts. |
+| 3 M | Tempering Line | Ritual / Instant / Mechanical | `[Active when: 2 x Mechanical]`. `[Spend: 2 x Mechanical]`. `[Forge 2 Synthetic Mechanical]`. `[Discount 1]` forge. | Cashes the pile into two faces plus a discount. |
+
+**Luminar — heal, `[Mark N Shield]`, reaction `[Prevent]` only**
+
+| Cost | Name | Type line | Printed play region | Role in Tempo |
+|---|---|---|---|---|
+| 2 L | Glint Veil | Reaction / Luminar | `[Prevent 1]` on the waiting attack. | Cheapest chain answer; buys a turn of assembly. |
+| 3 L | Lantern Oath | Reaction / Luminar | `[Prevent 2]`. On prevent damage: `[Draw 1]`. | Prevent that refuels — reaction-exclusive `[Prevent]`. |
+| 3 L | Mirrorward | Reaction / Luminar | `[Prevent]` the waiting attack; `[Strike]` the attacker for the damage prevented. | Turns the opponent's swing into pressure. |
+| 2 L + 1 M | Mending Light | Instant / Luminar | `[Heal 2]` on your most damaged creature. `[Discount 1]` forge. | The two-color bridge. Both halves of the cost are spent on payoff both halves want: the Luminar body sustains, the Mechanical pip buys the next install. Not a converter. |
+| 3 L | Bright Cadence | Instant / Luminar | `[Mark 2 Shield]` on an allied creature you choose. `[Empower 1]`. | Proactive Luminar — shields, never `[Prevent]`. |
+| 2 L | Prism Mantle | Equipment / Luminar | On take damage, once per turn: reduce it by 1. | Makes the legendary hard to race without printing Prevent. |
+| 2 L + 1 M | Beacon Array | Equipment / Luminar | On absorb Luminar **or Shield** (`ally`), once per turn: `[Heal 1]`. | The only card that pays off a Shield absorb, so opening Shield faces stop being dead sustain. |
+| 2 L | Choirlight | Overload / Luminar | Luminar face only. On roll: `[Heal 1]`. | Sustain welded to a face the deck already rolls. |
+| 3 L | Radiant Accord | Ritual / Continuous / Luminar | `[Active when: 1 x Luminar, 1 x Mechanical]`. On absorb Luminar (`ally`), once per turn: `[Mark 1 Shield]`. | Two-color gate; standing Shield while the pile holds. |
+| 3 L | Daybreak Rite | Ritual / Instant / Luminar | `[Active when: 2 x Luminar]`. `[Spend: 2 x Luminar]`. `[Heal 2]` on each allied frontline creature. | The mass-stabilize turn. The single-target shield-and-swing stays on Bright Cadence; this is the board-wide reset the pile pays for. |
+
+Faces (spec `004`) and the Tempo squad (spec `003`) carry the same split:
+Mechanical faces bank and rebuild, Luminar faces shield and sustain.
+
+### Arcane + Darkness Control catalogue (authored)
+
+Control **wins by** stretching the game with deck manipulation, negates, and
+ritual/equipment removal, then converting that long engine into **lethal
+damage on the enemy legendary** — Pall of Ash, Sable Tithe, Lightless Verdict,
+Riftmark, Sigil Flare ticks, and Duskthrone Oracle's `[Drain]`. It is not
+creature beatdown and it is not a damage-free prison: the closers are the plan.
+
+Arcane owns **`[Insight]` / `[Search]`** (deck top and deck dig), the negates,
+ritual destroy, and cost reduction on its own Instants. Darkness owns
+**`[Mill]`**, graveyard recursion (`[Recall]` / replay), discard-for-fuel, and
+the drain/strike closers. No Corruption opponent-die, no Luminar `[Prevent]`,
+no Toxin markers, no Martial `[Swap]`, no Wild `[Frenzy]`, and Mechanical
+`[Stamp]` / `[Reforge]` stay out.
+
+`playCost` is the attribute pile, not generic Energy. All 22 print 2+.
+
+**Arcane — deck-top manipulation, negates, ritual answers, discounts**
+
+| Cost | Name | Type line | Printed play region | Role in Control |
+|---|---|---|---|---|
+| 2 A | Thread the Weave | Instant / Arcane | `[Insight 2].` | Cheapest dig; sets up the closer you need. Its **synthetic** forge is the other half of the choice — dig now or install a named Arcane face. |
+| 2 A | Oracle's Margin | Instant / Arcane | `[Insight 1]. [Discount 1]` forge. | Filter the top and cheapen the next install. Card advantage stays on Gloomdraft; this one converts information into engine. |
+| 3 A | Glyph of Refusal | Reaction / Arcane | `[Negate].` | The catch-all answer; taxes their best turn. |
+| 2 A | Sealbind Rune | Reaction / Arcane | `[Negate Ritual].` | Narrow, cheap answer to ritual engines. |
+| 3 A | Unwrite | Instant / Arcane | `[Destroy Ritual]` your opponent controls. | Cleans up a ritual that already landed. |
+| 3 A | Riftmark | Instant / Arcane | `[Spend: Arcane]`. `[Drain 2].` | Arcane's closer: reach plus sustain in one card. |
+| 3 A | Scholar's Lien | Equipment / Arcane | `[Discount 1]` on the first Arcane Instant you play each turn. | Makes the answer suite cheap enough to hold up. |
+| 2 A | Runewatch Lens | Overload / Arcane | Arcane face only. On roll: `[Generate 1 Arcane]`. On absorb, once per turn: `[Insight 1]`. | Both halves live — the absorb-vs-pool decision on a face you already roll. |
+| 3 A | Archivist's Summons | Ritual / Instant / Arcane | `[Active when: 2 x Arcane]`. `[Spend: 2 x Arcane]`. `[Search 2]` Instant or Ritual cards. | Turns a banked pile into the exact two answers. |
+| 3 A | Foresight Tithe | Ritual / Continuous / Arcane | `[Active when: 2 x Arcane]`. On roll Arcane: `[Insight 1]`. | Compounding selection while the pile holds. |
+| 2 A | Warded Annals | Equipment / Arcane | On absorb Arcane, once per turn: `[Mark 1 Shield]` on this creature. | Keeps the legendary alive without printing `[Prevent]`. |
+
+**Darkness — `[Mill]`, graveyard recursion, discard fuel, closers**
+
+| Cost | Name | Type line | Printed play region | Role in Control |
+|---|---|---|---|---|
+| 2 D | Hollow Tide | Instant / Darkness | Your opponent `[Mill 3]`. | The mill clock and Darkness's cheapest play. |
+| 2 D | Gloomdraft | Instant / Darkness | `[Draw 2]. [Discard 1].` | Card flow that also feeds Nightmarrow Pact. |
+| 3 D | Pall of Ash | Instant / Darkness | `[Spend: Darkness]`. `[Strike 3].` | The clean burn on the enemy legendary. |
+| 3 D | Sable Tithe | Instant / Darkness | Your opponent `[Mill 2]`. `[Strike 2]`. | Splits the two clocks onto one card. |
+| 3 D | Swallowed Whole | Reaction / Darkness | `[Negate]`. Your opponent `[Mill 2]`. | Darkness's answer — it advances the mill plan too. |
+| 2 D | Cinerary Locket | Equipment / Darkness | Arcane or Darkness creatures only. On absorb Darkness, once per turn: your opponent `[Mill 2]`. | Standing mill off your own banking. |
+| 2 D | Nightglass Rune | Overload / Darkness | Darkness face only. On roll: `[Generate 1 Darkness]`. On absorb, once per turn: your opponent `[Mill 1]`. | Cheap recurring fuel with a mill tick attached. |
+| 3 D | Graven Summons | Ritual / Instant / Darkness | `[Active when: Arcane + Darkness]`. `[Spend: 2 x Darkness]`. `[Recall 2]`. | Two-color gate; rebuys spent answers. |
+| 3 D | Echo of the Buried | Ritual / Instant / Darkness | `[Active when: 2 x Darkness]`. Choose an Instant or Ritual card in your graveyard and resolve its effect, ignoring its costs. It stays in your graveyard. | Replays the best card in the yard — Darkness recursion. |
+| 3 D | Nightmarrow Pact | Ritual / Continuous / Darkness | `[Active when: Arcane + Darkness]`. On discard: `[Generate 1 Darkness]`. | Converts every discard into pile fuel. |
+| 4 D | Lightless Verdict | Ritual / Instant / Darkness | `[Active when: Arcane + 2 x Darkness]`. `[Spend: 2 x Darkness]`. `[Strike 4].` | The top-end closer the long game is built to reach. **Forge region installs two** synthetic Darkness faces, so an early copy is engine instead of a dead finisher. |
+
+Faces (spec `004`) and the Control squad (spec `003`) carry the same split:
+Arcane faces see and chip, Darkness faces mill and buy back.
+`src/server/reducer/controlPackage.test.ts` covers the wiring.
+
+### Generic reach (authored)
+
+Two cards **both** builtins maindeck. The test is mechanical, not vibes:
+
+- **no header `playCost`** — you never need a pile colour to play them;
+- **no attribute-exclusive verb** (no `[Insight]`, `[Mill]`, `[Prevent]`,
+  `[Reforge]`, `[Stamp]`, `[Double]`) and **no `[Spend] X → [Generate] Y`**
+  conversion pretending to be splashable;
+- they still **touch dice** — a reroll and a Shield mark.
+
+Their `attribute` is **forge paint only**: forging paints that attribute onto
+your die, which is the dice-native splash. It is not a ninth colourless
+attribute, and each builtin gets one on-colour paint and one off-colour paint.
+An empty header cost is the generic-reach tool, so the play region stays
+modest — 1-pip `playCost` remains exceptional and is not the answer here.
+
+| Cost | Name | Type line | Printed play region | Why both lists run it |
+|---|---|---|---|---|
+| — | Rethrow | Instant / Mechanical | `[Reroll]` one of your rolled dice. | The die is the protagonist and a bad roll is the worst turn in the game. Forge paint is Mechanical, so Tempo also gets a free natural install. |
+| — | Ward Chit | Instant / Arcane | `[Mark 1 Shield]` on an allied creature you choose. | Free interaction with the Shield token every deck already absorbs. Forge paint is Arcane, so Control also gets a free natural install. |
+
+`[Reroll]` and Mark/Strip of **Shield** are shared vocabulary in
+`docs/KEYWORDS.md` — neither is an attribute exclusive.
+
 ### Aggro deck
 
 Builtin **Aggro** (`PROTOTYPE_*`) is **Martial / Wild only** — same two-color

@@ -49,6 +49,11 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Install matching faces (your or opponent's die as printed).",
   },
   {
+    test: (body) => /^Overcharge$/i.test(body),
+    reminder:
+      "Spend a natural own-die forge card onto an attribute face card; all dice showing it Generate +1 of the spent card's attribute.",
+  },
+  {
     test: (body) => /^Negate(?:\s+(?:Instant|Ritual))?$/i.test(body),
     reminder: "Negate top matching card chain link.",
   },
@@ -122,7 +127,7 @@ const STEM_RULES: readonly StemRule[] = [
   },
   {
     test: (body) => /^Stamp$/i.test(body),
-    reminder: "Re-fire showing face On roll + overloads.",
+    reminder: "Re-fire showing face roll effects (no new rolled pip).",
   },
   {
     test: (body) => /^Double$/i.test(body),

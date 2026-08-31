@@ -26,6 +26,7 @@ import {
   faceMarkerSummary,
   showingSlotsForFace,
   stayStatusForFace,
+  overchargeStatusForFace,
 } from "../intents/faceStatus";
 import {
   btnPrimary,
@@ -109,6 +110,7 @@ export function FaceCardTile({
   const activated = face?.activated;
   const kindLabel = face === undefined ? "?" : formatFaceKind(face.kind);
   const stayBits = stayStatusForFace(state, playerId, entry.faceCardId);
+  const overchargeBits = overchargeStatusForFace(state, playerId, entry.faceCardId);
   const showingSlots = showingSlotsForFace(state, playerId, entry.faceCardId);
   const markerBits = faceMarkerSummary(state, playerId, entry.faceCardId);
   const tooltip = [
@@ -118,6 +120,7 @@ export function FaceCardTile({
     face?.rulesText !== undefined && face.rulesText !== "" ? face.rulesText : null,
     stayBits,
     markerBits,
+    overchargeBits,
   ]
     .filter((line): line is string => line !== null && line !== "")
     .join("\n");
@@ -220,6 +223,9 @@ export function FaceCardTile({
       )}
       {markerBits !== null && (
         <p className="mt-1 text-[0.65rem] text-violet-300/90">{markerBits}</p>
+      )}
+      {overchargeBits !== null && (
+        <p className="mt-1 text-[0.65rem] text-sky-300/90">{overchargeBits}</p>
       )}
       {entry.overloads > 0 && (
         <p className="mt-1 text-[0.65rem] text-amber-200/80">

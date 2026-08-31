@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-glyph-of-refusal",
+  "name": "Glyph of Refusal",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Negate].",
+  "effect": {
+    "effects": [
+      {
+        "type": "negate-card",
+        "cardTypes": "any"
+      }
+    ]
+  }
+}

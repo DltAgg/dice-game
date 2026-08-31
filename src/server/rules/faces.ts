@@ -249,7 +249,8 @@ export function takeFaceFromPool(draft: Draft, playerId: PlayerId, faceCardId: F
 /**
  * Returns a face to its owner's pool when its last installed copy is gone.
  * No-op while any copy remains installed. Callers that orphan a face should
- * also `clearOverloadsOnFace` so overloads leave with the face card.
+ * also `clearOverloadsOnFace` / `clearOverchargeOnFace` so overloads and
+ * Overcharge pips leave with the face card.
  */
 export function returnFaceToPoolIfOrphaned(
   draft: Draft,
@@ -295,8 +296,9 @@ export function withForgeLockResetOnInstall(
 
 /**
  * Overwrite a slot with a new face, clearing slot-local pestilence /
- * forge-lock / forge yield. Callers that install onto the owner's die re-set
- * `forgeYield` after this (see `installFacesOnDie`).
+ * forge-lock / forge yield. Callers that install onto the owner's die
+ * re-set `forgeYield` after this (see `installFacesOnDie`). Overcharge
+ * pips live on the player, not the slot — callers orphan-clear separately.
  */
 export function overwrittenSlot(
   slot: DieSlot,

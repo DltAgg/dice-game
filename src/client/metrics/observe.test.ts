@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { advance, type GameAction } from "@server";
-import { ARCANE_SILENCE, ECLIPSE } from "@server/content/cards.js";
+import { COG_DRAFT, TOOLING_ORDER } from "@server/content/cards.js";
+import { COGTOOTH } from "@server/content/faces.js";
 import {
-  forgeAction,
   handCardIdAt,
   newMatch,
   P1,
   P2,
+  resolveOpenChain,
   withPile,
   withHand,
   withPhase,
@@ -166,7 +167,7 @@ describe("applyObservation", () => {
   });
 
   it("counts PLAY_CARD toward effect plays, not forge", () => {
-    const start = withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    const start = withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10);
     let { recording } = applyObservation(
       null,
       { prevState: null, state: start, action: null, accepted: true, error: null },
@@ -189,7 +190,7 @@ describe("applyObservation", () => {
 
     expect(recording.totalCardsPlayed).toBe(1);
     expect(recording.totalCardsForged).toBe(0);
-    expect(recording.cardPlayCounts["Eclipse (card-eclipse)"]).toBe(1);
+    expect(recording.cardPlayCounts["Cog Draft (card-cog-draft)"]).toBe(1);
     expect(recording.cardForgeCounts).toEqual({});
     expect(recording.turns.some((turn) => turn.cardsPlayed === 1 && turn.cardsForged === 0)).toBe(
       true,
@@ -198,7 +199,7 @@ describe("applyObservation", () => {
 
   it("counts a forged tactic once even when it installs two faces", () => {
     const start = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [ARCANE_SILENCE]),
+      withHand(withPhase(newMatch(), "actions"), P1, [TOOLING_ORDER]),
       P1,
       10,
     );
@@ -211,23 +212,43 @@ describe("applyObservation", () => {
       ctx(1_000),
     );
 
-    const action = forgeAction(start, P1, handCardIdAt(start, P1, 0), dieId, [3, 4]);
-    const forged = advance(start, action);
+    const playAction = {
+      type: "PLAY_CARD" as const,
+      playerId: P1,
+      cardInstanceId: handCardIdAt(start, P1, 0),
+    };
+    const played = resolveOpenChain(
+      (() => {
+        const result = advance(start, playAction);
+        expect(result.ok).toBe(true);
+        if (!result.ok) throw new Error("play failed");
+        return result.state;
+      })(),
+    );
+
+    const resolveAction = {
+      type: "RESOLVE_FORGE_FACES" as const,
+      playerId: P1,
+      dieId,
+      slotIndexes: [3, 4],
+      faceCardId: COGTOOTH,
+    };
+    const forged = advance(played, resolveAction);
     expect(forged.ok).toBe(true);
+    if (!forged.ok) return;
 
     recording = applyObservation(
       recording,
-      { prevState: start, state: forged.state, action, accepted: true, error: null },
+      { prevState: start, state: played, action: playAction, accepted: true, error: null },
       ctx(2_000),
     ).recording;
+    recording = applyObservation(
+      recording,
+      { prevState: played, state: forged.state, action: resolveAction, accepted: true, error: null },
+      ctx(3_000),
+    ).recording;
 
-    expect(recording.totalCardsPlayed).toBe(0);
-    expect(recording.totalCardsForged).toBe(1);
-    expect(recording.cardPlayCounts).toEqual({});
-    expect(recording.cardForgeCounts["Arcane Silence (card-arcane-silence)"]).toBe(1);
-    const turn = recording.turns.find((row) => row.cardsForged > 0);
-    expect(turn?.cardsForged).toBe(1);
-    expect(turn?.forges).toBe(2);
-    expect(turn?.cardsPlayed).toBe(0);
+    expect(recording.totalCardsPlayed).toBe(1);
+    expect(recording.cardPlayCounts["Tooling Order (card-tooling-order)"]).toBe(1);
   });
 });

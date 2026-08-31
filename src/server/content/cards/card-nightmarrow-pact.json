@@ -1,0 +1,40 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-nightmarrow-pact",
+  "name": "Nightmarrow Pact",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "On discard: [Generate 1 Darkness].",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 1,
+      "darkness": 1
+    },
+    "effects": [],
+    "standingAbilities": [
+      {
+        "type": "on-discard",
+        "discardingPlayer": "controller",
+        "effects": [
+          {
+            "type": "generate-symbol",
+            "symbol": "darkness",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ARCANE_SILENCE, BARRIER_OF_LIGHT, ECLIPSE, GLIMMER, getCard } from "../content/cards.js";
+import { COG_DRAFT, GLINT_VEIL, LANTERN_OATH, getCard } from "../content/cards.js";
 import type { CardDefinition } from "../model/cards.js";
 import type { EffectDefinition } from "../model/effects.js";
-import { asAttackId, asCardId, asEffectInstanceId } from "../model/ids.js";
+import { asCardId, asEffectInstanceId } from "../model/ids.js";
 import type { ChainLink, GameState } from "../model/state.js";
 import { advance } from "../reducer/reduce.js";
 import {
@@ -17,6 +17,7 @@ import {
   withPhase,
   withTokens,
 } from "../testing/scenario.js";
+import { DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
 import {
   hasLegalReactionOffer,
   isEnabledHandReaction,
@@ -30,11 +31,11 @@ function exampleReaction(effects: readonly EffectDefinition[]): CardDefinition {
   return {
     id: asCardId("card-example-reaction"),
     name: "Example Reaction",
-    playCost: { arcane: 1 },
+    playCost: { luminar: 1 },
     type: "reaction",
     subtypes: [],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    attribute: "luminar",
+    forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
     rulesText: "Negate.",
     effect: { effects },
   };
@@ -102,19 +103,17 @@ describe("reaction chain-target gates (UI queries)", () => {
   });
 });
 
-const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
-
 function openedAttackOnP2(hand: Parameters<typeof withHand>[2]): GameState {
   const base = withPhase(newMatch(), "actions");
-  const attacker = creatureIdAt(base, P1, 0);
+  const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
-  const combat = withHand(withPile(withTokens(base, attacker, { martial: 2 }), P2, 10), P2, hand);
+  const combat = withHand(withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10), P2, hand);
   return expectOk(
     advance(combat, {
       type: "ATTACK",
       playerId: P1,
       attackerId: attacker,
-      attackId: HEAVY_AXE,
+      attackId: DRIVE_SHAFT,
       targetId: target,
     }),
   );
@@ -127,25 +126,25 @@ describe("hasLegalReactionOffer (query)", () => {
     expect(hasLegalReactionOffer(opened, P2)).toBe(false);
   });
 
-  it("waits when Prismatic Barrier is a legal prevent on an attack targeting you", () => {
-    const opened = openedAttackOnP2([BARRIER_OF_LIGHT]);
-    const barrier = getCard(BARRIER_OF_LIGHT);
-    expect(barrier).toBeDefined();
-    expect(isLegalHandReaction(opened, barrier!)).toBe(true);
-    expect(isEnabledHandReaction(opened, P2, barrier!)).toBe(true);
+  it("waits when Glint Veil is a legal prevent on an attack targeting you", () => {
+    const opened = openedAttackOnP2([GLINT_VEIL]);
+    const veil = getCard(GLINT_VEIL);
+    expect(veil).toBeDefined();
+    expect(isLegalHandReaction(opened, veil!)).toBe(true);
+    expect(isEnabledHandReaction(opened, P2, veil!)).toBe(true);
     expect(hasLegalReactionOffer(opened, P2)).toBe(true);
   });
 
-  it("waits when Glimmer can arm prevent-draw against an attack on you", () => {
-    const opened = openedAttackOnP2([GLIMMER]);
+  it("waits when Lantern Oath can arm prevent-draw against an attack on you", () => {
+    const opened = openedAttackOnP2([LANTERN_OATH]);
     expect(hasLegalReactionOffer(opened, P2)).toBe(true);
   });
 
-  it("does not treat Barrier as an offer when the top link is not an attack", () => {
+  it("does not treat Glint Veil as an offer when the top link is not an attack", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
       P2,
-      [BARRIER_OF_LIGHT],
+      [GLINT_VEIL],
     );
     const opened = expectOk(
       advance(ready, {
@@ -154,17 +153,17 @@ describe("hasLegalReactionOffer (query)", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    const barrier = getCard(BARRIER_OF_LIGHT)!;
-    expect(isLegalHandReaction(opened, barrier)).toBe(true);
-    expect(isEnabledHandReaction(opened, P2, barrier)).toBe(false);
+    const veil = getCard(GLINT_VEIL)!;
+    expect(isLegalHandReaction(opened, veil)).toBe(true);
+    expect(isEnabledHandReaction(opened, P2, veil)).toBe(false);
     expect(hasLegalReactionOffer(opened, P2)).toBe(false);
   });
 
-  it("waits when Arcane Silence can negate a tactic on the chain", () => {
+  it("waits when an example negate reaction can target a tactic on the chain", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
       P2,
-      [ARCANE_SILENCE],
+      [COG_DRAFT],
     );
     const opened = expectOk(
       advance(ready, {
@@ -173,7 +172,9 @@ describe("hasLegalReactionOffer (query)", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(hasLegalReactionOffer(opened, P2)).toBe(true);
+    expect(hasLegalReactionOffer(opened, P2)).toBe(false);
+    const negate = exampleReaction([{ type: "negate-card", cardTypes: "any" }]);
+    expect(isLegalHandReaction(opened, negate)).toBe(true);
   });
 
   it("treats prevent effects as illegal without an attack targeting the seat", () => {

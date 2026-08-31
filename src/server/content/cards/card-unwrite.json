@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-unwrite",
+  "name": "Unwrite",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Destroy Ritual] your opponent controls.",
+  "effect": {
+    "effects": [
+      {
+        "type": "destroy-ritual",
+        "target": {
+          "kind": "choose-opponent-ritual"
+        }
+      }
+    ]
+  }
+}

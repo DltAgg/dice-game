@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-ossuary",
+  "name": "Ossuary",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll: your opponent [Mill 1].\nOn absorb, once per turn: [Recall 1] that costs 2 or less.",
+  "onRoll": [
+    {
+      "type": "mill-cards",
+      "amount": 1,
+      "player": "opponent"
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "search-graveyard",
+      "amount": 1,
+      "maxPlayCost": 2
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

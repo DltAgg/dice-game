@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-halo-lamp",
+  "name": "Halo Lamp",
+  "kind": "synthetic",
+  "symbol": "luminar",
+  "rulesText": "On roll: [Generate 1 Shield].\nOn absorb, once per turn: [Mark 2 Shield] on an allied creature.",
+  "onRoll": [
+    {
+      "type": "generate-symbol",
+      "symbol": "shield",
+      "amount": 1
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "grant-shield",
+      "amount": 2,
+      "target": {
+        "kind": "choose-ally"
+      }
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

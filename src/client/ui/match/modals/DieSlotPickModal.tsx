@@ -5,6 +5,8 @@ import {
   slotCannotBeReplacedByForge,
   type Attribute,
   type DieId,
+  type DieSlot,
+  type DieState,
   type GameState,
   type PlayerId,
 } from "@server";
@@ -41,6 +43,7 @@ export function DieSlotPickModal({
   onCancel,
   onBack,
   backLabel,
+  slotBlocked,
 }: {
   state: GameState;
   title: string;
@@ -58,12 +61,15 @@ export function DieSlotPickModal({
   onCancel?: (() => void) | undefined;
   onBack?: (() => void) | undefined;
   backLabel?: string | undefined;
+  /** When set, replaces the forge cannot-replace / attribute-cap checks. */
+  slotBlocked?: ((die: DieState, slot: DieSlot) => string | null) | undefined;
 }) {
   const dice = diceOf(state, dieOwnerId);
   const selectedDie = selectedDieId !== undefined ? state.dice[selectedDieId] : undefined;
   const flatSlots = pickMode === "single-slot" && onPickSingleSlot !== undefined;
 
   const slotDisabled = (die: (typeof dice)[number], slot: (typeof die.slots)[number]): string | null => {
+    if (slotBlocked !== undefined) return slotBlocked(die, slot);
     if (slotCannotBeReplacedByForge(slot)) return slotStatusLine(slot) ?? "Cannot replace";
     if (
       forgeAttribute !== undefined &&
@@ -82,6 +88,7 @@ export function DieSlotPickModal({
   ) => {
     const face = getFaceCard(slot.faceCardId);
     const blocked = slotDisabled(die, slot);
+    const status = blocked === null ? slotStatusLine(slot) : null;
     return (
       <button
         key={`${die.id}:${String(slot.index)}`}
@@ -106,6 +113,9 @@ export function DieSlotPickModal({
         </p>
         {blocked !== null && (
           <p className="mt-1 text-[0.65rem] text-rose-300/90">{blocked}</p>
+        )}
+        {blocked === null && status !== null && (
+          <p className="mt-1 text-[0.65rem] text-sky-300/90">{status}</p>
         )}
         {picked && blocked === null && (
           <p className="mt-1 text-[0.65rem] font-medium text-[var(--accent)]">Selected</p>

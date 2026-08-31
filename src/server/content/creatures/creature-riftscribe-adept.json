@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-riftscribe-adept",
+  "name": "Riftscribe Adept",
+  "life": 14,
+  "attributes": [
+    "arcane"
+  ],
+  "passiveRulesText": "On absorb Arcane, once per turn: [Insight 1].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "arcane"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "peek-deck-optional-bottom"
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-riftscribe-adept-rune-lash",
+      "name": "Rune Lash",
+      "kind": "basic",
+      "discards": {
+        "arcane": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Draw 1].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "draw-cards",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "attack-riftscribe-adept-ley-surge",
+      "name": "Ley Surge",
+      "kind": "special",
+      "requires": {
+        "arcane": 1,
+        "darkness": 1
+      },
+      "discards": {
+        "arcane": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. [Insight 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "look-top-deck",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

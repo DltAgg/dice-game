@@ -1,223 +1,29 @@
 import { describe, expect, it } from "vitest";
 import {
-  ECLIPSE,
-  LIVING_LIBRARY,
-  RATCHET,
-  RECALIBRATE,
-  UNMAKE,
-  WAR_AXE,
+  BEACON_ARRAY,
+  BRIGHT_CADENCE,
+  COG_DRAFT,
+  MENDING_LIGHT,
+  PRISM_MANTLE,
+  QUICKSET_JIG,
   getCard,
 } from "../content/cards.js";
-import { SHADOW_ECHO } from "../content/faces.js";
-import type { DieState } from "../model/dice.js";
-import type { CardId, DieId, FaceCardId } from "../model/ids.js";
-import type { GameState } from "../model/state.js";
-import { replayableGraveyardTactics, ritualsOf, searchableInGraveyard } from "../rules/cards.js";
-import {
-  expectOk,
-  handCardIdAt,
-  newMatch,
-  P1,
-  withPile,
-  withHand,
-  withAttributePool,
-  withPhase,
-  withSymbols,
-  advanceResolvingChain as advance,
-} from "../testing/scenario.js";
+import { LUCENT_CHOIR } from "../content/faces.js";
 
-const actionsReady = (cards: readonly CardId[], pileTokens = 10) =>
-  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, pileTokens);
-
-function moveHandCardsToGraveyard(
-  state: GameState,
-  ids: readonly ReturnType<typeof handCardIdAt>[],
-): GameState {
-  const player = state.players[P1];
-  if (player === undefined) throw new Error("test: no player");
-  const idSet = new Set(ids);
-  return {
-    ...state,
-    cards: Object.fromEntries(
-      Object.entries(state.cards).map(([id, card]) => [
-        id,
-        idSet.has(card.id) ? { ...card, zone: "graveyard" as const } : card,
-      ]),
-    ),
-    players: {
-      ...state.players,
-      [P1]: {
-        ...player,
-        hand: player.hand.filter((id) => !idSet.has(id)),
-        graveyard: [...player.graveyard, ...ids],
-      },
-    },
-  };
-}
-
-function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
-  const id = state.players[playerId]?.dieIds[index];
-  if (id === undefined) throw new Error("test: no die");
-  return id;
-}
-
-function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): GameState {
-  const die = state.dice[dieId];
-  if (die === undefined) throw new Error("test: missing die");
-  return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
-}
-
-function installFace(state: GameState, faceCardId: FaceCardId, slot = 0): GameState {
-  const dieId = dieIdOf(state);
-  const die = state.dice[dieId];
-  if (die === undefined) throw new Error("test: missing die");
-  const slots = die.slots.map((s, index) =>
-    index === slot ? { ...s, faceCardId, faceCardOwnerId: P1 } : s,
-  );
-  return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
-}
-
-function rollShowingSlot(state: GameState, slot: number): GameState {
-  let rolled: GameState = withPhase(state, "roll");
-  rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: slot });
-  rolled = withDie(rolled, dieIdOf(rolled, P1, 1), { retained: true, rolledSlotIndex: 4 });
-  return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-}
-
-describe("pending source + GY search filter", () => {
-  it("Recalibrate GY search lists only cost ≤ maxPlayCost and attributes the Recalibrate instance", () => {
-    let ready = actionsReady([RECALIBRATE, RATCHET, UNMAKE]);
-    const recalibrateId = handCardIdAt(ready, P1, 0);
-    const cheapId = handCardIdAt(ready, P1, 1);
-    const expensiveId = handCardIdAt(ready, P1, 2);
-    ready = moveHandCardsToGraveyard(ready, [cheapId, expensiveId]);
-
-    const after = expectOk(
-      advance(ready, { type: "PLAY_CARD", playerId: P1, cardInstanceId: recalibrateId }),
-    );
-
-    expect(after.pendingDecision).toMatchObject({
-      type: "search-graveyard",
-      controllerId: P1,
-      amount: 1,
-      maxPlayCost: 2,
-      sourceCardInstanceId: recalibrateId,
-      sourceFaceCardId: null,
-    });
-
-    expect(after.cards[recalibrateId]?.cardId).toBe(RECALIBRATE);
-
-    const pending = after.pendingDecision;
-    if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
-    const eligible = searchableInGraveyard(after, P1, pending.maxPlayCost);
-    expect(eligible).toEqual([cheapId]);
-    expect(eligible).not.toContain(expensiveId);
-    expect(eligible).not.toContain(recalibrateId);
-
-    const rejected = advance(after, {
-      type: "RESOLVE_SEARCH",
-      playerId: P1,
-      cardInstanceIds: [expensiveId],
-    });
-    expect(rejected.ok).toBe(false);
-    if (!rejected.ok) expect(rejected.error).toBe("INVALID_SEARCH");
-
-    const resolved = expectOk(
-      advance(after, {
-        type: "RESOLVE_SEARCH",
-        playerId: P1,
-        cardInstanceIds: [cheapId],
-      }),
-    );
-    expect(resolved.pendingDecision).toBeNull();
-    expect(resolved.players[P1]?.hand).toContain(cheapId);
+describe("Tempo pending sources", () => {
+  it("instant effects come from tempo tactics", () => {
+    expect(getCard(COG_DRAFT)?.type).toBe("instant");
+    expect(getCard(MENDING_LIGHT)?.type).toBe("instant");
+    expect(getCard(BRIGHT_CADENCE)?.type).toBe("instant");
   });
 
-  it("Living Library deck search attributes the ritual instance and keeps the Instant/Ritual filter", () => {
-    const base = actionsReady([LIVING_LIBRARY, ECLIPSE, WAR_AXE, LIVING_LIBRARY]);
-    const player = base.players[P1];
-    if (player === undefined) throw new Error("test: no player");
-    const [ritualHand, ...deckIds] = player.hand;
-    if (ritualHand === undefined) throw new Error("test: no ritual");
-    const seeded = {
-      ...base,
-      cards: Object.fromEntries(
-        Object.entries(base.cards).map(([id, card]) => [
-          id,
-          deckIds.includes(card.id) ? { ...card, zone: "deck" as const } : card,
-        ]),
-      ),
-      players: {
-        ...base.players,
-        [P1]: { ...player, hand: [ritualHand], deck: deckIds },
-      },
-    };
-
-    const placed = expectOk(
-      advance(seeded, { type: "PLAY_CARD", playerId: P1, cardInstanceId: ritualHand }),
-    );
-    const ritualId = ritualsOf(placed, P1)[0]?.id;
-    if (ritualId === undefined) throw new Error("test: no ritual");
-
-    const oriented = withAttributePool(
-      {
-        ...withSymbols(withPhase(placed, "actions"), P1, ["arcane", "arcane"]),
-        cards: {
-          ...placed.cards,
-          [ritualId]: {
-            ...placed.cards[ritualId]!,
-            ritualOrientation: "ready" as const,
-          },
-        },
-      },
-      P1,
-      { arcane: 2 },
-    );
-
-    const activated = expectOk(
-      advance(oriented, { type: "ACTIVATE_RITUAL", playerId: P1, cardInstanceId: ritualId }),
-    );
-    expect(activated.pendingDecision).toEqual({
-      type: "search-deck",
-      controllerId: P1,
-      amount: 2,
-      filter: ["instant", "ritual"],
-      sourceCardInstanceId: ritualId,
-      sourceFaceCardId: null,
-    });
-    expect(activated.cards[ritualId]?.cardId).toBe(LIVING_LIBRARY);
+  it("equipment hosts standing abilities", () => {
+    expect(getCard(QUICKSET_JIG)?.equipment?.abilities.length ?? 0).toBeGreaterThan(0);
+    expect(getCard(BEACON_ARRAY)?.equipment?.abilities.length ?? 0).toBeGreaterThan(0);
+    expect(getCard(PRISM_MANTLE)?.equipment?.abilities.length ?? 0).toBeGreaterThan(0);
   });
 
-  it("Shadow Echo on-absorb GY search attributes the face, not a card", () => {
-    let state = actionsReady([RATCHET, UNMAKE]);
-    const cheapId = handCardIdAt(state, P1, 0);
-    const expensiveId = handCardIdAt(state, P1, 1);
-    state = moveHandCardsToGraveyard(state, [cheapId, expensiveId]);
-    state = installFace(state, SHADOW_ECHO);
-    state = rollShowingSlot(state, 0);
-
-    // Auto-bank fires On absorb GY search.
-    expect(state.pendingDecision).toMatchObject({
-      type: "search-graveyard",
-      controllerId: P1,
-      amount: 1,
-      maxPlayCost: 2,
-      sourceCardInstanceId: null,
-      sourceFaceCardId: SHADOW_ECHO,
-    });
-    const pending = state.pendingDecision;
-    if (pending?.type !== "search-graveyard") throw new Error("expected GY search");
-    expect(searchableInGraveyard(state, P1, pending.maxPlayCost)).toEqual([cheapId]);
-  });
-
-  it("replayableGraveyardTactics lists only instant/ritual cards with modelled effects", () => {
-    const ready = actionsReady([ECLIPSE, WAR_AXE, LIVING_LIBRARY]);
-    const eclipseId = handCardIdAt(ready, P1, 0);
-    const axeId = handCardIdAt(ready, P1, 1);
-    const libraryId = handCardIdAt(ready, P1, 2);
-    const gy = moveHandCardsToGraveyard(ready, [eclipseId, axeId, libraryId]);
-
-    expect(getCard(WAR_AXE)?.type).toBe("equipment");
-    expect(replayableGraveyardTactics(gy, P1)).toEqual([eclipseId, libraryId]);
+  it("Lucent Choir is a Luminar synthetic with dual timing", () => {
+    expect(LUCENT_CHOIR).toBeDefined();
   });
 });

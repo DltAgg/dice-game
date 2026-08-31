@@ -3,107 +3,119 @@
   "id": "deck-control",
   "name": "Control",
   "squad": [
-    "creature-archmage",
-    "creature-nightbound-adept",
-    "creature-sovereign-nightvault"
+    "creature-riftscribe-adept",
+    "creature-gravemarrow-shade",
+    "creature-duskthrone-oracle"
   ],
   "deckCounts": [
     {
-      "cardId": "card-living-library",
+      "cardId": "card-thread-the-weave",
+      "copies": 2
+    },
+    {
+      "cardId": "card-oracles-margin",
+      "copies": 2
+    },
+    {
+      "cardId": "card-glyph-of-refusal",
+      "copies": 2
+    },
+    {
+      "cardId": "card-sealbind-rune",
+      "copies": 2
+    },
+    {
+      "cardId": "card-unwrite",
+      "copies": 1
+    },
+    {
+      "cardId": "card-riftmark",
+      "copies": 2
+    },
+    {
+      "cardId": "card-scholars-lien",
+      "copies": 2
+    },
+    {
+      "cardId": "card-runewatch-lens",
+      "copies": 2
+    },
+    {
+      "cardId": "card-archivists-summons",
+      "copies": 1
+    },
+    {
+      "cardId": "card-foresight-tithe",
+      "copies": 1
+    },
+    {
+      "cardId": "card-warded-annals",
+      "copies": 1
+    },
+    {
+      "cardId": "card-hollow-tide",
+      "copies": 2
+    },
+    {
+      "cardId": "card-gloomdraft",
       "copies": 3
     },
     {
-      "cardId": "card-eclipse",
-      "copies": 3
-    },
-    {
-      "cardId": "card-arcane-amplifier",
-      "copies": 3
-    },
-    {
-      "cardId": "card-arcane-resonance",
-      "copies": 3
-    },
-    {
-      "cardId": "card-archmages-grimoire",
-      "copies": 3
-    },
-    {
-      "cardId": "card-gloom-resonance",
-      "copies": 3
-    },
-    {
-      "cardId": "card-eternal-darkness",
+      "cardId": "card-pall-of-ash",
       "copies": 2
     },
     {
-      "cardId": "card-fade",
-      "copies": 3
-    },
-    {
-      "cardId": "card-siphon-sigil",
-      "copies": 3
-    },
-    {
-      "cardId": "card-seal-the-rite",
+      "cardId": "card-sable-tithe",
       "copies": 2
     },
     {
-      "cardId": "card-runic-nullification",
+      "cardId": "card-swallowed-whole",
       "copies": 2
     },
     {
-      "cardId": "card-unmake",
+      "cardId": "card-cinerary-locket",
       "copies": 2
     },
     {
-      "cardId": "card-umbral-bolt",
-      "copies": 3
-    },
-    {
-      "cardId": "card-rift-collapse",
+      "cardId": "card-nightglass-rune",
       "copies": 2
     },
     {
-      "cardId": "card-consult",
+      "cardId": "card-graven-summons",
+      "copies": 1
+    },
+    {
+      "cardId": "card-echo-of-the-buried",
+      "copies": 1
+    },
+    {
+      "cardId": "card-nightmarrow-pact",
+      "copies": 1
+    },
+    {
+      "cardId": "card-lightless-verdict",
       "copies": 2
     },
     {
-      "cardId": "card-bury-the-name",
-      "copies": 2
+      "cardId": "card-rethrow",
+      "copies": 1
     },
     {
-      "cardId": "card-umbral-brand",
-      "copies": 2
-    },
-    {
-      "cardId": "card-warding-charm",
-      "copies": 2
-    },
-    {
-      "cardId": "card-shadow-cipher",
-      "copies": 2
-    },
-    {
-      "cardId": "card-veiled-tome",
-      "copies": 2
-    },
-    {
-      "cardId": "card-umbral-lens",
+      "cardId": "card-ward-chit",
       "copies": 1
     }
   ],
   "faceDeck": [
-    "face-synthetic-nightwell",
-    "face-synthetic-sacrifice",
-    "face-synthetic-shadow-echo",
-    "face-synthetic-resonance-rune",
-    "face-synthetic-insight-rune",
-    "face-synthetic-runeflare"
+    "face-synthetic-augur-glass",
+    "face-synthetic-sigil-flare",
+    "face-synthetic-ward-lattice",
+    "face-synthetic-gloomwell",
+    "face-synthetic-ossuary",
+    "face-synthetic-pyre-of-names"
   ],
   "startingDice": [
     [
-      "face-synthetic-nightwell",
+      "face-natural-arcane",
       "face-natural-arcane",
       "face-natural-arcane",
       "face-natural-darkness",
@@ -111,9 +123,9 @@
       "face-untyped-shield"
     ],
     [
-      "face-synthetic-resonance-rune",
       "face-natural-arcane",
       "face-natural-arcane",
+      "face-natural-darkness",
       "face-natural-darkness",
       "face-natural-darkness",
       "face-untyped-shield"

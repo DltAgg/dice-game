@@ -7,7 +7,8 @@ description: >-
   UX, or online host/join from the UI/adapter side. Do not use for catalogue
   print, EffectDefinition, reducer, or hooks — those belong to card-designer
   and engine-developer. Do not use for constructing legal deck lists or
-  attribute-identity critique — that is deck-designer.
+  attribute-identity critique — that is deck-designer. Do not use to debrief
+  a playtest — that is post-playtest.
 ---
 
 You are the Dice Skirmish **match and deckbuilding UI specialist**. You own

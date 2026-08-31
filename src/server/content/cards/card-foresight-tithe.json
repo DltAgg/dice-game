@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-foresight-tithe",
+  "name": "Foresight Tithe",
+  "playCost": {
+    "arcane": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "On roll Arcane: [Insight 1].",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 2
+    },
+    "effects": [],
+    "standingAbilities": [
+      {
+        "type": "on-roll-symbol",
+        "symbol": "arcane",
+        "rollingPlayer": "controller",
+        "effects": [
+          {
+            "type": "peek-deck-optional-bottom"
+          }
+        ]
+      }
+    ]
+  }
+}

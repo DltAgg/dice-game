@@ -46,6 +46,7 @@ npm run typecheck && npm test && npm run lint
 | Module budget | `src/architecture/module-budget.test.ts` (no megamodules / freeze) |
 | Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
 | Keyword glossary | `docs/KEYWORDS.md` (update when print vocabulary / tokens change; Rules tab) |
+| Mechanic × archetype feel | `docs/MECHANIC_ARCHETYPES.md` (post-playtest agent updates this; same change as a later retarget) |
 | Match store | `src/client/store/matchStore.ts` |
 | Deck store / localStorage | `src/client/store/deckStore.ts`, `src/client/decks/` |
 | Match metrics / IndexedDB | `src/client/metrics/`, `src/client/ui/metrics/`, `src/client/store/metricsStore.ts` |
@@ -95,7 +96,7 @@ Details: `docs/specs/007-peerjs.md`.
 | Skill | Use when |
 |---|---|
 | `.cursor/skills/slice-changes/` | Large / cross-layer work — stop megamodule rewrites |
-| `.cursor/skills/author-content/` | Adding catalogue cards from print / CSV |
+| `.cursor/skills/author-content/` | Design then author catalogue cards (uniqueness / forge / dice-resonance) |
 | `.cursor/skills/standardize-card-effects/` | Normalizing On roll / On absorb text and wiring triggers |
 | `.cursor/skills/develop-engine/` | New effect AST, reducer, hooks |
 | `.cursor/skills/implement-hooks/` | Shared standing trigger events (`010`) |
@@ -106,7 +107,7 @@ Details: `docs/specs/007-peerjs.md`.
 
 | Agent | Use when |
 |---|---|
-| `.cursor/agents/card-designer.md` | Authoring tactics / rituals / faces / creatures; new mechanics → engine-developer |
+| `.cursor/agents/card-designer.md` | Design then author tactics / rituals / faces / creatures (unique slot first); new mechanics → engine-developer |
 | `.cursor/agents/engine-developer.md` | Implementing rules in `src/server` (hooks, reducer, resolution, statuses) |
 | `.cursor/agents/match-ui.md` | Lobby / MatchBoard / deck builder / stores / PeerJS adapters |
 | `.cursor/agents/deck-designer.md` | Constructed loadouts; orphan / attribute-identity critique |

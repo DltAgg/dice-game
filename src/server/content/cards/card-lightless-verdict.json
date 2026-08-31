@@ -1,0 +1,38 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-lightless-verdict",
+  "name": "Lightless Verdict",
+  "playCost": {
+    "darkness": 4
+  },
+  "type": "ritual",
+  "subtypes": [
+    "instant"
+  ],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 4].",
+  "ritual": {
+    "activeWhen": {
+      "arcane": 1,
+      "darkness": 2
+    },
+    "spend": {
+      "darkness": 2
+    },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 4,
+        "target": {
+          "kind": "choose-enemy"
+        }
+      }
+    ]
+  }
+}

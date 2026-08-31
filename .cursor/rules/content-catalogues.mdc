@@ -33,7 +33,16 @@ Rules:
   (`face-synthetic-martial`, `face-synthetic-corruption`, Forged Martial, …).
 - Follow `.cursor/skills/author-content/SKILL.md` for full workflows and templates.
 - Honor **attribute exclusive mechanics** in `.cursor/skills/author-content/design.md`.
-  Do not print another attribute’s signature verb (scry, mill, prevent,
-  opponent-die, toxin markers, ally swap, own-die reconstruction).
+  Do not print another attribute’s signature verb (scry, mill, Luminar `[Prevent]`
+  on non-reactions, opponent-die, toxin markers, ally swap, own-die reconstruction,
+  `[Frenzy]`). `[Prevent]` / `grant-attack-prevent` is **reaction-only** (spec `009`).
+  Attribute fuel is the **player pile** — see `attribute-pile.md`.
+  Mechanic × archetype feel: `docs/MECHANIC_ARCHETYPES.md` (do not reprint
+  `RETARGETED` leaks such as attack-spend `[Generate]`).
+- **Live JSON** in `src/server/content/{cards,faces,creatures}/` is catalogue
+  truth. Spec `002` tables of missing cards are not a pattern. Do not clone
+  `forge.faces: 1` stickers or `[Spend] X, [Generate] Y` converter slots
+  (`.cursor/skills/author-content/design-craft.md`).
 - Print voice is the **holder**: `you` is the player whose field the card sits on; `opponent` is that player’s opponent (including after a hand-off / opponent-die forge / opponent equip).
-- Printed `playCost` totaling 1 pile token is exceptional and niche. Prefer 2+; the primary 1-token play pattern is cost reduction, not 1-drops.
+- Printed `playCost` totaling 1 pile token is exceptional and niche. Prefer 2+
+  of the card’s attribute; cheaper plays come from `[Discount]`, not 1-drops.

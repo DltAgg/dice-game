@@ -8,8 +8,8 @@
 | on-toxin-damage | `EquipmentAbility` | `triggers.fireOnToxinDamage` |
 | on-roll-symbol | `EquipmentAbility` | `triggers.fireOnRollSymbol` |
 | on-absorb (gear) | `EquipmentAbility` | `triggers.fireOnAbsorbEquipment` |
-| on-absorb (face) | `FaceCardDefinition.onAbsorb` | absorb path in reducer + triggers |
-| on-absorb (overload) | `OverloadRegion.onAbsorb` | same |
+| on-absorb (face) | `FaceCardDefinition.onAbsorb` | attribute bank path → `queueAbsorbTriggers` (spec `016`) |
+| on-absorb (overload) | `OverloadRegion.onAbsorb` | same — fires when pip banks into owner pile |
 | on-roll (face) | `FaceCardDefinition.onRoll` | `ROLL_DICE` in `reduce.ts` |
 | on-roll (overload) | `OverloadRegion.onRoll` | after face onRoll for showing face |
 
@@ -17,7 +17,7 @@
 
 See `src/server/model/effects.ts`. Current members include: `damage`, `heal`,
 `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`, `search-deck`,
-`search-graveyard`, `destroy-equipment`, `apply-toxin`,
+`search-graveyard`, `arm-forge-discount`, `destroy-equipment`, `apply-toxin`,
 `remove-shield`, `next-attack-bonus`, `negate-card`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`.
 
@@ -33,6 +33,9 @@ park until vocabulary exists:
 - Face copy / echo
 - Prevent + reflect (Judgement-style is partially in `009` — check before deferring)
 - Forge-from-effect
+- A second inherent pip / second `symbol` on `FaceCardDefinition` (dual-pip
+  print that cannot be composed as `symbol` + `[Generate]` on roll/absorb) —
+  brief engine-developer; do not skip the slot or clone Generate-same
 
 Do **not** design or restore **enemy push** (forced move of opposing creatures).
 Ally **swap** / **reposition** are legal — prefer:

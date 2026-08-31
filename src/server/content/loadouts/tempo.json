@@ -3,95 +3,119 @@
   "id": "deck-tempo",
   "name": "Tempo",
   "squad": [
-    "creature-cogwork-driver",
-    "creature-prism-herald",
-    "creature-prismarch-regent"
+    "creature-torque-wright",
+    "creature-dawn-warden",
+    "creature-lodestar-artificer"
   ],
   "deckCounts": [
     {
-      "cardId": "card-ratchet",
-      "copies": 3
-    },
-    {
-      "cardId": "card-servomotor",
-      "copies": 3
-    },
-    {
-      "cardId": "card-foundry",
-      "copies": 3
-    },
-    {
-      "cardId": "card-transmission",
+      "cardId": "card-cog-draft",
       "copies": 2
     },
     {
-      "cardId": "card-camshaft",
+      "cardId": "card-tooling-order",
       "copies": 3
     },
     {
-      "cardId": "card-blueprint",
-      "copies": 3
-    },
-    {
-      "cardId": "card-spare-cog",
-      "copies": 3
-    },
-    {
-      "cardId": "card-governor",
+      "cardId": "card-shim-kit",
       "copies": 2
     },
     {
-      "cardId": "card-assembly-line",
+      "cardId": "card-quickset-jig",
       "copies": 2
     },
     {
-      "cardId": "card-die-press",
+      "cardId": "card-die-punch",
+      "copies": 1
+    },
+    {
+      "cardId": "card-recast",
+      "copies": 1
+    },
+    {
+      "cardId": "card-twin-cam",
       "copies": 2
     },
     {
-      "cardId": "card-safety-latch",
-      "copies": 3
-    },
-    {
-      "cardId": "card-blade-of-serene-light",
-      "copies": 3
-    },
-    {
-      "cardId": "card-luminar-prism",
-      "copies": 3
-    },
-    {
-      "cardId": "card-barrier-of-light",
-      "copies": 3
-    },
-    {
-      "cardId": "card-glimmer",
-      "copies": 3
-    },
-    {
-      "cardId": "card-hunting-armour",
+      "cardId": "card-idler-gear",
       "copies": 2
     },
     {
-      "cardId": "card-sidestep",
+      "cardId": "card-pawl-spring",
+      "copies": 1
+    },
+    {
+      "cardId": "card-driveshaft-rig",
       "copies": 2
     },
     {
-      "cardId": "card-luminar-judgement",
+      "cardId": "card-machine-shop",
       "copies": 2
+    },
+    {
+      "cardId": "card-tempering-line",
+      "copies": 1
+    },
+    {
+      "cardId": "card-glint-veil",
+      "copies": 2
+    },
+    {
+      "cardId": "card-mirrorward",
+      "copies": 2
+    },
+    {
+      "cardId": "card-lantern-oath",
+      "copies": 2
+    },
+    {
+      "cardId": "card-mending-light",
+      "copies": 2
+    },
+    {
+      "cardId": "card-bright-cadence",
+      "copies": 3
+    },
+    {
+      "cardId": "card-prism-mantle",
+      "copies": 2
+    },
+    {
+      "cardId": "card-beacon-array",
+      "copies": 1
+    },
+    {
+      "cardId": "card-choirlight",
+      "copies": 1
+    },
+    {
+      "cardId": "card-radiant-accord",
+      "copies": 1
+    },
+    {
+      "cardId": "card-daybreak-rite",
+      "copies": 1
+    },
+    {
+      "cardId": "card-rethrow",
+      "copies": 1
+    },
+    {
+      "cardId": "card-ward-chit",
+      "copies": 1
     }
   ],
   "faceDeck": [
-    "face-synthetic-gear",
-    "face-synthetic-piston",
-    "face-synthetic-flywheel",
-    "face-synthetic-vital-spark",
-    "face-synthetic-aegis",
-    "face-synthetic-revelation"
+    "face-natural-dawnwright",
+    "face-synthetic-gear-train",
+    "face-synthetic-mainspring",
+    "face-synthetic-halo-lamp",
+    "face-synthetic-lucent-choir",
+    "face-synthetic-sunward-lens"
   ],
   "startingDice": [
     [
-      "face-synthetic-gear",
+      "face-natural-mechanical",
       "face-natural-mechanical",
       "face-natural-mechanical",
       "face-natural-luminar",
@@ -99,7 +123,7 @@
       "face-untyped-shield"
     ],
     [
-      "face-synthetic-vital-spark",
+      "face-natural-mechanical",
       "face-natural-mechanical",
       "face-natural-mechanical",
       "face-natural-luminar",

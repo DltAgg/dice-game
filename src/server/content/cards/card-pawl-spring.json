@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-pawl-spring",
+  "name": "Pawl Spring",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Mechanical face.\nOn absorb, once per turn: [Discount 1] forge.",
+  "overload": {
+    "faceSymbols": [
+      "mechanical"
+    ],
+    "onRoll": [],
+    "onAbsorb": [
+      {
+        "type": "arm-forge-discount",
+        "amount": 1
+      }
+    ]
+  }
+}

@@ -47,7 +47,7 @@ function openedEmptyPriority(): GameState {
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
   const combat = withHand(
-    withPile(withTokens(base, attacker, { martial: 2 }), P2, 10),
+    withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10),
     P2,
     [],
   );
@@ -56,7 +56,7 @@ function openedEmptyPriority(): GameState {
       type: "ATTACK",
       playerId: P1,
       attackerId: attacker,
-      attackId: asAttackId("attack-minotaur-heavy-axe"),
+      attackId: asAttackId("attack-torque-wright-crank"),
       targetId: target,
     }),
   );

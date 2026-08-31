@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  BARRIER_OF_LIGHT,
-  ECLIPSE,
-  GLIMMER,
-  LUMINAR_JUDGEMENT,
+  COG_DRAFT,
+  GLINT_VEIL,
+  LANTERN_OATH,
+  MIRRORWARD,
 } from "../content/cards.js";
-import { asAttackId, asEffectInstanceId } from "../model/ids.js";
+import { asEffectInstanceId } from "../model/ids.js";
 import { currentLife } from "../rules/creatures.js";
 import { createDraft } from "./draft.js";
 import { advance } from "./reduce.js";
@@ -25,11 +25,12 @@ import {
   withShields,
   withTokens,
 } from "../testing/scenario.js";
+import { CRANK, DRIVE_SHAFT, KINDLE } from "../testing/tempoCatalogue.js";
 
-const HEAVY_AXE = asAttackId("attack-minotaur-heavy-axe");
-const CHARGE = asAttackId("attack-varcolac-charge");
+const HEAVY_AXE = DRIVE_SHAFT;
+const CHARGE = KINDLE;
 
-function combatWithAttacker(tokens: { martial: number }) {
+function combatWithAttacker(tokens: { mechanical: number }) {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
@@ -40,7 +41,18 @@ function combatWithAttacker(tokens: { martial: number }) {
   };
 }
 
-/** Varcolac Charge deals 2 and has no ignore-shield, so 009 shield tests stay vanilla. */
+function combatWithDriveShaft() {
+  const base = withPhase(newMatch(), "actions");
+  const attacker = creatureIdAt(base, P1, 2);
+  const target = creatureIdAt(base, P2, 0);
+  return {
+    attacker,
+    target,
+    state: withTokens(base, attacker, { mechanical: 1 }),
+  };
+}
+
+/** Dawn Warden Kindle deals 2 and has no ignore-shield, so 009 shield tests stay vanilla. */
 function combatWithCharge() {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 1);
@@ -48,7 +60,7 @@ function combatWithCharge() {
   return {
     attacker,
     target,
-    state: withTokens(base, attacker, { wild: 1 }),
+    state: withTokens(base, attacker, { luminar: 1 }),
   };
 }
 
@@ -92,16 +104,16 @@ describe("true prevent (009)", () => {
     ).toBe(false);
   });
 
-  it("Prismatic Barrier prevents the next attack on the attack target", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
-    const withBarrier = withHand(withPile(combat, P2, 10), P2, [BARRIER_OF_LIGHT]);
+  it("Lantern Oath prevents the waiting attack on the attack target", () => {
+    const { attacker, target, state: combat } = combatWithAttacker({ mechanical: 1 });
+    const withBarrier = withHand(withPile(combat, P2, 10), P2, [LANTERN_OATH]);
 
     const opened = expectOk(
       advance(withBarrier, {
         type: "ATTACK",
         playerId: P1,
         attackerId: attacker,
-        attackId: HEAVY_AXE,
+        attackId: CRANK,
         targetId: target,
       }),
     );
@@ -116,14 +128,16 @@ describe("true prevent (009)", () => {
     const resolved = resolveOpenChain(barred);
 
     expect(resolved.creatures[target]?.damage).toBe(0);
-    expect(resolved.creatures[target]?.attackPreventCount).toBe(0);
+    expect(
+      eventTypes(resolved).filter((type) => type === "damage-prevented").length,
+    ).toBeGreaterThan(0);
   });
 
-  it("rejects Barrier when the top link is not an attack", () => {
+  it("rejects Glint Veil when the top link is not an attack", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
       P2,
-      [BARRIER_OF_LIGHT],
+      [GLINT_VEIL],
     );
     const opened = expectOk(
       advance(ready, {
@@ -142,10 +156,10 @@ describe("true prevent (009)", () => {
     expect(denied.error).toBe("INVALID_CHAIN_TARGET");
   });
 
-  it("Luminar Judgement prevents the attack and reflects to the attacker", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+  it("Mirrorward prevents the attack and reflects to the attacker", () => {
+    const { attacker, target, state: combat } = combatWithDriveShaft();
     const lifeBefore = currentLife(combat.creatures[attacker]!);
-    const withJudgement = withHand(withPile(combat, P2, 10), P2, [LUMINAR_JUDGEMENT]);
+    const withJudgement = withHand(withPile(combat, P2, 10), P2, [MIRRORWARD]);
 
     const opened = expectOk(
       advance(withJudgement, {
@@ -170,18 +184,13 @@ describe("true prevent (009)", () => {
     expect(eventTypes(resolved)).toContain("damage-prevented");
   });
 
-  it("Glimmer draws when prevent resolves after Barrier", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
-    const seeded = withHand(withPile(combat, P2, 10), P2, [
-      BARRIER_OF_LIGHT,
-      GLIMMER,
-      ECLIPSE,
-      ECLIPSE,
-    ]);
+  it("Lantern Oath draws when prevent resolves", () => {
+    const { attacker, target, state: combat } = combatWithAttacker({ mechanical: 1 });
+    const seeded = withHand(withPile(combat, P2, 10), P2, [LANTERN_OATH, COG_DRAFT, COG_DRAFT]);
     const player = seeded.players[P2];
     if (player === undefined) throw new Error("test: no p2");
-    const deckA = handCardIdAt(seeded, P2, 2);
-    const deckB = handCardIdAt(seeded, P2, 3);
+    const deckA = handCardIdAt(seeded, P2, 1);
+    const deckB = handCardIdAt(seeded, P2, 2);
     const withDeck = {
       ...seeded,
       cards: {
@@ -193,7 +202,7 @@ describe("true prevent (009)", () => {
         ...seeded.players,
         [P2]: {
           ...player,
-          hand: [handCardIdAt(seeded, P2, 0), handCardIdAt(seeded, P2, 1)],
+          hand: [handCardIdAt(seeded, P2, 0)],
           deck: [deckA, deckB],
         },
       },
@@ -204,7 +213,7 @@ describe("true prevent (009)", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: attacker,
-        attackId: HEAVY_AXE,
+        attackId: CRANK,
         targetId: target,
       }),
     );
@@ -215,24 +224,13 @@ describe("true prevent (009)", () => {
         cardInstanceId: handCardIdAt(opened, P2, 0),
       }),
     );
-    // Priority passed to P1 after Barrier; Pass so P2 can add Glimmer.
-    const afterP1Pass = expectOk(
-      advance(afterBarrier, { type: "PASS_PRIORITY", playerId: P1 }),
-    );
-    const afterGlimmer = expectOk(
-      advance(afterP1Pass, {
-        type: "PLAY_CARD",
-        playerId: P2,
-        cardInstanceId: handCardIdAt(afterP1Pass, P2, 0),
-      }),
-    );
-    const resolved = resolveOpenChain(afterGlimmer);
+    const resolved = resolveOpenChain(afterBarrier);
     expect(eventTypes(resolved)).toContain("card-drawn");
-    expect(resolved.players[P2]?.hand.length).toBe(2);
+    expect(resolved.players[P2]?.hand.length).toBe(1);
   });
 
   it("leftover attack-prevent persists; a later attack without prevent hits", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ martial: 1 });
+    const { attacker, target, state: combat } = combatWithDriveShaft();
     const buffered = {
       ...combat,
       creatures: {
@@ -266,7 +264,7 @@ describe("true prevent (009)", () => {
         },
       },
       attacker,
-      { martial: 1 },
+      { mechanical: 1 },
     );
     const second = resolveOpenChain(
       expectOk(

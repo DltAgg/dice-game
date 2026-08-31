@@ -43,6 +43,7 @@ export function SpectatorSeatDock({
             selected={null}
             onPlay={() => undefined}
             onForge={() => undefined}
+            onOvercharge={() => undefined}
             onCancel={() => undefined}
             idleLabel="observing"
           />

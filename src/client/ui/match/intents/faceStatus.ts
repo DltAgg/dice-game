@@ -1,7 +1,9 @@
 import {
+  attributeLabel,
   diceOf,
   getFaceCard,
   slotCannotBeReplacedByForge,
+  type Attribute,
   type DieId,
   type DieSlot,
   type FaceCardId,
@@ -22,8 +24,26 @@ export function forgeLockStatusLabel(remaining: number | undefined): string | nu
   return `Forge-lock ${String(remaining)}`;
 }
 
+/** Attribute counts on a face card's Overcharge pips (spec `021`). */
+export function overchargePipLabel(
+  pips: readonly Attribute[] | undefined,
+): string | null {
+  if (pips === undefined || pips.length === 0) return null;
+  const counts = new Map<Attribute, number>();
+  for (const attribute of pips) {
+    counts.set(attribute, (counts.get(attribute) ?? 0) + 1);
+  }
+  const bits: string[] = [];
+  for (const [attribute, count] of counts) {
+    const name = attributeLabel(attribute);
+    bits.push(count === 1 ? name : `${name} ×${String(count)}`);
+  }
+  return `Overcharge ${bits.join(" · ")}`;
+}
+
 export function slotStatusLine(slot: DieSlot): string | null {
   const parts: string[] = [];
+  if (slot.forgeYield === true) parts.push("Forge yield");
   if ((slot.corruptionMarkers ?? 0) > 0) {
     parts.push(`Corruption ×${String(slot.corruptionMarkers)}`);
   }
@@ -35,6 +55,15 @@ export function slotStatusLine(slot: DieSlot): string | null {
   if (slot.suppressInherentNextRoll === true) parts.push("Suppress next roll");
   if (slot.resourceLockedThisTurn === true) parts.push("Resource locked");
   return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+/** Overcharge pips on the unique installed face card (shared across copies). */
+export function overchargeStatusForFace(
+  state: GameState,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+): string | null {
+  return overchargePipLabel(state.players[playerId]?.overchargeByFace[faceCardId]);
 }
 
 /** Aggregated stay-on-slot cues for a unique installed face card. */

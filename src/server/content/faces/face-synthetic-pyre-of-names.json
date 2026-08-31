@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-pyre-of-names",
+  "name": "Pyre of Names",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll: you may [Discard 1]; if you do, [Strike 2].\nOn absorb, once per turn: [Generate 1 Darkness].",
+  "onRoll": [
+    {
+      "type": "discard-cards",
+      "amount": 1,
+      "optional": true,
+      "then": [
+        {
+          "type": "damage",
+          "amount": 2,
+          "target": {
+            "kind": "choose-enemy"
+          }
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [
+    {
+      "type": "generate-symbol",
+      "symbol": "darkness",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

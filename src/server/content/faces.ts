@@ -10,15 +10,20 @@ import faceOrder from "./faces/_order.json";
 import { catalogueFromModules } from "./catalogueLoader.js";
 
 /**
- * Face cards from the Figma `Face card` page (`2:13`), plus named synthetics
- * staged from `synthetic_faces.csv`. Translated to English.
+ * Face cards backing die faces (spec `004`).
  *
  * Basics are starting-die identity faces: natural faces for all eight
- * attributes, plus untyped Shield. Synthetics remain **named specials only**
- * — never blank `face-synthetic-<attr>` generics. Dual-timing print uses
+ * attributes, plus untyped Shield. Synthetics are **named specials only**
+ * — never blank `face-synthetic-<attr>` generics. A natural may also be a
+ * named special (Dawnwright); it is packed from the face deck like any
+ * other special. Dual-timing print uses
  * `On roll:` / `On absorb:`; fill `onRoll` / `onAbsorb` only for clauses the
  * engine can resolve — leave the other array empty and keep the deferred
  * clause in `rulesText` (see DEFERRED_CATALOGUE).
+ *
+ * The special pool holds the Mechanical + Luminar Tempo set and the
+ * Arcane + Darkness Control set (3 named specials per attribute, so a face
+ * deck can run either pair inside the 3-per-attribute cap).
  */
 
 export const naturalFaceId = (attribute: Attribute): FaceCardId =>
@@ -50,57 +55,32 @@ export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
 
 /* ----------------------------------------------------- named specials --- */
 
-export const ARCANE_ECHO_FACE: FaceCardId = asFaceCardId("face-synthetic-arcane-echo");
-export const GREAT_SPARK: FaceCardId = asFaceCardId("face-synthetic-great-spark");
-export const RENDING_CLAW: FaceCardId = asFaceCardId("face-synthetic-rending-claw");
-export const CRUSH: FaceCardId = asFaceCardId("face-synthetic-crush");
-export const REKINDLE: FaceCardId = asFaceCardId("face-synthetic-rekindle");
-export const BLADE_RAIN: FaceCardId = asFaceCardId("face-synthetic-blade-rain");
-export const FORBIDDEN_HERITAGE: FaceCardId = asFaceCardId("face-synthetic-forbidden-heritage");
-export const PESTILENT_PLAGUE: FaceCardId = asFaceCardId("face-synthetic-pestilent-plague");
+/** Mechanical: own-die reconstruction and forge discounts. */
+export const COGTOOTH: FaceCardId = asFaceCardId("face-synthetic-cogtooth");
+export const GEAR_TRAIN: FaceCardId = asFaceCardId("face-synthetic-gear-train");
+export const MAINSPRING: FaceCardId = asFaceCardId("face-synthetic-mainspring");
 
-/** Named synthetics from the synthetic_faces CSV worksheet (print-first). */
-export const INSIGHT_RUNE: FaceCardId = asFaceCardId("face-synthetic-insight-rune");
-export const CONVERSION_RUNE: FaceCardId = asFaceCardId("face-synthetic-conversion-rune");
-export const RESONANCE_RUNE: FaceCardId = asFaceCardId("face-synthetic-resonance-rune");
-export const VITAL_SPARK: FaceCardId = asFaceCardId("face-synthetic-vital-spark");
-export const AEGIS: FaceCardId = asFaceCardId("face-synthetic-aegis");
-export const REVELATION: FaceCardId = asFaceCardId("face-synthetic-revelation");
-export const INSTINCT: FaceCardId = asFaceCardId("face-synthetic-instinct");
-export const PRIMORDIAL_FURY: FaceCardId = asFaceCardId("face-synthetic-primordial-fury");
-export const PACK: FaceCardId = asFaceCardId("face-synthetic-pack");
-export const PACK_SHARE: FaceCardId = asFaceCardId("face-synthetic-pack-share");
-export const COMMAND: FaceCardId = asFaceCardId("face-synthetic-command");
-export const IMPACT: FaceCardId = asFaceCardId("face-synthetic-impact");
-export const FORMATION: FaceCardId = asFaceCardId("face-synthetic-formation");
-export const VENOM: FaceCardId = asFaceCardId("face-synthetic-venom");
-export const SPORES: FaceCardId = asFaceCardId("face-synthetic-spores");
-export const ADAPTIVE_TOXIN: FaceCardId = asFaceCardId("face-synthetic-adaptive-toxin");
-export const STAIN: FaceCardId = asFaceCardId("face-synthetic-stain");
-export const INFECTION: FaceCardId = asFaceCardId("face-synthetic-infection");
-export const DECAY: FaceCardId = asFaceCardId("face-synthetic-decay");
-export const BLIGHT: FaceCardId = asFaceCardId("face-synthetic-blight");
-export const HEXBRAND: FaceCardId = asFaceCardId("face-synthetic-hexbrand");
-export const CANKER: FaceCardId = asFaceCardId("face-synthetic-canker");
-export const GEAR: FaceCardId = asFaceCardId("face-synthetic-gear");
-export const CATALYST: FaceCardId = asFaceCardId("face-synthetic-catalyst");
-export const OVERCHARGE: FaceCardId = asFaceCardId("face-synthetic-overcharge");
-export const FLYWHEEL: FaceCardId = asFaceCardId("face-synthetic-flywheel");
-export const PISTON: FaceCardId = asFaceCardId("face-synthetic-piston");
-export const SHADOW_ECHO: FaceCardId = asFaceCardId("face-synthetic-shadow-echo");
-export const DRAIN: FaceCardId = asFaceCardId("face-synthetic-drain");
-export const SACRIFICE: FaceCardId = asFaceCardId("face-synthetic-sacrifice");
-export const WARHORN: FaceCardId = asFaceCardId("face-synthetic-warhorn");
-export const CLEAVING_STRIKE: FaceCardId = asFaceCardId("face-synthetic-cleaving-strike");
-export const BLOODSCENT: FaceCardId = asFaceCardId("face-synthetic-bloodscent");
-export const GORE: FaceCardId = asFaceCardId("face-synthetic-gore");
-export const NEEDLE: FaceCardId = asFaceCardId("face-synthetic-needle");
-export const SEEP: FaceCardId = asFaceCardId("face-synthetic-seep");
-export const NIGHTWELL: FaceCardId = asFaceCardId("face-synthetic-nightwell");
-export const RUNEFLARE: FaceCardId = asFaceCardId("face-synthetic-runeflare");
-export const MARROW_ROT: FaceCardId = asFaceCardId("face-synthetic-marrow-rot");
-export const CINDER: FaceCardId = asFaceCardId("face-synthetic-cinder");
-export const WASTING_BRAND: FaceCardId = asFaceCardId("face-synthetic-wasting-brand");
+/** Luminar: shields, sustain, and the Luminar → Mechanical hand-off. */
+export const HALO_LAMP: FaceCardId = asFaceCardId("face-synthetic-halo-lamp");
+export const LUCENT_CHOIR: FaceCardId = asFaceCardId("face-synthetic-lucent-choir");
+export const SUNWARD_LENS: FaceCardId = asFaceCardId("face-synthetic-sunward-lens");
+
+/** Arcane: deck-top manipulation and face-sourced chip damage. */
+export const AUGUR_GLASS: FaceCardId = asFaceCardId("face-synthetic-augur-glass");
+export const SIGIL_FLARE: FaceCardId = asFaceCardId("face-synthetic-sigil-flare");
+export const WARD_LATTICE: FaceCardId = asFaceCardId("face-synthetic-ward-lattice");
+
+/** Darkness: mill ticks and graveyard value. Gloomwell pays out in Arcane. */
+export const GLOOMWELL: FaceCardId = asFaceCardId("face-synthetic-gloomwell");
+export const OSSUARY: FaceCardId = asFaceCardId("face-synthetic-ossuary");
+export const PYRE_OF_NAMES: FaceCardId = asFaceCardId("face-synthetic-pyre-of-names");
+
+/**
+ * Named **natural** special: shows Mechanical and pays out Luminar on roll.
+ * Packable like a synthetic — it is not one of the eight opening identity
+ * basics, so it never belongs in `BASIC_FACE_CARDS`.
+ */
+export const DAWNWRIGHT: FaceCardId = asFaceCardId("face-natural-dawnwright");
 
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);
@@ -108,7 +88,7 @@ const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOr
 export const FACE_CARDS: Readonly<Record<string, FaceCardDefinition>> = loadedFaces.byId;
 export const getFaceCard = (id: FaceCardId): FaceCardDefinition | undefined => FACE_CARDS[id];
 
-/** Catalogue order: starting naturals, untyped Shield, then named specials with printings. */
+/** Catalogue order: starting naturals, untyped Shield, then named specials. */
 export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = loadedFaces.list;
 
 /** Starting naturals for all eight attributes, plus untyped Shield. */
@@ -117,7 +97,10 @@ export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.sl
   DUAL_KIND_ATTRIBUTES.length + 1,
 );
 
-/** Named synthetic specials that have printed rules text. */
+/**
+ * Packable named specials that have printed rules text: the synthetics plus
+ * named naturals such as Dawnwright. Everything after the opening basics.
+ */
 export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
   DUAL_KIND_ATTRIBUTES.length + 1,
 );
@@ -155,37 +138,14 @@ export function legacyStartingLayout(): StartingDiceLayout {
 }
 
 /**
- * Scenario / forge-test face pool. Unique ids (ledger: pooled xor installed).
- * Named specials cover Eclipse / Library / Contamination forge paths. The
- * builtin hotseat loadout uses `PROTOTYPE_FACE_DECK` instead.
+ * Scenario / forge-test face pool. Unique ids (ledger: pooled xor installed);
+ * 3 Mechanical + 3 Luminar stays inside the per-attribute face-deck cap.
  */
 export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
-  SHADOW_ECHO,
-  INFECTION,
-  VENOM,
-  GEAR,
-  INSIGHT_RUNE,
-  ARCANE_ECHO_FACE,
-  RENDING_CLAW,
-  BLADE_RAIN,
-  CRUSH,
-  FORBIDDEN_HERITAGE,
-  PESTILENT_PLAGUE,
-  SACRIFICE,
+  COGTOOTH,
+  GEAR_TRAIN,
+  MAINSPRING,
+  HALO_LAMP,
+  LUCENT_CHOIR,
+  SUNWARD_LENS,
 ];
-
-
-export {
-  AGGRO_FACE_DECK,
-  AGGRO_STARTING_DICE,
-  BURN_FACE_DECK,
-  BURN_STARTING_DICE,
-  COMBO_MECHANICAL_FACE_DECK,
-  COMBO_MECHANICAL_STARTING_DICE,
-  CONTROL_FACE_DECK,
-  CONTROL_STARTING_DICE,
-  PROTOTYPE_FACE_DECK,
-  PROTOTYPE_STARTING_DICE,
-  TEMPO_FACE_DECK,
-  TEMPO_STARTING_DICE,
-} from "./loadouts/index.js";

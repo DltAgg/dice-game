@@ -5,7 +5,8 @@ description: >-
   long games, stall/idle turns, drag score, low lethality, reaction-window
   friction, and think time. Use when the user pastes a metrics export, mentions
   the Metrics tab, games going past 10 turns, drag score, or asks why matches
-  feel slow.
+  feel slow. Do not use when they also have playtest notes or “felt like the
+  wrong archetype” — that is post-playtest (skill review-playtest).
 ---
 
 # Analyze match metrics
@@ -78,3 +79,7 @@ Only if the sample is too small or guest-only.
 
 Do not change `src/server` from this skill. If a rules experiment is agreed,
 hand off to `engine-developer`. Match-board chrome stays with `match-ui`.
+If the diagnosis is “this list played like another archetype,” or the user
+also has **playtest notes**, hand the full debrief to **post-playtest**
+(skill `review-playtest`) — it updates `docs/MECHANIC_ARCHETYPES.md` and
+briefs `card-designer`. Metrics-only pace dumps stay in this skill.

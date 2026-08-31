@@ -85,8 +85,8 @@ export function formatForgeLine(forge: ForgeRegion): string {
 
 /**
  * The bracketed pile line above the effect body. Rituals print Active when
- * (gate). Other cards that carry `effect.requires` print Spend — that field
- * burns from the pile. Returns null when there is no line to show.
+ * (gate). Other cards that carry `effect.requires` print `[Requires: …]` —
+ * that field is a hold-gate, not Spend. Returns null when there is no line.
  */
 export function formatRequirementLine(card: CardDefinition): string | null {
   const requires = card.ritual?.activeWhen ?? card.effect?.requires;
@@ -95,7 +95,7 @@ export function formatRequirementLine(card: CardDefinition): string | null {
   const body = formatRequirementBody(requires);
   if (body.length === 0) return null;
   if (card.type === "ritual" || card.ritual !== undefined) return `[Active when: ${body}]`;
-  return `[Spend: ${body}]`;
+  return `[Requires: ${body}]`;
 }
 
 /**
@@ -141,4 +141,14 @@ export function formatEffectRegion(card: CardDefinition): readonly string[] {
     if (line.length > 0) lines.push(line);
   }
   return lines;
+}
+
+/**
+ * Rules body for inspect surfaces that already show play cost, gate, and ritual
+ * activate spend in dedicated rows. Omits header `[Spend]` / `[Active when]`
+ * lines that {@link formatEffectRegion} prepends for card art layout.
+ */
+export function formatInspectEffectLines(card: CardDefinition): readonly string[] {
+  if (card.rulesText.length === 0) return ["None"];
+  return card.rulesText.split("\n").filter((line) => line.length > 0);
 }

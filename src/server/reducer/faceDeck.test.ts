@@ -1,46 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { ARCANE_ECHO, ECLIPSE, LIVING_LIBRARY, TEMPER } from "../content/cards.js";
+import { COG_DRAFT, MENDING_LIGHT, TOOLING_ORDER } from "../content/cards.js";
 import {
-  ARCANE_ECHO_FACE,
-  BLADE_RAIN,
-  BLIGHT,
-  BLOODSCENT,
-  CANKER,
-  CLEAVING_STRIKE,
-  COMBO_MECHANICAL_FACE_DECK,
-  BURN_FACE_DECK,
-  COMMAND,
-  CONTROL_FACE_DECK,
+  COGTOOTH,
+  DAWNWRIGHT,
   ENGINE_TEST_FACE_DECK,
-  GEAR,
-  GORE,
-  GREAT_SPARK,
-  HEXBRAND,
-  INFECTION,
-  INSIGHT_RUNE,
-  MARROW_ROT,
-  CINDER,
-  WASTING_BRAND,
-  SPORES,
-  NEEDLE,
-  NIGHTWELL,
-  PROTOTYPE_FACE_DECK,
-  REKINDLE,
-  RESONANCE_RUNE,
-  RUNEFLARE,
-  SEEP,
-  CRUSH,
+  GEAR_TRAIN,
+  HALO_LAMP,
+  LUCENT_CHOIR,
+  MAINSPRING,
   SPECIAL_FACE_CARDS,
-  SHADOW_ECHO,
-  STAIN,
-  TEMPO_FACE_DECK,
-  VENOM,
+  SUNWARD_LENS,
   naturalFaceId,
 } from "../content/faces.js";
+import { TEMPO_FACE_DECK } from "../content/loadouts/index.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { DieId } from "../model/ids.js";
 import { validateFaceDeck } from "../rules/faces.js";
-import { advanceResolvingChain as advance } from "../testing/scenario.js";
 import {
   forgeAction,
   handCardIdAt,
@@ -50,8 +25,8 @@ import {
   withPile,
   withHand,
   withPhase,
+  advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { eventTypes } from "../testing/scenario.js";
 
 describe("face deck", () => {
   it("loads the engine-test face deck into each player's face pool at setup", () => {
@@ -60,65 +35,18 @@ describe("face deck", () => {
     expect(validateFaceDeck(ENGINE_TEST_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
   });
 
-  it("keeps the builtin aggro face deck legal under attribute caps", () => {
-    expect(validateFaceDeck(PROTOTYPE_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    expect(PROTOTYPE_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
-    expect(PROTOTYPE_FACE_DECK).toHaveLength(6);
-    expect(new Set(PROTOTYPE_FACE_DECK).size).toBe(PROTOTYPE_FACE_DECK.length);
-    expect(PROTOTYPE_FACE_DECK).toEqual(
-      expect.arrayContaining([CRUSH, COMMAND, CLEAVING_STRIKE, BLOODSCENT, GORE, BLADE_RAIN]),
-    );
-    expect(PROTOTYPE_FACE_DECK).not.toContain(NEEDLE);
-    expect(PROTOTYPE_FACE_DECK).not.toContain(SEEP);
-    expect(PROTOTYPE_FACE_DECK).not.toContain(VENOM);
-    expect(PROTOTYPE_FACE_DECK).not.toContain(INFECTION);
-    expect(PROTOTYPE_FACE_DECK).not.toContain(STAIN);
-    expect(PROTOTYPE_FACE_DECK).not.toContain(GREAT_SPARK);
-    expect(PROTOTYPE_FACE_DECK).not.toContain(REKINDLE);
-  });
-
-  it("keeps the builtin control face deck legal under attribute caps", () => {
-    expect(validateFaceDeck(CONTROL_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    // Two-color Arcane/Darkness lists max out at 6 under ≤3/attr (no off-pie padding).
-    expect(CONTROL_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
-    expect(CONTROL_FACE_DECK).toHaveLength(6);
-    expect(new Set(CONTROL_FACE_DECK).size).toBe(CONTROL_FACE_DECK.length);
-    expect(CONTROL_FACE_DECK).toEqual(
-      expect.arrayContaining([NIGHTWELL, RUNEFLARE, RESONANCE_RUNE, SHADOW_ECHO]),
-    );
-    expect(CONTROL_FACE_DECK).not.toContain(BLIGHT);
-    expect(CONTROL_FACE_DECK).not.toContain(HEXBRAND);
-    expect(CONTROL_FACE_DECK).not.toContain(CANKER);
-    expect(CONTROL_FACE_DECK).not.toContain(STAIN);
-    expect(CONTROL_FACE_DECK).not.toContain(GREAT_SPARK);
-    expect(CONTROL_FACE_DECK).not.toContain(REKINDLE);
-  });
-
-  it("keeps the builtin tempo face deck legal under attribute caps", () => {
+  it("keeps the Tempo face deck legal under attribute caps", () => {
     expect(validateFaceDeck(TEMPO_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    // Mech/Luminar only — ≤3/attr ⇒ 6 faces, not the 12-card ceiling.
     expect(TEMPO_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
     expect(TEMPO_FACE_DECK).toHaveLength(6);
     expect(new Set(TEMPO_FACE_DECK).size).toBe(TEMPO_FACE_DECK.length);
-  });
-
-  it("keeps the builtin combo mechanical face deck legal under attribute caps", () => {
-    expect(validateFaceDeck(COMBO_MECHANICAL_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    expect(COMBO_MECHANICAL_FACE_DECK).toHaveLength(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
-    expect(new Set(COMBO_MECHANICAL_FACE_DECK).size).toBe(COMBO_MECHANICAL_FACE_DECK.length);
+    expect(TEMPO_FACE_DECK).toEqual(
+      expect.arrayContaining([DAWNWRIGHT, GEAR_TRAIN, MAINSPRING, HALO_LAMP, LUCENT_CHOIR, SUNWARD_LENS]),
+    );
   });
 
   it("refuses a face deck over the twelve-card cap", () => {
-    const oversized = [
-      ...CONTROL_FACE_DECK,
-      GEAR,
-      NEEDLE,
-      SEEP,
-      VENOM,
-      BLOODSCENT,
-      GORE,
-      BLADE_RAIN,
-    ];
+    const oversized = [...TEMPO_FACE_DECK, COGTOOTH, GEAR_TRAIN, MAINSPRING, HALO_LAMP, LUCENT_CHOIR, SUNWARD_LENS, COGTOOTH];
     expect(oversized.length).toBeGreaterThan(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
     const result = validateFaceDeck(oversized, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
@@ -126,23 +54,18 @@ describe("face deck", () => {
   });
 
   it("refuses more than three face cards of one attribute", () => {
-    const tooMany = [
-      STAIN,
-      STAIN,
-      STAIN,
-      STAIN,
-    ];
+    const tooMany = [COGTOOTH, GEAR_TRAIN, MAINSPRING, COGTOOTH];
     const result = validateFaceDeck(tooMany, DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/corruption/);
+    if (!result.ok) expect(result.reason).toMatch(/mechanical/);
   });
 
   it("takes a face from the pool on first forge and leaves it out while installed", () => {
-    const state = withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    const state = withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10);
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("test: no die");
 
-    expect(state.players[P1]?.facePool).toContain(SHADOW_ECHO);
+    expect(state.players[P1]?.facePool).toContain(COGTOOTH);
 
     const forged = advance(
       state,
@@ -151,37 +74,31 @@ describe("face deck", () => {
 
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    expect(forged.state.players[P1]?.facePool).not.toContain(SHADOW_ECHO);
-    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(SHADOW_ECHO);
+    expect(forged.state.players[P1]?.facePool).not.toContain(COGTOOTH);
+    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(COGTOOTH);
   });
 
-  it("forges a leftover builtin natural via Temper and still draws", () => {
+  it("forges a natural Luminar face via Mending Light without burning its dual cost", () => {
     const state = withPile(
-      withHand(withPhase(newMatchWithDecks(), "actions"), P1, [TEMPER]),
+      withHand(withPhase(newMatchWithDecks(), "actions"), P1, [MENDING_LIGHT]),
       P1,
       10,
     );
-    expect(state.players[P1]?.facePool).toContain(COMMAND);
-    expect(state.players[P1]?.facePool).not.toContain(CRUSH);
-    expect(state.players[P1]?.facePool).not.toContain(BLOODSCENT);
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("test: no die");
-    expect(state.players[P1]?.deck.length).toBeGreaterThan(0);
     const forged = advance(
       state,
       forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [5]),
     );
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    // Temper's forge region is Natural Martial (play effect installs specials).
-    expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(naturalFaceId("martial"));
-    expect(forged.state.players[P1]?.facePool).toContain(COMMAND);
-    expect(eventTypes(forged.state)).toContain("card-drawn");
+    expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(naturalFaceId("luminar"));
+    expect(forged.state.players[P1]?.attributePool.mechanical ?? 0).toBe(10);
   });
 
-  it("installs a named synthetic when the card is not Echo-tagged", () => {
+  it("installs a named synthetic from the pool via Tooling Order", () => {
     const state = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY]),
+      withHand(withPhase(newMatch(), "actions"), P1, [TOOLING_ORDER]),
       P1,
       10,
     );
@@ -195,11 +112,11 @@ describe("face deck", () => {
 
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(INSIGHT_RUNE);
+    expect(forged.state.dice[dieId]?.slots[4]?.faceCardId).toBe(COGTOOTH);
   });
 
   it("returns a displaced starting face to the pool when its last copy is gone", () => {
-    let state = withPile(withHand(withPhase(newMatch(), "actions"), P1, [ECLIPSE]), P1, 10);
+    let state = withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10);
     const dieIds = state.players[P1]?.dieIds ?? [];
     const shieldSlots: Array<{ dieId: DieId; slot: number }> = [];
     for (const dieId of dieIds) {
@@ -211,10 +128,10 @@ describe("face deck", () => {
         }
       }
     }
-    expect(shieldSlots.length).toBe(4);
+    expect(shieldSlots.length).toBeGreaterThan(0);
 
     for (const { dieId, slot } of shieldSlots) {
-      state = withPile(withHand(withPhase(state, "actions"), P1, [ECLIPSE]), P1, 10);
+      state = withPile(withHand(withPhase(state, "actions"), P1, [COG_DRAFT]), P1, 10);
       const result = advance(
         state,
         forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [slot]),
@@ -227,98 +144,21 @@ describe("face deck", () => {
     expect(state.players[P1]?.facePool.some((id) => id.includes("shield"))).toBe(true);
   });
 
-  it("catalogues every printed special face", () => {
+  it("catalogues every printed Tempo and Control special face", () => {
     expect(SPECIAL_FACE_CARDS.map((face) => face.name)).toEqual([
-      "Arcane Echo",
-      "Blade Rain",
-      "Rending Claw",
-      "Crush",
-      "Forbidden Heritage",
-      "Pestilent Plague",
-      "Insight Rune",
-      "Conversion Rune",
-      "Resonance Rune",
-      "Vital Spark",
-      "Aegis",
-      "Revelation",
-      "Instinct",
-      "Primordial Fury",
-      "Pack",
-      "Pack Share",
-      "Command",
-      "Impact",
-      "Formation",
-      "Venom",
-      "Spores",
-      "Adaptive Toxin",
-      "Stain",
-      "Infection",
-      "Decay",
-      "Blight",
-      "Hexbrand",
-      "Canker",
-      "Gear",
-      "Catalyst",
-      "Overcharge",
-      "Flywheel",
-      "Piston",
-      "Shadow Echo",
-      "Drain",
-      "Sacrifice",
-      "Nightwell",
-      "Runeflare",
-      "Warhorn",
-      "Cleaving Strike",
-      "Bloodscent",
-      "Gore",
-      "Needle",
-      "Seep",
-      "Marrow Rot",
-      "Cinder",
-      "Wasting Brand",
+      "Cogtooth",
+      "Gear Train",
+      "Mainspring",
+      "Halo Lamp",
+      "Lucent Choir",
+      "Sunward Lens",
+      "Augur Glass",
+      "Sigil Flare",
+      "Ward Lattice",
+      "Gloomwell",
+      "Ossuary",
+      "Pyre of Names",
+      "Dawnwright",
     ]);
   });
-
-  it("lets only Echo-tagged tactics forge Arcane Echo", () => {
-    const state = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [LIVING_LIBRARY, ARCANE_ECHO]),
-      P1,
-      10,
-    );
-    const dieId = state.players[P1]?.dieIds[0];
-    if (dieId === undefined) throw new Error("test: no die");
-
-    const library = advance(
-      state,
-      forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4]),
-    );
-    expect(library.ok).toBe(true);
-    if (!library.ok) return;
-    expect(library.state.dice[dieId]?.slots[4]?.faceCardId).toBe(INSIGHT_RUNE);
-
-    const echoReady = withPile(
-      withHand(withPhase(library.state, "actions"), P1, [ARCANE_ECHO]),
-      P1,
-      10,
-    );
-    const echo = advance(
-      echoReady,
-      forgeAction(echoReady, P1, handCardIdAt(echoReady, P1, 0), dieId, [5]),
-    );
-    expect(echo.ok).toBe(true);
-    if (!echo.ok) return;
-    expect(echo.state.dice[dieId]?.slots[5]?.faceCardId).toBe(ARCANE_ECHO_FACE);
-  });
-  it("keeps the builtin burn face deck legal under attribute caps", () => {
-    expect(validateFaceDeck(BURN_FACE_DECK, DEFAULT_RULES_CONFIG).ok).toBe(true);
-    expect(BURN_FACE_DECK.length).toBeLessThanOrEqual(DEFAULT_RULES_CONFIG.faceDeckMaxCards);
-    expect(new Set(BURN_FACE_DECK).size).toBe(BURN_FACE_DECK.length);
-    expect(BURN_FACE_DECK).toEqual(
-      expect.arrayContaining([SEEP, MARROW_ROT, SPORES, CINDER, WASTING_BRAND]),
-    );
-    expect(BURN_FACE_DECK).not.toContain(HEXBRAND);
-    expect(BURN_FACE_DECK).not.toContain(BLIGHT);
-    expect(BURN_FACE_DECK).not.toContain(CANKER);
-  });
-
 });

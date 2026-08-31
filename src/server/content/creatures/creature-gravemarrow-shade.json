@@ -1,0 +1,81 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-gravemarrow-shade",
+  "name": "Gravemarrow Shade",
+  "life": 13,
+  "attributes": [
+    "darkness"
+  ],
+  "passiveRulesText": "On absorb Darkness, once per turn: your opponent [Mill 2].",
+  "standingAbilities": [
+    {
+      "type": "on-absorb",
+      "symbols": [
+        "darkness"
+      ],
+      "absorberRelation": "ally",
+      "oncePerTurn": true,
+      "effects": [
+        {
+          "type": "mill-cards",
+          "amount": 2,
+          "player": "opponent"
+        }
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-gravemarrow-shade-grave-reach",
+      "name": "Grave Reach",
+      "kind": "basic",
+      "discards": {
+        "darkness": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. Your opponent [Mill 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "mill-cards",
+          "amount": 2,
+          "player": "opponent"
+        }
+      ]
+    },
+    {
+      "id": "attack-gravemarrow-shade-ebb-of-names",
+      "name": "Ebb of Names",
+      "kind": "special",
+      "requires": {
+        "arcane": 1,
+        "darkness": 1
+      },
+      "discards": {
+        "darkness": 1
+      },
+      "range": false,
+      "rulesText": "[Strike 2]. Your opponent [Mill 3].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "mill-cards",
+          "amount": 3,
+          "player": "opponent"
+        }
+      ]
+    }
+  ]
+}

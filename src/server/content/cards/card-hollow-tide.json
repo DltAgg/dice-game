@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-hollow-tide",
+  "name": "Hollow Tide",
+  "playCost": {
+    "darkness": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Your opponent [Mill 3].",
+  "effect": {
+    "effects": [
+      {
+        "type": "mill-cards",
+        "amount": 3,
+        "player": "opponent"
+      }
+    ]
+  }
+}

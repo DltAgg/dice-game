@@ -300,6 +300,20 @@ export function clearOverloadsOnFace(
   }
 }
 
+/** When a face card leaves play (last copy orphaned), its Overcharge pips leave too. */
+export function clearOverchargeOnFace(
+  draft: Draft,
+  faceCardId: FaceCardId,
+  ownerId: PlayerId,
+): void {
+  const player = draft.players[ownerId];
+  if (player === undefined) return;
+  if (player.overchargeByFace[faceCardId] === undefined) return;
+  const next = { ...player.overchargeByFace };
+  delete next[faceCardId];
+  patchPlayer(draft, ownerId, { overchargeByFace: next });
+}
+
 export function placeRitual(draft: Draft, cardInstanceId: CardInstanceId): void {
   const card = draft.cards[cardInstanceId];
   if (card === undefined) return;

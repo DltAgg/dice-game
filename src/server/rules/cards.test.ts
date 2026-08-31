@@ -1,20 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { CONTROL_SQUAD } from "../content/creatures.js";
+import { SCHOLARS_LIEN, TWIN_CAM, getCard } from "../content/cards.js";
+import { TEMPO_SQUAD } from "../content/creatures.js";
 import type { CardDefinition } from "../model/cards.js";
-import { asCardId, type PlayerId } from "../model/ids.js";
+import { asCardId, asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { newMatch, P1, P2, withAttributePool } from "../testing/scenario.js";
+import {
+  creatureAt,
+  newMatch,
+  P1,
+  P2,
+  withAttributePool,
+} from "../testing/scenario.js";
 import { canAffordForge, canAffordPlay } from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
   return {
     id: asCardId("card-example-afford"),
     name: "Example Afford",
-    playCost: { arcane: 2 },
+    playCost: { mechanical: 2 },
     type: "instant",
     subtypes: [],
-    attribute: "arcane",
-    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    attribute: "mechanical",
+    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     rulesText: "Test.",
     ...overrides,
   };
@@ -31,12 +38,11 @@ function withForgeDiscount(
   };
 }
 
-/** Archmage (CONTROL_SQUAD[0]) grants −1 play cost on Arcane cards once per turn. */
-function controlMatch(): GameState {
+function tempoMatch(): GameState {
   return newMatch({
     players: [
-      { id: P1, squad: CONTROL_SQUAD, deck: [] },
-      { id: P2, squad: CONTROL_SQUAD, deck: [] },
+      { id: P1, squad: TEMPO_SQUAD, deck: [] },
+      { id: P2, squad: TEMPO_SQUAD, deck: [] },
     ],
   });
 }
@@ -55,33 +61,26 @@ describe("canAffordPlay / canAffordForge", () => {
   });
 
   it("returns false when the pile cannot cover the header cost", () => {
-    const state = withAttributePool(newMatch(), P1, { arcane: 1 });
-    const card = exampleCard({ playCost: { arcane: 2 } });
+    const state = withAttributePool(newMatch(), P1, { mechanical: 1 });
+    const card = exampleCard({ playCost: { mechanical: 2 } });
     expect(canAffordPlay(state, P1, card)).toBe(false);
     expect(canAffordForge(state, P1, card)).toBe(false);
   });
 
   it("returns true when the pile covers the full header cost", () => {
-    const state = withAttributePool(newMatch(), P1, { arcane: 2 });
-    const card = exampleCard({ playCost: { arcane: 2 } });
+    const state = withAttributePool(newMatch(), P1, { mechanical: 2 });
+    const card = exampleCard({ playCost: { mechanical: 2 } });
     expect(canAffordPlay(state, P1, card)).toBe(true);
     expect(canAffordForge(state, P1, card)).toBe(true);
   });
 
-  it("applies play-cost discounts to play but not forge", () => {
-    const state = withAttributePool(controlMatch(), P1, { arcane: 1 });
-    const card = exampleCard({ playCost: { arcane: 2 }, attribute: "arcane" });
-    expect(canAffordPlay(state, P1, card)).toBe(true);
-    expect(canAffordForge(state, P1, card)).toBe(false);
-  });
-
   it("applies forgeDiscountThisTurn to forge but not play", () => {
     const state = withForgeDiscount(
-      withAttributePool(newMatch(), P1, { arcane: 1 }),
+      withAttributePool(tempoMatch(), P1, { mechanical: 1 }),
       P1,
       1,
     );
-    const card = exampleCard({ playCost: { arcane: 2 } });
+    const card = exampleCard({ playCost: { mechanical: 2 } });
     expect(canAffordForge(state, P1, card)).toBe(true);
     expect(canAffordPlay(state, P1, card)).toBe(false);
   });
@@ -89,45 +88,77 @@ describe("canAffordPlay / canAffordForge", () => {
   it("treats natural forge as free regardless of pile or playCost", () => {
     const state = withAttributePool(newMatch(), P1, {});
     const card = exampleCard({
-      playCost: { arcane: 2 },
-      forge: { faces: 1, kind: "natural", attribute: "arcane", target: "own-die" },
+      playCost: { mechanical: 2 },
+      forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
     });
     expect(canAffordForge(state, P1, card)).toBe(true);
     expect(canAffordPlay(state, P1, card)).toBe(false);
   });
 
-  it("multi-attr play cost with discount 1 accepts either printed attribute", () => {
-    const martialOnly = withAttributePool(controlMatch(), P1, { martial: 1 });
-    const arcaneOnly = withAttributePool(controlMatch(), P1, { arcane: 1 });
-    const neither = withAttributePool(controlMatch(), P1, {});
-    // Archmage −1 on Arcane; printed 1 arcane + 1 martial → need 1 of either
+  it("multi-attr forge discount 1 accepts either printed attribute", () => {
     const card = exampleCard({
-      playCost: { arcane: 1, martial: 1 },
-      attribute: "arcane",
+      playCost: { mechanical: 1, luminar: 1 },
+      attribute: "mechanical",
+      forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     });
-    expect(canAffordPlay(martialOnly, P1, card)).toBe(true);
-    expect(canAffordPlay(arcaneOnly, P1, card)).toBe(true);
-    expect(canAffordPlay(neither, P1, card)).toBe(false);
-    // Forge ignores play-cost discounts — still need both without forge discount
-    expect(canAffordForge(martialOnly, P1, card)).toBe(false);
-    expect(canAffordForge(arcaneOnly, P1, card)).toBe(false);
-  });
-
-  it("multi-attr forge discount 1 accepts either printed attribute (Crosscut shape)", () => {
-    const card = exampleCard({
-      playCost: { martial: 1, wild: 1 },
-      attribute: "martial",
-      forge: { faces: 1, kind: "synthetic", attribute: "martial", target: "own-die" },
-    });
-    const martial = withForgeDiscount(
-      withAttributePool(newMatch(), P1, { martial: 1 }),
+    const mechanical = withForgeDiscount(
+      withAttributePool(newMatch(), P1, { mechanical: 1 }),
       P1,
       1,
     );
-    const wild = withForgeDiscount(withAttributePool(newMatch(), P1, { wild: 1 }), P1, 1);
-    expect(canAffordForge(martial, P1, card)).toBe(true);
-    expect(canAffordForge(wild, P1, card)).toBe(true);
-    expect(canAffordPlay(martial, P1, card)).toBe(false);
-    expect(canAffordPlay(wild, P1, card)).toBe(false);
+    const luminar = withForgeDiscount(withAttributePool(newMatch(), P1, { luminar: 1 }), P1, 1);
+    expect(canAffordForge(mechanical, P1, card)).toBe(true);
+    expect(canAffordForge(luminar, P1, card)).toBe(true);
+    expect(canAffordPlay(mechanical, P1, card)).toBe(false);
+    expect(canAffordPlay(luminar, P1, card)).toBe(false);
+  });
+
+  it("Twin Cam gate is unmet even when Discount 1 would cover the header", () => {
+    const twinCam = getCard(TWIN_CAM);
+    if (twinCam === undefined) throw new Error("Twin Cam");
+    const state = withEquipped(
+      withAttributePool(newMatch(), P1, { mechanical: 1 }),
+      P1,
+      SCHOLARS_LIEN,
+    );
+    // Scholar's Lien discounts Arcane Instants; keep Twin Cam costs/requires.
+    const discounted = { ...twinCam, attribute: "arcane" as const };
+    expect(canAffordPlay(state, P1, discounted)).toBe(false);
+    expect(
+      canAffordForge(withForgeDiscount(state, P1, 1), P1, twinCam),
+    ).toBe(true);
   });
 });
+
+function withEquipped(state: GameState, playerId: PlayerId, cardId: CardId): GameState {
+  const creature = creatureAt(state, playerId, 0);
+  const instanceId = asCardInstanceId(`test-equip-${cardId}`);
+  const player = state.players[playerId];
+  if (player === undefined) throw new Error("player");
+  return {
+    ...state,
+    cards: {
+      ...state.cards,
+      [instanceId]: {
+        id: instanceId,
+        cardId,
+        ownerId: playerId,
+        zone: "equipment",
+        attachedToCreatureId: creature.id,
+        attachedToFaceCardId: null,
+        ritualOrientation: null,
+      },
+    },
+    creatures: {
+      ...state.creatures,
+      [creature.id]: {
+        ...creature,
+        equipmentIds: [...creature.equipmentIds, instanceId],
+      },
+    },
+    players: {
+      ...state.players,
+      [playerId]: { ...player, equipment: [...player.equipment, instanceId] },
+    },
+  };
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-bright-cadence",
+  "name": "Bright Cadence",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Mark 2 Shield] on an allied creature you choose. [Empower 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-shield",
+        "amount": 2,
+        "target": {
+          "kind": "choose-ally"
+        }
+      },
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}
