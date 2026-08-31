@@ -30,8 +30,12 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
 6. **`[Requires]` / `[Spend]`.** `[Requires: …]` is a pile **gate** (must hold,
    not spent) — attack `requires` **and** card `effect.requires`. `[Spend: …]`
    **burns** from the pile (header `playCost`, ritual activate `spend`, attack
-   `discards`). Wildcards may cover shortfall. `[Discount]` reduces header Spend
-   only, never a Requires gate. Forge does not check `effect.requires`.
+   `discards`). Either clause may include **`any`** generic pips (`{ any: 2 }`
+   or `{ arcane: 1, any: 2 }`): a count of leftover pile tokens of any attribute
+   after named pips are reserved. `any` is not stored on `attributePool` and is
+   not a ninth attribute. Wildcards may cover shortfall. `[Discount]` reduces
+   header Spend only, never a Requires gate, and reduces `any` before named
+   attributes. Forge does not check `effect.requires`.
 7. **Attacks.** `requires` is checked against the attacker's owner's
    `attributePool` (not spent). `discards` is checked and burned. **Both may
    apply** on one attack. Same-turn absorb **can** enable an attack

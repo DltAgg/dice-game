@@ -210,4 +210,28 @@ describe("English card printing", () => {
     void playCost;
     expect(formatPlayCostLine(withoutCost)).toBeNull();
   });
+
+  it("prints Any as generic pile pips", () => {
+    expect(formatPlayCostLine(exampleCard({ playCost: { any: 2 } }))).toBe("[Spend: 2 x Any]");
+    expect(formatPlayCostLine(exampleCard({ playCost: { arcane: 1, any: 2 } }))).toBe(
+      "[Spend: Arcane + 2 x Any]",
+    );
+    expect(
+      formatRequirementLine(
+        exampleCard({
+          type: "ritual",
+          subtypes: ["continuous"],
+          ritual: { activeWhen: { arcane: 1, any: 2 }, effects: [] },
+        }),
+      ),
+    ).toBe("[Active when: Arcane + 2 x Any]");
+    expect(
+      formatRequirementLine(
+        exampleCard({
+          type: "instant",
+          effect: { requires: { any: 1 }, effects: [] },
+        }),
+      ),
+    ).toBe("[Requires: Any]");
+  });
 });

@@ -1,4 +1,4 @@
-import type { Attribute } from "./attributes.js";
+import { isAttribute, type Attribute } from "./attributes.js";
 import type { CreatureId, DieId, PlayerId, SymbolInstanceId } from "./ids.js";
 
 /**
@@ -60,21 +60,38 @@ export interface SymbolInstance {
 }
 
 /**
- * A cost, e.g. `{ martial: 1, wild: 1 }`. Attribute-keyed by construction:
- * cards and attacks only ever speak in attributes, so Shield is unrepresentable
- * here rather than merely discouraged.
+ * Generic pile pips on a cost / gate / Spend (`{ any: 2 }`). Not a ninth
+ * attribute, not Shield, and never stored on `attributePool`.
  */
-export type SymbolRequirement = Readonly<Partial<Record<Attribute, number>>>;
+export const ANY_COST = "any";
+export type AnyCostPip = typeof ANY_COST;
 
-/** A creature's absorbed fuel. Same shape as a cost, and compared against one. */
+export const isAnyCostPip = (value: string): value is AnyCostPip => value === ANY_COST;
+
+/**
+ * A cost, e.g. `{ martial: 1, wild: 1 }` or `{ arcane: 1, any: 2 }`. Named
+ * keys are attributes; `any` is a generic count of pile tokens of any
+ * attribute. Shield is unrepresentable here rather than merely discouraged.
+ */
+export type SymbolRequirement = Readonly<Partial<Record<Attribute | AnyCostPip, number>>>;
+
+/** A creature's absorbed fuel. Named attributes only — the pile never holds `any`. */
 export type AttributeTokens = Readonly<Partial<Record<Attribute, number>>>;
 
+/** Named attribute counts on a requirement (`any` excluded). */
 export const requirementEntries = (
   requirement: SymbolRequirement,
 ): ReadonlyArray<readonly [Attribute, number]> =>
   Object.entries(requirement).flatMap(([attribute, count]) =>
-    count === undefined || count <= 0 ? [] : [[attribute as Attribute, count] as const],
+    count === undefined || count <= 0 || !isAttribute(attribute)
+      ? []
+      : [[attribute, count] as const],
   );
 
+/** Generic (`Any`) pips on a requirement. `0` when omitted. */
+export const genericCount = (requirement: SymbolRequirement): number =>
+  Math.max(0, requirement[ANY_COST] ?? 0);
+
 export const requirementTotal = (requirement: SymbolRequirement): number =>
-  requirementEntries(requirement).reduce((total, [, count]) => total + count, 0);
+  requirementEntries(requirement).reduce((total, [, count]) => total + count, 0) +
+  genericCount(requirement);

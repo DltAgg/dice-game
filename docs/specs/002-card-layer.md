@@ -92,6 +92,7 @@ overload an Arcane face).
 | `[Spend: Arcane + Arcane]` | Optional burn from the owner’s attribute pile on `ACTIVATE_RITUAL` (often the same counts as Active-when for strong instants). Continuous standing rituals usually omit Spend. | Ritual |
 | `[Requires: Martial + Wild]` | Attack **gate** vs the owner’s attribute pile (must hold; not spent) | Creature attack |
 | `[Spend: Martial]` | Burn from the owner’s attribute pile (attack `discards`, instant extra cost, ritual activate) | Attack / Instant / Ritual |
+| `[Spend: Arcane + 2 x Any]` / `[Requires: 2 x Any]` | Generic pile tokens of any attribute after named pips. `any` is a cost pip, not a ninth attribute. | Play / ritual / attack |
 | `[Can only overload a Toxin face]` | Restricts the overload target | Overload |
 | `[This card may be equipped to a Martial creature]` | Restricts the equip target | Equipment |
 | `Pay 3` (pile tokens) | An extra `[Spend: …]` inside the effect, on top of header `playCost` | Instant |

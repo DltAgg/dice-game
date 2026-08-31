@@ -147,9 +147,11 @@ Costs never require Shield.
 
 `[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
 `[Spend: …]` **burns** from your pile. Resonance wildcards may cover shortfall
-on either. An attack or card may print both. Unabsorbed turn-pool symbols
-expire at end of turn. There is no “store a symbol.” The only way to keep a
-**die result** across a roll is **retain**.
+on either. An attack or card may print both. Costs may name attributes and/or
+**Any** (generic pile tokens of any attribute — not Shield, not a ninth
+colour). Named pips are reserved first; leftover tokens cover Any. Unabsorbed
+turn-pool symbols expire at end of turn. There is no “store a symbol.” The only
+way to keep a **die result** across a roll is **retain**.
 
 Shield absorb still names a creature (below).
 
@@ -188,10 +190,14 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   you **play** the card for its effect.
 - **Synthetic forge** burns the same header `[Spend]` when you install faces.
 - **Discounts** (`[Discount N]`) cut N tokens from the header pile total
-  (minimum 0). After discount you still pay with attributes that appear on the
-  printed cost, without exceeding each attribute’s printed count — e.g. cost
+  (minimum 0). Discount reduces **Any** pips first, then named attributes, so
+  `[Spend: Arcane + 2 x Any]` with Discount 1 still needs the Arcane plus one
+  Any. After discount you still pay with attributes that appear on the printed
+  cost, without exceeding each named attribute’s printed count — e.g. cost
   `1 Arcane + 1 Corruption` with discount 1 needs **one** token: either Arcane
-  or Corruption. Play-cost discounts do not apply to forge; forge has a
+  or Corruption. Any pips may be paid with any attribute leftover after named
+  pips. Spend of Any burns leftover tokens in attribute order (Martial first)
+  until a picker exists. Play-cost discounts do not apply to forge; forge has a
   separate one-turn discount from some gear that applies only to synthetic
   forge (natural is already free and does not consume that discount). A
   synthetic install that **consumes** that forge discount does **not** also

@@ -5,7 +5,7 @@ import type {
 } from "../model/cards.js";
 import type { Attribute } from "../model/attributes.js";
 import type { FaceKind } from "../model/dice.js";
-import { requirementEntries, requirementTotal, type SymbolRequirement } from "../model/symbols.js";
+import { genericCount, requirementEntries, requirementTotal, type SymbolRequirement } from "../model/symbols.js";
 
 /**
  * English printing of the Figma tactic-card grammar. The layouts are Portuguese;
@@ -112,13 +112,15 @@ export function formatSpendLine(card: CardDefinition): string | null {
 
 /** Shared pile-cost wording for Spend, Requires, Active when, and playCost. */
 export function formatRequirementBody(requirement: SymbolRequirement): string {
-  return requirementEntries(requirement)
-    .flatMap(([attribute, count]) => {
-      const label = ATTRIBUTE_LABEL[attribute];
-      if (count <= 1) return [label];
-      return [`${String(count)} x ${label}`];
-    })
-    .join(" + ");
+  const parts = requirementEntries(requirement).flatMap(([attribute, count]) => {
+    const label = ATTRIBUTE_LABEL[attribute];
+    if (count <= 1) return [label];
+    return [`${String(count)} x ${label}`];
+  });
+  const generic = genericCount(requirement);
+  if (generic === 1) parts.push("Any");
+  else if (generic > 1) parts.push(`${String(generic)} x Any`);
+  return parts.join(" + ");
 }
 
 /**

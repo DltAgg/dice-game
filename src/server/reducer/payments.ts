@@ -1,11 +1,7 @@
 import type { CardDefinition } from "../model/cards.js";
 import type { GameError } from "../model/errors.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
-import {
-  requirementEntries,
-  type AttributeTokens,
-  type SymbolRequirement,
-} from "../model/symbols.js";
+import type { SymbolRequirement } from "../model/symbols.js";
 import {
   discountedPlayRequirement,
   reduceRequirement,
@@ -13,6 +9,7 @@ import {
 } from "../rules/discounts.js";
 import {
   isNonEmptyRequirement,
+  pickPilePayment,
   pileRequirementShortfall,
   removeTokens,
 } from "../rules/tokens.js";
@@ -105,12 +102,7 @@ export function payPileSpend(
   const shortfall = pileRequirementShortfall(pile, requirement);
   if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
 
-  const spend: Partial<Record<keyof AttributeTokens, number>> = {};
-  for (const [attribute, count] of requirementEntries(requirement)) {
-    const held = pile[attribute] ?? 0;
-    const fromPile = Math.min(held, count);
-    if (fromPile > 0) spend[attribute] = fromPile;
-  }
+  const spend = pickPilePayment(pile, requirement);
   if (Object.keys(spend).length > 0) {
     patchPlayer(draft, playerId, {
       attributePool: removeTokens(pile, spend),

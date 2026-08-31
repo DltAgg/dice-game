@@ -1,11 +1,13 @@
 import type { Attribute } from "../model/attributes.js";
 import { ATTRIBUTES } from "../model/attributes.js";
 import {
+  genericCount,
   requirementEntries,
   requirementTotal,
   type AttributeTokens,
   type SymbolRequirement,
 } from "../model/symbols.js";
+import { canAffordUnderCaps } from "./discounts.js";
 
 /**
  * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
@@ -18,24 +20,62 @@ import {
 export const holdsTokens = (
   tokens: AttributeTokens,
   requirement: SymbolRequirement,
-): boolean =>
-  requirementEntries(requirement).every(
-    ([attribute, count]) => (tokens[attribute] ?? 0) >= count,
-  );
+): boolean => pileRequirementShortfall(tokens, requirement) === 0;
 
 /**
  * How many pips of `requirement` the pile cannot cover (before wildcards).
+ * Named attributes are reserved first; leftover tokens cover `any`.
  */
 export function pileRequirementShortfall(
   tokens: AttributeTokens,
   requirement: SymbolRequirement,
 ): number {
+  const remaining: Partial<Record<Attribute, number>> = { ...tokens };
   let shortfall = 0;
   for (const [attribute, count] of requirementEntries(requirement)) {
-    const held = tokens[attribute] ?? 0;
-    if (held < count) shortfall += count - held;
+    const held = remaining[attribute] ?? 0;
+    const take = Math.min(held, count);
+    remaining[attribute] = held - take;
+    shortfall += count - take;
   }
+  const leftover = totalTokens(remaining);
+  const generic = genericCount(requirement);
+  if (leftover < generic) shortfall += generic - leftover;
   return shortfall;
+}
+
+/**
+ * Named-then-generic pile burn for `[Spend]`. Takes held tokens only (no
+ * wildcard pad). Generic pips come from leftover tokens in `ATTRIBUTES` order.
+ */
+export function pickPilePayment(
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): AttributeTokens {
+  const spend: Partial<Record<Attribute, number>> = {};
+  const remaining: Partial<Record<Attribute, number>> = { ...tokens };
+
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const have = remaining[attribute] ?? 0;
+    const take = Math.min(have, count);
+    if (take > 0) {
+      spend[attribute] = (spend[attribute] ?? 0) + take;
+      remaining[attribute] = have - take;
+    }
+  }
+
+  let generic = genericCount(requirement);
+  for (const attribute of ATTRIBUTES) {
+    if (generic <= 0) break;
+    const have = remaining[attribute] ?? 0;
+    const take = Math.min(have, generic);
+    if (take > 0) {
+      spend[attribute] = (spend[attribute] ?? 0) + take;
+      remaining[attribute] = have - take;
+      generic -= take;
+    }
+  }
+  return spend;
 }
 
 /** Gate / Spend check: pile plus one-shot Resonance wildcards. */
@@ -116,12 +156,7 @@ export function cardPlayIsFuelled(
         : 0;
   if (need <= 0) return true;
   if (!isNonEmptyRequirement(caps)) return need <= remaining;
-
-  let fromPile = 0;
-  for (const [attribute, cap] of requirementEntries(caps)) {
-    fromPile += Math.min(tokens[attribute] ?? 0, cap);
-  }
-  return need - fromPile <= remaining;
+  return canAffordUnderCaps(tokens, caps, need, remaining);
 }
 
 export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({
@@ -209,6 +244,7 @@ export function isLegalTokenDiscardPick(
   discarded: SymbolRequirement,
   amount: number,
 ): boolean {
+  if (genericCount(discarded) > 0) return false;
   const take = Math.min(amount, totalTokens(tokens));
   if (take <= 0) return false;
   if (requirementTotal(discarded) !== take) return false;

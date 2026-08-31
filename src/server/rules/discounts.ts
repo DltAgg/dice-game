@@ -5,6 +5,7 @@ import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { ATTRIBUTES, type Attribute } from "../model/attributes.js";
 import {
+  genericCount,
   requirementEntries,
   requirementTotal,
   type AttributeTokens,
@@ -103,8 +104,8 @@ export function matchingPlayCostDiscounts(
 
 /**
  * After `[Discount N]`, the player owes this many pile tokens (minimum 0).
- * Each token must still come from an attribute on the printed cost and may not
- * exceed that attribute’s printed count — see `pickSpendUnderCaps`.
+ * Discount reduces `Any` pips first, then named attributes — see
+ * `pickSpendUnderCaps`.
  */
 export function discountedRequirementNeed(
   requirement: SymbolRequirement,
@@ -113,9 +114,35 @@ export function discountedRequirementNeed(
   return Math.max(0, requirementTotal(requirement) - Math.max(0, discount));
 }
 
+/** Apply discount to generic (`Any`) first, then named totals. */
+function splitDiscount(
+  caps: SymbolRequirement,
+  discount: number,
+): { readonly namedNeed: number; readonly genericNeed: number } {
+  const generic = genericCount(caps);
+  const namedTotal = requirementTotal(caps) - generic;
+  let remainingDiscount = Math.max(0, discount);
+  const fromGeneric = Math.min(generic, remainingDiscount);
+  remainingDiscount -= fromGeneric;
+  return {
+    namedNeed: Math.max(0, namedTotal - remainingDiscount),
+    genericNeed: generic - fromGeneric,
+  };
+}
+
+function heldTotal(tokens: AttributeTokens): number {
+  let total = 0;
+  for (const attribute of ATTRIBUTES) {
+    total += tokens[attribute] ?? 0;
+  }
+  return total;
+}
+
 /**
  * Whether the pile (plus Resonance wildcards) can pay `need` tokens under the
- * printed attribute caps. Does not invent a rigid peeled `SymbolRequirement`.
+ * printed caps. Named identity is reserved first; leftover tokens cover `Any`.
+ * `[Discount]` reduces `Any` first so a 1-Arcane + 2-Any cost discounted by 1
+ * still needs the Arcane.
  */
 export function canAffordUnderCaps(
   tokens: AttributeTokens,
@@ -124,17 +151,27 @@ export function canAffordUnderCaps(
   wildcardCount = 0,
 ): boolean {
   if (need <= 0) return true;
-  let fromPile = 0;
+  const total = requirementTotal(caps);
+  const { namedNeed, genericNeed } = splitDiscount(caps, Math.max(0, total - need));
+
+  let namedFromPile = 0;
   for (const [attribute, cap] of requirementEntries(caps)) {
-    fromPile += Math.min(tokens[attribute] ?? 0, cap);
+    namedFromPile += Math.min(tokens[attribute] ?? 0, cap);
   }
-  return need - fromPile <= wildcardCount;
+  const namedShort = Math.max(0, namedNeed - namedFromPile);
+  if (namedShort > wildcardCount) return false;
+
+  const namedTaken = Math.min(namedFromPile, namedNeed);
+  const leftover = heldTotal(tokens) - namedTaken;
+  const genericShort = Math.max(0, genericNeed - leftover);
+  return genericShort <= wildcardCount - namedShort;
 }
 
 /**
  * Deterministic header spend of `need` under printed `caps`.
- * 1. Take from the pile in `ATTRIBUTES` order (min of cap, held, remaining).
- * 2. Pad any leftover onto caps in the same order (Resonance shortfall).
+ * Named pips first (ATTRIBUTES order, under named caps), then `Any` from
+ * leftover tokens (ATTRIBUTES order). Pads shortfall onto named caps, then
+ * onto Martial for remaining generic (Resonance wildcard pad).
  */
 export function pickSpendUnderCaps(
   tokens: AttributeTokens,
@@ -142,34 +179,63 @@ export function pickSpendUnderCaps(
   need: number,
 ): SymbolRequirement {
   if (need <= 0) return {};
-  const spend: Partial<Record<Attribute, number>> = {};
-  let remaining = need;
+  const total = requirementTotal(caps);
+  const { namedNeed, genericNeed } = splitDiscount(caps, Math.max(0, total - need));
+  const namedSpend: Partial<Record<Attribute, number>> = {};
+  const remaining: Partial<Record<Attribute, number>> = { ...tokens };
 
+  let namedLeft = namedNeed;
   for (const attribute of ATTRIBUTES) {
-    if (remaining <= 0) break;
+    if (namedLeft <= 0) break;
     const cap = caps[attribute] ?? 0;
     if (cap <= 0) continue;
-    const take = Math.min(cap, tokens[attribute] ?? 0, remaining);
+    const have = remaining[attribute] ?? 0;
+    const take = Math.min(cap, have, namedLeft);
     if (take > 0) {
-      spend[attribute] = take;
-      remaining -= take;
+      namedSpend[attribute] = take;
+      remaining[attribute] = have - take;
+      namedLeft -= take;
     }
   }
 
-  if (remaining > 0) {
+  const genericSpend: Partial<Record<Attribute, number>> = {};
+  let genericLeft = genericNeed;
+  for (const attribute of ATTRIBUTES) {
+    if (genericLeft <= 0) break;
+    const have = remaining[attribute] ?? 0;
+    const take = Math.min(have, genericLeft);
+    if (take > 0) {
+      genericSpend[attribute] = take;
+      remaining[attribute] = have - take;
+      genericLeft -= take;
+    }
+  }
+
+  if (namedLeft > 0) {
     for (const attribute of ATTRIBUTES) {
-      if (remaining <= 0) break;
+      if (namedLeft <= 0) break;
       const cap = caps[attribute] ?? 0;
       if (cap <= 0) continue;
-      const already = spend[attribute] ?? 0;
-      const pad = Math.min(cap - already, remaining);
+      const already = namedSpend[attribute] ?? 0;
+      const pad = Math.min(cap - already, namedLeft);
       if (pad > 0) {
-        spend[attribute] = already + pad;
-        remaining -= pad;
+        namedSpend[attribute] = already + pad;
+        namedLeft -= pad;
       }
     }
   }
 
+  if (genericLeft > 0) {
+    genericSpend.martial = (genericSpend.martial ?? 0) + genericLeft;
+  }
+
+  const spend: Partial<Record<Attribute, number>> = { ...namedSpend };
+  for (const attribute of ATTRIBUTES) {
+    const extra = genericSpend[attribute];
+    if (extra !== undefined && extra > 0) {
+      spend[attribute] = (spend[attribute] ?? 0) + extra;
+    }
+  }
   return spend;
 }
 

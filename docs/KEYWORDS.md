@@ -150,7 +150,7 @@ These are not tokens.
 | `[Pierce N]` | Ignore N Shield after Prevent |
 | `[Prevent]` | Prevent the next attack against the creature under attack (before Shield). Luminar **reaction** exclusive — not a proactive arm. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
-| `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). Remaining cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
+| `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). Discount reduces `[Spend]` **Any** pips first, then named attributes. Remaining named cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
 | `[Search N]` | Look through your deck; add up to N cards of the printed types; shuffle. Arcane exclusive. |
 | `[Recall N]` | Return up to N cards from your graveyard to your hand |
@@ -189,9 +189,9 @@ These are not effect replacements.
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
 | `[Overcharge]` | Third exclusive use of a natural own-die forge card: spend it onto an attribute face card on your dice |
-| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent) |
-| `[Active when: …]` | One-time ritual unlock vs owner’s attribute pile (not repeated in the effect box) |
-| `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate) |
+| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent). May include **Any** (generic tokens of any attribute). |
+| `[Active when: …]` | One-time ritual unlock vs owner’s attribute pile (not repeated in the effect box). May include **Any**. |
+| `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate). May include **Any**. |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | `On roll:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…” |
@@ -232,8 +232,8 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Ignore Shield | `[Pierce N]` |
 | Stop damage (Luminar reaction) | `[Prevent]` |
 | Take life from an enemy into an ally | `[Drain N]` |
-| Hold in your pile, don’t spend | `[Requires: Martial + Wild]` or `[Requires: 2 x Martial]` |
-| Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` |
+| Hold in your pile, don’t spend | `[Requires: Martial + Wild]` or `[Requires: 2 x Martial]` or `[Requires: Arcane + 2 x Any]` |
+| Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` or `[Spend: Arcane + 2 x Any]` |
 | Pool pip | `[Generate N Arcane]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
 | Overcharge a kept face | `[Overcharge]` (natural own-die forge spend) |

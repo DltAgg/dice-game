@@ -89,7 +89,8 @@ export interface ForgeRegion {
  * Rituals print `[Active when: …]` for `ritual.activeWhen` and `[Spend: …]`
  * for `ritual.spend`. Attack `[Requires: …]` is the same kind of gate on
  * `AttackDefinition.requires`. Extra burn that is not a gate belongs in
- * `playCost` / attack `discards` / `ritual.spend`.
+ * `playCost` / attack `discards` / `ritual.spend`. Any of these maps may
+ * include `any` generic pips (`{ arcane: 1, any: 2 }`).
  */
 export interface EffectRegion {
   readonly requires?: SymbolRequirement;
@@ -297,8 +298,9 @@ export interface CardDefinition {
   readonly name: string;
   /**
    * Header play/forge cost — burned from the attribute pile when playing or
-   * forging. Instants print this as `[Spend: …]` above the effect body;
-   * equipment / overload / ritual place share the same pile gate.
+   * forging. May include `any` generic pips. Instants print this as
+   * `[Spend: …]` above the effect body; equipment / overload / ritual place
+   * share the same pile gate.
    */
   readonly playCost?: SymbolRequirement;
   readonly type: CardType;

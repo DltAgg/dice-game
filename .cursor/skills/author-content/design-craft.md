@@ -163,9 +163,10 @@ A real bridge **plays like both identities at once** (gate 2, synergy).
 fuel in [attribute-pile.md](attribute-pile.md) is for gates and spends,
 not a converter license.
 
-`playCost` today is AND of listed attributes. An OR-cost (“pay Martial
-*or* Wild”) is missing vocabulary — design the card, then brief
-`engine-developer`. Do not fake OR as AND or as Spend/Generate.
+`playCost` is AND of listed attributes plus optional **`any`** generic pips
+(`{ arcane: 1, any: 2 }` → `[Spend: Arcane + 2 x Any]`). An OR-cost (“pay
+Martial *or* Wild”) is still missing vocabulary — design the card, then brief
+`engine-developer`. Do not fake OR as AND, as `any`, or as Spend/Generate.
 
 ## Generic reach (not a ninth attribute)
 

@@ -61,6 +61,27 @@ use a **fixed** `playCost` (often 2). See `src/server/content/cards.ts` and
 `DEFERRED_CATALOGUE.md`. Do not use that gap as a reason to author 1-token
 `playCost`; prefer 2+ and discounts (see “Printed 1-token playCost is exceptional”).
 
+### Generic (`Any`) pile pips
+
+**Status:** `DECIDED` · 2026-08-31 · costs / gates / Spend
+
+`SymbolRequirement` may include `any: N` for a **fixed** count of generic pile
+tokens (any attribute, never Shield). Print: `[Spend: Arcane + 2 x Any]`,
+`[Requires: 2 x Any]`, `[Active when: Arcane + Any]`. Named pips are AND;
+leftover tokens cover Any. This is **not** a ninth colourless attribute, **not**
+an OR-cost (“Martial or Wild”), and **not** variable `?` pay-at-least-N.
+
+`[Discount]` reduces Any first, then named attributes. Spend of Any burns
+leftover tokens in `ATTRIBUTES` order (Martial first).
+
+**ASSUMED:** no player picker for which leftover tokens pay Any; auto-pick is
+deterministic. A later `choose-attribute-tokens` reuse (spec `011`) can replace
+that without changing print.
+
+Applies to header `playCost`, `effect.requires`, ritual `activeWhen` / `spend`,
+and attack `requires` / `discards`. Does not apply to `card.attribute`,
+`forge.attribute`, `[Generate]`, or `[Mark]` arguments.
+
 ### Battlefield capacity
 
 **Status:** `DECIDED`

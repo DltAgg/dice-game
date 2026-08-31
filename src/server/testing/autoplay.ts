@@ -29,6 +29,7 @@ import {
   attackIsFuelled,
   discardTokensInAttributeOrder,
   isNonEmptyRequirement,
+  pileRequirementShortfall,
 } from "../rules/tokens.js";
 import { advance } from "../reducer/reduce.js";
 
@@ -216,8 +217,7 @@ function playCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy)
     if (playCostTotal(definition) > 0) {
       const pool = current.players[playerId]?.attributePool ?? {};
       const cost = definition.playCost ?? {};
-      const shortfall = Object.entries(cost).some(([attr, n]) => (pool[attr as keyof typeof pool] ?? 0) < (n ?? 0));
-      if (shortfall) continue;
+      if (pileRequirementShortfall(pool, cost) > 0) continue;
     }
 
     const targetId = mostDamaged(current, playerId)?.id;
@@ -252,8 +252,7 @@ function forgeCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy
     if (definition.forge.kind !== "natural" && playCostTotal(definition) > 0) {
       const pool = current.players[playerId]?.attributePool ?? {};
       const cost = definition.playCost ?? {};
-      const shortfall = Object.entries(cost).some(([attr, n]) => (pool[attr as keyof typeof pool] ?? 0) < (n ?? 0));
-      if (shortfall) continue;
+      if (pileRequirementShortfall(pool, cost) > 0) continue;
     }
 
     const plan = shieldSlotsFor(current, playerId, definition.forge.faces);

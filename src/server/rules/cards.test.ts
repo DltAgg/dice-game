@@ -74,6 +74,20 @@ describe("canAffordPlay / canAffordForge", () => {
     expect(canAffordForge(state, P1, card)).toBe(true);
   });
 
+  it("Arcane + 2 Any is payable with one Arcane and off-attribute tokens", () => {
+    const card = exampleCard({
+      attribute: "arcane",
+      playCost: { arcane: 1, any: 2 },
+      forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    });
+    const splash = withAttributePool(newMatch(), P1, { arcane: 1, martial: 2 });
+    const mono = withAttributePool(newMatch(), P1, { martial: 3 });
+    expect(canAffordPlay(splash, P1, card)).toBe(true);
+    expect(canAffordForge(splash, P1, card)).toBe(true);
+    expect(canAffordPlay(mono, P1, card)).toBe(false);
+    expect(canAffordForge(mono, P1, card)).toBe(false);
+  });
+
   it("applies forgeDiscountThisTurn to forge but not play", () => {
     const state = withForgeDiscount(
       withAttributePool(tempoMatch(), P1, { mechanical: 1 }),

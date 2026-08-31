@@ -1,6 +1,8 @@
 import type { PlayerId, SymbolInstanceId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import {
+  genericCount,
+  isAttributeSymbol,
   requirementEntries,
   type SymbolInstance,
   type SymbolRequirement,
@@ -81,6 +83,18 @@ export function planConsumption(
     }
   }
 
+  const generic = genericCount(requirement);
+  if (generic > 0) {
+    const matches = pool.filter(
+      (candidate) => isAttributeSymbol(candidate.symbol) && !taken.has(candidate.id),
+    );
+    if (matches.length < generic) return null;
+    for (const match of matches.slice(0, generic)) {
+      taken.add(match.id);
+      chosen.push(match.id);
+    }
+  }
+
   return chosen;
 }
 
@@ -106,9 +120,21 @@ export function requirementShortfall(
 ): number {
   const pool = usableSymbols(state, playerId);
   let short = 0;
+  const remaining = [...pool];
   for (const [attribute, count] of requirementEntries(requirement)) {
-    const have = pool.filter((candidate) => candidate.symbol === attribute).length;
+    let have = 0;
+    for (let i = remaining.length - 1; i >= 0; i--) {
+      if (remaining[i]?.symbol !== attribute) continue;
+      have += 1;
+      remaining.splice(i, 1);
+      if (have >= count) break;
+    }
     if (have < count) short += count - have;
+  }
+  const generic = genericCount(requirement);
+  if (generic > 0) {
+    const leftover = remaining.filter((candidate) => isAttributeSymbol(candidate.symbol)).length;
+    if (leftover < generic) short += generic - leftover;
   }
   return short;
 }
