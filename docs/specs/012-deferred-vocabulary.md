@@ -33,6 +33,9 @@ engine can resolve the clause honestly. Movers always go through
 ### Cost discounts
 
 - `play-cost-discount` standing ability on creatures and equipment.
+- One-shot `play-cost-discount` effect (face / overload On roll): arms
+  `playCostDiscountThisTurn`. Consumed on the next `PLAY_CARD` header spend;
+  cleared at end of turn.
 - Applies to `PLAY_CARD` (effect, ritual place, equip, overload). **Not**
   `FORGE_CARD`.
 - Filters: `cardTypes`, `subtypes`, `attributes`. `oncePerTurn` spends a host
@@ -96,6 +99,7 @@ engine can resolve the clause honestly. Movers always go through
 | `FaceCardDefinition.stayPolicy` / `pestilenceSpreadAt` | Heritage never-replace; Plague lock + spread |
 | `GameState.ignoreShieldThisTurn` | Rust |
 | `GameState.forgeDiscountThisTurn` | Gear absorb |
+| `GameState.playCostDiscountThisTurn` | On roll `[Discount]` (not forge) |
 | `GameState.requirementWildcardsThisTurn` | Resonance |
 | `GameState.bladeRainArmed` | Blade Rain |
 | `PendingEffect.ignoreShield` / `sourceDieId` / `sourceSlotIndex` | Pierce + face context |

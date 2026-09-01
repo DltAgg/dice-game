@@ -71,7 +71,7 @@ Evaluator is a method on the executor/context, used by handlers.
 |---|---|
 | `immediate` | Apply now |
 | `end-of-turn` | `attackBonusThisTurn`, `ignoreShieldThisTurn`, `bladeRainArmed`, … |
-| `until-consumed` | `nextAttackBonus`, `preventDrawArmed`, `arm-requirement-wildcard`, next-incoming, next-face-twice |
+| `until-consumed` | `nextAttackBonus`, `preventDrawArmed`, `arm-requirement-wildcard`, next-incoming, next-face-twice, `playCostDiscountThisTurn` |
 | `until-owners-next-turn` | `toxinReceiveCapRemaining` |
 | `while-attached` | Standing passives (`attack-damage-bonus`, `play-cost-discount`, `ignore-shield`) |
 

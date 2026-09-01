@@ -243,6 +243,7 @@ export function createMatch(setup: MatchSetup): GameState {
     preventDrawArmed: {},
     ignoreShieldThisTurn: {},
     forgeDiscountThisTurn: {},
+    playCostDiscountThisTurn: {},
     requirementWildcardsThisTurn: {},
     bladeRainArmed: {},
     facesAppearedThisRoll: [],

@@ -262,7 +262,8 @@ export function discountedPlayRequirement(
   baseCost: SymbolRequirement,
 ): { readonly cost: SymbolRequirement; readonly matches: readonly DiscountMatch[] } {
   const matches = matchingPlayCostDiscounts(state, playerId, definition);
-  const discount = matches.reduce((sum, match) => sum + match.amount, 0);
+  const armed = state.playCostDiscountThisTurn[playerId] ?? 0;
+  const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed;
   const pile = state.players[playerId]?.attributePool ?? {};
   return { cost: reduceRequirement(baseCost, discount, pile), matches };
 }

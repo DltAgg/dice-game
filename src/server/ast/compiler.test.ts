@@ -30,6 +30,16 @@ describe("AstCompiler", () => {
     expect(node.duration).toEqual({ kind: "end-of-turn" });
   });
 
+  it("maps play-cost-discount to modify until consumed", () => {
+    const node = compiler.compileLegacy({ type: "play-cost-discount", amount: 1 });
+    expect(node).toEqual({
+      op: "modify",
+      stat: "play-cost-discount",
+      amount: literal(1),
+      duration: { kind: "until-consumed" },
+    });
+  });
+
   it("maps conditional to branch with combinable atoms", () => {
     const node = compiler.compileLegacy({
       type: "conditional",

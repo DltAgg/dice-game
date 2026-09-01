@@ -14,12 +14,17 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Mechanical face.\nOn absorb, once per turn: [Discount 1] forge.",
+  "rulesText": "Can only overload a Mechanical face.\nOn roll: [Discount 1].\nOn absorb, once per turn: [Discount 1] forge.",
   "overload": {
     "faceSymbols": [
       "mechanical"
     ],
-    "onRoll": [],
+    "onRoll": [
+      {
+        "type": "play-cost-discount",
+        "amount": 1
+      }
+    ],
     "onAbsorb": [
       {
         "type": "arm-forge-discount",

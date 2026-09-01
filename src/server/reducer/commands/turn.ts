@@ -48,6 +48,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   draft.preventDrawArmed = {};
   draft.ignoreShieldThisTurn = {};
   draft.forgeDiscountThisTurn = {};
+  draft.playCostDiscountThisTurn = {};
   draft.requirementWildcardsThisTurn = {};
   draft.bladeRainArmed = {};
   draft.facesAppearedThisRoll = [];

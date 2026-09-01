@@ -19,6 +19,7 @@ import {
 } from "../testing/scenario.js";
 import { createDraft } from "./draft.js";
 import { payForgeCost, payHeaderCost } from "./payments.js";
+import { drainResolution, pushEffect } from "./resolution.js";
 
 function tempoMatch() {
   return newMatch({
@@ -115,6 +116,67 @@ describe("forge and play discounts", () => {
     const allyId = creatureIdAt(tempoMatch(), P1, 1);
     expect(stateHasTorqueWright(tempoMatch())).toBe(true);
     void allyId;
+  });
+});
+
+describe("On roll play-cost-discount", () => {
+  function armOnRollDiscount(state: ReturnType<typeof tempoMatch>, amount = 1) {
+    const dieId = state.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("die");
+    const draft = createDraft(state);
+    pushEffect(
+      draft,
+      P1,
+      { type: "play-cost-discount", amount },
+      null,
+      null,
+      null,
+      dieId,
+      0,
+    );
+    drainResolution(draft);
+    return draft;
+  }
+
+  it("arms from the on-roll push path and cheapens the next play", () => {
+    const ready = withAttributePool(
+      withHand(withPhase(tempoMatch(), "actions"), P1, [SHIM_KIT]),
+      P1,
+      { mechanical: 1 },
+    );
+    const denied = advance(ready, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(ready, P1, 0),
+    });
+    expect(denied.ok).toBe(false);
+
+    const armed = armOnRollDiscount(ready);
+    expect(armed.playCostDiscountThisTurn[P1]).toBe(1);
+    const after = expectOk(
+      advance(armed, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(ready, P1, 0),
+      }),
+    );
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    expect(after.playCostDiscountThisTurn[P1]).toBeUndefined();
+    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
+  });
+
+  it("does not cheapen synthetic forge", () => {
+    const draft = armOnRollDiscount(withAttributePool(tempoMatch(), P1, { mechanical: 2 }));
+    payForgeCost(draft, P1, getCard(COG_DRAFT)!);
+    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    expect(draft.playCostDiscountThisTurn[P1]).toBe(1);
+  });
+
+  it("expires at end of turn if unspent", () => {
+    const armed = armOnRollDiscount(withPhase(tempoMatch(), "actions"));
+    expect(armed.playCostDiscountThisTurn[P1]).toBe(1);
+    const after = expectOk(advance(armed, { type: "END_TURN", playerId: P1 }));
+    expect(after.playCostDiscountThisTurn[P1]).toBeUndefined();
   });
 });
 

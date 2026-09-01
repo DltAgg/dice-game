@@ -149,7 +149,8 @@ export function canAffordPlay(
   const base = definition.playCost;
   const hasSpend = isNonEmptyRequirement(base);
   const matches = hasSpend ? matchingPlayCostDiscounts(state, playerId, definition) : [];
-  const discount = matches.reduce((sum, match) => sum + match.amount, 0);
+  const armed = hasSpend ? (state.playCostDiscountThisTurn[playerId] ?? 0) : 0;
+  const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed;
   const spendNeed = hasSpend ? discountedRequirementNeed(base, discount) : 0;
   const requires = definition.effect?.requires;
   return cardPlayIsFuelled(

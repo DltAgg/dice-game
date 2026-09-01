@@ -208,6 +208,11 @@ export type EffectDefinition =
   /** Next `FORGE_CARD` this turn costs this much less from the pile (min 0). */
   | { readonly type: "arm-forge-discount"; readonly amount: number }
   /**
+   * Next `PLAY_CARD` this turn (effect, ritual place, equip, overload — not
+   * forge) costs this much less from the pile (min 0). Face / overload On roll.
+   */
+  | { readonly type: "play-cost-discount"; readonly amount: number }
+  /**
    * Until EOT, up to `amount` damage that would hit another allied creature is
    * dealt to `target` instead (Aegis).
    */

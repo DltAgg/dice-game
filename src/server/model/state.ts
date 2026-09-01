@@ -406,6 +406,11 @@ export interface GameState {
   /** Next FORGE_CARD this turn costs this much less (Gear absorb). */
   readonly forgeDiscountThisTurn: Readonly<Record<string, number>>;
   /**
+   * Next PLAY_CARD this turn costs this much less (On roll `[Discount]`, not
+   * forge). Consumed on the next header spend; cleared at end of turn.
+   */
+  readonly playCostDiscountThisTurn: Readonly<Record<string, number>>;
+  /**
    * One-shot Resonance / Catalyst wildcards. Consumed when they cover shortfall
    * on a `[Requires]` / Active-when gate or a `[Spend]` burn this turn.
    */

@@ -38,6 +38,17 @@ function withForgeDiscount(
   };
 }
 
+function withPlayCostDiscount(
+  state: GameState,
+  playerId: PlayerId,
+  amount: number,
+): GameState {
+  return {
+    ...state,
+    playCostDiscountThisTurn: { ...state.playCostDiscountThisTurn, [playerId]: amount },
+  };
+}
+
 function tempoMatch(): GameState {
   return newMatch({
     players: [
@@ -72,6 +83,17 @@ describe("canAffordPlay / canAffordForge", () => {
     const card = exampleCard({ playCost: { mechanical: 2 } });
     expect(canAffordPlay(state, P1, card)).toBe(true);
     expect(canAffordForge(state, P1, card)).toBe(true);
+  });
+
+  it("On roll play-cost-discount covers a play but not a forge", () => {
+    const card = exampleCard({ playCost: { mechanical: 2 } });
+    const state = withPlayCostDiscount(
+      withAttributePool(newMatch(), P1, { mechanical: 1 }),
+      P1,
+      1,
+    );
+    expect(canAffordPlay(state, P1, card)).toBe(true);
+    expect(canAffordForge(state, P1, card)).toBe(false);
   });
 
   it("Arcane + 2 Any is payable with one Arcane and off-attribute tokens", () => {

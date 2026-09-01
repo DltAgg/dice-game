@@ -51,6 +51,7 @@ export interface Draft {
   preventDrawArmed: Record<string, number>;
   ignoreShieldThisTurn: Record<string, number>;
   forgeDiscountThisTurn: Record<string, number>;
+  playCostDiscountThisTurn: Record<string, number>;
   requirementWildcardsThisTurn: Record<string, readonly { readonly fromSymbol?: SymbolType }[]>;
   bladeRainArmed: Record<string, boolean>;
   facesAppearedThisRoll: Array<{

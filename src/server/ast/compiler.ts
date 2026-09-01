@@ -121,6 +121,13 @@ export class AstCompiler {
           amount: amount(effect.amount),
           duration: { kind: "until-consumed" },
         };
+      case "play-cost-discount":
+        return {
+          op: "modify",
+          stat: "play-cost-discount",
+          amount: amount(effect.amount),
+          duration: { kind: "until-consumed" },
+        };
       case "arm-redirect-damage":
         return {
           op: "modify",
@@ -270,7 +277,7 @@ export class AstCompiler {
           modifiers: [
             {
               op: "modify",
-              stat: "forge-discount",
+              stat: "play-cost-discount",
               amount: literal(trigger.amount),
               duration: { kind: "while-attached" },
             },

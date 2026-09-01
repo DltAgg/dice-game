@@ -27,12 +27,17 @@ export function payHeaderCost(
   const { cost, matches } = applyDiscounts
     ? discountedPlayRequirement(draft, playerId, definition, base)
     : { cost: base, matches: [] as DiscountMatch[] };
+  const armed = applyDiscounts ? (draft.playCostDiscountThisTurn[playerId] ?? 0) : 0;
   if (!isNonEmptyRequirement(cost)) {
     markDiscountMatchesSpent(draft, matches);
+    consumePlayCostDiscount(draft, playerId, armed);
     return null;
   }
   const err = payPileSpend(draft, playerId, cost);
-  if (err === null) markDiscountMatchesSpent(draft, matches);
+  if (err === null) {
+    markDiscountMatchesSpent(draft, matches);
+    consumePlayCostDiscount(draft, playerId, armed);
+  }
   return err;
 }
 
@@ -128,6 +133,13 @@ function markDiscountMatchesSpent(draft: Draft, matches: readonly DiscountMatch[
       spentOncePerTurnTriggers: [...creature.spentOncePerTurnTriggers, match.key],
     });
   }
+}
+
+function consumePlayCostDiscount(draft: Draft, playerId: PlayerId, armed: number): void {
+  if (armed <= 0) return;
+  const next = { ...draft.playCostDiscountThisTurn };
+  delete next[playerId];
+  draft.playCostDiscountThisTurn = next;
 }
 
 export function consumeRequirementWildcards(draft: Draft, playerId: PlayerId, count: number): void {

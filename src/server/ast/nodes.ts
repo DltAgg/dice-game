@@ -46,6 +46,7 @@ export type ModifyStat =
   | "prevent-draw"
   | "requirement-wildcard"
   | "forge-discount"
+  | "play-cost-discount"
   | "redirect-damage"
   | "next-incoming-damage"
   | "blade-rain"

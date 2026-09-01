@@ -1000,6 +1000,14 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       };
       return false;
     }
+    case "play-cost-discount": {
+      const current = draft.playCostDiscountThisTurn[pending.controllerId] ?? 0;
+      draft.playCostDiscountThisTurn = {
+        ...draft.playCostDiscountThisTurn,
+        [pending.controllerId]: current + effect.amount,
+      };
+      return false;
+    }
     case "arm-redirect-damage": {
       applyToTargets(draft, pending, effect.target, (targetId) => {
         const creature = draft.creatures[targetId];

@@ -203,7 +203,9 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   `1 Arcane + 1 Corruption` with discount 1 needs **one** token: either Arcane
   or Corruption. Any pips may be paid with any attribute leftover after named
   pips. Spend of Any burns leftover tokens in attribute order (Martial first)
-  until a picker exists. Play-cost discounts do not apply to forge; forge has a
+  until a picker exists. **On roll** `[Discount N]` (no **forge** word) cheapens
+  the next **play** this turn. `[Discount N] forge` cheapens the next synthetic
+  `FORGE_CARD`. Play-cost discounts do not apply to forge; forge has a
   separate one-turn discount from some gear that applies only to synthetic
   forge (natural is already free and does not consume that discount). A
   synthetic install that **consumes** that forge discount does **not** also

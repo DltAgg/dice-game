@@ -190,6 +190,20 @@ describe("on-absorb overloads", () => {
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
   });
 
+  it("arms play-cost-discount when Pawl Spring's face is rolled", () => {
+    const base = actionsReady([PAWL_SPRING]);
+    const attached = expectOk(
+      advance(installFace(base, COGTOOTH), {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+        declaredFaceCardId: COGTOOTH,
+      }),
+    );
+    const after = rollShowingSlot(attached, 0);
+    expect(after.playCostDiscountThisTurn[P1]).toBeGreaterThanOrEqual(1);
+  });
+
   it("arms forge discount when Pawl Spring's face is absorbed", () => {
     const base = actionsReady([PAWL_SPRING]);
     const attached = expectOk(

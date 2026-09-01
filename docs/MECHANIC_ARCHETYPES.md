@@ -249,7 +249,7 @@ negate / mill).
 
 **Mechanic:** `[Discount]` next forge or play.
 
-**Window:** Absorb, attack rider, instant.
+**Window:** Absorb, attack rider, instant, On roll.
 
 **Intended home:** Tempo (Torque Wright absorb), Control (Oracle's Margin),
 Support sequencing.
