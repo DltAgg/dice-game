@@ -47,8 +47,8 @@ Ally **swap** / **reposition** are legal — prefer:
 | An allied creature may reposition | `reposition-creature` + `choose-ally` |
 | On change position: … | `on-change-position` StandingTrigger |
 
-Optional “may” without a decline action → OPEN_DESIGN ASSUMED (choose when
-legal; whiff when none).
+Optional “may” → `optional: true` on the effect; the prompt includes **Decline**.
+Mandatory “choose a creature” targeting is not optional.
 
 ## Ritual timing reminder
 

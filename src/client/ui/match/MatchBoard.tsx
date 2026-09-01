@@ -688,6 +688,7 @@ export function MatchBoard() {
           state={state}
           amount={pending.amount}
           pick={searchPick}
+          optional={pending.optional === true}
           onToggle={(id) =>
             setSearchPick((prev) =>
               prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -702,6 +703,18 @@ export function MatchBoard() {
             });
             setSearchPick([]);
           }}
+          {...(pending.optional === true
+            ? {
+                onDecline: () => {
+                  tryDispatch({
+                    type: "RESOLVE_DISCARD",
+                    playerId: pending.controllerId,
+                    cardInstanceIds: [],
+                  });
+                  setSearchPick([]);
+                },
+              }
+            : {})}
         />
       )}
       {pending?.type === "discard-cards" && !isPendingChooser && (

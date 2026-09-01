@@ -134,6 +134,12 @@ If a `pendingDecision` is open (search, discard, choose creature, reaction
 window, …), other match actions wait until it is answered. Those choices are
 part of conducting an effect — they do **not** open a new reaction window.
 
+Print that says you **may** (optional discard, optional reroll, optional
+reposition / swap) includes **Decline**. Declining skips that effect and any
+“if you do” rider. Naming a target for a **mandatory** effect (“choose an
+enemy”, “an allied creature you choose”) is not optional: if a legal target
+exists you must name one; if none exist, the effect whiffs.
+
 ---
 
 ## 6. Symbols and the central split
@@ -232,6 +238,7 @@ Forge does not check a card’s effect `[Requires]` (play vs forge is exclusive)
 
 Discard-from-hand effects **draw first**, then the player **names** which
 cards to discard. The engine never auto-discards the front of the hand.
+Optional `you may [Discard N]` lets you name fewer cards, including none.
 
 **Mill** puts cards from the **top of a tactics deck** into that deck’s
 owner’s graveyard. It is not discard-from-hand. An empty or short deck

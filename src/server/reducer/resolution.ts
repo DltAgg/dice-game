@@ -301,6 +301,10 @@ function choiceFilterFor(selector: TargetSelector): CreatureChoiceFilter | null 
   return mapped;
 }
 
+function isOptionalEffect(effect: EffectDefinition): boolean {
+  return "optional" in effect && effect.optional === true;
+}
+
 function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
   if (effect.type === "swap-positions") {
     return { ...effect, with: { kind: "declared-target" }, optional: false };
@@ -551,9 +555,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
   if (selector !== null) {
     const filter = choiceFilterFor(selector);
     if (filter !== null) {
-      const optional =
-        (effect.type === "reposition-creature" || effect.type === "swap-positions") &&
-        effect.optional === true;
+      const optional = isOptionalEffect(effect);
       return openCreatureChoice(draft, pending, filter, optional, withDeclaredTarget(effect));
     }
   }

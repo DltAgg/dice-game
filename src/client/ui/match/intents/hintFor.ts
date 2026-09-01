@@ -113,9 +113,11 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       : "Waiting for the opponent to choose from their graveyard.";
   }
   if (state.pendingDecision?.type === "discard-cards") {
-    return isPendingChooser
-      ? `Choose ${String(state.pendingDecision.amount)} card(s) from your hand to discard.`
-      : "Waiting for the opponent to discard.";
+    if (!isPendingChooser) return "Waiting for the opponent to discard.";
+    const n = String(state.pendingDecision.amount);
+    return state.pendingDecision.optional === true
+      ? `You may discard up to ${n} card(s) from your hand, or Decline.`
+      : `Choose ${n} card(s) from your hand to discard.`;
   }
   if (state.pendingDecision?.type === "choose-creature") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a creature.";
