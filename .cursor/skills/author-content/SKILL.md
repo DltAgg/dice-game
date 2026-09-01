@@ -44,7 +44,7 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
 
 1. **Play, forge, or `[Overcharge]` — never two on the same use** (bible §19–20
    + spec `021`). Every hand card still *has* a forge region. Do **not** print
-   `[Overcharge]` on each natural-forge card (master rule; RULEBOOK §11). Spec
+   `[Overcharge]` on each card (master rule; RULEBOOK §11). Spec
    `013` `optional-overcharge` is a face-marker opcode, not this keyword.
 2. Set structured engine fields **only** when every printed clause is modelled.
    Write `rulesText` with keywords from [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md)

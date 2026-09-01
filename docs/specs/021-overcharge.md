@@ -1,12 +1,13 @@
-# 021 — Tactic Overcharge (natural-forge spend)
+# 021 — Tactic Overcharge (hand-card spend)
 
 Status: **IMPLEMENTED** (2026-08-30) · **retargeted to face card** (2026-08-30)
+· **any hand card** (2026-08-31)
 
-A master rule: a hand card whose forge region is **natural** (own-die) may be
-spent once per turn to **Overcharge** an existing attribute **face card** on
-your dice, instead of forging. The next time **any** of your dice show that
-face after a roll, each showing die also `[Generate]`s 1 pip of the spent
-card’s attribute — the same on-roll generate path as an overload.
+A master rule: **any** hand card may be spent once per turn to **Overcharge**
+an existing attribute **face card** on your dice, instead of playing or
+forging. The next time **any** of your dice show that face after a roll, each
+showing die also `[Generate]`s 1 pip of the spent card’s attribute — the same
+on-roll generate path as an overload.
 
 Bible is silent. Assumptions are labelled `ASSUMED` in
 [`OPEN_DESIGN.md`](../OPEN_DESIGN.md). Player wording lives in
@@ -17,31 +18,32 @@ This is **not** spec `013`’s Mechanical face-marker Overcharge
 opcode stays for catalogue faces that still use it. Player-facing **Overcharge**
 now means this master rule.
 
-Proving card: **Scholar's Lien** (`card-scholars-lien`) — Arcane equipment,
-`forge.kind: "natural"`, `forge.attribute: "arcane"`. No catalogue JSON change:
-the rule keys off the forge region, not a new card field.
+Proving cards: **Scholar's Lien** (`card-scholars-lien`, Arcane, natural forge)
+and **Twin Cam** (`card-twin-cam`, Mechanical, synthetic forge). No catalogue
+JSON change: the rule keys off the card being in hand, not the forge region.
 
 ## Intent
 
-Natural-forge tactics were only useful as face stickers. Overcharge lets you
-keep a face you actually want to roll (Darkness Natural, Pyre of Names, …) and
-piggyback the spent card’s attribute onto it, like a one-attribute on-roll
-overload that does not occupy an overload slot. Target is the **face card**,
-not a physical slot: one spend covers every die that shows that face.
+Hand cards that you would rather not play or forge can still splash their
+attribute onto a face you actually want to roll (Darkness Natural, Pyre of
+Names, …), like a one-attribute on-roll overload that does not occupy an
+overload slot. Target is the **face card**, not a physical slot: one spend
+covers every die that shows that face. Forge kind and target do not gate
+this spend.
 
 ## Rules
 
 1. **Who.** During **actions**, the active player may Overcharge instead of
    playing or forging a hand card. Play, forge, and Overcharge are mutually
    exclusive on the same use (extends bible §19–20 “forge or play, never both”).
-2. **Legal card.** The card is in hand, `forge.kind === "natural"`, and
-   `forge.target === "own-die"`. Opponent-die natural forge (Corruption
-   harassment) cannot Overcharge. Synthetic forge cannot Overcharge.
+2. **Legal card.** The card is in the actor’s hand. Forge kind (natural vs
+   synthetic) and forge target (own-die vs opponent-die) do **not** gate
+   Overcharge.
 3. **Once per turn.** At most one Overcharge action per player per turn
    (`spentOncePerTurnKeys` key `"overcharge"`). Cleared on `END_TURN` with
    other player once-per-turn keys.
-4. **Cost.** The card is consumed to the graveyard. No pile `[Spend]`. Natural
-   forge is already free; Overcharge does not burn `playCost`, does not consume
+4. **Cost.** The card is consumed to the graveyard. No pile `[Spend]`.
+   Overcharge does not burn `playCost`, does not consume
    `forgeDiscountThisTurn`, and does **not** draw, set forge yield, or pay the
    synthetic forge bank.
 5. **Target.** Choose one **face card** installed on **your** dice whose
@@ -50,7 +52,7 @@ not a physical slot: one spend covers every die that shows that face.
    not replacing). An opponent’s copy of the same face id is not a legal
    target and does not share your pips.
 6. **Pip.** That face card (player-scoped) gains one Overcharge pip of the
-   card’s **`forge.attribute`** (always +1, even if `forge.faces > 1`). Copies
+   spent card’s **`attribute`** (always +1, even if `forge.faces > 1`). Copies
    of the same face on your dice **share** the pips. Multiple Overcharges on
    the same face stack (another turn, or after the once-per-turn window
    resets).
@@ -71,10 +73,11 @@ not a physical slot: one spend covers every die that shows that face.
    roll.
 9. **Reaction window.** Overcharge does **not** open a reaction window (same
    as `FORGE_CARD`).
-10. **Print.** Master rule, not a line on every natural-forge card. Keyword
+10. **Print.** Master rule, not a line on every card. Keyword
     `[Overcharge]`. Proving example: Scholar's Lien Overcharges Darkness
     Natural while it is on both of your dice → each die that shows it
-    generates Darkness + Arcane.
+    generates Darkness + Arcane. Twin Cam Overcharges the same way with
+    Mechanical.
 
 ## State Changes
 
@@ -94,8 +97,8 @@ not a physical slot: one spend covers every die that shows that face.
 }
 ```
 
-Intent only. Host/`reduce()` derives the attribute from the card’s forge
-region. Do not send the generated symbol from the client. There is no
+Intent only. Host/`reduce()` derives the attribute from the spent card’s
+`attribute`. Do not send the generated symbol from the client. There is no
 `dieId` / `slotIndex`.
 
 ## Validation
@@ -105,7 +108,6 @@ region. Do not send the generated symbol from the client. There is no
 | Not actions / not active / pending | existing `INVALID_PHASE` / `NOT_ACTIVE_PLAYER` / `PENDING_DECISION` |
 | Unknown card | `UNKNOWN_ENTITY` |
 | Card not in actor’s hand | `CARD_NOT_AVAILABLE` |
-| Forge is synthetic or opponent-die | `CARD_HAS_NO_EFFECT` (this card cannot Overcharge) |
 | Already Overcharged this turn | `ALREADY_USED` |
 | Face not installed on actor’s own dice | `INVALID_TARGET` |
 | Unknown / untyped Shield / non-attribute face | `INVALID_FACE` |
@@ -124,7 +126,7 @@ Command module `src/server/reducer/commands/overcharge.ts` (do **not** grow
 `reduce.ts` dispatches `OVERCHARGE_CARD` only.
 
 1. Validate as above.
-2. Append `forge.attribute` to `players[playerId].overchargeByFace[faceCardId]`.
+2. Append the card’s `attribute` to `players[playerId].overchargeByFace[faceCardId]`.
 3. `markPlayerSpent(draft, playerId, "overcharge")`.
 4. `moveCard` → graveyard.
 5. Emit `face-overcharged` (playerId, cardInstanceId, faceCardId, attribute).
@@ -153,7 +155,7 @@ Match-ui (hotseat + online), **do not implement in engine-developer**:
 
 | Surface | Player sees / does |
 |---|---|
-| Hand card with legal natural own-die forge | **Overcharge** control next to Play / Forge, enabled iff `canOvercharge`. Disabled (do not hide) when once-per-turn is spent or no legal face. |
+| Hand card | **Overcharge** control next to Play / Forge, enabled iff `canOvercharge`. Disabled (do not hide) when once-per-turn is spent or no legal face. |
 | After clicking Overcharge | Pick one legal **face card** (`legalOverchargeFaces`). **Reuse the overload face-picker shape.** Confirm dispatches `OVERCHARGE_CARD` with `faceCardId` (not die/slot). Cancel returns to idle. |
 | Face tile | Show Overcharge pips (attribute + count) on the **unique face card** tile, not per physical slot, distinct from forge yield / Corruption / overload attachments. Shared across copies of that face. |
 | Hint bar | “Choose a face card on your dice to Overcharge (+1 ⟨attribute⟩ on roll).” |
@@ -177,8 +179,8 @@ Do not grow `MatchBoard.tsx` past `module-budget.test.ts` — extract under
 - [x] Overwrite the **last** copy: Overcharge key cleared; rolling the new
       face does not generate Arcane.
 - [x] Second Overcharge the same turn is refused.
-- [x] Synthetic-forge card (e.g. a Mechanical synthetic) cannot Overcharge.
-- [x] Opponent-die natural forge cannot Overcharge.
+- [x] Twin Cam (synthetic Mechanical) from hand Overcharges Darkness Natural:
+      next roll generates Darkness **and** Mechanical.
 - [x] Shield / untyped face is illegal.
 - [x] Opponent’s face card (not installed on your dice) is illegal.
 - [x] Suppress inherent still generates Overcharge pips (overload family).
@@ -189,11 +191,11 @@ Do not grow `MatchBoard.tsx` past `module-budget.test.ts` — extract under
 ## Tests
 
 - [x] `src/server/reducer/overcharge.test.ts` (proving Scholar's Lien +
-      Darkness Natural + Pyre of Names; two-copy share / orphan; once-per-turn;
-      illegal cards/faces; generate on retained/next roll).
+      Darkness Natural + Pyre of Names; Twin Cam synthetic; two-copy share /
+      orphan; once-per-turn; illegal faces; generate on retained/next roll).
 - [x] `src/architecture/module-budget.test.ts` still green.
 
 ## Catalogue
 
-No JSON edits. Do not print `[Overcharge]` on every natural-forge card.
+No JSON edits. Do not print `[Overcharge]` on every card.
 Card-designer may add a `MECHANIC_ARCHETYPES.md` `WATCH` row only.

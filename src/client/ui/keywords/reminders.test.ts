@@ -145,7 +145,7 @@ describe("lookupKeywordReminders", () => {
     expect(rows.map((row) => row.token)).toEqual(["[Generate 1 Toxin]"]);
   });
 
-  it("looks up [Overcharge] as the natural-forge spend", () => {
+  it("looks up [Overcharge] as the hand-card spend", () => {
     const rows = lookupKeywordReminders("[Overcharge]");
     expect(rows).toHaveLength(1);
     expect(rows[0]?.token).toBe("[Overcharge]");

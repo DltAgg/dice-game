@@ -51,7 +51,7 @@ const STEM_RULES: readonly StemRule[] = [
   {
     test: (body) => /^Overcharge$/i.test(body),
     reminder:
-      "Spend a natural own-die forge card onto an attribute face card; all dice showing it Generate +1 of the spent card's attribute.",
+      "Spend a hand card onto an attribute face card; all dice showing it Generate +1 of the spent card's attribute.",
   },
   {
     test: (body) => /^Negate(?:\s+(?:Instant|Ritual))?$/i.test(body),

@@ -723,8 +723,8 @@ Mechanical face-marker opcode (`optional-overcharge`, suppress inherent,
 |---|---|
 | **Face-card pips** | `PlayerState.overchargeByFace` is `Readonly<Record<string, readonly Attribute[]>>`, keyed by face card. Copies of the same face on this player’s dice share pips. Opponent copies of the same id use that opponent’s map (`die.ownerId`). |
 | **Persist until last copy leaves** | Pips stay until `countInstalledCopies === 0` for that owner, then `clearOverchargeOnFace` deletes the key — same moment as `clearOverloadsOnFace`. Not consumed after the first generate. Overwriting one of two copies keeps the Overcharge. |
-| **Own-die natural only** | `forge.kind === "natural"` and `forge.target === "own-die"`. Synthetic and opponent-die cannot Overcharge. |
-| **Always +1** | One pip of `forge.attribute` regardless of `forge.faces`. |
+| **Any hand card** | Forge kind and target do not gate Overcharge. Synthetic and opponent-die cards may Overcharge. The pip is the spent card’s `attribute`. |
+| **Always +1** | One pip of the spent card’s `attribute` regardless of `forge.faces`. |
 | **No reaction window** | Same as `FORGE_CARD`. |
 | **No GameState bag** | Once-per-turn uses `spentOncePerTurnKeys` key `"overcharge"`. `state.ts` stays frozen. |
 

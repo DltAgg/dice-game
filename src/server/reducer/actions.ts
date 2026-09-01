@@ -52,8 +52,8 @@ export type GameAction =
       readonly faceCardId: FaceCardId;
     }
   /**
-   * Spend a natural own-die forge card to Overcharge one attribute face card
-   * on your dice (spec `021`). Attribute is derived from the card's forge region.
+   * Spend a hand card to Overcharge one attribute face card on your dice
+   * (spec `021`). Attribute is derived from the spent card's `attribute`.
    */
   | {
       readonly type: "OVERCHARGE_CARD";

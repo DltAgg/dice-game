@@ -1,16 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MENDING_LIGHT, SCHOLARS_LIEN, TWIN_CAM, getCard } from "../content/cards.js";
+import { MENDING_LIGHT, SCHOLARS_LIEN, TWIN_CAM } from "../content/cards.js";
 import { naturalFaceId, PYRE_OF_NAMES, SHIELD_FACE_ID } from "../content/faces.js";
-import type { CardDefinition } from "../model/cards.js";
 import type { DieState } from "../model/dice.js";
-import { asCardId, type DieId, type FaceCardId } from "../model/ids.js";
+import { type DieId, type FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { graveyardOf } from "../rules/cards.js";
-import {
-  canOvercharge,
-  isOverchargeLegalCard,
-  legalOverchargeFaces,
-} from "../rules/overcharge.js";
+import { canOvercharge, legalOverchargeFaces } from "../rules/overcharge.js";
 import {
   eventTypes,
   expectOk,
@@ -85,19 +80,6 @@ function declineOptionalDiscard(state: GameState): GameState {
   return expectOk(
     advance(state, { type: "RESOLVE_DISCARD", playerId: P1, cardInstanceIds: [] }),
   );
-}
-
-function opponentDieNatural(): CardDefinition {
-  return {
-    id: asCardId("card-example-opponent-natural"),
-    name: "Example Opponent Natural",
-    playCost: { corruption: 2 },
-    type: "instant",
-    subtypes: [],
-    attribute: "corruption",
-    forge: { faces: 1, kind: "natural", attribute: "corruption", target: "opponent-die" },
-    rulesText: "Test.",
-  };
 }
 
 describe("tactic Overcharge", () => {
@@ -229,21 +211,17 @@ describe("tactic Overcharge", () => {
     expect(rolled.players[P1]?.attributePool.arcane).toBe(2);
   });
 
-  it("synthetic-forge card cannot Overcharge", () => {
+  it("synthetic-forge card can Overcharge (Twin Cam → Mechanical)", () => {
     const ready = actionsReady([TWIN_CAM]);
     const cardId = handCardIdAt(ready, P1, 0);
-    expect(canOvercharge(ready, P1, cardId)).toBe(false);
-    const result = advance(ready, overchargeAction(P1, cardId, DARKNESS_NATURAL));
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("CARD_HAS_NO_EFFECT");
-    expect(result.state).toBe(ready);
-  });
+    expect(canOvercharge(ready, P1, cardId)).toBe(true);
+    const charged = expectOk(advance(ready, overchargeAction(P1, cardId, DARKNESS_NATURAL)));
+    expect(charged.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toEqual(["mechanical"]);
+    expect(graveyardOf(charged, P1).map((card) => card.id)).toEqual([cardId]);
 
-  it("opponent-die natural forge cannot Overcharge", () => {
-    const scholars = getCard(SCHOLARS_LIEN);
-    if (scholars === undefined) throw new Error("Scholar's Lien");
-    expect(isOverchargeLegalCard(scholars)).toBe(true);
-    expect(isOverchargeLegalCard(opponentDieNatural())).toBe(false);
+    const rolled = rollShowingSlot(charged, DARKNESS_SLOT);
+    expect(rolled.players[P1]?.attributePool.darkness).toBe(1);
+    expect(rolled.players[P1]?.attributePool.mechanical).toBe(1);
   });
 
   it("Shield / untyped face is illegal", () => {

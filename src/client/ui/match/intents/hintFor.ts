@@ -271,7 +271,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       const instance = state.cards[intent.cardInstanceId];
       const def = instance !== undefined ? getCard(instance.cardId) : undefined;
       const attribute =
-        def !== undefined ? attributeLabel(def.forge.attribute) : "attribute";
+        def !== undefined ? attributeLabel(def.attribute) : "attribute";
       return `Choose a face card to Overcharge (every die showing it Generates +1 ${attribute} on roll).`;
     }
     default:

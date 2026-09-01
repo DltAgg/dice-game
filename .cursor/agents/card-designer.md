@@ -102,8 +102,8 @@ the user explicitly asks for tooling.
 
 - **Play, forge, or `[Overcharge]` — never two on the same use** (extends bible
   §19–20). Every hand card still has a forge region. `[Overcharge]` is the spec
-  `021` master rule (natural own-die forge spend); do **not** print it on each
-  such card. Spec `013` `optional-overcharge` is a Mechanical face-marker
+  `021` master rule (any hand card); do **not** print it on each
+  card. Spec `013` `optional-overcharge` is a Mechanical face-marker
   opcode, not this keyword. New mechanics still go to engine-developer; this
   master rule is **already shipped**.
 - Rituals are main `type: "ritual"` with a `ritual` region — not a subtype.
