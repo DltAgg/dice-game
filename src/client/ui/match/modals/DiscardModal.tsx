@@ -8,6 +8,7 @@ import {
   formatPlayCostCompact,
 } from "../intents/format";
 import {
+  btnClass,
   btnPrimary,
 } from "../styles";
 import {
@@ -21,18 +22,24 @@ export function DiscardModal({
   state,
   amount,
   pick,
+  optional,
   onToggle,
   onConfirm,
+  onDecline,
 }: {
   state: GameState;
   amount: number;
   pick: readonly CardInstanceId[];
+  optional: boolean;
   onToggle: (id: CardInstanceId) => void;
   onConfirm: () => void;
+  onDecline?: () => void;
 }) {
   const pending = state.pendingDecision;
   if (pending === null || pending.type !== "discard-cards") return null;
   const hand = handOf(state, pending.controllerId);
+  const canConfirm = optional ? pick.length <= amount : pick.length === amount;
+  const confirmNone = optional && pick.length === 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -41,7 +48,9 @@ export function DiscardModal({
           Discard from hand
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Choose {amount} card{amount === 1 ? "" : "s"} from your hand to discard.
+          {optional
+            ? `You may discard up to ${String(amount)} card${amount === 1 ? "" : "s"} from your hand. You may Decline.`
+            : `Choose ${String(amount)} card${amount === 1 ? "" : "s"} from your hand to discard.`}
         </p>
         <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
@@ -82,12 +91,19 @@ export function DiscardModal({
         </ul>
         <button
           type="button"
-          className={`${btnPrimary} mt-4`}
-          disabled={pick.length !== amount}
+          className={`${btnPrimary} mt-4 w-full`}
+          disabled={!canConfirm}
           onClick={onConfirm}
         >
-          Confirm discard ({String(pick.length)}/{String(amount)})
+          {confirmNone
+            ? `Confirm none (0/${String(amount)})`
+            : `Confirm discard (${String(pick.length)}/${String(amount)})`}
         </button>
+        {optional && onDecline !== undefined && (
+          <button type="button" className={`${btnClass} mt-2 w-full`} onClick={onDecline}>
+            Decline
+          </button>
+        )}
       </div>
     </div>
   );

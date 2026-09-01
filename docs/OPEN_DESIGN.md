@@ -770,21 +770,21 @@ order (`martial` → … → `darkness`). Token **cap** remains OPEN.
 
 ---
 
-### Optional ally swap / reposition without a decline action
+### Optional “you may” choices (decline)
 
-**Status:** `ASSUMED` · 2026-08-14 · `swap-positions` / `reposition-creature`
+**Status:** `DECIDED` · 2026-08-31 · playtest · `optional` pending
 
-Print often says “you may swap/reposition”. The engine has no cancel /
-decline action for creature choices today.
+Print that says you **may** (optional discard, optional reroll, optional
+reposition / swap) opens a pending with `optional: true`. The controller may
+**Decline** (`creatureId` / `dieId` / slot `null`, or empty discard).
+Declining skips that effect and any “if you do” rider.
 
-**ASSUMED:** when at least one legal ally (or self) move exists, open
-`choose-creature` and the controller must name a legal target; when none
-exist, the effect whiffs. Do not invent `creatureId: null` decline unless
-design reopens optional choices.
+Mandatory targeting (“choose an enemy”, “an allied creature you choose”) is
+not optional: if a legal target exists, one must be named; if none exist, the
+effect whiffs.
 
 War Charge swap is queued as attack `followUpEffects` (after the damage
-effect resolves on the chain). Optional `swap-positions` still supports a
-decline. Garuda Dive no longer swaps.
+effect resolves on the chain). Garuda Dive no longer swaps.
 
 **Banned forever:** any effect that moves an **enemy** creature (push).
 
