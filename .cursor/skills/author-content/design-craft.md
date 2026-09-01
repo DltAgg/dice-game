@@ -84,9 +84,9 @@ the **default sticker**. Stop using it unless that *is* the designed
 choice and the play region sequences with it.
 
 Natural own-die forge is no longer sticker-only: the player may **forge** or
-**`[Overcharge]`** (spec `021` / RULEBOOK §11) — spend the card onto a kept
+**`[Overcharge]`** (spec `021` / RULEBOOK §11) — spend **any** hand card onto a kept
 attribute **face card** so that face `[Generate]`s +1 of this card’s
-`forge.attribute` on roll. That is a real alternative (keep a named synthetic, splash this
+attribute on roll. That is a real alternative (keep a named synthetic, splash this
 card’s color). Still do **not** clone Forge-1 stickers as the whole identity,
 and do **not** reprint `[Overcharge]` on the card. Spec `013`
 `optional-overcharge` is a face-marker opcode, not this spend.

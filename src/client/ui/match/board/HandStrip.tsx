@@ -16,7 +16,6 @@ import {
   handOf,
   hasPlayableEffect,
   isEnabledHandReaction,
-  isOverchargeLegalCard,
   type CardInstance,
   type CardInstanceId,
   type GameState,
@@ -162,9 +161,7 @@ export function HandStrip({
             hasPlayableEffect(def) &&
             canAffordPlay(state, playerId, def);
           const canForge = actionsLive && canAffordForge(state, playerId, def);
-          const showOvercharge = isOverchargeLegalCard(def);
-          const overchargeEnabled =
-            showOvercharge && canOvercharge(state, playerId, card.id);
+          const overchargeEnabled = canOvercharge(state, playerId, card.id);
           const canRespond =
             reactionsLive &&
             isEnabledHandReaction(state, playerId, def) &&
@@ -208,16 +205,14 @@ export function HandStrip({
                     >
                       Forge
                     </button>
-                    {showOvercharge && (
-                      <button
-                        type="button"
-                        className={overchargeEnabled ? btnHand : `${btnHand} opacity-40`}
-                        disabled={!overchargeEnabled}
-                        onClick={() => onOvercharge(card)}
-                      >
-                        Overcharge
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className={overchargeEnabled ? btnHand : `${btnHand} opacity-40`}
+                      disabled={!overchargeEnabled}
+                      onClick={() => onOvercharge(card)}
+                    >
+                      Overcharge
+                    </button>
                   </>
                 )}
                 {reactionsLive && (

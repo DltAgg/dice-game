@@ -194,7 +194,7 @@ export function forgeAction(
   };
 }
 
-/** Test helper: spend a natural own-die forge card as Overcharge (spec `021`). */
+/** Test helper: spend a hand card as Overcharge (spec `021`). */
 export function overchargeAction(
   playerId: PlayerId,
   cardInstanceId: CardInstanceId,

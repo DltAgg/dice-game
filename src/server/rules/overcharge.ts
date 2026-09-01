@@ -1,6 +1,5 @@
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
-import type { CardDefinition } from "../model/cards.js";
 import type { CardInstanceId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { isAttributeSymbol } from "../model/symbols.js";
@@ -8,11 +7,6 @@ import { diceOf } from "./dice.js";
 
 /** `PlayerState.spentOncePerTurnKeys` entry after a successful Overcharge. */
 export const OVERCHARGE_ONCE_PER_TURN_KEY = "overcharge";
-
-/** True when the card's forge region is a natural own-die spend (spec `021`). */
-export function isOverchargeLegalCard(definition: CardDefinition): boolean {
-  return definition.forge.kind === "natural" && definition.forge.target === "own-die";
-}
 
 /**
  * Unique attribute face cards installed on the actor's own dice (not Shield).
@@ -38,8 +32,9 @@ export function legalOverchargeFaces(
 
 /**
  * UI enablement for Overcharge. False when not actions, not the active seat,
- * a decision is pending, the card cannot Overcharge, the once-per-turn key is
- * spent, or no attribute face exists on the actor's dice.
+ * a decision is pending, the card is not in the actor's hand, the once-per-turn
+ * key is spent, or no attribute face exists on the actor's dice. Any hand card
+ * is legal fodder (spec `021`).
  */
 export function canOvercharge(
   state: GameState,
@@ -54,7 +49,6 @@ export function canOvercharge(
   }
   const card = state.cards[cardInstanceId];
   if (card === undefined || card.ownerId !== playerId || card.zone !== "hand") return false;
-  const definition = getCard(card.cardId);
-  if (definition === undefined || !isOverchargeLegalCard(definition)) return false;
+  if (getCard(card.cardId) === undefined) return false;
   return legalOverchargeFaces(state, playerId).length > 0;
 }

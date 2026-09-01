@@ -83,7 +83,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-12](#ma-12-combat-reforge-stamp) | `[Reforge]` / `[Stamp]` on a **paid** attack | Creature special | Tempo (Mechanical exclusive) | Engine during combat, not pile refund | `HOME` |
 | [MA-13](#ma-13-legendary-strike-band) | Strike 3 vs Strike 2 on legendaries | Creature attack | Tempo hits harder; Control chips | Tempo closer vs Control engine | `WATCH` |
 | [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
-| [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` natural own-die forge spend | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
+| [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` any hand card | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
 | [MA-16](#ma-16-instant-rituals) | Ritual / Instant (place → Active-when → activate → GY) | Ritual place + activate | None as a band | Worthless vs equipment / overload / continuous | `RETARGETED` |
 
 ---
@@ -308,31 +308,34 @@ consumed `forgeDiscountThisTurn`. Undiscounted synthetic still banks.
 
 ### MA-15 Tactic Overcharge
 
-**Mechanic:** `[Overcharge]` — spend a **natural own-die** forge card from
-hand onto one attribute **face card**; every die showing that face
-`[Generate]`s +1 of the card’s forge attribute on roll (overload-style
-host, persists until the last owned copy leaves). Spec `021`.
+**Mechanic:** `[Overcharge]` — spend **any** hand card onto one attribute
+**face card**; every die showing that face `[Generate]`s +1 of the spent
+card’s attribute on roll (overload-style host, persists until the last owned
+copy leaves). Spec `021`.
 
 **Window:** Actions, once per turn, instead of play or forge. Not On roll
 print and not an attack follow-up.
 
-**Intended home:** Tempo (keep a dense synthetic, splash another attribute)
+**Intended home:** Tempo (keep a dense synthetic, splash another attribute —
+including from a synthetic or opponent-die card you do not want to forge)
 and Control (Scholar's Lien piggybacks Arcane onto Darkness Natural /
 Pyre of Names instead of installing a blank Arcane natural).
 
 **Playtest feel:** Untested.
 
-**Why:** Natural forge was sticker-only. This is not MA-02 (the face’s own
-On roll `[Generate]` of the same attribute) and not MA-03 (`[Spend] X,
-[Generate] Y` in the play region — `ANTI`).
+**Why:** A card you would rather not play or forge can still splash its
+attribute onto a kept face. This is not MA-02 (the face’s own On roll
+`[Generate]` of the same attribute) and not MA-03 (`[Spend] X, [Generate] Y`
+in the play region — `ANTI`). Forge kind does not gate the spend.
 
 **Evidence:** Design example 2026-08-30 · Control · `card-scholars-lien` +
-`face-natural-darkness` / `face-synthetic-pyre-of-names`.
+`face-natural-darkness` / `face-synthetic-pyre-of-names`. Any-card retarget
+2026-08-31 · Tempo · `card-twin-cam`.
 
 **Status:** `WATCH`
 
 **Follow-up:** post-playtest after a session that actually Overcharges; do
-not reprint `[Overcharge]` on every natural-forge card.
+not reprint `[Overcharge]` on every card.
 
 ### MA-16 Instant rituals
 

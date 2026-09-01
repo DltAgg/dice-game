@@ -109,7 +109,7 @@ Same idea, different nouns.
 |---|---|---|
 | `[Generate N X]` | A symbol (Martial, Shield, …) | Add N of X to your pool this turn |
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
-| `[Overcharge]` | A natural own-die forge card from hand | Spend that card onto one attribute **face card** on **your** dice; every die that shows that face `[Generate]`s +1 of the card’s forge attribute when rolled |
+| `[Overcharge]` | A hand card | Spend that card onto one attribute **face card** on **your** dice; every die that shows that face `[Generate]`s +1 of the spent card’s attribute when rolled |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` / `[Destroy Overload]` | A card on the field | Send one to its owner’s graveyard |
 | `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal your **most-damaged ally** for the **HP actually lost**. |
@@ -118,10 +118,10 @@ Same idea, different nouns.
 opponent’s die is Corruption’s exclusive (their die). Mechanical forges
 **your** die.
 
-`[Overcharge]` is the master-rule spend of a **natural own-die** forge card
-(not a line on every such card). It is **not** spec `013`’s Mechanical
-face-marker opcode (`optional-overcharge` / suppress inherent / double next
-face effect). That opcode stays on the faces that still use it.
+`[Overcharge]` is the master-rule spend of **any** hand card (not a line on
+every card). It is **not** spec `013`’s Mechanical face-marker opcode
+(`optional-overcharge` / suppress inherent / double next face effect). That
+opcode stays on the faces that still use it.
 
 `[Negate Ritual]` answers a ritual on the chain. `[Destroy Ritual]` answers a
 ritual already on the field. `[Destroy Equipment]` / `[Destroy Overload]` name
@@ -190,7 +190,7 @@ These are not effect replacements.
 | Print | Role |
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
-| `[Overcharge]` | Third exclusive use of a natural own-die forge card: spend it onto an attribute face card on your dice |
+| `[Overcharge]` | Third exclusive use of a hand card: spend it onto an attribute face card on your dice |
 | `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent). May include **Any** (generic tokens of any attribute). |
 | `[Active when: …]` | One-time ritual unlock vs owner’s attribute pile (not repeated in the effect box). May include **Any**. |
 | `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate). May include **Any**. |
@@ -238,7 +238,7 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` or `[Spend: Arcane + 2 x Any]` |
 | Pool pip | `[Generate N Arcane]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
-| Overcharge a kept face | `[Overcharge]` (natural own-die forge spend) |
+| Overcharge a kept face | `[Overcharge]` (hand-card spend) |
 | Install on them | `[Forge 1 Synthetic Corruption]` on the opponent’s die |
 | Extra attack damage | `[Empower]`, never `[Mark N Damage]` |
 | Unique consume/split closer | Spell it |

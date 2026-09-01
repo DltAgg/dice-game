@@ -41,9 +41,9 @@ Each player’s loadout is:
 | Opening dice | Two d6 layouts (`startingDice`) |
 
 Tactics cards always have both a **play** region and a **forge** region. On
-each use you pick one: play **or** forge, never both. A **natural** forge
-region that targets **your** die may instead be spent to **Overcharge** (see
-§11) — still one use: play, forge, or Overcharge, never two.
+each use you pick one: play **or** forge, never both. Any hand card may
+instead be spent to **Overcharge** (see §11) — still one use: play, forge, or
+Overcharge, never two.
 
 **Opening dice**
 
@@ -315,22 +315,23 @@ bank. Discount and the bank do not stack on the same card.
 Some faces **stay locked** on a slot for printed turns after install
 (forge-lock). That is not retain.
 
-**Overcharge.** Once per turn during actions, you may spend a **natural**
-forge card that targets **your** die from hand to Overcharge one **attribute
-face card** installed on your dice (not Shield / untyped). That face card
-gains +1 of the card’s forge attribute. The next time **any** of your dice
-show that face after a roll (including a retained keep or an actions-window
-reroll), **each** showing die also `[Generate]`s that pip — the same on-roll
-Generate path as forge yield / overload. One spend covers every copy you
-have showing. Overcharge does **not** pay pile cost, does **not** draw, does
-**not** set forge yield, and does **not** open a reaction window.
+**Overcharge.** Once per turn during actions, you may spend **any** card
+from hand to Overcharge one **attribute face card** installed on your dice
+(not Shield / untyped). That face card gains +1 of the spent card’s
+attribute. The next time **any** of your dice show that face after a roll
+(including a retained keep or an actions-window reroll), **each** showing die
+also `[Generate]`s that pip — the same on-roll Generate path as forge yield /
+overload. One spend covers every copy you have showing. Overcharge does
+**not** pay pile cost, does **not** draw, does **not** set forge yield, and
+does **not** open a reaction window.
 
 Pips sit on the **face card** until the last copy you own leaves the dice
 (overwrite or peel) — the same moment overloads detach. Overwriting one of
 two copies keeps the Overcharge on the remaining copy. Stay / cannot-replace
-does not block Overcharge (you are not replacing the face). Synthetic forge
-and opponent-die forge cannot Overcharge. Multiple Overcharges on the same
-face card stack across turns.
+does not block Overcharge (you are not replacing the face). Forge kind
+(natural vs synthetic) and forge target (your die vs opponent’s) do **not**
+gate Overcharge. Multiple Overcharges on the same face card stack across
+turns.
 
 ---
 
