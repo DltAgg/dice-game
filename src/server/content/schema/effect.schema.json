@@ -73,6 +73,7 @@
         "optional-bonus-basic-attack",
         "destroy-equipment",
         "destroy-ritual",
+        "destroy-overload",
         "drain-life",
         "search-graveyard"
       ]
@@ -161,6 +162,7 @@
         { "$ref": "#/$defs/negateRitual" },
         { "$ref": "#/$defs/drainLife" },
         { "$ref": "#/$defs/destroyRitual" },
+        { "$ref": "#/$defs/destroyOverload" },
         { "$ref": "#/$defs/grantAttackPrevent" },
         { "$ref": "#/$defs/preventAttackReflect" },
         { "$ref": "#/$defs/armPreventDraw" },
@@ -309,7 +311,7 @@
     },
     "destroyEquipment": {
       "title": "destroy-equipment",
-      "description": "Send one equipment on the target creature to its owner's graveyard. 2+ pieces open choose-equipment.",
+      "description": "Send one equipment to its owner's graveyard. Creature target: 0/1/2+ pieces (011). choose-opponent-equipment: field-wide pick.",
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "target"],
@@ -416,6 +418,17 @@
       "required": ["type", "target"],
       "properties": {
         "type": { "const": "destroy-ritual" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "destroyOverload": {
+      "title": "destroy-overload",
+      "description": "Send one opposing attached overload to its owner's graveyard. choose-opponent-overload always prompts when ≥1 exists.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target"],
+      "properties": {
+        "type": { "const": "destroy-overload" },
         "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
       }
     },

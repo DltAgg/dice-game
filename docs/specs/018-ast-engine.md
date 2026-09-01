@@ -97,7 +97,7 @@ Generic (prefer these in new JSON):
 |---|---|
 | `damage` / `heal` | `damage`, `heal` |
 | `mark` | `apply-toxin`, `grant-shield`, `add-corruption-marker`, `add-pestilence-counter` via `token` |
-| `strip` | `remove-shield`, `destroy-equipment`, `destroy-ritual`, strip-corrupted-face (named until fully decomposed) |
+| `strip` | `remove-shield`, `destroy-equipment`, `destroy-ritual`, `destroy-overload`, strip-corrupted-face (named until fully decomposed) |
 | `drain-life` | Life transfer (`[Drain N]`) — damage source, heal dest for HP lost |
 | `draw` / `discard` / `search` / `mill` | matching members |
 | `forge` | `forge-faces` |

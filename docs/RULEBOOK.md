@@ -277,8 +277,12 @@ Reaction rituals may still respond in a reaction window from the field while
 **ready**. Standing triggers fire while **ready** and do not spend Active-when
 / Spend.
 
-Destroying an opposing field ritual is not negate. Negate answers chain
-links; destroy answers a card already on the field.
+Destroying an opposing field ritual, attached equipment, or attached overload
+is not negate. Negate answers chain links; destroy answers a card already on
+the field. When an effect names `[Destroy Ritual]`, `[Destroy Equipment]`, or
+`[Destroy Overload]` your opponent controls, you pick one opposing card of that
+kind (always a prompt if at least one exists, including exactly one). An empty
+opposing field is a legal whiff.
 
 ---
 

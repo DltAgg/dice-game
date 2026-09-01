@@ -251,7 +251,9 @@ export function resolveChooseRitual(
 }
 
 /**
- * Completes a pending equipment choice (`destroy-equipment` with 2+ pieces).
+ * Completes a pending equipment choice. Creature-scoped (2+ pieces) destroys
+ * immediately. Field-wide `choose-opponent-equipment` stamps the deferred
+ * effect then resumes.
  */
 export function resolveChooseEquipment(
   draft: Draft,
@@ -262,6 +264,23 @@ export function resolveChooseEquipment(
   if (pending === null || pending.type !== "choose-equipment") return "INVALID_PHASE";
   if (pending.controllerId !== playerId) return "PENDING_DECISION";
 
+  const card = draft.cards[cardInstanceId];
+  if (card === undefined || card.zone !== "equipment") return "INVALID_CHOICE";
+
+  if (pending.filter === "opponent") {
+    if (card.ownerId === playerId) return "INVALID_CHOICE";
+    const deferred = pending.deferred;
+    if (deferred === undefined) return "INVALID_PHASE";
+    draft.pendingDecision = null;
+    emit(draft, { type: "choose-equipment-resolved", playerId, cardInstanceId });
+    applyDeferredEffect(draft, {
+      ...deferred,
+      declaredTargetCardInstanceId: cardInstanceId,
+    });
+    return resumeAfterEffectPause(draft);
+  }
+
+  if (pending.creatureId === null) return "INVALID_CHOICE";
   const creature = draft.creatures[pending.creatureId];
   if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
   if (!creature.equipmentIds.includes(cardInstanceId)) return "INVALID_CHOICE";
@@ -269,6 +288,32 @@ export function resolveChooseEquipment(
   draft.pendingDecision = null;
   emit(draft, { type: "choose-equipment-resolved", playerId, cardInstanceId });
   destroyEquipment(draft, cardInstanceId);
+  return resumeAfterEffectPause(draft);
+}
+
+/**
+ * Completes a pending overload choice (`choose-opponent-overload`).
+ */
+export function resolveChooseOverload(
+  draft: Draft,
+  playerId: PlayerId,
+  cardInstanceId: CardInstanceId,
+): GameError | null {
+  const pending = draft.pendingDecision;
+  if (pending === null || pending.type !== "choose-overload") return "INVALID_PHASE";
+  if (pending.controllerId !== playerId) return "PENDING_DECISION";
+
+  const card = draft.cards[cardInstanceId];
+  if (card === undefined || card.zone !== "overload") return "INVALID_CHOICE";
+  if (pending.filter === "opponent" && card.ownerId === playerId) return "INVALID_CHOICE";
+
+  draft.pendingDecision = null;
+  emit(draft, { type: "choose-overload-resolved", playerId, cardInstanceId });
+
+  applyDeferredEffect(draft, {
+    ...pending.deferred,
+    declaredTargetCardInstanceId: cardInstanceId,
+  });
   return resumeAfterEffectPause(draft);
 }
 

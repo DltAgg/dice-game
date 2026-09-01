@@ -1,10 +1,8 @@
 import {
-  equipmentOf,
   getCard,
-  getCreatureDefinition,
   opponentOf,
+  overloadsOf,
   type CardInstanceId,
-  type CreatureId,
   type GameState,
   type PlayerId,
 } from "@server";
@@ -15,67 +13,53 @@ import {
   TacticInspectHover,
 } from "../tooltips/inspectHovers";
 
-export function ChooseEquipmentModal({
+export function ChooseOverloadModal({
   state,
-  creatureId,
+  filter,
   controllerId,
-  filter = "creature",
   onPick,
 }: {
   state: GameState;
-  creatureId: CreatureId | null;
-  controllerId?: PlayerId;
-  filter?: "creature" | "opponent";
+  filter: "opponent";
+  controllerId: PlayerId;
   onPick: (cardInstanceId: CardInstanceId) => void;
 }) {
-  const fieldWide = filter === "opponent" && controllerId !== undefined;
-  const equipmentIds = fieldWide
-    ? equipmentOf(state, opponentOf(state, controllerId)).map((card) => card.id)
-    : creatureId !== null
-      ? (state.creatures[creatureId]?.equipmentIds ?? [])
-      : [];
-  const creature = creatureId !== null ? state.creatures[creatureId] : undefined;
-  const hostDef =
-    creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
+  const ownerId = filter === "opponent" ? opponentOf(state, controllerId) : controllerId;
+  const overloads = overloadsOf(state, ownerId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          {fieldWide ? "Choose an opposing equipment" : "Choose equipment to destroy"}
+          Choose an opposing overload
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          {fieldWide
-            ? "Pick one equipment the opponent controls."
-            : `Pick 1 Equipment on ${hostDef?.name ?? "the chosen creature"}.`}
+          Pick one overload the opponent controls to send to their graveyard.
         </p>
         <CausedByLine state={state} />
         <ul className="mt-4 space-y-2">
-          {equipmentIds.map((id) => {
-            const card = state.cards[id];
-            const def = card !== undefined ? getCard(card.cardId) : undefined;
+          {overloads.map((card) => {
+            const def = getCard(card.cardId);
             return (
-              <li key={id}>
+              <li key={card.id}>
                 <button
                   type="button"
                   className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:border-[var(--accent)]"
-                  onClick={() => onPick(id)}
+                  onClick={() => onPick(card.id)}
                 >
                   <p className="text-sm font-medium text-stone-100">
                     {def !== undefined ? (
                       <TacticInspectHover def={def} placement="below" />
                     ) : (
-                      (card?.cardId ?? id)
+                      card.cardId
                     )}
                   </p>
                 </button>
               </li>
             );
           })}
-          {equipmentIds.length === 0 && (
-            <li className="text-sm text-red-300">
-              {fieldWide ? "No opposing equipment on the field." : "No equipment on that creature."}
-            </li>
+          {overloads.length === 0 && (
+            <li className="text-sm text-red-300">No opposing overloads on the field.</li>
           )}
         </ul>
       </div>

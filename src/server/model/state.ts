@@ -89,7 +89,7 @@ export interface PendingEffect {
   readonly effect: EffectDefinition;
   readonly sourceCreatureId: CreatureId | null;
   readonly declaredTargetCreatureId: CreatureId | null;
-  /** Set after `RESOLVE_CHOOSE_RITUAL` for `declared-ritual` targets. */
+  /** Set after choose-ritual / equipment / overload for `declared-*` targets. */
   readonly declaredTargetCardInstanceId: CardInstanceId | null;
   readonly sourceDieId: DieId | null;
   readonly sourceSlotIndex: number | null;
@@ -174,10 +174,18 @@ export type PendingDecision =
   | {
       readonly type: "choose-equipment";
       readonly controllerId: PlayerId;
-      /** Creature whose attached equipment is being chosen. */
-      readonly creatureId: CreatureId;
+      /** Host creature, or null for field-wide `choose-opponent-equipment`. */
+      readonly creatureId: CreatureId | null;
+      readonly filter?: "opponent";
+      readonly deferred?: PendingEffect;
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
+    }
+  | {
+      readonly type: "choose-overload";
+      readonly controllerId: PlayerId;
+      readonly filter: "opponent";
+      readonly deferred: PendingEffect;
     }
   | {
       readonly type: "choose-attribute-tokens";

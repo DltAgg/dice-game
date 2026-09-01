@@ -58,9 +58,9 @@ export type EffectDefinition =
       readonly maxPlayCost?: number;
     }
   /**
-   * Sends one equipment on the target creature to its owner's graveyard.
-   * After the creature is known, 2+ attached pieces open `choose-equipment`
-   * (one piece destroys without a second prompt; none is a legal whiff).
+   * Send one equipment to its owner's graveyard. Creature `target` (011): 0
+   * pieces whiff; 1 destroys; 2+ open `choose-equipment`. Card `target`
+   * (`choose-opponent-equipment` / `declared-equipment`): field-wide pick.
    */
   | { readonly type: "destroy-equipment"; readonly target: TargetSelector }
   /** Places Toxin counters on a creature. Each counter deals 1 damage per owner turn. */
@@ -119,6 +119,11 @@ export type EffectDefinition =
    * Send one opposing field ritual to its owner's graveyard. Spec `011`.
    */
   | { readonly type: "destroy-ritual"; readonly target: TargetSelector }
+  /**
+   * Send one opposing attached overload to its owner's graveyard.
+   * `choose-opponent-overload` / `declared-overload`. Spec `011`.
+   */
+  | { readonly type: "destroy-overload"; readonly target: TargetSelector }
   /**
    * Add to a creature’s prevent-next-N-**attacks** counter (before Shields).
    * Spec `009`. Amount is how many incoming attack instances to cancel.
@@ -425,16 +430,16 @@ export type TargetSelector =
   | { readonly kind: "choose-ally" }
   /** Pause for the controller to name one opposing living creature. */
   | { readonly kind: "choose-enemy" }
-  /**
-   * Pause for the controller to name one opposing field ritual
-   * (preparing / ready / exhausted). Spec `011`.
-   */
+  /** Pause: name one opposing field ritual. Spec `011`. */
   | { readonly kind: "choose-opponent-ritual" }
-  /**
-   * Ritual named by a completed `choose-ritual` decision (after rewrite).
-   * Spec `011`.
-   */
+  /** Pause: name one opposing attached equipment. Spec `011`. */
+  | { readonly kind: "choose-opponent-equipment" }
+  /** Pause: name one opposing attached overload. Spec `011`. */
+  | { readonly kind: "choose-opponent-overload" }
+  /** Card named by a completed choose-ritual / equipment / overload decision. */
   | { readonly kind: "declared-ritual" }
+  | { readonly kind: "declared-equipment" }
+  | { readonly kind: "declared-overload" }
   /**
    * The creature targeted by the waiting attack chain link (Prismatic Barrier).
    * Spec `009`.

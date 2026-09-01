@@ -64,6 +64,8 @@ export class AstCompiler {
         return { op: "destroy-equipment", target: effect.target };
       case "destroy-ritual":
         return { op: "destroy-ritual", target: effect.target };
+      case "destroy-overload":
+        return { op: "destroy-overload", target: effect.target };
       case "drain-life":
         return {
           op: "drain-life",

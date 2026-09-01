@@ -45,8 +45,11 @@ import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
 import {
+  applyDestroyDeclaredCard,
+  tryOpenOpposingCardChoice,
+} from "./cardChoice.js";
+import {
   destroyEquipment,
-  destroyRitual,
   drawCards,
   millCards,
   releaseEquipmentOn,
@@ -237,8 +240,12 @@ function resolveTarget(
     case "choose-ally-with-tokens":
     case "choose-adjacent-ally":
     case "choose-opponent-ritual":
+    case "choose-opponent-equipment":
+    case "choose-opponent-overload":
     case "declared-ritual":
-      // Creature/ritual choose-* open pending decisions; ritual uses resolveRitualTarget.
+    case "declared-equipment":
+    case "declared-overload":
+      // Creature/card choose-* open pending decisions; card uses resolveDeclaredCardTarget.
       return null;
     case "allied-frontline":
     case "enemy-frontline":
@@ -253,27 +260,6 @@ function resolveTarget(
       return null;
     }
   }
-}
-
-function resolveRitualTarget(
-  pending: PendingEffect,
-  selector: TargetSelector,
-): CardInstanceId | null {
-  switch (selector.kind) {
-    case "declared-ritual":
-      return pending.declaredTargetCardInstanceId;
-    case "choose-opponent-ritual":
-      return null;
-    default:
-      return null;
-  }
-}
-
-function opposingRitualIds(draft: Draft, controllerId: PlayerId): readonly CardInstanceId[] {
-  const enemyId = opponentOf(draft, controllerId);
-  const enemy = draft.players[enemyId];
-  if (enemy === undefined) return [];
-  return enemy.ritual.filter((id) => draft.cards[id]?.zone === "ritual");
 }
 
 function resolveTargets(
@@ -317,11 +303,6 @@ function withDeclaredTarget(effect: EffectDefinition): EffectDefinition {
   }
   if (!("target" in effect) || typeof effect.target !== "object") return effect;
   return { ...effect, target: { kind: "declared-target" } } as EffectDefinition;
-}
-
-function withDeclaredRitual(effect: EffectDefinition): EffectDefinition {
-  if (!("target" in effect) || typeof effect.target !== "object") return effect;
-  return { ...effect, target: { kind: "declared-ritual" } } as EffectDefinition;
 }
 
 function selectorOf(effect: EffectDefinition): TargetSelector | null {
@@ -520,27 +501,8 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
 
   const { effect } = pending;
 
-  if ("target" in effect && typeof effect.target === "object") {
-    if (effect.target.kind === "choose-opponent-ritual") {
-      const eligible = opposingRitualIds(draft, pending.controllerId);
-      if (eligible.length === 0) {
-        emit(draft, { type: "effect-resolved", effectId: pending.id, effectType: effect.type });
-        return false;
-      }
-      draft.pendingDecision = {
-        type: "choose-ritual",
-        controllerId: pending.controllerId,
-        filter: "opponent",
-        deferred: { ...pending, effect: withDeclaredRitual(effect) },
-      };
-      emit(draft, {
-        type: "choose-ritual-started",
-        playerId: pending.controllerId,
-        filter: "opponent",
-      });
-      return true;
-    }
-  }
+  const opposingCardChoice = tryOpenOpposingCardChoice(draft, pending, effect);
+  if (opposingCardChoice !== null) return opposingCardChoice;
 
   if (effect.type === "reposition-creature" && effect.optional === true) {
     const selector = effect.target;
@@ -697,6 +659,12 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       return true;
     }
     case "destroy-equipment": {
+      if (
+        effect.target.kind === "declared-equipment" ||
+        effect.target.kind === "choose-opponent-equipment"
+      ) {
+        return applyDestroyDeclaredCard(draft, pending, effect);
+      }
       const targetId = resolveTarget(draft, pending, effect.target);
       if (targetId === null) return false;
       const creature = draft.creatures[targetId];
@@ -831,13 +799,9 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       });
       return false;
     }
-    case "destroy-ritual": {
-      // Always a choose-ritual pending when ≥1 opposing ritual exists (including one).
-      const ritualId = resolveRitualTarget(pending, effect.target);
-      if (ritualId === null) return false;
-      destroyRitual(draft, ritualId);
-      return false;
-    }
+    case "destroy-ritual":
+    case "destroy-overload":
+      return applyDestroyDeclaredCard(draft, pending, effect);
     case "grant-attack-prevent": {
       // Reaction-exclusive: only while a living attack is on the chain, and
       // only onto that attack's target (Barrier / Sidestep). Proactive grants whiff.

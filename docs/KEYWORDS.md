@@ -111,7 +111,7 @@ Same idea, different nouns.
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
 | `[Overcharge]` | A natural own-die forge card from hand | Spend that card onto one attribute **face card** on **your** dice; every die that shows that face `[Generate]`s +1 of the card’s forge attribute when rolled |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
-| `[Destroy Equipment]` / `[Destroy Ritual]` | A card on the field | Send one to its owner’s graveyard |
+| `[Destroy Equipment]` / `[Destroy Ritual]` / `[Destroy Overload]` | A card on the field | Send one to its owner’s graveyard |
 | `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal your **most-damaged ally** for the **HP actually lost**. |
 
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
@@ -124,12 +124,13 @@ face-marker opcode (`optional-overcharge` / suppress inherent / double next
 face effect). That opcode stays on the faces that still use it.
 
 `[Negate Ritual]` answers a ritual on the chain. `[Destroy Ritual]` answers a
-ritual already on the field.
+ritual already on the field. `[Destroy Equipment]` / `[Destroy Overload]` name
+an opposing attached card the same way — not the host creature or face.
 
 <!--
 Engine: generate-symbol | FORGE_CARD / forge-faces | OVERCHARGE_CARD (`[Overcharge]`) |
 negate-card / negate-ritual |
-destroy-equipment / destroy-ritual | drain-life |
+destroy-equipment / destroy-ritual / destroy-overload | drain-life |
 No Contaminate / Seal / Disarm / Unmake / Siphon keywords.
 Spec `013` `optional-overcharge` is the face-marker opcode, not this keyword.
 -->

@@ -258,10 +258,21 @@ export type GameEvent =
   | {
       readonly type: "choose-equipment-started";
       readonly playerId: PlayerId;
-      readonly creatureId: CreatureId;
+      readonly creatureId?: CreatureId;
+      readonly filter?: "opponent";
     }
   | {
       readonly type: "choose-equipment-resolved";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  | {
+      readonly type: "choose-overload-started";
+      readonly playerId: PlayerId;
+      readonly filter: "opponent";
+    }
+  | {
+      readonly type: "choose-overload-resolved";
       readonly playerId: PlayerId;
       readonly cardInstanceId: CardInstanceId;
     }

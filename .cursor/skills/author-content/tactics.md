@@ -136,7 +136,7 @@ Read `src/server/model/effects.ts` as authority. Today:
 
 `damage`, `heal`, `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`,
 `search-deck`, `search-graveyard`, `arm-forge-discount`, `destroy-equipment`,
-`apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
+`destroy-overload`, `apply-toxin`, `remove-shield`, `next-attack-bonus`, `grant-next-attack-bonus`,
 `arm-attack-toxin`, `negate-card`, `negate-ritual`,
 `destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`,
@@ -144,7 +144,8 @@ Read `src/server/model/effects.ts` as authority. Today:
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
 `most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
-`declared-ritual`, `chain-attack-target`
+`choose-opponent-equipment`, `choose-opponent-overload`,
+`declared-ritual`, `declared-equipment`, `declared-overload`, `chain-attack-target`
 
 Standing triggers live on equipment / continuous rituals — see
 [implement-hooks](../implement-hooks/SKILL.md).

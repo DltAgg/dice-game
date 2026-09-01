@@ -141,7 +141,7 @@
     },
     "targetSelector": {
       "title": "TargetSelector",
-      "description": "How an effect names a creature or ritual. choose-* opens a pending decision. Auto selectors (most-damaged-ally, source-creature, …) do not prompt.",
+      "description": "How an effect names a creature, ritual, equipment, or overload. choose-* opens a pending decision. Auto selectors (most-damaged-ally, source-creature, …) do not prompt.",
       "oneOf": [
         {
           "title": "source-creature",
@@ -219,12 +219,44 @@
           "properties": { "kind": { "const": "choose-opponent-ritual" } }
         },
         {
+          "title": "choose-opponent-equipment",
+          "description": "Pause: controller names one opposing attached equipment.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-opponent-equipment" } }
+        },
+        {
+          "title": "choose-opponent-overload",
+          "description": "Pause: controller names one opposing attached overload.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-opponent-overload" } }
+        },
+        {
           "title": "declared-ritual",
           "description": "Ritual named by a completed choose-ritual decision (after rewrite).",
           "type": "object",
           "additionalProperties": false,
           "required": ["kind"],
           "properties": { "kind": { "const": "declared-ritual" } }
+        },
+        {
+          "title": "declared-equipment",
+          "description": "Equipment named by a completed choose-equipment decision (after rewrite).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "declared-equipment" } }
+        },
+        {
+          "title": "declared-overload",
+          "description": "Overload named by a completed choose-overload decision (after rewrite).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "declared-overload" } }
         },
         {
           "title": "chain-attack-target",

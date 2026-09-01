@@ -98,6 +98,7 @@ export type EffectOp =
   | "optional-bonus-basic-attack"
   | "destroy-equipment"
   | "destroy-ritual"
+  | "destroy-overload"
   | "drain-life"
   | "search-graveyard";
 

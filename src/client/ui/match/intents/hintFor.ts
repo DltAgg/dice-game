@@ -131,9 +131,16 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
     return "Choose an opposing ritual on the field to destroy.";
   }
   if (state.pendingDecision?.type === "choose-equipment") {
+    const fieldWide = state.pendingDecision.filter === "opponent";
     return isPendingChooser
-      ? "Choose 1 Equipment on that creature to destroy."
+      ? fieldWide
+        ? "Choose an opposing equipment on the field to destroy."
+        : "Choose 1 Equipment on that creature to destroy."
       : "Waiting for the opponent to choose equipment to destroy.";
+  }
+  if (state.pendingDecision?.type === "choose-overload") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose an overload.";
+    return "Choose an opposing overload on the field to destroy.";
   }
   if (state.pendingDecision?.type === "choose-attribute-tokens") {
     return isPendingChooser

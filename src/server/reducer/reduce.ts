@@ -20,6 +20,7 @@ import {
   resolveChooseDie,
   resolveChooseDieSlot,
   resolveChooseEquipment,
+  resolveChooseOverload,
   resolveChoosePoolSymbol,
   resolveChooseRitual,
   resolveConvertSymbols,
@@ -107,6 +108,8 @@ function isMatchingPendingResolve(pending: ChoicePending, action: GameAction): b
       return action.type === "RESOLVE_CHOOSE_RITUAL";
     case "choose-equipment":
       return action.type === "RESOLVE_CHOOSE_EQUIPMENT";
+    case "choose-overload":
+      return action.type === "RESOLVE_CHOOSE_OVERLOAD";
     case "choose-attribute-tokens":
       return action.type === "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS";
     case "forge-faces":
@@ -195,6 +198,8 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return resolveChooseRitual(draft, action.playerId, action.cardInstanceId);
     case "RESOLVE_CHOOSE_EQUIPMENT":
       return resolveChooseEquipment(draft, action.playerId, action.cardInstanceId);
+    case "RESOLVE_CHOOSE_OVERLOAD":
+      return resolveChooseOverload(draft, action.playerId, action.cardInstanceId);
     case "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS":
       return resolveChooseAttributeTokens(draft, action.playerId, action.discarded);
     case "RESOLVE_FORGE_FACES":

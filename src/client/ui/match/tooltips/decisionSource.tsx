@@ -70,14 +70,32 @@ export function pendingSourceOf(
     case "dark-pact":
     case "mind-control":
     case "copy-pool-symbol":
-    case "choose-equipment":
     case "choose-attribute-tokens":
+      return {
+        cardInstanceId: pending.sourceCardInstanceId,
+        faceCardId: pending.sourceFaceCardId,
+      };
+    case "choose-equipment":
+      if (pending.filter === "opponent" && pending.deferred !== undefined) {
+        return {
+          cardInstanceId: pending.deferred.sourceCardInstanceId,
+          faceCardId:
+            pending.deferred.sourceCardInstanceId !== null
+              ? null
+              : faceIdFromDieSlot(
+                  state,
+                  pending.deferred.sourceDieId,
+                  pending.deferred.sourceSlotIndex,
+                ),
+        };
+      }
       return {
         cardInstanceId: pending.sourceCardInstanceId,
         faceCardId: pending.sourceFaceCardId,
       };
     case "choose-creature":
     case "choose-ritual":
+    case "choose-overload":
     case "choose-die":
     case "choose-die-slot":
     case "choose-pool-symbol":

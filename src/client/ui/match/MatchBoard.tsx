@@ -44,6 +44,7 @@ import { ChooseCreatureModal } from "./modals/ChooseCreatureModal";
 import { ChooseDieModal } from "./modals/ChooseDieModal";
 import { ChooseDieSlotModal } from "./modals/ChooseDieSlotModal";
 import { ChooseEquipmentModal } from "./modals/ChooseEquipmentModal";
+import { ChooseOverloadModal } from "./modals/ChooseOverloadModal";
 import { ChoosePoolSymbolModal } from "./modals/ChoosePoolSymbolModal";
 import { ChooseRitualModal } from "./modals/ChooseRitualModal";
 import { ConvertSymbolsModal } from "./modals/ConvertSymbolsModal";
@@ -763,6 +764,8 @@ export function MatchBoard() {
         <ChooseEquipmentModal
           state={state}
           creatureId={pending.creatureId}
+          controllerId={pending.controllerId}
+          filter={pending.filter === "opponent" ? "opponent" : "creature"}
           onPick={(cardInstanceId) =>
             tryDispatch({
               type: "RESOLVE_CHOOSE_EQUIPMENT",
@@ -774,6 +777,24 @@ export function MatchBoard() {
       )}
       {pending?.type === "choose-equipment" && !isPendingChooser && (
         <WaitingBanner>Opponent is choosing equipment to destroy.</WaitingBanner>
+      )}
+
+      {pending?.type === "choose-overload" && isPendingChooser && (
+        <ChooseOverloadModal
+          state={state}
+          filter={pending.filter}
+          controllerId={pending.controllerId}
+          onPick={(cardInstanceId) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_OVERLOAD",
+              playerId: pending.controllerId,
+              cardInstanceId,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-overload" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing an overload.</WaitingBanner>
       )}
 
       {pending?.type === "choose-attribute-tokens" && isPendingChooser && (

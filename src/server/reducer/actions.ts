@@ -123,10 +123,19 @@ export type GameAction =
       readonly cardInstanceId: CardInstanceId;
     }
   /**
-   * Completes a pending equipment choice (`destroy-equipment` with 2+ pieces).
+   * Completes a pending equipment choice (creature-scoped 2+ pieces, or
+   * field-wide `choose-opponent-equipment`).
    */
   | {
       readonly type: "RESOLVE_CHOOSE_EQUIPMENT";
+      readonly playerId: PlayerId;
+      readonly cardInstanceId: CardInstanceId;
+    }
+  /**
+   * Completes a pending overload choice (`choose-opponent-overload`).
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_OVERLOAD";
       readonly playerId: PlayerId;
       readonly cardInstanceId: CardInstanceId;
     }

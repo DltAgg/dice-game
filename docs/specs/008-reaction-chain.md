@@ -63,7 +63,8 @@ conducts, its body cannot be interrupted.
 11b. **Seal the Rite.** Hand reaction; header cost 3; `negate-ritual` only.
 11c. **Fade.** Hand reaction; header cost 3; `negate-card` / `cardTypes: "any"`.
 12. **No mid-conduct reactions.** While `pendingDecision` is `search-deck`,
-    `search-graveyard`, `discard-cards`, `choose-creature`, or `choose-ritual`,
+    `search-graveyard`, `discard-cards`, `choose-creature`, `choose-ritual`,
+    `choose-equipment`, or `choose-overload`,
     no reaction window — those choices are part of conducting.
 13. **Negated card link.** Costs stay paid; body skipped. Ritual place:
     card never sits preparing (ends in GY). Equip/overload: attach does not
@@ -158,7 +159,7 @@ None.
 - [ ] Double pass resolves LILO; negated tactic link skips body
 - [ ] Negate illegal against top `attack` link
 - [ ] Runic Nullification + Arcane Silence fully wired and tested
-- [ ] No reaction mid search / discard / choose-creature / choose-ritual
+- [ ] No reaction mid search / discard / choose-creature / choose-ritual / choose-equipment / choose-overload
 - [ ] Host broadcasts chain state
 - [ ] DoD green; `DEFERRED_CATALOGUE.md` updated for chain + negate + those two cards
 

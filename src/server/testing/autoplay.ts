@@ -15,6 +15,8 @@ import {
   handOf,
   playCostTotal,
   replayableGraveyardTactics,
+  equipmentOf,
+  overloadsOf,
   ritualsOf,
   searchableInDeck,
   searchableInGraveyard,
@@ -426,7 +428,12 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "choose-equipment") {
-    const [cardInstanceId] = state.creatures[pending.creatureId]?.equipmentIds ?? [];
+    const cardInstanceId =
+      pending.filter === "opponent"
+        ? equipmentOf(state, opponentOf(state, pending.controllerId))[0]?.id
+        : pending.creatureId !== null
+          ? state.creatures[pending.creatureId]?.equipmentIds[0]
+          : undefined;
     if (cardInstanceId === undefined) {
       throw new Error("autoplay: no equipment for choose-equipment");
     }
@@ -437,6 +444,23 @@ function resolvePending(state: GameState): GameState {
     });
     if (!result.ok) {
       throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_EQUIPMENT`);
+    }
+    return resolvePending(result.state);
+  }
+
+  if (pending.type === "choose-overload") {
+    const ownerId = opponentOf(state, pending.controllerId);
+    const [cardInstanceId] = overloadsOf(state, ownerId).map((card) => card.id);
+    if (cardInstanceId === undefined) {
+      throw new Error("autoplay: no overload for choose-overload");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_CHOOSE_OVERLOAD",
+      playerId: pending.controllerId,
+      cardInstanceId,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_OVERLOAD`);
     }
     return resolvePending(result.state);
   }
