@@ -3,7 +3,7 @@
   "id": "card-oracles-margin",
   "name": "Oracle's Margin",
   "playCost": {
-    "arcane": 2
+    "arcane": 1
   },
   "type": "instant",
   "subtypes": [],

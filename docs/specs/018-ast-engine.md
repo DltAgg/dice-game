@@ -146,7 +146,9 @@ Face `onRoll` / `onAbsorb` compile to `when.event: on-roll | on-absorb`.
 ### Targeting
 
 `TargetSelector` is unchanged as IR (`kind` union). Choose-* still opens
-today’s `PendingDecision` types.
+today’s `PendingDecision` types. Auto multi-creature kinds (`allied-frontline`,
+`enemy-frontline`, `ally-all`, `enemy-all`) apply to every living match with
+no prompt.
 
 ### Stack drain
 

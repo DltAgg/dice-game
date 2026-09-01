@@ -283,6 +283,22 @@
           "properties": { "kind": { "const": "enemy-frontline" } }
         },
         {
+          "title": "ally-all",
+          "description": "Every living allied creature (frontline and back).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "ally-all" } }
+        },
+        {
+          "title": "enemy-all",
+          "description": "Every living enemy creature (frontline and back).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "enemy-all" } }
+        },
+        {
           "title": "choose-ally-other",
           "type": "object",
           "additionalProperties": false,

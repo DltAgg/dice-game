@@ -39,7 +39,13 @@ import {
   takeFaceFromPool,
   withForgeLockResetOnInstall,
 } from "../rules/faces.js";
-import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter, choiceFilterForSelector } from "../rules/targets.js";
+import {
+  legalCreaturesForFilter,
+  legalDiceForFilter,
+  legalDieSlotsForFilter,
+  choiceFilterForSelector,
+  livingCreaturesForMultiSelector,
+} from "../rules/targets.js";
 import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
 import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
@@ -249,6 +255,8 @@ function resolveTarget(
       return null;
     case "allied-frontline":
     case "enemy-frontline":
+    case "ally-all":
+    case "enemy-all":
       return null;
     case "chain-attack-target": {
       for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
@@ -267,17 +275,9 @@ function resolveTargets(
   pending: PendingEffect,
   selector: TargetSelector,
 ): readonly CreatureId[] {
+  const multi = livingCreaturesForMultiSelector(draft, pending.controllerId, selector.kind);
+  if (multi !== null) return multi;
   const single = resolveTarget(draft, pending, selector);
-  if (selector.kind === "allied-frontline") {
-    return livingCreaturesOf(draft, pending.controllerId)
-      .filter((creature) => creature.position === "frontline")
-      .map((creature) => creature.id);
-  }
-  if (selector.kind === "enemy-frontline") {
-    return livingCreaturesOf(draft, opponentOf(draft, pending.controllerId))
-      .filter((creature) => creature.position === "frontline")
-      .map((creature) => creature.id);
-  }
   return single === null ? [] : [single];
 }
 

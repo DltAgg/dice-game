@@ -5,29 +5,32 @@
   "playCost": {
     "arcane": 3
   },
-  "type": "instant",
-  "subtypes": [],
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
   "attribute": "arcane",
   "forge": {
     "faces": 1,
-    "kind": "natural",
+    "kind": "synthetic",
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "[Drain 2].",
-  "effect": {
-    "requires": {
-      "arcane": 1
+  "rulesText": "[Reroll] one of your dice.\n[Mark 2 Shield] on an allied creature you choose.",
+  "ritual": {
+    "spend": {
+      "arcane": 1,
+      "any": 1
     },
     "effects": [
       {
-        "type": "drain-life",
+        "type": "optional-reroll-die"
+      },
+      {
+        "type": "grant-shield",
         "amount": 2,
         "target": {
-          "kind": "choose-enemy"
-        },
-        "with": {
-          "kind": "most-damaged-ally"
+          "kind": "choose-ally"
         }
       }
     ]

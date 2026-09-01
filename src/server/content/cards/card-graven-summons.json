@@ -3,12 +3,11 @@
   "id": "card-graven-summons",
   "name": "Graven Summons",
   "playCost": {
-    "darkness": 3
+    "darkness": 3,
+    "any": 1
   },
-  "type": "ritual",
-  "subtypes": [
-    "continuous"
-  ],
+  "type": "instant",
+  "subtypes": [],
   "attribute": "darkness",
   "forge": {
     "faces": 1,
@@ -16,19 +15,16 @@
     "attribute": "darkness",
     "target": "own-die"
   },
-  "rulesText": "[Recall 2].",
-  "ritual": {
-    "activeWhen": {
-      "arcane": 1,
-      "darkness": 1
-    },
-    "spend": {
-      "darkness": 2
-    },
+  "rulesText": "[Recall 2]. [Discount 1] forge.",
+  "effect": {
     "effects": [
       {
         "type": "search-graveyard",
         "amount": 2
+      },
+      {
+        "type": "arm-forge-discount",
+        "amount": 1
       }
     ]
   }

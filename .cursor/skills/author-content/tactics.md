@@ -143,9 +143,8 @@ Read `src/server/model/effects.ts` as authority. Today:
 `mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-life`
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
-`most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`,
-`choose-opponent-equipment`, `choose-opponent-overload`,
-`declared-ritual`, `declared-equipment`, `declared-overload`, `chain-attack-target`
+`most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`, `choose-opponent-equipment`, `choose-opponent-overload`,
+`declared-ritual`, `declared-equipment`, `declared-overload`, `chain-attack-target`, `allied-frontline`, `enemy-frontline`, `ally-all`, `enemy-all`
 
 Standing triggers live on equipment / continuous rituals — see
 [implement-hooks](../implement-hooks/SKILL.md).

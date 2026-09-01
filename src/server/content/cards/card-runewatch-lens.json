@@ -14,21 +14,18 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "Can only overload an Arcane face.\nOn roll: [Generate 1 Arcane].\nOn absorb, once per turn: [Insight 1].",
+  "rulesText": "Can only overload an Arcane face.\nOn roll: [Insight 1]. [Discount 1] next card you play this turn.",
   "overload": {
     "faceSymbols": [
       "arcane"
     ],
     "onRoll": [
       {
-        "type": "generate-symbol",
-        "symbol": "arcane",
-        "amount": 1
-      }
-    ],
-    "onAbsorb": [
-      {
         "type": "peek-deck-optional-bottom"
+      },
+      {
+        "type": "play-cost-discount",
+        "amount": 1
       }
     ]
   }

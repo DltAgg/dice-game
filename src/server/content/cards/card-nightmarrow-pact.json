@@ -3,7 +3,7 @@
   "id": "card-nightmarrow-pact",
   "name": "Nightmarrow Pact",
   "playCost": {
-    "darkness": 3
+    "darkness": 2
   },
   "type": "ritual",
   "subtypes": [
@@ -16,24 +16,21 @@
     "attribute": "darkness",
     "target": "own-die"
   },
-  "rulesText": "On discard: [Generate 1 Darkness].",
+  "rulesText": "[Drain 2].",
   "ritual": {
-    "activeWhen": {
-      "arcane": 1,
+    "spend": {
       "darkness": 1
     },
-    "effects": [],
-    "standingAbilities": [
+    "effects": [
       {
-        "type": "on-discard",
-        "discardingPlayer": "controller",
-        "effects": [
-          {
-            "type": "generate-symbol",
-            "symbol": "darkness",
-            "amount": 1
-          }
-        ]
+        "type": "drain-life",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        },
+        "with": {
+          "kind": "choose-ally"
+        }
       }
     ]
   }

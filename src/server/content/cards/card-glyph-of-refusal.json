@@ -3,7 +3,8 @@
   "id": "card-glyph-of-refusal",
   "name": "Glyph of Refusal",
   "playCost": {
-    "arcane": 3
+    "arcane": 2,
+    "any": 1
   },
   "type": "reaction",
   "subtypes": [],
@@ -14,12 +15,16 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "[Negate].",
+  "rulesText": "[Negate]. [Draw 1].",
   "effect": {
     "effects": [
       {
         "type": "negate-card",
         "cardTypes": "any"
+      },
+      {
+        "type": "draw-cards",
+        "amount": 1
       }
     ]
   }

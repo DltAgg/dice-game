@@ -14,12 +14,16 @@
     "attribute": "darkness",
     "target": "own-die"
   },
-  "rulesText": "[Draw 2]. [Discard 1].",
+  "rulesText": "[Search 2] Instant or Ritual cards. [Discard 1].",
   "effect": {
     "effects": [
       {
-        "type": "draw-cards",
-        "amount": 2
+        "type": "search-deck",
+        "amount": 2,
+        "filter": [
+          "instant",
+          "ritual"
+        ]
       },
       {
         "type": "discard-cards",

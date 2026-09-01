@@ -79,7 +79,9 @@ Each player has:
 - **Frontline** (2 slots) and **Back** (the third creature at setup is the
   legendary). Frontline protects the back: a non-Range attack may hit a
   back-row creature only if that player has **no living frontline**. Range
-  ignores this.
+  ignores this. Card and face effects that name creatures are not attacks:
+  they ignore this unless print says otherwise. Print that names **each
+  enemy** or **each ally** hits every living creature on that side.
 - **Engine area** for rituals.
 - **Two dice**, each with six faces that reference face cards.
 - Hand, tactics deck (top-first), graveyard, equipment, overloads.

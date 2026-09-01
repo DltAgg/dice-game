@@ -18,9 +18,6 @@
   },
   "rulesText": "On roll Mechanical: [Generate 1 Mechanical].",
   "ritual": {
-    "activeWhen": {
-      "mechanical": 2
-    },
     "effects": [],
     "standingAbilities": [
       {

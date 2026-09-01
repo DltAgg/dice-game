@@ -126,6 +126,23 @@ describe("catalogue JSON schemas", () => {
     ).toBe(false);
   });
 
+  it("accepts damage targeting every living enemy", () => {
+    expect(
+      validateCard({
+        id: "card-example",
+        name: "Example",
+        type: "instant",
+        subtypes: [],
+        attribute: "darkness",
+        forge: { faces: 1, kind: "natural", attribute: "darkness", target: "own-die" },
+        rulesText: "[Strike 1] each enemy.",
+        effect: {
+          effects: [{ type: "damage", amount: 1, target: { kind: "enemy-all" } }],
+        },
+      }),
+    ).toBe(true);
+  });
+
   it("accepts AST mark with a token", () => {
     expect(
       validateCard({

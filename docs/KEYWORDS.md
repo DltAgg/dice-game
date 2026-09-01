@@ -143,8 +143,8 @@ These are not tokens.
 
 | Print | Means |
 |---|---|
-| `[Strike N]` | Deal N damage (default: a chosen enemy; name any other target) |
-| `[Heal N]` | Heal N |
+| `[Strike N]` | Deal N damage (default: a chosen enemy; name any other target). `each enemy` / `all enemy creatures` (and the ally forms) = every living creature on that side. |
+| `[Heal N]` | Heal N (default: a chosen ally; name any other target). `each ally` / `all allied creatures` = every living creature on that side. |
 | `[Draw N]` / `[Discard N]` | Draw / discard. “Up to” and extra clauses stay English. |
 | `[Empower N]` | The next attack this turn deals +N. Name the creature if it is not yours. |
 | `[Frenzy]` / `[Frenzy N]` | That creature may declare N extra attacks this turn (default 1). Wild exclusive. Does not clear attacks already used. |
@@ -165,7 +165,8 @@ These are not tokens.
 | `[Retain]` | Keep a retainable die across the next roll |
 
 <!--
-Engine: damage | heal | draw-cards | discard-cards | next-attack-bonus |
+Engine: damage | heal (`choose-enemy` / `enemy-all` / `ally-all` / …) |
+draw-cards | discard-cards | next-attack-bonus |
 grant-next-attack-bonus | ignore-shield / arm-ignore-shield | grant-attack-prevent |
 convert-symbols | play-cost-discount / arm-forge-discount | look-top-deck /
 peek-deck-optional-bottom | search-deck | search-graveyard | dark-pact |

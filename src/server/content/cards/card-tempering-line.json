@@ -18,9 +18,6 @@
   },
   "rulesText": "[Forge 2 Synthetic Mechanical] on your die. [Discount 1] forge.",
   "ritual": {
-    "activeWhen": {
-      "mechanical": 2
-    },
     "spend": {
       "mechanical": 2
     },

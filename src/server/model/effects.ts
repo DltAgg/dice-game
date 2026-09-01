@@ -449,6 +449,10 @@ export type TargetSelector =
   | { readonly kind: "allied-frontline" }
   /** Every living enemy frontline creature. */
   | { readonly kind: "enemy-frontline" }
+  /** Every living allied creature (frontline and back). */
+  | { readonly kind: "ally-all" }
+  /** Every living enemy creature (frontline and back). */
+  | { readonly kind: "enemy-all" }
   | { readonly kind: "choose-ally-other" }
   | { readonly kind: "choose-allied-frontline" }
   | { readonly kind: "choose-allied-frontline-other" }

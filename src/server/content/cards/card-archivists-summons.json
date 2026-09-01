@@ -3,7 +3,7 @@
   "id": "card-archivists-summons",
   "name": "Archivist's Summons",
   "playCost": {
-    "arcane": 3
+    "arcane": 1
   },
   "type": "ritual",
   "subtypes": [
@@ -16,22 +16,15 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "[Search 2] Instant or Ritual cards.",
+  "rulesText": "[Discount 1] forge.",
   "ritual": {
-    "activeWhen": {
-      "arcane": 2
-    },
     "spend": {
-      "arcane": 2
+      "arcane": 1
     },
     "effects": [
       {
-        "type": "search-deck",
-        "amount": 2,
-        "filter": [
-          "instant",
-          "ritual"
-        ]
+        "type": "arm-forge-discount",
+        "amount": 1
       }
     ]
   }

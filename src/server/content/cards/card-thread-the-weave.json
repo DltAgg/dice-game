@@ -3,7 +3,7 @@
   "id": "card-thread-the-weave",
   "name": "Thread the Weave",
   "playCost": {
-    "arcane": 2
+    "arcane": 4
   },
   "type": "instant",
   "subtypes": [],
@@ -14,12 +14,14 @@
     "attribute": "arcane",
     "target": "own-die"
   },
-  "rulesText": "[Insight 2].",
+  "rulesText": "[Destroy Equipment] your opponent controls.",
   "effect": {
     "effects": [
       {
-        "type": "look-top-deck",
-        "amount": 2
+        "type": "destroy-equipment",
+        "target": {
+          "kind": "choose-opponent-equipment"
+        }
       }
     ]
   }

@@ -146,6 +146,8 @@ Prefer members already in `src/server/model/effects.ts` and selectors already in
 | `[Reposition]` | `reposition-creature` |
 | Auto-pick damaged ally | `{ kind: "most-damaged-ally" }` |
 | Player picks enemy | `{ kind: "choose-enemy" }` |
+| Each living ally | `{ kind: "ally-all" }` |
+| Each living enemy | `{ kind: "enemy-all" }` |
 
 Conditional “if …” clauses often need **new** effect fields or hooks — do not
 stuff them into an unconditional effect.
@@ -227,7 +229,8 @@ equipment: {
 1. **One timing per line** — never bury absorb inside a roll sentence.
 2. **Reuse hooks** — prefer `on-absorb` / `onRoll` over a new reducer branch.
 3. **Auto vs choose** — use `most-*-*` selectors when print does not ask the
-   player to pick; otherwise `choose-ally` / `choose-enemy`.
+   player to pick; `ally-all` / `enemy-all` when print names each creature on
+   a side; otherwise `choose-ally` / `choose-enemy`.
 4. **Ritual Instant vs Reaction** — Instant subtype is retired (leftover GY
    after activate). Reaction stays on the field and exhausts (once per turn);
    it only changes *when* it can fire (`008`). Continuous stays / exhausts.

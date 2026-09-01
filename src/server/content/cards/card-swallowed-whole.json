@@ -3,7 +3,8 @@
   "id": "card-swallowed-whole",
   "name": "Swallowed Whole",
   "playCost": {
-    "darkness": 3
+    "darkness": 1,
+    "any": 1
   },
   "type": "reaction",
   "subtypes": [],
@@ -14,17 +15,12 @@
     "attribute": "darkness",
     "target": "own-die"
   },
-  "rulesText": "[Negate]. Your opponent [Mill 2].",
+  "rulesText": "[Negate].",
   "effect": {
     "effects": [
       {
         "type": "negate-card",
         "cardTypes": "any"
-      },
-      {
-        "type": "mill-cards",
-        "amount": 2,
-        "player": "opponent"
       }
     ]
   }

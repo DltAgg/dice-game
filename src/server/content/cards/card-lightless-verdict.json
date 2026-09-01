@@ -3,7 +3,9 @@
   "id": "card-lightless-verdict",
   "name": "Lightless Verdict",
   "playCost": {
-    "darkness": 4
+    "darkness": 2,
+    "arcane": 1,
+    "any": 2
   },
   "type": "instant",
   "subtypes": [],
@@ -14,11 +16,8 @@
     "attribute": "darkness",
     "target": "own-die"
   },
-  "rulesText": "[Strike 4].",
+  "rulesText": "[Strike 4]. [Draw 1].",
   "effect": {
-    "requires": {
-      "arcane": 1
-    },
     "effects": [
       {
         "type": "damage",
@@ -26,6 +25,10 @@
         "target": {
           "kind": "choose-enemy"
         }
+      },
+      {
+        "type": "draw-cards",
+        "amount": 1
       }
     ]
   }

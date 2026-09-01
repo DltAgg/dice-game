@@ -244,7 +244,7 @@ no Toxin markers, no Martial `[Swap]`, no Wild `[Frenzy]`, and Mechanical
 
 | Cost | Name | Type line | Printed play region | Role in Control |
 |---|---|---|---|---|
-| 2 D | Hollow Tide | Instant / Darkness | Your opponent `[Mill 3]`. | The mill clock and Darkness's cheapest play. |
+| 3 D + 3 Any | Hollow Tide | Instant / Darkness | `[Strike 3]` all enemy creatures. | Board-wide Strike; hits every living enemy including the back row. |
 | 2 D | Gloomdraft | Instant / Darkness | `[Draw 2]. [Discard 1].` | Card flow that also feeds Nightmarrow Pact. |
 | 3 D | Pall of Ash | Instant / Darkness | `[Spend: Darkness]`. `[Strike 3].` | The clean burn on the enemy legendary. |
 | 3 D | Sable Tithe | Instant / Darkness | Your opponent `[Mill 2]`. `[Strike 2]`. | Splits the two clocks onto one card. |

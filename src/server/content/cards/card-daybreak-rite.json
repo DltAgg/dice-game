@@ -18,9 +18,6 @@
   },
   "rulesText": "[Heal 2] on each allied frontline creature.",
   "ritual": {
-    "activeWhen": {
-      "luminar": 2
-    },
     "spend": {
       "luminar": 2
     },

@@ -208,14 +208,11 @@ describe("Arcane Control package", () => {
 });
 
 describe("Darkness Control package", () => {
-  it("Hollow Tide mills three from the opponent's deck", () => {
-    const ready = withDeck(readyToPlay([HOLLOW_TIDE]), P2, [
-      GLOOMDRAFT,
-      GLOOMDRAFT,
-      PALL_OF_ASH,
-      PALL_OF_ASH,
-      RIFTMARK,
-    ]);
+  it("Hollow Tide strikes every living enemy for 3", () => {
+    const ready = readyToPlay([HOLLOW_TIDE]);
+    const frontA = creatureIdAt(ready, P2, 0);
+    const frontB = creatureIdAt(ready, P2, 1);
+    const back = creatureIdAt(ready, P2, 2);
     const state = expectOk(
       advanceResolvingChain(ready, {
         type: "PLAY_CARD",
@@ -223,8 +220,10 @@ describe("Darkness Control package", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(state.players[P2]?.deck).toHaveLength(2);
-    expect(graveyardOf(state, P2)).toHaveLength(3);
+    expect(state.pendingDecision).toBeNull();
+    expect(state.creatures[frontA]?.damage).toBe(3);
+    expect(state.creatures[frontB]?.damage).toBe(3);
+    expect(state.creatures[back]?.damage).toBe(3);
   });
 
   it("Pall of Ash strikes a chosen enemy for 3", () => {

@@ -3,7 +3,8 @@
   "id": "card-hollow-tide",
   "name": "Hollow Tide",
   "playCost": {
-    "darkness": 2
+    "darkness": 3,
+    "any": 3
   },
   "type": "instant",
   "subtypes": [],
@@ -14,13 +15,15 @@
     "attribute": "darkness",
     "target": "own-die"
   },
-  "rulesText": "Your opponent [Mill 3].",
+  "rulesText": "[Strike 3] all enemy creatures.",
   "effect": {
     "effects": [
       {
-        "type": "mill-cards",
+        "type": "damage",
         "amount": 3,
-        "player": "opponent"
+        "target": {
+          "kind": "enemy-all"
+        }
       }
     ]
   }

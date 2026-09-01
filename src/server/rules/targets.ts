@@ -242,7 +242,38 @@ export function choiceFilterForSelector(
       return "adjacent-ally";
     case "allied-frontline":
     case "enemy-frontline":
+    case "ally-all":
+    case "enemy-all":
       return "multi";
+    default:
+      return null;
+  }
+}
+
+/**
+ * Auto multi-creature selectors. `null` if `kind` is single-target or choose-*.
+ */
+export function livingCreaturesForMultiSelector(
+  state: QueryState,
+  controllerId: PlayerId,
+  kind: string,
+): readonly CreatureId[] | null {
+  switch (kind) {
+    case "allied-frontline":
+      return livingCreaturesOf(state as GameState, controllerId)
+        .filter((creature) => creature.position === "frontline")
+        .map((creature) => creature.id);
+    case "enemy-frontline":
+      return livingCreaturesOf(state as GameState, opponentOf(state as GameState, controllerId))
+        .filter((creature) => creature.position === "frontline")
+        .map((creature) => creature.id);
+    case "ally-all":
+      return livingCreaturesOf(state as GameState, controllerId).map((creature) => creature.id);
+    case "enemy-all":
+      return livingCreaturesOf(
+        state as GameState,
+        opponentOf(state as GameState, controllerId),
+      ).map((creature) => creature.id);
     default:
       return null;
   }
