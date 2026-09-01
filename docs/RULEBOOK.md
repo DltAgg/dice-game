@@ -286,6 +286,13 @@ the field. When an effect names `[Destroy Ritual]`, `[Destroy Equipment]`, or
 kind (always a prompt if at least one exists, including exactly one). An empty
 opposing field is a legal whiff.
 
+**Bounce** answers the same opposing field cards — ritual, equipment, or
+overload — but the chosen card **returns to its owner’s hand** instead of the
+graveyard. Detach first (equipment off the creature, overload off the face,
+ritual off the field). Preparing, ready, and exhausted rituals are all legal.
+Bounce is not discard and does not negate a chain link. An empty legal set is
+a legal whiff; if at least one eligible card exists you always pick.
+
 ---
 
 ## 11. Forging
@@ -314,6 +321,15 @@ bank. Discount and the bank do not stack on the same card.
 
 Some faces **stay locked** on a slot for printed turns after install
 (forge-lock). That is not retain.
+
+**Desynthesis.** `[Desynthesize]` peels a **synthetic** attribute face on
+**any die** (yours or the opponent’s) back to that attribute’s **natural**
+identity face. It is not a forge (no forge-draw) and is **not** `[Reforge]`
+(swap to a different synthetic from your pool). Stay / forge-lock does not
+block it. The natural belongs to the **die owner**; the displaced synthetic
+returns to its owner’s pool when the last copy leaves, and overloads /
+Overcharge on that orphaned face leave as they do on overwrite. An already
+generated pip on a showing slot stays; the next roll uses the natural.
 
 **Overcharge.** Once per turn during actions, you may spend **any** card
 from hand to Overcharge one **attribute face card** installed on your dice
@@ -392,6 +408,24 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 it takes damage equal to its markers, then **all** markers are cleared.
 Markers applied during the owner’s own turn detonate at that same turn’s
 end.
+
+**Silence:** `[Silence]` names an opposing **creature**, **field ritual**, or
+**die slot** (the card lists which). Until the **start of your next turn**
+(the rest of this turn plus the opponent’s intervening turn):
+
+- That host cannot **activate** or **fire its effects**, including inherited
+  ones: a silenced creature’s standing abilities and attached equipment; a
+  silenced showing slot’s face On roll / On absorb, attached overloads, and
+  Overcharge / forge-yield extra pips; a silenced ritual cannot
+  `ACTIVATE_RITUAL`, and a silenced continuous ritual’s standing abilities
+  do not fire. Passive while-attached modifiers from silenced equipment or
+  a silenced continuous ritual do not apply.
+- Rolled **pips still generate**. Attacks may still be **declared**; Strike,
+  Prevent, and Shield still happen. Extra attack effects and follow-ups from
+  a silenced attacker are skipped.
+- Equipment and overloads are not named directly — they are silenced with
+  their host creature or showing slot. Hand, deck, and unattached cards are
+  not silenced.
 
 **Stun** is implemented on dice but **deferred**: nothing applies it.
 

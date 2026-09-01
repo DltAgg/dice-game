@@ -19,6 +19,7 @@ import {
 } from "../model/ids.js";
 import type { SymbolType } from "../model/symbols.js";
 import { nextInstanceId, patchCreature, type Draft } from "./draft.js";
+import { filterSilencedHosts, isCreatureSilenced, isSlotSilenced } from "../rules/silence.js";
 import {
   isHostSpent,
   isPlayerSpent,
@@ -222,7 +223,7 @@ function collectHosts(draft: Draft): TriggerHost[] {
     });
   }
 
-  return hosts;
+  return filterSilencedHosts(draft, hosts);
 }
 
 /** After the bearer deals HP damage to `damagedCreatureId`. */
@@ -233,6 +234,7 @@ export function fireOnDealDamage(
 ): void {
   const creature = draft.creatures[sourceCreatureId];
   if (creature === undefined || creature.defeated) return;
+  if (isCreatureSilenced(draft, sourceCreatureId)) return;
 
   for (const cardInstanceId of creature.equipmentIds) {
     const instance = draft.cards[cardInstanceId];
@@ -362,6 +364,13 @@ export function queueAbsorbTriggers(
     absorber.kind === "creature"
       ? absorber.id
       : faceSourceCreatureId;
+  if (
+    sourceDieId !== null &&
+    slotIndex !== null &&
+    isSlotSilenced(draft, sourceDieId, slotIndex)
+  ) {
+    return;
+  }
   fireFaceOnAbsorb(draft, absorbingPlayerId, faceCardId, sourceCreatureId, sourceDieId, slotIndex);
   fireOverloadsOnAbsorb(
     draft,
@@ -538,6 +547,7 @@ export function applyOnTakeDamageReduce(
   let remaining = amount;
   const creature = draft.creatures[damagedCreatureId];
   if (creature === undefined || remaining <= 0) return remaining;
+  if (isCreatureSilenced(draft, damagedCreatureId)) return remaining;
 
   for (const cardInstanceId of creature.equipmentIds) {
     const instance = draft.cards[cardInstanceId];
@@ -577,6 +587,7 @@ export function fireOnTakeDamageEffects(
 ): void {
   const creature = draft.creatures[damagedCreatureId];
   if (creature === undefined) return;
+  if (isCreatureSilenced(draft, damagedCreatureId)) return;
 
   for (const cardInstanceId of creature.equipmentIds) {
     const instance = draft.cards[cardInstanceId];

@@ -1,6 +1,6 @@
 import type { EffectDefinition, TargetSelector } from "../model/effects.js";
 import type { CardInstanceId, PlayerId } from "../model/ids.js";
-import type { PendingEffect } from "../model/state.js";
+import type { GameState, PendingEffect } from "../model/state.js";
 import { opponentOf } from "../rules/creatures.js";
 import { emit, type Draft } from "./draft.js";
 import { destroyEquipment, destroyOverload, destroyRitual } from "./zones.js";
@@ -11,28 +11,31 @@ import { destroyEquipment, destroyOverload, destroyRitual } from "./zones.js";
  * (including exactly one); empty field is a legal whiff.
  */
 
-export function opposingRitualIds(draft: Draft, controllerId: PlayerId): readonly CardInstanceId[] {
-  const enemy = draft.players[opponentOf(draft, controllerId)];
+export function opposingRitualIds(
+  state: GameState,
+  controllerId: PlayerId,
+): readonly CardInstanceId[] {
+  const enemy = state.players[opponentOf(state, controllerId)];
   if (enemy === undefined) return [];
-  return enemy.ritual.filter((id) => draft.cards[id]?.zone === "ritual");
+  return enemy.ritual.filter((id) => state.cards[id]?.zone === "ritual");
 }
 
 export function opposingEquipmentIds(
-  draft: Draft,
+  state: GameState,
   controllerId: PlayerId,
 ): readonly CardInstanceId[] {
-  const enemy = draft.players[opponentOf(draft, controllerId)];
+  const enemy = state.players[opponentOf(state, controllerId)];
   if (enemy === undefined) return [];
-  return enemy.equipment.filter((id) => draft.cards[id]?.zone === "equipment");
+  return enemy.equipment.filter((id) => state.cards[id]?.zone === "equipment");
 }
 
 export function opposingOverloadIds(
-  draft: Draft,
+  state: GameState,
   controllerId: PlayerId,
 ): readonly CardInstanceId[] {
-  const enemy = draft.players[opponentOf(draft, controllerId)];
+  const enemy = state.players[opponentOf(state, controllerId)];
   if (enemy === undefined) return [];
-  return enemy.overload.filter((id) => draft.cards[id]?.zone === "overload");
+  return enemy.overload.filter((id) => state.cards[id]?.zone === "overload");
 }
 
 export function resolveDeclaredCardTarget(

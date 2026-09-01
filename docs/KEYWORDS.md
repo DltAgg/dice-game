@@ -31,8 +31,8 @@ shared; the argument follows attribute exclusives.
 | Layer | What belongs here | Example |
 |---|---|---|
 | **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
-| **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]` |
-| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Prevent]`, `[Convert N]` |
+| **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]`, `[Bounce X]` |
+| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Prevent]`, `[Silence]`, `[Convert N]`, `[Desynthesize]` |
 
 ---
 
@@ -96,6 +96,8 @@ transfer. Do not mint Detonate / Rend as keywords.
 | `[Generate N Toxin]` | A **pool symbol** for this turn. Expires at end of turn. |
 | Absorb Toxin | Banks a pool pip into your attribute pile. Grammar, not an effect keyword. |
 | `[Prevent]` | Reaction to an attack declaration. Grants attack-prevent on the attack’s target (before Shield). Luminar exclusive. Not a token you Mark. |
+| `[Silence]` | Physics. Chosen opposing host cannot fire or activate its effects until the start of your next turn. Not a Mark token. Distinct from `[Negate]`. |
+| `[Desynthesize]` | Physics. Replace a synthetic attribute face on any die with that attribute’s natural. Not a Mark token. Distinct from `[Reforge]`. |
 | `[Empower N]` | Extra damage on an attack. Not a token. |
 | `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. |
 
@@ -112,6 +114,7 @@ Same idea, different nouns.
 | `[Overcharge]` | A hand card | Spend that card onto one attribute **face card** on **your** dice; every die that shows that face `[Generate]`s +1 of the spent card’s attribute when rolled |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` / `[Destroy Overload]` | A card on the field | Send one to its owner’s graveyard |
+| `[Bounce]` / `[Bounce Ritual]` / `[Bounce Equipment]` / `[Bounce Overload]` | A card on the field | Return one to its owner’s **hand**. `[Bounce]` with no type = ritual, equipment, or overload |
 | `[Drain N]` | Life (HP) | Deal up to N damage to a chosen enemy (normal Prevent → Shield → HP). Heal your **most-damaged ally** for the **HP actually lost**. |
 
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
@@ -127,10 +130,13 @@ opcode stays on the faces that still use it.
 ritual already on the field. `[Destroy Equipment]` / `[Destroy Overload]` name
 an opposing attached card the same way — not the host creature or face.
 
+`[Bounce]` answers the same opposing field cards as Destroy, but the card
+returns to its owner’s **hand** instead of the graveyard. Not discard.
+
 <!--
 Engine: generate-symbol | FORGE_CARD / forge-faces | OVERCHARGE_CARD (`[Overcharge]`) |
 negate-card / negate-ritual |
-destroy-equipment / destroy-ritual / destroy-overload | drain-life |
+destroy-equipment / destroy-ritual / destroy-overload | bounce | drain-life |
 No Contaminate / Seal / Disarm / Unmake / Siphon keywords.
 Spec `013` `optional-overcharge` is the face-marker opcode, not this keyword.
 -->
@@ -150,6 +156,8 @@ These are not tokens.
 | `[Frenzy]` / `[Frenzy N]` | That creature may declare N extra attacks this turn (default 1). Wild exclusive. Does not clear attacks already used. |
 | `[Pierce N]` | Ignore N Shield after Prevent |
 | `[Prevent]` | Prevent the next attack against the creature under attack (before Shield). Luminar **reaction** exclusive — not a proactive arm. |
+| `[Silence]` | The chosen opposing creature, field ritual, or die slot cannot activate or fire its effects until the start of **your** next turn. Not a token. Distinct from `[Negate]` / the reaction card Arcane Silence. |
+| `[Desynthesize]` | Replace a synthetic attribute face on **any die** with that attribute’s natural identity. Not a forge. Not `[Reforge]`. Overloads on the orphaned face leave. Stay / forge-lock does not block it. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
 | `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). On roll / Instant without **forge** arms that play discount for this turn. `[Discount N] forge` cheapens the next synthetic forge instead. Discount reduces `[Spend]` **Any** pips first, then named attributes. Remaining named cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
@@ -157,7 +165,7 @@ These are not tokens.
 | `[Recall N]` | Return up to N cards from your graveyard to your hand |
 | `[Mill N]` | Put cards from a deck into a graveyard. Darkness exclusive. |
 | `[Reposition]` / `[Swap]` | Move an ally frontline ↔ back / swap with an ally. Martial exclusive. |
-| `[Reforge]` | Replace one of your matching synthetic faces (no forge-draw). Mechanical exclusive. |
+| `[Reforge]` | Replace one of your matching synthetic faces (no forge-draw). Mechanical exclusive. Distinct from `[Desynthesize]`. |
 | `[Stamp]` | Re-fire a showing face’s roll effects (On roll, overloads, Overcharge, forge yield, equipment on-roll-symbol). No new rolled pip. Mechanical exclusive. |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
 | `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
@@ -173,11 +181,15 @@ peek-deck-optional-bottom | search-deck | search-graveyard | dark-pact |
 reposition-creature | swap-positions | replace-synthetic-face |
 reapply-die-modifiers | arm-resolve-next-face-effect-twice |
 arm-requirement-wildcard | arm-wildcard-from-synthetic-pool | optional-reroll-die |
-retain-die | grant-extra-attack (`[Frenzy]`).
+retain-die | grant-extra-attack (`[Frenzy]`) | silence (`[Silence]`, spec `022`) |
+bounce (`[Bounce]`, spec `023`) | desynthesize (`[Desynthesize]`, spec `024`).
 Peek is [Insight 1]. Prime is [Empower N] on that creature.
 Spell until they recur: Aegis, Rain, Expose, Tough, Might, Lock, Suppress, Hex,
 Copy Face, Mirror, Exterminate, Mind Control.
 Push is banned. Stun and Scale are deferred — do not print.
+`[Silence]` is not `[Negate]` and not Arcane Silence the reaction card.
+`[Bounce]` is not `[Destroy]` (hand, not GY) and not discard.
+`[Desynthesize]` is not `[Reforge]` (`replace-synthetic-face`).
 Wild's exclusive extra-attack verb is `[Frenzy]`.
 -->
 

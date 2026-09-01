@@ -3,12 +3,16 @@ import {
   formatFaceKind,
   getCard,
   hasLegalReactionOffer,
+  uniqueBounceHosts,
+  uniqueSilenceHosts,
+  type BounceHost,
   type CardInstanceId,
   type CardType,
   type CreatureChoiceFilter,
   type DieChoiceFilter,
   type DieSlotChoiceFilter,
   type GameState,
+  type SilenceHost,
 } from "@server";
 import {
   type Intent,
@@ -79,6 +83,8 @@ export function chooseDieSlotFilterHint(filter: DieSlotChoiceFilter): string {
       return "Choose another face on the same die.";
     case "appeared-synthetic-this-roll":
       return "Choose a synthetic face that appeared this roll.";
+    case "any-synthetic":
+      return "Choose a synthetic face on any die.";
   }
 }
 
@@ -88,6 +94,42 @@ export function formatCardTypeList(types: readonly CardType[]): string {
   if (labels.length === 1) return labels[0] ?? "card";
   if (labels.length === 2) return `${labels[0] ?? ""} or ${labels[1] ?? ""}`;
   return `${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1] ?? ""}`;
+}
+
+const SILENCE_HOST_LABEL: Readonly<Record<SilenceHost, string>> = {
+  creature: "creature",
+  ritual: "ritual",
+  face: "die face",
+};
+
+export function chooseSilenceHostHint(hosts: readonly SilenceHost[]): string {
+  const labels = uniqueSilenceHosts(hosts).map((host) => SILENCE_HOST_LABEL[host]);
+  if (labels.length === 0) {
+    return "Choose an opposing creature, ritual, or die face to Silence.";
+  }
+  if (labels.length === 1) return `Choose an opposing ${labels[0] ?? "host"} to Silence.`;
+  if (labels.length === 2) {
+    return `Choose an opposing ${labels[0] ?? ""} or ${labels[1] ?? ""} to Silence.`;
+  }
+  return `Choose an opposing ${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1] ?? ""} to Silence.`;
+}
+
+const BOUNCE_HOST_LABEL: Readonly<Record<BounceHost, string>> = {
+  ritual: "ritual",
+  equipment: "equipment",
+  overload: "overload",
+};
+
+export function chooseBounceCardHint(hosts: readonly BounceHost[]): string {
+  const labels = uniqueBounceHosts(hosts).map((host) => BOUNCE_HOST_LABEL[host]);
+  if (labels.length === 0) {
+    return "Choose an opposing ritual, equipment, or overload to Bounce.";
+  }
+  if (labels.length === 1) return `Choose an opposing ${labels[0] ?? "card"} to Bounce.`;
+  if (labels.length === 2) {
+    return `Choose an opposing ${labels[0] ?? ""} or ${labels[1] ?? ""} to Bounce.`;
+  }
+  return `Choose an opposing ${labels.slice(0, -1).join(", ")}, or ${labels[labels.length - 1] ?? ""} to Bounce.`;
 }
 
 export function maxPlayCostPhrase(maxPlayCost: number): string {
@@ -215,9 +257,21 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       : "Waiting for the opponent to decide on a reroll.";
   }
   if (state.pendingDecision?.type === "choose-die-slot") {
-    if (!isPendingChooser) return "Waiting for the opponent to choose a die face.";
+    if (!isPendingChooser) {
+      return state.pendingDecision.filter === "any-synthetic"
+        ? "Waiting for the opponent to choose a synthetic face to Desynthesize."
+        : "Waiting for the opponent to choose a die face.";
+    }
     const base = chooseDieSlotFilterHint(state.pendingDecision.filter);
     return state.pendingDecision.optional === true ? `${base} Or Decline.` : base;
+  }
+  if (state.pendingDecision?.type === "choose-silence-host") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose a host to Silence.";
+    return chooseSilenceHostHint(state.pendingDecision.hosts);
+  }
+  if (state.pendingDecision?.type === "choose-bounce-card") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose a card to Bounce.";
+    return chooseBounceCardHint(state.pendingDecision.hosts);
   }
   if (state.pendingDecision?.type === "choose-pool-symbol") {
     return isPendingChooser

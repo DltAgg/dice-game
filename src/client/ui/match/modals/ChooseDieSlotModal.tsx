@@ -1,6 +1,9 @@
 import {
+  attributeLabel,
   getFaceCard,
+  isAttribute,
   legalDieSlotsForFilter,
+  naturalFaceId,
   type DieId,
   type DieSlotChoiceFilter,
   type GameState,
@@ -55,7 +58,7 @@ export function ChooseDieSlotModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Choose a die face
+          {filter === "any-synthetic" ? "Desynthesize a synthetic face" : "Choose a die face"}
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">{chooseDieSlotFilterHint(filter)}</p>
         <CausedByLine state={state} />
@@ -64,7 +67,14 @@ export function ChooseDieSlotModal({
             const die = state.dice[dieId];
             const slot = die?.slots[slotIndex];
             const face = slot !== undefined ? getFaceCard(slot.faceCardId) : undefined;
-            const status = slot !== undefined ? slotStatusLine(slot) : null;
+            const counterpartLabel =
+              face !== undefined &&
+              face.kind === "synthetic" &&
+              isAttribute(face.symbol) &&
+              getFaceCard(naturalFaceId(face.symbol)) !== undefined
+                ? ` · → Natural ${attributeLabel(face.symbol)}`
+                : "";
+            const status = slot !== undefined ? slotStatusLine(slot, { state, dieId }) : null;
             return (
               <li key={`${dieId}:${String(slotIndex)}`}>
                 <button
@@ -82,6 +92,7 @@ export function ChooseDieSlotModal({
                   <p className="text-xs capitalize text-stone-500">
                     {labelForDie(dieId)} · slot {String(slotIndex + 1)}
                     {face !== undefined ? ` · ${face.kind} · ${face.symbol}` : ""}
+                    {counterpartLabel}
                   </p>
                   {status !== null && (
                     <p className="mt-1 text-[0.65rem] text-rose-300/90">{status}</p>

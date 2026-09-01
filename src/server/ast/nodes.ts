@@ -1,7 +1,7 @@
 import type { Attribute } from "../model/attributes.js";
 import type { CardType } from "../model/cards.js";
 import type { FaceKind, ForgeableFaceKind } from "../model/dice.js";
-import type { TargetSelector } from "../model/effects.js";
+import type { BounceHost, SilenceHost, TargetSelector } from "../model/targeting.js";
 import type { SymbolType } from "../model/symbols.js";
 
 /** Closed token set for `[Mark N X]` / `[Strip N X]`. Stun is DEFERRED. */
@@ -100,7 +100,10 @@ export type EffectOp =
   | "destroy-ritual"
   | "destroy-overload"
   | "drain-life"
-  | "search-graveyard";
+  | "search-graveyard"
+  | "silence"
+  | "bounce"
+  | "desynthesize";
 
 export type EffectNode = {
   readonly op: EffectOp;
@@ -130,6 +133,7 @@ export type EffectNode = {
   readonly oncePerTurn?: boolean;
   readonly sameFaceAllyDamage?: number;
   readonly searchZone?: "deck" | "graveyard";
+  readonly hosts?: readonly SilenceHost[] | readonly BounceHost[];
 };
 
 export type TriggerEvent =

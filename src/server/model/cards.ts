@@ -359,4 +359,9 @@ export interface CardInstance {
   readonly attachedToFaceCardId: FaceCardId | null;
   /** Set only while `zone === "ritual"`. */
   readonly ritualOrientation: RitualOrientation | null;
+  /**
+   * `[Silence]` expiry turn while in zone `ritual`. Silenced while
+   * `GameState.turn < this`. Spec `022`.
+   */
+  readonly silenceExpiresOnTurn?: number;
 }

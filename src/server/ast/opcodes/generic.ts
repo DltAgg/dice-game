@@ -5,6 +5,9 @@ import type { CreatureId } from "../../model/ids.js";
 import { ValueEvaluator } from "../evaluate.js";
 import type { ExecutionContext, IOpcodeHandler } from "../registry.js";
 import { OpcodeRegistry } from "../registry.js";
+import { BounceHandler } from "./bounce.js";
+import { DesynthesizeHandler } from "./desynthesize.js";
+import { SilenceHandler } from "./silence.js";
 
 export interface ResolutionKernel {
   applyToTargets(
@@ -135,6 +138,9 @@ export function createGenericRegistry(kernel: ResolutionKernel): OpcodeRegistry 
   registry.register(wrapping(new HealHandler(kernel)));
   registry.register(wrapping(new MarkHandler(kernel)));
   registry.register(wrapping(new ModifyHandler(kernel)));
+  registry.register(new SilenceHandler());
+  registry.register(new BounceHandler());
+  registry.register(new DesynthesizeHandler());
   return registry;
 }
 

@@ -13,6 +13,7 @@ import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/
 import type { GameState } from "../model/state.js";
 import type { SymbolType } from "../model/symbols.js";
 import { requirementTotal } from "../model/symbols.js";
+import { isCreatureSilenced } from "./silence.js";
 import {
   canAffordUnderCaps,
   discountedRequirementNeed,
@@ -286,6 +287,7 @@ export function attackDamageBonus(
 
   for (const ally of Object.values(state.creatures)) {
     if (ally.defeated || ally.ownerId !== creature.ownerId) continue;
+    if (isCreatureSilenced(state, ally.id)) continue;
     const standing = getCreatureDefinition(ally.definitionId)?.standingAbilities ?? [];
     addFromAbilities(standing, ally.id);
     for (const cardInstanceId of ally.equipmentIds) {

@@ -129,4 +129,8 @@ export interface CreatureState {
    * owner's next turn starts. `null` / omitted = uncapped. Spec `013`.
    */
   readonly toxinReceiveCapRemaining?: number | null;
+  /**
+   * `[Silence]` expiry turn. Silenced while `GameState.turn < this`. Spec `022`.
+   */
+  readonly silenceExpiresOnTurn?: number;
 }

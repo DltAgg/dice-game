@@ -93,3 +93,39 @@ describe("seatGate — non-reaction pending chooser vs turn player", () => {
     expect(localSeatIsPendingChooser(true, P2, p2TurnP1Chooses)).toBe(false);
   });
 });
+
+describe("seatGate — choose-silence-host uses controllerId", () => {
+  const silencePending = stateOf({
+    activePlayerId: P2,
+    pending: {
+      type: "choose-silence-host",
+      controllerId: P1,
+      hosts: ["creature", "ritual", "face"],
+      deferred: {} as never,
+    },
+  });
+
+  it("offers the mixed Silence chooser to the controller, not the turn player", () => {
+    expect(pendingChooserId(silencePending)).toBe(P1);
+    expect(localSeatIsPendingChooser(true, P1, silencePending)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P2, silencePending)).toBe(false);
+  });
+});
+
+describe("seatGate — choose-bounce-card uses controllerId", () => {
+  const bouncePending = stateOf({
+    activePlayerId: P2,
+    pending: {
+      type: "choose-bounce-card",
+      controllerId: P1,
+      hosts: ["ritual", "equipment", "overload"],
+      deferred: {} as never,
+    },
+  });
+
+  it("offers the mixed Bounce chooser to the controller, not the turn player", () => {
+    expect(pendingChooserId(bouncePending)).toBe(P1);
+    expect(localSeatIsPendingChooser(true, P1, bouncePending)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P2, bouncePending)).toBe(false);
+  });
+});

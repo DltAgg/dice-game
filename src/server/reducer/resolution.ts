@@ -54,6 +54,10 @@ import {
   applyDestroyDeclaredCard,
   tryOpenOpposingCardChoice,
 } from "./cardChoice.js";
+import { applyBounce } from "./bounceApply.js";
+import { applyDesynthesize } from "./desynthesize.js";
+import { applySilence } from "./silenceApply.js";
+import { tryOpenEffectChoice } from "./effectChoiceOpeners.js";
 import {
   destroyEquipment,
   drawCards,
@@ -251,6 +255,10 @@ function resolveTarget(
     case "declared-ritual":
     case "declared-equipment":
     case "declared-overload":
+    case "choose-opponent-silence-host":
+    case "choose-opponent-bounce-card":
+    case "choose-any-synthetic-slot":
+    case "declared-die-slot":
       // Creature/card choose-* open pending decisions; card uses resolveDeclaredCardTarget.
       return null;
     case "allied-frontline":
@@ -503,6 +511,9 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
 
   const opposingCardChoice = tryOpenOpposingCardChoice(draft, pending, effect);
   if (opposingCardChoice !== null) return opposingCardChoice;
+
+  const effectChoice = tryOpenEffectChoice(draft, pending, effect);
+  if (effectChoice !== null) return effectChoice;
 
   if (effect.type === "reposition-creature" && effect.optional === true) {
     const selector = effect.target;
@@ -802,6 +813,12 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
     case "destroy-ritual":
     case "destroy-overload":
       return applyDestroyDeclaredCard(draft, pending, effect);
+    case "silence":
+      return applySilence(draft, pending, effect);
+    case "bounce":
+      return applyBounce(draft, pending, effect);
+    case "desynthesize":
+      return applyDesynthesize(draft, pending, effect);
     case "grant-attack-prevent": {
       // Reaction-exclusive: only while a living attack is on the chain, and
       // only onto that attack's target (Barrier / Sidestep). Proactive grants whiff.

@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-homeward-seal",
+  "name": "Homeward Seal",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Bounce] an opposing ritual, equipment, or overload.",
+  "effect": {
+    "effects": [
+      {
+        "type": "bounce",
+        "hosts": ["ritual", "equipment", "overload"],
+        "target": {
+          "kind": "choose-opponent-bounce-card",
+          "hosts": ["ritual", "equipment", "overload"]
+        }
+      }
+    ]
+  }
+}

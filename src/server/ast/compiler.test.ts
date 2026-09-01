@@ -40,6 +40,50 @@ describe("AstCompiler", () => {
     });
   });
 
+  it("maps silence to the silence opcode with hosts", () => {
+    const node = compiler.compileLegacy({
+      type: "silence",
+      hosts: ["creature", "face"],
+      target: { kind: "choose-opponent-silence-host", hosts: ["creature", "face"] },
+    });
+    expect(node.op).toBe("silence");
+    expect(node.hosts).toEqual(["creature", "face"]);
+    expect(node.target).toEqual({
+      kind: "choose-opponent-silence-host",
+      hosts: ["creature", "face"],
+    });
+  });
+
+  it("maps bounce to the bounce opcode with hosts", () => {
+    const node = compiler.compileLegacy({
+      type: "bounce",
+      hosts: ["ritual", "equipment", "overload"],
+      target: {
+        kind: "choose-opponent-bounce-card",
+        hosts: ["ritual", "equipment", "overload"],
+      },
+    });
+    expect(node).toEqual({
+      op: "bounce",
+      hosts: ["ritual", "equipment", "overload"],
+      target: {
+        kind: "choose-opponent-bounce-card",
+        hosts: ["ritual", "equipment", "overload"],
+      },
+    });
+  });
+
+  it("maps desynthesize to the desynthesize opcode", () => {
+    const node = compiler.compileLegacy({
+      type: "desynthesize",
+      target: { kind: "choose-any-synthetic-slot" },
+    });
+    expect(node).toEqual({
+      op: "desynthesize",
+      target: { kind: "choose-any-synthetic-slot" },
+    });
+  });
+
   it("maps conditional to branch with combinable atoms", () => {
     const node = compiler.compileLegacy({
       type: "conditional",

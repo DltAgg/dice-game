@@ -13,6 +13,7 @@ import {
   formatTypeLine,
   getCard,
   getCreatureDefinition,
+  isCreatureSilenced,
   SHIELD,
   type AttackId,
   type CreatureId,
@@ -67,6 +68,7 @@ export function CreatureTile({
   const def = getCreatureDefinition(creature.definitionId);
   if (def === undefined) return null;
   const isLegendary = def.legendary === true;
+  const silenced = isCreatureSilenced(state, creature.id);
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
   const absorbSymbolId = intent.kind === "absorb" ? intent.symbolId : undefined;
@@ -123,6 +125,7 @@ export function CreatureTile({
                   : ""}
                 {creature.nextAttackBonus > 0 ? ` · Next ATK +${creature.nextAttackBonus}` : ""} ·
                 Toxin {creature.toxinMarkers}
+                {silenced ? " · Silenced" : ""}
               </p>
               <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
                 {creature.position}
@@ -192,6 +195,11 @@ export function CreatureTile({
         <p className="flex flex-wrap items-center gap-2 font-medium text-stone-100">
           <span>{def.name}</span>
           {isLegendary && <LegendaryBadge />}
+          {silenced && (
+            <span className="inline-block rounded border border-violet-400/40 bg-violet-950/50 px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-violet-200">
+              Silenced
+            </span>
+          )}
         </p>
         <p className="mt-1 text-xs text-stone-400">
           HP {life}/{def.life} · Shield {creature.shields}

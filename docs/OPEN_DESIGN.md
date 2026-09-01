@@ -612,6 +612,91 @@ Not to be designed or built on for now. `DieState.stunMarkers` and the roll
 rule that honours it stay in place — they are implemented and tested — but no
 effect will apply stun, and no removal timing will be invented.
 
+### Silence (`[Silence]`)
+
+**Status:** `DECIDED` · 2026-09-01 · user-directed · spec `022`
+
+A physics keyword, **not** a Mark token and **not** stun. Legal sources:
+tactic instant `effect`, ritual activate `effects`, overload `onRoll` /
+`onAbsorb` (same `silence` opcode). Target hosts are a non-empty unique
+subset of `"creature" | "ritual" | "face"` per card. Default targeting is
+**opposing** hosts only. Empty legal set is a legal **whiff**.
+
+This is **not** Arcane Silence / `negate-card` (that card stays a `[Negate]`
+reaction). Spec `013` `suppressInherentNextRoll` stays a narrower skip
+(inherent onRoll only; overloads still fire). Stun stays `DEFERRED`.
+
+**ASSUMED** (labelled prototype; bible is silent):
+
+| Topic | Assumption coded |
+|---|---|
+| **Expiry** | `silenceExpiresOnTurn = state.turn + 2`. Host is silenced while `state.turn < silenceExpiresOnTurn`. `GameState.turn` increments every `END_TURN`. Covers remainder of the current turn + the opponent’s intervening turn (= until the start of the silencer’s next turn). |
+| **Storage** | Creature: `CreatureState.silenceExpiresOnTurn`. Ritual: `CardInstance.silenceExpiresOnTurn` (zone `ritual` only). Face: **per physical slot** `DieSlot.silenceExpiresOnTurn` (like forge-lock). Same face on another die is not silenced. |
+| **Pips** | Rolled pips still generate. Silence skips **effects**, not the die result / pile banking of the pip. Forge-yield extra pips and Overcharge generate skip when the showing slot is silenced. |
+| **Attacks** | Silenced creature may still declare. Strike / attack-prevent / Shield still happen. Skip `followUpEffects` when the attacker is silenced. Skip standing `on-attack` / `on-deal-damage` / other hooks from that creature **and its equipment**. |
+| **Modifiers** | Passive `while-attached` modifiers from a silenced creature’s equipment or a silenced continuous ritual do not apply. |
+| **Stamp** | `[Stamp]` / `reapply-die-modifiers` / copy-face re-fires skip a silenced showing slot’s face onRoll and that face’s overloads. |
+| **Not targets** | Equipment is silenced via the host creature. Overloads via the showing slot. Do not silence the opponent’s hand, deck, or unattached cards. |
+| **vs suppress inherent** | Either skip face onRoll. Silence **also** skips overloads; `suppressInherentNextRoll` does not. |
+
+---
+
+### Bounce (`[Bounce]`)
+
+**Status:** `DECIDED` · 2026-09-01 · user-directed · spec `023`
+
+An operator keyword, parameterized like `[Destroy]`: `[Bounce Ritual]` /
+`[Bounce Equipment]` / `[Bounce Overload]` / `[Bounce]` = any of those three.
+Legal sources: tactic instant `effect`, ritual activate `effects`, overload
+`onRoll` / `onAbsorb` (same `bounce` opcode). Target hosts are a non-empty
+unique subset of `"ritual" | "equipment" | "overload"` per card. Destination
+is the **owner’s hand** after detach. Distinct from Destroy (GY).
+
+**ASSUMED** (labelled prototype; bible is silent):
+
+| Topic | Assumption coded |
+|---|---|
+| **Opposing only** | Same as Unwrite / destroy-ritual. Own-field cards are never legal. Empty legal set = legal **whiff**. Always prompt when ≥1 eligible (including exactly one). |
+| **Not discard** | Do not fire `on-discard`. |
+| **Not destroy** | Do not emit `*-destroyed` as the primary event; emit `card-bounced` (zone left + `cardInstanceId`). |
+| **Silence** | Clear `silenceExpiresOnTurn` on the instance; field status does not follow into hand. |
+| **Rituals** | Preparing / ready / exhausted are all legal (same as destroy-ritual). |
+| **Hand size** | No hand-size cap. |
+| **Detach** | Equipment/overload attachment fields clear via `moveCard`. Still detach from `creature.equipmentIds` before the move. |
+| **Chain** | Does not touch the reaction chain (not negate). |
+
+Stun stays `DEFERRED`.
+
+---
+
+### Desynthesize (`[Desynthesize]`)
+
+**Status:** `DECIDED` · 2026-09-01 · user-directed · spec `024`
+
+A physics keyword, **not** a Mark token and **not** Mechanical-exclusive
+(Mechanical already has `[Reforge]`). Shared operator. Proving-card source is
+an instant; the reducer does not hard-ban other sources. Target: a synthetic
+face **slot** on **your die or the opponent’s die**.
+
+**Not** `[Reforge]` / `replace-synthetic-face` (swap to a different synthetic
+from pool, owned die only, blocked by stay/forge-lock).
+
+**ASSUMED** (labelled prototype; bible is silent):
+
+| Topic | Assumption coded |
+|---|---|
+| **Counterpart** | `kind === "synthetic"` and `symbol` is an `Attribute` → install `naturalFaceId(symbol)` on that slot. `faceCardOwnerId` of the **natural** = **die owner**. Untyped / non-attribute synthetics are not legal. |
+| **Named naturals** | Named **natural** specials (e.g. Dawnwright) are not synthetic — illegal targets. |
+| **Displaced synthetic** | `returnFaceToPoolIfOrphaned` to `slot.faceCardOwnerId`. If last copy of that faceCardId+owner is gone, `clearOverloadsOnFace` + `clearOverchargeOnFace`. |
+| **Not a forge** | No forge-draw. **Not blocked** by `slotCannotBeReplacedByForge` / forge-lock / cannot-replace-by-forge (peel-class). Lock / pestilence / corruption / silence / suppress / forgeYield on that slot **clear** because the face changed. |
+| **Pool** | Do **not** take the natural from anyone’s face pool (basics are identity faces). |
+| **Attribute cap** | Synthetic X → natural X keeps the same attribute on the slot — legal even at the 4-pip cap. |
+| **Showing slot** | Do **not** rewrite the already-generated unabsorbed pip. Next roll uses the natural. |
+| **Chooser** | Always prompt when ≥1 legal synthetic slot exists (any player’s dice). Empty = legal whiff. Not optional. |
+| **Copies** | Per **physical slot**. Other slots with the same synthetic id stay until orphaned-copy rules return the card to pool. |
+
+Stun stays `DEFERRED`. `[Reforge]` stays Mechanical exclusive and is not reused for desynthesis.
+
 ---
 
 ## Prototype assumptions — deferred vocabulary (2026-08-14)

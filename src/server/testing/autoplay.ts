@@ -23,9 +23,11 @@ import {
 } from "../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import { diceOf } from "../rules/dice.js";
+import { collectLegalSilenceHosts } from "../rules/silence.js";
+import { collectLegalBounceCards } from "../rules/bounce.js";
 import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
 import { legalTargetsFor } from "../rules/targeting.js";
-import { legalCreaturesForFilter, legalDiceForFilter } from "../rules/targets.js";
+import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
 import {
   addToken,
   attackIsFuelled,
@@ -736,6 +738,75 @@ function resolvePending(state: GameState): GameState {
     });
     if (!result.ok) {
       throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_OPTIONAL_REROLL`);
+    }
+    return resolvePending(result.state);
+  }
+
+  if (pending.type === "choose-silence-host") {
+    const legal = collectLegalSilenceHosts(state, pending.controllerId, pending.hosts);
+    const choice = legal[0];
+    if (choice === undefined) {
+      throw new Error("autoplay: no host for choose-silence-host");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_CHOOSE_SILENCE_HOST",
+      playerId: pending.controllerId,
+      choice,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_SILENCE_HOST`);
+    }
+    return resolvePending(result.state);
+  }
+
+  if (pending.type === "choose-bounce-card") {
+    const legal = collectLegalBounceCards(state, pending.controllerId, pending.hosts);
+    const choice = legal[0];
+    if (choice === undefined) {
+      throw new Error("autoplay: no host for choose-bounce-card");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_CHOOSE_BOUNCE_CARD",
+      playerId: pending.controllerId,
+      choice,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_BOUNCE_CARD`);
+    }
+    return resolvePending(result.state);
+  }
+
+  if (pending.type === "choose-die-slot") {
+    const legal = legalDieSlotsForFilter(state, pending.controllerId, pending.filter, {
+      ...(pending.contextDieId !== undefined ? { contextDieId: pending.contextDieId } : {}),
+      ...(pending.excludedSlotIndex !== undefined
+        ? { excludedSlotIndex: pending.excludedSlotIndex }
+        : {}),
+    });
+    const first = legal[0];
+    if (first === undefined) {
+      if (pending.optional === true) {
+        const declined = advance(state, {
+          type: "RESOLVE_CHOOSE_DIE_SLOT",
+          playerId: pending.controllerId,
+          dieId: null,
+          slotIndex: null,
+        });
+        if (!declined.ok) {
+          throw new Error(`autoplay: unexpected ${declined.error} on RESOLVE_CHOOSE_DIE_SLOT decline`);
+        }
+        return resolvePending(declined.state);
+      }
+      throw new Error("autoplay: no slot for choose-die-slot");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_CHOOSE_DIE_SLOT",
+      playerId: pending.controllerId,
+      dieId: first.dieId,
+      slotIndex: first.slotIndex,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_DIE_SLOT`);
     }
     return resolvePending(result.state);
   }

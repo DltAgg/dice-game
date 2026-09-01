@@ -10,6 +10,7 @@ import {
 import type { SymbolType } from "../../model/symbols.js";
 import type { RNG } from "../../rng/rng.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../../rules/dice.js";
+import { isSlotSilenced } from "../../rules/silence.js";
 import { emit, patchDie, type Draft } from "../draft.js";
 import { drainResolution } from "../resolution.js";
 import { bankRolledSymbols } from "../rollBank.js";
@@ -100,8 +101,10 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
     // Own-die forge yield: extra Generate of the showing face's attribute
     // (DECIDED 2026-08-29). Same auto-bank path as effect Generate.
     const showingSlot = draft.dice[die.id]?.slots[slotIndex] ?? slot;
-    applyForgeYieldGenerate(draft, playerId, showingSlot, face.symbol);
-    applyOverchargeGenerate(draft, die.ownerId, showingSlot.faceCardId);
+    if (!isSlotSilenced(draft, die.id, slotIndex)) {
+      applyForgeYieldGenerate(draft, playerId, showingSlot, face.symbol);
+      applyOverchargeGenerate(draft, die.ownerId, showingSlot.faceCardId);
+    }
   }
 
   // Fire onRoll in die order (later dice push on top so LIFO resolves left-to-right).

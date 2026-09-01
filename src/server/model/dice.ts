@@ -147,6 +147,11 @@ export interface DieSlot {
    * by overwrite / peel unless re-set. OPEN_DESIGN DECIDED 2026-08-29.
    */
   readonly forgeYield?: boolean;
+  /**
+   * `[Silence]` expiry turn on this physical slot. Silenced while
+   * `GameState.turn < this`. Spec `022`. Same face on another die is unaffected.
+   */
+  readonly silenceExpiresOnTurn?: number;
 }
 
 export interface DieState {

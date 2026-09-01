@@ -139,6 +139,34 @@
         "any": { "$ref": "#/$defs/positiveAmount" }
       }
     },
+    "silenceHost": {
+      "title": "SilenceHost",
+      "description": "A [Silence] target kind. Spec 022.",
+      "type": "string",
+      "enum": ["creature", "ritual", "face"]
+    },
+    "silenceHosts": {
+      "title": "SilenceHosts",
+      "description": "Non-empty unique subset of Silence hosts this card may name.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/silenceHost" }
+    },
+    "bounceHost": {
+      "title": "BounceHost",
+      "description": "A [Bounce] target kind. Spec 023.",
+      "type": "string",
+      "enum": ["ritual", "equipment", "overload"]
+    },
+    "bounceHosts": {
+      "title": "BounceHosts",
+      "description": "Non-empty unique subset of Bounce hosts this card may name.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/bounceHost" }
+    },
     "targetSelector": {
       "title": "TargetSelector",
       "description": "How an effect names a creature, ritual, equipment, or overload. choose-* opens a pending decision. Auto selectors (most-damaged-ally, source-creature, …) do not prompt.",
@@ -233,6 +261,48 @@
           "additionalProperties": false,
           "required": ["kind"],
           "properties": { "kind": { "const": "choose-opponent-overload" } }
+        },
+        {
+          "title": "choose-opponent-silence-host",
+          "description": "Pause: mixed opposing Silence target (creature, field ritual, and/or die slot) per hosts. Always prompt when ≥1 eligible; empty is a legal whiff. Spec 022.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "hosts"],
+          "properties": {
+            "kind": { "const": "choose-opponent-silence-host" },
+            "hosts": { "$ref": "#/$defs/silenceHosts" }
+          }
+        },
+        {
+          "title": "choose-opponent-bounce-card",
+          "description": "Pause: mixed opposing Bounce target (field ritual, attached equipment, and/or attached overload) per hosts. Always prompt when ≥1 eligible; empty is a legal whiff. Spec 023.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "hosts"],
+          "properties": {
+            "kind": { "const": "choose-opponent-bounce-card" },
+            "hosts": { "$ref": "#/$defs/bounceHosts" }
+          }
+        },
+        {
+          "title": "choose-any-synthetic-slot",
+          "description": "Pause: name one synthetic attribute face slot on any player's die. Spec 024. Runtime rewrites to declared-die-slot.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "choose-any-synthetic-slot" } }
+        },
+        {
+          "title": "declared-die-slot",
+          "description": "Die slot named by a completed choose-silence-host decision. Catalogue JSON never uses this.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "dieId", "slotIndex"],
+          "properties": {
+            "kind": { "const": "declared-die-slot" },
+            "dieId": { "type": "string", "minLength": 1 },
+            "slotIndex": { "type": "integer", "minimum": 0, "maximum": 5 }
+          }
         },
         {
           "title": "declared-ritual",

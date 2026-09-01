@@ -1,4 +1,5 @@
 import { getCreatureDefinition } from "../content/creatures.js";
+import { isAttribute } from "../model/attributes.js";
 import type { CreatureChoiceFilter, DieChoiceFilter, DieSlotChoiceFilter } from "../model/effects.js";
 import type { CreatureId, DieId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -202,6 +203,14 @@ export function legalDieSlotsForFilter(
         }
       }
       break;
+    case "any-synthetic": {
+      const allDice = Object.values(state.dice).map((die) => die.id);
+      pushMatching(allDice, (dieId, slotIndex) => {
+        const face = faceAt(state, dieId, slotIndex);
+        return face?.kind === "synthetic" && isAttribute(face.symbol);
+      });
+      break;
+    }
   }
 
   return results;

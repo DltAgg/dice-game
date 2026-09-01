@@ -70,7 +70,9 @@ export function DieSlotPickModal({
 
   const slotDisabled = (die: (typeof dice)[number], slot: (typeof die.slots)[number]): string | null => {
     if (slotBlocked !== undefined) return slotBlocked(die, slot);
-    if (slotCannotBeReplacedByForge(slot)) return slotStatusLine(slot) ?? "Cannot replace";
+    if (slotCannotBeReplacedByForge(slot)) {
+      return slotStatusLine(slot, { state, dieId: die.id }) ?? "Cannot replace";
+    }
     if (
       forgeAttribute !== undefined &&
       forgeExceedsAttributeLimit(die, [slot.index], forgeAttribute, 1, state.config)
@@ -88,7 +90,7 @@ export function DieSlotPickModal({
   ) => {
     const face = getFaceCard(slot.faceCardId);
     const blocked = slotDisabled(die, slot);
-    const status = blocked === null ? slotStatusLine(slot) : null;
+    const status = blocked === null ? slotStatusLine(slot, { state, dieId: die.id }) : null;
     return (
       <button
         key={`${die.id}:${String(slot.index)}`}

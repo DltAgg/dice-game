@@ -14,6 +14,7 @@ import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
 import type { ForgeableFaceKind } from "./dice.js";
 import type { CreatureChoiceFilter } from "./effects.js";
+import type { BounceHost, BounceHostChoice, SilenceHost, SilenceHostChoice } from "./targeting.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
 import type { ChainLinkKind, TurnPhase } from "./state.js";
 
@@ -365,6 +366,50 @@ export type GameEvent =
       readonly linkId: EffectInstanceId;
       readonly kind: ChainLinkKind;
       readonly negated: boolean;
+    }
+  | {
+      readonly type: "choose-silence-host-started";
+      readonly playerId: PlayerId;
+      readonly hosts: readonly SilenceHost[];
+    }
+  | {
+      readonly type: "choose-silence-host-resolved";
+      readonly playerId: PlayerId;
+      readonly choice: SilenceHostChoice;
+    }
+  | {
+      readonly type: "host-silenced";
+      readonly host: SilenceHost;
+      readonly expiresOnTurn: number;
+      readonly creatureId?: CreatureId;
+      readonly cardInstanceId?: CardInstanceId;
+      readonly dieId?: DieId;
+      readonly slotIndex?: number;
+    }
+  | {
+      readonly type: "choose-bounce-card-started";
+      readonly playerId: PlayerId;
+      readonly hosts: readonly BounceHost[];
+    }
+  | {
+      readonly type: "choose-bounce-card-resolved";
+      readonly playerId: PlayerId;
+      readonly choice: BounceHostChoice;
+    }
+  | {
+      readonly type: "card-bounced";
+      readonly cardInstanceId: CardInstanceId;
+      readonly fromZone: "ritual" | "equipment" | "overload";
+      readonly ownerId: PlayerId;
+    }
+  | {
+      readonly type: "face-desynthesized";
+      readonly dieId: DieId;
+      readonly slotIndex: number;
+      readonly fromFaceCardId: FaceCardId;
+      readonly toFaceCardId: FaceCardId;
+      readonly dieOwnerId: PlayerId;
+      readonly returnedOwnerId: PlayerId;
     };
 
 export interface LoggedEvent {

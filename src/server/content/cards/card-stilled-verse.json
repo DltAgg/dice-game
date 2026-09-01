@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-stilled-verse",
+  "name": "Stilled Verse",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Silence] an opposing creature, ritual, or face until the start of your next turn.",
+  "effect": {
+    "effects": [
+      {
+        "type": "silence",
+        "hosts": ["creature", "ritual", "face"],
+        "target": {
+          "kind": "choose-opponent-silence-host",
+          "hosts": ["creature", "ritual", "face"]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-anneal",
+  "name": "Anneal",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Desynthesize] a synthetic face on any die.",
+  "effect": {
+    "effects": [
+      {
+        "type": "desynthesize",
+        "target": { "kind": "choose-any-synthetic-slot" }
+      }
+    ]
+  }
+}

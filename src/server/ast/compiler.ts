@@ -66,6 +66,12 @@ export class AstCompiler {
         return { op: "destroy-ritual", target: effect.target };
       case "destroy-overload":
         return { op: "destroy-overload", target: effect.target };
+      case "silence":
+        return { op: "silence", target: effect.target, hosts: effect.hosts };
+      case "bounce":
+        return { op: "bounce", target: effect.target, hosts: effect.hosts };
+      case "desynthesize":
+        return { op: "desynthesize", target: effect.target };
       case "drain-life":
         return {
           op: "drain-life",

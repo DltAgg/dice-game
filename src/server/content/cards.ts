@@ -24,6 +24,7 @@ export const PAWL_SPRING: CardId = asCardId("card-pawl-spring");
 export const DRIVESHAFT_RIG: CardId = asCardId("card-driveshaft-rig");
 export const MACHINE_SHOP: CardId = asCardId("card-machine-shop");
 export const TEMPERING_LINE: CardId = asCardId("card-tempering-line");
+export const ANNEAL: CardId = asCardId("card-anneal");
 
 /* ---------------------------------------------------------- Luminar --- */
 
@@ -51,6 +52,8 @@ export const RUNEWATCH_LENS: CardId = asCardId("card-runewatch-lens");
 export const ARCHIVISTS_SUMMONS: CardId = asCardId("card-archivists-summons");
 export const FORESIGHT_TITHE: CardId = asCardId("card-foresight-tithe");
 export const WARDED_ANNALS: CardId = asCardId("card-warded-annals");
+export const STILLED_VERSE: CardId = asCardId("card-stilled-verse");
+export const HOMEWARD_SEAL: CardId = asCardId("card-homeward-seal");
 
 /* --------------------------------------------------------- Darkness --- */
 

@@ -6,6 +6,7 @@ import { isAttributeSymbol, type SymbolType } from "../../model/symbols.js";
 import { emit, nextInstanceId, type Draft } from "../draft.js";
 import { createSymbol, pushEffect } from "../resolution.js";
 import { fireEquipmentOnRollSymbol } from "../triggers.js";
+import { isSlotSilenced } from "../../rules/silence.js";
 
 /** Record that this face showed; does not clear earlier appearances this roll. */
 export function appendFaceAppeared(
@@ -172,8 +173,10 @@ export function refireShownFaceRollEffects(
   const face = getFaceCard(slot.faceCardId);
   if (face === undefined) return;
 
-  applyForgeYieldGenerate(draft, controllerId, slot, face.symbol);
-  applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
+  if (!isSlotSilenced(draft, dieId, slotIndex)) {
+    applyForgeYieldGenerate(draft, controllerId, slot, face.symbol);
+    applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
+  }
   fireShownFaceRollHooks(
     draft,
     controllerId,
@@ -194,10 +197,13 @@ export function fireShownFaceRollHooks(
   symbol: SymbolType,
   suppressInherent = false,
 ): void {
-  if (!suppressInherent) {
+  const silenced = isSlotSilenced(draft, dieId, slotIndex);
+  if (!silenced && !suppressInherent) {
     fireFaceOnRoll(draft, controllerId, dieId, slotIndex);
   }
-  fireOverloadsForShownFace(draft, controllerId, faceCardId, dieId, slotIndex);
+  if (!silenced) {
+    fireOverloadsForShownFace(draft, controllerId, faceCardId, dieId, slotIndex);
+  }
   fireEquipmentOnRollSymbol(draft, controllerId, symbol);
 }
 

@@ -2,6 +2,7 @@ import {
   getCard,
   hasLegalReactionOffer,
   isLegalRitualReaction,
+  isRitualSilenced,
   livingCreaturesOf,
   ritualsOf,
   type AttackId,
@@ -108,6 +109,7 @@ export function Battlefield({
             const ready = card.ritualOrientation === "ready";
             const canActivate = (() => {
               if (!canAct || !ready || absorbArmed || def === undefined) return false;
+              if (isRitualSilenced(state, card.id)) return false;
               if ((def.ritual?.effects?.length ?? 0) === 0) return false;
               if (inReactionWindow) {
                 if (playerId !== actingPlayerId) return false;

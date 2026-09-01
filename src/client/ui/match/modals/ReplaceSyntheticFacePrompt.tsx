@@ -67,7 +67,7 @@ export function ReplaceSyntheticFacePrompt({
               const die = state.dice[dieId];
               const slot = die?.slots[slotIndex];
               const face = slot !== undefined ? getFaceCard(slot.faceCardId) : undefined;
-              const status = slot !== undefined ? slotStatusLine(slot) : null;
+              const status = slot !== undefined ? slotStatusLine(slot, { state, dieId }) : null;
               return (
                 <li key={`${dieId}:${String(slotIndex)}`}>
                   <button

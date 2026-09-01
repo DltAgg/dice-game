@@ -10,6 +10,7 @@ import {
   formatRequirementLine,
   formatTypeLine,
   getCard,
+  isRitualSilenced,
   type CardInstance,
   type GameState,
 } from "@server";
@@ -59,6 +60,7 @@ export function RitualTile({
 
   const orientation = card.ritualOrientation ?? "—";
   const durationLabel = ritualStayLabel(def);
+  const silenced = isRitualSilenced(state, card.id);
   const activeWhen = formatRequirementLine(def);
   const spend = def.ritual?.spend;
   const spendLine =
@@ -111,6 +113,7 @@ export function RitualTile({
               <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
                 {orientation}
                 {durationLabel !== null ? ` · ${durationLabel}` : ""}
+                {silenced ? " · Silenced" : ""}
               </p>
               {gateVsPile !== null && gateVsPile !== "" && preparing && (
                 <p className="mt-1 text-xs text-amber-200/80">Active-when vs pile: {gateVsPile}</p>
@@ -161,7 +164,14 @@ export function RitualTile({
         )}
 
       <div className="w-full text-left">
-        <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
+        <p className="flex flex-wrap items-center gap-1.5">
+          <span className="truncate text-sm font-medium text-stone-100">{def.name}</span>
+          {silenced && (
+            <span className="inline-block shrink-0 rounded border border-violet-400/40 bg-violet-950/50 px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-violet-200">
+              Silenced
+            </span>
+          )}
+        </p>
         <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
           {formatPlayCostCompact(def)} · {def.subtypes.join("/") || "ritual"}
         </p>

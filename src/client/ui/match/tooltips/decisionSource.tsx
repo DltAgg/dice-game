@@ -98,6 +98,8 @@ export function pendingSourceOf(
     case "choose-overload":
     case "choose-die":
     case "choose-die-slot":
+    case "choose-silence-host":
+    case "choose-bounce-card":
     case "choose-pool-symbol":
       return {
         cardInstanceId: pending.deferred.sourceCardInstanceId,

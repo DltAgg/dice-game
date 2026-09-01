@@ -2,6 +2,7 @@ import {
   attributeLabel,
   diceOf,
   getFaceCard,
+  isSlotSilenced,
   slotCannotBeReplacedByForge,
   type Attribute,
   type DieId,
@@ -41,7 +42,10 @@ export function overchargePipLabel(
   return `Overcharge ${bits.join(" · ")}`;
 }
 
-export function slotStatusLine(slot: DieSlot): string | null {
+export function slotStatusLine(
+  slot: DieSlot,
+  ctx?: { readonly state: GameState; readonly dieId: DieId },
+): string | null {
   const parts: string[] = [];
   if (slot.forgeYield === true) parts.push("Forge yield");
   if ((slot.corruptionMarkers ?? 0) > 0) {
@@ -54,6 +58,9 @@ export function slotStatusLine(slot: DieSlot): string | null {
   if (slotCannotBeReplacedByForge(slot)) parts.push("Cannot replace");
   if (slot.suppressInherentNextRoll === true) parts.push("Suppress next roll");
   if (slot.resourceLockedThisTurn === true) parts.push("Resource locked");
+  if (ctx !== undefined && isSlotSilenced(ctx.state, ctx.dieId, slot.index)) {
+    parts.push("Silenced");
+  }
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
@@ -137,17 +144,20 @@ export function faceMarkerSummary(
   let corruption = 0;
   let suppress = false;
   let locked = false;
+  let silenced = false;
   for (const die of diceOf(state, playerId)) {
     for (const slot of die.slots) {
       if (slot.faceCardId !== faceCardId) continue;
       corruption = Math.max(corruption, slot.corruptionMarkers ?? 0);
       if (slot.suppressInherentNextRoll === true) suppress = true;
       if (slot.resourceLockedThisTurn === true) locked = true;
+      if (isSlotSilenced(state, die.id, slot.index)) silenced = true;
     }
   }
   const parts: string[] = [];
   if (corruption > 0) parts.push(`Corruption ×${String(corruption)}`);
   if (suppress) parts.push("Suppress");
   if (locked) parts.push("Locked");
+  if (silenced) parts.push("Silenced");
   return parts.length > 0 ? parts.join(" · ") : null;
 }

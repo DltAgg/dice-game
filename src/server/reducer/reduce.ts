@@ -38,6 +38,9 @@ import {
   resolveSearch,
   resolveSplitDamage,
 } from "./pending/resolvers.js";
+import { resolveChooseSilenceHost } from "./silenceResolve.js";
+import { resolveChooseBounceCard } from "./bounceResolve.js";
+import { resolveDesynthesizeDieSlot } from "./desynthesizeResolve.js";
 
 /**
  * The single place a game can advance (SPDD §54).
@@ -144,6 +147,10 @@ function isMatchingPendingResolve(pending: ChoicePending, action: GameAction): b
       return action.type === "RESOLVE_OPTIONAL_OVERCHARGE";
     case "optional-bonus-attack":
       return action.type === "RESOLVE_OPTIONAL_BONUS_ATTACK";
+    case "choose-silence-host":
+      return action.type === "RESOLVE_CHOOSE_SILENCE_HOST";
+    case "choose-bounce-card":
+      return action.type === "RESOLVE_CHOOSE_BOUNCE_CARD";
   }
 }
 
@@ -245,7 +252,17 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
     case "RESOLVE_OPTIONAL_REROLL":
       return resolveOptionalReroll(draft, action.playerId, action.accept, rng);
     case "RESOLVE_CHOOSE_DIE_SLOT":
+      if (
+        draft.pendingDecision?.type === "choose-die-slot" &&
+        draft.pendingDecision.deferred.effect.type === "desynthesize"
+      ) {
+        return resolveDesynthesizeDieSlot(draft, action.playerId, action.dieId, action.slotIndex);
+      }
       return resolveChooseDieSlot(draft, action.playerId, action.dieId, action.slotIndex);
+    case "RESOLVE_CHOOSE_SILENCE_HOST":
+      return resolveChooseSilenceHost(draft, action.playerId, action.choice);
+    case "RESOLVE_CHOOSE_BOUNCE_CARD":
+      return resolveChooseBounceCard(draft, action.playerId, action.choice);
     case "RESOLVE_CHOOSE_POOL_SYMBOL":
       return resolveChoosePoolSymbol(draft, action.playerId, action.symbolId);
     case "RESOLVE_OPTIONAL_OVERCHARGE":

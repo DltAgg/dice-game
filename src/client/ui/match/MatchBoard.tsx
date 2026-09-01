@@ -47,6 +47,8 @@ import { ChooseEquipmentModal } from "./modals/ChooseEquipmentModal";
 import { ChooseOverloadModal } from "./modals/ChooseOverloadModal";
 import { ChoosePoolSymbolModal } from "./modals/ChoosePoolSymbolModal";
 import { ChooseRitualModal } from "./modals/ChooseRitualModal";
+import { ChooseBounceCardModal } from "./modals/ChooseBounceCardModal";
+import { ChooseSilenceHostModal } from "./modals/ChooseSilenceHostModal";
 import { ConvertSymbolsModal } from "./modals/ConvertSymbolsModal";
 import { CopyPoolSymbolModal } from "./modals/CopyPoolSymbolModal";
 import { DarkPactModal } from "./modals/DarkPactModal";
@@ -1097,7 +1099,47 @@ export function MatchBoard() {
         />
       )}
       {pending?.type === "choose-die-slot" && !isPendingChooser && (
-        <WaitingBanner>Opponent is choosing a die face.</WaitingBanner>
+        <WaitingBanner>
+          {pending.filter === "any-synthetic"
+            ? "Opponent is choosing a synthetic face to Desynthesize."
+            : "Opponent is choosing a die face."}
+        </WaitingBanner>
+      )}
+
+      {pending?.type === "choose-silence-host" && isPendingChooser && (
+        <ChooseSilenceHostModal
+          state={state}
+          controllerId={pending.controllerId}
+          hosts={pending.hosts}
+          onPick={(choice) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_SILENCE_HOST",
+              playerId: pending.controllerId,
+              choice,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-silence-host" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing a host to Silence.</WaitingBanner>
+      )}
+
+      {pending?.type === "choose-bounce-card" && isPendingChooser && (
+        <ChooseBounceCardModal
+          state={state}
+          controllerId={pending.controllerId}
+          hosts={pending.hosts}
+          onPick={(choice) =>
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_BOUNCE_CARD",
+              playerId: pending.controllerId,
+              choice,
+            })
+          }
+        />
+      )}
+      {pending?.type === "choose-bounce-card" && !isPendingChooser && (
+        <WaitingBanner>Opponent is choosing a card to Bounce.</WaitingBanner>
       )}
 
       {pending?.type === "choose-pool-symbol" && isPendingChooser && (

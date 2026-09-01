@@ -1,8 +1,20 @@
-import type { Attribute, DualKindAttribute } from "./attributes.js";
+import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
 import type { FaceKind, ForgeableFaceKind } from "./dice.js";
-import type { CreatureId } from "./ids.js";
 import type { SymbolType } from "./symbols.js";
+import type { BounceHost, SilenceHost, TargetSelector } from "./targeting.js";
+
+export type {
+  BounceHost,
+  BounceHostChoice,
+  CreatureChoiceFilter,
+  DieChoiceFilter,
+  DieSlotChoiceFilter,
+  SilenceHost,
+  SilenceHostChoice,
+  TargetSelector,
+} from "./targeting.js";
+export { NATURAL_CONVERT_SYMBOLS } from "./targeting.js";
 
 /**
  * Effects are data, never functions (SPDD §26). GameState has to survive JSON,
@@ -120,10 +132,33 @@ export type EffectDefinition =
    */
   | { readonly type: "destroy-ritual"; readonly target: TargetSelector }
   /**
+   * `[Silence]` an opposing creature, field ritual, or die slot (per `hosts`)
+   * until the start of the silencer's next turn. Spec `022`.
+   */
+  | {
+      readonly type: "silence";
+      readonly target: TargetSelector;
+      readonly hosts: readonly SilenceHost[];
+    }
+  /**
    * Send one opposing attached overload to its owner's graveyard.
    * `choose-opponent-overload` / `declared-overload`. Spec `011`.
    */
   | { readonly type: "destroy-overload"; readonly target: TargetSelector }
+  /**
+   * Return one opposing field ritual, attached equipment, or attached overload
+   * (per `hosts`) to its owner's hand. Spec `023`. Not destroy (GY) and not discard.
+   */
+  | {
+      readonly type: "bounce";
+      readonly target: TargetSelector;
+      readonly hosts: readonly BounceHost[];
+    }
+  /**
+   * Replace a synthetic attribute face slot on any die with that attribute's
+   * natural identity face. Spec `024`. Not `[Reforge]`.
+   */
+  | { readonly type: "desynthesize"; readonly target: TargetSelector }
   /**
    * Add to a creature’s prevent-next-N-**attacks** counter (before Shields).
    * Spec `009`. Amount is how many incoming attack instances to cancel.
@@ -392,110 +427,3 @@ export type EffectCondition =
   | { readonly type: "has-adjacent-ally" }
   | { readonly type: "controller-has-frontline" }
   | { readonly type: "source-is-frontline" };
-
-/**
- * Targets are resolved against the resolution context rather than chosen at
- * definition time. Selectors that need a player decision arrive as `choose-*`
- * and open a `choose-creature` pending.
- */
-export type TargetSelector =
-  /** The creature whose ability or attack produced the effect. */
-  | { readonly kind: "source-creature" }
-  /** The creature named by the action that started this resolution. */
-  | { readonly kind: "declared-target" }
-  /**
-   * A concrete creature id stamped at runtime between nested choices
-   * (e.g. drain-life source while choosing the heal destination). Catalogue
-   * JSON never uses this.
-   */
-  | { readonly kind: "fixed"; readonly creatureId: CreatureId }
-  /**
-   * The controller's living creature with the most damage (ties: earliest id).
-   * Intentional silent pick for on-roll heals with no declared target — print
-   * does not ask the player to name an ally.
-   */
-  | { readonly kind: "most-damaged-ally" }
-  /**
-   * An opposing living creature with the most Shield (ties: earliest id).
-   * Intentional silent pick for on-roll shield-strip faces; print names the
-   * most-shielded enemy, not a chosen one.
-   */
-  | { readonly kind: "most-shielded-enemy" }
-  /**
-   * An opposing living creature with the most damage (ties: earliest id).
-   * Used by turn-start burn pulses so END_TURN stays atomic (no choose pending).
-   */
-  | { readonly kind: "most-damaged-enemy" }
-  /** Pause for the controller to name one of their living creatures. */
-  | { readonly kind: "choose-ally" }
-  /** Pause for the controller to name one opposing living creature. */
-  | { readonly kind: "choose-enemy" }
-  /** Pause: name one opposing field ritual. Spec `011`. */
-  | { readonly kind: "choose-opponent-ritual" }
-  /** Pause: name one opposing attached equipment. Spec `011`. */
-  | { readonly kind: "choose-opponent-equipment" }
-  /** Pause: name one opposing attached overload. Spec `011`. */
-  | { readonly kind: "choose-opponent-overload" }
-  /** Card named by a completed choose-ritual / equipment / overload decision. */
-  | { readonly kind: "declared-ritual" }
-  | { readonly kind: "declared-equipment" }
-  | { readonly kind: "declared-overload" }
-  /**
-   * The creature targeted by the waiting attack chain link (Prismatic Barrier).
-   * Spec `009`.
-   */
-  | { readonly kind: "chain-attack-target" }
-  /** Every living allied frontline creature. */
-  | { readonly kind: "allied-frontline" }
-  /** Every living enemy frontline creature. */
-  | { readonly kind: "enemy-frontline" }
-  /** Every living allied creature (frontline and back). */
-  | { readonly kind: "ally-all" }
-  /** Every living enemy creature (frontline and back). */
-  | { readonly kind: "enemy-all" }
-  | { readonly kind: "choose-ally-other" }
-  | { readonly kind: "choose-allied-frontline" }
-  | { readonly kind: "choose-allied-frontline-other" }
-  | { readonly kind: "choose-ally-with-toxin" }
-  | { readonly kind: "choose-enemy-with-toxin" }
-  | { readonly kind: "choose-ally-damage-over-half" }
-  /** Pause: living ally whose owner currently holds at least one pile token. */
-  | { readonly kind: "choose-ally-with-tokens" }
-  /**
-   * Pause: living `creatureIds` neighbor (±1) of the source creature.
-   * Spec `015` mill.
-   */
-  | { readonly kind: "choose-adjacent-ally" };
-
-/** Filters for a `choose-creature` pending (specs `011` / `012`). */
-export type CreatureChoiceFilter =
-  | "ally"
-  | "enemy"
-  | "self"
-  | "ally-other"
-  | "allied-frontline"
-  | "allied-frontline-other"
-  | "ally-with-toxin"
-  | "enemy-with-toxin"
-  | "ally-damage-over-half"
-  | "ally-with-tokens"
-  | "adjacent-ally";
-
-/** Filters for a `choose-die` pending (spec `012`). */
-export type DieChoiceFilter = "owned-retainable" | "owned-rolled" | "any-synthetic-corruption";
-
-/** Filters for a `choose-die-slot` pending (spec `013`). */
-export type DieSlotChoiceFilter =
-  | "opposing-synthetic"
-  | "opposing-natural"
-  | "opposing-corrupted"
-  | "opposing-corrupted-with-other-slot"
-  | "same-die-other-slot"
-  | "appeared-synthetic-this-roll";
-
-export const NATURAL_CONVERT_SYMBOLS: readonly DualKindAttribute[] = [
-  "martial",
-  "wild",
-  "arcane",
-  "luminar",
-];

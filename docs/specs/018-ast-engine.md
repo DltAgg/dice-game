@@ -103,6 +103,9 @@ Generic (prefer these in new JSON):
 | `forge` | `forge-faces` |
 | `reposition` / `swap` | movers |
 | `negate` | `negate-card`, `negate-ritual` (`scope`) |
+| `silence` | `[Silence]` an opposing creature, field ritual, or die slot until the start of your next turn (spec `022`) |
+| `bounce` | `[Bounce]` an opposing ritual, equipment, or overload to its owner’s hand (spec `023`) |
+| `desynthesize` | `[Desynthesize]` a synthetic attribute face on any die to that attribute’s natural (spec `024`). Not `replace-synthetic-face` |
 | `modify` | all `arm-*`, `next-attack-bonus`, `grant-next-attack-bonus`, `grant-attack-prevent`, `grant-extra-attack` |
 | `generate-symbol` / `convert-symbols` | same |
 | `sequence` | implicit lists + `then` |

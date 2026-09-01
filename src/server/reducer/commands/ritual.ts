@@ -3,6 +3,7 @@ import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
 import { isReactionCard, ritualDurationOf } from "../../rules/cards.js";
+import { isRitualSilenced } from "../../rules/silence.js";
 import { pileRequirementShortfall } from "../../rules/tokens.js";
 import {
   buildEffectLink,
@@ -41,6 +42,7 @@ export function activateRitual(
   if (card === undefined) return "UNKNOWN_ENTITY";
   if (card.ownerId !== playerId || card.zone !== "ritual") return "CARD_NOT_AVAILABLE";
   if (card.ritualOrientation !== "ready") return "CARD_NOT_AVAILABLE";
+  if (isRitualSilenced(draft, cardInstanceId)) return "CARD_NOT_AVAILABLE";
   if (cardCommittedToChain(draft, cardInstanceId)) return "CARD_NOT_AVAILABLE";
 
   const definition = getCard(card.cardId);

@@ -9,6 +9,7 @@ import type {
 } from "../model/ids.js";
 import type { Attribute } from "../model/attributes.js";
 import type { SymbolRequirement, SymbolType } from "../model/symbols.js";
+import type { SilenceHostChoice, BounceHostChoice } from "../model/targeting.js";
 
 /**
  * Actions describe intent, never outcome (SPDD §34). There is no DEAL_DAMAGE
@@ -242,6 +243,24 @@ export type GameAction =
       readonly playerId: PlayerId;
       readonly dieId: DieId | null;
       readonly slotIndex: number | null;
+    }
+  /**
+   * Completes a pending mixed Silence host pick (creature / ritual / face slot).
+   * Spec `022`.
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_SILENCE_HOST";
+      readonly playerId: PlayerId;
+      readonly choice: SilenceHostChoice;
+    }
+  /**
+   * Completes a pending mixed Bounce card pick (ritual / equipment / overload).
+   * Spec `023`.
+   */
+  | {
+      readonly type: "RESOLVE_CHOOSE_BOUNCE_CARD";
+      readonly playerId: PlayerId;
+      readonly choice: BounceHostChoice;
     }
   /**
    * Completes a pending pool-symbol choice (Catalyst roll wildcard). Spec `013`.

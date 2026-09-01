@@ -12,6 +12,7 @@ import {
   type SymbolRequirement,
 } from "../model/symbols.js";
 import type { Draft } from "../reducer/draft.js";
+import { isCreatureSilenced } from "./silence.js";
 
 export type DiscountMatch = {
   readonly amount: number;
@@ -49,6 +50,7 @@ function collectDiscountHosts(state: GameState | Draft): readonly {
 
   for (const creature of Object.values(state.creatures)) {
     if (creature.defeated) continue;
+    if (isCreatureSilenced(state as GameState, creature.id)) continue;
     const standing = getCreatureDefinition(creature.definitionId)?.standingAbilities ?? [];
     if (standing.length > 0) {
       hosts.push({
@@ -276,6 +278,7 @@ export function attackIgnoreShieldAmount(
   let amount = state.ignoreShieldThisTurn[playerId] ?? 0;
   const attacker = state.creatures[attackerId];
   if (attacker === undefined) return amount;
+  if (isCreatureSilenced(state as GameState, attackerId)) return amount;
   const standing = getCreatureDefinition(attacker.definitionId)?.standingAbilities ?? [];
   for (const ability of standing) {
     if (ability.type === "ignore-shield") amount += ability.amount;

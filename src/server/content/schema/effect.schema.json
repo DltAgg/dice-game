@@ -75,7 +75,10 @@
         "destroy-ritual",
         "destroy-overload",
         "drain-life",
-        "search-graveyard"
+        "search-graveyard",
+        "silence",
+        "bounce",
+        "desynthesize"
       ]
     },
     "astEffect": {
@@ -114,7 +117,13 @@
         "sourceOnly": { "type": "boolean" },
         "oncePerTurn": { "type": "boolean" },
         "sameFaceAllyDamage": { "$ref": "defs.schema.json#/$defs/amount" },
-        "searchZone": { "type": "string", "enum": ["deck", "graveyard"] }
+        "searchZone": { "type": "string", "enum": ["deck", "graveyard"] },
+        "hosts": {
+          "oneOf": [
+            { "$ref": "defs.schema.json#/$defs/silenceHosts" },
+            { "$ref": "defs.schema.json#/$defs/bounceHosts" }
+          ]
+        }
       },
       "allOf": [
         {
@@ -136,6 +145,35 @@
           "then": {
             "required": ["stat"],
             "properties": { "stat": { "$ref": "defs.schema.json#/$defs/modifyStat" } }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "silence" } }, "required": ["op"] },
+          "then": {
+            "required": ["target", "hosts"],
+            "properties": {
+              "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+              "hosts": { "$ref": "defs.schema.json#/$defs/silenceHosts" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "bounce" } }, "required": ["op"] },
+          "then": {
+            "required": ["target", "hosts"],
+            "properties": {
+              "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+              "hosts": { "$ref": "defs.schema.json#/$defs/bounceHosts" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "desynthesize" } }, "required": ["op"] },
+          "then": {
+            "required": ["target"],
+            "properties": {
+              "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+            }
           }
         }
       ]
@@ -162,6 +200,9 @@
         { "$ref": "#/$defs/negateRitual" },
         { "$ref": "#/$defs/drainLife" },
         { "$ref": "#/$defs/destroyRitual" },
+        { "$ref": "#/$defs/silence" },
+        { "$ref": "#/$defs/bounce" },
+        { "$ref": "#/$defs/desynthesize" },
         { "$ref": "#/$defs/destroyOverload" },
         { "$ref": "#/$defs/grantAttackPrevent" },
         { "$ref": "#/$defs/preventAttackReflect" },
@@ -418,6 +459,41 @@
       "required": ["type", "target"],
       "properties": {
         "type": { "const": "destroy-ritual" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "silence": {
+      "title": "silence",
+      "description": "[Silence] an opposing creature, field ritual, or die slot (hosts) until the start of your next turn. Spec 022.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target", "hosts"],
+      "properties": {
+        "type": { "const": "silence" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "hosts": { "$ref": "defs.schema.json#/$defs/silenceHosts" }
+      }
+    },
+    "bounce": {
+      "title": "bounce",
+      "description": "[Bounce] an opposing ritual, equipment, or overload (hosts) to its owner's hand. Spec 023.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target", "hosts"],
+      "properties": {
+        "type": { "const": "bounce" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "hosts": { "$ref": "defs.schema.json#/$defs/bounceHosts" }
+      }
+    },
+    "desynthesize": {
+      "title": "desynthesize",
+      "description": "[Desynthesize] a synthetic attribute face on any die to that attribute's natural. Spec 024. Not Reforge.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target"],
+      "properties": {
+        "type": { "const": "desynthesize" },
         "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
       }
     },

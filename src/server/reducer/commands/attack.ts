@@ -2,6 +2,7 @@ import { getCreatureDefinition } from "../../content/creatures.js";
 import type { GameError } from "../../model/errors.js";
 import type { AttackId, CreatureId, PlayerId } from "../../model/ids.js";
 import { attackDamageBonus } from "../../rules/cards.js";
+import { isCreatureSilenced } from "../../rules/silence.js";
 import { targetingError } from "../../rules/targeting.js";
 import {
   attackIsFuelled,
@@ -97,6 +98,7 @@ export function attack(
     patchCreature(draft, attackerId, { nextAttackBonus: 0 });
   }
 
+  const silenced = isCreatureSilenced(draft, attackerId);
   pushChainLink(
     draft,
     buildAttackLink({
@@ -105,7 +107,7 @@ export function attack(
       attackId: attackDefinition.id,
       targetId,
       attackEffect: effect,
-      attackFollowUpEffects: attackDefinition.followUpEffects ?? [],
+      attackFollowUpEffects: silenced ? [] : (attackDefinition.followUpEffects ?? []),
     }),
   );
   fireOnAttack(draft, attackerId, attackDefinition.kind, targetId);

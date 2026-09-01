@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { Attribute, DieSlot, FaceCardId, GameState, PlayerId } from "@server";
-import { overchargePipLabel, overchargeStatusForFace, slotStatusLine } from "./faceStatus.js";
+import type { Attribute, DieId, DieSlot, FaceCardId, GameState, PlayerId } from "@server";
+import {
+  faceMarkerSummary,
+  overchargePipLabel,
+  overchargeStatusForFace,
+  slotStatusLine,
+} from "./faceStatus.js";
 
 function slot(partial: Partial<DieSlot> & { faceCardId: FaceCardId }): DieSlot {
   return {
@@ -34,6 +39,51 @@ describe("slotStatusLine", () => {
     expect(line).toContain("Forge yield");
     expect(line).toContain("Corruption ×2");
     expect(line).not.toContain("Overcharge");
+    expect(line).not.toContain("Silenced");
+  });
+
+  it("appends Silenced when isSlotSilenced is true", () => {
+    const dieId = "die-1" as DieId;
+    const silencedSlot = slot({
+      faceCardId: "face-natural-darkness" as FaceCardId,
+      silenceExpiresOnTurn: 5,
+    });
+    const state = {
+      turn: 3,
+      dice: { [dieId]: { id: dieId, slots: [silencedSlot] } },
+    } as unknown as GameState;
+    expect(slotStatusLine(silencedSlot, { state, dieId })).toContain("Silenced");
+  });
+
+  it("omits Silenced after expiry", () => {
+    const dieId = "die-1" as DieId;
+    const expiredSlot = slot({
+      faceCardId: "face-natural-darkness" as FaceCardId,
+      silenceExpiresOnTurn: 5,
+    });
+    const state = {
+      turn: 5,
+      dice: { [dieId]: { id: dieId, slots: [expiredSlot] } },
+    } as unknown as GameState;
+    expect(slotStatusLine(expiredSlot, { state, dieId })).toBeNull();
+  });
+});
+
+describe("faceMarkerSummary", () => {
+  it("appends Silenced when any copy of the face is silenced", () => {
+    const playerId = "p1" as PlayerId;
+    const dieId = "die-1" as DieId;
+    const faceCardId = "face-natural-darkness" as FaceCardId;
+    const silencedSlot = slot({
+      faceCardId,
+      silenceExpiresOnTurn: 4,
+    });
+    const state = {
+      turn: 2,
+      players: { p1: { dieIds: [dieId] } },
+      dice: { [dieId]: { id: dieId, slots: [silencedSlot] } },
+    } as unknown as GameState;
+    expect(faceMarkerSummary(state, playerId, faceCardId)).toContain("Silenced");
   });
 });
 
