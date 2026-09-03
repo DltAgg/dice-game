@@ -51,7 +51,7 @@ describe("Tempo generic utility", () => {
     expect(after.forgeDiscountThisTurn[P1]).toBe(2);
   });
 
-  it("Recast targets synthetic mechanical faces", () => {
+  it("Recast opens replace-synthetic-face", () => {
     let state = actionsReady([RECAST]);
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("die");

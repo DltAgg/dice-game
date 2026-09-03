@@ -95,7 +95,7 @@ Hook Progress:
 | Symbol shown on roll | existing `ROLL_DICE` path (pass `rollingPlayerId`) |
 | Absorb (attribute bank / Shield) | `bankAttributeIntoPile` / Shield path in `commands/absorb.ts` → `queueAbsorbTriggers` |
 | HP dealt | `dealDamage` / attack damage path |
-| Incoming damage modify | inside `dealDamage` **before** prevent/shield when `reduceBy` |
+| Incoming damage modify | inside `dealDamage` **before** prevent/shield when `[Reduce N]` / `reduceBy` |
 | Discard | `discardSpecificCards` (and any other discard entry) |
 | Position change | `setCreaturePosition` in `zones.ts` only |
 | Turn begins | `finishTurn` in `reduce.ts` after `tickToxins` |

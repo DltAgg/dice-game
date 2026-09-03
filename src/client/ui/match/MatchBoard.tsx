@@ -64,6 +64,7 @@ import { OptionalRerollModal } from "./modals/OptionalRerollModal";
 import { OverchargeFacePick } from "./modals/OverchargeFacePick";
 import { OverloadFacePickModal } from "./modals/OverloadFacePickModal";
 import { PeekDeckModal } from "./modals/PeekDeckModal";
+import { ChooseEffectModePrompt } from "./modals/ChooseEffectModePrompt";
 import { ReplaceSyntheticFacePrompt } from "./modals/ReplaceSyntheticFacePrompt";
 import { ReplayGraveyardModal } from "./modals/ReplayGraveyardModal";
 import { SearchPanel } from "./modals/SearchPanel";
@@ -103,9 +104,6 @@ export function MatchBoard() {
   const [forgeFacesDieId, setForgeFacesDieId] = useState<DieId | undefined>();
   const [forgeFacesSlots, setForgeFacesSlots] = useState<readonly number[]>([]);
   const [forgeFacesFaceId, setForgeFacesFaceId] = useState<FaceCardId | undefined>();
-  const [replaceSyntheticSlot, setReplaceSyntheticSlot] = useState<
-    { readonly dieId: DieId; readonly slotIndex: number } | undefined
-  >();
   const [handCollapsed, setHandCollapsed] = useState(false);
   const [autoPassHint, setAutoPassHint] = useState<string | null>(null);
 
@@ -143,7 +141,6 @@ export function MatchBoard() {
     setForgeFacesDieId(undefined);
     setForgeFacesSlots([]);
     setForgeFacesFaceId(undefined);
-    setReplaceSyntheticSlot(undefined);
   }, [pending?.type]);
 
   useEffect(() => {
@@ -879,24 +876,39 @@ export function MatchBoard() {
         <ReplaceSyntheticFacePrompt
           state={state}
           pending={pending}
-          selectedSlot={replaceSyntheticSlot}
-          onPickSlot={setReplaceSyntheticSlot}
-          onClearSlot={() => setReplaceSyntheticSlot(undefined)}
-          onPickFace={(faceCardId) => {
-            if (replaceSyntheticSlot === undefined) return;
+          onResolve={({ dieId, slotIndexes, faceCardIds }) => {
             tryDispatch({
               type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
               playerId: pending.controllerId,
-              dieId: replaceSyntheticSlot.dieId,
-              slotIndex: replaceSyntheticSlot.slotIndex,
-              faceCardId,
+              dieId,
+              slotIndexes,
+              faceCardIds,
             });
           }}
         />
       )}
       {pending?.type === "replace-synthetic-face" && !isPendingChooser && (
         <WaitingBanner>
-          Opponent is replacing a Synthetic face on their die.
+          Opponent is replacing faces on their die.
+        </WaitingBanner>
+      )}
+
+      {pending?.type === "choose-effect-mode" && isPendingChooser && (
+        <ChooseEffectModePrompt
+          state={state}
+          pending={pending}
+          onResolve={(modeIndex) => {
+            tryDispatch({
+              type: "RESOLVE_CHOOSE_EFFECT_MODE",
+              playerId: pending.controllerId,
+              modeIndex,
+            });
+          }}
+        />
+      )}
+      {pending?.type === "choose-effect-mode" && !isPendingChooser && (
+        <WaitingBanner>
+          Opponent is choosing a mode.
         </WaitingBanner>
       )}
 

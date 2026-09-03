@@ -3,7 +3,8 @@
   "id": "card-anneal",
   "name": "Anneal",
   "playCost": {
-    "mechanical": 2
+    "mechanical": 2,
+    "any": 2
   },
   "type": "instant",
   "subtypes": [],
@@ -14,12 +15,14 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Desynthesize] a synthetic face on any die.",
+  "rulesText": "[Desynthesize] a face on any die.",
   "effect": {
     "effects": [
       {
         "type": "desynthesize",
-        "target": { "kind": "choose-any-synthetic-slot" }
+        "target": {
+          "kind": "choose-any-synthetic-slot"
+        }
       }
     ]
   }

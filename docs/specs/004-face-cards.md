@@ -79,7 +79,7 @@ cap. All `maxOverloads: 2`, no forge restriction. Every `On absorb` line prints
 |---|---|---|---|---|
 | `face-synthetic-cogtooth` | Cogtooth | Mechanical | `[Generate 1 Mechanical]` | `[Discount 1]` forge |
 | `face-synthetic-gear-train` | Gear Train | Mechanical | If you have another Synthetic symbol in the Pool, `[Generate 1 Mechanical]` | `[Double]` |
-| `face-synthetic-mainspring` | Mainspring | Mechanical | `[Empower 1]` | `[Reforge]` a Synthetic Mechanical face on your die |
+| `face-synthetic-mainspring` | Mainspring | Mechanical | `[Empower 1]` | `[Reforge 1 Mechanical]` any faces on one of your dice |
 | `face-synthetic-halo-lamp` | Halo Lamp | Luminar | `[Generate 1 Shield]` | `[Mark 2 Shield]` on an allied creature |
 | `face-synthetic-lucent-choir` | Lucent Choir | Luminar | `[Generate 1 Luminar]` | `[Empower 1]` on an allied creature |
 | `face-synthetic-sunward-lens` | Sunward Lens | Luminar | `[Heal 1]` on your most damaged creature | `[Generate 1 Mechanical]` |

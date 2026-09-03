@@ -204,8 +204,8 @@ export type StandingTrigger =
       readonly effects: readonly EffectDefinition[];
     }
   /**
-   * Incoming damage on the host. `reduceBy` applies inside `dealDamage` before
-   * prevent/Shields; optional `effects` queue after HP is dealt.
+   * Incoming damage on the host. `[Reduce N]` is `reduceBy`: applies inside
+   * `dealDamage` before prevent/Shields; optional `effects` queue after HP is dealt.
    */
   | {
       readonly type: "on-take-damage";

@@ -196,6 +196,13 @@ export class AstCompiler {
           attribute: effect.attribute,
           forgeTarget: effect.target,
         };
+      case "replace-synthetic-face":
+        return {
+          op: "replace-synthetic-face",
+          faces: effect.faces,
+          attribute: effect.attribute,
+          ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
+        };
       case "reposition-creature":
         return {
           op: "reposition",
@@ -242,6 +249,8 @@ export class AstCompiler {
           symbol: effect.symbol,
           amount: amount(effect.amount),
         };
+      case "choose-effect-mode":
+        return { op: "choose-effect-mode" };
       default:
         return { op: effect.type };
     }

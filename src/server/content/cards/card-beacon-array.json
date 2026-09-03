@@ -4,7 +4,7 @@
   "name": "Beacon Array",
   "playCost": {
     "luminar": 2,
-    "mechanical": 1
+    "any": 1
   },
   "type": "equipment",
   "subtypes": [],
@@ -15,7 +15,7 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "On absorb Luminar or Shield, once per turn: [Heal 1] on your most damaged creature.",
+  "rulesText": "On absorb Luminar or Shield, once per turn: [Heal 1] on this creature.",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -32,7 +32,7 @@
             "type": "heal",
             "amount": 1,
             "target": {
-              "kind": "most-damaged-ally"
+              "kind": "source-creature"
             }
           }
         ]

@@ -89,7 +89,7 @@ so player-pile banking (not creature tokens) drives the engine.
 
 | Id | Name | Life | Attributes | Passive | Basic | Special |
 |---|---|---|---|---|---|---|
-| `creature-torque-wright` | Torque Wright | 14 | Mechanical | On absorb Mechanical, once per turn: `[Discount 1]` forge. | Crank — `[Strike 2]` | Retool — `[Strike 2]`. `[Reforge]` a Synthetic Mechanical face. |
+| `creature-torque-wright` | Torque Wright | 14 | Mechanical | On absorb Mechanical, once per turn: `[Discount 1]` forge. | Crank — `[Strike 2]` | Retool — `[Strike 2]`. `[Reforge 1 Mechanical]` any faces on one of your dice. |
 | `creature-dawn-warden` | Dawn Warden | 13 | Luminar | On absorb Luminar, once per turn: `[Mark 1 Shield]` on your most damaged creature. | Kindle — `[Strike 2]`. `[Heal 1]`. | Vigil — `[Strike 2]`. `[Mark 2 Shield]` on an allied creature you choose. |
 | `creature-lodestar-artificer` | Lodestar Artificer **(legendary)** | 22 | Mechanical / Luminar | On absorb Mechanical, once per turn: `[Empower 1]` this creature. | Drive Shaft — `[Strike 3]` | Overdrive — `[Strike 3]`. `[Stamp]`. |
 

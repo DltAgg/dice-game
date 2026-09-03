@@ -177,11 +177,12 @@ tempo back with reaction `[Prevent]`. Every row serves forge or play.
 | Cost | Name | Type line | Printed play region | Role in Tempo |
 |---|---|---|---|---|
 | 2 M | Cog Draft | Instant / Mechanical | `[Generate 2 Mechanical]. [Draw 1].` | Opener. Converts a turn into pile + a card. |
-| 2 M | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. `[Forge 2 Synthetic Mechanical]` on your die. | Pile → die assembly; the main pile sink. |
+| 2 M + 1 Any | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. Choose one — `[Cross forge 2 Mechanical / Luminar]` or `[Cross forge 2 Luminar / Mechanical]` on one of your dice. | Flexible die reconstruction: swing two faces between the Tempo pair. |
 | 2 M | Shim Kit | Instant / Mechanical | `[Discount 2]` forge. | One-shot discount that turns a forge into a tempo turn. |
 | 3 M | Quickset Jig | Equipment / Mechanical | On roll Mechanical: `[Discount 1]` forge. | Standing discount engine — rolls, not pile. |
 | 2 M | Die Punch | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Stamp]`. | Own-die reconstruction: reapply your die modifiers. |
-| 2 M | Recast | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Reforge]` a Synthetic Mechanical face. | Swaps a stale synthetic without a fresh forge. |
+| 2 M | Recast | Instant / Mechanical | `[Reforge 2 Mechanical]` any faces on one of your dice. | Rebuilds one die from the synthetic Mechanical pool without a forge-draw. |
+| 2 M | Alloy Shift | Instant / Mechanical | `[Cross forge 1 Mechanical / Luminar]` on one of your dice. | Turns a Mechanical face into a synthetic Luminar from the pool. |
 | 2 M | Twin Cam | Instant / Mechanical | `[Requires 2 x Mechanical]`. `[Double]`. | Payoff for a stacked die: next face effect twice. |
 | 2 M | Idler Gear | Overload / Mechanical | Mechanical face only. On roll: `[Generate 1 Mechanical]`. `[Generate 1 Luminar]`. | The two-color bridge welded to the die — Mechanical face, Luminar payout. |
 | 2 M | Pawl Spring | Overload / Mechanical | Mechanical face only. On roll: `[Discount 1]`. On absorb, once per turn: `[Discount 1]` forge. | Roll cheapens the next play; absorb cheapens the next forge. Its natural forge paints the Mechanical face it can later overload. |
@@ -198,7 +199,7 @@ tempo back with reaction `[Prevent]`. Every row serves forge or play.
 | 3 L | Mirrorward | Reaction / Luminar | `[Prevent]` the waiting attack; `[Strike]` the attacker for the damage prevented. | Turns the opponent's swing into pressure. |
 | 2 L + 1 M | Mending Light | Instant / Luminar | `[Heal 2]` on your most damaged creature. `[Discount 1]` forge. | The two-color bridge. Both halves of the cost are spent on payoff both halves want: the Luminar body sustains, the Mechanical pip buys the next install. Not a converter. |
 | 3 L | Bright Cadence | Instant / Luminar | `[Mark 2 Shield]` on an allied creature you choose. `[Empower 1]`. | Proactive Luminar — shields, never `[Prevent]`. |
-| 2 L | Prism Mantle | Equipment / Luminar | On take damage, once per turn: reduce it by 1. | Makes the legendary hard to race without printing Prevent. |
+| 2 L | Prism Mantle | Equipment / Luminar | On take damage, once per turn: `[Reduce 1]`. | Makes the legendary hard to race without printing Prevent. |
 | 2 L + 1 M | Beacon Array | Equipment / Luminar | On absorb Luminar **or Shield** (`ally`), once per turn: `[Heal 1]`. | The only card that pays off a Shield absorb, so opening Shield faces stop being dead sustain. |
 | 2 L | Choirlight | Overload / Luminar | Luminar face only. On roll: `[Heal 1]`. | Sustain welded to a face the deck already rolls. |
 | 3 L | Radiant Accord | Ritual / Continuous / Luminar | `[Active when: 1 x Luminar, 1 x Mechanical]`. On absorb Luminar (`ally`), once per turn: `[Mark 1 Shield]`. | Two-color gate; standing Shield while the pile holds. |
@@ -318,7 +319,7 @@ splash print for reference; those Toxin cards are **not** on the Aggro builtin
 | 2 | Hunter's Collar | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: [Generate 1 Martial]. |
 | 4 | Insignia of Command | Equipment / Martial | 1 Natural Martial, your die | *Martial creatures only.* On attack, once per turn: another ally may [Reposition]. |
 | 2 | War Axe | Equipment / Martial | 1 Natural Martial, your die | On basic attack: +1 damage. |
-| 2 | Hunting Armour | Equipment / Luminar | 1 Natural Luminar, your die | On take damage, once per turn: reduce it by 1. |
+| 2 | Hunting Armour | Equipment / Luminar | 1 Natural Luminar, your die | On take damage, once per turn: `[Reduce 1]`. |
 | 2 | Twin Blades | Equipment / Martial | 1 Natural Martial, your die | On basic attack: [Strip 1 Shield]. |
 | 2 | Wild Carapace | Equipment / Wild | 1 Natural Wild, your die | On absorb Wild: [Heal 1] this creature. |
 
@@ -401,7 +402,7 @@ Deepens Combo sequencing on the same absorb-vs-pool tension: Transmission /
 Servomotor / Foundry lean absorb; Camshaft / Clockwork / Stamp lean roll-pool;
 Coupling spends a stacked pool; Blueprint / Safety Latch arm forge discounts;
 Recalibrate resets without Arcane negate. Densified in builtin **Combo
-Mechanical**; Tempo takes a lighter cut. **Reforge** uses
+Mechanical**; Tempo takes a lighter cut. **Reforge / Cross forge** use
 `replace-synthetic-face` (spec `012`). Safety Latch is a Mechanical reaction
 (next-forge discount), not prevent.
 
@@ -416,7 +417,7 @@ Mechanical**; Tempo takes a lighter cut. **Reforge** uses
 | 3 | Coupling | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* [Double]. |
 | 2 | Clockwork | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On roll Mechanical: [Generate 1 Mechanical]. |
 | 3 | Recalibrate | Reaction / Mechanical | 1 Synthetic Mechanical, your die | [Recall 1] that costs 2 or less. |
-| 3 | Reforge | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* [Reforge]. |
+| 3 | Reforge | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* [Reforge N Attr]. |
 
 ### Martial / Wild aggro package (authored)
 

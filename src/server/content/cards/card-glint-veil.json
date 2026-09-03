@@ -3,7 +3,7 @@
   "id": "card-glint-veil",
   "name": "Glint Veil",
   "playCost": {
-    "luminar": 2
+    "luminar": 1
   },
   "type": "reaction",
   "subtypes": [],
@@ -14,7 +14,7 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Prevent 1] on the waiting attack.",
+  "rulesText": "[Prevent].",
   "effect": {
     "effects": [
       {

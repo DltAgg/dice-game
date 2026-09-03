@@ -3,7 +3,8 @@
   "id": "card-shim-kit",
   "name": "Shim Kit",
   "playCost": {
-    "mechanical": 2
+    "mechanical": 2,
+    "any": 1
   },
   "type": "instant",
   "subtypes": [],
@@ -14,12 +15,16 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Discount 2] forge.",
+  "rulesText": "[Silence] an opposing face.",
   "effect": {
     "effects": [
       {
-        "type": "arm-forge-discount",
-        "amount": 2
+        "type": "silence",
+        "hosts": ["face"],
+        "target": {
+          "kind": "choose-opponent-silence-host",
+          "hosts": ["face"]
+        }
       }
     ]
   }

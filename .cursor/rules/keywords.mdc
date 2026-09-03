@@ -21,7 +21,7 @@ print:
 3. A new **token** (creature counter, Shield, face marker) gets a rulebook
    paragraph and joins **X** on `[Mark]` / `[Strip]`. It does not get its own
    keyword. Attribute exclusives still gate the **argument**, not the verb.
-4. Add a **physics** keyword (`[Empower]`, `[Pierce]`, `[Prevent]`) only when
+4. Add a **physics** keyword (`[Empower]`, `[Pierce]`, `[Reduce]`, `[Prevent]`) only when
    the operation is not placing or removing a token.
 5. Timing prefixes stay prefixes: `On roll: [Mark 1 Toxin].` Never “Whenever…”.
 6. Same change: update `docs/KEYWORDS.md`. If play itself changed, also

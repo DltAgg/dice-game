@@ -144,7 +144,7 @@ Passives (`attack-damage-bonus`, `play-cost-discount`, `ignore-shield`) are
 
 Face `onRoll` / `onAbsorb` compile to `when.event: on-roll | on-absorb`.
 
-`on-take-damage.reduceBy` remains a modifier applied inside `dealDamage`.
+`on-take-damage.reduceBy` (`[Reduce N]`) remains a modifier applied inside `dealDamage`.
 
 ### Targeting
 

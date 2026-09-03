@@ -9,7 +9,7 @@
   ],
   "deckCounts": [
     {
-      "cardId": "card-cog-draft",
+      "cardId": "card-anneal",
       "copies": 2
     },
     {
@@ -30,7 +30,7 @@
     },
     {
       "cardId": "card-recast",
-      "copies": 1
+      "copies": 2
     },
     {
       "cardId": "card-twin-cam",
@@ -42,7 +42,7 @@
     },
     {
       "cardId": "card-pawl-spring",
-      "copies": 1
+      "copies": 2
     },
     {
       "cardId": "card-driveshaft-rig",
@@ -94,14 +94,6 @@
     },
     {
       "cardId": "card-daybreak-rite",
-      "copies": 1
-    },
-    {
-      "cardId": "card-rethrow",
-      "copies": 1
-    },
-    {
-      "cardId": "card-ward-chit",
       "copies": 1
     }
   ],

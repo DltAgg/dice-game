@@ -14,12 +14,12 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Double].",
+  "rulesText": "[Stamp].\n[Stamp].",
   "effect": {
-    "requires": {
-      "mechanical": 2
-    },
     "effects": [
+      {
+        "type": "arm-resolve-next-face-effect-twice"
+      },
       {
         "type": "arm-resolve-next-face-effect-twice"
       }

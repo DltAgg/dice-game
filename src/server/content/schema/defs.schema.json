@@ -930,7 +930,7 @@
     },
     "triggerOnTakeDamage": {
       "title": "on-take-damage",
-      "description": "Incoming damage on the host. reduceBy applies inside dealDamage before prevent/Shields; optional effects queue after HP is dealt. effects may be omitted (reduce-only).",
+      "description": "Incoming damage on the host. [Reduce N] is reduceBy: applies inside dealDamage before prevent/Shields; optional effects queue after HP is dealt. effects may be omitted (reduce-only).",
       "type": "object",
       "additionalProperties": false,
       "required": ["type"],

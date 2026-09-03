@@ -16,9 +16,6 @@
   },
   "rulesText": "[Stamp].",
   "effect": {
-    "requires": {
-      "mechanical": 1
-    },
     "effects": [
       {
         "type": "reapply-die-modifiers"

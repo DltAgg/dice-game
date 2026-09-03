@@ -162,16 +162,21 @@ export type GameAction =
       readonly faceCardId: FaceCardId;
     }
   /**
-   * Completes a pending replace-synthetic-face (Reforge): uninstall the named
-   * slot's matching face to the pool and install a different pool face there.
-   * Not a forge — no forge-draw.
+   * Completes pending `[Reforge]` / `[Cross forge]`: overwrite `slotIndexes` on
+   * one owned die with `faceCardIds` (synthetic destination faces from pool).
+   * Lengths must equal pending `faces`. Not a forge — no forge-draw.
    */
   | {
       readonly type: "RESOLVE_REPLACE_SYNTHETIC_FACE";
       readonly playerId: PlayerId;
       readonly dieId: DieId;
-      readonly slotIndex: number;
-      readonly faceCardId: FaceCardId;
+      readonly slotIndexes: readonly number[];
+      readonly faceCardIds: readonly FaceCardId[];
+    }
+  | {
+      readonly type: "RESOLVE_CHOOSE_EFFECT_MODE";
+      readonly playerId: PlayerId;
+      readonly modeIndex: number;
     }
   | {
       readonly type: "RESOLVE_CHOOSE_DIE";

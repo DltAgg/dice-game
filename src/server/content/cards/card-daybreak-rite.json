@@ -16,17 +16,24 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Heal 2] on each allied frontline creature.",
+  "rulesText": "[Heal 2] on 2 allied creatures.",
   "ritual": {
     "spend": {
-      "luminar": 2
+      "luminar": 3
     },
     "effects": [
       {
         "type": "heal",
         "amount": 2,
         "target": {
-          "kind": "allied-frontline"
+          "kind": "choose-ally"
+        }
+      },
+      {
+        "type": "heal",
+        "amount": 2,
+        "target": {
+          "kind": "choose-ally"
         }
       }
     ]

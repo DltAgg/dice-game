@@ -3,7 +3,8 @@
   "id": "card-tooling-order",
   "name": "Tooling Order",
   "playCost": {
-    "mechanical": 2
+    "mechanical": 2,
+    "any": 1
   },
   "type": "instant",
   "subtypes": [],
@@ -14,18 +15,36 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Forge 2 Synthetic Mechanical] on your die.",
+  "rulesText": "Choose one:\n• [Cross forge 2 Mechanical / Luminar]\n• [Cross forge 2 Luminar / Mechanical]",
   "effect": {
     "requires": {
       "mechanical": 2
     },
     "effects": [
       {
-        "type": "forge-faces",
-        "faces": 2,
-        "kind": "synthetic",
-        "attribute": "mechanical",
-        "target": "own-die"
+        "type": "choose-effect-mode",
+        "modes": [
+          [
+            {
+              "type": "replace-synthetic-face",
+              "faces": 2,
+              "attribute": "luminar",
+              "fromAttribute": "mechanical"
+            }
+          ],
+          [
+            {
+              "type": "replace-synthetic-face",
+              "faces": 2,
+              "attribute": "mechanical",
+              "fromAttribute": "luminar"
+            }
+          ]
+        ],
+        "modeLabels": [
+          "Mechanical → Luminar",
+          "Luminar → Mechanical"
+        ]
       }
     ]
   }

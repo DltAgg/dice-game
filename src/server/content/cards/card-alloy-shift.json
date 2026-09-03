@@ -1,7 +1,7 @@
 {
   "$schema": "../schema/card.schema.json",
-  "id": "card-recast",
-  "name": "Recast",
+  "id": "card-alloy-shift",
+  "name": "Alloy Shift",
   "playCost": {
     "mechanical": 2
   },
@@ -14,13 +14,14 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Reforge 2 Mechanical] any faces on one of your dice.",
+  "rulesText": "[Cross forge 1 Mechanical / Luminar] on one of your dice.",
   "effect": {
     "effects": [
       {
         "type": "replace-synthetic-face",
-        "faces": 2,
-        "attribute": "mechanical"
+        "faces": 1,
+        "attribute": "luminar",
+        "fromAttribute": "mechanical"
       }
     ]
   }

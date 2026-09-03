@@ -14,7 +14,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "On absorb Mechanical, once per turn: [Generate 1 Mechanical].",
+  "rulesText": "On absorb Mechanical, once per turn: [Empower 1].",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -27,8 +27,7 @@
         "oncePerTurn": true,
         "effects": [
           {
-            "type": "generate-symbol",
-            "symbol": "mechanical",
+            "type": "next-attack-bonus",
             "amount": 1
           }
         ]

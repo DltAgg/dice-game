@@ -106,7 +106,7 @@ and do **not** reprint `[Overcharge]` on the card. Spec `013`
 | Overload that cares it was forged | Fires or scales on yield / synthetic bank / “this face was installed this game.” |
 | Dual-pip face (below) | The install *is* the plus: two attributes from one slot. |
 
-Mechanical still owns extra own-die reconstruction (`[Reforge]`, `[Stamp]`,
+Mechanical still owns extra own-die reconstruction (`[Reforge]`, `[Cross forge]`, `[Stamp]`,
 extra forge as the **exclusive verb**). Other attributes may still have
 interesting **forge regions** (count, riders, dual-pip faces) without
 stealing that verb. Opponent-die forge remains Corruption.

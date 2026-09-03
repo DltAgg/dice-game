@@ -57,7 +57,7 @@ Do **not** use “Whenever…”, “When you…”, or “When this creature…
 | `on-roll-symbol` | `On roll <Symbol>:` / `On opponent roll <Symbol>:` |
 | `on-absorb` | `On absorb:` / `On absorb <Symbol>:` / `On absorb Natural:` / `On absorb <Symbol>, once per turn:` |
 | `on-attack` | `On attack:` / `On basic attack:` / `On special attack:` / `On attack, another ally:` |
-| `on-take-damage` | `On take damage:` (add `, once per turn` before the colon when needed) |
+| `on-take-damage` | `On take damage:` / `On take damage, once per turn: [Reduce N].` |
 | `on-discard` | `On discard:` |
 | `attack-damage-bonus` | `On basic attack:` / `On attack:` (+N damage) |
 | `on-turn-start` | `On start of turn:` / `On start of opponent's turn:` |
@@ -76,7 +76,7 @@ Qualifiers use a comma before the colon (`On take damage, once per turn:`), neve
 | `On roll <Symbol>:` | `on-roll-symbol` + `symbol` | Matching roll (filter `rollingPlayer`) |
 | `On absorb <Symbol>:` | `on-absorb` (+ filters; use `ally` on gear when “you bank”) | Matching attribute bank |
 | `On attack:` / `On basic attack:` / … | `on-attack` | Attack declared |
-| `On take damage:` | `on-take-damage` | Incoming damage |
+| `On take damage:` | `on-take-damage` (`[Reduce N]` / optional `effects`) | Incoming damage |
 | `On discard:` | `on-discard` | Hand discard |
 | `On change position:` | `on-change-position` | Ally moved via `setCreaturePosition` |
 | `On start of turn:` | `on-turn-start` + `whoseTurn` | Incoming player's turn begins (after toxin ticks) |

@@ -212,6 +212,7 @@
         { "$ref": "#/$defs/repositionCreature" },
         { "$ref": "#/$defs/swapPositions" },
         { "$ref": "#/$defs/conditional" },
+        { "$ref": "#/$defs/chooseEffectMode" },
         { "$ref": "#/$defs/retainDie" },
         { "$ref": "#/$defs/convertSymbols" },
         { "$ref": "#/$defs/armIgnoreShield" },
@@ -555,14 +556,15 @@
     },
     "replaceSyntheticFace": {
       "title": "replace-synthetic-face",
-      "description": "[Reforge]: choose an owned die slot whose installed face matches kind+attribute, return that face to the pool, then install a different matching face onto the same slot. Not a forge — no forge-draw.",
+      "description": "[Reforge N Attribute] / [Cross forge N Y / Z]. Choose N replaceable slots on one owned die, then N synthetic destination faces from the pool. fromAttribute omitted = any showing face (Reforge). Set = Cross forge (slots must show Y). Always installs synthetic attribute. Not a forge — no forge-draw.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "kind", "attribute"],
+      "required": ["type", "faces", "attribute"],
       "properties": {
         "type": { "const": "replace-synthetic-face" },
-        "kind": { "$ref": "defs.schema.json#/$defs/forgeableFaceKind" },
-        "attribute": { "$ref": "defs.schema.json#/$defs/attribute" }
+        "faces": { "$ref": "defs.schema.json#/$defs/positiveAmount" },
+        "attribute": { "$ref": "defs.schema.json#/$defs/attribute" },
+        "fromAttribute": { "$ref": "defs.schema.json#/$defs/attribute" }
       }
     },
     "repositionCreature": {
@@ -599,6 +601,25 @@
         "type": { "const": "conditional" },
         "when": { "$ref": "defs.schema.json#/$defs/effectCondition" },
         "then": { "$ref": "#/$defs/effectList" }
+      }
+    },
+    "chooseEffectMode": {
+      "title": "choose-effect-mode",
+      "description": "Controller chooses one of N modes. Each mode is an array of effects. If only one mode is legal the engine auto-picks it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "modes"],
+      "properties": {
+        "type": { "const": "choose-effect-mode" },
+        "modes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/effectList" },
+          "minItems": 2
+        },
+        "modeLabels": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
       }
     },
     "retainDie": {

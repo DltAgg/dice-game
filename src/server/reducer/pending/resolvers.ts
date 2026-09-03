@@ -1,6 +1,5 @@
 import { getCard } from "../../content/cards.js";
 import { getCreatureDefinition } from "../../content/creatures.js";
-import { getFaceCard } from "../../content/faces.js";
 import type { GameError } from "../../model/errors.js";
 import { NATURAL_CONVERT_SYMBOLS } from "../../model/effects.js";
 import type {
@@ -23,15 +22,9 @@ import {
 import { livingCreaturesOf, opponentOf } from "../../rules/creatures.js";
 import { diceOf } from "../../rules/dice.js";
 import {
-  countInstalledCopies,
   eligibleFacesForForge,
-  eligiblePoolFacesForReplace,
   isLegalForgeKindForAttribute,
-  overwrittenSlot,
-  returnFaceToPoolIfOrphaned,
   slotCannotBeReplacedByForge,
-  takeFaceFromPool,
-  withForgeLockResetOnInstall,
 } from "../../rules/faces.js";
 import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../../rules/targets.js";
 import {
@@ -42,7 +35,7 @@ import {
 import { attack } from "../commands/attack.js";
 import { installFacesOnDie } from "../commands/forge.js";
 import { resumeAfterEffectPause } from "../commands/priority.js";
-import { emit, patchDie, patchPlayer, type Draft } from "../draft.js";
+import { emit, patchPlayer, type Draft } from "../draft.js";
 import {
   applyDeferredEffect,
   applyDieSlotChoice,
@@ -53,8 +46,6 @@ import {
   pushEffect,
 } from "../resolution.js";
 import {
-  clearOverchargeOnFace,
-  clearOverloadsOnFace,
   destroyEquipment,
   destroyOverload,
   discardSpecificCards,
@@ -429,81 +420,9 @@ export function resolveForgeFaces(
 }
 
 /**
- * Completes a pending replace-synthetic-face (Reforge). Uninstalls the named
- * slot's matching face to the pool and installs a different pool face onto the
- * same slot. Not a forge — no forge-draw.
+ * Completes a pending replace-synthetic-face (Reforge / Cross forge).
  */
-export function resolveReplaceSyntheticFace(
-  draft: Draft,
-  playerId: PlayerId,
-  dieId: DieId,
-  slotIndex: number,
-  faceCardId: FaceCardId,
-): GameError | null {
-  const pending = draft.pendingDecision;
-  if (pending === null || pending.type !== "replace-synthetic-face") return "INVALID_PHASE";
-  if (pending.controllerId !== playerId) return "PENDING_DECISION";
-
-  const die = draft.dice[dieId];
-  if (die === undefined) return "UNKNOWN_ENTITY";
-  if (die.ownerId !== playerId) return "INVALID_TARGET";
-
-  const slot = die.slots[slotIndex];
-  if (slot === undefined) return "INVALID_FACE";
-  if (slotCannotBeReplacedByForge(slot)) return "INVALID_FACE";
-
-  const installedFace = getFaceCard(slot.faceCardId);
-  if (
-    installedFace === undefined ||
-    installedFace.kind !== pending.kind ||
-    installedFace.symbol !== pending.attribute
-  ) {
-    return "INVALID_CHOICE";
-  }
-
-  if (faceCardId === slot.faceCardId) return "INVALID_CHOICE";
-
-  const eligible = eligiblePoolFacesForReplace(
-    draft,
-    playerId,
-    pending.kind,
-    pending.attribute,
-    slot.faceCardId,
-  );
-  if (!eligible.includes(faceCardId)) return "FACE_NOT_AVAILABLE";
-
-  if (!takeFaceFromPool(draft, playerId, faceCardId)) {
-    return "FACE_NOT_AVAILABLE";
-  }
-
-  const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
-  const slots = withForgeLockResetOnInstall(
-    die.slots.map((candidate) =>
-      candidate.index === slotIndex
-        ? overwrittenSlot(candidate, faceCardId, playerId)
-        : candidate,
-    ),
-    faceCardId,
-  );
-  patchDie(draft, dieId, { slots });
-
-  returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
-  if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
-    clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
-    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
-  }
-
-  draft.pendingDecision = null;
-  emit(draft, {
-    type: "replace-synthetic-face-resolved",
-    playerId,
-    dieId,
-    slotIndex,
-    removedFaceCardId: displaced.faceCardId,
-    installedFaceCardId: faceCardId,
-  });
-  return resumeAfterEffectPause(draft);
-}
+export { resolveReplaceSyntheticFace } from "./replaceSyntheticFace.js";
 
 export function resolveChooseDie(
   draft: Draft,

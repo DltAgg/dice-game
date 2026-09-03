@@ -14,7 +14,7 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Prevent] the waiting attack; [Strike] the attacking creature for the damage prevented.",
+  "rulesText": "[Prevent].\n[Strike] the attacking creature for the damage prevented.",
   "effect": {
     "effects": [
       {

@@ -158,7 +158,8 @@ cards (Bloodline Pact, Ichor Exchange, Eclipse, …) are not copy sources.
 | Card | Why |
 |---|---|
 | Thread the Weave | Instant exclusive verb (`[Insight]`) |
-| Recast | Play-region `[Reforge]` (Mechanical exclusive) — forge region still 1; do not treat as occupying extra-forge-region |
+| Recast | Play-region `[Reforge 2 Mechanical]` (Mechanical exclusive) — forge region still 1; do not treat as occupying extra-forge-region |
+| Alloy Shift | Play-region `[Cross forge 1 Mechanical / Luminar]` — proving card for Y → synthetic Z; not a second Recast |
 | Tooling Order | Play-region `[Forge 2]` — **not** `forge.faces: 2` |
 | Tempering Line | Ritual play-region Forge 2 + Discount |
 | Shim Kit | `[Discount]` payoff |

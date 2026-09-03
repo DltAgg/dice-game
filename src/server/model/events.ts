@@ -328,16 +328,23 @@ export type GameEvent =
   | {
       readonly type: "replace-synthetic-face-started";
       readonly playerId: PlayerId;
-      readonly kind: ForgeableFaceKind;
+      readonly faces: number;
       readonly attribute: Attribute;
+      readonly fromAttribute?: Attribute;
     }
   | {
       readonly type: "replace-synthetic-face-resolved";
       readonly playerId: PlayerId;
       readonly dieId: DieId;
-      readonly slotIndex: number;
-      readonly removedFaceCardId: FaceCardId;
-      readonly installedFaceCardId: FaceCardId;
+      readonly slotIndexes: readonly number[];
+      readonly removedFaceCardIds: readonly FaceCardId[];
+      readonly installedFaceCardIds: readonly FaceCardId[];
+    }
+  | {
+      readonly type: "effect-mode-chosen";
+      readonly playerId: PlayerId;
+      readonly modeIndex: number;
+      readonly modeLabel: string;
     }
   | { readonly type: "turn-ended"; readonly playerId: PlayerId }
   | { readonly type: "match-finished"; readonly winnerId: PlayerId }

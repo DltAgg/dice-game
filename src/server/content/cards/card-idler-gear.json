@@ -14,20 +14,14 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Mechanical face.\nOn roll: [Generate 1 Mechanical]. [Generate 1 Luminar].",
+  "rulesText": "Can only overload a Mechanical face.\nOn roll: [Discount 1].",
   "overload": {
     "faceSymbols": [
       "mechanical"
     ],
     "onRoll": [
       {
-        "type": "generate-symbol",
-        "symbol": "mechanical",
-        "amount": 1
-      },
-      {
-        "type": "generate-symbol",
-        "symbol": "luminar",
+        "type": "play-cost-discount",
         "amount": 1
       }
     ]

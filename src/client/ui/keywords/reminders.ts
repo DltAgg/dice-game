@@ -58,8 +58,12 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Negate top matching card chain link.",
   },
   {
-    test: (body) => /^Destroy\s+(?:Equipment|Ritual)$/i.test(body),
+    test: (body) => /^Destroy\s+(?:Equipment|Ritual|Overload)$/i.test(body),
     reminder: "Send one matching field card to GY.",
+  },
+  {
+    test: (body) => /^Bounce(?:\s+(?:Ritual|Equipment|Overload))?$/i.test(body),
+    reminder: "Return one matching field card to its owner's hand.",
   },
   {
     test: (body) => /^Strike(?:\s+\d+)?$/i.test(body),
@@ -86,8 +90,21 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Ignore N Shield after Prevent.",
   },
   {
+    test: (body) => /^Reduce(?:\s+\d+)?$/i.test(body),
+    reminder: "That incoming hit deals N less (min 0), before Prevent and Shield.",
+  },
+  {
     test: (body) => /^Prevent(?:\s+\d+)?$/i.test(body),
     reminder: "Prevent the next attack against the creature under attack (before Shield). Reaction only.",
+  },
+  {
+    test: (body) => /^Silence$/i.test(body),
+    reminder:
+      "Chosen opposing creature, field ritual, or die slot cannot fire until the start of your next turn.",
+  },
+  {
+    test: (body) => /^Desynthesize$/i.test(body),
+    reminder: "Replace a synthetic attribute face on any die with that attribute's natural.",
   },
   {
     test: (body) => /^Drain(?:\s+\d+)?$/i.test(body),
@@ -122,8 +139,14 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Ally frontline↔back / swap.",
   },
   {
-    test: (body) => /^Reforge$/i.test(body),
-    reminder: "Replace matching synthetic (no forge-draw).",
+    test: (body) => /^Reforge(?:\s+\d+)?(?:\s+[A-Za-z]+)?$/i.test(body),
+    reminder:
+      "On one of your dice, replace any N faces with N synthetic faces of that attribute from your pool (no forge-draw).",
+  },
+  {
+    test: (body) => /^Cross forge(?:\s+\d+)?(?:\s+[A-Za-z]+\s*\/\s*[A-Za-z]+)?$/i.test(body),
+    reminder:
+      "On one of your dice, replace N faces of attribute Y with N synthetic Z faces from your pool (no forge-draw).",
   },
   {
     test: (body) => /^Stamp$/i.test(body),

@@ -4,8 +4,9 @@ Status: **IMPLEMENTED** (2026-09-01)
 
 `[Desynthesize]` is a physics keyword. It peels a **Synthetic** attribute
 face on **any die** back to that attribute’s **natural** identity face. It is
-**not** `[Reforge]` (`replace-synthetic-face`: swap to a different synthetic
-from pool, owned die only, blocked by stay / forge-lock, Mechanical exclusive).
+**not** `[Reforge]` / `[Cross forge]` (`replace-synthetic-face`: overwrite N
+slots on your die with synthetics from pool, owned die only, blocked by stay /
+forge-lock, Mechanical exclusive).
 
 Related: [`018-ast-engine.md`](./018-ast-engine.md),
 [`KEYWORDS.md`](../KEYWORDS.md), [`RULEBOOK.md`](../RULEBOOK.md) §11,

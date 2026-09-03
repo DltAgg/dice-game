@@ -38,6 +38,7 @@ import {
   resolveSearch,
   resolveSplitDamage,
 } from "./pending/resolvers.js";
+import { resolveChooseEffectMode } from "./pending/chooseEffectMode.js";
 import { resolveChooseSilenceHost } from "./silenceResolve.js";
 import { resolveChooseBounceCard } from "./bounceResolve.js";
 import { resolveDesynthesizeDieSlot } from "./desynthesizeResolve.js";
@@ -119,6 +120,8 @@ function isMatchingPendingResolve(pending: ChoicePending, action: GameAction): b
       return action.type === "RESOLVE_FORGE_FACES";
     case "replace-synthetic-face":
       return action.type === "RESOLVE_REPLACE_SYNTHETIC_FACE";
+    case "choose-effect-mode":
+      return action.type === "RESOLVE_CHOOSE_EFFECT_MODE";
     case "choose-die":
       return action.type === "RESOLVE_CHOOSE_DIE";
     case "convert-symbols":
@@ -222,9 +225,11 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         draft,
         action.playerId,
         action.dieId,
-        action.slotIndex,
-        action.faceCardId,
+        action.slotIndexes,
+        action.faceCardIds,
       );
+    case "RESOLVE_CHOOSE_EFFECT_MODE":
+      return resolveChooseEffectMode(draft, action.playerId, action.modeIndex);
     case "RESOLVE_CHOOSE_DIE":
       return resolveChooseDie(draft, action.playerId, action.dieId);
     case "RESOLVE_CONVERT_SYMBOLS":

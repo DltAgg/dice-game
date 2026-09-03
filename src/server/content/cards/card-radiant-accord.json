@@ -3,7 +3,8 @@
   "id": "card-radiant-accord",
   "name": "Radiant Accord",
   "playCost": {
-    "luminar": 3
+    "luminar": 1,
+    "any": 1
   },
   "type": "ritual",
   "subtypes": [
@@ -16,26 +17,20 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "On absorb Luminar, once per turn: [Mark 1 Shield] on your most damaged creature.",
+  "rulesText": "[Silence] an opposing creature or ritual.",
   "ritual": {
-    "effects": [],
-    "standingAbilities": [
+    "spend": {
+      "luminar": 2,
+      "any": 1
+    },
+    "effects": [
       {
-        "type": "on-absorb",
-        "symbols": [
-          "luminar"
-        ],
-        "absorberRelation": "ally",
-        "oncePerTurn": true,
-        "effects": [
-          {
-            "type": "grant-shield",
-            "amount": 1,
-            "target": {
-              "kind": "most-damaged-ally"
-            }
-          }
-        ]
+        "type": "silence",
+        "hosts": ["creature", "ritual"],
+        "target": {
+          "kind": "choose-opponent-silence-host",
+          "hosts": ["creature", "ritual"]
+        }
       }
     ]
   }

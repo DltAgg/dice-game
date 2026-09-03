@@ -110,6 +110,21 @@ describe("AstValidator", () => {
     });
     expect(validator.validate(node)).toEqual([]);
   });
+
+  it("maps Cross forge fromAttribute onto replace-synthetic-face", () => {
+    const node = compiler.compileLegacy({
+      type: "replace-synthetic-face",
+      faces: 1,
+      attribute: "luminar",
+      fromAttribute: "mechanical",
+    });
+    expect(node).toEqual({
+      op: "replace-synthetic-face",
+      faces: 1,
+      attribute: "luminar",
+      fromAttribute: "mechanical",
+    });
+  });
 });
 
 describe("ValueEvaluator", () => {

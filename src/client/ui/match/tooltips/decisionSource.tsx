@@ -64,6 +64,7 @@ export function pendingSourceOf(
     case "discard-cards":
     case "forge-faces":
     case "replace-synthetic-face":
+    case "choose-effect-mode":
     case "replay-graveyard-tactic":
     case "look-top-deck":
     case "peek-deck":

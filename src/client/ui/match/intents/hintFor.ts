@@ -200,11 +200,18 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
   }
   if (state.pendingDecision?.type === "replace-synthetic-face") {
     if (!isPendingChooser) {
-      return "Waiting for the opponent to replace a Synthetic face on their die.";
+      return "Waiting for the opponent to replace faces on their die.";
     }
     const pending = state.pendingDecision;
-    const kind = formatFaceKind(pending.kind);
-    return `Choose a ${kind} ${pending.attribute} face on your die to uninstall, then a different matching face from your pool to install (no forge-draw).`;
+    const dest = pending.attribute;
+    if (pending.fromAttribute !== undefined) {
+      return `Choose ${String(pending.faces)} ${pending.fromAttribute} face(s) on one of your dice, then ${String(pending.faces)} synthetic ${dest} face(s) from your pool (no forge-draw).`;
+    }
+    return `Choose ${String(pending.faces)} replaceable face(s) on one of your dice, then ${String(pending.faces)} synthetic ${dest} face(s) from your pool (no forge-draw).`;
+  }
+  if (state.pendingDecision?.type === "choose-effect-mode") {
+    if (!isPendingChooser) return "Waiting for the opponent to choose a mode.";
+    return `Choose one: ${state.pendingDecision.modeLabels.join(" or ")}.`;
   }
   if (state.pendingDecision?.type === "choose-die") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a die.";

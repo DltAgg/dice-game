@@ -18,6 +18,7 @@ export const SHIM_KIT: CardId = asCardId("card-shim-kit");
 export const QUICKSET_JIG: CardId = asCardId("card-quickset-jig");
 export const DIE_PUNCH: CardId = asCardId("card-die-punch");
 export const RECAST: CardId = asCardId("card-recast");
+export const ALLOY_SHIFT: CardId = asCardId("card-alloy-shift");
 export const TWIN_CAM: CardId = asCardId("card-twin-cam");
 export const IDLER_GEAR: CardId = asCardId("card-idler-gear");
 export const PAWL_SPRING: CardId = asCardId("card-pawl-spring");

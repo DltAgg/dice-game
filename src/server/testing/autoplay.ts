@@ -4,9 +4,12 @@ import { getFaceCard } from "../content/faces.js";
 import {
   resolveFaceForForge,
   preferredSlotsForForgeFaces,
-  legalSlotsForReplaceSyntheticFace,
-  eligiblePoolFacesForReplace,
 } from "../rules/faces.js";
+import {
+  eligiblePoolFacesForReforge,
+  isLegalReforgeAssignment,
+  legalSlotsForReplaceSyntheticFace,
+} from "../rules/reforge.js";
 import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type FaceCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -520,39 +523,61 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "replace-synthetic-face") {
-    const slots = legalSlotsForReplaceSyntheticFace(
-      state,
-      pending.controllerId,
-      pending.kind,
-      pending.attribute,
-    );
-    const choice = slots[0];
-    if (choice === undefined) {
-      throw new Error("autoplay: no slot for replace-synthetic-face");
-    }
-    const removedId = state.dice[choice.dieId]?.slots[choice.slotIndex]?.faceCardId;
-    if (removedId === undefined) {
-      throw new Error("autoplay: missing face on replace slot");
-    }
-    const [faceCardId] = eligiblePoolFacesForReplace(
-      state,
-      pending.controllerId,
-      pending.kind,
-      pending.attribute,
-      removedId,
-    );
-    if (faceCardId === undefined) {
+    const spec = {
+      faces: pending.faces,
+      attribute: pending.attribute,
+      ...(pending.fromAttribute !== undefined ? { fromAttribute: pending.fromAttribute } : {}),
+    };
+    const slots = legalSlotsForReplaceSyntheticFace(state, pending.controllerId, spec);
+    const pool = eligiblePoolFacesForReforge(state, pending.controllerId, pending.attribute);
+    const faceCardIds = pool.slice(0, pending.faces);
+    if (faceCardIds.length < pending.faces) {
       throw new Error("autoplay: no pool face for replace-synthetic-face");
     }
+    const byDie = new Map<DieId, number[]>();
+    for (const slot of slots) {
+      const indexes = byDie.get(slot.dieId) ?? [];
+      indexes.push(slot.slotIndex);
+      byDie.set(slot.dieId, indexes);
+    }
+    for (const [dieId, indexes] of byDie) {
+      if (indexes.length < pending.faces) continue;
+      const slotIndexes = indexes.slice(0, pending.faces);
+      if (
+        !isLegalReforgeAssignment(
+          state,
+          pending.controllerId,
+          spec,
+          dieId,
+          slotIndexes,
+          faceCardIds,
+        )
+      ) {
+        continue;
+      }
+      const result = advance(state, {
+        type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
+        playerId: pending.controllerId,
+        dieId,
+        slotIndexes,
+        faceCardIds,
+      });
+      if (!result.ok) {
+        throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_REPLACE_SYNTHETIC_FACE`);
+      }
+      return resolvePending(result.state);
+    }
+    throw new Error("autoplay: no slot for replace-synthetic-face");
+  }
+
+  if (pending.type === "choose-effect-mode") {
     const result = advance(state, {
-      type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
+      type: "RESOLVE_CHOOSE_EFFECT_MODE",
       playerId: pending.controllerId,
-      dieId: choice.dieId,
-      slotIndex: choice.slotIndex,
-      faceCardId,
+      modeIndex: 0,
     });
     if (!result.ok) {
-      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_REPLACE_SYNTHETIC_FACE`);
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_EFFECT_MODE`);
     }
     return resolvePending(result.state);
   }

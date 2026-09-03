@@ -52,8 +52,8 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    Never approximate silently.
 3. **`[Prevent]`** is **Luminar + reaction-exclusive** (`grant-attack-prevent`
    on `type: "reaction"` only, during an attack chain). Proactive mitigation
-   uses `[Mark N Shield]` / `[Heal]` — not `[Prevent]` on faces, absorb, or
-   standing hooks. Spec `009` · `docs/KEYWORDS.md`.
+   uses `[Mark N Shield]` / `[Heal]` / standing `On take damage: [Reduce N]` —
+   not `[Prevent]` on faces, absorb, or standing hooks. Spec `009` · `docs/KEYWORDS.md`.
 4. Effects are **data** (AST `op` nodes or legacy `type` members compiled by
    `AstCompiler`). Prefer existing opcodes. Missing vocabulary → proving-card
    brief to `engine-developer` ([develop-engine](../develop-engine/SKILL.md)).

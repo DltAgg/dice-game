@@ -78,6 +78,15 @@ describe("lookupKeywordReminders", () => {
     expect(lookupKeywordReminders("[Strike equal]")).toEqual([]);
   });
 
+  it("looks up [Silence] from glossary print", () => {
+    const rows = lookupKeywordReminders(
+      "[Silence] an opposing creature, ritual, or face until the start of your next turn.",
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.token).toBe("[Silence]");
+    expect(rows[0]?.reminder).toMatch(/cannot fire/i);
+  });
+
   it("matches operator families from the glossary", () => {
     const print = [
       "[Strip 3 Shield]",
@@ -86,11 +95,16 @@ describe("lookupKeywordReminders", () => {
       "[Overcharge]",
       "[Negate Instant]",
       "[Destroy Ritual]",
+      "[Destroy Overload]",
+      "[Bounce]",
       "[Strike 3]",
       "[Heal 1]",
       "[Draw 2]",
       "[Pierce 1]",
+      "[Reduce 1]",
       "[Prevent]",
+      "[Silence]",
+      "[Desynthesize]",
       "[Drain 2]",
       "[Convert 1]",
       "[Discount 2]",
@@ -99,7 +113,8 @@ describe("lookupKeywordReminders", () => {
       "[Recall 1]",
       "[Mill 2]",
       "[Reposition]",
-      "[Reforge]",
+      "[Reforge 2 Mechanical]",
+      "[Cross forge 1 Mechanical / Luminar]",
       "[Stamp]",
       "[Double]",
       "[Resonance]",
@@ -116,11 +131,16 @@ describe("lookupKeywordReminders", () => {
       "[Overcharge]",
       "[Negate Instant]",
       "[Destroy Ritual]",
+      "[Destroy Overload]",
+      "[Bounce]",
       "[Strike 3]",
       "[Heal 1]",
       "[Draw 2]",
       "[Pierce 1]",
+      "[Reduce 1]",
       "[Prevent]",
+      "[Silence]",
+      "[Desynthesize]",
       "[Drain 2]",
       "[Convert 1]",
       "[Discount 2]",
@@ -129,7 +149,8 @@ describe("lookupKeywordReminders", () => {
       "[Recall 1]",
       "[Mill 2]",
       "[Reposition]",
-      "[Reforge]",
+      "[Reforge 2 Mechanical]",
+      "[Cross forge 1 Mechanical / Luminar]",
       "[Stamp]",
       "[Double]",
       "[Resonance]",
@@ -150,6 +171,15 @@ describe("lookupKeywordReminders", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]?.token).toBe("[Overcharge]");
     expect(rows[0]?.reminder).toMatch(/attribute face card/i);
+  });
+
+  it("matches Reforge N Attribute and Cross forge N Y / Z", () => {
+    expect(lookupKeywordReminders("[Reforge 2 Mechanical]").map((row) => row.token)).toEqual([
+      "[Reforge 2 Mechanical]",
+    ]);
+    expect(
+      lookupKeywordReminders("[Cross forge 1 Mechanical / Luminar]").map((row) => row.token),
+    ).toEqual(["[Cross forge 1 Mechanical / Luminar]"]);
   });
 });
 

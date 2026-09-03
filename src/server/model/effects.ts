@@ -190,15 +190,16 @@ export type EffectDefinition =
       readonly target: "own-die" | "opponent-die";
     }
   /**
-   * Pending: choose an owned die slot whose installed face matches
-   * `kind`+`attribute`, return that face to the pool, then install a
-   * **different** matching face from the pool onto the same slot.
-   * Not a forge — no forge-draw (Reforge). Spec `012`.
+   * `[Reforge N Attribute]` / `[Cross forge N Y / Z]`. Pending: choose N
+   * replaceable slots on **one** owned die, then N **synthetic** `attribute`
+   * faces from the pool. `fromAttribute` omitted = any showing face (Reforge);
+   * set = Cross forge (those slots must show Y). Not a forge — no forge-draw.
    */
   | {
       readonly type: "replace-synthetic-face";
-      readonly kind: ForgeableFaceKind;
+      readonly faces: number;
       readonly attribute: Attribute;
+      readonly fromAttribute?: Attribute;
     }
   /**
    * Toggle an **ally** between frontline and back. If moving to frontline would
@@ -225,6 +226,17 @@ export type EffectDefinition =
       readonly type: "conditional";
       readonly when: EffectCondition;
       readonly then: readonly EffectDefinition[];
+    }
+  /**
+   * Pending: controller chooses one of N modes. Each mode is an array of
+   * effects that replace this node on the stack. `modeLabels` are short
+   * player-facing strings (e.g. `"Mechanical → Luminar"`). If only one mode
+   * is legal the engine auto-picks it; if none are legal, the effect whiffs.
+   */
+  | {
+      readonly type: "choose-effect-mode";
+      readonly modes: readonly (readonly EffectDefinition[])[];
+      readonly modeLabels?: readonly string[];
     }
   /** Pending: choose an owned retainable die and mark it retained. */
   | { readonly type: "retain-die" }

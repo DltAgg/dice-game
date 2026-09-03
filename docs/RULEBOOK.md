@@ -325,11 +325,25 @@ Some faces **stay locked** on a slot for printed turns after install
 **Desynthesis.** `[Desynthesize]` peels a **synthetic** attribute face on
 **any die** (yours or the opponent’s) back to that attribute’s **natural**
 identity face. It is not a forge (no forge-draw) and is **not** `[Reforge]`
-(swap to a different synthetic from your pool). Stay / forge-lock does not
-block it. The natural belongs to the **die owner**; the displaced synthetic
+or `[Cross forge]` (overwrite slots on **your** die with synthetics from
+your pool). Stay / forge-lock does not block it. The natural belongs to the
+**die owner**; the displaced synthetic
 returns to its owner’s pool when the last copy leaves, and overloads /
 Overcharge on that orphaned face leave as they do on overwrite. An already
 generated pip on a showing slot stays; the next roll uses the natural.
+
+**Reforge / Cross forge.** `[Reforge N Attr]` on **one of your dice**: replace
+**any** N replaceable faces with N **synthetic** Attr faces from your pool
+(you name the slots and the pool faces). `[Cross forge N Y / Z]` is the same
+except those N slots must currently show **Y**, and the installs are synthetic
+**Z**. Neither is a forge (no forge-draw, no yield, no synthetic bank). Stay /
+cannot-replace slots are illegal. The §9.1 attribute cap still applies to the
+finished die. Displaced faces return to pool when orphaned; their overloads /
+Overcharge leave as on overwrite. Mechanical exclusive.
+
+**Choose one.** Some cards (e.g. Tooling Order) read "Choose one — A or B."
+You pick exactly one mode; the other is ignored. If only one mode can legally
+resolve, it is chosen automatically.
 
 **Overcharge.** Once per turn during actions, you may spend **any** card
 from hand to Overcharge one **attribute face card** installed on your dice
@@ -375,7 +389,10 @@ face) fires again.
   the fuel.
 - Declaring an attack opens a reaction window (§15). Prevent may answer;
   negate may not.
-- Damage apply order: **prevention → Shield → Life**.
+- Damage apply order: **`[Reduce]` → prevention → Shield → Life**.
+- `[Reduce N]` subtracts N from that incoming hit (minimum 0) before Prevent
+  and Shield. It applies to any damage that hits the creature, not only
+  attacks. It does not cancel the attack.
 - Pierce / ignore Shield skips that many Shields **without spending them**,
   after prevention, before remaining Shields and HP.
 - Some attacks queue follow-up effects after the damage link.
@@ -387,6 +404,13 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 ---
 
 ## 14. Damage extras
+
+**Reduce** (incoming hit math — not Prevent):
+
+- `[Reduce N]` on `On take damage:` cuts N from that hit before Prevent and
+  Shield. Optional `, once per turn` is a print qualifier, not a second
+  keyword. Distinct from `[Prevent]` (cancel the next attack) and
+  `[Discount]` (pile costs).
 
 **Prevention** (reaction to an attack declaration — not a proactive buffer):
 

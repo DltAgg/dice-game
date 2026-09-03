@@ -14,7 +14,7 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "On take damage, once per turn: reduce it by 1.",
+  "rulesText": "On take damage, once per turn: [Reduce 1].",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [

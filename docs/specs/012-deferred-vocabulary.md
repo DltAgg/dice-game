@@ -52,8 +52,8 @@ engine can resolve the clause honestly. Movers always go through
 
 ### Pierce / ignore Shield
 
-- Attack damage order: Aegis redirect → incoming bonus → `on-take-damage`
-  reduce → prevent buffer (`009`) → skip up to N Shield (**not spent**) →
+- Attack damage order: Aegis redirect → incoming bonus → `[Reduce]`
+  (`on-take-damage.reduceBy`) → prevent buffer (`009`) → skip up to N Shield (**not spent**) →
   remaining Shield (spent) → HP.
 - Sources: creature `ignore-shield` standing; Rust `arm-ignore-shield` turn
   buffer.
@@ -81,11 +81,13 @@ engine can resolve the clause honestly. Movers always go through
   forge overwrite. Plague uses `DieSlot.forgeLockRemaining` (catalogue `turns: 4`,
   ticked on the **die owner’s** turn finish). Installing Plague onto a die
   resets remaining lock to 4 on every Plague slot of **that die**.
-- `replace-synthetic-face` (Reforge): pending choice of an owned die slot whose
-  installed face matches `kind`+`attribute` (Synthetic Mechanical), return that
-  face to the pool (last-copy overload detach applies), then install a
-  **different** matching face from the pool onto the same slot. Not a forge —
-  no forge-draw. Whiffs when no legal complete choice exists.
+- `replace-synthetic-face` (`[Reforge N Attr]` / `[Cross forge N Y / Z]`):
+  pending choice of N replaceable slots on **one** owned die, then N
+  **synthetic** destination faces from the controller pool. `fromAttribute`
+  omitted = any showing face (Reforge). Set = those slots must show Y (Cross
+  forge). Always installs synthetic `attribute`. Not a forge — no forge-draw.
+  Whiffs when no legal complete choice exists (including fewer than N pool
+  synthetics, stay / cannot-replace, or the §9.1 attribute cap).
 
 ## State Changes
 
@@ -121,7 +123,7 @@ engine can resolve the clause honestly. Movers always go through
 | `RESOLVE_MIND_CONTROL` | Strip overloads (one face all, or one each of up to two) |
 | `RESOLVE_SPLIT_DAMAGE` | Blade Rain / Extermination |
 | `RESOLVE_OPTIONAL_REROLL` | Adrenaline (same-face ally damage); Rethrow (choose a rolled die, no punishment) |
-| `RESOLVE_REPLACE_SYNTHETIC_FACE` | Reforge (`replace-synthetic-face`) |
+| `RESOLVE_REPLACE_SYNTHETIC_FACE` | Reforge / Cross forge (`replace-synthetic-face`) |
 | `ACTIVATE_FACE` | Heritage / Plague activated ability |
 
 Illegal moves return `GameError` + original state.
@@ -182,7 +184,7 @@ Match-ui must render these pendings (hotseat + online):
 | `mind-control` | Mode + 1 or 2 opposing face cards; `strip-one-each` also names the overload instance when a face has 2+ |
 | `split-damage` | Assign integer damage that sums to `amount` |
 | `optional-reroll` | Accept or decline reroll of that die (Adrenaline may then deal same-face ally damage; Rethrow does not) |
-| `replace-synthetic-face` | Pick owned Synthetic Mechanical slot + different matching pool face |
+| `replace-synthetic-face` | Pick N slots on one owned die, then N synthetic destination faces from pool (`fromAttribute` = Cross forge) |
 
 Also: **Activate** control on a showing Forbidden Heritage / Pestilent Plague
 face during actions (`ACTIVATE_FACE`). Display pile cost
@@ -194,10 +196,10 @@ Show optional reposition / swap prompts after Dive / War Charge /
 Instinct.
 
 `choose-creature` already has a Decline path for optional filters.
-`replace-synthetic-face` is wired in MatchBoard (slot → pool face →
-`RESOLVE_REPLACE_SYNTHETIC_FACE`). Other pending types above that are still
-missing a chooser will leave the engine sitting on `pendingDecision` until the
-UI dispatches the matching resolve.
+`replace-synthetic-face` is wired in MatchBoard (N slots on one die → N pool
+synthetics → `RESOLVE_REPLACE_SYNTHETIC_FACE`). Other pending types above that
+are still missing a chooser will leave the engine sitting on `pendingDecision`
+until the UI dispatches the matching resolve.
 
 ## Acceptance Criteria
 

@@ -26,7 +26,7 @@ who may act; the inactive side is read-only until the turn passes.
 | Board: creatures, dice faces, symbols, attribute pile, phase, hand | Fancy card art on the board (catalogue remains separate) |
 | Actions: roll, then **actions** for absorb / attack / play / forge / activate ritual (any order), retain, resolve search, skip to actions from roll, end turn | Reaction chain UI |
 | Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
-| Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge), `choose-equipment`, and `choose-attribute-tokens` | Second legality engine in React |
+| Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge / Cross forge), `choose-equipment`, and `choose-attribute-tokens` | Second legality engine in React |
 | Sticky error snackbar | |
 | Catalogue still reachable from the app shell | Persistence / resume |
 
@@ -36,16 +36,16 @@ who may act; the inactive side is read-only until the turn passes.
 controller and a waiting banner for everyone else. The chooser may complete the
 pending even when they are not the turn player (`actingPlayerIdOf` follows
 `pendingChooserId`). Resolve via
-`useMatchStore.dispatch` only — query `src/game` helpers for legal options
-(e.g. `legalSlotsForReplaceSyntheticFace` / `eligiblePoolFacesForReplace` for
-Reforge). Do not special-case catalogue card ids.
+`useMatchStore.dispatch` only — query `@server` helpers for legal options
+(e.g. `legalSlotsForReplaceSyntheticFace` / `eligiblePoolFacesForReforge` for
+Reforge / Cross forge). Do not special-case catalogue card ids.
 
-Notable Reforge UX (`replace-synthetic-face`):
+Notable Reforge / Cross forge UX (`replace-synthetic-face`):
 
-1. Pick an owned matching die slot to uninstall.
-2. Pick a **different** matching face from the controller's pool.
-3. Dispatch `RESOLVE_REPLACE_SYNTHETIC_FACE` (engine handles uninstall / install;
-   no forge-draw).
+1. Pick N replaceable slots on **one** owned die (Cross forge: those slots must show Y).
+2. Pick N **synthetic** destination faces from the controller's pool.
+3. Dispatch `RESOLVE_REPLACE_SYNTHETIC_FACE` with parallel `slotIndexes` /
+   `faceCardIds` (engine handles uninstall / install; no forge-draw).
 
 ## UI — two-phase turn
 

@@ -3,7 +3,8 @@
   "id": "card-choirlight",
   "name": "Choirlight",
   "playCost": {
-    "luminar": 2
+    "luminar": 3,
+    "any": 1
   },
   "type": "overload",
   "subtypes": [],
@@ -14,18 +15,22 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "Can only overload a Luminar face.\nOn roll: [Heal 1] on your most damaged creature.",
+  "rulesText": "Can only overload a Luminar face.\nOn roll: [Shield 2]. [Empower 1].",
   "overload": {
     "faceSymbols": [
       "luminar"
     ],
     "onRoll": [
       {
-        "type": "heal",
-        "amount": 1,
+        "type": "grant-shield",
+        "amount": 2,
         "target": {
-          "kind": "most-damaged-ally"
+          "kind": "choose-ally"
         }
+      },
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
       }
     ]
   }

@@ -130,8 +130,17 @@ export type PendingDecision =
   | {
       readonly type: "replace-synthetic-face";
       readonly controllerId: PlayerId;
-      readonly kind: ForgeableFaceKind;
+      readonly faces: number;
       readonly attribute: Attribute;
+      readonly fromAttribute?: Attribute;
+      readonly sourceCardInstanceId: CardInstanceId | null;
+      readonly sourceFaceCardId: FaceCardId | null;
+    }
+  | {
+      readonly type: "choose-effect-mode";
+      readonly controllerId: PlayerId;
+      readonly modes: readonly (readonly EffectDefinition[])[];
+      readonly modeLabels: readonly string[];
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
     }

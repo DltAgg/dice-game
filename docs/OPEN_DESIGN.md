@@ -678,8 +678,8 @@ A physics keyword, **not** a Mark token and **not** Mechanical-exclusive
 an instant; the reducer does not hard-ban other sources. Target: a synthetic
 face **slot** on **your die or the opponent’s die**.
 
-**Not** `[Reforge]` / `replace-synthetic-face` (swap to a different synthetic
-from pool, owned die only, blocked by stay/forge-lock).
+**Not** `[Reforge]` / `[Cross forge]` / `replace-synthetic-face` (overwrite N
+slots on your die with synthetics from pool, blocked by stay/forge-lock).
 
 **ASSUMED** (labelled prototype; bible is silent):
 

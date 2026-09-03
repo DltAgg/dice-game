@@ -120,7 +120,7 @@ Pairings that keep the pie readable:
 | **Corruption** | Opponent-die manipulation | Forge / markers / lock / suppress / strip / steal overloads on **their** faces; opponent-die named specials | Own-die forge; own overloads; Toxin markers on creatures |
 | **Toxin** | Toxin counter placement | Apply / spread / arm-attack Toxin markers; payoffs that *require* those markers | Corruption face ticks; generic delayed damage with no Toxin marker |
 | **Martial** | Ally creature movement | Swap two allies; reposition an ally frontline ↔ back (War Charge, Command) | Enemy push (banned); extra attacks (`[Frenzy]` is Wild); sharing tokens |
-| **Mechanical** | Own-die reconstruction | Extra forge on **your** die; replace your faces without a forge-draw (Reforge); reapply / copy / double **your** face and overload modifiers (Stamp, Coupling); move your overloads between **your** faces | Opponent-die (Corruption); deck order (Arcane); generating symbols; pile tokens; GY recursion |
+| **Mechanical** | Own-die reconstruction | Extra forge on **your** die; replace your faces without a forge-draw (`[Reforge]` / `[Cross forge]`); reapply / copy / double **your** face and overload modifiers (Stamp, Coupling); move your overloads between **your** faces | Opponent-die (Corruption); deck order (Arcane); generating symbols; pile tokens; GY recursion |
 | **Wild** | Extra attacks (`[Frenzy]`) | Grant a creature additional attacks this turn beyond the usual one (`grant-extra-attack`); may combine with `[Spend]` / absorb timing per card | Absorbing onto yourself (universal); generating pool symbols; ally reposition (Martial) |
 
 ### Authoring notes

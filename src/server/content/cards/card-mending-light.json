@@ -3,8 +3,7 @@
   "id": "card-mending-light",
   "name": "Mending Light",
   "playCost": {
-    "luminar": 2,
-    "mechanical": 1
+    "luminar": 1
   },
   "type": "instant",
   "subtypes": [],
@@ -15,19 +14,16 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Heal 2] on your most damaged creature. [Discount 1] forge.",
+  "rulesText": "[Bounce] an opposing ritual, equipment, or overload.",
   "effect": {
     "effects": [
       {
-        "type": "heal",
-        "amount": 2,
+        "type": "bounce",
+        "hosts": ["ritual", "equipment", "overload"],
         "target": {
-          "kind": "most-damaged-ally"
+          "kind": "choose-opponent-bounce-card",
+          "hosts": ["ritual", "equipment", "overload"]
         }
-      },
-      {
-        "type": "arm-forge-discount",
-        "amount": 1
       }
     ]
   }

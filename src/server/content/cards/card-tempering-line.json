@@ -3,7 +3,8 @@
   "id": "card-tempering-line",
   "name": "Tempering Line",
   "playCost": {
-    "mechanical": 3
+    "mechanical": 2,
+    "any": 1
   },
   "type": "ritual",
   "subtypes": [
@@ -16,19 +17,12 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Forge 2 Synthetic Mechanical] on your die. [Discount 1] forge.",
+  "rulesText": "[Discount 2] forge.",
   "ritual": {
     "spend": {
-      "mechanical": 2
+      "mechanical": 1
     },
     "effects": [
-      {
-        "type": "forge-faces",
-        "faces": 2,
-        "kind": "synthetic",
-        "attribute": "mechanical",
-        "target": "own-die"
-      },
       {
         "type": "arm-forge-discount",
         "amount": 1

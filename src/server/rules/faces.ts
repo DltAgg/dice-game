@@ -2,7 +2,7 @@ import { getFaceCard } from "../content/faces.js";
 import { attributeAllowsNaturalFaces, isAttribute } from "../model/attributes.js";
 import type { DieSlot, DieState, FaceKind, ForgeableFaceKind } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
-import type { DieId, FaceCardId, PlayerId } from "../model/ids.js";
+import type { FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, type SymbolType } from "../model/symbols.js";
 import type { Draft } from "../reducer/draft.js";
@@ -387,57 +387,3 @@ export function hasLegalForgeFacesChoice(
   return false;
 }
 
-/** Pool faces matching kind+attribute other than `excludedFaceCardId` (Reforge). */
-export function eligiblePoolFacesForReplace(
-  state: GameState | Draft,
-  playerId: PlayerId,
-  kind: ForgeableFaceKind,
-  attribute: SymbolType,
-  excludedFaceCardId: FaceCardId,
-): readonly FaceCardId[] {
-  return matchingFacesInPool(state, playerId, kind, attribute).filter(
-    (id) => id !== excludedFaceCardId,
-  );
-}
-
-/**
- * Owned die slots whose installed face matches kind+attribute and for which
- * a different matching face exists in the controller's pool.
- */
-export function legalSlotsForReplaceSyntheticFace(
-  state: GameState | Draft,
-  controllerId: PlayerId,
-  kind: ForgeableFaceKind,
-  attribute: SymbolType,
-): ReadonlyArray<{ readonly dieId: DieId; readonly slotIndex: number }> {
-  const player = state.players[controllerId];
-  if (player === undefined) return [];
-  const results: Array<{ readonly dieId: DieId; readonly slotIndex: number }> = [];
-  for (const dieId of player.dieIds) {
-    const die = state.dice[dieId];
-    if (die === undefined) continue;
-    for (const slot of die.slots) {
-      const face = getFaceCard(slot.faceCardId);
-      if (face === undefined || face.kind !== kind || face.symbol !== attribute) continue;
-      if (slotCannotBeReplacedByForge(slot)) continue;
-      if (
-        eligiblePoolFacesForReplace(state, controllerId, kind, attribute, slot.faceCardId).length ===
-        0
-      ) {
-        continue;
-      }
-      results.push({ dieId, slotIndex: slot.index });
-    }
-  }
-  return results;
-}
-
-/** Whether Reforge-style replace can open a pending decision. */
-export function hasLegalReplaceSyntheticFaceChoice(
-  state: GameState | Draft,
-  controllerId: PlayerId,
-  kind: ForgeableFaceKind,
-  attribute: SymbolType,
-): boolean {
-  return legalSlotsForReplaceSyntheticFace(state, controllerId, kind, attribute).length > 0;
-}

@@ -76,6 +76,7 @@ export type EffectOp =
   | "prompt"
   | "prevent-attack-reflect"
   | "replace-synthetic-face"
+  | "choose-effect-mode"
   | "retain-die"
   | "replay-graveyard-tactic"
   | "copy-pool-symbol"
@@ -127,6 +128,7 @@ export type EffectNode = {
   readonly faces?: number;
   readonly kind?: ForgeableFaceKind;
   readonly attribute?: Attribute;
+  readonly fromAttribute?: Attribute;
   readonly forgeTarget?: "own-die" | "opponent-die";
   readonly with?: TargetSelector;
   readonly sourceOnly?: boolean;

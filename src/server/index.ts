@@ -18,6 +18,7 @@ export * from "./rules/dice.js";
 export * from "./rules/faces.js";
 export * from "./rules/loadout.js";
 export * from "./rules/overcharge.js";
+export * from "./rules/reforge.js";
 export * from "./rules/reactions.js";
 export * from "./rules/silence.js";
 export * from "./rules/bounce.js";

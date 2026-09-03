@@ -3,7 +3,8 @@
   "id": "card-machine-shop",
   "name": "Machine Shop",
   "playCost": {
-    "mechanical": 3
+    "mechanical": 1,
+    "any": 1
   },
   "type": "ritual",
   "subtypes": [
@@ -16,21 +17,15 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "On roll Mechanical: [Generate 1 Mechanical].",
+  "rulesText": "[Stamp].",
   "ritual": {
-    "effects": [],
-    "standingAbilities": [
+    "spend": {
+      "mechanical": 1,
+      "any": 1
+    },
+    "effects": [
       {
-        "type": "on-roll-symbol",
-        "symbol": "mechanical",
-        "rollingPlayer": "controller",
-        "effects": [
-          {
-            "type": "generate-symbol",
-            "symbol": "mechanical",
-            "amount": 1
-          }
-        ]
+        "type": "reapply-die-modifiers"
       }
     ]
   }

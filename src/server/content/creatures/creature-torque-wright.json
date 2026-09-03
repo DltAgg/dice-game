@@ -53,7 +53,7 @@
         "mechanical": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Reforge] a Synthetic Mechanical face on your die.",
+      "rulesText": "[Strike 2]. [Reforge 1 Mechanical] any faces on one of your dice.",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -64,7 +64,7 @@
       "followUpEffects": [
         {
           "type": "replace-synthetic-face",
-          "kind": "synthetic",
+          "faces": 1,
           "attribute": "mechanical"
         }
       ]

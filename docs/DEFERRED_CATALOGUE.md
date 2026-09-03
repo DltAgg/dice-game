@@ -47,8 +47,8 @@ suppress / lock / Instinct absorb (`013`).
 ## Tactic / creature leftovers
 
 No push leftovers. Alpha's Hide special→generate Wild is wired (`012` ASSUMED:
-controller pool). Reforge (`card-reforge`) is wired via `replace-synthetic-face`
-(`012`). No tactic / creature print rows currently deferred.
+controller pool). Recast / Alloy Shift are wired via `replace-synthetic-face`
+(`[Reforge N Attr]` / `[Cross forge N Y / Z]`, spec `012`). No tactic / creature print rows currently deferred.
 
 ## Revisit checklist
 

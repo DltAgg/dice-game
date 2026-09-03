@@ -3,7 +3,8 @@
   "id": "card-quickset-jig",
   "name": "Quickset Jig",
   "playCost": {
-    "mechanical": 3
+    "mechanical": 2,
+    "any": 1
   },
   "type": "equipment",
   "subtypes": [],
@@ -14,7 +15,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "On roll Mechanical: [Discount 1] forge.",
+  "rulesText": "On roll Mechanical: [Empower 1] this creature.",
   "equipment": {
     "mayTargetOpponent": false,
     "abilities": [
@@ -24,8 +25,11 @@
         "rollingPlayer": "controller",
         "effects": [
           {
-            "type": "arm-forge-discount",
-            "amount": 1
+            "type": "grant-next-attack-bonus",
+            "amount": 1,
+            "target": {
+              "kind": "source-creature"
+            }
           }
         ]
       }

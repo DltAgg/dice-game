@@ -3,7 +3,7 @@
   "id": "card-lantern-oath",
   "name": "Lantern Oath",
   "playCost": {
-    "luminar": 3
+    "luminar": 2
   },
   "type": "reaction",
   "subtypes": [],
@@ -14,12 +14,12 @@
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Prevent 2] on the waiting attack. On prevent damage: [Draw 1].",
+  "rulesText": "[Prevent].\nOn prevent damage: [Draw 1].",
   "effect": {
     "effects": [
       {
         "type": "grant-attack-prevent",
-        "amount": 2,
+        "amount": 1,
         "target": {
           "kind": "chain-attack-target"
         }

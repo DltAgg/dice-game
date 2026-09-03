@@ -32,13 +32,13 @@ import { legendaryCreatureOf, livingCreaturesOf, opponentOf } from "../rules/cre
 import {
   countInstalledCopies,
   hasLegalForgeFacesChoice,
-  hasLegalReplaceSyntheticFaceChoice,
   overwrittenSlot,
   returnFaceToPoolIfOrphaned,
   slotCannotBeReplacedByForge,
   takeFaceFromPool,
   withForgeLockResetOnInstall,
 } from "../rules/faces.js";
+import { hasLegalReplaceSyntheticFaceChoice } from "../rules/reforge.js";
 import {
   legalCreaturesForFilter,
   legalDiceForFilter,
@@ -875,28 +875,28 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       return true;
     }
     case "replace-synthetic-face": {
-      if (
-        !hasLegalReplaceSyntheticFaceChoice(
-          draft,
-          pending.controllerId,
-          effect.kind,
-          effect.attribute,
-        )
-      ) {
+      const spec = {
+        faces: effect.faces,
+        attribute: effect.attribute,
+        ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
+      };
+      if (!hasLegalReplaceSyntheticFaceChoice(draft, pending.controllerId, spec)) {
         return false;
       }
       draft.pendingDecision = {
         type: "replace-synthetic-face",
         controllerId: pending.controllerId,
-        kind: effect.kind,
+        faces: effect.faces,
         attribute: effect.attribute,
+        ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
         ...effectChoiceSource(draft, pending),
       };
       emit(draft, {
         type: "replace-synthetic-face-started",
         playerId: pending.controllerId,
-        kind: effect.kind,
+        faces: effect.faces,
         attribute: effect.attribute,
+        ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
       });
       return true;
     }
@@ -913,6 +913,35 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       if (otherId === null || pending.sourceCreatureId === null) return false;
       swapCreaturePositions(draft, pending.sourceCreatureId, otherId);
       return false;
+    }
+    case "choose-effect-mode": {
+      const labels = effect.modeLabels ?? effect.modes.map((_m, i) => `Mode ${String(i + 1)}`);
+      if (effect.modes.length === 0) return false;
+      if (effect.modes.length === 1) {
+        for (const child of [...effect.modes[0]!].reverse()) {
+          pushEffect(
+            draft,
+            pending.controllerId,
+            child,
+            pending.sourceCreatureId,
+            pending.declaredTargetCreatureId,
+            pending.declaredTargetCardInstanceId,
+            pending.sourceDieId,
+            pending.sourceSlotIndex,
+            pending.ignoreShield,
+            pending.sourceCardInstanceId,
+          );
+        }
+        return false;
+      }
+      draft.pendingDecision = {
+        type: "choose-effect-mode",
+        controllerId: pending.controllerId,
+        modes: effect.modes,
+        modeLabels: labels,
+        ...effectChoiceSource(draft, pending),
+      };
+      return true;
     }
     case "conditional": {
       if (evaluateCondition(draft, pending, effect.when)) {

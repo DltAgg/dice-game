@@ -51,31 +51,11 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function forgedSyntheticCount(state: GameState, dieId: DieId): number {
-  const die = state.dice[dieId];
-  if (die === undefined) return 0;
-  return die.slots.filter((slot) => {
-    const id = slot.faceCardId;
-    return id.length > 0 && !id.includes("shield") && !id.includes("natural");
-  }).length;
-}
-
 describe("Tempo mechanical assembly", () => {
-  it("Tooling Order forges two synthetic Mechanical faces on play", () => {
+  it("Tooling Order opens choose-effect-mode for Cross forge", () => {
     const ready = actionsReady([TOOLING_ORDER]);
-    const dieId = dieIdOf(ready);
     const played = playCard(ready);
-    expect(played.pendingDecision?.type).toBe("forge-faces");
-    const forged = expectOk(
-      advance(played, {
-        type: "RESOLVE_FORGE_FACES",
-        playerId: P1,
-        dieId,
-        slotIndexes: [3, 4],
-        faceCardId: COGTOOTH,
-      }),
-    );
-    expect(forgedSyntheticCount(forged, dieId)).toBeGreaterThanOrEqual(2);
+    expect(played.pendingDecision?.type).toBe("choose-effect-mode");
   });
 
   it("Tempering Line places a ritual and arms forge discount on activate", () => {
@@ -133,7 +113,7 @@ describe("Tempo mechanical assembly", () => {
     expect(after.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Recast opens replace-synthetic-face on a synthetic slot", () => {
+  it("Recast opens replace-synthetic-face for any faces on one die", () => {
     let state = actionsReady([RECAST]);
     const dieId = dieIdOf(state);
     state = {

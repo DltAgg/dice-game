@@ -21,7 +21,7 @@ are that union; creatures/rituals reuse it).
 | `on-roll-symbol` | Die shows symbol | Filter `rollingPlayer` |
 | `on-absorb` | Attribute banked into pile (`player` absorber) or Shield onto creature (`creature` absorber) | Filter `absorberRelation` / `symbols` / `faceKinds`; see `attribute-pile.md` |
 | `on-attack` | Attack declared | Filter `attackerRelation` / `attackKinds` |
-| `on-take-damage` | Incoming damage | `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
+| `on-take-damage` | Incoming damage | `[Reduce N]` / `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
 | `on-discard` | Cards discarded | Filter `discardingPlayer` |
 | `on-change-position` | Creature position changed | Filter `creatureRelation`; only via `setCreaturePosition` |
 | `on-turn-start` | Incoming player's turn begins | Filter `whoseTurn`; after toxin ticks; auto-target only |
@@ -39,7 +39,7 @@ are that union; creatures/rituals reuse it).
 | Corrupting Elder | `on-roll-symbol` opponent | choose-enemy damage |
 | Archmage of the Runes | `on-attack` self + basic/special | draw / generate Arcane |
 | Void Summoner | `on-attack` self + basic/special | generate Arcane / draw |
-| Hunting Armour | `on-take-damage` reduceBy 1 oncePerTurn | Modifier path |
+| Hunting Armour / Prism Mantle | `on-take-damage` `[Reduce 1]` oncePerTurn | Modifier path |
 | Abyssal Sacrifice | `on-discard` controller | generate Darkness |
 | Hunter's Collar | `on-absorb` Wild + `ally` | generate Martial |
 | Slow Burn | `on-turn-start` opponent | apply-toxin most-damaged-enemy |

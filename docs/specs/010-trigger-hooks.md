@@ -55,7 +55,7 @@ reducer only knows the hook kinds and passes instance ids for filtering.
    `oncePerTurn` match. Context: attacker id + owner, kind, target id.
    `declared-target` in effects = attack target.
 6. **On-take-damage.** Inside `dealDamage`, before prevent/Shields, apply
-   `reduceBy` from host gear/passives (`oncePerTurn` supported). Optional
+   `[Reduce N]` (`reduceBy`) from host gear/passives (`oncePerTurn` supported). Optional
    `effects` queue after HP is dealt.
 7. **On-discard.** After one or more hand cards are discarded, fire
    `on-discard` with `discardingPlayer` filter (default `controller`).

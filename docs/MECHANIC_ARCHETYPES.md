@@ -261,6 +261,8 @@ Support sequencing.
 ### MA-12 Combat Reforge Stamp
 
 **Mechanic:** `[Reforge]` / `[Stamp]` as a **paid** attack follow-up.
+Play-region `[Reforge N Attr]` / `[Cross forge N Y / Z]` (Recast, Alloy Shift)
+are the same Mechanical exclusive, not this combat window.
 
 **Window:** Tempo specials (`creature-torque-wright` Retool, `creature-lodestar-artificer` Overdrive). Mechanical exclusive.
 
