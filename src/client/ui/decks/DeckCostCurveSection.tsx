@@ -8,7 +8,8 @@ export function DeckCostCurveSection({ deck }: { deck: readonly CardId[] }) {
         Cost curve
       </h2>
       <p className="mt-1 text-xs text-stone-500">
-        Copies at each total header cost — click a bar to list the cards at that cost.
+        Copies at each header cost, split Natural / Synthetic and stacked by type. Labels show
+        quantity × cost. Click a bar for the mix at that cost.
       </p>
       <div className="mt-3">
         <DeckCostChart deck={deck} />
