@@ -10,7 +10,7 @@
   "attribute": "luminar",
   "forge": {
     "faces": 1,
-    "kind": "natural",
+    "kind": "synthetic",
     "attribute": "luminar",
     "target": "own-die"
   },

@@ -31,7 +31,33 @@
         "arcane": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Draw 1].",
+      "rulesText": "[Strike 2]. [Insight 1].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": {
+          "kind": "declared-target"
+        }
+      },
+      "followUpEffects": [
+        {
+          "type": "peek-deck-optional-bottom"
+        }
+      ]
+    },
+    {
+      "id": "attack-riftscribe-adept-ley-surge",
+      "name": "Ley Surge",
+      "kind": "special",
+      "requires": {
+        "arcane": 2,
+        "any": 1
+      },
+      "discards": {
+        "arcane": 2
+      },
+      "range": false,
+      "rulesText": "[Strike 2].\n[Draw 1].",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -43,33 +69,6 @@
         {
           "type": "draw-cards",
           "amount": 1
-        }
-      ]
-    },
-    {
-      "id": "attack-riftscribe-adept-ley-surge",
-      "name": "Ley Surge",
-      "kind": "special",
-      "requires": {
-        "arcane": 1,
-        "darkness": 1
-      },
-      "discards": {
-        "arcane": 1
-      },
-      "range": false,
-      "rulesText": "[Strike 2]. [Insight 2].",
-      "effect": {
-        "type": "damage",
-        "amount": 2,
-        "target": {
-          "kind": "declared-target"
-        }
-      },
-      "followUpEffects": [
-        {
-          "type": "look-top-deck",
-          "amount": 2
         }
       ]
     }

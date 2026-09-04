@@ -34,7 +34,9 @@
       "name": "Drive Shaft",
       "kind": "basic",
       "discards": {
-        "mechanical": 1
+        "mechanical": 1,
+        "luminar": 1,
+        "any": 1
       },
       "range": false,
       "rulesText": "[Strike 3].",
@@ -52,16 +54,18 @@
       "kind": "special",
       "requires": {
         "mechanical": 1,
-        "luminar": 1
+        "luminar": 1,
+        "any": 2
       },
       "discards": {
-        "mechanical": 1
+        "mechanical": 1,
+        "luminar": 1
       },
       "range": false,
-      "rulesText": "[Strike 3]. [Stamp].",
+      "rulesText": "[Strike 4].\n[Stamp].",
       "effect": {
         "type": "damage",
-        "amount": 3,
+        "amount": 4,
         "target": {
           "kind": "declared-target"
         }

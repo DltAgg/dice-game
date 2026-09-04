@@ -9,12 +9,12 @@
   "subtypes": [],
   "attribute": "luminar",
   "forge": {
-    "faces": 1,
-    "kind": "synthetic",
+    "faces": 2,
+    "kind": "natural",
     "attribute": "luminar",
     "target": "own-die"
   },
-  "rulesText": "[Prevent].\nOn prevent damage: [Draw 1].",
+  "rulesText": "[Prevent].\n[Draw 1].",
   "effect": {
     "effects": [
       {
@@ -25,7 +25,7 @@
         }
       },
       {
-        "type": "arm-prevent-draw",
+        "type": "draw-cards",
         "amount": 1
       }
     ]

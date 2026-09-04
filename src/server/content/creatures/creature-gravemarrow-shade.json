@@ -6,7 +6,7 @@
   "attributes": [
     "darkness"
   ],
-  "passiveRulesText": "On absorb Darkness, once per turn: your opponent [Mill 2].",
+  "passiveRulesText": "On absorb Darkness, once per turn: [Drain 1].",
   "standingAbilities": [
     {
       "type": "on-absorb",
@@ -17,9 +17,14 @@
       "oncePerTurn": true,
       "effects": [
         {
-          "type": "mill-cards",
-          "amount": 2,
-          "player": "opponent"
+          "type": "drain-life",
+          "amount": 1,
+          "target": {
+            "kind": "choose-enemy"
+          },
+          "with": {
+            "kind": "source-creature"
+          }
         }
       ]
     }
@@ -33,47 +38,43 @@
         "darkness": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. Your opponent [Mill 2].",
+      "rulesText": "[Strike 2].",
       "effect": {
         "type": "damage",
         "amount": 2,
         "target": {
           "kind": "declared-target"
         }
-      },
-      "followUpEffects": [
-        {
-          "type": "mill-cards",
-          "amount": 2,
-          "player": "opponent"
-        }
-      ]
+      }
     },
     {
       "id": "attack-gravemarrow-shade-ebb-of-names",
       "name": "Ebb of Names",
       "kind": "special",
       "requires": {
-        "arcane": 1,
-        "darkness": 1
+        "darkness": 2,
+        "arcane": 1
       },
       "discards": {
-        "darkness": 1
+        "darkness": 1,
+        "arcane": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. Your opponent [Mill 3].",
+      "rulesText": "[Strike 3].\n[Mark 1 Shield] this creature.",
       "effect": {
         "type": "damage",
-        "amount": 2,
+        "amount": 3,
         "target": {
           "kind": "declared-target"
         }
       },
       "followUpEffects": [
         {
-          "type": "mill-cards",
-          "amount": 3,
-          "player": "opponent"
+          "type": "grant-shield",
+          "amount": 1,
+          "target": {
+            "kind": "source-creature"
+          }
         }
       ]
     }

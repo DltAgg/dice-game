@@ -11,7 +11,7 @@
   ],
   "attribute": "arcane",
   "forge": {
-    "faces": 1,
+    "faces": 2,
     "kind": "natural",
     "attribute": "arcane",
     "target": "own-die"

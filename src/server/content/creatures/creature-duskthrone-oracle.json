@@ -8,7 +8,7 @@
     "darkness"
   ],
   "legendary": true,
-  "passiveRulesText": "On absorb Arcane, once per turn: [Drain 1].",
+  "passiveRulesText": "On absorb Arcane, once per turn: [Mark 1 Shield] on one of your creatures you choose.",
   "standingAbilities": [
     {
       "type": "on-absorb",
@@ -19,13 +19,10 @@
       "oncePerTurn": true,
       "effects": [
         {
-          "type": "drain-life",
+          "type": "grant-shield",
           "amount": 1,
           "target": {
-            "kind": "choose-enemy"
-          },
-          "with": {
-            "kind": "most-damaged-ally"
+            "kind": "choose-ally"
           }
         }
       ]
@@ -37,22 +34,18 @@
       "name": "Nightward Bolt",
       "kind": "basic",
       "discards": {
-        "darkness": 1
+        "darkness": 1,
+        "any": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Insight 1].",
+      "rulesText": "[Strike 3].",
       "effect": {
         "type": "damage",
-        "amount": 2,
+        "amount": 3,
         "target": {
           "kind": "declared-target"
         }
-      },
-      "followUpEffects": [
-        {
-          "type": "peek-deck-optional-bottom"
-        }
-      ]
+      }
     },
     {
       "id": "attack-duskthrone-oracle-verdict-of-dusk",
@@ -60,13 +53,15 @@
       "kind": "special",
       "requires": {
         "arcane": 1,
-        "darkness": 1
+        "darkness": 1,
+        "any": 1
       },
       "discards": {
+        "arcane": 1,
         "darkness": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Drain 2].",
+      "rulesText": "[Strike 2].\n[Drain 2] an opponent's creature to one of your creatures.",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -82,7 +77,7 @@
             "kind": "choose-enemy"
           },
           "with": {
-            "kind": "most-damaged-ally"
+            "kind": "choose-ally"
           }
         }
       ]

@@ -9,7 +9,7 @@
   "subtypes": [],
   "attribute": "arcane",
   "forge": {
-    "faces": 1,
+    "faces": 2,
     "kind": "synthetic",
     "attribute": "arcane",
     "target": "own-die"

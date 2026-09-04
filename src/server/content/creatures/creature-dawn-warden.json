@@ -6,7 +6,7 @@
   "attributes": [
     "luminar"
   ],
-  "passiveRulesText": "On absorb Luminar, once per turn: [Mark 1 Shield] on your most damaged creature.",
+  "passiveRulesText": "On absorb Luminar, once per turn: [Mark 1 Shield] on one of your creatures you choose.",
   "standingAbilities": [
     {
       "type": "on-absorb",
@@ -20,7 +20,7 @@
           "type": "grant-shield",
           "amount": 1,
           "target": {
-            "kind": "most-damaged-ally"
+            "kind": "choose-ally"
           }
         }
       ]
@@ -32,10 +32,10 @@
       "name": "Kindle",
       "kind": "basic",
       "discards": {
-        "luminar": 1
+        "luminar": 2
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Heal 1] on your most damaged creature.",
+      "rulesText": "[Strike 2].\n[Heal 1] on one of your creatures you choose.",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -48,7 +48,7 @@
           "type": "heal",
           "amount": 1,
           "target": {
-            "kind": "most-damaged-ally"
+            "kind": "choose-ally"
           }
         }
       ]
@@ -58,14 +58,14 @@
       "name": "Vigil",
       "kind": "special",
       "requires": {
-        "luminar": 1,
-        "mechanical": 1
+        "luminar": 2,
+        "any": 1
       },
       "discards": {
-        "luminar": 1
+        "luminar": 2
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Mark 2 Shield] on an allied creature you choose.",
+      "rulesText": "[Strike 2].\n[Mark 2 Shield] this creature.",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -78,7 +78,7 @@
           "type": "grant-shield",
           "amount": 2,
           "target": {
-            "kind": "choose-ally"
+            "kind": "source-creature"
           }
         }
       ]

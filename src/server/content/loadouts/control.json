@@ -98,11 +98,7 @@
     },
     {
       "cardId": "card-rethrow",
-      "copies": 1
-    },
-    {
-      "cardId": "card-ward-chit",
-      "copies": 1
+      "copies": 2
     }
   ],
   "faceDeck": [

@@ -29,7 +29,8 @@
       "name": "Crank",
       "kind": "basic",
       "discards": {
-        "mechanical": 1
+        "mechanical": 1,
+        "any": 1
       },
       "range": false,
       "rulesText": "[Strike 2].",
@@ -46,14 +47,14 @@
       "name": "Retool",
       "kind": "special",
       "requires": {
-        "mechanical": 1,
-        "luminar": 1
+        "mechanical": 2,
+        "any": 1
       },
       "discards": {
-        "mechanical": 1
+        "mechanical": 2
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Reforge 1 Mechanical] any faces on one of your dice.",
+      "rulesText": "[Strike 2].\n[Reforge 1 Mechanical] any face on one of your dice.",
       "effect": {
         "type": "damage",
         "amount": 2,

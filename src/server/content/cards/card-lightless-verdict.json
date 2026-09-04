@@ -11,12 +11,12 @@
   "subtypes": [],
   "attribute": "darkness",
   "forge": {
-    "faces": 2,
+    "faces": 1,
     "kind": "synthetic",
     "attribute": "darkness",
     "target": "own-die"
   },
-  "rulesText": "[Strike 4]. [Draw 1].",
+  "rulesText": "[Strike 4].\n[Draw 1].",
   "effect": {
     "effects": [
       {

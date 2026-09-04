@@ -9,7 +9,7 @@
   "subtypes": [],
   "attribute": "darkness",
   "forge": {
-    "faces": 1,
+    "faces": 2,
     "kind": "synthetic",
     "attribute": "darkness",
     "target": "own-die"

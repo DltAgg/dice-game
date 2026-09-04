@@ -10,8 +10,8 @@
   "subtypes": [],
   "attribute": "mechanical",
   "forge": {
-    "faces": 1,
-    "kind": "natural",
+    "faces": 2,
+    "kind": "synthetic",
     "attribute": "mechanical",
     "target": "own-die"
   },

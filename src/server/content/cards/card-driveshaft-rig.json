@@ -9,7 +9,7 @@
   "subtypes": [],
   "attribute": "mechanical",
   "forge": {
-    "faces": 1,
+    "faces": 2,
     "kind": "synthetic",
     "attribute": "mechanical",
     "target": "own-die"
