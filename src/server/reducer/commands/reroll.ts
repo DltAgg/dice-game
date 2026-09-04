@@ -4,6 +4,7 @@ import type { GameError } from "../../model/errors.js";
 import type { PlayerId } from "../../model/ids.js";
 import type { RNG } from "../../rng/rng.js";
 import { livingCreaturesOf } from "../../rules/creatures.js";
+import { isSlotSilenced } from "../../rules/silence.js";
 import { emit, patchDie, type Draft } from "../draft.js";
 import { dealDamage, drainResolution } from "../resolution.js";
 import { bankRolledSymbols } from "../rollBank.js";
@@ -13,13 +14,20 @@ import {
   applyForgeYieldGenerate,
   applyOverchargeGenerate,
   fireShownFaceRollHooks,
-  replaceOrCreateRolledResult,
 } from "./shownFace.js";
+import {
+  bankableShownFaceIds,
+  forfeitRolledPips,
+  isConvertingShownFace,
+  replaceShowingFacePips,
+  skipRollYieldAndOvercharge,
+} from "./rollPips.js";
 
 /**
  * Optional `[Reroll]` accept/decline (Rethrow, Adrenaline). Stay in actions.
  * Accept rolls that one die again: new face, On roll + auto-bank, then
- * Adrenaline same-face ally damage if printed.
+ * Adrenaline same-face ally damage if printed. Convert applies to this new
+ * roll only (spec `025`).
  */
 export function resolveOptionalReroll(
   draft: Draft,
@@ -46,16 +54,14 @@ export function resolveOptionalReroll(
   const face = slot === undefined ? undefined : getFaceCard(slot.faceCardId);
   if (face !== undefined && slot !== undefined) {
     emit(draft, { type: "die-rolled", dieId, slotIndex, symbol: face.symbol });
-    const symbolId = replaceOrCreateRolledResult(
-      draft,
-      playerId,
-      dieId,
-      slotIndex,
-      face.symbol,
-    );
+    const symbolIds = replaceShowingFacePips(draft, playerId, dieId, slotIndex, face);
     appendFaceAppeared(draft, dieId, slotIndex, slot.faceCardId, face.kind);
-    applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
-    applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
+    const silenced = isSlotSilenced(draft, dieId, slotIndex);
+    const converting = isConvertingShownFace(face, silenced);
+    if (!skipRollYieldAndOvercharge(face, silenced)) {
+      applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
+      applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
+    }
     fireShownFaceRollHooks(
       draft,
       playerId,
@@ -65,9 +71,25 @@ export function resolveOptionalReroll(
       face.symbol,
     );
     drainResolution(draft);
+    if (converting) forfeitRolledPips(draft, symbolIds);
     const deferAbsorb =
       draft.pendingDecision !== null || draft.resolutionStack.length > 0;
-    bankRolledSymbols(draft, playerId, [symbolId], deferAbsorb);
+    bankRolledSymbols(
+      draft,
+      playerId,
+      bankableShownFaceIds([
+        {
+          dieId,
+          slotIndex,
+          faceCardId: slot.faceCardId,
+          symbol: face.symbol,
+          suppressInherent: false,
+          symbolIds,
+          converting,
+        },
+      ]),
+      deferAbsorb,
+    );
     if (!deferAbsorb) {
       drainResolution(draft);
     }

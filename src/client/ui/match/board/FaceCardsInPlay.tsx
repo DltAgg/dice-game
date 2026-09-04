@@ -11,6 +11,7 @@ import {
   getCard,
   getFaceCard,
   overloadsOnFace,
+  whileShowingTotals,
   type DieId,
   type FaceCardId,
   type GameState,
@@ -23,10 +24,13 @@ import {
 } from "./AttributePile";
 import {
   activateFaceSpendCost,
+  convertRollCueForFace,
   faceMarkerSummary,
   showingSlotsForFace,
   stayStatusForFace,
   overchargeStatusForFace,
+  whileShowingCues,
+  whileShowingStatusLine,
 } from "../intents/faceStatus";
 import {
   btnPrimary,
@@ -77,6 +81,35 @@ export function uniqueInstalledFaces(
 export const FACE_TOOLTIP_WIDTH_PX = 224; // w-56
 export const FACE_TOOLTIP_GAP_PX = 8;
 
+function WhileShowingTotalsStrip({
+  state,
+  playerId,
+}: {
+  state: GameState;
+  playerId: PlayerId;
+}) {
+  const cues = whileShowingCues(whileShowingTotals(state, playerId));
+  if (cues.length === 0) return null;
+  return (
+    <div
+      className="mb-2 flex shrink-0 flex-wrap items-center gap-1.5"
+      aria-label="While showing"
+    >
+      <span className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-stone-500">
+        While showing
+      </span>
+      {cues.map((cue) => (
+        <span
+          key={cue.key}
+          className="rounded border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-1.5 py-0.5 text-[0.65rem] text-[var(--accent)]"
+        >
+          {cue.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function FaceCardTile({
   state,
   playerId,
@@ -113,11 +146,18 @@ export function FaceCardTile({
   const overchargeBits = overchargeStatusForFace(state, playerId, entry.faceCardId);
   const showingSlots = showingSlotsForFace(state, playerId, entry.faceCardId);
   const markerBits = faceMarkerSummary(state, playerId, entry.faceCardId);
+  const convertBits = convertRollCueForFace(state, playerId, entry.faceCardId);
+  const whileShowingBits =
+    entry.showing && (face?.whileShowing?.length ?? 0) > 0
+      ? whileShowingStatusLine(whileShowingTotals(state, playerId))
+      : null;
   const tooltip = [
     kindLabel,
     face?.symbol ?? "",
     entry.copies > 1 ? `Installed on ${String(entry.copies)} faces` : "Installed on dice",
     face?.rulesText !== undefined && face.rulesText !== "" ? face.rulesText : null,
+    convertBits,
+    whileShowingBits,
     stayBits,
     markerBits,
     overchargeBits,
@@ -218,6 +258,12 @@ export function FaceCardTile({
           Showing
         </p>
       )}
+      {convertBits !== null && (
+        <p className="mt-1 text-[0.65rem] text-orange-300/90">{convertBits}</p>
+      )}
+      {whileShowingBits !== null && (
+        <p className="mt-1 text-[0.65rem] text-[var(--accent)]">{whileShowingBits}</p>
+      )}
       {stayBits !== null && (
         <p className="mt-1 text-[0.65rem] text-rose-300/90">{stayBits}</p>
       )}
@@ -287,6 +333,7 @@ export function FaceCardsInPlay({
 
   const facesPane = (
     <div className="min-h-0 flex-1 basis-1/2 overflow-y-auto">
+      <WhileShowingTotalsStrip state={state} playerId={playerId} />
       <div className="grid grid-cols-2 gap-2">
         {faces.map((entry) => (
           <FaceCardTile

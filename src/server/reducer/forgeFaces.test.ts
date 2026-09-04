@@ -39,6 +39,6 @@ describe("forge face selection", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(afterPlay.pendingDecision?.type).toBe("forge-faces");
+    expect(afterPlay.pendingDecision?.type).toBe("choose-effect-mode");
   });
 });

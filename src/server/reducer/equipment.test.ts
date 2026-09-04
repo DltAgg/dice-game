@@ -35,12 +35,11 @@ describe("Tempo equipment", () => {
   it("Beacon Array heals on Luminar absorb", () => {
     const base = actionsReady([BEACON_ARRAY]);
     const bearerId = creatureIdAt(base, P1, 0);
-    const woundedId = creatureIdAt(base, P1, 1);
     const wounded = {
       ...base,
       creatures: {
         ...base.creatures,
-        [woundedId]: { ...base.creatures[woundedId]!, damage: 2 },
+        [bearerId]: { ...base.creatures[bearerId]!, damage: 2 },
       },
     };
     const equipped = expectOk(
@@ -54,15 +53,24 @@ describe("Tempo equipment", () => {
     const withPool = withSymbols(withPhase(equipped, "actions"), P1, ["luminar"], "rolled");
     const luminar = Object.values(withPool.symbols).find((s) => s.symbol === "luminar");
     if (luminar === undefined) throw new Error("luminar");
-    const after = expectOk(
+    let after = expectOk(
       advance(withPool, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
         symbolId: luminar.id,
       }),
     );
+    if (after.pendingDecision?.type === "choose-creature") {
+      after = expectOk(
+        advance(after, {
+          type: "RESOLVE_CHOOSE_CREATURE",
+          playerId: P1,
+          creatureId: bearerId,
+        }),
+      );
+    }
     expect(after.log.some((entry) => entry.event.type === "creature-healed")).toBe(true);
-    expect(after.creatures[woundedId]?.damage).toBeLessThan(2);
+    expect(after.creatures[bearerId]?.damage).toBe(1);
   });
 
   it("Drive Shaft Rig generates Mechanical on Mechanical absorb", () => {

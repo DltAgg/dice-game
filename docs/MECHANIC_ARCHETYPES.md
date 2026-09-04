@@ -85,6 +85,8 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
 | [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` any hand card | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
 | [MA-16](#ma-16-instant-rituals) | Ritual / Instant (place → Active-when → activate → GY) | Ritual place + activate | None as a band | Worthless vs equipment / overload / continuous | `RETARGETED` |
+| [MA-17](#ma-17-convert-roll) | `[Convert roll]` forfeit that die’s roll for On-roll payoff | On roll (face) | Tempo / Control closers | Untested | `WATCH` |
+| [MA-18](#ma-18-while-showing) | While showing stance (Pierce / Empower / Discount / Reduce) | Showing face (continuous) | Tempo / Support | Untested | `WATCH` |
 
 ---
 
@@ -371,6 +373,62 @@ Instant dump.
 GY replay as Continuous activate is warped.
 
 **Follow-up:** none (catalogue conversion). Deck-designer places copies.
+
+---
+
+### MA-17 Convert roll
+
+**Mechanic:** `[Convert roll]` — that die’s pips this roll do not bank
+(inherent extra pips, showing pip, forge yield, Overcharge). On roll is the
+payoff (`onRoll` only; `convertRoll: true` is the flag). Distinct from
+`[Convert N]` (pool → Natural).
+
+**Window:** On roll (face).
+
+**Intended home:** Tempo / Control closers (engine-converted damage, MA-06).
+
+**Playtest feel:** Untested. Hypothesis: converting a 2-pip special plus
+Overcharge investment for Strike / similar closer reads Control; cheap
+convert-into-combat on Aggro would leak.
+
+**Why:** Overcharge stacks extra pips on the face; converting trades that whole
+investment. Auto-bank made On-absorb-on-faces fire with On roll, so convert
+replaces “bank then On absorb closer.”
+
+**Evidence:** 2026-09-04 · engine proving `face-synthetic-sigil-flare`.
+
+**Status:** `WATCH` · 2026-09-04
+
+**Do not:** Overload `[Convert N]`. Do not mark MA-02 (On roll Generate-same)
+as `ANTI` — extra inherent pips are fuel physics, not that leak.
+
+**Follow-up:** card-designer (rest of the set); match-ui (convert cue).
+
+---
+
+### MA-18 While showing
+
+**Mechanic:** Continuous stance while that face is the showing face
+(`whileShowing`: Pierce / Empower / play-discount / forge-discount / Reduce).
+Not a StandingTrigger and not a second On-roll trigger. Retain keeps it.
+
+**Window:** Showing face (including opponent’s turn for Reduce).
+
+**Intended home:** Tempo / Support (engine density on the die; splashable
+stance utility).
+
+**Playtest feel:** Untested. Hypothesis: forge-discount / Pierce on a 2-pip
+synthetic is Tempo sequencing; Reduce on a keeper is Support.
+
+**Why:** On absorb on faces is retired; stance needs a window that survives
+the opponent’s turn without being an On-roll pulse.
+
+**Evidence:** 2026-09-04 · engine proving `face-synthetic-cogtooth`,
+`face-synthetic-halo-lamp`.
+
+**Status:** `WATCH` · 2026-09-04
+
+**Follow-up:** card-designer; match-ui (surface modifiers on showing dice).
 
 ---
 

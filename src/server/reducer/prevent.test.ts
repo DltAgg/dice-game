@@ -6,6 +6,7 @@ import {
   MIRRORWARD,
 } from "../content/cards.js";
 import { asEffectInstanceId } from "../model/ids.js";
+import type { AttributeTokens } from "../model/symbols.js";
 import { currentLife } from "../rules/creatures.js";
 import { createDraft } from "./draft.js";
 import { advance } from "./reduce.js";
@@ -25,12 +26,12 @@ import {
   withShields,
   withTokens,
 } from "../testing/scenario.js";
-import { CRANK, DRIVE_SHAFT, KINDLE } from "../testing/tempoCatalogue.js";
+import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL, KINDLE, KINDLE_FUEL } from "../testing/tempoCatalogue.js";
 
 const HEAVY_AXE = DRIVE_SHAFT;
 const CHARGE = KINDLE;
 
-function combatWithAttacker(tokens: { mechanical: number }) {
+function combatWithAttacker(tokens: AttributeTokens) {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
@@ -48,7 +49,7 @@ function combatWithDriveShaft() {
   return {
     attacker,
     target,
-    state: withTokens(base, attacker, { mechanical: 1 }),
+    state: withTokens(base, attacker, DRIVE_SHAFT_FUEL),
   };
 }
 
@@ -60,7 +61,7 @@ function combatWithCharge() {
   return {
     attacker,
     target,
-    state: withTokens(base, attacker, { luminar: 1 }),
+    state: withTokens(base, attacker, KINDLE_FUEL),
   };
 }
 
@@ -105,7 +106,7 @@ describe("true prevent (009)", () => {
   });
 
   it("Lantern Oath prevents the waiting attack on the attack target", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ mechanical: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker(CRANK_FUEL);
     const withBarrier = withHand(withPile(combat, P2, 10), P2, [LANTERN_OATH]);
 
     const opened = expectOk(
@@ -185,7 +186,7 @@ describe("true prevent (009)", () => {
   });
 
   it("Lantern Oath draws when prevent resolves", () => {
-    const { attacker, target, state: combat } = combatWithAttacker({ mechanical: 1 });
+    const { attacker, target, state: combat } = combatWithAttacker(CRANK_FUEL);
     const seeded = withHand(withPile(combat, P2, 10), P2, [LANTERN_OATH, COG_DRAFT, COG_DRAFT]);
     const player = seeded.players[P2];
     if (player === undefined) throw new Error("test: no p2");
@@ -264,7 +265,7 @@ describe("true prevent (009)", () => {
         },
       },
       attacker,
-      { mechanical: 1 },
+      DRIVE_SHAFT_FUEL,
     );
     const second = resolveOpenChain(
       expectOk(

@@ -23,7 +23,7 @@ describe("Tempo pending sources", () => {
     expect(getCard(PRISM_MANTLE)?.equipment?.abilities.length ?? 0).toBeGreaterThan(0);
   });
 
-  it("Lucent Choir is a Luminar synthetic with dual timing", () => {
+  it("Lucent Choir is a Luminar synthetic", () => {
     expect(LUCENT_CHOIR).toBeDefined();
   });
 });

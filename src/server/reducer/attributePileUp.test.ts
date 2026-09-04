@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { DAYBREAK_RITE, MACHINE_SHOP } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { HALO_LAMP, naturalFaceId } from "../content/faces.js";
+import { LUCENT_CHOIR, naturalFaceId } from "../content/faces.js";
+import { whileShowingTotals } from "../rules/whileShowing.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -95,29 +96,22 @@ describe("016 attribute pile-up", () => {
     expect(after.log.some((e) => e.event.type === "attribute-token-gained")).toBe(true);
   });
 
-  it("fires face onAbsorb when banking a pip from that face", () => {
-    let state = installFace(withPhase(newMatch(), "actions"), HALO_LAMP);
+  it("Lucent Choir banks 2 Luminar and is an Empower stance, with no face On absorb", () => {
+    let state = installFace(withPhase(newMatch(), "roll"), LUCENT_CHOIR);
     const dieId = dieIdOf(state);
+    const otherId = state.players[P1]?.dieIds[1];
+    if (otherId === undefined) throw new Error("other die");
     state = {
       ...state,
-      dice: { ...state.dice, [dieId]: { ...state.dice[dieId]!, rolledSlotIndex: 0 } },
-    };
-    state = withSymbols(state, P1, ["luminar"]);
-    const pip = Object.values(state.symbols)[0]!;
-    state = {
-      ...state,
-      symbols: {
-        ...state.symbols,
-        [pip.id]: { ...pip, sourceDieId: dieId },
+      dice: {
+        ...state.dice,
+        [dieId]: { ...state.dice[dieId]!, retained: true, rolledSlotIndex: 0 },
+        [otherId]: { ...state.dice[otherId]!, retained: true, rolledSlotIndex: 4 },
       },
     };
-    const after = expectOk(
-      advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
-    );
-    expect(after.players[P1]?.attributePool).toEqual({ luminar: 1 });
-    // Vital Spark onAbsorb opens choose-ally for Mark Shield (Phase 3 pile bank).
-    expect(after.pendingDecision?.type).toBe("choose-creature");
-    expect(after.log.some((e) => e.event.type === "symbol-absorbed")).toBe(true);
+    const after = expectOk(advance(state, { type: "ROLL_DICE", playerId: P1 }));
+    expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(2);
+    expect(whileShowingTotals(after, P1).empower).toBe(1);
   });
 
   it("attack requires/discards from owner pile; same-turn bank→attack OK", () => {
@@ -125,25 +119,8 @@ describe("016 attribute pile-up", () => {
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
-    const attack = def.attacks.find((a) => a.effect !== undefined && a.kind === "basic")!;
-    const fuelAttrs = new Set([
-      ...Object.keys(attack.requires ?? {}),
-      ...Object.keys(attack.discards ?? {}),
-    ]);
-    const needed = [...fuelAttrs].flatMap((attr) => {
-      const n = Math.max(
-        attack.requires?.[attr as keyof typeof attack.requires] ?? 0,
-        attack.discards?.[attr as keyof typeof attack.discards] ?? 0,
-      );
-      return Array.from({ length: n }, () => attr);
-    });
-    state = withSymbols(state, P1, needed as never);
-    for (const pip of Object.values(state.symbols)) {
-      state = expectOk(
-        advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
-      );
-    }
-    const before = { ...state.players[P1]!.attributePool };
+    const attack = def.attacks.find((a) => a.id === "attack-torque-wright-crank")!;
+    state = withAttributePool(state, P1, { mechanical: 1, luminar: 1 });
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -153,17 +130,12 @@ describe("016 attribute pile-up", () => {
         targetId,
       }),
     );
-    expect(after.chainStack.length + (after.pendingDecision ? 1 : 0)).toBeGreaterThanOrEqual(0);
     expect(after.log.some((e) => e.event.type === "attack-declared")).toBe(true);
-    if (attack.discards !== undefined) {
-      for (const [attr, n] of Object.entries(attack.discards)) {
-        const key = attr as keyof typeof before;
-        expect(after.players[P1]?.attributePool[key] ?? 0).toBe((before[key] ?? 0) - (n ?? 0));
-      }
-    }
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(0);
   });
 
-  it("ritual becomes ready when the owner's pile meets Active-when", () => {
+  it("ritual without Active-when is ready on place", () => {
     let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [MACHINE_SHOP]), P1, {
       mechanical: 3,
     });
@@ -176,14 +148,6 @@ describe("016 attribute pile-up", () => {
     );
     const ritualId = ritualsOf(state, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual");
-    expect(state.cards[ritualId]?.ritualOrientation).toBe("preparing");
-
-    state = withAttributePool(state, P1, { mechanical: 2 });
-    state = withSymbols(state, P1, ["mechanical"]);
-    const pip = Object.values(state.symbols)[0]!;
-    state = expectOk(
-      advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
-    );
     expect(state.cards[ritualId]?.ritualOrientation).toBe("ready");
   });
 
@@ -253,8 +217,8 @@ describe("016 attribute pile-up", () => {
     const targetId = creatureIdAt(state, P2, 0);
     const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
     const attack = def.attacks.find((a) => a.id === "attack-torque-wright-retool")!;
-    // Requires Mechanical+Luminar, Spend Mechanical.
-    state = withAttributePool(state, P1, { mechanical: 1 });
+    // Requires Mechanical 2 + Any 1, Spend Mechanical 2.
+    state = withAttributePool(state, P1, { mechanical: 2 });
     state = {
       ...state,
       requirementWildcardsThisTurn: { [P1]: [{ fromSymbol: "arcane" }] },
@@ -338,8 +302,7 @@ describe("016 attribute pile-up", () => {
       }),
     );
     expect(state.log.some((e) => e.event.type === "ritual-activated")).toBe(true);
-    // Spend shortfall 1 (pile had 1 luminar for spend 2) = 1 wildcard.
-    expect((state.requirementWildcardsThisTurn[P1] ?? []).length).toBe(beforeWild - 1);
+    expect((state.requirementWildcardsThisTurn[P1] ?? []).length).toBe(beforeWild - 2);
     expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(0);
   });
 });

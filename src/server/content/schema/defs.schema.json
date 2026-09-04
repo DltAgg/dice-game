@@ -488,6 +488,33 @@
           "additionalProperties": false,
           "required": ["type"],
           "properties": { "type": { "const": "source-is-frontline" } }
+        },
+        {
+          "title": "other-die-same-attribute",
+          "description": "Controller's other die shows a known face with the same attribute as this showing face (spec 025). Not has-other-symbol (pool).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "other-die-same-attribute" } }
+        },
+        {
+          "title": "this-die-attribute-count",
+          "description": "This die has at least atLeast slots whose face symbol equals this showing face's attribute (spec 025).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "atLeast"],
+          "properties": {
+            "type": { "const": "this-die-attribute-count" },
+            "atLeast": { "type": "integer", "minimum": 1 }
+          }
+        },
+        {
+          "title": "both-showing-synthetic",
+          "description": "Both of the controller's showing faces have kind synthetic (spec 025).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "both-showing-synthetic" } }
         }
       ]
     },
@@ -751,6 +778,30 @@
           "additionalProperties": false,
           "required": ["kind"],
           "properties": { "kind": { "const": "source-is-frontline" } }
+        },
+        {
+          "title": "other-die-same-attribute",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "other-die-same-attribute" } }
+        },
+        {
+          "title": "this-die-attribute-count",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "atLeast"],
+          "properties": {
+            "kind": { "const": "this-die-attribute-count" },
+            "atLeast": { "type": "integer", "minimum": 1 }
+          }
+        },
+        {
+          "title": "both-showing-synthetic",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "both-showing-synthetic" } }
         }
       ]
     },

@@ -4,21 +4,16 @@
   "name": "Ossuary",
   "kind": "synthetic",
   "symbol": "darkness",
-  "rulesText": "On roll: your opponent [Mill 1].\nOn absorb, once per turn: [Recall 1] that costs 2 or less.",
+  "rulesText": "On roll: [Recall 1] that costs 2 or less.",
+  "pips": 2,
   "onRoll": [
-    {
-      "type": "mill-cards",
-      "amount": 1,
-      "player": "opponent"
-    }
-  ],
-  "onAbsorb": [
     {
       "type": "search-graveyard",
       "amount": 1,
       "maxPlayCost": 2
     }
   ],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

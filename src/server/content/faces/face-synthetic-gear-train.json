@@ -4,28 +4,22 @@
   "name": "Gear Train",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: if you have another Synthetic symbol in the Pool, [Generate 1 Mechanical].\nOn absorb, once per turn: [Double].",
+  "rulesText": "On roll: if your other die shows the same attribute, [Double].",
+  "pips": 2,
   "onRoll": [
     {
       "type": "conditional",
       "when": {
-        "type": "has-other-symbol",
-        "faceKind": "synthetic"
+        "type": "other-die-same-attribute"
       },
       "then": [
         {
-          "type": "generate-symbol",
-          "symbol": "mechanical",
-          "amount": 1
+          "type": "arm-resolve-next-face-effect-twice"
         }
       ]
     }
   ],
-  "onAbsorb": [
-    {
-      "type": "arm-resolve-next-face-effect-twice"
-    }
-  ],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

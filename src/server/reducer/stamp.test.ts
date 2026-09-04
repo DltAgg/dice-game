@@ -84,9 +84,9 @@ describe("[Stamp] reapply-die-modifiers", () => {
 
     const stamped = playStampOnDie(rolled, dieId);
 
-    // Play cost is 2 Mechanical; stamp re-fires +2 Mechanical and +1 Luminar from hooks.
-    expect(stamped.players[P1]?.attributePool.mechanical ?? 0).toBe(mechAfterRoll);
-    expect(stamped.players[P1]?.attributePool.luminar ?? 0).toBe(lumAfterRoll + 1);
+    // Play Die Punch (2 Mechanical, minus Idler Gear's On roll [Discount 1]).
+    expect(stamped.players[P1]?.attributePool.mechanical ?? 0).toBe(mechAfterRoll - 1);
+    expect(stamped.players[P1]?.attributePool.luminar ?? 0).toBe(lumAfterRoll);
     expect(
       Object.values(stamped.symbols).filter((symbol) => symbol.sourceDieId === dieId).length,
     ).toBe(rolledSymbolsBefore);

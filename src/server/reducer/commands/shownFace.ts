@@ -173,7 +173,8 @@ export function refireShownFaceRollEffects(
   const face = getFaceCard(slot.faceCardId);
   if (face === undefined) return;
 
-  if (!isSlotSilenced(draft, dieId, slotIndex)) {
+  const silenced = isSlotSilenced(draft, dieId, slotIndex);
+  if (!silenced && face.convertRoll !== true) {
     applyForgeYieldGenerate(draft, controllerId, slot, face.symbol);
     applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
   }

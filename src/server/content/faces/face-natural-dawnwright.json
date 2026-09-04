@@ -4,14 +4,13 @@
   "name": "Dawnwright",
   "kind": "natural",
   "symbol": "mechanical",
-  "rulesText": "On roll: [Generate 1 Luminar].",
-  "onRoll": [
-    {
-      "type": "generate-symbol",
-      "symbol": "luminar",
-      "amount": 1
-    }
-  ],
+  "rulesText": "On roll: this face also produces 1 Luminar.",
+  "pips": 1,
+  "bonusPips": {
+    "symbol": "luminar",
+    "amount": 1
+  },
+  "onRoll": [],
   "onAbsorb": [],
   "maxOverloads": 1,
   "forgeRestriction": null

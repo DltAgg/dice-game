@@ -4,23 +4,14 @@
   "name": "Sunward Lens",
   "kind": "synthetic",
   "symbol": "luminar",
-  "rulesText": "On roll: [Heal 1] on your most damaged creature.\nOn absorb, once per turn: [Generate 1 Mechanical].",
-  "onRoll": [
-    {
-      "type": "heal",
-      "amount": 1,
-      "target": {
-        "kind": "most-damaged-ally"
-      }
-    }
-  ],
-  "onAbsorb": [
-    {
-      "type": "generate-symbol",
-      "symbol": "mechanical",
-      "amount": 1
-    }
-  ],
+  "rulesText": "On roll: this face also produces 1 Mechanical.",
+  "pips": 1,
+  "bonusPips": {
+    "symbol": "mechanical",
+    "amount": 1
+  },
+  "onRoll": [],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, MENDING_LIGHT, TOOLING_ORDER } from "../content/cards.js";
+import { ANNEAL, COG_DRAFT, MENDING_LIGHT } from "../content/cards.js";
 import {
   COGTOOTH,
   DAWNWRIGHT,
@@ -96,9 +96,9 @@ describe("face deck", () => {
     expect(forged.state.players[P1]?.attributePool.mechanical ?? 0).toBe(10);
   });
 
-  it("installs a named synthetic from the pool via Tooling Order", () => {
+  it("installs a named synthetic from the pool via Anneal", () => {
     const state = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [TOOLING_ORDER]),
+      withHand(withPhase(newMatch(), "actions"), P1, [ANNEAL]),
       P1,
       10,
     );

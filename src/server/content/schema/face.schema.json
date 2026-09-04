@@ -25,9 +25,33 @@
       "items": { "$ref": "effect.schema.json#/$defs/effect" }
     },
     "onAbsorb": {
-      "description": "Fired when a symbol produced by a die showing this face is absorbed. Empty until On-absorb print is wired.",
+      "description": "Fired when a symbol produced by a die showing this face is absorbed. Empty until On-absorb print is wired. On-absorb is retired as a face design axis (spec 025); leave empty on new faces.",
       "type": "array",
       "items": { "$ref": "effect.schema.json#/$defs/effect" }
+    },
+    "pips": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How many pips of symbol this face produces when rolled. Default 1. Inherent physics, not a Generate opcode (spec 025)."
+    },
+    "bonusPips": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "amount"],
+      "description": "Extra pips of a (possibly other) symbol from this same die/roll. Dual-pip. Illegal on Shield / untyped.",
+      "properties": {
+        "symbol": { "$ref": "defs.schema.json#/$defs/symbolType" },
+        "amount": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "convertRoll": {
+      "type": "boolean",
+      "description": "If true, this die's pips from this roll do not bank (including yield and Overcharge); onRoll is the Convert roll payoff (spec 025)."
+    },
+    "whileShowing": {
+      "type": "array",
+      "description": "Continuous stance modifiers while this face is showing on an owned die (spec 025). Not StandingTrigger.",
+      "items": { "$ref": "#/$defs/whileShowingModifier" }
     },
     "maxOverloads": {
       "type": "integer",
@@ -62,7 +86,10 @@
       "then": {
         "properties": {
           "symbol": { "const": "shield" },
-          "id": { "type": "string", "pattern": "^face-untyped-" }
+          "id": { "type": "string", "pattern": "^face-untyped-" },
+          "pips": { "const": 1 },
+          "convertRoll": { "const": false },
+          "bonusPips": false
         }
       }
     },
@@ -90,5 +117,21 @@
         }
       }
     }
-  ]
+  ],
+  "$defs": {
+    "whileShowingModifier": {
+      "title": "WhileShowingModifier",
+      "description": "Closed stance union while this face is showing (spec 025).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["pierce", "empower", "play-discount", "forge-discount", "reduce"]
+        },
+        "amount": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
 }

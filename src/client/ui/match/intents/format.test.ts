@@ -19,12 +19,11 @@ describe("ritualStayLabel", () => {
   });
 
   it("keeps standing-only continuous copy", () => {
-    expect(ritualStayLabel(mustCard("card-radiant-accord"))).toBe(
-      "Continuous (stays)",
-    );
-    expect(ritualStayLabel(mustCard("card-machine-shop"))).toBe(
-      "Continuous (stays)",
-    );
+    const standingOnly = {
+      ...mustCard("card-daybreak-rite"),
+      ritual: { effects: [] },
+    };
+    expect(ritualStayLabel(standingOnly)).toBe("Continuous (stays)");
   });
 
   it("does not call reaction field rituals Continuous", () => {

@@ -16,7 +16,7 @@ import {
   withTokens,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { CRANK } from "../testing/tempoCatalogue.js";
+import { CRANK, CRANK_FUEL } from "../testing/tempoCatalogue.js";
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -53,7 +53,7 @@ describe("Tempo combat package", () => {
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
   });
 
-  it("Shim Kit arms forge discount on play", () => {
+  it("Shim Kit opens a silence choice on play", () => {
     const ready = actionsReady([SHIM_KIT]);
     const after = expectOk(
       advance(ready, {
@@ -62,13 +62,13 @@ describe("Tempo combat package", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
+    expect(after.pendingDecision?.type).toBe("choose-silence-host");
   });
 
   it("Crank damages through shields one point at a time", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     let state = withShields(withPhase(newMatch(), "actions"), targetId, 1);
-    state = withTokens(state, creatureIdAt(state, P1, 0), { mechanical: 1 });
+    state = withTokens(state, creatureIdAt(state, P1, 0), CRANK_FUEL);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",

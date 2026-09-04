@@ -4,20 +4,17 @@
   "name": "Mainspring",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: [Empower 1].\nOn absorb, once per turn: [Reforge 1 Mechanical] any faces on one of your dice.",
+  "rulesText": "On roll: [Convert roll]. [Reforge 1 Mechanical].",
+  "pips": 2,
+  "convertRoll": true,
   "onRoll": [
-    {
-      "type": "next-attack-bonus",
-      "amount": 1
-    }
-  ],
-  "onAbsorb": [
     {
       "type": "replace-synthetic-face",
       "faces": 1,
       "attribute": "mechanical"
     }
   ],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

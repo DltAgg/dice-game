@@ -42,6 +42,7 @@ import {
   TEMPO_STARTING_DICE,
 } from "../content/loadouts/index.js";
 import { asAttackId } from "../model/ids.js";
+import type { AttributeTokens } from "../model/symbols.js";
 
 export {
   BEACON_ARRAY,
@@ -94,3 +95,12 @@ export const RETOOL = asAttackId("attack-torque-wright-retool");
 export const OVERDRIVE = asAttackId("attack-lodestar-artificer-overdrive");
 /** Strike 2 special with shield follow-up. */
 export const VIGIL = asAttackId("attack-dawn-warden-vigil");
+
+/** Live Crank Spend: Mechanical + Any. */
+export const CRANK_FUEL: AttributeTokens = { mechanical: 1, luminar: 1 };
+/** Live Drive Shaft Spend: Mechanical + Luminar + Any. */
+export const DRIVE_SHAFT_FUEL: AttributeTokens = { mechanical: 1, luminar: 1, martial: 1 };
+/** Live Kindle Spend: 2 Luminar. */
+export const KINDLE_FUEL: AttributeTokens = { luminar: 2 };
+/** Live Retool: Requires Mechanical 2 + Any, Spend 2 Mechanical. */
+export const RETOOL_FUEL: AttributeTokens = { mechanical: 2, luminar: 1 };

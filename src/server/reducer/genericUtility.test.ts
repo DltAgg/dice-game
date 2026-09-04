@@ -39,7 +39,7 @@ describe("Tempo generic utility", () => {
     expect(eventTypes(after)).toContain("card-played");
   });
 
-  it("Shim Kit discounts forge", () => {
+  it("Shim Kit opens a silence choice", () => {
     const ready = actionsReady([SHIM_KIT]);
     const after = expectOk(
       advance(ready, {
@@ -48,7 +48,7 @@ describe("Tempo generic utility", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
+    expect(after.pendingDecision?.type).toBe("choose-silence-host");
   });
 
   it("Recast opens replace-synthetic-face", () => {

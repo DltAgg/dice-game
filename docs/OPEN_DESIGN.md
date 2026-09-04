@@ -877,30 +877,11 @@ effect resolves on the chain). Garuda Dive no longer swaps.
 
 ### Whether a named Natural face is free on opening dice
 
-**Status:** `OPEN` · 2026-08-30 · raised by `face-natural-dawnwright`
+**Status:** `DECIDED` · 2026-09-04 · spec `025`
 
-**Why it matters.** `isOpeningBasicFace` (`src/server/rules/loadout.ts`) treats
-**any** face whose `kind` is `natural` as an opening basic, so it neither
-consumes a face-deck row nor counts against
-`startingMaxSyntheticsPerDie` / `startingMaxSyntheticsPerPlayer`. That was
-written when every Natural was one of the eight identity blanks. Dawnwright is
-a **named** Natural with printed `On roll: [Generate 1 Luminar]`, so a
-constructed layout can currently paint it onto opening slots for free and get a
-strictly better basic than `face-natural-mechanical`.
-
-**The question.** Is "basic" defined by `kind === "natural"`, or by being an
-identity face (`id === face-natural-<its own symbol>`)?
-
-**Design intent (card-designer, not yet implemented).** Identity. A named
-Natural should be packed and capped like any other named special; only the
-eight blanks and Shield stay free. The catalogue side of that is already
-asserted (`faceKindPolicy.test.ts` keeps named naturals out of
-`BASIC_FACE_CARDS` and inside `SPECIAL_FACE_CARDS`), but loadout legality is
-engine work and is **not** done — an `engine-developer` change to
-`isOpeningBasicFace` plus `validateStartingDice` coverage is required before
-named Naturals are safe in constructed.
-
-**Decision.** TBD.
+Opening basics are **only** `BASIC_FACE_CARDS` (eight identity naturals + Shield).
+`isOpeningBasicFace` is membership in that list. Named naturals (Dawnwright)
+consume the face deck when they sit on `startingDice`.
 
 ---
 

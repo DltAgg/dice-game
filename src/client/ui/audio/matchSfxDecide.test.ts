@@ -17,6 +17,7 @@ import {
   withPhase,
   withTokens,
 } from "@server/testing/scenario.js";
+import { CRANK_FUEL } from "@server/testing/tempoCatalogue.js";
 import { matchSfxCuesFor } from "./matchSfxDecide.js";
 
 const P1 = asPlayerId("p1");
@@ -47,7 +48,7 @@ function openedEmptyPriority(): GameState {
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
   const combat = withHand(
-    withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10),
+    withPile(withTokens(base, attacker, CRANK_FUEL), P2, 10),
     P2,
     [],
   );

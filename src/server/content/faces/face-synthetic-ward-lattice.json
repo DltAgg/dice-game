@@ -4,21 +4,23 @@
   "name": "Ward Lattice",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: [Insight 1].\nOn absorb, once per turn: [Mark 1 Shield] on an allied creature you choose.",
+  "rulesText": "On roll: if your other die shows the same attribute, [Insight 2].",
+  "pips": 2,
   "onRoll": [
     {
-      "type": "peek-deck-optional-bottom"
+      "type": "conditional",
+      "when": {
+        "type": "other-die-same-attribute"
+      },
+      "then": [
+        {
+          "type": "look-top-deck",
+          "amount": 2
+        }
+      ]
     }
   ],
-  "onAbsorb": [
-    {
-      "type": "grant-shield",
-      "amount": 1,
-      "target": {
-        "kind": "choose-ally"
-      }
-    }
-  ],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

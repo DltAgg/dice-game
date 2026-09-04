@@ -7,6 +7,7 @@ import {
   reduceRequirement,
   type DiscountMatch,
 } from "../rules/discounts.js";
+import { whileShowingTotals } from "../rules/whileShowing.js";
 import {
   isNonEmptyRequirement,
   pickPilePayment,
@@ -54,8 +55,9 @@ export function payForgeCost(
   if (definition.forge.kind === "natural") return null;
   const base = definition.playCost;
   if (base === undefined || !isNonEmptyRequirement(base)) return null;
-  const discount = draft.forgeDiscountThisTurn[playerId] ?? 0;
-  if (discount > 0) {
+  const armedThisTurn = draft.forgeDiscountThisTurn[playerId] ?? 0;
+  const discount = armedThisTurn + whileShowingTotals(draft, playerId).forgeDiscount;
+  if (armedThisTurn > 0) {
     const next = { ...draft.forgeDiscountThisTurn };
     delete next[playerId];
     draft.forgeDiscountThisTurn = next;

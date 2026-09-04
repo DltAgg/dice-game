@@ -4,7 +4,6 @@ import { getFaceCard, SHIELD_FACE_ID } from "../content/faces.js";
 import type {
   CreatureChoiceFilter,
   DieChoiceFilter,
-  EffectCondition,
   EffectDefinition,
   TargetSelector,
 } from "../model/effects.js";
@@ -18,11 +17,12 @@ import {
   type PlayerId,
   type SymbolInstanceId,
 } from "../model/ids.js";
-import type { FaceKind } from "../model/dice.js";
 import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { isAttributeSymbol } from "../model/symbols.js";
 import { isSyntheticOnlyAttribute } from "../model/attributes.js";
+import { evaluateCondition, faceKindOfSymbol } from "./conditions.js";
+import { whileShowingTotals } from "../rules/whileShowing.js";
 import {
   forgeExceedsAttributeLimit,
   replayableGraveyardTactics,
@@ -354,77 +354,6 @@ function poolSymbols(draft: Draft, playerId: PlayerId) {
     (symbol) =>
       symbol.ownerId === playerId && (symbol.status === "rolled" || symbol.status === "available"),
   );
-}
-
-function faceKindOfSymbol(draft: Draft, sourceDieId: DieId | null): FaceKind | null {
-  if (sourceDieId === null) return null;
-  const die = draft.dice[sourceDieId];
-  const slot = die?.rolledSlotIndex;
-  if (die === undefined || slot === null || slot === undefined) return null;
-  const faceCardId = die.slots[slot]?.faceCardId;
-  if (faceCardId === undefined) return null;
-  return getFaceCard(faceCardId)?.kind ?? null;
-}
-
-function evaluateCondition(draft: Draft, pending: PendingEffect, when: EffectCondition): boolean {
-  switch (when.type) {
-    case "source-position": {
-      const creature =
-        pending.sourceCreatureId === null ? undefined : draft.creatures[pending.sourceCreatureId];
-      return creature?.position === when.position;
-    }
-    case "source-is-frontline": {
-      const creature =
-        pending.sourceCreatureId === null ? undefined : draft.creatures[pending.sourceCreatureId];
-      return creature?.position === "frontline";
-    }
-    case "any-enemy-has-toxin":
-      return livingCreaturesOf(draft, opponentOf(draft, pending.controllerId)).some(
-        (creature) => creature.toxinMarkers > 0,
-      );
-    case "any-ally-attacked-this-turn":
-      return livingCreaturesOf(draft, pending.controllerId).some(
-        (creature) => creature.attacksUsedThisCombat > 0,
-      );
-    case "has-other-symbol": {
-      const pool = poolSymbols(draft, pending.controllerId);
-      return pool.some((symbol) => {
-        if (pending.sourceDieId !== null && symbol.sourceDieId === pending.sourceDieId) {
-          return false;
-        }
-        if (when.symbol !== undefined && symbol.symbol !== when.symbol) return false;
-        if (when.faceKind !== undefined) {
-          const kind = faceKindOfSymbol(draft, symbol.sourceDieId);
-          if (kind === when.faceKind) return true;
-          if (
-            kind === null &&
-            when.faceKind === "synthetic" &&
-            isSyntheticOnlyAttribute(symbol.symbol)
-          ) {
-            return true;
-          }
-          return false;
-        }
-        return true;
-      });
-    }
-    case "has-adjacent-ally": {
-      const ids = draft.players[pending.controllerId]?.creatureIds ?? [];
-      for (let i = 0; i < ids.length; i += 1) {
-        const a = ids[i];
-        const b = ids[i + 1];
-        if (a === undefined || b === undefined) continue;
-        const ca = draft.creatures[a];
-        const cb = draft.creatures[b];
-        if (ca !== undefined && !ca.defeated && cb !== undefined && !cb.defeated) return true;
-      }
-      return false;
-    }
-    case "controller-has-frontline":
-      return livingCreaturesOf(draft, pending.controllerId).some(
-        (creature) => creature.position === "frontline",
-      );
-  }
 }
 
 export function applyToTargets(
@@ -1884,6 +1813,10 @@ export function dealDamage(
     patchCreature(draft, creatureId, { nextIncomingDamageBonus: 0 });
   }
 
+  incoming = Math.max(
+    0,
+    incoming - whileShowingTotals(draft, afterRedirect.ownerId).reduce,
+  );
   let remaining = applyOnTakeDamageReduce(draft, creatureId, incoming);
 
   // Spec 009: attack-prevent (whole attack instance) → Shield → HP.

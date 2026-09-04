@@ -3,39 +3,35 @@ import { DIE_PUNCH, TWIN_CAM, getCard } from "../content/cards.js";
 import { cardPlayIsFuelled, holdsTokens, isNonEmptyRequirement, pickPilePayment, pileRequirementShortfall } from "./tokens.js";
 
 describe("cardPlayIsFuelled", () => {
-  it("Twin Cam with 2 Mechanical meets gate and header Spend", () => {
+  it("Twin Cam with 2 Mechanical meets header Spend", () => {
     const twinCam = getCard(TWIN_CAM);
     if (twinCam === undefined) throw new Error("Twin Cam");
-    const requires = twinCam.effect?.requires;
     const spend = twinCam.playCost;
-    if (!isNonEmptyRequirement(requires) || !isNonEmptyRequirement(spend)) {
+    if (!isNonEmptyRequirement(spend)) {
       throw new Error("Twin Cam costs");
     }
-    expect(cardPlayIsFuelled({ mechanical: 2 }, { requires, spend })).toBe(true);
+    expect(cardPlayIsFuelled({ mechanical: 2 }, { spend })).toBe(true);
   });
 
-  it("Twin Cam with 1 Mechanical fails the gate even when Discount 1 covers the header", () => {
+  it("Twin Cam with 1 Mechanical fails the header; Discount 1 covers it", () => {
     const twinCam = getCard(TWIN_CAM);
     if (twinCam === undefined) throw new Error("Twin Cam");
-    const requires = twinCam.effect?.requires;
     const spend = twinCam.playCost;
-    if (!isNonEmptyRequirement(requires) || !isNonEmptyRequirement(spend)) {
+    if (!isNonEmptyRequirement(spend)) {
       throw new Error("Twin Cam costs");
     }
-    expect(cardPlayIsFuelled({ mechanical: 1 }, { requires, spend, spendNeed: 1 })).toBe(
-      false,
-    );
+    expect(cardPlayIsFuelled({ mechanical: 1 }, { spend, spendNeed: 1 })).toBe(true);
+    expect(cardPlayIsFuelled({ mechanical: 1 }, { spend })).toBe(false);
   });
 
-  it("Die Punch with 2 Mechanical is fuelled (gate 1 held, Spend 2)", () => {
+  it("Die Punch with 2 Mechanical is fuelled (Spend 2, no gate)", () => {
     const diePunch = getCard(DIE_PUNCH);
     if (diePunch === undefined) throw new Error("Die Punch");
-    const requires = diePunch.effect?.requires;
     const spend = diePunch.playCost;
-    if (!isNonEmptyRequirement(requires) || !isNonEmptyRequirement(spend)) {
+    if (!isNonEmptyRequirement(spend)) {
       throw new Error("Die Punch costs");
     }
-    expect(cardPlayIsFuelled({ mechanical: 2 }, { requires, spend })).toBe(true);
+    expect(cardPlayIsFuelled({ mechanical: 2 }, { spend })).toBe(true);
   });
 });
 

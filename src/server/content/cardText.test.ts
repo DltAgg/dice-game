@@ -111,10 +111,10 @@ describe("English card printing", () => {
     expect(formatRequirementLine(card)).toBe("[Requires: 2 x Mechanical]");
   });
 
-  it("prints Twin Cam effect.requires as a Requires gate", () => {
+  it("prints Twin Cam with no Requires gate", () => {
     const twinCam = getCard(TWIN_CAM);
     if (twinCam === undefined) throw new Error("Twin Cam");
-    expect(formatRequirementLine(twinCam)).toBe("[Requires: 2 x Mechanical]");
+    expect(formatRequirementLine(twinCam)).toBeNull();
   });
 
   it("prints converted engine rituals as Continuous and closers as Instant", () => {
@@ -136,10 +136,10 @@ describe("English card printing", () => {
     }
     expect(formatTypeLine(archivists)).toBe("[Ritual / Continuous / Arcane]");
     expect(formatTypeLine(tempering)).toBe("[Ritual / Continuous / Mechanical]");
-    expect(formatTypeLine(graven)).toBe("[Ritual / Continuous / Darkness]");
+    expect(formatTypeLine(graven)).toBe("[Instant / Darkness]");
     expect(formatTypeLine(daybreak)).toBe("[Ritual / Continuous / Luminar]");
     expect(formatTypeLine(verdict)).toBe("[Instant / Darkness]");
-    expect(formatRequirementLine(verdict)).toBe("[Requires: Arcane]");
+    expect(formatRequirementLine(verdict)).toBeNull();
     expect(formatTypeLine(echo)).toBe("[Instant / Darkness]");
   });
 

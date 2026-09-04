@@ -1,13 +1,7 @@
 import { getFaceCard } from "../../content/faces.js";
 import { FACE_SLOTS_PER_DIE } from "../../model/dice.js";
 import type { GameError } from "../../model/errors.js";
-import {
-  type DieId,
-  type FaceCardId,
-  type PlayerId,
-  type SymbolInstanceId,
-} from "../../model/ids.js";
-import type { SymbolType } from "../../model/symbols.js";
+import { type DieId, type PlayerId } from "../../model/ids.js";
 import type { RNG } from "../../rng/rng.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../../rules/dice.js";
 import { isSlotSilenced } from "../../rules/silence.js";
@@ -18,9 +12,16 @@ import {
   appendFaceAppeared,
   applyForgeYieldGenerate,
   applyOverchargeGenerate,
-  createRolledDieSymbol,
   fireShownFaceRollHooks,
 } from "./shownFace.js";
+import {
+  bankableShownFaceIds,
+  createShowingFacePips,
+  forfeitRolledPips,
+  isConvertingShownFace,
+  skipRollYieldAndOvercharge,
+  type ShownFaceRollEntry,
+} from "./rollPips.js";
 import { enterPhase } from "./turn.js";
 
 /* ---------------------------------------------------------------- roll --- */
@@ -29,18 +30,14 @@ import { enterPhase } from "./turn.js";
  * Bible §16 rolls the dice and generates symbols as consecutive steps. Symbol
  * generation carries no decision, so it happens here and shows up as its own
  * events rather than as a phase the player has to click through.
+ *
+ * Both dice are rolled (pips created, showing slots known) before onRoll fires
+ * so dice-geometry conditions can see both faces (spec `025`).
  */
 export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null {
   if (draft.phase !== "roll") return "INVALID_PHASE";
 
-  const rolled: Array<{
-    readonly dieId: DieId;
-    readonly slotIndex: number;
-    readonly faceCardId: FaceCardId;
-    readonly symbol: SymbolType;
-    readonly suppressInherent: boolean;
-    readonly symbolId: SymbolInstanceId;
-  }> = [];
+  const rolled: ShownFaceRollEntry[] = [];
 
   draft.facesAppearedThisRoll = [];
 
@@ -87,27 +84,29 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
       emit(draft, { type: "die-rolled", dieId: die.id, slotIndex, symbol: face.symbol });
     }
 
-    const symbolId = createRolledDieSymbol(draft, playerId, die.id, slotIndex, face.symbol);
+    const symbolIds = createShowingFacePips(draft, playerId, die.id, slotIndex, face);
+    const silenced = isSlotSilenced(draft, die.id, slotIndex);
+    const converting = isConvertingShownFace(face, silenced, suppressInherent);
     rolled.push({
       dieId: die.id,
       slotIndex,
       faceCardId: slot.faceCardId,
       symbol: face.symbol,
       suppressInherent,
-      symbolId,
+      symbolIds,
+      converting,
     });
     appendFaceAppeared(draft, die.id, slotIndex, slot.faceCardId, face.kind);
 
-    // Own-die forge yield: extra Generate of the showing face's attribute
-    // (DECIDED 2026-08-29). Same auto-bank path as effect Generate.
     const showingSlot = draft.dice[die.id]?.slots[slotIndex] ?? slot;
-    if (!isSlotSilenced(draft, die.id, slotIndex)) {
+    if (!skipRollYieldAndOvercharge(face, silenced)) {
       applyForgeYieldGenerate(draft, playerId, showingSlot, face.symbol);
       applyOverchargeGenerate(draft, die.ownerId, showingSlot.faceCardId);
     }
   }
 
   // Fire onRoll in die order (later dice push on top so LIFO resolves left-to-right).
+  // Both showing faces are already known (geometry).
   for (const entry of [...rolled].reverse()) {
     fireShownFaceRollHooks(
       draft,
@@ -122,9 +121,10 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
 
   drainResolution(draft);
 
-  const bankableIds = rolled
-    .filter((entry) => !entry.suppressInherent)
-    .map((entry) => entry.symbolId);
+  for (const entry of rolled) {
+    if (entry.converting) forfeitRolledPips(draft, entry.symbolIds);
+  }
+  const bankableIds = bankableShownFaceIds(rolled);
   const deferAbsorb =
     draft.pendingDecision !== null || draft.resolutionStack.length > 0;
   bankRolledSymbols(draft, playerId, bankableIds, deferAbsorb);

@@ -84,6 +84,21 @@ describe("AstCompiler", () => {
     });
   });
 
+  it("maps dice-geometry conditions", () => {
+    const node = compiler.compileLegacy({
+      type: "conditional",
+      when: { type: "other-die-same-attribute" },
+      then: [{ type: "arm-resolve-next-face-effect-twice" }],
+    });
+    expect(node.when).toEqual({ kind: "other-die-same-attribute" });
+    const count = compiler.compileLegacy({
+      type: "conditional",
+      when: { type: "this-die-attribute-count", atLeast: 3 },
+      then: [{ type: "draw-cards", amount: 1 }],
+    });
+    expect(count.when).toEqual({ kind: "this-die-attribute-count", atLeast: 3 });
+  });
+
   it("maps conditional to branch with combinable atoms", () => {
     const node = compiler.compileLegacy({
       type: "conditional",

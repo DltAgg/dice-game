@@ -16,10 +16,8 @@ import { catalogueFromModules } from "./catalogueLoader.js";
  * attributes, plus untyped Shield. Synthetics are **named specials only**
  * — never blank `face-synthetic-<attr>` generics. A natural may also be a
  * named special (Dawnwright); it is packed from the face deck like any
- * other special. Dual-timing print uses
- * `On roll:` / `On absorb:`; fill `onRoll` / `onAbsorb` only for clauses the
- * engine can resolve — leave the other array empty and keep the deferred
- * clause in `rulesText` (see DEFERRED_CATALOGUE).
+ * other special. Print uses `On roll:` / `While showing:` (spec `025`).
+ * Face `onAbsorb` stays empty — auto-bank retired On absorb as a face axis.
  *
  * The special pool holds the Mechanical + Luminar Tempo set and the
  * Arcane + Darkness Control set (3 named specials per attribute, so a face
@@ -60,25 +58,26 @@ export const COGTOOTH: FaceCardId = asFaceCardId("face-synthetic-cogtooth");
 export const GEAR_TRAIN: FaceCardId = asFaceCardId("face-synthetic-gear-train");
 export const MAINSPRING: FaceCardId = asFaceCardId("face-synthetic-mainspring");
 
-/** Luminar: shields, sustain, and the Luminar → Mechanical hand-off. */
+/** Luminar: Pierce / Empower stances and the Luminar → Mechanical dual-pip. */
 export const HALO_LAMP: FaceCardId = asFaceCardId("face-synthetic-halo-lamp");
 export const LUCENT_CHOIR: FaceCardId = asFaceCardId("face-synthetic-lucent-choir");
 export const SUNWARD_LENS: FaceCardId = asFaceCardId("face-synthetic-sunward-lens");
 
-/** Arcane: deck-top manipulation and face-sourced chip damage. */
+/** Arcane: play-discount stance, Insight geometry, and convert Strike. */
 export const AUGUR_GLASS: FaceCardId = asFaceCardId("face-synthetic-augur-glass");
 export const SIGIL_FLARE: FaceCardId = asFaceCardId("face-synthetic-sigil-flare");
 export const WARD_LATTICE: FaceCardId = asFaceCardId("face-synthetic-ward-lattice");
 
-/** Darkness: mill ticks and graveyard value. Gloomwell pays out in Arcane. */
+/** Darkness: dual-pip Arcane, Recall, and convert Drain. Gloomwell pays Arcane. */
 export const GLOOMWELL: FaceCardId = asFaceCardId("face-synthetic-gloomwell");
 export const OSSUARY: FaceCardId = asFaceCardId("face-synthetic-ossuary");
 export const PYRE_OF_NAMES: FaceCardId = asFaceCardId("face-synthetic-pyre-of-names");
 
 /**
- * Named **natural** special: shows Mechanical and pays out Luminar on roll.
- * Packable like a synthetic — it is not one of the eight opening identity
- * basics, so it never belongs in `BASIC_FACE_CARDS`.
+ * Named **natural** special: shows Mechanical and also produces 1 Luminar
+ * (inherent bonus pip, spec `025`). Packable like a synthetic — it is not
+ * one of the eight opening identity basics, so it never belongs in
+ * `BASIC_FACE_CARDS`.
  */
 export const DAWNWRIGHT: FaceCardId = asFaceCardId("face-natural-dawnwright");
 

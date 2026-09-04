@@ -276,7 +276,7 @@ describe("[Silence] instant", () => {
     rolled = withDie(rolled, dieIdOf(rolled, P2, 1), { retained: true, rolledSlotIndex: 4 });
     const silencedRoll = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P2 }));
     expect(eventTypesOf(silencedRoll)).toContain("symbol-generated");
-    expect(silencedRoll.players[P2]?.attributePool.mechanical ?? 0).toBe(1);
+    expect(silencedRoll.players[P2]?.attributePool.mechanical ?? 0).toBe(2);
     expect(silencedRoll.playCostDiscountThisTurn[P2] ?? 0).toBe(0);
 
     let other = withActivePlayer(withPhase(state, "roll"), P2);

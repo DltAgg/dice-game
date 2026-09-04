@@ -4,18 +4,14 @@
   "name": "Augur Glass",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: [Generate 1 Arcane].\nOn absorb, once per turn: [Insight 2].",
-  "onRoll": [
+  "rulesText": "While showing: [Discount 1].",
+  "pips": 2,
+  "onRoll": [],
+  "onAbsorb": [],
+  "whileShowing": [
     {
-      "type": "generate-symbol",
-      "symbol": "arcane",
+      "type": "play-discount",
       "amount": 1
-    }
-  ],
-  "onAbsorb": [
-    {
-      "type": "look-top-deck",
-      "amount": 2
     }
   ],
   "maxOverloads": 2,

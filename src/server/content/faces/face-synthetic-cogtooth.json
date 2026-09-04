@@ -4,17 +4,13 @@
   "name": "Cogtooth",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: [Generate 1 Mechanical].\nOn absorb, once per turn: [Discount 1] forge.",
-  "onRoll": [
+  "rulesText": "While showing: [Discount 1] forge.",
+  "pips": 2,
+  "onRoll": [],
+  "onAbsorb": [],
+  "whileShowing": [
     {
-      "type": "generate-symbol",
-      "symbol": "mechanical",
-      "amount": 1
-    }
-  ],
-  "onAbsorb": [
-    {
-      "type": "arm-forge-discount",
+      "type": "forge-discount",
       "amount": 1
     }
   ],

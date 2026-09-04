@@ -47,11 +47,12 @@ Overcharge, never two.
 
 **Opening dice**
 
-- Basics (Natural Martial / Wild / Arcane / Luminar, and untyped Shield) may
-  sit on opening slots **without** consuming the face deck.
-- A named special on an opening slot **must** be in the face deck and starts
-  **installed** (not also in the leftover pool unless the list has another
-  copy of that id).
+- Basics (identity Natural Martial / Wild / Arcane / Luminar / Toxin /
+  Mechanical / Corruption / Darkness, and untyped Shield) may sit on
+  opening slots **without** consuming the face deck.
+- A named special on an opening slot (including a named natural such as
+  Dawnwright) **must** be in the face deck and starts **installed** (not
+  also in the leftover pool unless the list has another copy of that id).
 - Leftover face-deck rows are the mid-game forge pool.
 - Copying an already-installed matching face (including an opening special)
   remains legal.
@@ -63,7 +64,7 @@ Opening-layout caps (prototype knobs, `ASSUMED` unless noted):
 | Same attribute on one die | **4** (`DEFINED`) |
 | Min Shield faces per die | **1** |
 | Named synthetics per player / per die | **2** / **2** |
-| Faces with a non-empty On roll per die | **2** |
+| Faces with On roll, `[Convert roll]`, or While showing per die | **2** |
 
 Forbidden Heritage, Pestilent Plague, and Arcane Echo are refused on
 `startingDice` (they may still sit in the face deck for mid-game).
@@ -107,24 +108,42 @@ non-legendaries fill frontline first.
 Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
 
 1. **Roll.** Roll your non-retained dice. Retained dice keep their showing
-   face and still generate that symbol. On-roll face / overload effects fire
-   as part of the roll. **Usable attribute** pips from the roll then
-   **auto-bank** into your attribute pile (On absorb fires). **Shield** and
-   locked/unusable pips stay in the turn pool. Effect-generated attributes
-   also auto-bank when created. Then the turn enters **actions**.
+   face and still generate that symbol. Named specials may produce **more than
+   one pip** from the showing face itself (inherent extra pips — not a
+   `[Generate]` line). On-roll face / overload effects fire as part of the
+   roll. **Usable attribute** pips from the roll then **auto-bank** into your
+   attribute pile (On absorb fires), unless that die’s showing face has
+   **`[Convert roll]`** — then **all** pips that die produced this roll
+   (inherent extra pips, showing pip, forge yield, Overcharge) are forfeited
+   and the face’s On roll is the payoff instead. The **other** die banks
+   normally. **Shield** and locked/unusable pips stay in the turn pool.
+   Effect-generated attributes also auto-bank when created. Then the turn
+   enters **actions**.
+   **While showing** is a continuous stance while that face is the showing
+   face (including retain and the opponent’s turn for defensive modifiers).
+   It is not a second On-roll trigger.
 2. **Actions.** In any order you may: absorb Shield onto a creature, pay
    `[Spend]` from your pile (and meet `[Requires]` gates), attack, play, forge,
    activate a **ready** ritual, retain/release dice, or end the turn.
 
 `[Reroll]` rolls **that one die** again during **actions** (you do not return
 to the roll phase). The **new** showing face fires On roll (and overloads on
-that face), then a usable attribute pip **auto-banks** (On absorb). The
-previous roll of that die is not undone: a token already in your pile stays,
-and an unabsorbed leftover (Shield, locked) is replaced by the new result
-rather than sitting beside it. `[Stamp]` is different: it re-fires the
-**current** showing face’s roll effects — On roll, overloads on that face,
-Overcharge pips, forge-yield extra Generate, and equipment on-roll-symbol —
-without changing the face or creating a new rolled pip.
+that face), then a usable attribute pip **auto-banks** (On absorb) unless
+that new face converts. The previous roll of that die is not undone: a token
+already in your pile stays, and an unabsorbed leftover (Shield, locked) is
+replaced by the new result rather than sitting beside it. `[Stamp]` is
+different: it re-fires the **current** showing face’s roll effects — On roll,
+overloads on that face, Overcharge pips, forge-yield extra Generate, and
+equipment on-roll-symbol — without changing the face or creating a new rolled
+pip (and without minting a second copy of inherent extra pips). Stamp on a
+converting face skips yield / Overcharge generate and re-fires the convert
+On-roll payoff.
+
+On-roll lines may be **conditional on dice geometry** (your other die’s
+showing attribute, how many faces of this attribute sit on this die, both
+showing faces synthetic). Those are ordinary On-roll conditions, not a new
+phase. Both dice are rolled before On roll fires, so geometry can see both
+showing faces.
 
 There is no dedicated absorb phase and no leftover-rolled flip. The turn
 pool mainly holds **Shield** (and locked/unusable pips). Attributes live in
@@ -152,6 +171,9 @@ Costs never require Shield.
 
 **Rolled and effect-generated usable attributes** auto-bank into your pile
 (On absorb fires). Locked/unusable pips and **Shield** stay in the turn pool.
+A die showing `[Convert roll]` does **not** bank any attribute pips **that
+die** produced on that roll (inherent extra pips, showing pip, forge yield,
+Overcharge). The other die is untouched.
 
 `[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
 `[Spend: …]` **burns** from your pile. Resonance wildcards may cover shortfall
@@ -308,7 +330,8 @@ deck still fails the draw quietly. This draw is a forge rule, not card text.
 **Own-die forge yield:** When you install a face onto **your own** die (via
 `FORGE_CARD` or a forge-faces effect), that slot gains **forge yield**. While
 that forged face is showing after your roll, you also generate one extra pip of
-its attribute (same auto-bank path as effect Generate). Shield / untyped faces
+its attribute (same auto-bank path as effect Generate), **unless** the showing
+face has `[Convert roll]`. Shield / untyped faces
 grant no yield. Opponent-die installs (Corruption harassment) do **not** gain
 yield. Overwriting or peeling a slot clears yield unless the new install
 re-sets it.
@@ -351,7 +374,9 @@ from hand to Overcharge one **attribute face card** installed on your dice
 attribute. The next time **any** of your dice show that face after a roll
 (including a retained keep or an actions-window reroll), **each** showing die
 also `[Generate]`s that pip — the same on-roll Generate path as forge yield /
-overload. One spend covers every copy you have showing. Overcharge does
+overload — **unless** that showing face has `[Convert roll]` (those Overcharge
+pips are forfeited with the rest of that die’s roll). One spend covers every
+copy you have showing. Overcharge does
 **not** pay pile cost, does **not** draw, does **not** set forge yield, and
 does **not** open a reaction window.
 
@@ -392,9 +417,15 @@ face) fires again.
 - Damage apply order: **`[Reduce]` → prevention → Shield → Life**.
 - `[Reduce N]` subtracts N from that incoming hit (minimum 0) before Prevent
   and Shield. It applies to any damage that hits the creature, not only
-  attacks. It does not cancel the attack.
+  attacks. It does not cancel the attack. **While showing** `[Reduce N]` uses
+  the same math for the controller’s living creatures while that face is
+  showing.
 - Pierce / ignore Shield skips that many Shields **without spending them**,
-  after prevention, before remaining Shields and HP.
+  after prevention, before remaining Shields and HP. **While showing**
+  `[Pierce N]` applies to the controller’s attacks for as long as the face
+  is showing (every attack, not a one-shot arm).
+- **While showing** `[Empower N]` adds N to the controller’s attacks for as
+  long as the face is showing (every attack, not next-attack-once).
 - Some attacks queue follow-up effects after the damage link.
 
 Enemy creature movement (push) is **not** in the game. Ally reposition is

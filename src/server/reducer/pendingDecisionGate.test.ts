@@ -14,7 +14,7 @@ import {
   withPhase,
   withTokens,
 } from "../testing/scenario.js";
-import { CRANK } from "../testing/tempoCatalogue.js";
+import { CRANK, CRANK_FUEL } from "../testing/tempoCatalogue.js";
 
 const playCard = (state: ReturnType<typeof newMatch>) =>
   resolveOpenChain(
@@ -45,7 +45,7 @@ describe("pending decision gates", () => {
     const base = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
-    const combat = withHand(withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10), P2, [
+    const combat = withHand(withPile(withTokens(base, attacker, CRANK_FUEL), P2, 10), P2, [
       GLINT_VEIL,
     ]);
     const opened = expectOk(

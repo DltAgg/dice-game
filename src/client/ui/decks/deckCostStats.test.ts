@@ -26,8 +26,8 @@ describe("summarizeDeckCosts", () => {
     ]);
     expect(summary.cardCount).toBe(8);
     expect(summary.uniqueCards).toBe(5);
-    expect(summary.byForge.natural).toBe(5);
-    expect(summary.byForge.synthetic).toBe(3);
+    expect(summary.byForge.natural).toBe(6);
+    expect(summary.byForge.synthetic).toBe(2);
     expect(summary.costWeight).toBe(4 * 1 + 4 * 2);
 
     const oneCost = summary.buckets.find((row) => row.bucket === 1);
@@ -48,8 +48,8 @@ describe("summarizeDeckCosts", () => {
     expect(twoCost?.byType.instant).toBe(2);
     expect(twoCost?.byType.reaction).toBe(1);
     expect(twoCost?.byType.equipment).toBe(1);
-    expect(twoCost?.byForge.synthetic).toBe(3);
-    expect(twoCost?.byForge.natural).toBe(1);
+    expect(twoCost?.byForge.synthetic).toBe(2);
+    expect(twoCost?.byForge.natural).toBe(2);
     expect(twoCost && formatBucketWeight(twoCost)).toBe("4×2=8");
   });
 

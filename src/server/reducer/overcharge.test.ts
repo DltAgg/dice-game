@@ -75,13 +75,6 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
   return rollShowingSlots(state, slot, SHIELD_SLOT);
 }
 
-function declineOptionalDiscard(state: GameState): GameState {
-  if (state.pendingDecision?.type !== "discard-cards") return state;
-  return expectOk(
-    advance(state, { type: "RESOLVE_DISCARD", playerId: P1, cardInstanceIds: [] }),
-  );
-}
-
 describe("tactic Overcharge", () => {
   it("Scholar's Lien Overcharges Darkness Natural face card; next roll generates Darkness and Arcane", () => {
     const ready = actionsReady([SCHOLARS_LIEN]);
@@ -112,9 +105,10 @@ describe("tactic Overcharge", () => {
     );
     expect(charged.players[P1]?.overchargeByFace[PYRE_OF_NAMES]).toEqual(["arcane"]);
 
-    const rolled = declineOptionalDiscard(rollShowingSlot(charged, DARKNESS_SLOT));
-    expect((rolled.players[P1]?.attributePool.darkness ?? 0) >= 1).toBe(true);
-    expect(rolled.players[P1]?.attributePool.arcane).toBe(1);
+    const rolled = rollShowingSlot(charged, DARKNESS_SLOT);
+    expect(rolled.players[P1]?.attributePool.darkness ?? 0).toBe(0);
+    expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
+    expect(rolled.pendingDecision?.type).toBe("choose-creature");
   });
 
   it("one Overcharge on two copies generates Arcane once per showing die", () => {

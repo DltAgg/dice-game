@@ -20,6 +20,7 @@ import {
   matchingPlayCostDiscounts,
 } from "./discounts.js";
 import { cardPlayIsFuelled, isNonEmptyRequirement } from "./tokens.js";
+import { whileShowingTotals } from "./whileShowing.js";
 
 /**
  * Reading helpers for the card zones, and the one rule forging has to enforce
@@ -151,7 +152,8 @@ export function canAffordPlay(
   const hasSpend = isNonEmptyRequirement(base);
   const matches = hasSpend ? matchingPlayCostDiscounts(state, playerId, definition) : [];
   const armed = hasSpend ? (state.playCostDiscountThisTurn[playerId] ?? 0) : 0;
-  const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed;
+  const stance = hasSpend ? whileShowingTotals(state, playerId).playDiscount : 0;
+  const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed + stance;
   const spendNeed = hasSpend ? discountedRequirementNeed(base, discount) : 0;
   const requires = definition.effect?.requires;
   return cardPlayIsFuelled(
@@ -166,8 +168,9 @@ export function canAffordPlay(
 
 /**
  * Whether the player can pay the header pile cost to forge this card (mirrors
- * `payForgeCost`: natural is free; synthetic uses forgeDiscountThisTurn only —
- * not play-cost discounts). Free / empty cost → true. Does not mutate state.
+ * `payForgeCost`: natural is free; synthetic uses forgeDiscountThisTurn plus
+ * While showing `[Discount N] forge` — not play-cost discounts). Free / empty
+ * cost → true. Does not mutate state.
  */
 export function canAffordForge(
   state: GameState,
@@ -177,7 +180,9 @@ export function canAffordForge(
   if (definition.forge.kind === "natural") return true;
   const base = definition.playCost;
   if (base === undefined || !isNonEmptyRequirement(base)) return true;
-  const discount = state.forgeDiscountThisTurn[playerId] ?? 0;
+  const discount =
+    (state.forgeDiscountThisTurn[playerId] ?? 0) +
+    whileShowingTotals(state, playerId).forgeDiscount;
   const need = discountedRequirementNeed(base, discount);
   if (need <= 0) return true;
   const pile = state.players[playerId]?.attributePool ?? {};
@@ -261,7 +266,7 @@ export function attackDamageBonus(
   const creature = state.creatures[creatureId];
   if (creature === undefined) return 0;
 
-  let bonus = 0;
+  let bonus = whileShowingTotals(state, creature.ownerId).empower;
   const addFromAbilities = (
     abilities: readonly { type: string; amount?: number; attackKinds?: readonly ("basic" | "special")[]; bearerRelation?: "self" | "left-ally" }[],
     bearerId: CreatureId,

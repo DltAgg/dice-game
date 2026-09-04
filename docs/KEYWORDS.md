@@ -15,7 +15,16 @@ Timing lines stay as prefixes. The keyword is the **clause after the colon**:
 ```text
 On roll: [Empower 1].
 On absorb: [Mark 1 Toxin].
+While showing: [Pierce 1].
+On roll: [Convert roll]. [Strike 2].
+On roll: this face also produces 1 Luminar.
 ```
+
+Inherent extra pips on a named face are **physics**, not `[Generate]`. Print
+the showing attribute as the face’s symbol; dual-pip bonus uses
+`On roll: this face also produces 1 Luminar.` (or the matching attribute).
+Do not reprint `[Generate]` for those pips. `[Convert roll]` is not
+`[Convert N]`.
 
 Keyword the **verb** when it is a game operation. Parameterize the **noun**
 when it is a token, symbol, card type, or target. A new token reuses
@@ -32,7 +41,7 @@ shared; the argument follows attribute exclusives.
 |---|---|---|
 | **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]`, `[Bounce X]` |
-| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Reduce N]`, `[Prevent]`, `[Silence]`, `[Convert N]`, `[Desynthesize]` |
+| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Reduce N]`, `[Prevent]`, `[Silence]`, `[Convert N]`, `[Convert roll]`, `[Desynthesize]` |
 
 ---
 
@@ -99,8 +108,8 @@ transfer. Do not mint Detonate / Rend as keywords.
 | `[Reduce N]` | Incoming hit math. That hit deals N less (minimum 0) before `[Prevent]` and Shield. Not a token. Distinct from `[Prevent]` (cancel the attack) and `[Discount]` (pile costs). |
 | `[Silence]` | Physics. Chosen opposing host cannot fire or activate its effects until the start of your next turn. Not a Mark token. Distinct from `[Negate]`. |
 | `[Desynthesize]` | Physics. Replace a synthetic attribute face on any die with that attribute’s natural. Not a Mark token. Distinct from `[Reforge]` / `[Cross forge]`. |
-| `[Empower N]` | Extra damage on an attack. Not a token. |
-| `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. |
+| `[Empower N]` | Extra damage on an attack. Not a token. Next-attack Instant arms `nextAttackBonus` (consume-once). **While showing** `[Empower N]` is every attack while the face is showing. |
+| `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. **While showing** `[Pierce N]` lasts until the die shows something else. |
 
 ---
 
@@ -163,7 +172,8 @@ These are not tokens.
 | `[Silence]` | The chosen opposing creature, field ritual, or die slot cannot activate or fire its effects until the start of **your** next turn. Not a token. Distinct from `[Negate]` / the reaction card Arcane Silence. |
 | `[Desynthesize]` | Replace a synthetic attribute face on **any die** with that attribute’s natural identity. Not a forge. Not `[Reforge]`. Overloads on the orphaned face leave. Stay / forge-lock does not block it. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
-| `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). On roll / Instant without **forge** arms that play discount for this turn. `[Discount N] forge` cheapens the next synthetic forge instead. Discount reduces `[Spend]` **Any** pips first, then named attributes. Remaining named cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
+| `[Convert roll]` | This die’s pips from **this roll** do not bank (inherent extra pips, showing pip, forge yield, Overcharge). On roll is the payoff. Distinct from `[Convert N]`. |
+| `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). On roll / Instant without **forge** arms that play discount for this turn. `[Discount N] forge` cheapens the next synthetic forge instead. **While showing** `[Discount N]` / `[Discount N] forge` is a continuous stance (stacks with those arms; not consumed). Discount reduces `[Spend]` **Any** pips first, then named attributes. Remaining named cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
 | `[Search N]` | Look through your deck; add up to N cards of the printed types; shuffle. Arcane exclusive. |
 | `[Recall N]` | Return up to N cards from your graveyard to your hand |
@@ -171,10 +181,10 @@ These are not tokens.
 | `[Reposition]` / `[Swap]` | Move an ally frontline ↔ back / swap with an ally. Martial exclusive. |
 | `[Reforge N Attr]` | On **one of your dice**, replace **any** N replaceable faces with N **synthetic** Attr faces from your pool (you pick slots and pool faces). No forge-draw. Mechanical exclusive. Distinct from `[Desynthesize]` and `[Cross forge]`. |
 | `[Cross forge N Y / Z]` | Same as `[Reforge]`, but the N slots must currently show **Y**; the installs are synthetic **Z**. Mechanical exclusive. |
-| `[Stamp]` | Re-fire a showing face’s roll effects (On roll, overloads, Overcharge, forge yield, equipment on-roll-symbol). No new rolled pip. Mechanical exclusive. |
+| `[Stamp]` | Re-fire a showing face’s roll effects (On roll, overloads, Overcharge, forge yield, equipment on-roll-symbol). No new rolled pip and no second copy of inherent extra pips. Mechanical exclusive. |
+| `[Reroll]` | Roll that die again during actions: On roll fires for the **new** face, then a usable attribute auto-banks (On absorb) unless the new face has `[Convert roll]`. Not `[Stamp]` (same showing face, no new pip). |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
 | `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
-| `[Reroll]` | Roll that die again during actions: On roll fires for the **new** face, then a usable attribute auto-banks (On absorb). Not `[Stamp]` (same showing face, no new pip). |
 | `[Retain]` | Keep a retainable die across the next roll |
 
 <!--
@@ -214,7 +224,7 @@ These are not effect replacements.
 | `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate). May include **Any**. |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
-| `On roll:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…” |
+| `On roll:` `While showing:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…”. `While showing:` is a continuous stance on the showing face, not a second On-roll trigger. |
 
 ---
 
@@ -262,6 +272,8 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Overcharge a kept face | `[Overcharge]` (hand-card spend) |
 | Install on them | `[Forge 1 Synthetic Corruption]` on the opponent’s die |
 | Extra attack damage | `[Empower]`, never `[Mark N Damage]` |
+| Convert this die’s roll (do not bank) | `[Convert roll]` |
+| Convert pool symbols to Natural | `[Convert N]` |
 | Unique consume/split closer | Spell it |
 
 When a new token is added to the rules, it gets a name and joins X. It does

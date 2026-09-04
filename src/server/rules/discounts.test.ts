@@ -45,7 +45,7 @@ describe("flexible attribute-pile discounts", () => {
   });
 
   it("reads live Tempo card costs", () => {
-    expect(getCard(SHIM_KIT)?.playCost).toEqual({ mechanical: 2 });
+    expect(getCard(SHIM_KIT)?.playCost).toEqual({ mechanical: 2, any: 1 });
   });
 
   const hybrid = { arcane: 1, any: 2 };

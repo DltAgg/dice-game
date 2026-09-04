@@ -4,21 +4,14 @@
   "name": "Lucent Choir",
   "kind": "synthetic",
   "symbol": "luminar",
-  "rulesText": "On roll: [Generate 1 Luminar].\nOn absorb, once per turn: [Empower 1] on an allied creature.",
-  "onRoll": [
+  "rulesText": "While showing: [Empower 1].",
+  "pips": 2,
+  "onRoll": [],
+  "onAbsorb": [],
+  "whileShowing": [
     {
-      "type": "generate-symbol",
-      "symbol": "luminar",
+      "type": "empower",
       "amount": 1
-    }
-  ],
-  "onAbsorb": [
-    {
-      "type": "grant-next-attack-bonus",
-      "amount": 1,
-      "target": {
-        "kind": "choose-ally"
-      }
     }
   ],
   "maxOverloads": 2,

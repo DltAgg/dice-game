@@ -4,13 +4,71 @@ import {
   getFaceCard,
   isSlotSilenced,
   slotCannotBeReplacedByForge,
+  whileShowingTotals,
   type Attribute,
   type DieId,
   type DieSlot,
   type FaceCardId,
   type GameState,
   type PlayerId,
+  type WhileShowingTotals,
 } from "@server";
+
+export type WhileShowingCue = {
+  readonly key: "pierce" | "empower" | "play-discount" | "forge-discount" | "reduce";
+  readonly label: string;
+};
+
+const CONVERT_ROLL_CUE = "Convert roll · pips not banked";
+
+/** Player-facing chips for `whileShowingTotals` — do not recompute stance in React. */
+export function whileShowingCues(totals: WhileShowingTotals): readonly WhileShowingCue[] {
+  const cues: WhileShowingCue[] = [];
+  if (totals.pierce > 0) {
+    cues.push({ key: "pierce", label: `Pierce ${String(totals.pierce)}` });
+  }
+  if (totals.empower > 0) {
+    cues.push({ key: "empower", label: `Empower ${String(totals.empower)}` });
+  }
+  if (totals.playDiscount > 0) {
+    cues.push({ key: "play-discount", label: `Discount ${String(totals.playDiscount)}` });
+  }
+  if (totals.forgeDiscount > 0) {
+    cues.push({ key: "forge-discount", label: `Discount ${String(totals.forgeDiscount)} forge` });
+  }
+  if (totals.reduce > 0) {
+    cues.push({ key: "reduce", label: `Reduce ${String(totals.reduce)}` });
+  }
+  return cues;
+}
+
+export function whileShowingStatusLine(totals: WhileShowingTotals): string | null {
+  const cues = whileShowingCues(totals);
+  return cues.length === 0 ? null : `While showing · ${cues.map((cue) => cue.label).join(" · ")}`;
+}
+
+export function whileShowingStatusForPlayer(
+  state: GameState,
+  playerId: PlayerId,
+): string | null {
+  return whileShowingStatusLine(whileShowingTotals(state, playerId));
+}
+
+/**
+ * Cue on a showing `[Convert roll]` face: that die's pips this roll do not bank.
+ * Hidden when every showing copy is silenced (convert does not fire; pips still generate).
+ */
+export function convertRollCueForFace(
+  state: GameState,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+): string | null {
+  if (getFaceCard(faceCardId)?.convertRoll !== true) return null;
+  const showing = showingSlotsForFace(state, playerId, faceCardId);
+  if (showing.length === 0) return null;
+  const live = showing.some((slot) => !isSlotSilenced(state, slot.dieId, slot.slotIndex));
+  return live ? CONVERT_ROLL_CUE : null;
+}
 
 export function pestilenceStatusLabel(count: number, faceCardId: FaceCardId): string | null {
   if (count <= 0) return null;

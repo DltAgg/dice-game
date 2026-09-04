@@ -4,30 +4,22 @@
   "name": "Pyre of Names",
   "kind": "synthetic",
   "symbol": "darkness",
-  "rulesText": "On roll: you may [Discard 1]; if you do, [Strike 2].\nOn absorb, once per turn: [Generate 1 Darkness].",
+  "rulesText": "On roll: [Convert roll]. [Drain 2].",
+  "pips": 2,
+  "convertRoll": true,
   "onRoll": [
     {
-      "type": "discard-cards",
-      "amount": 1,
-      "optional": true,
-      "then": [
-        {
-          "type": "damage",
-          "amount": 2,
-          "target": {
-            "kind": "choose-enemy"
-          }
-        }
-      ]
+      "type": "drain-life",
+      "amount": 2,
+      "target": {
+        "kind": "choose-enemy"
+      },
+      "with": {
+        "kind": "most-damaged-ally"
+      }
     }
   ],
-  "onAbsorb": [
-    {
-      "type": "generate-symbol",
-      "symbol": "darkness",
-      "amount": 1
-    }
-  ],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

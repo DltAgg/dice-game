@@ -47,10 +47,14 @@ describe("FORGE_CARD", () => {
     const ready = withHand(withPhase(newMatch(), "actions"), P1, [TOOLING_ORDER]);
     const dieId = ready.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("die");
-    const denied = advance(
-      ready,
-      forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [3, 4]),
-    );
+    const denied = advance(ready, {
+      type: "FORGE_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(ready, P1, 0),
+      dieId,
+      slotIndexes: [3, 4],
+      faceCardId: naturalFaceId("mechanical"),
+    });
     expect(denied.ok).toBe(false);
   });
 });

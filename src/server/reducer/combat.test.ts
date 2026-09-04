@@ -16,7 +16,7 @@ import {
   withTokens,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { CRANK, DRIVE_SHAFT, KINDLE, RETOOL, VIGIL } from "../testing/tempoCatalogue.js";
+import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL, KINDLE, KINDLE_FUEL, RETOOL, RETOOL_FUEL, VIGIL } from "../testing/tempoCatalogue.js";
 
 function combatState(creatureIndex: number, tokens: AttributeTokens) {
   const state = withPhase(newMatch(), "actions");
@@ -25,7 +25,7 @@ function combatState(creatureIndex: number, tokens: AttributeTokens) {
 
 describe("attacking", () => {
   it("damages the target when the attacker holds the discarded attributes", () => {
-    const state = combatState(0, { mechanical: 1 });
+    const state = combatState(0, CRANK_FUEL);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
 
@@ -71,7 +71,7 @@ describe("attacking", () => {
   });
 
   it("burns Spend tokens on Retool without emptying the Requires gate", () => {
-    const state = combatState(0, { mechanical: 1, luminar: 1 });
+    const state = combatState(0, RETOOL_FUEL);
     const attackerId = creatureIdAt(state, P1, 0);
 
     const after = expectOk(
@@ -89,7 +89,7 @@ describe("attacking", () => {
   });
 
   it("burns discarded tokens when Drive Shaft is declared", () => {
-    const state = combatState(2, { mechanical: 1 });
+    const state = combatState(2, DRIVE_SHAFT_FUEL);
     const attackerId = creatureIdAt(state, P1, 2);
 
     const after = expectOk(
@@ -138,7 +138,7 @@ describe("attacking", () => {
   });
 
   it("lets a creature attack again on the following turn", () => {
-    const state = combatState(0, { mechanical: 1 });
+    const state = combatState(0, CRANK_FUEL);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const first = expectOk(
@@ -146,7 +146,7 @@ describe("attacking", () => {
     );
     const p2Turn = expectOk(advance(first, { type: "END_TURN", playerId: P1 }));
     const p1TurnAgain = expectOk(advance(p2Turn, { type: "END_TURN", playerId: P2 }));
-    const refreshed = withTokens(withPhase(p1TurnAgain, "actions"), attackerId, { mechanical: 1 });
+    const refreshed = withTokens(withPhase(p1TurnAgain, "actions"), attackerId, CRANK_FUEL);
     const second = advance(refreshed, {
       type: "ATTACK",
       playerId: P1,
@@ -158,9 +158,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack outside the actions phase", () => {
-    const state = withTokens(withPhase(newMatch(), "roll"), creatureIdAt(newMatch(), P1, 0), {
-      mechanical: 1,
-    });
+    const state = withTokens(withPhase(newMatch(), "roll"), creatureIdAt(newMatch(), P1, 0), CRANK_FUEL);
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
@@ -173,7 +171,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack a friendly creature", () => {
-    const state = combatState(0, { mechanical: 1 });
+    const state = combatState(0, CRANK_FUEL);
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
@@ -186,7 +184,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack with a defeated creature", () => {
-    const state = withDefeatedCreature(combatState(0, { mechanical: 1 }), creatureIdAt(combatState(0, {}), P1, 0));
+    const state = withDefeatedCreature(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P1, 0));
     const attackerId = creatureIdAt(state, P1, 0);
     const result = advance(state, {
       type: "ATTACK",
@@ -200,7 +198,7 @@ describe("attacking", () => {
   });
 
   it("prevents damage one point at a time and is spent doing so", () => {
-    const state = withShields(combatState(0, { mechanical: 1 }), creatureIdAt(combatState(0, {}), P2, 0), 1);
+    const state = withShields(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P2, 0), 1);
     const targetId = creatureIdAt(state, P2, 0);
     const after = expectOk(
       advance(state, {
@@ -216,7 +214,7 @@ describe("attacking", () => {
   });
 
   it("can absorb an attack outright, leaving the creature untouched", () => {
-    const base = combatState(0, { mechanical: 1 });
+    const base = combatState(0, CRANK_FUEL);
     const targetId = creatureIdAt(base, P2, 0);
     const shielded = {
       ...base,
@@ -241,7 +239,7 @@ describe("attacking", () => {
   });
 
   it("survives the end of turn", () => {
-    const state = withDamage(combatState(0, { mechanical: 1 }), creatureIdAt(combatState(0, {}), P2, 0), 5);
+    const state = withDamage(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P2, 0), 5);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -255,7 +253,7 @@ describe("attacking", () => {
   });
 
   it("stops a melee attack from reaching the back row", () => {
-    const state = combatState(0, { mechanical: 1 });
+    const state = combatState(0, CRANK_FUEL);
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
@@ -277,7 +275,7 @@ describe("attacking", () => {
     let state = withPhase(match, "actions");
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 1));
-    state = withTokens(state, creatureIdAt(state, P1, 0), { mechanical: 1 });
+    state = withTokens(state, creatureIdAt(state, P1, 0), CRANK_FUEL);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -291,7 +289,7 @@ describe("attacking", () => {
   });
 
   it("defeats a creature whose damage reaches its life", () => {
-    const state = withDamage(combatState(0, { mechanical: 1 }), creatureIdAt(combatState(0, {}), P2, 0), 12);
+    const state = withDamage(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P2, 0), 12);
     const targetId = creatureIdAt(state, P2, 0);
     const after = expectOk(
       advance(state, {
@@ -318,7 +316,7 @@ describe("attacking", () => {
     const legendaryId = legendaryCreatureOf(state, P2)?.id;
     if (legendaryId === undefined) throw new Error("legendary");
     state = withDamage(state, legendaryId, 21);
-    state = withTokens(state, creatureIdAt(state, P1, 2), { mechanical: 1 });
+    state = withTokens(state, creatureIdAt(state, P1, 2), DRIVE_SHAFT_FUEL);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -333,7 +331,7 @@ describe("attacking", () => {
   });
 
   it("does not end the match when only non-legendaries fall", () => {
-    const state = withDamage(combatState(2, { mechanical: 1 }), creatureIdAt(combatState(2, {}), P2, 0), 12);
+    const state = withDamage(combatState(2, DRIVE_SHAFT_FUEL), creatureIdAt(combatState(2, {}), P2, 0), 12);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -359,7 +357,7 @@ describe("attacking", () => {
     const legendaryId = legendaryCreatureOf(state, P2)?.id;
     if (legendaryId === undefined) throw new Error("legendary");
     state = withDamage(state, legendaryId, 21);
-    state = withTokens(state, creatureIdAt(state, P1, 2), { mechanical: 1 });
+    state = withTokens(state, creatureIdAt(state, P1, 2), DRIVE_SHAFT_FUEL);
     state = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -380,8 +378,8 @@ describe("Kindle follow-up", () => {
     const woundedId = creatureIdAt(newMatch(), P1, 0);
     let state = withDamage(withPhase(newMatch(), "actions"), woundedId, 2);
     const attackerId = creatureIdAt(state, P1, 1);
-    state = withTokens(state, attackerId, { luminar: 1 });
-    const after = expectOk(
+    state = withTokens(state, attackerId, KINDLE_FUEL);
+    const afterAttack = expectOk(
       advance(state, {
         type: "ATTACK",
         playerId: P1,
@@ -390,6 +388,16 @@ describe("Kindle follow-up", () => {
         targetId: creatureIdAt(state, P2, 0),
       }),
     );
+    let after = afterAttack;
+    while (after.pendingDecision?.type === "choose-creature") {
+      after = expectOk(
+        advance(after, {
+          type: "RESOLVE_CHOOSE_CREATURE",
+          playerId: P1,
+          creatureId: woundedId,
+        }),
+      );
+    }
     expect(after.creatures[woundedId]?.damage).toBe(1);
   });
 });

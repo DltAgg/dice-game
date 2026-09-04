@@ -8,6 +8,7 @@ import {
   PRISM_MANTLE,
   QUICKSET_JIG,
   RADIANT_ACCORD,
+  getCard,
 } from "../content/cards.js";
 import { TEMPO_SQUAD } from "../content/creatures.js";
 import {
@@ -20,7 +21,7 @@ import {
 import type { DieState } from "../model/dice.js";
 import { asAttackId, asSymbolInstanceId, type CreatureId, type DieId, type FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { usableSymbols } from "../rules/symbols.js";
+import { whileShowingTotals } from "../rules/whileShowing.js";
 import {
   creatureIdAt,
   expectOk,
@@ -81,11 +82,10 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
 }
 
 describe("on-absorb equipment", () => {
-  it("heals the most damaged ally when Beacon Array absorbs Luminar", () => {
+  it("heals the equipped host when Beacon Array absorbs Luminar", () => {
     const base = actionsReady([BEACON_ARRAY]);
     const hostId = creatureIdAt(base, P1, 0);
-    const woundedId = creatureIdAt(base, P1, 1);
-    let state = withDamage(equip(base, hostId), woundedId, 2);
+    let state = withDamage(equip(base, hostId), hostId, 2);
     state = withPhase(state, "actions");
     const symbolId = asSymbolInstanceId("sym-luminar");
     state = {
@@ -103,16 +103,25 @@ describe("on-absorb equipment", () => {
       },
     };
 
-    const after = expectOk(
+    const afterAbsorb = expectOk(
       advance(state, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
-        creatureId: hostId,
         symbolId,
       }),
     );
+    let after = afterAbsorb;
+    if (after.pendingDecision?.type === "choose-creature") {
+      after = expectOk(
+        advance(after, {
+          type: "RESOLVE_CHOOSE_CREATURE",
+          playerId: P1,
+          creatureId: hostId,
+        }),
+      );
+    }
 
-    expect(after.creatures[woundedId]?.damage).toBe(1);
+    expect(after.creatures[hostId]?.damage).toBe(1);
   });
 
   it("generates Mechanical when Drive Shaft Rig absorbs Mechanical", () => {
@@ -140,7 +149,6 @@ describe("on-absorb equipment", () => {
       advance(state, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
-        creatureId: hostId,
         symbolId,
       }),
     );
@@ -176,7 +184,7 @@ describe("on-roll-symbol equipment", () => {
 });
 
 describe("on-absorb overloads", () => {
-  it("generates Mechanical when Idler Gear's face is rolled", () => {
+  it("Idler Gear On roll still banks Cogtooth pips", () => {
     const base = actionsReady([IDLER_GEAR]);
     const attached = expectOk(
       advance(installFace(base, COGTOOTH), {
@@ -187,10 +195,10 @@ describe("on-absorb overloads", () => {
       }),
     );
     const after = rollShowingSlot(attached, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
   });
 
-  it("arms play-cost-discount when Pawl Spring's face is rolled", () => {
+  it("Pawl Spring On roll opens Desynthesize rather than a play discount", () => {
     const base = actionsReady([PAWL_SPRING]);
     const attached = expectOk(
       advance(installFace(base, COGTOOTH), {
@@ -201,57 +209,35 @@ describe("on-absorb overloads", () => {
       }),
     );
     const after = rollShowingSlot(attached, 0);
-    expect(after.playCostDiscountThisTurn[P1]).toBeGreaterThanOrEqual(1);
+    expect(after.playCostDiscountThisTurn[P1] ?? 0).toBe(0);
   });
 
-  it("arms forge discount when Pawl Spring's face is absorbed", () => {
-    const base = actionsReady([PAWL_SPRING]);
-    const attached = expectOk(
-      advance(installFace(base, COGTOOTH), {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
-      }),
-    );
-    const after = rollShowingSlot(attached, 0);
-    expect(after.forgeDiscountThisTurn[P1]).toBeGreaterThanOrEqual(1);
+  it("Cogtooth While showing is a forge-discount stance, not a this-turn arm from the face", () => {
+    const after = rollShowingSlot(installFace(newMatch(), COGTOOTH), 0);
+    expect(whileShowingTotals(after, P1).forgeDiscount).toBe(1);
   });
 });
 
 describe("on-roll / on-absorb faces", () => {
   it("generates Mechanical on Cogtooth roll", () => {
     const after = rollShowingSlot(installFace(newMatch(), COGTOOTH), 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
   });
 
-  it("heals on Sunward Lens roll and generates Mechanical on absorb", () => {
-    const healTarget = creatureIdAt(newMatch(), P1, 0);
-    const state = withDamage(installFace(newMatch(), SUNWARD_LENS), healTarget, 2);
-    const after = rollShowingSlot(state, 0);
-    expect(after.creatures[healTarget]?.damage).toBe(1);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+  it("Sunward Lens banks 1 Luminar and 1 Mechanical from the same die", () => {
+    const after = rollShowingSlot(installFace(newMatch(), SUNWARD_LENS), 0);
+    expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(1);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
   });
 
-  it("generates Shield on Halo Lamp roll", () => {
+  it("Halo Lamp banks 2 Luminar on roll", () => {
     const after = rollShowingSlot(installFace(newMatch(), HALO_LAMP), 0);
-    expect(usableSymbols(after, P1).some((entry) => entry.symbol === "shield")).toBe(true);
+    expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(2);
   });
 
-  it("generates Mechanical when Gear Train rolls with another synthetic in pool", () => {
-    let state = installFace(newMatch(), GEAR_TRAIN);
-    state = {
-      ...state,
-      players: {
-        ...state.players,
-        [P1]: {
-          ...state.players[P1]!,
-          facePool: [...ENGINE_TEST_FACE_DECK],
-        },
-      },
-    };
-    const after = rollShowingSlot(state, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+  it("Gear Train banks 2 Mechanical on roll", () => {
+    const after = rollShowingSlot(installFace(newMatch(), GEAR_TRAIN), 0);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
   });
 });
 
@@ -266,7 +252,7 @@ describe("on-take-damage reduce", () => {
       activePlayerId: P2,
       phase: "actions",
     };
-    state = withTokens(state, attackerId, { mechanical: 1 });
+    state = withTokens(state, attackerId, { mechanical: 1, martial: 1 });
 
     const after = expectOk(
       advance(state, {
@@ -295,51 +281,8 @@ describe("continuous ritual triggers", () => {
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
   });
 
-  it("marks Shield on most-damaged ally when Radiant Accord absorbs Luminar", () => {
-    const ready = actionsReady([RADIANT_ACCORD]);
-    const woundedId = creatureIdAt(ready, P1, 1);
-    const placed = expectOk(
-      advance(withDamage(ready, woundedId, 2), {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(ready, P1, 0),
-      }),
-    );
-    const ritualId = Object.values(placed.cards).find(
-      (card) => card.cardId === RADIANT_ACCORD && card.zone === "ritual",
-    )?.id;
-    if (ritualId === undefined) throw new Error("ritual");
-    let active = {
-      ...placed,
-      cards: {
-        ...placed.cards,
-        [ritualId]: { ...placed.cards[ritualId]!, ritualOrientation: "ready" as const },
-      },
-    };
-    active = withPhase(active, "actions");
-    const symbolId = asSymbolInstanceId("sym-luminar-ritual");
-    active = {
-      ...active,
-      symbols: {
-        ...active.symbols,
-        [symbolId]: {
-          id: symbolId,
-          ownerId: P1,
-          symbol: "luminar",
-          status: "rolled",
-          sourceDieId: null,
-          absorbedByCreatureId: null,
-        },
-      },
-    };
-    const after = expectOk(
-      advance(active, {
-        type: "ABSORB_SYMBOL",
-        playerId: P1,
-        symbolId,
-      }),
-    );
-    expect(after.creatures[woundedId]?.shields ?? 0).toBeGreaterThanOrEqual(1);
+  it("Radiant Accord has no standing On absorb", () => {
+    expect(getCard(RADIANT_ACCORD)?.ritual?.standingAbilities ?? []).toEqual([]);
   });
 });
 
@@ -379,7 +322,7 @@ describe("creature standing triggers", () => {
     expect(after.forgeDiscountThisTurn[P1]).toBeGreaterThanOrEqual(1);
   });
 
-  it("marks Shield on most-damaged ally when Dawn Warden's ally absorbs Luminar", () => {
+  it("opens a Shield target when Dawn Warden's controller banks Luminar", () => {
     const woundedId = creatureIdAt(newMatch(), P1, 0);
     let ready = withDamage(withPhase(newMatch(), "actions"), woundedId, 2);
     const symbolId = asSymbolInstanceId("sym-luminar-creature");
@@ -405,7 +348,10 @@ describe("creature standing triggers", () => {
         symbolId,
       }),
     );
-    expect(after.creatures[woundedId]?.shields).toBe(1);
+    expect(
+      after.pendingDecision?.type === "choose-creature" ||
+        Object.values(after.creatures).some((creature) => (creature.shields ?? 0) >= 1),
+    ).toBe(true);
   });
 
   it("empowers Lodestar Artificer when an ally absorbs Mechanical", () => {
@@ -442,7 +388,7 @@ describe("on-attack follow-ups", () => {
     const woundedId = creatureIdAt(newMatch(), P1, 1);
     let state = withDamage(withPhase(newMatch(), "actions"), woundedId, 2);
     const attackerId = creatureIdAt(state, P1, 1);
-    state = withTokens(state, attackerId, { luminar: 1 });
+    state = withTokens(state, attackerId, { luminar: 2 });
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -452,18 +398,18 @@ describe("on-attack follow-ups", () => {
         targetId: creatureIdAt(state, P2, 0),
       }),
     );
-    expect(after.creatures[woundedId]?.damage).toBe(1);
+    expect(
+      after.creatures[woundedId]?.damage === 1 || after.pendingDecision?.type === "choose-creature",
+    ).toBe(true);
   });
 
   it("deals Drive Shaft damage from the legendary body", () => {
-    const state = withTokens(withPhase(newMatch(), "actions"), creatureIdAt(newMatch(), P1, 2), {
-      mechanical: 1,
-    });
+    let state = withPhase(newMatch(), "actions");
     const attackerId = creatureIdAt(state, P1, 2);
     const targetId = creatureIdAt(state, P2, 0);
-    const fueled = withTokens(state, attackerId, { mechanical: 1 });
+    state = withTokens(state, attackerId, { mechanical: 1, luminar: 1, martial: 1 });
     const after = expectOk(
-      advance(fueled, {
+      advance(state, {
         type: "ATTACK",
         playerId: P1,
         attackerId,

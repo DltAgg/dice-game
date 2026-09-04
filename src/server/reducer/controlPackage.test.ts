@@ -36,7 +36,6 @@ import {
   resolveOpenChain,
   withActivePlayer,
   withAttributePool,
-  withDamage,
   withPile,
   withHand,
   withPhase,
@@ -107,41 +106,50 @@ function placedRitualReady(state: GameState, playerId: PlayerId): GameState {
 }
 
 describe("Arcane Control package", () => {
-  it("Thread the Weave opens an Insight look at the top of the deck", () => {
-    const ready = withDeck(readyToPlay([THREAD_THE_WEAVE]), P1, [
-      HOLLOW_TIDE,
-      GLOOMDRAFT,
-      PALL_OF_ASH,
-    ]);
-    const played = advanceResolvingChain(ready, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(ready, P1, 0),
-    });
-    const state = expectOk(played);
-    expect(state.pendingDecision?.type).toBe("look-top-deck");
-  });
-
-  it("Riftmark drains an enemy into the most damaged ally", () => {
-    const base = readyToPlay([RIFTMARK]);
-    const ally = creatureIdAt(base, P1, 0);
-    const enemy = creatureIdAt(base, P2, 0);
-    const ready = withDamage(base, ally, 3);
-    let state = expectOk(
+  it("Thread the Weave opens a choice of opposing equipment", () => {
+    const opponentEquip = withActivePlayer(
+      withPile(withHand(withPhase(controlMatch(), "actions"), P2, [CINERARY_LOCKET]), P2, 10),
+      P2,
+    );
+    const bearer = creatureIdAt(opponentEquip, P2, 0);
+    const equipped = resolveOpenChain(
+      expectOk(
+        advance(opponentEquip, {
+          type: "PLAY_CARD",
+          playerId: P2,
+          cardInstanceId: handCardIdAt(opponentEquip, P2, 0),
+          declaredTargetCreatureId: bearer,
+        }),
+      ),
+    );
+    const ready = withActivePlayer(
+      withPile(withHand(equipped, P1, [THREAD_THE_WEAVE]), P1, 10),
+      P1,
+    );
+    const state = expectOk(
       advanceResolvingChain(ready, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(state.pendingDecision?.type).toBe("choose-creature");
-    state = resolveOpenChain(
+    expect(state.pendingDecision?.type).toBe("choose-equipment");
+  });
+
+  it("Riftmark marks Shield on an ally when it activates", () => {
+    const placed = placedRitualReady(readyToPlay([RIFTMARK]), P1);
+    const ritualId = ritualsOf(placed, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("ritual");
+    const activated = resolveOpenChain(
       expectOk(
-        advance(state, { type: "RESOLVE_CHOOSE_CREATURE", playerId: P1, creatureId: enemy }),
+        advance(placed, {
+          type: "ACTIVATE_RITUAL",
+          playerId: P1,
+          cardInstanceId: ritualId,
+        }),
       ),
     );
-    expect(state.creatures[enemy]?.damage).toBe(2);
-    expect(state.creatures[ally]?.damage).toBe(1);
+    expect(activated.pendingDecision?.type).toBe("choose-creature");
   });
 
   it("Unwrite destroys a ritual the opponent controls", () => {
@@ -244,33 +252,20 @@ describe("Darkness Control package", () => {
     expect(state.creatures[enemy]?.damage).toBe(3);
   });
 
-  it("Nightmarrow Pact generates Darkness when its controller discards", () => {
-    const pactReady = placedRitualReady(readyToPlay([NIGHTMARROW_PACT]), P1);
-    const withDraws = withDeck(withHand(pactReady, P1, [GLOOMDRAFT]), P1, [
-      HOLLOW_TIDE,
-      PALL_OF_ASH,
-    ]);
-    const played = expectOk(
-      advanceResolvingChain(withDraws, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(withDraws, P1, 0),
-      }),
-    );
-    expect(played.pendingDecision?.type).toBe("discard-cards");
-    const toDiscard = played.players[P1]?.hand[0];
-    if (toDiscard === undefined) throw new Error("nothing to discard");
-    const before = played.players[P1]?.attributePool.darkness ?? 0;
-    const discarded = resolveOpenChain(
+  it("Nightmarrow Pact opens Drain on activate", () => {
+    const placed = placedRitualReady(readyToPlay([NIGHTMARROW_PACT]), P1);
+    const ritualId = ritualsOf(placed, P1)[0]?.id;
+    if (ritualId === undefined) throw new Error("ritual");
+    const activated = resolveOpenChain(
       expectOk(
-        advance(played, {
-          type: "RESOLVE_DISCARD",
+        advance(placed, {
+          type: "ACTIVATE_RITUAL",
           playerId: P1,
-          cardInstanceIds: [toDiscard],
+          cardInstanceId: ritualId,
         }),
       ),
     );
-    expect(discarded.players[P1]?.attributePool.darkness ?? 0).toBe(before + 1);
+    expect(activated.pendingDecision?.type).toBe("choose-creature");
   });
 
   it("Echo of the Buried replays an Instant from the graveyard", () => {
@@ -348,8 +343,9 @@ describe("Darkness Control package", () => {
     const GRAVE_REACH = asAttackId("attack-gravemarrow-shade-grave-reach");
     const LEY_SURGE = asAttackId("attack-riftscribe-adept-ley-surge");
     let state = withAttributePool(withPhase(controlMatch(), "actions"), P1, {
-      arcane: 1,
+      arcane: 2,
       darkness: 2,
+      martial: 1,
     });
     state = withDeck(state, P2, [GLOOMDRAFT, PALL_OF_ASH, HOLLOW_TIDE]);
     state = withDeck(state, P1, [THREAD_THE_WEAVE, HOLLOW_TIDE, PALL_OF_ASH]);
@@ -377,8 +373,8 @@ describe("Darkness Control package", () => {
       }),
     );
     expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
-    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(1);
-    expect(state.players[P2]?.deck).toHaveLength(1);
+    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(2);
+    expect(state.players[P2]?.deck).toHaveLength(3);
 
     state = expectOk(
       advanceResolvingChain(state, {
@@ -391,6 +387,6 @@ describe("Darkness Control package", () => {
     );
     expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(0);
     expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
-    expect(state.pendingDecision?.type).toBe("look-top-deck");
+    expect(state.players[P1]?.hand.length).toBeGreaterThan(0);
   });
 });

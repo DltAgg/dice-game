@@ -13,6 +13,7 @@ import {
 } from "../model/symbols.js";
 import type { Draft } from "../reducer/draft.js";
 import { isCreatureSilenced } from "./silence.js";
+import { whileShowingTotals } from "./whileShowing.js";
 
 export type DiscountMatch = {
   readonly amount: number;
@@ -265,7 +266,8 @@ export function discountedPlayRequirement(
 ): { readonly cost: SymbolRequirement; readonly matches: readonly DiscountMatch[] } {
   const matches = matchingPlayCostDiscounts(state, playerId, definition);
   const armed = state.playCostDiscountThisTurn[playerId] ?? 0;
-  const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed;
+  const stance = whileShowingTotals(state, playerId).playDiscount;
+  const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed + stance;
   const pile = state.players[playerId]?.attributePool ?? {};
   return { cost: reduceRequirement(baseCost, discount, pile), matches };
 }
@@ -276,6 +278,7 @@ export function attackIgnoreShieldAmount(
   playerId: PlayerId,
 ): number {
   let amount = state.ignoreShieldThisTurn[playerId] ?? 0;
+  amount += whileShowingTotals(state, playerId).pierce;
   const attacker = state.creatures[attackerId];
   if (attacker === undefined) return amount;
   if (isCreatureSilenced(state as GameState, attackerId)) return amount;

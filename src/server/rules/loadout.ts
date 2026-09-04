@@ -1,6 +1,6 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { getFaceCard } from "../content/faces.js";
+import { BASIC_FACE_CARDS, getFaceCard } from "../content/faces.js";
 import { attributeAllowsNaturalFaces } from "../model/attributes.js";
 import { FACE_SLOTS_PER_DIE, type StartingDiceLayout } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
@@ -31,14 +31,20 @@ export function isStartingDiceLayout(value: unknown): value is StartingDiceLayou
 }
 
 /**
- * Dual-kind naturals and untyped Shield. These opening slots do not consume
- * the face deck. Unknown ids are not basics.
+ * The eight identity naturals plus Shield. Named naturals (Dawnwright) are
+ * opening specials and consume the face deck.
  */
 export function isOpeningBasicFace(id: FaceCardId): boolean {
+  return BASIC_FACE_CARDS.some((face) => face.id === id);
+}
+
+/** On roll, `[Convert roll]`, or While showing — not extra pips alone (spec `025`). */
+export function countsTowardOpeningOnRollCap(id: FaceCardId): boolean {
   const definition = getFaceCard(id);
   if (definition === undefined) return false;
-  if (definition.kind === "untyped") return definition.symbol === SHIELD;
-  return definition.kind === "natural";
+  if (definition.onRoll.length > 0) return true;
+  if (definition.convertRoll === true) return true;
+  return (definition.whileShowing?.length ?? 0) > 0;
 }
 
 function flattenStartingDice(startingDice: StartingDiceLayout): readonly FaceCardId[] {
@@ -108,7 +114,7 @@ function validateOneDie(
     }
     if (definition.symbol === SHIELD) shields += 1;
     if (definition.kind === "synthetic") synthetics += 1;
-    if (definition.onRoll.length > 0) onRollFaces += 1;
+    if (countsTowardOpeningOnRollCap(id)) onRollFaces += 1;
     if (isAttributeSymbol(definition.symbol)) {
       byAttribute.set(definition.symbol, (byAttribute.get(definition.symbol) ?? 0) + 1);
     }

@@ -110,6 +110,23 @@ describe("catalogue JSON schemas", () => {
     ).toBe(false);
   });
 
+  it("rejects Shield bonusPips", () => {
+    expect(
+      validateFace({
+        id: "face-untyped-shield",
+        name: "Shield",
+        kind: "untyped",
+        symbol: "shield",
+        rulesText: "",
+        onRoll: [],
+        onAbsorb: [],
+        maxOverloads: 1,
+        forgeRestriction: null,
+        bonusPips: { symbol: "luminar", amount: 1 },
+      }),
+    ).toBe(false);
+  });
+
   it("rejects an untyped face that is not Shield", () => {
     expect(
       validateFace({

@@ -1,10 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { GLOOMDRAFT, WARD_CHIT } from "../content/cards.js";
-import { PYRE_OF_NAMES } from "../content/faces.js";
+import { SIGIL_FLARE } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { handOf } from "../rules/cards.js";
 import {
   expectOk,
   handCardIdAt,
@@ -17,7 +16,7 @@ import {
 } from "../testing/scenario.js";
 import { advance } from "./reduce.js";
 
-const DARKNESS_SLOT = 0;
+const ARCANE_SLOT = 0;
 const SHIELD_SLOT = 4;
 
 function dieIdOf(state: GameState, index = 0): DieId {
@@ -32,62 +31,32 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function installPyre(state: GameState): GameState {
+function installSigil(state: GameState): GameState {
   const dieId = dieIdOf(state);
   const die = state.dice[dieId];
   if (die === undefined) throw new Error("die");
   const slots = die.slots.map((slot, index) =>
-    index === DARKNESS_SLOT
-      ? { ...slot, faceCardId: PYRE_OF_NAMES, faceCardOwnerId: P1 }
+    index === ARCANE_SLOT
+      ? { ...slot, faceCardId: SIGIL_FLARE, faceCardOwnerId: P1 }
       : slot,
   );
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
-function rollPyre(state: GameState): GameState {
+function rollSigil(state: GameState): GameState {
   let rolled = withPhase(state, "roll");
-  rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: DARKNESS_SLOT });
+  rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: ARCANE_SLOT });
   rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: SHIELD_SLOT });
-  return expectOk(advanceResolvingChain(rolled, { type: "ROLL_DICE", playerId: P1 }));
+  return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
 describe("optional pending choices", () => {
-  it("Pyre of Names opens an optional discard you can decline without striking", () => {
-    const ready = installPyre(withHand(newMatch(), P1, [WARD_CHIT]));
-    const rolled = rollPyre(ready);
+  it("Sigil Flare convert opens a Strike target choice", () => {
+    const rolled = rollSigil(installSigil(newMatch()));
     expect(rolled.pendingDecision).toMatchObject({
-      type: "discard-cards",
-      amount: 1,
-      optional: true,
+      type: "choose-creature",
     });
-    const handBefore = [...(rolled.players[P1]?.hand ?? [])];
-
-    const declined = expectOk(
-      advance(rolled, { type: "RESOLVE_DISCARD", playerId: P1, cardInstanceIds: [] }),
-    );
-
-    expect(declined.pendingDecision).toBeNull();
-    expect(declined.players[P1]?.hand).toEqual(handBefore);
-    expect(handOf(declined, P1).map((card) => card.cardId)).toEqual([WARD_CHIT]);
-  });
-
-  it("accepting Pyre of Names discard queues the Strike rider", () => {
-    const ready = installPyre(withHand(newMatch(), P1, [WARD_CHIT]));
-    const rolled = rollPyre(ready);
-    const discarded = expectOk(
-      advance(rolled, {
-        type: "RESOLVE_DISCARD",
-        playerId: P1,
-        cardInstanceIds: [handCardIdAt(rolled, P1, 0)],
-      }),
-    );
-    expect(discarded.pendingDecision?.type).toBe("choose-creature");
-    expect(
-      discarded.pendingDecision?.type === "choose-creature"
-        ? discarded.pendingDecision.optional
-        : undefined,
-    ).not.toBe(true);
-    expect(handOf(discarded, P1)).toHaveLength(0);
+    expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
   });
 
   it("required Gloomdraft discard cannot be declined", () => {

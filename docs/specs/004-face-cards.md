@@ -1,8 +1,9 @@
 # 004 — Face cards and the face deck
 
-Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; On roll / On absorb
-wired where modellable (`011`–`013`). Remaining: empty print (Great Spark /
-Rekindle) — [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; spec `025` roll
+physics (inherent pips, `[Convert roll]`, While showing, geometry). Face On
+absorb is retired. Remaining: empty print (Great Spark / Rekindle) —
+[`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
 Derived from the `Face card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, node `2:13`).
@@ -70,38 +71,40 @@ capacity 1. Shield is not an attribute and is not Natural — `On absorb Natural
 
 Twelve synthetics — three per archetype attribute (Mechanical, Luminar, Arcane,
 Darkness) so a 12-card face deck can run either pair inside the 3-per-attribute
-cap. All `maxOverloads: 2`, no forge restriction. Every `On absorb` line prints
-`once per turn` (`onAbsorbPrintPolicy.test.ts`).
+cap. All `maxOverloads: 2`, no forge restriction. Named specials produce **more
+than 1 inherent pip** (spec `025`). Face `onAbsorb` is empty.
 
 **Tempo (Mechanical + Luminar)**
 
-| Id | Name | Symbol | On roll | On absorb |
+| Id | Name | Symbol | Pips | Window |
 |---|---|---|---|---|
-| `face-synthetic-cogtooth` | Cogtooth | Mechanical | `[Generate 1 Mechanical]` | `[Discount 1]` forge |
-| `face-synthetic-gear-train` | Gear Train | Mechanical | If you have another Synthetic symbol in the Pool, `[Generate 1 Mechanical]` | `[Double]` |
-| `face-synthetic-mainspring` | Mainspring | Mechanical | `[Empower 1]` | `[Reforge 1 Mechanical]` any faces on one of your dice |
-| `face-synthetic-halo-lamp` | Halo Lamp | Luminar | `[Generate 1 Shield]` | `[Mark 2 Shield]` on an allied creature |
-| `face-synthetic-lucent-choir` | Lucent Choir | Luminar | `[Generate 1 Luminar]` | `[Empower 1]` on an allied creature |
-| `face-synthetic-sunward-lens` | Sunward Lens | Luminar | `[Heal 1]` on your most damaged creature | `[Generate 1 Mechanical]` |
+| `face-synthetic-cogtooth` | Cogtooth | Mechanical | 2 Mechanical | While showing: `[Discount 1]` forge |
+| `face-synthetic-gear-train` | Gear Train | Mechanical | 2 Mechanical | On roll: if your other die shows the same attribute, `[Double]` |
+| `face-synthetic-mainspring` | Mainspring | Mechanical | 2 Mechanical | On roll: `[Convert roll]`. `[Reforge 1 Mechanical]` |
+| `face-synthetic-halo-lamp` | Halo Lamp | Luminar | 2 Luminar | While showing: `[Pierce 1]` |
+| `face-synthetic-lucent-choir` | Lucent Choir | Luminar | 2 Luminar | While showing: `[Empower 1]` |
+| `face-synthetic-sunward-lens` | Sunward Lens | Luminar | 1 Luminar + 1 Mechanical | Dual-pip (inherent bonus pip) |
 
 **Control (Arcane + Darkness)**
 
-| Id | Name | Symbol | On roll | On absorb |
+| Id | Name | Symbol | Pips | Window |
 |---|---|---|---|---|
-| `face-synthetic-augur-glass` | Augur Glass | Arcane | `[Generate 1 Arcane]` | `[Insight 2]` |
-| `face-synthetic-sigil-flare` | Sigil Flare | Arcane | `[Strike 1]` | `[Draw 1]` |
-| `face-synthetic-ward-lattice` | Ward Lattice | Arcane | `[Insight 1]` | `[Mark 1 Shield]` on an allied creature you choose |
-| `face-synthetic-gloomwell` | Gloomwell | Darkness | `[Generate 1 Arcane]` | your opponent `[Mill 2]` |
-| `face-synthetic-ossuary` | Ossuary | Darkness | your opponent `[Mill 1]` | `[Recall 1]` that costs 2 or less |
-| `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | you may `[Discard 1]`; if you do, `[Strike 2]` | `[Generate 1 Darkness]` |
+| `face-synthetic-augur-glass` | Augur Glass | Arcane | 2 Arcane | While showing: `[Discount 1]` |
+| `face-synthetic-sigil-flare` | Sigil Flare | Arcane | 2 Arcane | On roll: `[Convert roll]`. `[Strike 2]` |
+| `face-synthetic-ward-lattice` | Ward Lattice | Arcane | 2 Arcane | On roll: if your other die shows the same attribute, `[Insight 2]` |
+| `face-synthetic-gloomwell` | Gloomwell | Darkness | 1 Darkness + 1 Arcane | Dual-pip (inherent bonus pip) |
+| `face-synthetic-ossuary` | Ossuary | Darkness | 2 Darkness | On roll: `[Recall 1]` that costs 2 or less |
+| `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | 2 Darkness | On roll: `[Convert roll]`. `[Drain 2]` |
 
-**Dual-pip faces.** A face carries one inherent `symbol`, so a face that pays
-in two colours shows its own pip and **generates the partner** on roll.
-Gloomwell is the Synthetic version of that slot: it shows Darkness and pays
-`[Generate 1 Arcane]`, which is exactly what Control's two-colour gates
-(Graven Summons, Nightmarrow Pact, Lightless Verdict) are short of. It is
-deliberately **not** another Generate-same face — Cogtooth, Lucent Choir, and
-Augur Glass already hold that cycle.
+**Dual-pip faces.** A face carries one inherent `symbol`. Extra inherent pips
+of a partner colour are `bonusPips` (not `[Generate]`). Gloomwell shows
+Darkness and also produces 1 Arcane — fuel for Control's two-colour gates
+(Graven Summons, Nightmarrow Pact, Lightless Verdict). Sunward Lens is Tempo's
+synthetic mirror (Luminar showing, Mechanical bonus). Dawnwright is the Natural
+half (Mechanical showing, Luminar bonus).
+
+No mill on Arcane / Darkness faces. No draw on Luminar / Mechanical faces.
+No `[Prevent]` on any face.
 
 ### Named naturals — current catalogue
 
@@ -110,23 +113,20 @@ packed from the face deck like any synthetic; it is not one of the eight
 opening identity basics, so it must never appear in `BASIC_FACE_CARDS`
 (`faceKindPolicy.test.ts`).
 
-| Id | Name | Symbol | On roll | On absorb |
+| Id | Name | Symbol | Pips | Window |
 |---|---|---|---|---|
-| `face-natural-dawnwright` | Dawnwright | Mechanical | `[Generate 1 Luminar]` | — |
+| `face-natural-dawnwright` | Dawnwright | Mechanical | 1 Mechanical + 1 Luminar | Dual-pip (inherent bonus pip) |
 
-Dawnwright is the Natural half of the dual-pip slot and Tempo's mirror of
-Gloomwell: a Mechanical face that funds the Luminar half of Mending Light,
-Beacon Array, and the Radiant Accord gate. Being Natural also matters
-mechanically — Pawl Spring's natural forge installs it, and Pawl Spring and
-Idler Gear can then overload it, so one face is both the payout and the mount.
-Overload capacity stays at the Natural 1.
+Dawnwright is the Natural half of Tempo's dual-pip slot: a Mechanical face that
+funds the Luminar half of Mending Light, Beacon Array, and the Radiant Accord
+gate. Being Natural also matters mechanically — Pawl Spring's natural forge
+installs it, and Pawl Spring and Idler Gear can then overload it, so one face
+is both the payout and the mount. Overload capacity stays at the Natural 1.
 
-Both halves of every face are live, which is the absorb-vs-pool decision Tempo
-is built on: roll for pool pressure, or absorb to bank and rebuild. Control
-faces make the same trade on a slower axis — Sigil Flare and Pyre of Names are
-the face-sourced damage Control needs to threaten the enemy legendary, and
-Ossuary turns the mill plan back into cards. No `[Prevent]` appears on any
-face — that stays reaction-exclusive.
+Sigil Flare and Pyre of Names are convert closers (forfeit that die's pips,
+including Overcharge, for Strike / Drain). Ossuary returns cheap graveyard
+cards while still banking 2 Darkness. No `[Prevent]` appears on any face —
+that stays reaction-exclusive.
 
 **Authoring:** only **named specials**. Never add blank/generic identity
 synthetics (`face-synthetic-martial`, `face-synthetic-corruption`, Forged

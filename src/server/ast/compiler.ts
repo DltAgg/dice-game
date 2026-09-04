@@ -266,6 +266,8 @@ export class AstCompiler {
           ...(when.symbol !== undefined ? { symbol: when.symbol } : {}),
           ...(when.faceKind !== undefined ? { faceKind: when.faceKind } : {}),
         };
+      case "this-die-attribute-count":
+        return { kind: "this-die-attribute-count", atLeast: when.atLeast };
       default:
         return { kind: when.type };
     }

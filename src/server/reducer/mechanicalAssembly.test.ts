@@ -141,8 +141,8 @@ describe("Tempo mechanical assembly", () => {
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
   });
 
-  it("Shim Kit leaves forge discount after play resolves", () => {
+  it("Shim Kit opens a silence choice after play", () => {
     const after = playCard(actionsReady([SHIM_KIT]));
-    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
+    expect(after.pendingDecision?.type).toBe("choose-silence-host");
   });
 });

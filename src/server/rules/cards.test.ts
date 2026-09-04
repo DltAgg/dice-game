@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { SCHOLARS_LIEN, TWIN_CAM, getCard } from "../content/cards.js";
+import { TOOLING_ORDER, getCard } from "../content/cards.js";
 import { TEMPO_SQUAD } from "../content/creatures.js";
 import type { CardDefinition } from "../model/cards.js";
-import { asCardId, asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
+import { asCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import {
-  creatureAt,
   newMatch,
   P1,
   P2,
@@ -149,20 +148,16 @@ describe("canAffordPlay / canAffordForge", () => {
     expect(canAffordPlay(luminar, P1, card)).toBe(false);
   });
 
-  it("Twin Cam gate is unmet even when Discount 1 would cover the header", () => {
-    const twinCam = getCard(TWIN_CAM);
-    if (twinCam === undefined) throw new Error("Twin Cam");
-    const state = withEquipped(
+  it("Requires gate is unmet even when Discount 1 would cover the header", () => {
+    const tooling = getCard(TOOLING_ORDER);
+    if (tooling === undefined) throw new Error("Tooling Order");
+    const state = withPlayCostDiscount(
       withAttributePool(newMatch(), P1, { mechanical: 1 }),
       P1,
-      SCHOLARS_LIEN,
+      2,
     );
-    // Scholar's Lien discounts Arcane Instants; keep Twin Cam costs/requires.
-    const discounted = { ...twinCam, attribute: "arcane" as const };
-    expect(canAffordPlay(state, P1, discounted)).toBe(false);
-    expect(
-      canAffordForge(withForgeDiscount(state, P1, 1), P1, twinCam),
-    ).toBe(true);
+    expect(canAffordPlay(state, P1, tooling)).toBe(false);
+    expect(canAffordForge(state, P1, tooling)).toBe(true);
   });
 });
 
@@ -192,35 +187,3 @@ describe("ritualDurationOf", () => {
   });
 });
 
-function withEquipped(state: GameState, playerId: PlayerId, cardId: CardId): GameState {
-  const creature = creatureAt(state, playerId, 0);
-  const instanceId = asCardInstanceId(`test-equip-${cardId}`);
-  const player = state.players[playerId];
-  if (player === undefined) throw new Error("player");
-  return {
-    ...state,
-    cards: {
-      ...state.cards,
-      [instanceId]: {
-        id: instanceId,
-        cardId,
-        ownerId: playerId,
-        zone: "equipment",
-        attachedToCreatureId: creature.id,
-        attachedToFaceCardId: null,
-        ritualOrientation: null,
-      },
-    },
-    creatures: {
-      ...state.creatures,
-      [creature.id]: {
-        ...creature,
-        equipmentIds: [...creature.equipmentIds, instanceId],
-      },
-    },
-    players: {
-      ...state.players,
-      [playerId]: { ...player, equipment: [...player.equipment, instanceId] },
-    },
-  };
-}

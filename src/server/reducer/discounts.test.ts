@@ -43,7 +43,7 @@ function crosscutSyntheticForge(): CardDefinition {
 }
 
 describe("forge and play discounts", () => {
-  it("Shim Kit arms forge discount without spending on play", () => {
+  it("Shim Kit opens a silence choice without consuming extra pile", () => {
     const state = actionsReady([SHIM_KIT]);
     const after = expectOk(
       advance(state, {
@@ -52,7 +52,7 @@ describe("forge and play discounts", () => {
         cardInstanceId: handCardIdAt(state, P1, 0),
       }),
     );
-    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
+    expect(after.pendingDecision?.type).toBe("choose-silence-host");
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(8);
   });
 
@@ -140,7 +140,7 @@ describe("On roll play-cost-discount", () => {
 
   it("arms from the on-roll push path and cheapens the next play", () => {
     const ready = withAttributePool(
-      withHand(withPhase(tempoMatch(), "actions"), P1, [SHIM_KIT]),
+      withHand(withPhase(tempoMatch(), "actions"), P1, [COG_DRAFT]),
       P1,
       { mechanical: 1 },
     );
@@ -160,9 +160,8 @@ describe("On roll play-cost-discount", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
     expect(after.playCostDiscountThisTurn[P1]).toBeUndefined();
-    expect(after.forgeDiscountThisTurn[P1]).toBe(2);
   });
 
   it("does not cheapen synthetic forge", () => {

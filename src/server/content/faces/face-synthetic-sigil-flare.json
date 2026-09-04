@@ -4,22 +4,19 @@
   "name": "Sigil Flare",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: [Strike 1].\nOn absorb, once per turn: [Draw 1].",
+  "rulesText": "On roll: [Convert roll]. [Strike 2].",
+  "pips": 2,
+  "convertRoll": true,
   "onRoll": [
     {
       "type": "damage",
-      "amount": 1,
+      "amount": 2,
       "target": {
         "kind": "choose-enemy"
       }
     }
   ],
-  "onAbsorb": [
-    {
-      "type": "draw-cards",
-      "amount": 1
-    }
-  ],
+  "onAbsorb": [],
   "maxOverloads": 2,
   "forgeRestriction": null
 }

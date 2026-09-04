@@ -62,13 +62,12 @@ function showingFace(state: GameState, faceCardId: FaceCardId): GameState {
 }
 
 describe("Beacon Array", () => {
-  it("heals the most damaged ally when the bearer absorbs Luminar", () => {
+  it("heals the equipped host when the bearer banks Luminar", () => {
     const base = actionsReady([BEACON_ARRAY]);
     const bearerId = creatureIdAt(base, P1, 0);
-    const woundedId = creatureIdAt(base, P1, 1);
     const equipped = expectOk(
       advance(
-        withDamage(base, woundedId, 3),
+        withDamage(base, bearerId, 3),
         {
           type: "PLAY_CARD",
           playerId: P1,
@@ -83,15 +82,23 @@ describe("Beacon Array", () => {
     );
     if (luminar === undefined) throw new Error("expected rolled luminar");
 
-    const after = expectOk(
+    let after = expectOk(
       advance(withPool, {
         type: "ABSORB_SYMBOL",
         playerId: P1,
-        creatureId: bearerId,
         symbolId: luminar.id,
       }),
     );
-    expect(after.creatures[woundedId]?.damage).toBe(2);
+    if (after.pendingDecision?.type === "choose-creature") {
+      after = expectOk(
+        advance(after, {
+          type: "RESOLVE_CHOOSE_CREATURE",
+          playerId: P1,
+          creatureId: bearerId,
+        }),
+      );
+    }
+    expect(after.creatures[bearerId]?.damage).toBe(2);
   });
 });
 

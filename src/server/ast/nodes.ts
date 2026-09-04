@@ -36,7 +36,10 @@ export type ConditionExpr =
   | { readonly kind: "has-other-symbol"; readonly symbol?: SymbolType; readonly faceKind?: FaceKind }
   | { readonly kind: "has-adjacent-ally" }
   | { readonly kind: "controller-has-frontline" }
-  | { readonly kind: "source-is-frontline" };
+  | { readonly kind: "source-is-frontline" }
+  | { readonly kind: "other-die-same-attribute" }
+  | { readonly kind: "this-die-attribute-count"; readonly atLeast: number }
+  | { readonly kind: "both-showing-synthetic" };
 
 export type ModifyStat =
   | "attack-damage"

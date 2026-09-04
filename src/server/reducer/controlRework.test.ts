@@ -19,7 +19,7 @@ import {
   withHand,
   withPhase,
 } from "../testing/scenario.js";
-import { DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
+import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
 
 const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
@@ -56,18 +56,20 @@ describe("Tempo luminar control surface", () => {
       },
       players: {
         ...placed.players,
-        [P1]: { ...placed.players[P1]!, attributePool: { luminar: 2 } },
+        [P1]: { ...placed.players[P1]!, attributePool: { luminar: 3 } },
       },
     };
     const wounded = withDamage(armed, allyId, 4);
-    let activated = expectOk(
-      advance(wounded, {
-        type: "ACTIVATE_RITUAL",
-        playerId: P1,
-        cardInstanceId: ritualId,
-      }),
+    let activated = resolveOpenChain(
+      expectOk(
+        advance(wounded, {
+          type: "ACTIVATE_RITUAL",
+          playerId: P1,
+          cardInstanceId: ritualId,
+        }),
+      ),
     );
-    if (activated.pendingDecision?.type === "choose-creature") {
+    while (activated.pendingDecision?.type === "choose-creature") {
       activated = expectOk(
         advance(activated, {
           type: "RESOLVE_CHOOSE_CREATURE",
@@ -79,7 +81,7 @@ describe("Tempo luminar control surface", () => {
     activated = resolveOpenChain(activated);
     expect(ritualsOf(activated, P1).some((card) => card.id === ritualId)).toBe(true);
     expect(activated.cards[ritualId]?.ritualOrientation).toBe("exhausted");
-    expect(activated.creatures[allyId]?.damage).toBe(2);
+    expect(activated.creatures[allyId]?.damage).toBe(0);
   });
 
   it("Radiant Accord stays on field as a continuous ritual", () => {
@@ -108,7 +110,7 @@ describe("Tempo luminar control surface", () => {
     );
     const opened = expectOk(
       advance(
-        { ...combat, players: { ...combat.players, [P1]: { ...combat.players[P1]!, attributePool: { mechanical: 1 } } } },
+        { ...combat, players: { ...combat.players, [P1]: { ...combat.players[P1]!, attributePool: { ...DRIVE_SHAFT_FUEL } } } },
         {
           type: "ATTACK",
           playerId: P1,

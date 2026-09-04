@@ -17,7 +17,7 @@ import {
   withPhase,
   withTokens,
 } from "../testing/scenario.js";
-import { DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
+import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
 import {
   hasLegalReactionOffer,
   isEnabledHandReaction,
@@ -107,7 +107,7 @@ function openedAttackOnP2(hand: Parameters<typeof withHand>[2]): GameState {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
-  const combat = withHand(withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10), P2, hand);
+  const combat = withHand(withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10), P2, hand);
   return expectOk(
     advance(combat, {
       type: "ATTACK",

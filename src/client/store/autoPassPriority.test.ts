@@ -13,6 +13,7 @@ import {
   withTokens,
 } from "@server/testing/scenario.js";
 import { autoPassPriorityAction, drainEmptyReactionPriority, tryAutoPassPriority } from "./autoPassPriority.js";
+import { DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js";
 
 const DRIVE_SHAFT = asAttackId("attack-lodestar-artificer-drive-shaft");
 
@@ -20,7 +21,7 @@ function openedAttack(hand: Parameters<typeof withHand>[2]) {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
-  const combat = withHand(withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10), P2, hand);
+  const combat = withHand(withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10), P2, hand);
   return expectOk(
     advance(combat, {
       type: "ATTACK",

@@ -5,11 +5,9 @@ import type { GameState } from "../model/state.js";
 import { HALO_LAMP, SUNWARD_LENS } from "../content/faces.js";
 import {
   advanceResolvingChain as advance,
-  creatureIdAt,
   expectOk,
   newMatch,
   P1,
-  withDamage,
   withPhase,
 } from "../testing/scenario.js";
 
@@ -54,15 +52,14 @@ function rollRetainedSlots(state: GameState, slots: readonly [number, number]): 
 }
 
 describe("roll bank queue", () => {
-  it("resolves Sunward Lens heal before absorb follow-up", () => {
-    const healTarget = creatureIdAt(newMatch(), P1, 0);
-    let state = withDamage(installFaceOnDie(newMatch(), SUNWARD_LENS, 0), healTarget, 2);
-    state = rollRetainedSlots(state, [0, 4]);
-    expect(state.creatures[healTarget]?.damage).toBe(1);
+  it("Sunward Lens banks 1 Luminar and 1 Mechanical on roll", () => {
+    const state = rollRetainedSlots(installFaceOnDie(newMatch(), SUNWARD_LENS, 0), [0, 4]);
+    expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(1);
+    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
   });
 
-  it("Halo Lamp generates shield symbols on roll", () => {
+  it("Halo Lamp banks 2 Luminar on roll", () => {
     const state = rollRetainedSlots(installFaceOnDie(newMatch(), HALO_LAMP, 0), [0, 4]);
-    expect(Object.values(state.symbols).some((symbol) => symbol.symbol === "shield")).toBe(true);
+    expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(2);
   });
 });

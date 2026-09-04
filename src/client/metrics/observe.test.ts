@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { advance, type GameAction } from "@server";
-import { COG_DRAFT, TOOLING_ORDER } from "@server/content/cards.js";
+import { COG_DRAFT } from "@server/content/cards.js";
 import { COGTOOTH } from "@server/content/faces.js";
 import {
   handCardIdAt,
   newMatch,
   P1,
   P2,
-  resolveOpenChain,
   withPile,
   withHand,
   withPhase,
@@ -199,7 +198,7 @@ describe("applyObservation", () => {
 
   it("counts a forged tactic once even when it installs two faces", () => {
     const start = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [TOOLING_ORDER]),
+      withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]),
       P1,
       10,
     );
@@ -212,43 +211,25 @@ describe("applyObservation", () => {
       ctx(1_000),
     );
 
-    const playAction = {
-      type: "PLAY_CARD" as const,
+    const forgeAction: GameAction = {
+      type: "FORGE_CARD",
       playerId: P1,
       cardInstanceId: handCardIdAt(start, P1, 0),
-    };
-    const played = resolveOpenChain(
-      (() => {
-        const result = advance(start, playAction);
-        expect(result.ok).toBe(true);
-        if (!result.ok) throw new Error("play failed");
-        return result.state;
-      })(),
-    );
-
-    const resolveAction = {
-      type: "RESOLVE_FORGE_FACES" as const,
-      playerId: P1,
       dieId,
-      slotIndexes: [3, 4],
+      slotIndexes: [4],
       faceCardId: COGTOOTH,
     };
-    const forged = advance(played, resolveAction);
+    const forged = advance(start, forgeAction);
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
 
     recording = applyObservation(
       recording,
-      { prevState: start, state: played, action: playAction, accepted: true, error: null },
+      { prevState: start, state: forged.state, action: forgeAction, accepted: true, error: null },
       ctx(2_000),
     ).recording;
-    recording = applyObservation(
-      recording,
-      { prevState: played, state: forged.state, action: resolveAction, accepted: true, error: null },
-      ctx(3_000),
-    ).recording;
 
-    expect(recording.totalCardsPlayed).toBe(1);
-    expect(recording.cardPlayCounts["Tooling Order (card-tooling-order)"]).toBe(1);
+    expect(recording.totalCardsForged).toBe(1);
+    expect(recording.cardForgeCounts["Cog Draft (card-cog-draft)"]).toBe(1);
   });
 });

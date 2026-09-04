@@ -48,6 +48,17 @@ export type FaceStayPolicy =
   | { readonly kind: "forge-lock"; readonly turns: number };
 
 /**
+ * Continuous stance while this face is showing on an owned die (spec `025`).
+ * Not a StandingTrigger and not an EffectDefinition.
+ */
+export type WhileShowingModifier =
+  | { readonly type: "pierce"; readonly amount: number }
+  | { readonly type: "empower"; readonly amount: number }
+  | { readonly type: "play-discount"; readonly amount: number }
+  | { readonly type: "forge-discount"; readonly amount: number }
+  | { readonly type: "reduce"; readonly amount: number };
+
+/**
  * The reusable definition of a face (bible §11). Several physical die faces —
  * even on different dice — may point at the same face card (1:N). Overloads
  * attach to the face card, not to a physical slot.
@@ -73,6 +84,26 @@ export interface FaceCardDefinition {
    * Empty until On-absorb print lines are wired (`010-trigger-hooks`).
    */
   readonly onAbsorb: readonly EffectDefinition[];
+  /**
+   * How many pips of `symbol` this face produces when rolled. Default 1.
+   * Spec `025` inherent extra pips — not a `[Generate]` opcode.
+   */
+  readonly pips?: number;
+  /**
+   * Extra pips of a (possibly other) symbol from this same die/roll (dual-pip).
+   * Illegal on Shield / untyped.
+   */
+  readonly bonusPips?: { readonly symbol: SymbolType; readonly amount: number };
+  /**
+   * If true, this die’s pips from this roll do not bank; `onRoll` is the
+   * `[Convert roll]` payoff. Spec `025`.
+   */
+  readonly convertRoll?: boolean;
+  /**
+   * Continuous modifiers while this face is showing on an owned die.
+   * Empty / omitted = no stance.
+   */
+  readonly whileShowing?: readonly WhileShowingModifier[];
   /** Capacity for overloads attached to this face card (shared across all slots). */
   readonly maxOverloads: number;
   /**

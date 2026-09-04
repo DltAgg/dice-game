@@ -17,7 +17,7 @@ import {
   withPhase,
   withTokens,
 } from "../testing/scenario.js";
-import { CRANK, DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
+import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -27,7 +27,7 @@ describe("Tempo control effects", () => {
     const base = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
-    const combat = withHand(withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10), P2, [
+    const combat = withHand(withPile(withTokens(base, attacker, CRANK_FUEL), P2, 10), P2, [
       LANTERN_OATH,
     ]);
     const opened = expectOk(
@@ -55,7 +55,7 @@ describe("Tempo control effects", () => {
     const attacker = creatureIdAt(base, P1, 2);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
-      withPile(withTokens(base, attacker, { mechanical: 1 }), P2, 10),
+      withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10),
       P2,
       [MIRRORWARD],
     );

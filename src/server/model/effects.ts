@@ -438,4 +438,13 @@ export type EffectCondition =
   /** Another living ally is a `creatureIds` neighbor (±1). */
   | { readonly type: "has-adjacent-ally" }
   | { readonly type: "controller-has-frontline" }
-  | { readonly type: "source-is-frontline" };
+  | { readonly type: "source-is-frontline" }
+  /** Controller’s other die shows a known face with the same attribute (spec `025`). */
+  | { readonly type: "other-die-same-attribute" }
+  /**
+   * This die has at least `atLeast` slots whose face `symbol` equals this
+   * showing face’s attribute (spec `025`).
+   */
+  | { readonly type: "this-die-attribute-count"; readonly atLeast: number }
+  /** Both of the controller’s showing faces are `kind: "synthetic"` (spec `025`). */
+  | { readonly type: "both-showing-synthetic" };
