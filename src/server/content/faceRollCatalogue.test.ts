@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { inherentPipsOf } from "../model/dice.js";
+import { symbolTokenTotal } from "../model/symbols.js";
 import { SPECIAL_FACE_CARDS } from "./faces.js";
 
 function effectTypes(value: unknown, acc: string[] = []): string[] {
@@ -15,6 +17,13 @@ function effectTypes(value: unknown, acc: string[] = []): string[] {
 }
 
 describe("named face catalogue (spec 025)", () => {
+  it("omitted pips is one pip of face.symbol", () => {
+    expect(inherentPipsOf({ symbol: "shield" })).toEqual({ shield: 1 });
+    expect(inherentPipsOf({ symbol: "arcane", pips: { arcane: 2 } })).toEqual({
+      arcane: 2,
+    });
+  });
+
   it("leaves On absorb empty on every named special", () => {
     for (const face of SPECIAL_FACE_CARDS) {
       expect(face.onAbsorb, face.name).toEqual([]);
@@ -23,9 +32,9 @@ describe("named face catalogue (spec 025)", () => {
 
   it("produces more than 1 inherent pip", () => {
     for (const face of SPECIAL_FACE_CARDS) {
-      const extra = face.bonusPips?.amount ?? 0;
-      const total = (face.pips ?? 1) + extra;
-      expect(total, face.name).toBeGreaterThan(1);
+      const yieldMap = inherentPipsOf(face);
+      expect(yieldMap[face.symbol], face.name).toBeGreaterThanOrEqual(1);
+      expect(symbolTokenTotal(yieldMap), face.name).toBeGreaterThan(1);
     }
   });
 

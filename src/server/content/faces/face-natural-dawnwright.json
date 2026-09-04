@@ -5,10 +5,9 @@
   "kind": "natural",
   "symbol": "mechanical",
   "rulesText": "On roll: this face also produces 1 Luminar.",
-  "pips": 1,
-  "bonusPips": {
-    "symbol": "luminar",
-    "amount": 1
+  "pips": {
+    "mechanical": 1,
+    "luminar": 1
   },
   "onRoll": [],
   "onAbsorb": [],

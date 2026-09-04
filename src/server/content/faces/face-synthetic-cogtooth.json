@@ -5,7 +5,9 @@
   "kind": "synthetic",
   "symbol": "mechanical",
   "rulesText": "While showing: [Discount 1] forge.",
-  "pips": 2,
+  "pips": {
+    "mechanical": 2
+  },
   "onRoll": [],
   "onAbsorb": [],
   "whileShowing": [

@@ -5,7 +5,9 @@
   "kind": "synthetic",
   "symbol": "arcane",
   "rulesText": "On roll: if your other die shows the same attribute, [Insight 2].",
-  "pips": 2,
+  "pips": {
+    "arcane": 2
+  },
   "onRoll": [
     {
       "type": "conditional",

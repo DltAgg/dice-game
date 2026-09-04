@@ -5,7 +5,9 @@
   "kind": "synthetic",
   "symbol": "darkness",
   "rulesText": "On roll: [Recall 1] that costs 2 or less.",
-  "pips": 2,
+  "pips": {
+    "darkness": 2
+  },
   "onRoll": [
     {
       "type": "search-graveyard",

@@ -74,10 +74,9 @@ export const OSSUARY: FaceCardId = asFaceCardId("face-synthetic-ossuary");
 export const PYRE_OF_NAMES: FaceCardId = asFaceCardId("face-synthetic-pyre-of-names");
 
 /**
- * Named **natural** special: shows Mechanical and also produces 1 Luminar
- * (inherent bonus pip, spec `025`). Packable like a synthetic — it is not
- * one of the eight opening identity basics, so it never belongs in
- * `BASIC_FACE_CARDS`.
+ * Named **natural** special: dual-pip Mechanical + Luminar (`pips` map,
+ * spec `025`). Packable like a synthetic — it is not one of the eight
+ * opening identity basics, so it never belongs in `BASIC_FACE_CARDS`.
  */
 export const DAWNWRIGHT: FaceCardId = asFaceCardId("face-natural-dawnwright");
 

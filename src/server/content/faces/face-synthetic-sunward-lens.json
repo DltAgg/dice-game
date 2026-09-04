@@ -5,10 +5,9 @@
   "kind": "synthetic",
   "symbol": "luminar",
   "rulesText": "On roll: this face also produces 1 Mechanical.",
-  "pips": 1,
-  "bonusPips": {
-    "symbol": "mechanical",
-    "amount": 1
+  "pips": {
+    "luminar": 1,
+    "mechanical": 1
   },
   "onRoll": [],
   "onAbsorb": [],

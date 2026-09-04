@@ -83,7 +83,7 @@ than 1 inherent pip** (spec `025`). Face `onAbsorb` is empty.
 | `face-synthetic-mainspring` | Mainspring | Mechanical | 2 Mechanical | On roll: `[Convert roll]`. `[Reforge 1 Mechanical]` |
 | `face-synthetic-halo-lamp` | Halo Lamp | Luminar | 2 Luminar | While showing: `[Pierce 1]` |
 | `face-synthetic-lucent-choir` | Lucent Choir | Luminar | 2 Luminar | While showing: `[Empower 1]` |
-| `face-synthetic-sunward-lens` | Sunward Lens | Luminar | 1 Luminar + 1 Mechanical | Dual-pip (inherent bonus pip) |
+| `face-synthetic-sunward-lens` | Sunward Lens | Luminar | 1 Luminar + 1 Mechanical | Dual-pip |
 
 **Control (Arcane + Darkness)**
 
@@ -92,16 +92,16 @@ than 1 inherent pip** (spec `025`). Face `onAbsorb` is empty.
 | `face-synthetic-augur-glass` | Augur Glass | Arcane | 2 Arcane | While showing: `[Discount 1]` |
 | `face-synthetic-sigil-flare` | Sigil Flare | Arcane | 2 Arcane | On roll: `[Convert roll]`. `[Strike 2]` |
 | `face-synthetic-ward-lattice` | Ward Lattice | Arcane | 2 Arcane | On roll: if your other die shows the same attribute, `[Insight 2]` |
-| `face-synthetic-gloomwell` | Gloomwell | Darkness | 1 Darkness + 1 Arcane | Dual-pip (inherent bonus pip) |
+| `face-synthetic-gloomwell` | Gloomwell | Darkness | 1 Darkness + 1 Arcane | Dual-pip |
 | `face-synthetic-ossuary` | Ossuary | Darkness | 2 Darkness | On roll: `[Recall 1]` that costs 2 or less |
 | `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | 2 Darkness | On roll: `[Convert roll]`. `[Drain 2]` |
 
-**Dual-pip faces.** A face carries one inherent `symbol`. Extra inherent pips
-of a partner colour are `bonusPips` (not `[Generate]`). Gloomwell shows
-Darkness and also produces 1 Arcane — fuel for Control's two-colour gates
-(Graven Summons, Nightmarrow Pact, Lightless Verdict). Sunward Lens is Tempo's
-synthetic mirror (Luminar showing, Mechanical bonus). Dawnwright is the Natural
-half (Mechanical showing, Luminar bonus).
+**Dual-pip faces.** Yield is one `pips` map, same shape as pile tokens.
+Write the full bag including identity — `{ "mechanical": 1, "luminar": 1 }`
+— not a second field. Gloomwell shows Darkness and also produces 1 Arcane —
+fuel for Control's two-colour gates (Graven Summons, Nightmarrow Pact,
+Lightless Verdict). Sunward Lens is Tempo's synthetic mirror (Luminar +
+Mechanical). Dawnwright is the Natural half (Mechanical + Luminar).
 
 No mill on Arcane / Darkness faces. No draw on Luminar / Mechanical faces.
 No `[Prevent]` on any face.
@@ -115,7 +115,7 @@ opening identity basics, so it must never appear in `BASIC_FACE_CARDS`
 
 | Id | Name | Symbol | Pips | Window |
 |---|---|---|---|---|
-| `face-natural-dawnwright` | Dawnwright | Mechanical | 1 Mechanical + 1 Luminar | Dual-pip (inherent bonus pip) |
+| `face-natural-dawnwright` | Dawnwright | Mechanical | 1 Mechanical + 1 Luminar | Dual-pip |
 
 Dawnwright is the Natural half of Tempo's dual-pip slot: a Mechanical face that
 funds the Luminar half of Mending Light, Beacon Array, and the Radiant Accord

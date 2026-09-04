@@ -78,6 +78,29 @@ export type SymbolRequirement = Readonly<Partial<Record<Attribute | AnyCostPip, 
 /** A creature's absorbed fuel. Named attributes only — the pile never holds `any`. */
 export type AttributeTokens = Readonly<Partial<Record<Attribute, number>>>;
 
+/**
+ * Rolled-face yield (spec `025`). Same bag shape as `AttributeTokens`, plus
+ * Shield for the untyped starting face. Omitted face `pips` means one pip of
+ * `face.symbol`.
+ */
+export type SymbolTokens = Readonly<Partial<Record<SymbolType, number>>>;
+
+export const isSymbolType = (value: string): value is SymbolType =>
+  isAttribute(value) || value === SHIELD;
+
+/** Named symbol counts (`0` / omitted keys dropped). */
+export const symbolTokenEntries = (
+  tokens: SymbolTokens,
+): ReadonlyArray<readonly [SymbolType, number]> =>
+  Object.entries(tokens).flatMap(([symbol, count]) =>
+    count === undefined || count <= 0 || !isSymbolType(symbol)
+      ? []
+      : [[symbol, count] as const],
+  );
+
+export const symbolTokenTotal = (tokens: SymbolTokens): number =>
+  symbolTokenEntries(tokens).reduce((sum, [, count]) => sum + count, 0);
+
 /** Named attribute counts on a requirement (`any` excluded). */
 export const requirementEntries = (
   requirement: SymbolRequirement,

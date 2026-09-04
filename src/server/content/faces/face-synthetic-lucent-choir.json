@@ -5,7 +5,9 @@
   "kind": "synthetic",
   "symbol": "luminar",
   "rulesText": "While showing: [Empower 1].",
-  "pips": 2,
+  "pips": {
+    "luminar": 2
+  },
   "onRoll": [],
   "onAbsorb": [],
   "whileShowing": [

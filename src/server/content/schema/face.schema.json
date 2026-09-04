@@ -30,19 +30,8 @@
       "items": { "$ref": "effect.schema.json#/$defs/effect" }
     },
     "pips": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "How many pips of symbol this face produces when rolled. Default 1. Inherent physics, not a Generate opcode (spec 025)."
-    },
-    "bonusPips": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["symbol", "amount"],
-      "description": "Extra pips of a (possibly other) symbol from this same die/roll. Dual-pip. Illegal on Shield / untyped.",
-      "properties": {
-        "symbol": { "$ref": "defs.schema.json#/$defs/symbolType" },
-        "amount": { "type": "integer", "minimum": 1 }
-      }
+      "$ref": "defs.schema.json#/$defs/symbolTokens",
+      "description": "Inherent yield when rolled, e.g. { \"mechanical\": 2 } or { \"luminar\": 1, \"mechanical\": 1 }. Omitted = one pip of symbol. Spec 025. Not a Generate opcode."
     },
     "convertRoll": {
       "type": "boolean",
@@ -87,9 +76,14 @@
         "properties": {
           "symbol": { "const": "shield" },
           "id": { "type": "string", "pattern": "^face-untyped-" },
-          "pips": { "const": 1 },
-          "convertRoll": { "const": false },
-          "bonusPips": false
+          "pips": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "shield": { "$ref": "defs.schema.json#/$defs/positiveAmount" }
+            }
+          },
+          "convertRoll": { "const": false }
         }
       }
     },
@@ -101,7 +95,8 @@
       "then": {
         "properties": {
           "symbol": { "$ref": "defs.schema.json#/$defs/attribute" },
-          "id": { "type": "string", "pattern": "^face-natural-" }
+          "id": { "type": "string", "pattern": "^face-natural-" },
+          "pips": { "$ref": "defs.schema.json#/$defs/attributeTokens" }
         }
       }
     },
@@ -113,7 +108,8 @@
       "then": {
         "properties": {
           "symbol": { "$ref": "defs.schema.json#/$defs/attribute" },
-          "id": { "type": "string", "pattern": "^face-synthetic-" }
+          "id": { "type": "string", "pattern": "^face-synthetic-" },
+          "pips": { "$ref": "defs.schema.json#/$defs/attributeTokens" }
         }
       }
     }

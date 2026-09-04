@@ -26,20 +26,22 @@ Bible is silent on these axes. User **DECIDED** 2026-09-04. Player wording is
 [`RULEBOOK.md`](../RULEBOOK.md) and [`KEYWORDS.md`](../KEYWORDS.md).
 
 1. **Inherent pips.** After `ROLL_DICE`, `[Reroll]`, or retain-keep, a showing
-   face produces `pips` (default 1) rolled symbols of `face.symbol` with
-   `sourceDieId` set, then `bonusPips.amount` extra symbols of
-   `bonusPips.symbol` also attributed to that die. Not a `generate-symbol`
-   opcode; they bank via `bankRolledSymbols` after On roll (unless convert).
-   Forge yield and Overcharge still apply **on top** via today’s helpers.
-2. **Shield / untyped.** Still 1 Shield pip. `bonusPips` is illegal on Shield.
+   face produces `inherentPipsOf(face)` — `face.pips`, or `{ [face.symbol]: 1 }`
+   when omitted — as rolled symbols with `sourceDieId` set. Dual-pip is two
+   keys on that same map (`{ mechanical: 1, luminar: 1 }`), not a second field.
+   Not a `generate-symbol` opcode; they bank via `bankRolledSymbols` after On
+   roll (unless convert). Forge yield and Overcharge still apply **on top**
+   via today’s helpers.
+2. **Shield / untyped.** Still 1 Shield pip (omit `pips`, or `{ shield: N }`).
+   Attribute keys on Shield `pips` are illegal.
 3. **Silence.** Extra inherent pips still generate (silenced faces still
    generate pips). On roll / overloads / yield / Overcharge stay skipped.
 4. **Stamp.** `[Stamp]` / `refireShownFaceRollEffects` does **not** mint a
-   second copy of inherent `pips` / `bonusPips`. Yield / Overcharge generate
-   still apply unless convert skips them.
+   second copy of inherent `pips`. Yield / Overcharge generate still apply
+   unless convert skips them.
 5. **`[Convert roll]`** (`convertRoll: true`). When the slot is not silenced
    (so the payoff can fire): do **not** bank any attribute pips **this die**
-   produced this roll (inherent pips, bonus pips, forge yield, Overcharge).
+   produced this roll (inherent pips, forge yield, Overcharge).
    Skip `applyForgeYieldGenerate` / `applyOverchargeGenerate` for that die
    (those use `createSymbol` and would auto-bank). Fire `onRoll` as the
    payoff. Not optional, not a prompt. The **other** die banks normally.
@@ -88,8 +90,10 @@ None. Existing `ROLL_DICE`, `RESOLVE_OPTIONAL_REROLL`, `[Stamp]`
 
 ## Validation
 
-Catalogue: `pips` integer ≥ 1; `bonusPips` illegal on Shield / untyped;
-`convertRoll` not true on untyped; `whileShowing` is a closed modifier union.
+Catalogue: `pips` is a `SymbolTokens` map (same bag as pile tokens, plus
+Shield). Omitted = one pip of `face.symbol`. Attribute faces may not put
+`shield` in the map; untyped may only put `shield`. `convertRoll` not true
+on untyped; `whileShowing` is a closed modifier union.
 
 ## Resolution
 
@@ -136,4 +140,4 @@ None.
 
 - [x] `src/server/reducer/faceRollPhysics.test.ts`
 - [x] Geometry unit tests on `evaluateCondition`
-- [x] Loadout / schema tests for opening basics, Shield `bonusPips` reject
+- [x] Loadout / schema tests for opening basics, Shield attribute-pips reject

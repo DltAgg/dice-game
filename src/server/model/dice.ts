@@ -5,7 +5,7 @@ import type {
   PlayerId,
 } from "./ids.js";
 import type { EffectDefinition } from "./effects.js";
-import type { SymbolType } from "./symbols.js";
+import type { SymbolTokens, SymbolType } from "./symbols.js";
 
 /**
  * Bible §9: the game is played with customizable d6. Six is structural rather
@@ -85,15 +85,11 @@ export interface FaceCardDefinition {
    */
   readonly onAbsorb: readonly EffectDefinition[];
   /**
-   * How many pips of `symbol` this face produces when rolled. Default 1.
-   * Spec `025` inherent extra pips — not a `[Generate]` opcode.
+   * Inherent yield when this face is showing after a roll (spec `025`).
+   * Same `{ symbol: amount }` bag as pile tokens. Omitted = one pip of
+   * `symbol`. Not a `[Generate]` opcode. Dual-pip is two keys, not a second field.
    */
-  readonly pips?: number;
-  /**
-   * Extra pips of a (possibly other) symbol from this same die/roll (dual-pip).
-   * Illegal on Shield / untyped.
-   */
-  readonly bonusPips?: { readonly symbol: SymbolType; readonly amount: number };
+  readonly pips?: SymbolTokens;
   /**
    * If true, this die’s pips from this roll do not bank; `onRoll` is the
    * `[Convert roll]` payoff. Spec `025`.
@@ -132,6 +128,13 @@ export interface FaceCardDefinition {
    * the threshold (currently 2).
    */
   readonly pestilenceSpreadAt?: number;
+}
+
+/** Yield minted for a showing face. Omitted `pips` is one pip of `symbol`. */
+export function inherentPipsOf(
+  face: Pick<FaceCardDefinition, "symbol" | "pips">,
+): SymbolTokens {
+  return face.pips ?? { [face.symbol]: 1 };
 }
 
 /**

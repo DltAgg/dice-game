@@ -5,7 +5,9 @@
   "kind": "synthetic",
   "symbol": "mechanical",
   "rulesText": "On roll: if your other die shows the same attribute, [Double].",
-  "pips": 2,
+  "pips": {
+    "mechanical": 2
+  },
   "onRoll": [
     {
       "type": "conditional",

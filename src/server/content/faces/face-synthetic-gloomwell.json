@@ -5,10 +5,9 @@
   "kind": "synthetic",
   "symbol": "darkness",
   "rulesText": "On roll: this face also produces 1 Arcane.",
-  "pips": 1,
-  "bonusPips": {
-    "symbol": "arcane",
-    "amount": 1
+  "pips": {
+    "darkness": 1,
+    "arcane": 1
   },
   "onRoll": [],
   "onAbsorb": [],

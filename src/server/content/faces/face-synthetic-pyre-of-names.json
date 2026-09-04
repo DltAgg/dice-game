@@ -5,7 +5,9 @@
   "kind": "synthetic",
   "symbol": "darkness",
   "rulesText": "On roll: [Convert roll]. [Drain 2].",
-  "pips": 2,
+  "pips": {
+    "darkness": 2
+  },
   "convertRoll": true,
   "onRoll": [
     {

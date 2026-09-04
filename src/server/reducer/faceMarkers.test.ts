@@ -4,7 +4,7 @@ import { COGTOOTH, GEAR_TRAIN, MAINSPRING, getFaceCard } from "../content/faces.
 describe("Tempo face markers", () => {
   it("Cogtooth is a While showing forge-discount stance with no On roll", () => {
     const face = getFaceCard(COGTOOTH);
-    expect(face?.pips).toBe(2);
+    expect(face?.pips).toEqual({ mechanical: 2 });
     expect(face?.onRoll).toEqual([]);
     expect(face?.onAbsorb).toEqual([]);
     expect(face?.whileShowing).toEqual([{ type: "forge-discount", amount: 1 }]);

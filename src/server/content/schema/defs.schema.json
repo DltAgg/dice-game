@@ -139,6 +139,41 @@
         "any": { "$ref": "#/$defs/positiveAmount" }
       }
     },
+    "attributeTokens": {
+      "title": "AttributeTokens",
+      "description": "Named attribute counts, e.g. { \"mechanical\": 2 }. Used for face pips on attribute faces and the player pile. No any, no Shield.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "martial": { "$ref": "#/$defs/positiveAmount" },
+        "wild": { "$ref": "#/$defs/positiveAmount" },
+        "toxin": { "$ref": "#/$defs/positiveAmount" },
+        "arcane": { "$ref": "#/$defs/positiveAmount" },
+        "luminar": { "$ref": "#/$defs/positiveAmount" },
+        "mechanical": { "$ref": "#/$defs/positiveAmount" },
+        "corruption": { "$ref": "#/$defs/positiveAmount" },
+        "darkness": { "$ref": "#/$defs/positiveAmount" }
+      }
+    },
+    "symbolTokens": {
+      "title": "SymbolTokens",
+      "description": "Face yield, e.g. { \"mechanical\": 1, \"luminar\": 1 } or { \"shield\": 1 }. Same bag as attributeTokens plus Shield. Omitted face pips means one pip of face.symbol.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "martial": { "$ref": "#/$defs/positiveAmount" },
+        "wild": { "$ref": "#/$defs/positiveAmount" },
+        "toxin": { "$ref": "#/$defs/positiveAmount" },
+        "arcane": { "$ref": "#/$defs/positiveAmount" },
+        "luminar": { "$ref": "#/$defs/positiveAmount" },
+        "mechanical": { "$ref": "#/$defs/positiveAmount" },
+        "corruption": { "$ref": "#/$defs/positiveAmount" },
+        "darkness": { "$ref": "#/$defs/positiveAmount" },
+        "shield": { "$ref": "#/$defs/positiveAmount" }
+      }
+    },
     "silenceHost": {
       "title": "SilenceHost",
       "description": "A [Silence] target kind. Spec 022.",

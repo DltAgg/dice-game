@@ -110,7 +110,7 @@ describe("catalogue JSON schemas", () => {
     ).toBe(false);
   });
 
-  it("rejects Shield bonusPips", () => {
+  it("rejects Shield pips of an attribute", () => {
     expect(
       validateFace({
         id: "face-untyped-shield",
@@ -122,7 +122,7 @@ describe("catalogue JSON schemas", () => {
         onAbsorb: [],
         maxOverloads: 1,
         forgeRestriction: null,
-        bonusPips: { symbol: "luminar", amount: 1 },
+        pips: { luminar: 1 },
       }),
     ).toBe(false);
   });

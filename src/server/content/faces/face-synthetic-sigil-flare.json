@@ -5,7 +5,9 @@
   "kind": "synthetic",
   "symbol": "arcane",
   "rulesText": "On roll: [Convert roll]. [Strike 2].",
-  "pips": 2,
+  "pips": {
+    "arcane": 2
+  },
   "convertRoll": true,
   "onRoll": [
     {

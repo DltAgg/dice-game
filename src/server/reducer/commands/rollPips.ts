@@ -1,15 +1,10 @@
 import { getFaceCard } from "../../content/faces.js";
-import type { FaceCardDefinition } from "../../model/dice.js";
+import { inherentPipsOf, type FaceCardDefinition } from "../../model/dice.js";
 import type { DieId, FaceCardId, PlayerId, SymbolInstanceId } from "../../model/ids.js";
-import { isAttributeSymbol, type SymbolType } from "../../model/symbols.js";
+import { symbolTokenEntries, type SymbolType } from "../../model/symbols.js";
 import type { Draft } from "../draft.js";
 import { isSlotSilenced } from "../../rules/silence.js";
 import { createRolledDieSymbol } from "./shownFace.js";
-
-/** Inherent showing pips of `face.symbol`. Default 1. */
-export function showingFacePipCount(face: Pick<FaceCardDefinition, "pips">): number {
-  return face.pips ?? 1;
-}
 
 /**
  * `[Convert roll]` payoff can fire: not silenced, not suppress-inherent.
@@ -47,21 +42,16 @@ function createFacePips(
   face: FaceCardDefinition,
 ): SymbolInstanceId[] {
   const ids: SymbolInstanceId[] = [];
-  const pips = showingFacePipCount(face);
-  for (let i = 0; i < pips; i += 1) {
-    ids.push(createRolledDieSymbol(draft, ownerId, dieId, slotIndex, face.symbol));
-  }
-  const bonus = face.bonusPips;
-  if (bonus !== undefined && isAttributeSymbol(face.symbol)) {
-    for (let i = 0; i < bonus.amount; i += 1) {
-      ids.push(createRolledDieSymbol(draft, ownerId, dieId, slotIndex, bonus.symbol));
+  for (const [symbol, amount] of symbolTokenEntries(inherentPipsOf(face))) {
+    for (let i = 0; i < amount; i += 1) {
+      ids.push(createRolledDieSymbol(draft, ownerId, dieId, slotIndex, symbol));
     }
   }
   return ids;
 }
 
 /**
- * Create inherent showing pips (`pips` + `bonusPips`) attributed to this die.
+ * Create inherent showing pips attributed to this die.
  * Not a `generate-symbol` opcode — caller banks via `bankRolledSymbols` unless convert.
  */
 export function createShowingFacePips(
