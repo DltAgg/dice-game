@@ -119,16 +119,16 @@ describe("attribute pile absorb (spec 016)", () => {
     expect(state.players[P1]?.attributePool.martial).toBe(2);
   });
 
-  it("rolled absorb during actions still works without naming a creature for attributes", () => {
+  it("auto-banks rolled attributes into the pile without naming a creature", () => {
     const { state, symbols } = afterRoll();
-    const attribute = symbols.find((s) => s.symbol !== "shield");
-    if (attribute === undefined) return; // flaky seed — skip quietly
-    const absorbed = expectOk(
-      advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: attribute.id }),
-    );
-    expect(
-      (absorbed.players[P1]?.attributePool[attribute.symbol as "martial"] ?? 0) >= 1 ||
-        attribute.symbol === "shield",
-    ).toBe(true);
+    const attributes = symbols.filter((s) => s.symbol !== "shield");
+    expect(attributes.length).toBeGreaterThan(0);
+    for (const pip of attributes) {
+      expect(pip.status).toBe("absorbed");
+      expect(pip.absorbedByCreatureId).toBeNull();
+    }
+    const pool = state.players[P1]?.attributePool ?? {};
+    const banked = Object.values(pool).reduce((sum, n) => sum + n, 0);
+    expect(banked).toBe(attributes.length);
   });
 });

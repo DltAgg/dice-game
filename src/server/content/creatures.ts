@@ -2,6 +2,7 @@ import type { CreatureDefinition } from "../model/creatures.js";
 import { asCreatureDefinitionId, type CreatureDefinitionId } from "../model/ids.js";
 import creatureOrder from "./creatures/_order.json";
 import { catalogueFromModules } from "./catalogueLoader.js";
+import { lookupOverlayCreature } from "./runtimeOverlay.js";
 
 /**
  * Creature catalogue (spec `003`). Two squads, each two bodies plus one
@@ -29,8 +30,9 @@ const creatureModules = import.meta.glob("./creatures/creature-*.json", {
 const loadedCreatures = catalogueFromModules<CreatureDefinition>(creatureModules, creatureOrder);
 
 export const CREATURES: Readonly<Record<string, CreatureDefinition>> = loadedCreatures.byId;
-export const getCreatureDefinition = (id: CreatureDefinitionId): CreatureDefinition | undefined =>
-  CREATURES[id];
+export const getCreatureDefinition = (
+  id: CreatureDefinitionId,
+): CreatureDefinition | undefined => lookupOverlayCreature(id) ?? CREATURES[id];
 export const ALL_CREATURES: readonly CreatureDefinition[] = loadedCreatures.list;
 
 /** Re-export loadout squads so tests can import creatures + squad from one module. */

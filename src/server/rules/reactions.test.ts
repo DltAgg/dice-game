@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, GLINT_VEIL, LANTERN_OATH, getCard } from "../content/cards.js";
+import { getCard } from "../content/cards.js";
 import type { CardDefinition } from "../model/cards.js";
 import type { EffectDefinition } from "../model/effects.js";
 import { asCardId, asEffectInstanceId } from "../model/ids.js";
 import type { ChainLink, GameState } from "../model/state.js";
 import { advance } from "../reducer/reduce.js";
+import { TEST_PLAYABLE, TEST_REACTION_PREVENT } from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -126,25 +127,25 @@ describe("hasLegalReactionOffer (query)", () => {
     expect(hasLegalReactionOffer(opened, P2)).toBe(false);
   });
 
-  it("waits when Glint Veil is a legal prevent on an attack targeting you", () => {
-    const opened = openedAttackOnP2([GLINT_VEIL]);
-    const veil = getCard(GLINT_VEIL);
-    expect(veil).toBeDefined();
-    expect(isLegalHandReaction(opened, veil!)).toBe(true);
-    expect(isEnabledHandReaction(opened, P2, veil!)).toBe(true);
+  it("waits when a prevent reaction is legal on an attack targeting you", () => {
+    const opened = openedAttackOnP2([TEST_REACTION_PREVENT]);
+    const prevent = getCard(TEST_REACTION_PREVENT);
+    expect(prevent).toBeDefined();
+    expect(isLegalHandReaction(opened, prevent!)).toBe(true);
+    expect(isEnabledHandReaction(opened, P2, prevent!)).toBe(true);
     expect(hasLegalReactionOffer(opened, P2)).toBe(true);
   });
 
-  it("waits when Lantern Oath can arm prevent-draw against an attack on you", () => {
-    const opened = openedAttackOnP2([LANTERN_OATH]);
+  it("waits when a prevent reaction can answer an attack on you", () => {
+    const opened = openedAttackOnP2([TEST_REACTION_PREVENT]);
     expect(hasLegalReactionOffer(opened, P2)).toBe(true);
   });
 
-  it("does not treat Glint Veil as an offer when the top link is not an attack", () => {
+  it("does not treat a prevent reaction as an offer when the top link is not an attack", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10),
       P2,
-      [GLINT_VEIL],
+      [TEST_REACTION_PREVENT],
     );
     const opened = expectOk(
       advance(ready, {
@@ -153,17 +154,17 @@ describe("hasLegalReactionOffer (query)", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    const veil = getCard(GLINT_VEIL)!;
-    expect(isLegalHandReaction(opened, veil)).toBe(true);
-    expect(isEnabledHandReaction(opened, P2, veil)).toBe(false);
+    const prevent = getCard(TEST_REACTION_PREVENT)!;
+    expect(isLegalHandReaction(opened, prevent)).toBe(true);
+    expect(isEnabledHandReaction(opened, P2, prevent)).toBe(false);
     expect(hasLegalReactionOffer(opened, P2)).toBe(false);
   });
 
   it("waits when an example negate reaction can target a tactic on the chain", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10),
       P2,
-      [COG_DRAFT],
+      [TEST_PLAYABLE],
     );
     const opened = expectOk(
       advance(ready, {

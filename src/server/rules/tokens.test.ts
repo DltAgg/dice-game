@@ -1,36 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { DIE_PUNCH, TWIN_CAM, getCard } from "../content/cards.js";
+import { testCard } from "../testing/fixtures/index.js";
 import { cardPlayIsFuelled, holdsTokens, isNonEmptyRequirement, pickPilePayment, pileRequirementShortfall } from "./tokens.js";
 
 describe("cardPlayIsFuelled", () => {
-  it("Twin Cam with 2 Mechanical meets header Spend", () => {
-    const twinCam = getCard(TWIN_CAM);
-    if (twinCam === undefined) throw new Error("Twin Cam");
-    const spend = twinCam.playCost;
-    if (!isNonEmptyRequirement(spend)) {
-      throw new Error("Twin Cam costs");
-    }
+  const spendCard = testCard({ playCost: { mechanical: 2 } });
+  const spend = spendCard.playCost;
+  if (!isNonEmptyRequirement(spend)) {
+    throw new Error("fixture playCost");
+  }
+
+  it("2 Mechanical meets header Spend", () => {
     expect(cardPlayIsFuelled({ mechanical: 2 }, { spend })).toBe(true);
   });
 
-  it("Twin Cam with 1 Mechanical fails the header; Discount 1 covers it", () => {
-    const twinCam = getCard(TWIN_CAM);
-    if (twinCam === undefined) throw new Error("Twin Cam");
-    const spend = twinCam.playCost;
-    if (!isNonEmptyRequirement(spend)) {
-      throw new Error("Twin Cam costs");
-    }
+  it("1 Mechanical fails the header; Discount 1 covers it", () => {
     expect(cardPlayIsFuelled({ mechanical: 1 }, { spend, spendNeed: 1 })).toBe(true);
     expect(cardPlayIsFuelled({ mechanical: 1 }, { spend })).toBe(false);
   });
 
-  it("Die Punch with 2 Mechanical is fuelled (Spend 2, no gate)", () => {
-    const diePunch = getCard(DIE_PUNCH);
-    if (diePunch === undefined) throw new Error("Die Punch");
-    const spend = diePunch.playCost;
-    if (!isNonEmptyRequirement(spend)) {
-      throw new Error("Die Punch costs");
-    }
+  it("Spend 2 with no gate is fuelled", () => {
     expect(cardPlayIsFuelled({ mechanical: 2 }, { spend })).toBe(true);
   });
 });

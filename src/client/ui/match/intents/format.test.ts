@@ -1,44 +1,47 @@
 import { describe, expect, it } from "vitest";
-import { asCardId, getCard, type CardDefinition } from "@server";
+import { testCard } from "@server/testing/fixtures/index.js";
 import { ritualStayLabel } from "./format.js";
 
-function mustCard(id: string): CardDefinition {
-  const def = getCard(asCardId(id));
-  if (def === undefined) throw new Error(`missing ${id}`);
-  return def;
-}
+const continuousActivate = testCard({
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: { effects: [{ type: "draw-cards", amount: 1 }] },
+});
+const continuousStanding = testCard({
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: { effects: [] },
+});
+const reactionRitual = testCard({
+  type: "ritual",
+  subtypes: ["reaction"],
+  ritual: { effects: [{ type: "draw-cards", amount: 1 }] },
+});
+const leftoverRitual = testCard({
+  type: "ritual",
+  subtypes: ["instant"],
+  ritual: { effects: [{ type: "draw-cards", amount: 1 }] },
+});
+const nonRitual = testCard({ type: "instant" });
 
 describe("ritualStayLabel", () => {
   it("labels activate-body continuous as once-per-turn stay", () => {
-    expect(ritualStayLabel(mustCard("card-daybreak-rite"))).toBe(
-      "Once per turn (stays)",
-    );
-    expect(ritualStayLabel(mustCard("card-archivists-summons"))).toBe(
-      "Once per turn (stays)",
-    );
+    expect(ritualStayLabel(continuousActivate)).toBe("Once per turn (stays)");
   });
 
   it("keeps standing-only continuous copy", () => {
-    const standingOnly = {
-      ...mustCard("card-daybreak-rite"),
-      ritual: { effects: [] },
-    };
-    expect(ritualStayLabel(standingOnly)).toBe("Continuous (stays)");
+    expect(ritualStayLabel(continuousStanding)).toBe("Continuous (stays)");
   });
 
   it("does not call reaction field rituals Continuous", () => {
-    const daybreak = mustCard("card-daybreak-rite");
-    const reaction = { ...daybreak, subtypes: ["reaction"] as const };
-    expect(ritualStayLabel(reaction)).toBe("Once per turn (stays)");
+    expect(ritualStayLabel(reactionRitual)).toBe("Once per turn (stays)");
   });
 
   it("keeps leftover instant GY copy", () => {
-    const daybreak = mustCard("card-daybreak-rite");
-    const leftover = { ...daybreak, subtypes: ["instant"] as const };
-    expect(ritualStayLabel(leftover)).toBe("Leaves after activate");
+    expect(ritualStayLabel(leftoverRitual)).toBe("Leaves after activate");
   });
 
   it("returns null for non-rituals", () => {
-    expect(ritualStayLabel(mustCard("card-lightless-verdict"))).toBeNull();
+    expect(ritualStayLabel(nonRitual)).toBeNull();
   });
 });

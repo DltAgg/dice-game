@@ -19,5 +19,6 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    setupFiles: [fileURLToPath(new URL("./src/server/testing/setupTestCatalogue.ts", import.meta.url))],
   },
 });

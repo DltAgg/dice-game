@@ -1,16 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DIE_PUNCH, SCHOLARS_LIEN, getCard } from "../content/cards.js";
-import {
-  COGTOOTH,
-  DAWNWRIGHT,
-  ENGINE_TEST_FACE_DECK,
-  GEAR_TRAIN,
-  HALO_LAMP,
-  SIGIL_FLARE,
-  SHIELD_FACE_ID,
-  naturalFaceId,
-} from "../content/faces.js";
-import { TEMPO_STARTING_DICE } from "../content/loadouts/index.js";
+import { getCard } from "../content/cards.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
@@ -22,6 +11,17 @@ import {
   validateStartingDice,
 } from "../rules/loadout.js";
 import { sumWhileShowingModifiers, whileShowingTotals } from "../rules/whileShowing.js";
+import {
+  TEST_FACE_DECK,
+  TEST_OVERCHARGE_ARCANE,
+  TEST_PLAYABLE,
+  TEST_SHIELD_FACE_ID,
+  TEST_STARTING_DICE,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+  testFace,
+  testNaturalFaceId,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -43,8 +43,63 @@ import { evaluateCondition } from "./conditions.js";
 import { createDraft } from "./draft.js";
 
 const SHIELD_SLOT = 4;
-const MARTIAL = naturalFaceId("martial");
-const MECHANICAL = naturalFaceId("mechanical");
+const MARTIAL = testNaturalFaceId("martial");
+const MECHANICAL = testNaturalFaceId("mechanical");
+
+const TWO_PIP_MECHANICAL = testFace({
+  id: "face-test-physics-two-pip",
+  kind: "synthetic",
+  symbol: "mechanical",
+  pips: { mechanical: 2 },
+  whileShowing: [{ type: "forge-discount", amount: 1 }],
+});
+
+const DUAL_PIP_NATURAL = testFace({
+  id: "face-test-physics-dual-natural",
+  name: "Named Dual",
+  kind: "natural",
+  symbol: "mechanical",
+  rulesText: "On roll: this face also produces 1 Luminar.",
+  pips: { mechanical: 1, luminar: 1 },
+});
+
+const CONVERT_STRIKE = testFace({
+  id: "face-test-physics-convert",
+  kind: "synthetic",
+  symbol: "arcane",
+  convertRoll: true,
+  pips: { arcane: 2 },
+  onRoll: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
+});
+
+const PIERCE_STANCE = testFace({
+  id: "face-test-physics-pierce",
+  kind: "synthetic",
+  symbol: "luminar",
+  pips: { luminar: 2 },
+  whileShowing: [{ type: "pierce", amount: 1 }],
+});
+
+const DOUBLE_GEOMETRY = testFace({
+  id: "face-test-physics-double",
+  kind: "synthetic",
+  symbol: "mechanical",
+  pips: { mechanical: 2 },
+  onRoll: [
+    {
+      type: "conditional",
+      when: { type: "other-die-same-attribute" },
+      then: [{ type: "arm-resolve-next-face-effect-twice" }],
+    },
+  ],
+});
+
+const STAMP = testCard({
+  id: "card-test-physics-stamp",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  effect: { effects: [{ type: "reapply-die-modifiers" }] },
+});
 
 function dieIdOf(state: GameState, index = 0): DieId {
   const id = state.players[P1]?.dieIds[index];
@@ -90,8 +145,8 @@ describe("inherent extra pips", () => {
     expect(poolOf(after, "martial")).toBe(1);
   });
 
-  it("Cogtooth showing banks 2 Mechanical with no generate-symbol opcode", () => {
-    const after = rollShowingSlots(installFace(newMatch(), COGTOOTH), 0);
+  it("a 2-pip synthetic banks 2 Mechanical with no generate-symbol opcode", () => {
+    const after = rollShowingSlots(installFace(newMatch(), TWO_PIP_MECHANICAL.id), 0);
     expect(poolOf(after, "mechanical")).toBe(2);
     expect(
       after.log.some(
@@ -103,8 +158,8 @@ describe("inherent extra pips", () => {
     ).toBe(false);
   });
 
-  it("Dawnwright banks 1 Mechanical + 1 Luminar from the same die", () => {
-    const after = rollShowingSlots(installFace(newMatch(), DAWNWRIGHT), 0);
+  it("a dual-pip natural banks 1 Mechanical + 1 Luminar from the same die", () => {
+    const after = rollShowingSlots(installFace(newMatch(), DUAL_PIP_NATURAL.id), 0);
     const dieId = dieIdOf(after);
     expect(poolOf(after, "mechanical")).toBe(1);
     expect(poolOf(after, "luminar")).toBe(1);
@@ -115,8 +170,8 @@ describe("inherent extra pips", () => {
 });
 
 describe("[Convert roll]", () => {
-  it("does not bank Arcane from Sigil Flare; Strike 2 queues; other die still banks", () => {
-    let state = installFace(newMatch(), SIGIL_FLARE, 0, 0);
+  it("does not bank Arcane from a convert face; Strike 2 queues; other die still banks", () => {
+    let state = installFace(newMatch(), CONVERT_STRIKE.id, 0, 0);
     state = installFace(state, MARTIAL, 1, 0);
     const after = rollShowingSlots(state, 0, 0);
     expect(poolOf(after, "arcane")).toBe(0);
@@ -130,15 +185,18 @@ describe("[Convert roll]", () => {
   });
 
   it("Overcharge attributes on a convert face do not bank", () => {
-    let state = installFace(withHand(withPhase(newMatch(), "actions"), P1, [SCHOLARS_LIEN]), SIGIL_FLARE);
-    state = expectOk(advance(state, overchargeAction(P1, handCardIdAt(state, P1, 0), SIGIL_FLARE)));
+    let state = installFace(
+      withHand(withPhase(newMatch(), "actions"), P1, [TEST_OVERCHARGE_ARCANE]),
+      CONVERT_STRIKE.id,
+    );
+    state = expectOk(advance(state, overchargeAction(P1, handCardIdAt(state, P1, 0), CONVERT_STRIKE.id)));
     state = installFace(state, MARTIAL, 1, 0);
     const after = rollShowingSlots(state, 0, 0);
     expect(poolOf(after, "arcane")).toBe(0);
   });
 
   it("forge yield on a convert face does not bank", () => {
-    let state = installFace(newMatch(), SIGIL_FLARE);
+    let state = installFace(newMatch(), CONVERT_STRIKE.id);
     const dieId = dieIdOf(state);
     const die = state.dice[dieId]!;
     const slots = die.slots.map((slot, index) =>
@@ -151,7 +209,7 @@ describe("[Convert roll]", () => {
   });
 
   it("silenced convert does not fire Strike; pips still generate and bank", () => {
-    let state = installFace(newMatch(), SIGIL_FLARE);
+    let state = installFace(newMatch(), CONVERT_STRIKE.id);
     const dieId = dieIdOf(state);
     const die = state.dice[dieId]!;
     const slots = die.slots.map((slot, index) =>
@@ -184,8 +242,8 @@ describe("While showing", () => {
     });
   });
 
-  it("Halo Lamp pierce 1 while showing; gone after the die shows Shield", () => {
-    let rolled = rollShowingSlots(installFace(newMatch(), HALO_LAMP), 0);
+  it("pierce 1 while showing; gone after the die shows Shield", () => {
+    let rolled = rollShowingSlots(installFace(newMatch(), PIERCE_STANCE.id), 0);
     if (rolled.pendingDecision?.type === "choose-creature") {
       rolled = expectOk(
         advance(rolled, {
@@ -202,6 +260,8 @@ describe("While showing", () => {
     const targetId = creatureIdAt(rolled, P2, 0);
     const armed = withTokens(withShields(withPhase(rolled, "actions"), targetId, 1), attackerId, {
       mechanical: 1,
+      luminar: 1,
+      martial: 1,
     });
     const hit = expectOk(
       advance(armed, { type: "ATTACK", playerId: P1, attackerId, attackId: DRIVE_SHAFT, targetId }),
@@ -213,11 +273,11 @@ describe("While showing", () => {
     expect(whileShowingTotals(off, P1).pierce).toBe(0);
   });
 
-  it("Cogtooth while showing makes the next synthetic forge cheaper by 1", () => {
-    const rolled = rollShowingSlots(installFace(newMatch(), COGTOOTH), 0);
+  it("while showing makes the next synthetic forge cheaper by 1", () => {
+    const rolled = rollShowingSlots(installFace(newMatch(), TWO_PIP_MECHANICAL.id), 0);
     expect(whileShowingTotals(rolled, P1).forgeDiscount).toBe(1);
-    const definition = getCard(DIE_PUNCH);
-    if (definition === undefined) throw new Error("Die Punch");
+    const definition = getCard(TEST_PLAYABLE);
+    if (definition === undefined) throw new Error("playable");
     const showing = {
       ...withAttributePool(rolled, P1, { mechanical: 1 }),
       forgeDiscountThisTurn: {},
@@ -237,25 +297,25 @@ describe("While showing", () => {
 });
 
 describe("dice geometry", () => {
-  it("Gear Train arms Double when the other die shows the same attribute", () => {
-    let state = installFace(newMatch(), GEAR_TRAIN, 0, 0);
+  it("Double arms when the other die shows the same attribute", () => {
+    let state = installFace(newMatch(), DOUBLE_GEOMETRY.id, 0, 0);
     state = installFace(state, MECHANICAL, 1, 0);
     const after = rollShowingSlots(state, 0, 0);
     expect(after.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Gear Train does not arm Double when the other die shows a different attribute", () => {
-    let state = installFace(newMatch(), GEAR_TRAIN, 0, 0);
+  it("Double does not arm when the other die shows a different attribute", () => {
+    let state = installFace(newMatch(), DOUBLE_GEOMETRY.id, 0, 0);
     state = installFace(state, MARTIAL, 1, 0);
     const after = rollShowingSlots(state, 0, 0);
     expect(after.resolveNextFaceEffectTwice[P1]).toBeUndefined();
   });
 
   it("this-die-attribute-count and both-showing-synthetic on the helper", () => {
-    let state = installFace(newMatch(), GEAR_TRAIN, 0, 0);
+    let state = installFace(newMatch(), DOUBLE_GEOMETRY.id, 0, 0);
     state = installFace(state, MECHANICAL, 0, 1);
     state = installFace(state, MECHANICAL, 0, 2);
-    state = installFace(state, COGTOOTH, 1, 0);
+    state = installFace(state, TEST_SYNTHETIC_MECHANICAL_A, 1, 0);
     const die0 = dieIdOf(state, 0);
     const die1 = dieIdOf(state, 1);
     state = withDie(state, die0, { rolledSlotIndex: 0 });
@@ -280,7 +340,10 @@ describe("dice geometry", () => {
 
 describe("Stamp vs inherent pips", () => {
   it("Stamp does not mint a second copy of inherent pips", () => {
-    const base = installFace(withPile(withHand(withPhase(newMatch(), "actions"), P1, [DIE_PUNCH]), P1, 10), COGTOOTH);
+    const base = installFace(
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [STAMP.id]), P1, 10),
+      TWO_PIP_MECHANICAL.id,
+    );
     let rolled = withPhase(base, "roll");
     rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
     rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: SHIELD_SLOT });
@@ -310,26 +373,26 @@ describe("Stamp vs inherent pips", () => {
 
 describe("opening cap and basics", () => {
   it("counts whileShowing and convertRoll toward the on-roll cap; extra pips alone do not", () => {
-    expect(countsTowardOpeningOnRollCap(COGTOOTH)).toBe(true);
-    expect(countsTowardOpeningOnRollCap(HALO_LAMP)).toBe(true);
-    expect(countsTowardOpeningOnRollCap(SIGIL_FLARE)).toBe(true);
-    expect(countsTowardOpeningOnRollCap(DAWNWRIGHT)).toBe(false);
+    expect(countsTowardOpeningOnRollCap(TWO_PIP_MECHANICAL.id)).toBe(true);
+    expect(countsTowardOpeningOnRollCap(PIERCE_STANCE.id)).toBe(true);
+    expect(countsTowardOpeningOnRollCap(CONVERT_STRIKE.id)).toBe(true);
+    expect(countsTowardOpeningOnRollCap(DUAL_PIP_NATURAL.id)).toBe(false);
     expect(countsTowardOpeningOnRollCap(MECHANICAL)).toBe(false);
   });
 
-  it("Dawnwright is not an opening basic", () => {
-    expect(isOpeningBasicFace(DAWNWRIGHT)).toBe(false);
+  it("a named natural with rules text is not an opening basic", () => {
+    expect(isOpeningBasicFace(DUAL_PIP_NATURAL.id)).toBe(false);
     expect(isOpeningBasicFace(MECHANICAL)).toBe(true);
-    expect(isOpeningBasicFace(SHIELD_FACE_ID)).toBe(true);
+    expect(isOpeningBasicFace(TEST_SHIELD_FACE_ID)).toBe(true);
     const missing = validateStartingDice(
       [
-        [DAWNWRIGHT, MECHANICAL, MARTIAL, naturalFaceId("luminar"), naturalFaceId("luminar"), SHIELD_FACE_ID],
-        TEMPO_STARTING_DICE[1],
+        [DUAL_PIP_NATURAL.id, MECHANICAL, MARTIAL, testNaturalFaceId("luminar"), testNaturalFaceId("luminar"), TEST_SHIELD_FACE_ID],
+        TEST_STARTING_DICE[1],
       ],
-      ENGINE_TEST_FACE_DECK,
+      TEST_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
     expect(missing.ok).toBe(false);
-    if (!missing.ok) expect(missing.reason).toMatch(/dawnwright/i);
+    if (!missing.ok) expect(missing.reason).toMatch(/not in the face deck/);
   });
 });

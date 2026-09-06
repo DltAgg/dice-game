@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { MENDING_LIGHT, SCHOLARS_LIEN, TWIN_CAM } from "../content/cards.js";
-import { naturalFaceId, PYRE_OF_NAMES, SHIELD_FACE_ID } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import { type DieId, type FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { graveyardOf } from "../rules/cards.js";
 import { canOvercharge, legalOverchargeFaces } from "../rules/overcharge.js";
+import {
+  TEST_NATURAL_FORGE,
+  TEST_OVERCHARGE_ARCANE,
+  TEST_OVERCHARGE_MECHANICAL,
+  TEST_SHIELD_FACE_ID,
+  testFace,
+  testNaturalFaceId,
+} from "../testing/fixtures/index.js";
 import {
   eventTypes,
   expectOk,
@@ -20,9 +26,24 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const DARKNESS_NATURAL = naturalFaceId("darkness");
+const DARKNESS_NATURAL = testNaturalFaceId("darkness");
 const DARKNESS_SLOT = 0;
 const SHIELD_SLOT = 4;
+
+const CONVERT_KEEPER = testFace({
+  id: "face-test-convert-keeper",
+  kind: "synthetic",
+  symbol: "darkness",
+  convertRoll: true,
+  onRoll: [
+    {
+      type: "drain-life",
+      amount: 2,
+      target: { kind: "choose-enemy" },
+      with: { kind: "most-damaged-ally" },
+    },
+  ],
+});
 
 function dieIdOf(state: GameState, playerId = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
@@ -76,8 +97,8 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
 }
 
 describe("tactic Overcharge", () => {
-  it("Scholar's Lien Overcharges Darkness Natural face card; next roll generates Darkness and Arcane", () => {
-    const ready = actionsReady([SCHOLARS_LIEN]);
+  it("Overcharges a Darkness Natural face; next roll generates Darkness and Arcane", () => {
+    const ready = actionsReady([TEST_OVERCHARGE_ARCANE]);
     const cardId = handCardIdAt(ready, P1, 0);
     expect(canOvercharge(ready, P1, cardId)).toBe(true);
     expect(legalOverchargeFaces(ready, P1)).toContain(DARKNESS_NATURAL);
@@ -98,12 +119,12 @@ describe("tactic Overcharge", () => {
     expect(rolled.players[P1]?.attributePool.arcane).toBe(1);
   });
 
-  it("Overcharges Pyre of Names the same way (synthetic keeper)", () => {
-    const ready = installFace(actionsReady([SCHOLARS_LIEN]), PYRE_OF_NAMES);
+  it("Overcharges a convert synthetic the same way (keeper does not bank)", () => {
+    const ready = installFace(actionsReady([TEST_OVERCHARGE_ARCANE]), CONVERT_KEEPER.id);
     const charged = expectOk(
-      advance(ready, overchargeAction(P1, handCardIdAt(ready, P1, 0), PYRE_OF_NAMES)),
+      advance(ready, overchargeAction(P1, handCardIdAt(ready, P1, 0), CONVERT_KEEPER.id)),
     );
-    expect(charged.players[P1]?.overchargeByFace[PYRE_OF_NAMES]).toEqual(["arcane"]);
+    expect(charged.players[P1]?.overchargeByFace[CONVERT_KEEPER.id]).toEqual(["arcane"]);
 
     const rolled = rollShowingSlot(charged, DARKNESS_SLOT);
     expect(rolled.players[P1]?.attributePool.darkness ?? 0).toBe(0);
@@ -112,7 +133,7 @@ describe("tactic Overcharge", () => {
   });
 
   it("one Overcharge on two copies generates Arcane once per showing die", () => {
-    const ready = installFace(actionsReady([SCHOLARS_LIEN]), DARKNESS_NATURAL, DARKNESS_SLOT, 1);
+    const ready = installFace(actionsReady([TEST_OVERCHARGE_ARCANE]), DARKNESS_NATURAL, DARKNESS_SLOT, 1);
     expect(legalOverchargeFaces(ready, P1).filter((id) => id === DARKNESS_NATURAL)).toHaveLength(1);
 
     const charged = expectOk(
@@ -127,7 +148,7 @@ describe("tactic Overcharge", () => {
 
   it("overwrite of one copy keeps Overcharge on the remaining copy", () => {
     const ready = installFace(
-      actionsReady([SCHOLARS_LIEN, MENDING_LIGHT]),
+      actionsReady([TEST_OVERCHARGE_ARCANE, TEST_NATURAL_FORGE]),
       DARKNESS_NATURAL,
       DARKNESS_SLOT,
       1,
@@ -153,7 +174,7 @@ describe("tactic Overcharge", () => {
   });
 
   it("overwrite of the last copy clears Overcharge", () => {
-    const ready = actionsReady([SCHOLARS_LIEN, MENDING_LIGHT]);
+    const ready = actionsReady([TEST_OVERCHARGE_ARCANE, TEST_NATURAL_FORGE]);
     const dieId = dieIdOf(ready);
     const charged = expectOk(
       advance(ready, overchargeAction(P1, handCardIdAt(ready, P1, 0), DARKNESS_NATURAL)),
@@ -165,7 +186,7 @@ describe("tactic Overcharge", () => {
       ),
     );
     expect(forged.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toBeUndefined();
-    expect(forged.dice[dieId]?.slots[DARKNESS_SLOT]?.faceCardId).toBe(naturalFaceId("luminar"));
+    expect(forged.dice[dieId]?.slots[DARKNESS_SLOT]?.faceCardId).toBe(testNaturalFaceId("luminar"));
 
     const rolled = rollShowingSlot(forged, DARKNESS_SLOT);
     expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
@@ -173,7 +194,7 @@ describe("tactic Overcharge", () => {
   });
 
   it("refuses a second Overcharge the same turn and leaves state identity unchanged", () => {
-    const ready = actionsReady([SCHOLARS_LIEN, SCHOLARS_LIEN]);
+    const ready = actionsReady([TEST_OVERCHARGE_ARCANE, TEST_OVERCHARGE_ARCANE]);
     const charged = expectOk(
       advance(ready, overchargeAction(P1, handCardIdAt(ready, P1, 0), DARKNESS_NATURAL)),
     );
@@ -187,7 +208,7 @@ describe("tactic Overcharge", () => {
   });
 
   it("stacks two Overcharges on the same face: next roll Generates +2", () => {
-    const ready = actionsReady([SCHOLARS_LIEN, SCHOLARS_LIEN]);
+    const ready = actionsReady([TEST_OVERCHARGE_ARCANE, TEST_OVERCHARGE_ARCANE]);
     const firstId = handCardIdAt(ready, P1, 0);
     const secondId = handCardIdAt(ready, P1, 1);
     const once = expectOk(advance(ready, overchargeAction(P1, firstId, DARKNESS_NATURAL)));
@@ -205,8 +226,8 @@ describe("tactic Overcharge", () => {
     expect(rolled.players[P1]?.attributePool.arcane).toBe(2);
   });
 
-  it("synthetic-forge card can Overcharge (Twin Cam → Mechanical)", () => {
-    const ready = actionsReady([TWIN_CAM]);
+  it("synthetic-forge card can Overcharge with Mechanical", () => {
+    const ready = actionsReady([TEST_OVERCHARGE_MECHANICAL]);
     const cardId = handCardIdAt(ready, P1, 0);
     expect(canOvercharge(ready, P1, cardId)).toBe(true);
     const charged = expectOk(advance(ready, overchargeAction(P1, cardId, DARKNESS_NATURAL)));
@@ -219,11 +240,11 @@ describe("tactic Overcharge", () => {
   });
 
   it("Shield / untyped face is illegal", () => {
-    const ready = actionsReady([SCHOLARS_LIEN]);
-    expect(legalOverchargeFaces(ready, P1)).not.toContain(SHIELD_FACE_ID);
+    const ready = actionsReady([TEST_OVERCHARGE_ARCANE]);
+    expect(legalOverchargeFaces(ready, P1)).not.toContain(TEST_SHIELD_FACE_ID);
     const result = advance(
       ready,
-      overchargeAction(P1, handCardIdAt(ready, P1, 0), SHIELD_FACE_ID),
+      overchargeAction(P1, handCardIdAt(ready, P1, 0), TEST_SHIELD_FACE_ID),
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("INVALID_FACE");
@@ -231,7 +252,7 @@ describe("tactic Overcharge", () => {
   });
 
   it("suppress inherent still generates Overcharge pips", () => {
-    const ready = actionsReady([SCHOLARS_LIEN]);
+    const ready = actionsReady([TEST_OVERCHARGE_ARCANE]);
     const dieId = dieIdOf(ready);
     const charged = expectOk(
       advance(ready, overchargeAction(P1, handCardIdAt(ready, P1, 0), DARKNESS_NATURAL)),
@@ -247,7 +268,7 @@ describe("tactic Overcharge", () => {
   });
 
   it("does not Overcharge an opponent's face card", () => {
-    const ready = withHand(withPhase(newMatch(), "actions"), P1, [SCHOLARS_LIEN]);
+    const ready = withHand(withPhase(newMatch(), "actions"), P1, [TEST_OVERCHARGE_ARCANE]);
     const onTheirs = installFaceOnDie(
       ready,
       dieIdOf(ready, P2),

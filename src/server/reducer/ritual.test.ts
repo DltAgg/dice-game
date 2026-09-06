@@ -1,12 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { DAYBREAK_RITE } from "../content/cards.js";
 import type { CardDuration } from "../model/cards.js";
 import { asCardInstanceId, asEffectInstanceId, type CardInstanceId } from "../model/ids.js";
 import type { ChainLink, GameState } from "../model/state.js";
 import { graveyardOf, ritualsOf } from "../rules/cards.js";
+import { testCard } from "../testing/fixtures/index.js";
 import { newMatch, P1 } from "../testing/scenario.js";
 import { finishRitualActivation } from "./commands/ritual.js";
 import { createDraft } from "./draft.js";
+
+const CONTINUOUS_RITUAL = testCard({
+  id: "card-test-continuous-ritual",
+  playCost: { luminar: 3 },
+  attribute: "luminar",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { luminar: 3 },
+    effects: [{ type: "heal", amount: 2, target: { kind: "choose-ally" } }],
+  },
+});
 
 function withReadyRitual(state: GameState): { state: GameState; instanceId: CardInstanceId } {
   const player = state.players[P1];
@@ -20,7 +32,7 @@ function withReadyRitual(state: GameState): { state: GameState; instanceId: Card
         ...state.cards,
         [instanceId]: {
           id: instanceId,
-          cardId: DAYBREAK_RITE,
+          cardId: CONTINUOUS_RITUAL.id,
           ownerId: P1,
           zone: "ritual",
           attachedToCreatureId: null,

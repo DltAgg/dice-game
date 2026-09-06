@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { HOMEWARD_SEAL, IDLER_GEAR, NIGHTMARROW_PACT, QUICKSET_JIG } from "../content/cards.js";
-import { COGTOOTH } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import { asCardInstanceId, asEffectInstanceId, type CreatureId, type DieId } from "../model/ids.js";
 import type { BounceHostChoice } from "../model/targeting.js";
@@ -8,6 +6,10 @@ import type { GameState } from "../model/state.js";
 import { equipmentOf, graveyardOf, handOf, overloadsOf, ritualsOf } from "../rules/cards.js";
 import { createDraft } from "./draft.js";
 import { applyDeferredEffect, drainResolution } from "./resolution.js";
+import {
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -23,12 +25,62 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
+const BOUNCE = testCard({
+  id: "card-test-bounce",
+  playCost: { arcane: 2 },
+  attribute: "arcane",
+  effect: {
+    effects: [
+      {
+        type: "bounce",
+        hosts: ["ritual", "equipment", "overload"],
+        target: { kind: "choose-opponent-bounce-card", hosts: ["ritual", "equipment", "overload"] },
+      },
+    ],
+  },
+});
+
+const PLACE_RITUAL = testCard({
+  id: "card-test-bounce-ritual",
+  playCost: { darkness: 2 },
+  attribute: "darkness",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { darkness: 1 },
+    effects: [
+      {
+        type: "drain-life",
+        amount: 2,
+        target: { kind: "choose-enemy" },
+        with: { kind: "choose-ally" },
+      },
+    ],
+  },
+});
+
+const EQUIP = testCard({
+  id: "card-test-bounce-equip",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "equipment",
+  equipment: { mayTargetOpponent: false, abilities: [] },
+});
+
+const OVERLOAD = testCard({
+  id: "card-test-bounce-overload",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
+});
+
 const actionsReady = (playerId: typeof P1 | typeof P2, cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), playerId, cards), playerId, 10);
 
-function playHomewardSeal(state: GameState): GameState {
+function playBounce(state: GameState): GameState {
   const ready = withActivePlayer(
-    withPile(withHand(withPhase(state, "actions"), P1, [HOMEWARD_SEAL]), P1, 10),
+    withPile(withHand(withPhase(state, "actions"), P1, [BOUNCE.id]), P1, 10),
     P1,
   );
   return expectOk(
@@ -57,18 +109,20 @@ function dieIdOf(state: GameState, playerId = P2, index = 0): DieId {
   return id;
 }
 
-function installFace(state: GameState, playerId: typeof P1 | typeof P2, faceCardId: typeof COGTOOTH): GameState {
+function installFace(state: GameState, playerId: typeof P1 | typeof P2): GameState {
   const dieId = dieIdOf(state, playerId);
   const die = state.dice[dieId];
   if (die === undefined) throw new Error("die");
   const slots = die.slots.map((entry: DieState["slots"][number], index) =>
-    index === 0 ? { ...entry, faceCardId, faceCardOwnerId: playerId } : entry,
+    index === 0
+      ? { ...entry, faceCardId: TEST_SYNTHETIC_MECHANICAL_A, faceCardOwnerId: playerId }
+      : entry,
   );
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
 function placeP2Ritual(): GameState {
-  const ready = withActivePlayer(actionsReady(P2, [NIGHTMARROW_PACT]), P2);
+  const ready = withActivePlayer(actionsReady(P2, [PLACE_RITUAL.id]), P2);
   return resolveOpenChain(
     expectOk(
       advance(ready, {
@@ -81,7 +135,7 @@ function placeP2Ritual(): GameState {
 }
 
 function attachP2Equipment(): GameState {
-  const ready = withActivePlayer(actionsReady(P2, [QUICKSET_JIG]), P2);
+  const ready = withActivePlayer(actionsReady(P2, [EQUIP.id]), P2);
   const bearerId = creatureIdAt(ready, P2, 0);
   return resolveOpenChain(
     expectOk(
@@ -96,15 +150,15 @@ function attachP2Equipment(): GameState {
 }
 
 function attachP2Overload(): GameState {
-  const ready = withActivePlayer(actionsReady(P2, [IDLER_GEAR]), P2);
-  const installed = installFace(ready, P2, COGTOOTH);
+  const ready = withActivePlayer(actionsReady(P2, [OVERLOAD.id]), P2);
+  const installed = installFace(ready, P2);
   return resolveOpenChain(
     expectOk(
       advance(installed, {
         type: "PLAY_CARD",
         playerId: P2,
         cardInstanceId: handCardIdAt(installed, P2, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     ),
   );
@@ -117,7 +171,7 @@ describe("[Bounce] instant", () => {
     if (ritual === undefined) throw new Error("ritual");
     expect(ritual.ritualOrientation).not.toBeNull();
 
-    const after = chooseBounce(playHomewardSeal(placed), {
+    const after = chooseBounce(playBounce(placed), {
       host: "ritual",
       cardInstanceId: ritual.id,
     });
@@ -137,7 +191,7 @@ describe("[Bounce] instant", () => {
     if (gear === undefined) throw new Error("equipment");
     const bearerId = gear.attachedToCreatureId as CreatureId;
 
-    const after = chooseBounce(playHomewardSeal(equipped), {
+    const after = chooseBounce(playBounce(equipped), {
       host: "equipment",
       cardInstanceId: gear.id,
     });
@@ -153,26 +207,26 @@ describe("[Bounce] instant", () => {
     const overload = overloadsOf(attached, P2)[0];
     if (overload === undefined) throw new Error("overload");
     const dieId = dieIdOf(attached, P2);
-    expect(attached.dice[dieId]?.slots[0]?.faceCardId).toBe(COGTOOTH);
+    expect(attached.dice[dieId]?.slots[0]?.faceCardId).toBe(TEST_SYNTHETIC_MECHANICAL_A);
 
-    const after = chooseBounce(playHomewardSeal(attached), {
+    const after = chooseBounce(playBounce(attached), {
       host: "overload",
       cardInstanceId: overload.id,
     });
     expect(overloadsOf(after, P2)).toHaveLength(0);
     expect(handOf(after, P2).some((card) => card.id === overload.id)).toBe(true);
-    expect(after.dice[dieId]?.slots[0]?.faceCardId).toBe(COGTOOTH);
+    expect(after.dice[dieId]?.slots[0]?.faceCardId).toBe(TEST_SYNTHETIC_MECHANICAL_A);
     expect(eventTypesOf(after)).not.toContain("overload-destroyed");
   });
 
   it("opens a mixed chooser when at least one legal host exists", () => {
-    const state = playHomewardSeal(attachP2Equipment());
+    const state = playBounce(attachP2Equipment());
     expect(state.pendingDecision?.type).toBe("choose-bounce-card");
     expect(eventTypesOf(state)).toContain("choose-bounce-card-started");
   });
 
   it("whiffs when the legal set is empty", () => {
-    const state = playHomewardSeal(newMatch());
+    const state = playBounce(newMatch());
     expect(state.pendingDecision).toBeNull();
     expect(eventTypesOf(state)).not.toContain("card-bounced");
   });
@@ -208,7 +262,7 @@ describe("[Bounce] instant", () => {
     const placed = placeP2Ritual();
     const ritual = ritualsOf(placed, P2)[0];
     if (ritual === undefined) throw new Error("ritual");
-    const after = chooseBounce(playHomewardSeal(placed), {
+    const after = chooseBounce(playBounce(placed), {
       host: "ritual",
       cardInstanceId: ritual.id,
     });

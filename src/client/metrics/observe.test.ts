@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { advance, type GameAction } from "@server";
-import { COG_DRAFT } from "@server/content/cards.js";
-import { COGTOOTH } from "@server/content/faces.js";
+import { TEST_PLAYABLE, TEST_SYNTHETIC_MECHANICAL_A } from "@server/testing/fixtures/index.js";
 import {
   handCardIdAt,
   newMatch,
@@ -166,7 +165,7 @@ describe("applyObservation", () => {
   });
 
   it("counts PLAY_CARD toward effect plays, not forge", () => {
-    const start = withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10);
+    const start = withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10);
     let { recording } = applyObservation(
       null,
       { prevState: null, state: start, action: null, accepted: true, error: null },
@@ -189,7 +188,7 @@ describe("applyObservation", () => {
 
     expect(recording.totalCardsPlayed).toBe(1);
     expect(recording.totalCardsForged).toBe(0);
-    expect(recording.cardPlayCounts["Cog Draft (card-cog-draft)"]).toBe(1);
+    expect(recording.cardPlayCounts["Test Playable (card-test-playable)"]).toBe(1);
     expect(recording.cardForgeCounts).toEqual({});
     expect(recording.turns.some((turn) => turn.cardsPlayed === 1 && turn.cardsForged === 0)).toBe(
       true,
@@ -198,7 +197,7 @@ describe("applyObservation", () => {
 
   it("counts a forged tactic once even when it installs two faces", () => {
     const start = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]),
+      withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
       P1,
       10,
     );
@@ -217,7 +216,7 @@ describe("applyObservation", () => {
       cardInstanceId: handCardIdAt(start, P1, 0),
       dieId,
       slotIndexes: [4],
-      faceCardId: COGTOOTH,
+      faceCardId: TEST_SYNTHETIC_MECHANICAL_A,
     };
     const forged = advance(start, forgeAction);
     expect(forged.ok).toBe(true);
@@ -230,6 +229,6 @@ describe("applyObservation", () => {
     ).recording;
 
     expect(recording.totalCardsForged).toBe(1);
-    expect(recording.cardForgeCounts["Cog Draft (card-cog-draft)"]).toBe(1);
+    expect(recording.cardForgeCounts["Test Playable (card-test-playable)"]).toBe(1);
   });
 });

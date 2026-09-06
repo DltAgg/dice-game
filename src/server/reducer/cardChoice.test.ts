@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { IDLER_GEAR, QUICKSET_JIG } from "../content/cards.js";
-import { COGTOOTH } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -8,6 +6,10 @@ import { equipmentOf, graveyardOf, overloadsOf } from "../rules/cards.js";
 import { createDraft } from "./draft.js";
 import { drainResolution, pushEffect } from "./resolution.js";
 import { advance } from "./reduce.js";
+import {
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -21,6 +23,22 @@ import {
   withPhase,
   withPile,
 } from "../testing/scenario.js";
+
+const EQUIP = testCard({
+  id: "card-test-choice-equip",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "equipment",
+  equipment: { mayTargetOpponent: false, abilities: [] },
+});
+
+const OVERLOAD = testCard({
+  id: "card-test-choice-overload",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
+});
 
 const actionsFor = (playerId: typeof P1 | typeof P2, cards: Parameters<typeof withHand>[2]) =>
   withActivePlayer(
@@ -37,19 +55,20 @@ function dieIdOf(state: GameState, playerId: typeof P1 | typeof P2, index = 0): 
 function installFace(
   state: GameState,
   playerId: typeof P1 | typeof P2,
-  faceId: typeof COGTOOTH,
 ): GameState {
   const dieId = dieIdOf(state, playerId);
   const die = state.dice[dieId];
   if (die === undefined) throw new Error("die");
   const slots = die.slots.map((slot: DieState["slots"][number], index) =>
-    index === 0 ? { ...slot, faceCardId: faceId, faceCardOwnerId: playerId } : slot,
+    index === 0
+      ? { ...slot, faceCardId: TEST_SYNTHETIC_MECHANICAL_A, faceCardOwnerId: playerId }
+      : slot,
   );
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
 function attachP2Equipment(): GameState {
-  const ready = actionsFor(P2, [QUICKSET_JIG]);
+  const ready = actionsFor(P2, [EQUIP.id]);
   const bearerId = creatureIdAt(ready, P2, 0);
   return resolveOpenChain(
     expectOk(
@@ -64,14 +83,14 @@ function attachP2Equipment(): GameState {
 }
 
 function attachP2Overload(): GameState {
-  const ready = installFace(actionsFor(P2, [IDLER_GEAR]), P2, COGTOOTH);
+  const ready = installFace(actionsFor(P2, [OVERLOAD.id]), P2);
   return resolveOpenChain(
     expectOk(
       advance(ready, {
         type: "PLAY_CARD",
         playerId: P2,
         cardInstanceId: handCardIdAt(ready, P2, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     ),
   );
@@ -120,7 +139,7 @@ describe("choose-opponent-equipment / choose-opponent-overload", () => {
   it("refuses own equipment as a choose-opponent-equipment pick", () => {
     const p2Gear = attachP2Equipment();
     const p1Ready = withPile(
-      withHand(withActivePlayer(p2Gear, P1), P1, [QUICKSET_JIG]),
+      withHand(withActivePlayer(p2Gear, P1), P1, [EQUIP.id]),
       P1,
       10,
     );

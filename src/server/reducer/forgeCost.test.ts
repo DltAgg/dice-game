@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, MENDING_LIGHT, TWIN_CAM } from "../content/cards.js";
 import type { PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import { TEST_NATURAL_FORGE, TEST_PLAYABLE } from "../testing/fixtures/index.js";
 import { advance } from "./reduce.js";
 import {
   expectOk,
@@ -28,7 +28,7 @@ function withForgeDiscount(
 describe("FORGE_CARD pile cost", () => {
   it("natural forge installs without burning playCost", () => {
     const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [MENDING_LIGHT]),
+      withHand(withPhase(newMatch(), "actions"), P1, [TEST_NATURAL_FORGE]),
       P1,
       { luminar: 2 },
     );
@@ -42,7 +42,7 @@ describe("FORGE_CARD pile cost", () => {
 
   it("synthetic forge still burns playCost", () => {
     const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]),
+      withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
       P1,
       { mechanical: 3 },
     );
@@ -57,7 +57,7 @@ describe("FORGE_CARD pile cost", () => {
   it("forge discount reduces synthetic forge cost and is consumed", () => {
     const ready = withForgeDiscount(
       withAttributePool(
-        withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]),
+        withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
         P1,
         { mechanical: 1 },
       ),
@@ -73,10 +73,10 @@ describe("FORGE_CARD pile cost", () => {
     expect(forged.forgeDiscountThisTurn[P1]).toBeUndefined();
   });
 
-  it("Twin Cam with Discount 1 spends the last Mechanical (no synthetic-bank refund)", () => {
+  it("Discount 1 spends the last Mechanical on a 2-cost synthetic forge", () => {
     const ready = withForgeDiscount(
       withAttributePool(
-        withHand(withPhase(newMatch(), "actions"), P1, [TWIN_CAM]),
+        withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
         P1,
         { mechanical: 1 },
       ),
@@ -101,7 +101,7 @@ describe("FORGE_CARD pile cost", () => {
   it("natural forge leaves forgeDiscountThisTurn for a later synthetic", () => {
     let state = withForgeDiscount(
       withAttributePool(
-        withHand(withPhase(newMatch(), "actions"), P1, [MENDING_LIGHT, COG_DRAFT]),
+        withHand(withPhase(newMatch(), "actions"), P1, [TEST_NATURAL_FORGE, TEST_PLAYABLE]),
         P1,
         { luminar: 2, mechanical: 1 },
       ),

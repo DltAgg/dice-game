@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { DRIVESHAFT_RIG, MACHINE_SHOP, NIGHTMARROW_PACT, STILLED_VERSE } from "../content/cards.js";
-import { COGTOOTH } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import type { DieState } from "../model/dice.js";
 import {
@@ -19,6 +17,13 @@ import {
 import { createDraft } from "./draft.js";
 import { applyDeferredEffect, drainResolution } from "./resolution.js";
 import {
+  TEST_SQUAD,
+  testAttack,
+  testCard,
+  testCreature,
+  testFace,
+} from "../testing/fixtures/index.js";
+import {
   creatureIdAt,
   expectOk,
   handCardIdAt,
@@ -31,14 +36,107 @@ import {
   withPile,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { CRANK, RETOOL } from "../testing/tempoCatalogue.js";
+import { CRANK } from "../testing/tempoCatalogue.js";
+
+const SILENCE = testCard({
+  id: "card-test-silence",
+  playCost: { arcane: 2 },
+  attribute: "arcane",
+  effect: {
+    effects: [
+      {
+        type: "silence",
+        hosts: ["creature", "ritual", "face"],
+        target: { kind: "choose-opponent-silence-host", hosts: ["creature", "ritual", "face"] },
+      },
+    ],
+  },
+});
+
+const EQUIP = testCard({
+  id: "card-test-silence-equip",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-absorb",
+        symbols: ["mechanical"],
+        absorberRelation: "ally",
+        oncePerTurn: true,
+        effects: [{ type: "next-attack-bonus", amount: 1 }],
+      },
+    ],
+  },
+});
+
+const ACTIVATE_RITUAL = testCard({
+  id: "card-test-silence-activate-ritual",
+  playCost: { darkness: 2 },
+  attribute: "darkness",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { darkness: 1 },
+    effects: [
+      {
+        type: "drain-life",
+        amount: 2,
+        target: { kind: "choose-enemy" },
+        with: { kind: "choose-ally" },
+      },
+    ],
+  },
+});
+
+const STANDING_RITUAL = testCard({
+  id: "card-test-silence-standing-ritual",
+  playCost: { mechanical: 1, any: 1 },
+  attribute: "mechanical",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { mechanical: 1, any: 1 },
+    effects: [{ type: "reapply-die-modifiers" }],
+    standingAbilities: [
+      {
+        type: "on-roll-symbol",
+        symbol: "martial",
+        rollingPlayer: "controller",
+        effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      },
+    ],
+  },
+});
+
+const DISCOUNT_FACE = testFace({
+  id: "face-test-silence-discount",
+  kind: "synthetic",
+  symbol: "mechanical",
+  pips: { mechanical: 2 },
+  onRoll: [{ type: "play-cost-discount", amount: 1 }],
+});
+
+const FOLLOW_UP_ATTACK = testAttack({
+  id: "attack-test-silence-follow-up",
+  requires: { mechanical: 2, any: 1 },
+  discards: { mechanical: 2 },
+  followUpEffects: [{ type: "replace-synthetic-face", faces: 1, attribute: "mechanical" }],
+});
+const FOLLOW_UP_BODY = testCreature({
+  id: "creature-test-silence-follow-up",
+  attributes: ["mechanical"],
+  attacks: [FOLLOW_UP_ATTACK],
+});
 
 const actionsReady = (playerId: typeof P1 | typeof P2, cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), playerId, cards), playerId, 10);
 
-function playStilledVerse(state: GameState): GameState {
+function playSilence(state: GameState): GameState {
   const ready = withActivePlayer(
-    withPile(withHand(withPhase(state, "actions"), P1, [STILLED_VERSE]), P1, 10),
+    withPile(withHand(withPhase(state, "actions"), P1, [SILENCE.id]), P1, 10),
     P1,
   );
   return expectOk(
@@ -82,18 +180,18 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function installFace(state: GameState, playerId: typeof P1 | typeof P2, faceCardId: typeof COGTOOTH, slot = 0): GameState {
+function installFace(state: GameState, playerId: typeof P1 | typeof P2, slot = 0): GameState {
   const dieId = dieIdOf(state, playerId);
   const die = state.dice[dieId];
   if (die === undefined) throw new Error("die");
   const slots = die.slots.map((entry, index) =>
-    index === slot ? { ...entry, faceCardId, faceCardOwnerId: playerId } : entry,
+    index === slot ? { ...entry, faceCardId: DISCOUNT_FACE.id, faceCardOwnerId: playerId } : entry,
   );
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
 function attachEquipment(state: GameState, ownerId: typeof P2, creatureId: CreatureId): GameState {
-  const given = withHand(state, ownerId, [DRIVESHAFT_RIG]);
+  const given = withHand(state, ownerId, [EQUIP.id]);
   const cardInstanceId = handCardIdAt(given, ownerId, 0);
   const card = given.cards[cardInstanceId];
   if (card === undefined) throw new Error("equipment instance");
@@ -126,7 +224,7 @@ function attachEquipment(state: GameState, ownerId: typeof P2, creatureId: Creat
 
 describe("[Silence] instant", () => {
   it("opens a mixed chooser when any opposing host exists", () => {
-    const state = playStilledVerse(newMatch());
+    const state = playSilence(newMatch());
     expect(state.pendingDecision?.type).toBe("choose-silence-host");
     expect(eventTypesOf(state)).toContain("choose-silence-host-started");
   });
@@ -135,7 +233,7 @@ describe("[Silence] instant", () => {
     const attackerId = creatureIdAt(newMatch(), P2, 0);
     const targetId = creatureIdAt(newMatch(), P1, 0);
     let state = attachEquipment(newMatch(), P2, attackerId);
-    state = chooseSilence(playStilledVerse(state), { host: "creature", creatureId: attackerId });
+    state = chooseSilence(playSilence(state), { host: "creature", creatureId: attackerId });
     expect(isCreatureSilenced(state, attackerId)).toBe(true);
     expect(state.creatures[attackerId]?.silenceExpiresOnTurn).toBe(state.turn + 2);
 
@@ -179,9 +277,15 @@ describe("[Silence] instant", () => {
   });
 
   it("skips attack follow-up effects on a silenced attacker", () => {
-    const attackerId = creatureIdAt(newMatch(), P2, 0);
-    const targetId = creatureIdAt(newMatch(), P1, 0);
-    let state = chooseSilence(playStilledVerse(newMatch()), {
+    const match = newMatch({
+      players: [
+        { id: P1, squad: TEST_SQUAD, deck: [] },
+        { id: P2, squad: [FOLLOW_UP_BODY.id, ...TEST_SQUAD.slice(1)], deck: [] },
+      ],
+    });
+    const attackerId = creatureIdAt(match, P2, 0);
+    const targetId = creatureIdAt(match, P1, 0);
+    let state = chooseSilence(playSilence(match), {
       host: "creature",
       creatureId: attackerId,
     });
@@ -191,7 +295,7 @@ describe("[Silence] instant", () => {
         type: "ATTACK",
         playerId: P2,
         attackerId,
-        attackId: RETOOL,
+        attackId: FOLLOW_UP_ATTACK.id,
         targetId,
       }),
     );
@@ -200,7 +304,7 @@ describe("[Silence] instant", () => {
   });
 
   it("makes ACTIVATE_RITUAL illegal and skips continuous standing", () => {
-    let state = actionsReady(P2, [NIGHTMARROW_PACT, MACHINE_SHOP]);
+    let state = actionsReady(P2, [ACTIVATE_RITUAL.id, STANDING_RITUAL.id]);
     state = withActivePlayer(state, P2);
     const pactId = handCardIdAt(state, P2, 0);
     const shopId = handCardIdAt(state, P2, 1);
@@ -208,7 +312,7 @@ describe("[Silence] instant", () => {
       advance(state, { type: "PLAY_CARD", playerId: P2, cardInstanceId: pactId }),
     );
     const ritualId = Object.values(state.cards).find(
-      (card) => card.cardId === NIGHTMARROW_PACT && card.zone === "ritual",
+      (card) => card.cardId === ACTIVATE_RITUAL.id && card.zone === "ritual",
     )?.id;
     if (ritualId === undefined) throw new Error("pact");
     state = {
@@ -224,7 +328,7 @@ describe("[Silence] instant", () => {
       advance(state, { type: "PLAY_CARD", playerId: P2, cardInstanceId: shopId }),
     );
     const shopRitualId = Object.values(state.cards).find(
-      (card) => card.cardId === MACHINE_SHOP && card.zone === "ritual",
+      (card) => card.cardId === STANDING_RITUAL.id && card.zone === "ritual",
     )?.id;
     if (shopRitualId === undefined) throw new Error("shop");
     state = {
@@ -235,7 +339,7 @@ describe("[Silence] instant", () => {
       },
     };
 
-    state = chooseSilence(playStilledVerse(state), { host: "ritual", cardInstanceId: ritualId });
+    state = chooseSilence(playSilence(state), { host: "ritual", cardInstanceId: ritualId });
     expect(isRitualSilenced(state, ritualId)).toBe(true);
 
     state = withActivePlayer(withPhase(state, "actions"), P2);
@@ -248,7 +352,7 @@ describe("[Silence] instant", () => {
     if (activate.ok) return;
     expect(activate.error).toBe("CARD_NOT_AVAILABLE");
 
-    state = chooseSilence(playStilledVerse(activate.state), {
+    state = chooseSilence(playSilence(activate.state), {
       host: "ritual",
       cardInstanceId: shopRitualId,
     });
@@ -264,10 +368,10 @@ describe("[Silence] instant", () => {
   });
 
   it("skips face onRoll and overloads on a silenced slot; pip still generates; other slot is free", () => {
-    let state = installFace(newMatch(), P2, COGTOOTH, 0);
-    state = installFace(state, P2, COGTOOTH, 1);
+    let state = installFace(newMatch(), P2, 0);
+    state = installFace(state, P2, 1);
     const dieId = dieIdOf(state, P2);
-    state = chooseSilence(playStilledVerse(state), { host: "face", dieId, slotIndex: 0 });
+    state = chooseSilence(playSilence(state), { host: "face", dieId, slotIndex: 0 });
     expect(isSlotSilenced(state, dieId, 0)).toBe(true);
     expect(isSlotSilenced(state, dieId, 1)).toBe(false);
 
@@ -288,7 +392,7 @@ describe("[Silence] instant", () => {
 
   it("lasts through the opponent's turn and clears at the start of the silencer's next turn", () => {
     const creatureId = creatureIdAt(newMatch(), P2, 0);
-    let state = chooseSilence(playStilledVerse(newMatch()), {
+    let state = chooseSilence(playSilence(newMatch()), {
       host: "creature",
       creatureId,
     });

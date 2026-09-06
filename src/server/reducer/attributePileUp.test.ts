@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DAYBREAK_RITE, MACHINE_SHOP } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { LUCENT_CHOIR, naturalFaceId } from "../content/faces.js";
 import { whileShowingTotals } from "../rules/whileShowing.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
@@ -10,6 +8,13 @@ import { ritualsOf } from "../rules/cards.js";
 import { usableSymbols } from "../rules/symbols.js";
 import { createDraft } from "./draft.js";
 import { createSymbol, drainResolution } from "./resolution.js";
+import {
+  TEST_CRANK,
+  TEST_RETOOL,
+  testCard,
+  testFace,
+  testNaturalFaceId,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -24,6 +29,41 @@ import {
   withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
+
+const EMPOWER_STANCE = testFace({
+  id: "face-test-pile-empower",
+  kind: "synthetic",
+  symbol: "luminar",
+  pips: { luminar: 2 },
+  whileShowing: [{ type: "empower", amount: 1 }],
+});
+
+const READY_RITUAL = testCard({
+  id: "card-test-pile-ready-ritual",
+  playCost: { mechanical: 1, any: 1 },
+  attribute: "mechanical",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { mechanical: 1, any: 1 },
+    effects: [{ type: "reapply-die-modifiers" }],
+  },
+});
+
+const SPEND_RITUAL = testCard({
+  id: "card-test-pile-spend-ritual",
+  playCost: { luminar: 3 },
+  attribute: "luminar",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { luminar: 3 },
+    effects: [
+      { type: "heal", amount: 2, target: { kind: "choose-ally" } },
+      { type: "heal", amount: 2, target: { kind: "choose-ally" } },
+    ],
+  },
+});
 
 function dieIdOf(state: GameState): DieId {
   const id = state.players[P1]?.dieIds[0];
@@ -44,8 +84,7 @@ describe("016 attribute pile-up", () => {
   it("auto-banks usable rolled attributes after ROLL_DICE", () => {
     let state = withPhase(newMatch(), "roll");
     const dieId = dieIdOf(state);
-    // Force a known Martial natural face on slot 0, then retain so roll keeps it.
-    state = installFace(state, naturalFaceId("martial"));
+    state = installFace(state, testNaturalFaceId("martial"));
     state = {
       ...state,
       dice: {
@@ -57,7 +96,6 @@ describe("016 attribute pile-up", () => {
         },
       },
     };
-    // Also retain other P1 dice so only one pip is generated.
     for (const id of state.players[P1]!.dieIds) {
       if (id === dieId) continue;
       const die = state.dice[id]!;
@@ -96,8 +134,8 @@ describe("016 attribute pile-up", () => {
     expect(after.log.some((e) => e.event.type === "attribute-token-gained")).toBe(true);
   });
 
-  it("Lucent Choir banks 2 Luminar and is an Empower stance, with no face On absorb", () => {
-    let state = installFace(withPhase(newMatch(), "roll"), LUCENT_CHOIR);
+  it("a 2-pip Empower stance banks 2 Luminar with no face On absorb", () => {
+    let state = installFace(withPhase(newMatch(), "roll"), EMPOWER_STANCE.id);
     const dieId = dieIdOf(state);
     const otherId = state.players[P1]?.dieIds[1];
     if (otherId === undefined) throw new Error("other die");
@@ -119,7 +157,7 @@ describe("016 attribute pile-up", () => {
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
-    const attack = def.attacks.find((a) => a.id === "attack-torque-wright-crank")!;
+    const attack = def.attacks.find((a) => a.id === TEST_CRANK)!;
     state = withAttributePool(state, P1, { mechanical: 1, luminar: 1 });
     const after = expectOk(
       advance(state, {
@@ -136,7 +174,7 @@ describe("016 attribute pile-up", () => {
   });
 
   it("ritual without Active-when is ready on place", () => {
-    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [MACHINE_SHOP]), P1, {
+    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [READY_RITUAL.id]), P1, {
       mechanical: 3,
     });
     state = expectOk(
@@ -170,7 +208,6 @@ describe("016 attribute pile-up", () => {
   it("Requires spends from the attribute pile", () => {
     let state = withAttributePool(withPhase(newMatch(), "actions"), P1, { martial: 1 });
     expect(state.players[P1]?.attributePool.martial).toBe(1);
-    // Manual bank of a leftover pool pip still works for tests that inject via withSymbols.
     state = withSymbols(state, P1, ["wild"]);
     const pip = Object.values(state.symbols)[0]!;
     state = expectOk(
@@ -216,8 +253,7 @@ describe("016 attribute pile-up", () => {
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
-    const attack = def.attacks.find((a) => a.id === "attack-torque-wright-retool")!;
-    // Requires Mechanical 2 + Any 1, Spend Mechanical 2.
+    const attack = def.attacks.find((a) => a.id === TEST_RETOOL)!;
     state = withAttributePool(state, P1, { mechanical: 2 });
     state = {
       ...state,
@@ -238,7 +274,7 @@ describe("016 attribute pile-up", () => {
   });
 
   it("ritual stays ready after pile spend once Active-when was unlocked", () => {
-    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [MACHINE_SHOP]), P1, {
+    let state = withAttributePool(withHand(withPhase(newMatch(), "actions"), P1, [READY_RITUAL.id]), P1, {
       mechanical: 3,
     });
     state = expectOk(
@@ -265,7 +301,7 @@ describe("016 attribute pile-up", () => {
 
   it("Resonance wildcards cover ritual Spend on activate", () => {
     let state = withHand(withPile(withPhase(newMatch(), "actions"), P1, 10), P1, [
-      DAYBREAK_RITE,
+      SPEND_RITUAL.id,
     ]);
     state = expectOk(
       advance(state, {
@@ -277,7 +313,6 @@ describe("016 attribute pile-up", () => {
     const ritualId = ritualsOf(state, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual");
 
-    // Need Luminar 2 for ready + Luminar 2 Spend; pile has 1, three wildcards.
     state = withAttributePool(state, P1, { luminar: 1 });
     state = {
       ...state,
@@ -285,7 +320,6 @@ describe("016 attribute pile-up", () => {
         [P1]: [{}, {}, {}],
       },
     };
-    // Bank a pip so refreshRitualOrientations sees wildcards + pile.
     state = withSymbols(state, P1, ["martial"]);
     const pip = Object.values(state.symbols)[0]!;
     state = expectOk(

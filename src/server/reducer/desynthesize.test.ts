@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { ANNEAL, IDLER_GEAR } from "../content/cards.js";
-import { COGTOOTH, naturalFaceId } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
-import { asEffectInstanceId, asSymbolInstanceId, type DieId, type FaceCardId } from "../model/ids.js";
+import {
+  asEffectInstanceId,
+  asFaceCardId,
+  asSymbolInstanceId,
+  type DieId,
+  type FaceCardId,
+} from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { graveyardOf, overloadsOf } from "../rules/cards.js";
 import { createDraft } from "./draft.js";
 import { applyDeferredEffect, drainResolution } from "./resolution.js";
+import { TEST_SYNTHETIC_MECHANICAL_A, testCard } from "../testing/fixtures/index.js";
 import {
   expectOk,
   handCardIdAt,
@@ -21,11 +26,29 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const MECHANICAL_NATURAL = naturalFaceId("mechanical");
+/** Engine peels synthetics onto production identity naturals, not fixture ids. */
+const MECHANICAL_NATURAL = asFaceCardId("face-natural-mechanical");
 
-function playAnneal(state: GameState): GameState {
+const DESYNTHESIZE = testCard({
+  id: "card-test-desynthesize",
+  playCost: { mechanical: 2, any: 2 },
+  attribute: "mechanical",
+  effect: {
+    effects: [{ type: "desynthesize", target: { kind: "choose-any-synthetic-slot" } }],
+  },
+});
+
+const OVERLOAD = testCard({
+  id: "card-test-desynth-overload",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
+});
+
+function playDesynthesize(state: GameState): GameState {
   const ready = withActivePlayer(
-    withPile(withHand(withPhase(state, "actions"), P1, [ANNEAL]), P1, 10),
+    withPile(withHand(withPhase(state, "actions"), P1, [DESYNTHESIZE.id]), P1, 10),
     P1,
   );
   return expectOk(
@@ -99,9 +122,9 @@ function withSlotPatch(
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
-function attachOverloadOnCogtooth(state: GameState): GameState {
+function attachOverloadOnSynthetic(state: GameState): GameState {
   const ready = withActivePlayer(
-    withPile(withHand(withPhase(state, "actions"), P2, [IDLER_GEAR]), P2, 10),
+    withPile(withHand(withPhase(state, "actions"), P2, [OVERLOAD.id]), P2, 10),
     P2,
   );
   return resolveOpenChain(
@@ -110,52 +133,52 @@ function attachOverloadOnCogtooth(state: GameState): GameState {
         type: "PLAY_CARD",
         playerId: P2,
         cardInstanceId: handCardIdAt(ready, P2, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     ),
   );
 }
 
 describe("[Desynthesize] instant", () => {
-  it("peels own-die Cogtooth to natural mechanical and returns the synthetic to pool", () => {
-    let state = installSynthetic(newMatch(), P1, P1, COGTOOTH);
-    expect(state.players[P1]?.facePool.includes(COGTOOTH)).toBe(false);
+  it("peels own-die synthetic to natural mechanical and returns the synthetic to pool", () => {
+    let state = installSynthetic(newMatch(), P1, P1, TEST_SYNTHETIC_MECHANICAL_A);
+    expect(state.players[P1]?.facePool.includes(TEST_SYNTHETIC_MECHANICAL_A)).toBe(false);
     const dieId = dieIdOf(state, P1);
-    state = chooseSlot(playAnneal(state), dieId, 0);
+    state = chooseSlot(playDesynthesize(state), dieId, 0);
     expect(state.dice[dieId]?.slots[0]?.faceCardId).toBe(MECHANICAL_NATURAL);
     expect(state.dice[dieId]?.slots[0]?.faceCardOwnerId).toBe(P1);
-    expect(state.players[P1]?.facePool.includes(COGTOOTH)).toBe(true);
+    expect(state.players[P1]?.facePool.includes(TEST_SYNTHETIC_MECHANICAL_A)).toBe(true);
     expect(state.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("peels an opponent-die synthetic; natural belongs to the die owner; synthetic returns to the forger", () => {
-    let state = installSynthetic(newMatch(), P2, P1, COGTOOTH);
+    let state = installSynthetic(newMatch(), P2, P1, TEST_SYNTHETIC_MECHANICAL_A);
     const p2 = state.players[P2];
     if (p2 === undefined) throw new Error("p2");
     state = {
       ...state,
       players: {
         ...state.players,
-        [P2]: { ...p2, facePool: p2.facePool.filter((id) => id !== COGTOOTH) },
+        [P2]: { ...p2, facePool: p2.facePool.filter((id) => id !== TEST_SYNTHETIC_MECHANICAL_A) },
       },
     };
-    expect(state.players[P1]?.facePool.includes(COGTOOTH)).toBe(false);
-    expect(state.players[P2]?.facePool.includes(COGTOOTH)).toBe(false);
+    expect(state.players[P1]?.facePool.includes(TEST_SYNTHETIC_MECHANICAL_A)).toBe(false);
+    expect(state.players[P2]?.facePool.includes(TEST_SYNTHETIC_MECHANICAL_A)).toBe(false);
     const dieId = dieIdOf(state, P2);
-    state = chooseSlot(playAnneal(state), dieId, 0);
+    state = chooseSlot(playDesynthesize(state), dieId, 0);
     expect(state.dice[dieId]?.slots[0]?.faceCardId).toBe(MECHANICAL_NATURAL);
     expect(state.dice[dieId]?.slots[0]?.faceCardOwnerId).toBe(P2);
-    expect(state.players[P1]?.facePool.includes(COGTOOTH)).toBe(true);
-    expect(state.players[P2]?.facePool.includes(COGTOOTH)).toBe(false);
+    expect(state.players[P1]?.facePool.includes(TEST_SYNTHETIC_MECHANICAL_A)).toBe(true);
+    expect(state.players[P2]?.facePool.includes(TEST_SYNTHETIC_MECHANICAL_A)).toBe(false);
   });
 
   it("clears overloads on that face when the last copy leaves", () => {
-    let state = installSynthetic(newMatch(), P2, P2, COGTOOTH);
-    state = attachOverloadOnCogtooth(state);
+    let state = installSynthetic(newMatch(), P2, P2, TEST_SYNTHETIC_MECHANICAL_A);
+    state = attachOverloadOnSynthetic(state);
     expect(overloadsOf(state, P2).length).toBeGreaterThan(0);
     const overloadId = overloadsOf(state, P2)[0]?.id;
     const dieId = dieIdOf(state, P2);
-    state = chooseSlot(playAnneal(state), dieId, 0);
+    state = chooseSlot(playDesynthesize(state), dieId, 0);
     expect(overloadsOf(state, P2)).toHaveLength(0);
     if (overloadId !== undefined) {
       expect(graveyardOf(state, P2).some((card) => card.id === overloadId)).toBe(true);
@@ -163,18 +186,18 @@ describe("[Desynthesize] instant", () => {
   });
 
   it("can desynthesize a forge-locked slot", () => {
-    let state = installSynthetic(newMatch(), P1, P1, COGTOOTH);
+    let state = installSynthetic(newMatch(), P1, P1, TEST_SYNTHETIC_MECHANICAL_A);
     state = withSlotPatch(state, P1, 0, { forgeLockRemaining: 4, corruptionMarkers: 2 });
     const dieId = dieIdOf(state, P1);
     expect(state.dice[dieId]?.slots[0]?.forgeLockRemaining).toBe(4);
-    state = chooseSlot(playAnneal(state), dieId, 0);
+    state = chooseSlot(playDesynthesize(state), dieId, 0);
     expect(state.dice[dieId]?.slots[0]?.faceCardId).toBe(MECHANICAL_NATURAL);
     expect(state.dice[dieId]?.slots[0]?.forgeLockRemaining ?? 0).toBe(0);
     expect(state.dice[dieId]?.slots[0]?.corruptionMarkers ?? 0).toBe(0);
   });
 
   it("leaves an already-generated pip on a showing slot; face id becomes natural", () => {
-    let state = installSynthetic(newMatch(), P1, P1, COGTOOTH);
+    let state = installSynthetic(newMatch(), P1, P1, TEST_SYNTHETIC_MECHANICAL_A);
     const dieId = dieIdOf(state, P1);
     const die = state.dice[dieId];
     if (die === undefined) throw new Error("die");
@@ -194,27 +217,27 @@ describe("[Desynthesize] instant", () => {
         },
       },
     };
-    state = chooseSlot(playAnneal(state), dieId, 0);
+    state = chooseSlot(playDesynthesize(state), dieId, 0);
     expect(state.dice[dieId]?.slots[0]?.faceCardId).toBe(MECHANICAL_NATURAL);
     expect(state.symbols[symbolId]?.status).toBe("rolled");
     expect(state.symbols[symbolId]?.symbol).toBe("mechanical");
   });
 
   it("whiffs when no synthetics are on any die", () => {
-    const state = playAnneal(newMatch());
+    const state = playDesynthesize(newMatch());
     expect(state.pendingDecision).toBeNull();
     expect(state.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("does not open replace-synthetic-face pending", () => {
-    const state = installSynthetic(newMatch(), P1, P1, COGTOOTH);
-    const opened = playAnneal(state);
+    const state = installSynthetic(newMatch(), P1, P1, TEST_SYNTHETIC_MECHANICAL_A);
+    const opened = playDesynthesize(state);
     expect(opened.pendingDecision?.type).toBe("choose-die-slot");
     expect(opened.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("applies from a declared slot without a chooser (injected)", () => {
-    const installed = installSynthetic(newMatch(), P1, P1, COGTOOTH);
+    const installed = installSynthetic(newMatch(), P1, P1, TEST_SYNTHETIC_MECHANICAL_A);
     const dieId = dieIdOf(installed, P1);
     const draft = createDraft(withPhase(installed, "actions"));
     applyDeferredEffect(draft, {

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, DIE_PUNCH, RECAST, SHIM_KIT } from "../content/cards.js";
-import { COGTOOTH, MAINSPRING } from "../content/faces.js";
+import {
+  TEST_PLAYABLE,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   eventTypes,
   expectOk,
@@ -13,34 +16,66 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
+const STAMP = testCard({
+  id: "card-test-utility-stamp",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  effect: { effects: [{ type: "reapply-die-modifiers" }] },
+});
+
+const SILENCE = testCard({
+  id: "card-test-utility-silence",
+  playCost: { mechanical: 2, any: 1 },
+  attribute: "mechanical",
+  effect: {
+    effects: [
+      {
+        type: "silence",
+        hosts: ["face"],
+        target: { kind: "choose-opponent-silence-host", hosts: ["face"] },
+      },
+    ],
+  },
+});
+
+const REFORGE = testCard({
+  id: "card-test-utility-reforge",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  effect: {
+    effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
+  },
+});
+
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
-describe("Tempo generic utility", () => {
-  it("Cog Draft generates and draws", () => {
+describe("generic utility", () => {
+  it("a generate-and-draw instant generates and draws", () => {
     const after = expectOk(
-      advance(actionsReady([COG_DRAFT]), {
+      advance(actionsReady([TEST_PLAYABLE]), {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(actionsReady([COG_DRAFT]), P1, 0),
+        cardInstanceId: handCardIdAt(actionsReady([TEST_PLAYABLE]), P1, 0),
       }),
     );
     expect(eventTypes(after)).toContain("symbol-generated");
   });
 
-  it("Die Punch stamps after play", () => {
+  it("Stamp opens after play", () => {
     const after = expectOk(
-      advance(actionsReady([DIE_PUNCH]), {
+      advance(actionsReady([STAMP.id]), {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(actionsReady([DIE_PUNCH]), P1, 0),
+        cardInstanceId: handCardIdAt(actionsReady([STAMP.id]), P1, 0),
       }),
     );
     expect(eventTypes(after)).toContain("card-played");
   });
 
-  it("Shim Kit opens a silence choice", () => {
-    const ready = actionsReady([SHIM_KIT]);
+  it("Silence opens a host choice", () => {
+    const ready = actionsReady([SILENCE.id]);
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -51,8 +86,8 @@ describe("Tempo generic utility", () => {
     expect(after.pendingDecision?.type).toBe("choose-silence-host");
   });
 
-  it("Recast opens replace-synthetic-face", () => {
-    let state = actionsReady([RECAST]);
+  it("Reforge opens replace-synthetic-face", () => {
+    let state = actionsReady([REFORGE.id]);
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("die");
     state = {
@@ -62,7 +97,9 @@ describe("Tempo generic utility", () => {
         [dieId]: {
           ...state.dice[dieId]!,
           slots: state.dice[dieId]!.slots.map((slot, index) =>
-            index === 0 ? { ...slot, faceCardId: MAINSPRING, faceCardOwnerId: P1 } : slot,
+            index === 0
+              ? { ...slot, faceCardId: TEST_SYNTHETIC_MECHANICAL_A, faceCardOwnerId: P1 }
+              : slot,
           ),
         },
       },
@@ -75,6 +112,5 @@ describe("Tempo generic utility", () => {
       }),
     );
     expect(played.pendingDecision?.type).toBe("replace-synthetic-face");
-    expect(COGTOOTH).toBeDefined();
   });
 });

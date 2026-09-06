@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCard, SHIM_KIT } from "../content/cards.js";
+import { testCard } from "../testing/fixtures/index.js";
 import {
   canAffordUnderCaps,
   discountedRequirementNeed,
@@ -7,7 +7,7 @@ import {
   reduceRequirement,
 } from "./discounts.js";
 
-/** Multi-attribute header used by several Tempo synthetic forges. */
+/** Multi-attribute header used by several synthetic forges. */
 const DUAL_COST = { mechanical: 1, luminar: 1 };
 
 describe("flexible attribute-pile discounts", () => {
@@ -44,8 +44,10 @@ describe("flexible attribute-pile discounts", () => {
     expect(canAffordUnderCaps({}, DUAL_COST, 1, 1)).toBe(true);
   });
 
-  it("reads live Tempo card costs", () => {
-    expect(getCard(SHIM_KIT)?.playCost).toEqual({ mechanical: 2, any: 1 });
+  it("reads a hybrid printed header from a fixture card", () => {
+    const hybridHeader = testCard({ playCost: { mechanical: 2, any: 1 } }).playCost ?? {};
+    expect(hybridHeader).toEqual({ mechanical: 2, any: 1 });
+    expect(discountedRequirementNeed(hybridHeader, 1)).toBe(2);
   });
 
   const hybrid = { arcane: 1, any: 2 };

@@ -2,6 +2,7 @@ import type { CardDefinition } from "../model/cards.js";
 import { asCardId, type CardId } from "../model/ids.js";
 import cardOrder from "./cards/_order.json";
 import { catalogueFromModules } from "./catalogueLoader.js";
+import { lookupOverlayCard } from "./runtimeOverlay.js";
 
 /**
  * Header play/forge costs use the attribute pile (`playCost`). See docs/RULEBOOK.md §6.
@@ -86,5 +87,6 @@ const cardModules = import.meta.glob("./cards/card-*.json", { eager: true, impor
 const loadedCards = catalogueFromModules<CardDefinition>(cardModules, cardOrder);
 
 export const CARDS: Readonly<Record<string, CardDefinition>> = loadedCards.byId;
-export const getCard = (id: CardId): CardDefinition | undefined => CARDS[id];
+export const getCard = (id: CardId): CardDefinition | undefined =>
+  lookupOverlayCard(id) ?? CARDS[id];
 export const ALL_CARDS: readonly CardDefinition[] = loadedCards.list;

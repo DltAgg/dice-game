@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { DIE_PUNCH, IDLER_GEAR, SCHOLARS_LIEN } from "../content/cards.js";
-import { COGTOOTH } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import {
+  TEST_OVERCHARGE_ARCANE,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   expectOk,
   handCardIdAt,
@@ -17,6 +20,21 @@ import {
 } from "../testing/scenario.js";
 
 const SHIELD_SLOT = 4;
+
+const STAMP = testCard({
+  id: "card-test-stamp-die",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  effect: { effects: [{ type: "reapply-die-modifiers" }] },
+});
+
+const DISCOUNT_OVERLOAD = testCard({
+  id: "card-test-stamp-overload",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
+});
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -33,17 +51,19 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function installFace(state: GameState, faceId: typeof COGTOOTH): GameState {
+function installFace(state: GameState): GameState {
   const dieId = dieIdOf(state);
   const die = state.dice[dieId];
   if (die === undefined) throw new Error("die");
   const slots = die.slots.map((slot, index) =>
-    index === 0 ? { ...slot, faceCardId: faceId, faceCardOwnerId: P1 } : slot,
+    index === 0
+      ? { ...slot, faceCardId: TEST_SYNTHETIC_MECHANICAL_A, faceCardOwnerId: P1 }
+      : slot,
   );
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
-function rollShowingCogtooth(state: GameState): GameState {
+function rollShowingSynthetic(state: GameState): GameState {
   let rolled = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
   rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: SHIELD_SLOT });
@@ -65,16 +85,16 @@ function playStampOnDie(state: GameState, dieId: DieId): GameState {
 
 describe("[Stamp] reapply-die-modifiers", () => {
   it("re-fires On roll and overload generate without a new rolled pip", () => {
-    const base = installFace(actionsReady([IDLER_GEAR, DIE_PUNCH]), COGTOOTH);
+    const base = installFace(actionsReady([DISCOUNT_OVERLOAD.id, STAMP.id]));
     const attached = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     );
-    const rolled = rollShowingCogtooth(attached);
+    const rolled = rollShowingSynthetic(attached);
     const dieId = dieIdOf(rolled);
     const mechAfterRoll = rolled.players[P1]?.attributePool.mechanical ?? 0;
     const lumAfterRoll = rolled.players[P1]?.attributePool.luminar ?? 0;
@@ -84,7 +104,6 @@ describe("[Stamp] reapply-die-modifiers", () => {
 
     const stamped = playStampOnDie(rolled, dieId);
 
-    // Play Die Punch (2 Mechanical, minus Idler Gear's On roll [Discount 1]).
     expect(stamped.players[P1]?.attributePool.mechanical ?? 0).toBe(mechAfterRoll - 1);
     expect(stamped.players[P1]?.attributePool.luminar ?? 0).toBe(lumAfterRoll);
     expect(
@@ -93,11 +112,11 @@ describe("[Stamp] reapply-die-modifiers", () => {
   });
 
   it("re-fires Overcharge generate", () => {
-    let state = installFace(actionsReady([SCHOLARS_LIEN, DIE_PUNCH]), COGTOOTH);
+    let state = installFace(actionsReady([TEST_OVERCHARGE_ARCANE, STAMP.id]));
     state = expectOk(
-      advance(state, overchargeAction(P1, handCardIdAt(state, P1, 0), COGTOOTH)),
+      advance(state, overchargeAction(P1, handCardIdAt(state, P1, 0), TEST_SYNTHETIC_MECHANICAL_A)),
     );
-    const rolled = rollShowingCogtooth(state);
+    const rolled = rollShowingSynthetic(state);
     const dieId = dieIdOf(rolled);
     const arcaneBefore = rolled.players[P1]?.attributePool.arcane ?? 0;
 

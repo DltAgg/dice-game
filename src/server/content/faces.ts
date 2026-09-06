@@ -8,6 +8,7 @@ import { asFaceCardId, type FaceCardId } from "../model/ids.js";
 import { SHIELD, type SymbolType } from "../model/symbols.js";
 import faceOrder from "./faces/_order.json";
 import { catalogueFromModules } from "./catalogueLoader.js";
+import { lookupOverlayFace } from "./runtimeOverlay.js";
 
 /**
  * Face cards backing die faces (spec `004`).
@@ -84,7 +85,8 @@ const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, impor
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);
 
 export const FACE_CARDS: Readonly<Record<string, FaceCardDefinition>> = loadedFaces.byId;
-export const getFaceCard = (id: FaceCardId): FaceCardDefinition | undefined => FACE_CARDS[id];
+export const getFaceCard = (id: FaceCardId): FaceCardDefinition | undefined =>
+  lookupOverlayFace(id) ?? FACE_CARDS[id];
 
 /** Catalogue order: starting naturals, untyped Shield, then named specials. */
 export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = loadedFaces.list;

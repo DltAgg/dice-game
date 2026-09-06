@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, GLINT_VEIL, QUICKSET_JIG } from "../content/cards.js";
 import { equipmentOf, graveyardOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
+import {
+  TEST_PLAYABLE,
+  TEST_REACTION_PREVENT,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -19,12 +23,21 @@ import {
 } from "../testing/scenario.js";
 import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
 
+const EQUIP_CREATURE = testCard({
+  id: "card-test-equip-creature",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "equipment",
+  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  equipment: { mayTargetOpponent: false, abilities: [] },
+});
+
 const actionsReady = (cards: Parameters<typeof withHand>[2], energy = 10) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
 
 describe("reaction chain (008)", () => {
   it("opens a window on instant play and resolves after both Pass", () => {
-    const state = actionsReady([COG_DRAFT]);
+    const state = actionsReady([TEST_PLAYABLE]);
     const opened = expectOk(
       advance(state, {
         type: "PLAY_CARD",
@@ -46,11 +59,11 @@ describe("reaction chain (008)", () => {
     expect(eventTypes(resolved)).toContain("chain-link-resolved");
   });
 
-  it("rejects Glint Veil when the top link is not an attack", () => {
+  it("rejects a prevent reaction when the top link is not an attack", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10),
       P2,
-      [GLINT_VEIL],
+      [TEST_REACTION_PREVENT],
     );
     const opened = expectOk(
       advance(ready, {
@@ -76,7 +89,7 @@ describe("reaction chain (008)", () => {
     const combat = withHand(
       withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10),
       P2,
-      [GLINT_VEIL],
+      [TEST_REACTION_PREVENT],
     );
 
     const opened = expectOk(
@@ -97,7 +110,7 @@ describe("reaction chain (008)", () => {
 
   it("P1's turn continues after an empty reaction chain resolves", () => {
     const state = withPile(
-      withHand(withPhase(withActivePlayer(newMatch(), P1), "actions"), P1, [COG_DRAFT]),
+      withHand(withPhase(withActivePlayer(newMatch(), P1), "actions"), P1, [TEST_PLAYABLE]),
       P1,
       10,
     );
@@ -116,9 +129,9 @@ describe("reaction chain (008)", () => {
   it("lets P2 pass and respond after a JSON round-trip of the window", () => {
     const state = withPile(
       withHand(
-        withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
+        withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10),
         P2,
-        [GLINT_VEIL],
+        [TEST_REACTION_PREVENT],
       ),
       P2,
       10,
@@ -148,7 +161,7 @@ describe("reaction chain (008)", () => {
 
   it("opens a window on equipment play", () => {
     const state = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [QUICKSET_JIG]),
+      withHand(withPhase(newMatch(), "actions"), P1, [EQUIP_CREATURE.id]),
       P1,
       10,
     );
@@ -166,14 +179,14 @@ describe("reaction chain (008)", () => {
     expect(equipmentOf(resolved, P1)).toHaveLength(1);
   });
 
-  it("lets Glint Veil prevent during an attack window", () => {
+  it("lets a prevent reaction stop damage during an attack window", () => {
     const base = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
       withPile(withTokens(base, attacker, CRANK_FUEL), P2, 10),
       P2,
-      [GLINT_VEIL],
+      [TEST_REACTION_PREVENT],
     );
     const opened = expectOk(
       advance(combat, {

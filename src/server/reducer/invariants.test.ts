@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
-import { asAttackId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { requirementTotal } from "../model/symbols.js";
 import { hasSixPhysicalFaces } from "../rules/dice.js";
@@ -8,6 +7,7 @@ import { faceCardLocationIsConsistent, knownFaceCardOwnerships } from "../rules/
 import { usableSymbols } from "../rules/symbols.js";
 import { totalTokens } from "../rules/tokens.js";
 import { autoplay } from "../testing/autoplay.js";
+import { CRANK } from "../testing/tempoCatalogue.js";
 import {
   creatureIdAt,
   expectOk,
@@ -251,7 +251,7 @@ describe("behavioural invariants", () => {
       type: "ATTACK",
       playerId: P1,
       attackerId,
-      attackId: asAttackId("attack-lodestar-artificer-drive-shaft"),
+      attackId: CRANK,
       targetId: creatureIdAt(combat, P2, 0),
     });
 

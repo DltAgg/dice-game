@@ -2,7 +2,29 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { DieId, DieSlot, FaceCardId, GameState, PlayerId } from "@server";
+import { testFace } from "@server/testing/fixtures/index.js";
 import { FaceCardsInPlay } from "./FaceCardsInPlay.js";
+
+const pierceFace = testFace({
+  name: "Pierce Stance",
+  whileShowing: [{ type: "pierce", amount: 1 }],
+});
+const empowerFace = testFace({
+  name: "Empower Stance",
+  whileShowing: [{ type: "empower", amount: 1 }],
+});
+const playDiscountFace = testFace({
+  name: "Play Discount Stance",
+  whileShowing: [{ type: "play-discount", amount: 1 }],
+});
+const forgeDiscountFace = testFace({
+  name: "Forge Discount Stance",
+  whileShowing: [{ type: "forge-discount", amount: 1 }],
+});
+const convertFace = testFace({
+  name: "Convert Stance",
+  convertRoll: true,
+});
 
 function boardState(faceCardId: FaceCardId): GameState {
   const playerId = "p1" as PlayerId;
@@ -46,29 +68,23 @@ function renderFaces(faceCardId: FaceCardId): string {
 }
 
 describe("FaceCardsInPlay while-showing / convert cues", () => {
-  it("surfaces Halo Lamp pierce totals from whileShowingTotals", () => {
-    const html = renderFaces("face-synthetic-halo-lamp" as FaceCardId);
+  it("surfaces pierce totals from whileShowingTotals", () => {
+    const html = renderFaces(pierceFace.id);
     expect(html).toContain("While showing");
     expect(html).toContain("Pierce 1");
-    expect(html).toContain("Halo Lamp");
+    expect(html).toContain("Pierce Stance");
     expect(html).not.toContain("On absorb");
   });
 
-  it("surfaces Lucent Choir empower and Augur Glass play discount", () => {
-    expect(renderFaces("face-synthetic-lucent-choir" as FaceCardId)).toContain("Empower 1");
-    expect(renderFaces("face-synthetic-augur-glass" as FaceCardId)).toContain("Discount 1");
-    expect(renderFaces("face-synthetic-cogtooth" as FaceCardId)).toContain("Discount 1 forge");
+  it("surfaces empower and play / forge discounts", () => {
+    expect(renderFaces(empowerFace.id)).toContain("Empower 1");
+    expect(renderFaces(playDiscountFace.id)).toContain("Discount 1");
+    expect(renderFaces(forgeDiscountFace.id)).toContain("Discount 1 forge");
   });
 
-  it("shows a convert cue on Sigil Flare / Mainspring / Pyre of Names", () => {
-    for (const id of [
-      "face-synthetic-sigil-flare",
-      "face-synthetic-mainspring",
-      "face-synthetic-pyre-of-names",
-    ] as const) {
-      const html = renderFaces(id as FaceCardId);
-      expect(html).toContain("Convert roll · pips not banked");
-      expect(html).not.toContain("On absorb");
-    }
+  it("shows a convert cue on a convertRoll face", () => {
+    const html = renderFaces(convertFace.id);
+    expect(html).toContain("Convert roll · pips not banked");
+    expect(html).not.toContain("On absorb");
   });
 });

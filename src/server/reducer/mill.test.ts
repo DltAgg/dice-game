@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, SHIM_KIT } from "../content/cards.js";
-import { LODESTAR_ARTIFICER, TEMPO_SQUAD } from "../content/creatures.js";
-import { ENGINE_TEST_FACE_DECK } from "../content/faces.js";
 import { asPlayerId } from "../model/ids.js";
+import {
+  TEST_DECK_FILLER_IDS,
+  TEST_LEGEND,
+  TEST_PLAYABLE,
+  TEST_SQUAD,
+} from "../testing/fixtures/index.js";
 import {
   expectOk,
   handCardIdAt,
@@ -12,19 +15,20 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-describe("Tempo deck draw", () => {
-  it("Cog Draft draws when the deck has cards", () => {
-    const deck = [COG_DRAFT, COG_DRAFT, COG_DRAFT, SHIM_KIT, SHIM_KIT, SHIM_KIT];
+describe("deck draw", () => {
+  it("a generate-and-draw instant draws when the deck has cards", () => {
+    const filler = TEST_DECK_FILLER_IDS[0];
+    if (filler === undefined) throw new Error("filler");
+    const deck = [TEST_PLAYABLE, TEST_PLAYABLE, TEST_PLAYABLE, filler, filler, filler];
     const match = newMatch({
       config: { ...newMatch().config, deckMinCards: 0 },
       players: [
         {
           id: P1,
-          squad: TEMPO_SQUAD,
+          squad: TEST_SQUAD,
           deck,
-          faceDeck: ENGINE_TEST_FACE_DECK,
         },
-        { id: asPlayerId("p2"), squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+        { id: asPlayerId("p2"), squad: TEST_SQUAD, deck: [] },
       ],
     });
     const player = match.players[P1];
@@ -54,10 +58,8 @@ describe("Tempo deck draw", () => {
     expect(after.players[P1]?.hand.length).toBe(1);
   });
 
-  it("legendary creature is Lodestar Artificer", () => {
+  it("legendary creature is the test legend", () => {
     const state = newMatch();
-    expect(Object.values(state.creatures).some((c) => c.definitionId === LODESTAR_ARTIFICER)).toBe(
-      true,
-    );
+    expect(Object.values(state.creatures).some((c) => c.definitionId === TEST_LEGEND)).toBe(true);
   });
 });

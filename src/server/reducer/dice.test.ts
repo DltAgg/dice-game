@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { getFaceCard } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import { SHIELD } from "../model/symbols.js";
 import { createRng } from "../rng/rng.js";
 import { diceOf } from "../rules/dice.js";
-import { usableSymbols } from "../rules/symbols.js";
 import { newMatch, P1, P2, expectOk, eventTypes } from "../testing/scenario.js";
 import { advance, reduce } from "./reduce.js";
 
@@ -29,10 +30,16 @@ describe("rolling dice", () => {
 
     const generated = Object.values(state.symbols);
     expect(generated).toHaveLength(2);
-    expect(generated.every((symbol) => symbol.status === "rolled")).toBe(true);
     expect(generated.every((symbol) => symbol.ownerId === P1)).toBe(true);
     expect(state.phase).toBe("actions");
-    expect(usableSymbols(state, P1)).toHaveLength(2);
+    for (const symbol of generated) {
+      if (symbol.symbol === SHIELD) {
+        expect(symbol.status).toBe("rolled");
+      } else {
+        expect(symbol.status).toBe("absorbed");
+        expect(symbol.absorbedByCreatureId).toBeNull();
+      }
+    }
   });
 
   it("records which physical face came up on each die", () => {
@@ -52,7 +59,8 @@ describe("rolling dice", () => {
       const die = symbol.sourceDieId === null ? undefined : state.dice[symbol.sourceDieId];
       const slotIndex = die?.rolledSlotIndex;
       const slot = slotIndex === undefined || slotIndex === null ? undefined : die?.slots[slotIndex];
-      expect(slot?.faceCardId).toContain(symbol.symbol);
+      if (slot === undefined) throw new Error("expected a showing slot");
+      expect(getFaceCard(slot.faceCardId)?.symbol).toBe(symbol.symbol);
     }
   });
 

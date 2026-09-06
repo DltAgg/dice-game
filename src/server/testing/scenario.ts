@@ -1,11 +1,4 @@
 import { getCard } from "../content/cards.js";
-import { ENGINE_TEST_FACE_DECK, legacyStartingLayout } from "../content/faces.js";
-import {
-  TEMPO_DECK,
-  TEMPO_FACE_DECK,
-  TEMPO_SQUAD,
-  TEMPO_STARTING_DICE,
-} from "../content/loadouts/index.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
@@ -32,6 +25,12 @@ import type { GameAction } from "../reducer/actions.js";
 import { advance } from "../reducer/reduce.js";
 import { resolveFaceForForge } from "../rules/faces.js";
 import { createMatch, type MatchSetup, type PlayerSetup } from "../setup/createMatch.js";
+import {
+  TEST_FACE_DECK,
+  TEST_LEGAL_DECK,
+  TEST_SQUAD,
+  TEST_STARTING_DICE,
+} from "./fixtures/kit.js";
 
 /**
  * Arrangement helpers for scenario tests (SPDD §37). These write state
@@ -64,24 +63,28 @@ export function newMatch(
   const defaultPlayers: readonly [PlayerSetup, PlayerSetup] = [
     {
       id: P1,
-      squad: TEMPO_SQUAD,
+      squad: TEST_SQUAD,
       deck: [],
-      faceDeck: ENGINE_TEST_FACE_DECK,
-      startingDice: legacyStartingLayout(),
+      faceDeck: TEST_FACE_DECK,
+      startingDice: TEST_STARTING_DICE,
     },
     {
       id: P2,
-      squad: TEMPO_SQUAD,
+      squad: TEST_SQUAD,
       deck: [],
-      faceDeck: ENGINE_TEST_FACE_DECK,
-      startingDice: legacyStartingLayout(),
+      faceDeck: TEST_FACE_DECK,
+      startingDice: TEST_STARTING_DICE,
     },
   ];
   const raw = overrides.players ?? defaultPlayers;
-  const players: [PlayerSetup, PlayerSetup] = [
-    { startingDice: legacyStartingLayout(), ...raw[0] },
-    { startingDice: legacyStartingLayout(), ...raw[1] },
-  ];
+  const toSetup = (player: ScenarioPlayer): PlayerSetup => ({
+    id: player.id,
+    squad: player.squad,
+    deck: player.deck ?? [],
+    faceDeck: player.faceDeck ?? TEST_FACE_DECK,
+    startingDice: player.startingDice ?? TEST_STARTING_DICE,
+  });
+  const players: [PlayerSetup, PlayerSetup] = [toSetup(raw[0]), toSetup(raw[1])];
   return createMatch({
     matchId: "match-test",
     seed: 1,
@@ -100,8 +103,20 @@ export const newMatchWithDecks = (overrides: Partial<MatchSetup> = {}): GameStat
   newMatch({
     config: DEFAULT_RULES_CONFIG,
     players: [
-      { id: P1, squad: TEMPO_SQUAD, deck: TEMPO_DECK, faceDeck: TEMPO_FACE_DECK, startingDice: TEMPO_STARTING_DICE },
-      { id: P2, squad: TEMPO_SQUAD, deck: TEMPO_DECK, faceDeck: TEMPO_FACE_DECK, startingDice: TEMPO_STARTING_DICE },
+      {
+        id: P1,
+        squad: TEST_SQUAD,
+        deck: TEST_LEGAL_DECK,
+        faceDeck: TEST_FACE_DECK,
+        startingDice: TEST_STARTING_DICE,
+      },
+      {
+        id: P2,
+        squad: TEST_SQUAD,
+        deck: TEST_LEGAL_DECK,
+        faceDeck: TEST_FACE_DECK,
+        startingDice: TEST_STARTING_DICE,
+      },
     ],
     ...overrides,
   });

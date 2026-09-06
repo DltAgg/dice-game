@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DAYBREAK_RITE, COG_DRAFT, GLINT_VEIL, MIRRORWARD, RADIANT_ACCORD } from "../content/cards.js";
-import { TEMPO_SQUAD } from "../content/creatures.js";
-import { TEMPO_FACE_DECK, TEMPO_STARTING_DICE } from "../content/loadouts/index.js";
-import { HALO_LAMP, LUCENT_CHOIR } from "../content/faces.js";
-import type { GameState } from "../model/state.js";
 import { ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
+import {
+  TEST_FACE_DECK,
+  TEST_PLAYABLE,
+  TEST_REACTION_PREVENT,
+  TEST_SYNTHETIC_LUMINAR_A,
+  TEST_SYNTHETIC_LUMINAR_B,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -21,21 +24,53 @@ import {
 } from "../testing/scenario.js";
 import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
 
+const HEAL_RITUAL = testCard({
+  id: "card-test-heal-ritual",
+  playCost: { luminar: 3 },
+  attribute: "luminar",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { luminar: 3 },
+    effects: [
+      { type: "heal", amount: 2, target: { kind: "choose-ally" } },
+      { type: "heal", amount: 2, target: { kind: "choose-ally" } },
+    ],
+  },
+});
+
+const CONTINUOUS_RITUAL = testCard({
+  id: "card-test-stay-ritual",
+  playCost: { luminar: 1, any: 1 },
+  attribute: "luminar",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { luminar: 2, any: 1 },
+    effects: [
+      {
+        type: "silence",
+        hosts: ["creature", "ritual"],
+        target: { kind: "choose-opponent-silence-host", hosts: ["creature", "ritual"] },
+      },
+    ],
+  },
+});
+
+const PREVENT_REFLECT = testCard({
+  id: "card-test-rework-prevent-reflect",
+  playCost: { luminar: 3 },
+  attribute: "luminar",
+  type: "reaction",
+  effect: { effects: [{ type: "prevent-attack-reflect" }] },
+});
+
 const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][], energy = 10) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, energy);
 
-function tempoMatch(): GameState {
-  return newMatch({
-    players: [
-      { id: P1, squad: TEMPO_SQUAD, deck: [], faceDeck: TEMPO_FACE_DECK, startingDice: TEMPO_STARTING_DICE },
-      { id: P2, squad: TEMPO_SQUAD, deck: [], faceDeck: TEMPO_FACE_DECK, startingDice: TEMPO_STARTING_DICE },
-    ],
-  });
-}
-
-describe("Tempo luminar control surface", () => {
-  it("Daybreak Rite activates when the pile meets its gate", () => {
-    const ready = actionsReady([DAYBREAK_RITE]);
+describe("luminar control surface", () => {
+  it("a heal ritual activates when the pile meets its gate", () => {
+    const ready = actionsReady([HEAL_RITUAL.id]);
     const placed = resolveOpenChain(
       expectOk(
         advance(ready, {
@@ -84,8 +119,8 @@ describe("Tempo luminar control surface", () => {
     expect(activated.creatures[allyId]?.damage).toBe(0);
   });
 
-  it("Radiant Accord stays on field as a continuous ritual", () => {
-    const ready = actionsReady([RADIANT_ACCORD]);
+  it("a continuous ritual stays on field", () => {
+    const ready = actionsReady([CONTINUOUS_RITUAL.id]);
     const placed = resolveOpenChain(
       expectOk(
         advance(ready, {
@@ -99,14 +134,14 @@ describe("Tempo luminar control surface", () => {
     expect(ritualsOf(placed, P1)[0]?.ritualOrientation).toBe("ready");
   });
 
-  it("Mirrorward prevents and reflects on an attack chain", () => {
-    const base = withPhase(tempoMatch(), "actions");
+  it("prevent-reflect stops and reflects on an attack chain", () => {
+    const base = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(base, P1, 2);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
       withPile(withPile(base, P1, 10), P2, 10),
       P2,
-      [MIRRORWARD],
+      [PREVENT_REFLECT.id],
     );
     const opened = expectOk(
       advance(
@@ -131,11 +166,11 @@ describe("Tempo luminar control surface", () => {
     expect(resolved.creatures[target]?.damage).toBe(0);
   });
 
-  it("Glint Veil is a legal reaction on attacks only", () => {
+  it("a prevent reaction is legal on attacks only", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10),
       P2,
-      [GLINT_VEIL],
+      [TEST_REACTION_PREVENT],
     );
     const opened = expectOk(
       advance(ready, {
@@ -153,7 +188,9 @@ describe("Tempo luminar control surface", () => {
     if (!denied.ok) expect(denied.error).toBe("INVALID_CHAIN_TARGET");
   });
 
-  it("Tempo face deck includes Luminar specials", () => {
-    expect(TEMPO_FACE_DECK).toEqual(expect.arrayContaining([HALO_LAMP, LUCENT_CHOIR]));
+  it("the test face deck includes Luminar specials", () => {
+    expect(TEST_FACE_DECK).toEqual(
+      expect.arrayContaining([TEST_SYNTHETIC_LUMINAR_A, TEST_SYNTHETIC_LUMINAR_B]),
+    );
   });
 });

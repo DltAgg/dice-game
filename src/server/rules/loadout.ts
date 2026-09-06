@@ -1,6 +1,6 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { BASIC_FACE_CARDS, getFaceCard } from "../content/faces.js";
+import { getFaceCard } from "../content/faces.js";
 import { attributeAllowsNaturalFaces } from "../model/attributes.js";
 import { FACE_SLOTS_PER_DIE, type StartingDiceLayout } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
@@ -31,11 +31,14 @@ export function isStartingDiceLayout(value: unknown): value is StartingDiceLayou
 }
 
 /**
- * The eight identity naturals plus Shield. Named naturals (Dawnwright) are
- * opening specials and consume the face deck.
+ * Identity naturals plus Shield. Named naturals (Dawnwright) print rules text
+ * and consume the face deck; identity faces do not.
  */
 export function isOpeningBasicFace(id: FaceCardId): boolean {
-  return BASIC_FACE_CARDS.some((face) => face.id === id);
+  const face = getFaceCard(id);
+  if (face === undefined) return false;
+  if (face.kind === "untyped" && face.symbol === SHIELD) return true;
+  return face.kind === "natural" && isAttributeSymbol(face.symbol) && face.rulesText.trim() === "";
 }
 
 /** On roll, `[Convert roll]`, or While showing — not extra pips alone (spec `025`). */

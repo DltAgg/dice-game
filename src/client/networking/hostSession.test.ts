@@ -1,16 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { advance, asPlayerId, type GameState } from "@server";
 import {
-  PROTOTYPE_DECK,
-  PROTOTYPE_FACE_DECK,
-  PROTOTYPE_SQUAD,
-  PROTOTYPE_STARTING_DICE,
-  advance,
-  asAttackId,
-  asPlayerId,
-  type GameState,
-} from "@server";
-import { buildControlSavedDeck } from "@client/decks";
-import { COG_DRAFT, GLINT_VEIL } from "@server/content/cards.js";
+  TEST_FACE_DECK,
+  TEST_LEGAL_DECK,
+  TEST_PLAYABLE,
+  TEST_REACTION_PREVENT,
+  TEST_SQUAD,
+  TEST_STARTING_DICE,
+} from "@server/testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -21,7 +18,7 @@ import {
   withPhase,
   withTokens,
 } from "@server/testing/scenario.js";
-import { DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js";
+import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js";
 import { ClientSession } from "./clientSession.js";
 import { HostSession } from "./hostSession.js";
 import { attachFakeGuest, openFakeLink } from "./memoryTransport.js";
@@ -35,19 +32,13 @@ const P2_CLIENT = "p2-client";
 const SPEC_CLIENT = "spec-client";
 
 const loadout: WireLoadout = {
-  squad: PROTOTYPE_SQUAD,
-  deck: PROTOTYPE_DECK,
-  faceDeck: PROTOTYPE_FACE_DECK,
-  startingDice: PROTOTYPE_STARTING_DICE,
+  squad: TEST_SQUAD,
+  deck: TEST_LEGAL_DECK,
+  faceDeck: TEST_FACE_DECK,
+  startingDice: TEST_STARTING_DICE,
 };
 
-const controlDeck = buildControlSavedDeck();
-const otherLoadout: WireLoadout = {
-  squad: controlDeck.squad,
-  deck: controlDeck.deck,
-  faceDeck: controlDeck.faceDeck,
-  startingDice: controlDeck.startingDice,
-};
+const otherLoadout: WireLoadout = loadout;
 
 function persistedSeats(p1ClientId: string, p2ClientId: string): PersistedRoom {
   return {
@@ -569,7 +560,7 @@ describe("guest reconnection over fake transport", () => {
     expect(onboardBox.state?.matchId).toBe(matchId);
     expect(onboardBox.state).toEqual(hostBox.state);
     const p2 = onboardBox.state!.players[P2]!;
-    expect(onboardBox.state!.creatures[p2.creatureIds[0]!]!.definitionId).toBe(PROTOTYPE_SQUAD[0]);
+    expect(onboardBox.state!.creatures[p2.creatureIds[0]!]!.definitionId).toBe(TEST_SQUAD[0]);
 
     hostSession.destroy();
     secondClient.destroy();
@@ -767,9 +758,9 @@ function jsonClone<T>(value: T): T {
 describe("host/client reaction-priority (P2 guest)", () => {
   function openP1InstantWindow(): GameState {
     let ready = withHand(
-      withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]),
+      withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
       P2,
-      [GLINT_VEIL],
+      [TEST_REACTION_PREVENT],
     );
     ready = withPile(ready, P1, 10);
     ready = withPile(ready, P2, 10);
@@ -788,14 +779,14 @@ describe("host/client reaction-priority (P2 guest)", () => {
     const attacker = creatureIdAt(ready, P1, 2);
     const target = creatureIdAt(ready, P2, 0);
     ready = withHand(withPile(withTokens(ready, attacker, DRIVE_SHAFT_FUEL), P2, 10), P2, [
-      GLINT_VEIL,
+      TEST_REACTION_PREVENT,
     ]);
     const opened = expectOk(
       advance(ready, {
         type: "ATTACK",
         playerId: P1,
         attackerId: attacker,
-        attackId: asAttackId("attack-lodestar-artificer-drive-shaft"),
+        attackId: DRIVE_SHAFT,
         targetId: target,
       }),
     );
@@ -868,7 +859,7 @@ describe("host/client reaction-priority (P2 guest)", () => {
     });
     expect(ok).toBe(true);
     expect(lastError()).toBeNull();
-    // P1 has no Respond offer after Eclipse — host drains their empty seat and
+    // P1 has no Respond offer after the instant — host drains their empty seat and
     // resolves the chain instead of broadcasting a no-offer priority box.
     expect(hostBox.state?.pendingDecision?.type).not.toBe("reaction-priority");
     expect(guestBox.state?.pendingDecision).toEqual(hostBox.state?.pendingDecision);
@@ -878,7 +869,7 @@ describe("host/client reaction-priority (P2 guest)", () => {
     clientSession.destroy();
   });
 
-  it("lets the guest respond with Glint Veil and rebroadcasts the new link", () => {
+  it("lets the guest respond with a prevent reaction and rebroadcasts the new link", () => {
     const { hostSession, clientSession, hostBox, guestBox, lastError, opened } = connectWithChain(
       "CHAIN3",
       "g-chain-3",
@@ -927,7 +918,7 @@ describe("host/client reaction-priority (P2 guest)", () => {
   });
 
   it("drains empty reaction windows before broadcasting so guests never see a no-offer box", () => {
-    const driveShaft = asAttackId("attack-lodestar-artificer-drive-shaft");
+    const driveShaft = DRIVE_SHAFT;
     let ready = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(ready, P1, 2);
     const target = creatureIdAt(ready, P2, 0);

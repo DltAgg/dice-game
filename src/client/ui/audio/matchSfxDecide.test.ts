@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   advance,
-  asAttackId,
   asPlayerId,
   type GameAction,
   type GameState,
@@ -17,7 +16,7 @@ import {
   withPhase,
   withTokens,
 } from "@server/testing/scenario.js";
-import { CRANK_FUEL } from "@server/testing/tempoCatalogue.js";
+import { CRANK, CRANK_FUEL } from "@server/testing/tempoCatalogue.js";
 import { matchSfxCuesFor } from "./matchSfxDecide.js";
 
 const P1 = asPlayerId("p1");
@@ -57,7 +56,7 @@ function openedEmptyPriority(): GameState {
       type: "ATTACK",
       playerId: P1,
       attackerId: attacker,
-      attackId: asAttackId("attack-torque-wright-crank"),
+      attackId: CRANK,
       targetId: target,
     }),
   );

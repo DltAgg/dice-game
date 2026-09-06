@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BEACON_ARRAY, DRIVESHAFT_RIG, PRISM_MANTLE, QUICKSET_JIG } from "../content/cards.js";
-import { COGTOOTH } from "../content/faces.js";
 import { equipmentOf } from "../rules/cards.js";
+import { testCard } from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -15,25 +14,82 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
+const EQUIP = testCard({
+  id: "card-test-equip-attach",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "equipment",
+  equipment: { mayTargetOpponent: false, abilities: [] },
+});
+
+const HEAL_ON_LUMINAR = testCard({
+  id: "card-test-equip-heal-luminar",
+  playCost: { luminar: 2, any: 1 },
+  attribute: "luminar",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-absorb",
+        symbols: ["luminar", "shield"],
+        absorberRelation: "ally",
+        oncePerTurn: true,
+        effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
+      },
+    ],
+  },
+});
+
+const EMPOWER_ON_MECHANICAL = testCard({
+  id: "card-test-equip-empower-mechanical",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-absorb",
+        symbols: ["mechanical"],
+        absorberRelation: "ally",
+        oncePerTurn: true,
+        effects: [{ type: "next-attack-bonus", amount: 1 }],
+      },
+    ],
+  },
+});
+
+const REDUCE_ON_HIT = testCard({
+  id: "card-test-equip-reduce",
+  playCost: { luminar: 2 },
+  attribute: "luminar",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [{ type: "on-take-damage", reduceBy: 1, oncePerTurn: true }],
+  },
+});
+
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
-describe("Tempo equipment", () => {
-  it("Quickset Jig attaches to a creature", () => {
-    const bearerId = creatureIdAt(actionsReady([QUICKSET_JIG]), P1, 0);
+describe("equipment", () => {
+  it("attaches to a creature", () => {
+    const bearerId = creatureIdAt(actionsReady([EQUIP.id]), P1, 0);
     const after = expectOk(
-      advance(actionsReady([QUICKSET_JIG]), {
+      advance(actionsReady([EQUIP.id]), {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(actionsReady([QUICKSET_JIG]), P1, 0),
+        cardInstanceId: handCardIdAt(actionsReady([EQUIP.id]), P1, 0),
         declaredTargetCreatureId: bearerId,
       }),
     );
     expect(equipmentOf(after, P1)).toHaveLength(1);
   });
 
-  it("Beacon Array heals on Luminar absorb", () => {
-    const base = actionsReady([BEACON_ARRAY]);
+  it("heals on Luminar absorb", () => {
+    const base = actionsReady([HEAL_ON_LUMINAR.id]);
     const bearerId = creatureIdAt(base, P1, 0);
     const wounded = {
       ...base,
@@ -73,8 +129,8 @@ describe("Tempo equipment", () => {
     expect(after.creatures[bearerId]?.damage).toBe(1);
   });
 
-  it("Drive Shaft Rig generates Mechanical on Mechanical absorb", () => {
-    const base = actionsReady([DRIVESHAFT_RIG]);
+  it("empowers when Mechanical is absorbed onto the bearer", () => {
+    const base = actionsReady([EMPOWER_ON_MECHANICAL.id]);
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = expectOk(
       advance(base, {
@@ -98,8 +154,8 @@ describe("Tempo equipment", () => {
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
   });
 
-  it("Prism Mantle reduces incoming damage once per turn", () => {
-    const base = actionsReady([PRISM_MANTLE]);
+  it("reduce equipment attaches to the declared bearer", () => {
+    const base = actionsReady([REDUCE_ON_HIT.id]);
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = expectOk(
       advance(base, {
@@ -110,9 +166,5 @@ describe("Tempo equipment", () => {
       }),
     );
     expect(equipmentOf(equipped, P1)[0]?.attachedToCreatureId).toBe(bearerId);
-  });
-
-  it("equipment forge references remain synthetic specials", () => {
-    expect(COGTOOTH).toBeDefined();
   });
 });

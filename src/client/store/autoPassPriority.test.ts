@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { advance, asAttackId } from "@server";
-import { LANTERN_OATH } from "@server/content/cards.js";
+import { advance } from "@server";
+import { asTestCardId, testCard } from "@server/testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -13,9 +13,20 @@ import {
   withTokens,
 } from "@server/testing/scenario.js";
 import { autoPassPriorityAction, drainEmptyReactionPriority, tryAutoPassPriority } from "./autoPassPriority.js";
-import { DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js";
+import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js";
 
-const DRIVE_SHAFT = asAttackId("attack-lodestar-artificer-drive-shaft");
+const PREVENT_REACTION = testCard({
+  id: asTestCardId("auto-pass-prevent"),
+  type: "reaction",
+  attribute: "luminar",
+  playCost: { luminar: 1 },
+  forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
+  effect: {
+    effects: [
+      { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+    ],
+  },
+});
 
 function openedAttack(hand: Parameters<typeof withHand>[2]) {
   const base = withPhase(newMatch(), "actions");
@@ -51,8 +62,8 @@ describe("autoPassPriorityAction", () => {
     ).toEqual({ type: "PASS_PRIORITY", playerId: P2 });
   });
 
-  it("does not skip a window when Lantern Oath is a legal prevent", () => {
-    const state = openedAttack([LANTERN_OATH]);
+  it("does not skip a window when a legal prevent reaction is in hand", () => {
+    const state = openedAttack([PREVENT_REACTION.id]);
     expect(
       autoPassPriorityAction({
         state,
@@ -104,7 +115,7 @@ describe("autoPassPriorityAction", () => {
   });
 
   it("drainEmptyReactionPriority stops when a seat has a legal Respond", () => {
-    const opened = openedAttack([LANTERN_OATH]);
+    const opened = openedAttack([PREVENT_REACTION.id]);
     const drained = drainEmptyReactionPriority(opened);
     expect(drained.pendingDecision).toEqual({
       type: "reaction-priority",

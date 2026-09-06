@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { TEMPO_SQUAD } from "../content/creatures.js";
 import type { AttributeTokens } from "../model/symbols.js";
 import { currentLife, legendaryCreatureOf } from "../rules/creatures.js";
+import {
+  TEST_BODY_A,
+  TEST_LEGEND,
+  TEST_SQUAD,
+  testAttack,
+  testCreature,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -16,7 +22,18 @@ import {
   withTokens,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL, KINDLE, KINDLE_FUEL, RETOOL, RETOOL_FUEL, VIGIL } from "../testing/tempoCatalogue.js";
+import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL, KINDLE_FUEL, RETOOL, RETOOL_FUEL, VIGIL } from "../testing/tempoCatalogue.js";
+
+const HEAL_AFTER_STRIKE = testAttack({
+  id: "attack-test-heal-after-strike",
+  discards: { luminar: 2 },
+  followUpEffects: [{ type: "heal", amount: 1, target: { kind: "choose-ally" } }],
+});
+const HEALER = testCreature({
+  id: "creature-test-healer",
+  attributes: ["luminar"],
+  attacks: [HEAL_AFTER_STRIKE],
+});
 
 function combatState(creatureIndex: number, tokens: AttributeTokens) {
   const state = withPhase(newMatch(), "actions");
@@ -266,12 +283,7 @@ describe("attacking", () => {
   });
 
   it("opens the back row to melee once the frontline is gone", () => {
-    const match = newMatch({
-      players: [
-        { id: P1, squad: TEMPO_SQUAD, deck: [] },
-        { id: P2, squad: TEMPO_SQUAD, deck: [] },
-      ],
-    });
+    const match = newMatch();
     let state = withPhase(match, "actions");
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 1));
@@ -304,12 +316,7 @@ describe("attacking", () => {
   });
 
   it("ends the match when the opposing legendary falls", () => {
-    const match = newMatch({
-      players: [
-        { id: P1, squad: TEMPO_SQUAD, deck: [] },
-        { id: P2, squad: TEMPO_SQUAD, deck: [] },
-      ],
-    });
+    const match = newMatch();
     let state = withPhase(match, "actions");
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 1));
@@ -345,12 +352,7 @@ describe("attacking", () => {
   });
 
   it("refuses every action once the match is finished", () => {
-    const match = newMatch({
-      players: [
-        { id: P1, squad: TEMPO_SQUAD, deck: [] },
-        { id: P2, squad: TEMPO_SQUAD, deck: [] },
-      ],
-    });
+    const match = newMatch();
     let state = withPhase(match, "actions");
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 1));
@@ -375,8 +377,14 @@ describe("attacking", () => {
 
 describe("Kindle follow-up", () => {
   it("heals the most damaged ally after striking", () => {
-    const woundedId = creatureIdAt(newMatch(), P1, 0);
-    let state = withDamage(withPhase(newMatch(), "actions"), woundedId, 2);
+    const match = newMatch({
+      players: [
+        { id: P1, squad: [TEST_BODY_A, HEALER.id, TEST_LEGEND], deck: [] },
+        { id: P2, squad: TEST_SQUAD, deck: [] },
+      ],
+    });
+    const woundedId = creatureIdAt(match, P1, 0);
+    let state = withDamage(withPhase(match, "actions"), woundedId, 2);
     const attackerId = creatureIdAt(state, P1, 1);
     state = withTokens(state, attackerId, KINDLE_FUEL);
     const afterAttack = expectOk(
@@ -384,7 +392,7 @@ describe("Kindle follow-up", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: KINDLE,
+        attackId: HEAL_AFTER_STRIKE.id,
         targetId: creatureIdAt(state, P2, 0),
       }),
     );

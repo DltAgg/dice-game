@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
-import {
-  BEACON_ARRAY,
-  IDLER_GEAR,
-  MACHINE_SHOP,
-} from "../content/cards.js";
-import { COGTOOTH } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { CreatureId, DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import {
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -20,6 +18,56 @@ import {
   withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
+
+const HEAL_ON_LUMINAR = testCard({
+  id: "card-test-burn-heal-luminar",
+  playCost: { luminar: 2, any: 1 },
+  attribute: "luminar",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-absorb",
+        symbols: ["luminar", "shield"],
+        absorberRelation: "ally",
+        oncePerTurn: true,
+        effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
+      },
+    ],
+  },
+});
+
+const GENERATE_OVERLOAD = testCard({
+  id: "card-test-burn-overload-generate",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: {
+    faceSymbols: ["mechanical"],
+    onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+  },
+});
+
+const STANDING_RITUAL = testCard({
+  id: "card-test-burn-standing-ritual",
+  playCost: { mechanical: 1, any: 1 },
+  attribute: "mechanical",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { mechanical: 1, any: 1 },
+    effects: [{ type: "reapply-die-modifiers" }],
+    standingAbilities: [
+      {
+        type: "on-roll-symbol",
+        symbol: "martial",
+        rollingPlayer: "controller",
+        effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      },
+    ],
+  },
+});
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -61,9 +109,9 @@ function showingFace(state: GameState, faceCardId: FaceCardId): GameState {
   return next;
 }
 
-describe("Beacon Array", () => {
+describe("heal on absorb", () => {
   it("heals the equipped host when the bearer banks Luminar", () => {
-    const base = actionsReady([BEACON_ARRAY]);
+    const base = actionsReady([HEAL_ON_LUMINAR.id]);
     const bearerId = creatureIdAt(base, P1, 0);
     const equipped = expectOk(
       advance(
@@ -102,15 +150,15 @@ describe("Beacon Array", () => {
   });
 });
 
-describe("Idler Gear", () => {
+describe("overload generate", () => {
   it("generates Mechanical on roll from an overloaded Mechanical face", () => {
-    const base = showingFace(actionsReady([IDLER_GEAR]), COGTOOTH);
+    const base = showingFace(actionsReady([GENERATE_OVERLOAD.id]), TEST_SYNTHETIC_MECHANICAL_A);
     const attached = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     );
     const afterRoll = expectOk(advance(withPhase(attached, "roll"), { type: "ROLL_DICE", playerId: P1 }));
@@ -118,9 +166,9 @@ describe("Idler Gear", () => {
   });
 });
 
-describe("Machine Shop", () => {
+describe("standing ritual", () => {
   it("generates Mechanical on roll while the continuous ritual is active", () => {
-    const ready = actionsReady([MACHINE_SHOP]);
+    const ready = actionsReady([STANDING_RITUAL.id]);
     const placed = expectOk(
       advance(ready, {
         type: "PLAY_CARD",

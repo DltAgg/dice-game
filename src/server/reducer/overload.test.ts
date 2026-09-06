@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { IDLER_GEAR, PAWL_SPRING, CHOIRLIGHT } from "../content/cards.js";
-import { COGTOOTH, HALO_LAMP } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
-import type { DieId } from "../model/ids.js";
+import type { DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { overloadsOf } from "../rules/cards.js";
+import {
+  TEST_SYNTHETIC_LUMINAR_A,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   expectOk,
   handCardIdAt,
@@ -15,6 +18,51 @@ import {
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
+
+const MECHANICAL_OVERLOAD = testCard({
+  id: "card-test-overload-mechanical",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
+});
+
+const MECHANICAL_OVERLOAD_B = testCard({
+  id: "card-test-overload-mechanical-b",
+  playCost: { mechanical: 2, any: 1 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: {
+    faceSymbols: ["mechanical"],
+    faceKinds: ["synthetic"],
+    onRoll: [{ type: "desynthesize", target: { kind: "choose-any-synthetic-slot" } }],
+  },
+});
+
+const LUMINAR_OVERLOAD = testCard({
+  id: "card-test-overload-luminar",
+  playCost: { luminar: 3, any: 1 },
+  attribute: "luminar",
+  type: "overload",
+  overload: {
+    faceSymbols: ["luminar"],
+    onRoll: [
+      { type: "grant-shield", amount: 2, target: { kind: "choose-ally" } },
+      { type: "next-attack-bonus", amount: 1 },
+    ],
+  },
+});
+
+const GENERATE_OVERLOAD = testCard({
+  id: "card-test-overload-generate",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: {
+    faceSymbols: ["mechanical"],
+    onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+  },
+});
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -31,7 +79,7 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function installFace(state: GameState, faceId: typeof COGTOOTH): GameState {
+function installFace(state: GameState, faceId: FaceCardId): GameState {
   const dieId = dieIdOf(state);
   const die = state.dice[dieId];
   if (die === undefined) throw new Error("die");
@@ -41,54 +89,54 @@ function installFace(state: GameState, faceId: typeof COGTOOTH): GameState {
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
-describe("Tempo overloads", () => {
-  it("Idler Gear attaches to a Mechanical face", () => {
-    const base = installFace(actionsReady([IDLER_GEAR]), COGTOOTH);
+describe("overloads", () => {
+  it("attaches to a Mechanical face", () => {
+    const base = installFace(actionsReady([MECHANICAL_OVERLOAD.id]), TEST_SYNTHETIC_MECHANICAL_A);
     const attached = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     );
     expect(overloadsOf(attached, P1)).toHaveLength(1);
   });
 
-  it("Pawl Spring attaches to a Mechanical face", () => {
-    const base = installFace(actionsReady([PAWL_SPRING]), COGTOOTH);
+  it("a second Mechanical overload also attaches", () => {
+    const base = installFace(actionsReady([MECHANICAL_OVERLOAD_B.id]), TEST_SYNTHETIC_MECHANICAL_A);
     const attached = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     );
     expect(overloadsOf(attached, P1)).toHaveLength(1);
   });
 
-  it("Choirlight attaches to a Luminar natural face slot", () => {
-    const base = installFace(actionsReady([CHOIRLIGHT]), HALO_LAMP);
+  it("attaches to a Luminar face slot", () => {
+    const base = installFace(actionsReady([LUMINAR_OVERLOAD.id]), TEST_SYNTHETIC_LUMINAR_A);
     const attached = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: HALO_LAMP,
+        declaredFaceCardId: TEST_SYNTHETIC_LUMINAR_A,
       }),
     );
     expect(overloadsOf(attached, P1)).toHaveLength(1);
   });
 
-  it("Idler Gear on-roll generates Mechanical", () => {
-    const base = installFace(actionsReady([IDLER_GEAR]), COGTOOTH);
+  it("on-roll generates Mechanical", () => {
+    const base = installFace(actionsReady([GENERATE_OVERLOAD.id]), TEST_SYNTHETIC_MECHANICAL_A);
     const attached = expectOk(
       advance(base, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     );
     let rolled = withPhase(attached, "roll");

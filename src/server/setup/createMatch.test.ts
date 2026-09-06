@@ -1,18 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { TEMPO_SQUAD, LODESTAR_ARTIFICER, TORQUE_WRIGHT, DAWN_WARDEN } from "../content/creatures.js";
-import {
-  DEFAULT_BASIC_LAYOUT,
-  ENGINE_TEST_FACE_DECK,
-  getFaceCard,
-  legacyStartingLayout,
-} from "../content/faces.js";
-import { TEMPO_DECK, TEMPO_FACE_DECK, TEMPO_STARTING_DICE } from "../content/loadouts/index.js";
+import { getFaceCard } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
 import { SHIELD } from "../model/symbols.js";
 import { hasSixPhysicalFaces, symbolCountsOn } from "../rules/dice.js";
 import { leftoverFacePool } from "../rules/loadout.js";
 import { faceCardLocationIsConsistent, knownFaceCardOwnerships, openingSlotFromFace } from "../rules/faces.js";
+import {
+  TEST_BODY_A,
+  TEST_BODY_B,
+  TEST_FACE_DECK,
+  TEST_LEGAL_DECK,
+  TEST_LEGEND,
+  TEST_SQUAD,
+  TEST_STARTING_DICE,
+} from "../testing/fixtures/index.js";
 import { newMatch, P1, P2 } from "../testing/scenario.js";
 import { createMatch } from "./createMatch.js";
 
@@ -43,17 +45,17 @@ describe("match setup", () => {
       players: [
         {
           id: P1,
-          squad: [LODESTAR_ARTIFICER, TORQUE_WRIGHT, DAWN_WARDEN],
+          squad: [TEST_LEGEND, TEST_BODY_A, TEST_BODY_B],
           deck: [],
-          faceDeck: [],
-          startingDice: legacyStartingLayout(),
+          faceDeck: TEST_FACE_DECK,
+          startingDice: TEST_STARTING_DICE,
         },
         {
           id: P2,
-          squad: TEMPO_SQUAD,
+          squad: TEST_SQUAD,
           deck: [],
-          faceDeck: [],
-          startingDice: legacyStartingLayout(),
+          faceDeck: TEST_FACE_DECK,
+          startingDice: TEST_STARTING_DICE,
         },
       ],
     });
@@ -63,9 +65,9 @@ describe("match setup", () => {
     }));
 
     expect(positions).toEqual([
-      { definitionId: LODESTAR_ARTIFICER, position: "back" },
-      { definitionId: TORQUE_WRIGHT, position: "frontline" },
-      { definitionId: DAWN_WARDEN, position: "frontline" },
+      { definitionId: TEST_LEGEND, position: "back" },
+      { definitionId: TEST_BODY_A, position: "frontline" },
+      { definitionId: TEST_BODY_B, position: "frontline" },
     ]);
   });
 
@@ -78,33 +80,34 @@ describe("match setup", () => {
     }
   });
 
-  it("hydrates Tempo starting dice from the loadout document", () => {
+  it("hydrates starting dice from the test loadout", () => {
     const state = createMatch({
-      matchId: "tempo",
+      matchId: "fixture",
       seed: 1,
       config: DEFAULT_RULES_CONFIG,
       players: [
         {
           id: P1,
-          squad: TEMPO_SQUAD,
-          deck: TEMPO_DECK,
-          faceDeck: TEMPO_FACE_DECK,
-          startingDice: TEMPO_STARTING_DICE,
+          squad: TEST_SQUAD,
+          deck: TEST_LEGAL_DECK,
+          faceDeck: TEST_FACE_DECK,
+          startingDice: TEST_STARTING_DICE,
         },
         {
           id: P2,
-          squad: TEMPO_SQUAD,
-          deck: TEMPO_DECK,
-          faceDeck: TEMPO_FACE_DECK,
-          startingDice: TEMPO_STARTING_DICE,
+          squad: TEST_SQUAD,
+          deck: TEST_LEGAL_DECK,
+          faceDeck: TEST_FACE_DECK,
+          startingDice: TEST_STARTING_DICE,
         },
       ],
     });
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("die");
     const counts = symbolCountsOn(state.dice[dieId]!);
-    expect(counts.mechanical).toBe(3);
+    expect(counts.mechanical).toBe(2);
     expect(counts.luminar).toBe(2);
+    expect(counts.martial).toBe(1);
     expect(counts[SHIELD]).toBe(1);
   });
 
@@ -116,7 +119,7 @@ describe("match setup", () => {
   });
 
   it("maps opening faces to die slots", () => {
-    const faceId = TEMPO_FACE_DECK[0]!;
+    const faceId = TEST_FACE_DECK[0]!;
     const face = getFaceCard(faceId);
     if (face === undefined) throw new Error("face");
     const slot = openingSlotFromFace(0, faceId, P1);
@@ -124,18 +127,14 @@ describe("match setup", () => {
   });
 
   it("computes leftover face pool after starting dice consume specials", () => {
-    const pool = leftoverFacePool(TEMPO_FACE_DECK, TEMPO_STARTING_DICE);
-    expect(pool.length).toBeGreaterThan(0);
-    expect(pool.length).toBeLessThanOrEqual(TEMPO_FACE_DECK.length);
+    const pool = leftoverFacePool(TEST_FACE_DECK, TEST_STARTING_DICE);
+    expect(pool).toEqual([...TEST_FACE_DECK]);
   });
 
-  it("uses engine-test face pool when no loadout face deck is passed", () => {
+  it("uses the test face pool leftover when newMatch builds players", () => {
     const state = newMatch();
-    expect(state.players[P1]?.facePool).toEqual([...ENGINE_TEST_FACE_DECK]);
-  });
-
-  it("legacy starting layout matches default basic symbols", () => {
-    const layout = legacyStartingLayout();
-    expect(layout[0]).toHaveLength(DEFAULT_BASIC_LAYOUT.length);
+    expect(state.players[P1]?.facePool).toEqual(
+      leftoverFacePool(TEST_FACE_DECK, TEST_STARTING_DICE),
+    );
   });
 });

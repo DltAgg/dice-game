@@ -1,15 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { TOOLING_ORDER, getCard } from "../content/cards.js";
-import { TEMPO_SQUAD } from "../content/creatures.js";
+import { getCard } from "../content/cards.js";
 import type { CardDefinition } from "../model/cards.js";
 import { asCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import {
-  newMatch,
-  P1,
-  P2,
-  withAttributePool,
-} from "../testing/scenario.js";
+import { TEST_REQUIRES_GATE } from "../testing/fixtures/index.js";
+import { newMatch, P1, withAttributePool } from "../testing/scenario.js";
 import { canAffordForge, canAffordPlay, isReactionCard, ritualDurationOf } from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
@@ -46,15 +41,6 @@ function withPlayCostDiscount(
     ...state,
     playCostDiscountThisTurn: { ...state.playCostDiscountThisTurn, [playerId]: amount },
   };
-}
-
-function tempoMatch(): GameState {
-  return newMatch({
-    players: [
-      { id: P1, squad: TEMPO_SQUAD, deck: [] },
-      { id: P2, squad: TEMPO_SQUAD, deck: [] },
-    ],
-  });
 }
 
 describe("canAffordPlay / canAffordForge", () => {
@@ -111,7 +97,7 @@ describe("canAffordPlay / canAffordForge", () => {
 
   it("applies forgeDiscountThisTurn to forge but not play", () => {
     const state = withForgeDiscount(
-      withAttributePool(tempoMatch(), P1, { mechanical: 1 }),
+      withAttributePool(newMatch(), P1, { mechanical: 1 }),
       P1,
       1,
     );
@@ -149,12 +135,16 @@ describe("canAffordPlay / canAffordForge", () => {
   });
 
   it("Requires gate is unmet even when Discount 1 would cover the header", () => {
-    const tooling = getCard(TOOLING_ORDER);
-    if (tooling === undefined) throw new Error("Tooling Order");
-    const state = withPlayCostDiscount(
-      withAttributePool(newMatch(), P1, { mechanical: 1 }),
+    const tooling = getCard(TEST_REQUIRES_GATE);
+    if (tooling === undefined) throw new Error("requires-gate fixture");
+    const state = withForgeDiscount(
+      withPlayCostDiscount(
+        withAttributePool(newMatch(), P1, { mechanical: 1 }),
+        P1,
+        2,
+      ),
       P1,
-      2,
+      1,
     );
     expect(canAffordPlay(state, P1, tooling)).toBe(false);
     expect(canAffordForge(state, P1, tooling)).toBe(true);

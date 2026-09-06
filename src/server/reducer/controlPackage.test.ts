@@ -1,29 +1,15 @@
 import { describe, expect, it } from "vitest";
-import {
-  CINERARY_LOCKET,
-  ECHO_OF_THE_BURIED,
-  FORESIGHT_TITHE,
-  GLOOMDRAFT,
-  HOLLOW_TIDE,
-  NIGHTMARROW_PACT,
-  PALL_OF_ASH,
-  RIFTMARK,
-  SEALBIND_RUNE,
-  THREAD_THE_WEAVE,
-  UNWRITE,
-} from "../content/cards.js";
-import {
-  DUSKTHRONE_ORACLE,
-  GRAVEMARROW_SHADE,
-  RIFTSCRIBE_ADEPT,
-  TEMPO_SQUAD,
-} from "../content/creatures.js";
-import { ENGINE_TEST_FACE_DECK } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
-import { asAttackId, asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
+import { asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { graveyardOf, replayableGraveyardTactics, ritualsOf } from "../rules/cards.js";
 import { advance } from "./reduce.js";
+import {
+  TEST_PLAYABLE,
+  testAttack,
+  testCard,
+  testCreature,
+} from "../testing/fixtures/index.js";
 import {
   advanceResolvingChain,
   creatureIdAt,
@@ -41,19 +27,152 @@ import {
   withPhase,
 } from "../testing/scenario.js";
 
-const CONTROL_SQUAD_DEFS = [RIFTSCRIBE_ADEPT, GRAVEMARROW_SHADE, DUSKTHRONE_ORACLE] as const;
+const DESTROY_EQUIPMENT = testCard({
+  id: "card-test-control-destroy-equipment",
+  playCost: { arcane: 4 },
+  attribute: "arcane",
+  effect: {
+    effects: [{ type: "destroy-equipment", target: { kind: "choose-opponent-equipment" } }],
+  },
+});
 
-/** Both seats run the Control squad so Arcane / Darkness hosts and targets exist. */
+const ATTR_GATED_EQUIP = testCard({
+  id: "card-test-control-attr-equip",
+  playCost: { darkness: 3 },
+  attribute: "darkness",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    creatureAttributes: ["arcane", "darkness"],
+    abilities: [],
+  },
+});
+
+const SHIELD_RITUAL = testCard({
+  id: "card-test-control-shield-ritual",
+  playCost: { arcane: 3 },
+  attribute: "arcane",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { arcane: 1, any: 1 },
+    effects: [{ type: "grant-shield", amount: 2, target: { kind: "choose-ally" } }],
+  },
+});
+
+const DESTROY_RITUAL = testCard({
+  id: "card-test-control-destroy-ritual",
+  playCost: { arcane: 3 },
+  attribute: "arcane",
+  effect: {
+    effects: [{ type: "destroy-ritual", target: { kind: "choose-opponent-ritual" } }],
+  },
+});
+
+const PLACE_RITUAL = testCard({
+  id: "card-test-control-place-ritual",
+  playCost: { arcane: 2 },
+  attribute: "arcane",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    effects: [{ type: "peek-deck-optional-bottom" }],
+  },
+});
+
+const NEGATE_RITUAL = testCard({
+  id: "card-test-control-negate-ritual",
+  playCost: { arcane: 2 },
+  attribute: "arcane",
+  type: "reaction",
+  effect: { effects: [{ type: "negate-ritual" }] },
+});
+
+const DRAIN_RITUAL = testCard({
+  id: "card-test-control-drain-ritual",
+  playCost: { darkness: 2 },
+  attribute: "darkness",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { darkness: 1 },
+    effects: [
+      {
+        type: "drain-life",
+        amount: 2,
+        target: { kind: "choose-enemy" },
+        with: { kind: "choose-ally" },
+      },
+    ],
+  },
+});
+
+const DAMAGE_ALL = testCard({
+  id: "card-test-control-damage-all",
+  playCost: { darkness: 3, any: 3 },
+  attribute: "darkness",
+  effect: {
+    effects: [{ type: "damage", amount: 3, target: { kind: "enemy-all" } }],
+  },
+});
+
+const DAMAGE_CHOOSE = testCard({
+  id: "card-test-control-damage-choose",
+  playCost: { darkness: 3 },
+  attribute: "darkness",
+  effect: {
+    requires: { darkness: 1 },
+    effects: [{ type: "damage", amount: 3, target: { kind: "choose-enemy" } }],
+  },
+});
+
+const REPLAY = testCard({
+  id: "card-test-control-replay",
+  playCost: { darkness: 3 },
+  attribute: "darkness",
+  effect: { effects: [{ type: "replay-graveyard-tactic" }] },
+});
+
+const GRAVE_REACH = testAttack({
+  id: "attack-test-control-grave-reach",
+  discards: { darkness: 1 },
+});
+const LEY_SURGE = testAttack({
+  id: "attack-test-control-ley-surge",
+  kind: "special",
+  requires: { arcane: 2, any: 1 },
+  discards: { arcane: 2 },
+  followUpEffects: [{ type: "draw-cards", amount: 1 }],
+});
+
+const SHADE = testCreature({
+  id: "creature-test-control-shade",
+  attributes: ["darkness"],
+  attacks: [GRAVE_REACH],
+});
+const ADEPT = testCreature({
+  id: "creature-test-control-adept",
+  attributes: ["arcane"],
+  attacks: [LEY_SURGE],
+});
+const ORACLE = testCreature({
+  id: "creature-test-control-oracle",
+  life: 20,
+  attributes: ["arcane", "darkness"],
+  legendary: true,
+});
+
+const CONTROL_SQUAD = [ADEPT.id, SHADE.id, ORACLE.id] as const;
+
 function controlMatch(): GameState {
   return newMatch({
     players: [
-      { id: P1, squad: CONTROL_SQUAD_DEFS, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-      { id: P2, squad: CONTROL_SQUAD_DEFS, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+      { id: P1, squad: CONTROL_SQUAD, deck: [] },
+      { id: P2, squad: CONTROL_SQUAD, deck: [] },
     ],
   });
 }
 
-/** Stocks a library without shuffling, so mill and Insight counts are exact. */
 function withDeck(state: GameState, playerId: PlayerId, cardIds: readonly CardId[]): GameState {
   const player = state.players[playerId];
   if (player === undefined) throw new Error(`unknown player ${playerId}`);
@@ -83,7 +202,6 @@ function withDeck(state: GameState, playerId: PlayerId, cardIds: readonly CardId
 const readyToPlay = (cards: readonly CardId[]): GameState =>
   withPile(withHand(withPhase(controlMatch(), "actions"), P1, cards), P1, 10);
 
-/** Places a ritual from hand and forces it ready, skipping the pile ramp. */
 function placedRitualReady(state: GameState, playerId: PlayerId): GameState {
   const placed = resolveOpenChain(
     expectOk(
@@ -106,9 +224,9 @@ function placedRitualReady(state: GameState, playerId: PlayerId): GameState {
 }
 
 describe("Arcane Control package", () => {
-  it("Thread the Weave opens a choice of opposing equipment", () => {
+  it("opens a choice of opposing equipment", () => {
     const opponentEquip = withActivePlayer(
-      withPile(withHand(withPhase(controlMatch(), "actions"), P2, [CINERARY_LOCKET]), P2, 10),
+      withPile(withHand(withPhase(controlMatch(), "actions"), P2, [ATTR_GATED_EQUIP.id]), P2, 10),
       P2,
     );
     const bearer = creatureIdAt(opponentEquip, P2, 0);
@@ -123,7 +241,7 @@ describe("Arcane Control package", () => {
       ),
     );
     const ready = withActivePlayer(
-      withPile(withHand(equipped, P1, [THREAD_THE_WEAVE]), P1, 10),
+      withPile(withHand(equipped, P1, [DESTROY_EQUIPMENT.id]), P1, 10),
       P1,
     );
     const state = expectOk(
@@ -136,8 +254,8 @@ describe("Arcane Control package", () => {
     expect(state.pendingDecision?.type).toBe("choose-equipment");
   });
 
-  it("Riftmark marks Shield on an ally when it activates", () => {
-    const placed = placedRitualReady(readyToPlay([RIFTMARK]), P1);
+  it("a ritual marks Shield on an ally when it activates", () => {
+    const placed = placedRitualReady(readyToPlay([SHIELD_RITUAL.id]), P1);
     const ritualId = ritualsOf(placed, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual");
     const activated = resolveOpenChain(
@@ -152,9 +270,9 @@ describe("Arcane Control package", () => {
     expect(activated.pendingDecision?.type).toBe("choose-creature");
   });
 
-  it("Unwrite destroys a ritual the opponent controls", () => {
+  it("destroys a ritual the opponent controls", () => {
     const opponentRitual = withActivePlayer(
-      withPile(withHand(withPhase(controlMatch(), "actions"), P2, [FORESIGHT_TITHE]), P2, 10),
+      withPile(withHand(withPhase(controlMatch(), "actions"), P2, [PLACE_RITUAL.id]), P2, 10),
       P2,
     );
     const placed = resolveOpenChain(
@@ -169,7 +287,7 @@ describe("Arcane Control package", () => {
     const ritualId = ritualsOf(placed, P2)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual was not placed");
 
-    const ready = withActivePlayer(withPile(withHand(placed, P1, [UNWRITE]), P1, 10), P1);
+    const ready = withActivePlayer(withPile(withHand(placed, P1, [DESTROY_RITUAL.id]), P1, 10), P1);
     let state = expectOk(
       advanceResolvingChain(ready, {
         type: "PLAY_CARD",
@@ -187,11 +305,13 @@ describe("Arcane Control package", () => {
     expect(graveyardOf(state, P2).some((card) => card.id === ritualId)).toBe(true);
   });
 
-  it("Sealbind Rune negates a ritual on the chain", () => {
+  it("negates a ritual on the chain", () => {
     const ready = withPile(
-      withHand(withPile(withHand(withPhase(controlMatch(), "actions"), P1, [NIGHTMARROW_PACT]), P1, 10), P2, [
-        SEALBIND_RUNE,
-      ]),
+      withHand(
+        withPile(withHand(withPhase(controlMatch(), "actions"), P1, [DRAIN_RITUAL.id]), P1, 10),
+        P2,
+        [NEGATE_RITUAL.id],
+      ),
       P2,
       10,
     );
@@ -216,8 +336,8 @@ describe("Arcane Control package", () => {
 });
 
 describe("Darkness Control package", () => {
-  it("Hollow Tide strikes every living enemy for 3", () => {
-    const ready = readyToPlay([HOLLOW_TIDE]);
+  it("strikes every living enemy for 3", () => {
+    const ready = readyToPlay([DAMAGE_ALL.id]);
     const frontA = creatureIdAt(ready, P2, 0);
     const frontB = creatureIdAt(ready, P2, 1);
     const back = creatureIdAt(ready, P2, 2);
@@ -234,8 +354,8 @@ describe("Darkness Control package", () => {
     expect(state.creatures[back]?.damage).toBe(3);
   });
 
-  it("Pall of Ash strikes a chosen enemy for 3", () => {
-    const ready = readyToPlay([PALL_OF_ASH]);
+  it("strikes a chosen enemy for 3", () => {
+    const ready = readyToPlay([DAMAGE_CHOOSE.id]);
     const enemy = creatureIdAt(ready, P2, 1);
     let state = expectOk(
       advanceResolvingChain(ready, {
@@ -252,8 +372,8 @@ describe("Darkness Control package", () => {
     expect(state.creatures[enemy]?.damage).toBe(3);
   });
 
-  it("Nightmarrow Pact opens Drain on activate", () => {
-    const placed = placedRitualReady(readyToPlay([NIGHTMARROW_PACT]), P1);
+  it("Drain ritual opens choose-creature on activate", () => {
+    const placed = placedRitualReady(readyToPlay([DRAIN_RITUAL.id]), P1);
     const ritualId = ritualsOf(placed, P1)[0]?.id;
     if (ritualId === undefined) throw new Error("ritual");
     const activated = resolveOpenChain(
@@ -268,20 +388,20 @@ describe("Darkness Control package", () => {
     expect(activated.pendingDecision?.type).toBe("choose-creature");
   });
 
-  it("Echo of the Buried replays an Instant from the graveyard", () => {
+  it("replay opens a graveyard Instant chooser", () => {
     const spent = withPile(
-      withHand(withPhase(controlMatch(), "actions"), P1, [HOLLOW_TIDE]),
+      withHand(withPhase(controlMatch(), "actions"), P1, [TEST_PLAYABLE]),
       P1,
       10,
     );
-    const afterMill = expectOk(
-      advanceResolvingChain(withDeck(spent, P2, [GLOOMDRAFT, GLOOMDRAFT, PALL_OF_ASH]), {
+    const afterFirst = expectOk(
+      advanceResolvingChain(spent, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(spent, P1, 0),
       }),
     );
-    const ready = withPile(withHand(afterMill, P1, [ECHO_OF_THE_BURIED]), P1, 10);
+    const ready = withPile(withHand(afterFirst, P1, [REPLAY.id]), P1, 10);
     const played = expectOk(
       advanceResolvingChain(ready, {
         type: "PLAY_CARD",
@@ -290,7 +410,7 @@ describe("Darkness Control package", () => {
       }),
     );
     expect(played.pendingDecision?.type).toBe("replay-graveyard-tactic");
-    const echo = graveyardOf(played, P1).find((card) => card.cardId === ECHO_OF_THE_BURIED);
+    const echo = graveyardOf(played, P1).find((card) => card.cardId === REPLAY.id);
     const source =
       played.pendingDecision?.type === "replay-graveyard-tactic"
         ? played.pendingDecision.sourceCardInstanceId
@@ -299,15 +419,10 @@ describe("Darkness Control package", () => {
     expect(replayableGraveyardTactics(played, P1, source)).not.toContain(echo?.id);
   });
 
-  it("Cinerary Locket only equips Arcane or Darkness creatures", () => {
-    const tempoHost = newMatch({
-      players: [
-        { id: P1, squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-        { id: P2, squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-      ],
-    });
+  it("attribute-gated equipment only equips Arcane or Darkness creatures", () => {
+    const tempoHost = newMatch();
     const ready = withPile(
-      withHand(withPhase(tempoHost, "actions"), P1, [CINERARY_LOCKET]),
+      withHand(withPhase(tempoHost, "actions"), P1, [ATTR_GATED_EQUIP.id]),
       P1,
       10,
     );
@@ -320,7 +435,7 @@ describe("Darkness Control package", () => {
     expect(refused.ok).toBe(false);
     if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
 
-    const controlReady = readyToPlay([CINERARY_LOCKET]);
+    const controlReady = readyToPlay([ATTR_GATED_EQUIP.id]);
     const accepted = advance(controlReady, {
       type: "PLAY_CARD",
       playerId: P1,
@@ -330,31 +445,29 @@ describe("Darkness Control package", () => {
     expect(accepted.ok).toBe(true);
   });
 
-  it("Duskthrone Oracle is the Control squad's legendary win target", () => {
+  it("the Control squad's legendary sits in the back", () => {
     const state = controlMatch();
     const legendary = Object.values(state.creatures).find(
-      (creature) => creature.definitionId === DUSKTHRONE_ORACLE,
+      (creature) => creature.definitionId === ORACLE.id,
     );
     expect(legendary).toBeDefined();
     expect(legendary?.position).toBe("back");
   });
 
-  it("Grave Reach and Ley Surge spend pile without refunding the spent attribute", () => {
-    const GRAVE_REACH = asAttackId("attack-gravemarrow-shade-grave-reach");
-    const LEY_SURGE = asAttackId("attack-riftscribe-adept-ley-surge");
+  it("attack Spend burns pile without refunding the spent attribute", () => {
     let state = withAttributePool(withPhase(controlMatch(), "actions"), P1, {
       arcane: 2,
       darkness: 2,
       martial: 1,
     });
-    state = withDeck(state, P2, [GLOOMDRAFT, PALL_OF_ASH, HOLLOW_TIDE]);
-    state = withDeck(state, P1, [THREAD_THE_WEAVE, HOLLOW_TIDE, PALL_OF_ASH]);
+    state = withDeck(state, P2, [TEST_PLAYABLE, TEST_PLAYABLE, TEST_PLAYABLE]);
+    state = withDeck(state, P1, [TEST_PLAYABLE, TEST_PLAYABLE, TEST_PLAYABLE]);
 
     const shade = Object.values(state.creatures).find(
-      (creature) => creature.definitionId === GRAVEMARROW_SHADE && creature.ownerId === P1,
+      (creature) => creature.definitionId === SHADE.id && creature.ownerId === P1,
     );
     const adept = Object.values(state.creatures).find(
-      (creature) => creature.definitionId === RIFTSCRIBE_ADEPT && creature.ownerId === P1,
+      (creature) => creature.definitionId === ADEPT.id && creature.ownerId === P1,
     );
     const target = Object.values(state.creatures).find(
       (creature) => creature.ownerId === P2 && creature.position === "frontline",
@@ -368,7 +481,7 @@ describe("Darkness Control package", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: shade.id,
-        attackId: GRAVE_REACH,
+        attackId: GRAVE_REACH.id,
         targetId: target.id,
       }),
     );
@@ -381,7 +494,7 @@ describe("Darkness Control package", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId: adept.id,
-        attackId: LEY_SURGE,
+        attackId: LEY_SURGE.id,
         targetId: target.id,
       }),
     );

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { DieState } from "../model/dice.js";
-import type { DieId, FaceCardId, PlayerId } from "../model/ids.js";
+import type { DieId, FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { HALO_LAMP, SUNWARD_LENS } from "../content/faces.js";
+import { testFace } from "../testing/fixtures/index.js";
 import {
   advanceResolvingChain as advance,
   expectOk,
@@ -11,7 +11,21 @@ import {
   withPhase,
 } from "../testing/scenario.js";
 
-function dieIdOf(state: GameState, playerId: PlayerId = P1, index = 0): DieId {
+const DUAL_PIP = testFace({
+  id: "face-test-bank-dual-pip",
+  kind: "synthetic",
+  symbol: "luminar",
+  pips: { luminar: 1, mechanical: 1 },
+});
+
+const DOUBLE_LUMINAR = testFace({
+  id: "face-test-bank-double-luminar",
+  kind: "synthetic",
+  symbol: "luminar",
+  pips: { luminar: 2 },
+});
+
+function dieIdOf(state: GameState, playerId: typeof P1 = P1, index = 0): DieId {
   const id = state.players[playerId]?.dieIds[index];
   if (id === undefined) throw new Error("die");
   return id;
@@ -52,14 +66,14 @@ function rollRetainedSlots(state: GameState, slots: readonly [number, number]): 
 }
 
 describe("roll bank queue", () => {
-  it("Sunward Lens banks 1 Luminar and 1 Mechanical on roll", () => {
-    const state = rollRetainedSlots(installFaceOnDie(newMatch(), SUNWARD_LENS, 0), [0, 4]);
+  it("a dual-pip face banks 1 Luminar and 1 Mechanical on roll", () => {
+    const state = rollRetainedSlots(installFaceOnDie(newMatch(), DUAL_PIP.id, 0), [0, 4]);
     expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(1);
     expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
   });
 
-  it("Halo Lamp banks 2 Luminar on roll", () => {
-    const state = rollRetainedSlots(installFaceOnDie(newMatch(), HALO_LAMP, 0), [0, 4]);
+  it("a 2-pip Luminar face banks 2 Luminar on roll", () => {
+    const state = rollRetainedSlots(installFaceOnDie(newMatch(), DOUBLE_LUMINAR.id, 0), [0, 4]);
     expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(2);
   });
 });

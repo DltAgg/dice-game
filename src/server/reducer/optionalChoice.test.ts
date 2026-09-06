@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { GLOOMDRAFT, WARD_CHIT } from "../content/cards.js";
-import { SIGIL_FLARE } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
+import { testCard, testFace } from "../testing/fixtures/index.js";
 import {
   expectOk,
   handCardIdAt,
@@ -19,6 +18,34 @@ import { advance } from "./reduce.js";
 const ARCANE_SLOT = 0;
 const SHIELD_SLOT = 4;
 
+const CONVERT_STRIKE = testFace({
+  id: "face-test-convert-strike",
+  kind: "synthetic",
+  symbol: "arcane",
+  convertRoll: true,
+  pips: { arcane: 2 },
+  onRoll: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
+});
+
+const REQUIRED_DISCARD = testCard({
+  id: "card-test-required-discard",
+  playCost: { darkness: 2 },
+  attribute: "darkness",
+  effect: {
+    effects: [
+      { type: "search-deck", amount: 2, filter: ["instant", "ritual"] },
+      { type: "discard-cards", amount: 1 },
+    ],
+  },
+});
+
+const HAND_FILLER = testCard({
+  id: "card-test-discard-filler",
+  playCost: { arcane: 2 },
+  attribute: "arcane",
+  effect: { effects: [{ type: "grant-shield", amount: 1, target: { kind: "choose-ally" } }] },
+});
+
 function dieIdOf(state: GameState, index = 0): DieId {
   const id = state.players[P1]?.dieIds[index];
   if (id === undefined) throw new Error("expected a die");
@@ -31,19 +58,19 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
 }
 
-function installSigil(state: GameState): GameState {
+function installConvert(state: GameState): GameState {
   const dieId = dieIdOf(state);
   const die = state.dice[dieId];
   if (die === undefined) throw new Error("die");
   const slots = die.slots.map((slot, index) =>
     index === ARCANE_SLOT
-      ? { ...slot, faceCardId: SIGIL_FLARE, faceCardOwnerId: P1 }
+      ? { ...slot, faceCardId: CONVERT_STRIKE.id, faceCardOwnerId: P1 }
       : slot,
   );
   return { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
 }
 
-function rollSigil(state: GameState): GameState {
+function rollConvert(state: GameState): GameState {
   let rolled = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: ARCANE_SLOT });
   rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: SHIELD_SLOT });
@@ -51,17 +78,17 @@ function rollSigil(state: GameState): GameState {
 }
 
 describe("optional pending choices", () => {
-  it("Sigil Flare convert opens a Strike target choice", () => {
-    const rolled = rollSigil(installSigil(newMatch()));
+  it("convert roll opens a Strike target choice", () => {
+    const rolled = rollConvert(installConvert(newMatch()));
     expect(rolled.pendingDecision).toMatchObject({
       type: "choose-creature",
     });
     expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
   });
 
-  it("required Gloomdraft discard cannot be declined", () => {
+  it("required discard cannot be declined", () => {
     const ready = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [GLOOMDRAFT, WARD_CHIT]),
+      withHand(withPhase(newMatch(), "actions"), P1, [REQUIRED_DISCARD.id, HAND_FILLER.id]),
       P1,
       10,
     );

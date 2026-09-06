@@ -1,45 +1,58 @@
 import { describe, expect, it } from "vitest";
-import {
-  COG_DRAFT,
-  GLINT_VEIL,
-  LANTERN_OATH,
-  MENDING_LIGHT,
-  PRISM_MANTLE,
-} from "@server/content/cards.js";
+import { testCard } from "@server/testing/fixtures/index.js";
 import {
   formatBucketWeight,
   formatTypeMix,
   summarizeDeckCosts,
 } from "./deckCostStats.js";
 
+const cost1Instant = testCard({
+  playCost: { luminar: 1 },
+  attribute: "luminar",
+  type: "instant",
+});
+const cost1Reaction = testCard({
+  playCost: { luminar: 1 },
+  attribute: "luminar",
+  type: "reaction",
+});
+const cost2Instant = testCard({
+  playCost: { mechanical: 2 },
+  type: "instant",
+});
+const cost2Reaction = testCard({
+  playCost: { luminar: 2 },
+  attribute: "luminar",
+  type: "reaction",
+});
+const cost2Equipment = testCard({
+  playCost: { mechanical: 2 },
+  type: "equipment",
+  equipment: { mayTargetOpponent: false, abilities: [] },
+});
+
 describe("summarizeDeckCosts", () => {
-  it("groups copies into cost buckets with type, forge, and weight", () => {
+  it("groups copies into cost buckets with type and weight", () => {
     const summary = summarizeDeckCosts([
-      MENDING_LIGHT,
-      MENDING_LIGHT,
-      GLINT_VEIL,
-      GLINT_VEIL,
-      COG_DRAFT,
-      COG_DRAFT,
-      LANTERN_OATH,
-      PRISM_MANTLE,
+      cost1Instant.id,
+      cost1Instant.id,
+      cost1Reaction.id,
+      cost1Reaction.id,
+      cost2Instant.id,
+      cost2Instant.id,
+      cost2Reaction.id,
+      cost2Equipment.id,
     ]);
     expect(summary.cardCount).toBe(8);
     expect(summary.uniqueCards).toBe(5);
-    expect(summary.byForge.natural).toBe(6);
-    expect(summary.byForge.synthetic).toBe(2);
     expect(summary.costWeight).toBe(4 * 1 + 4 * 2);
 
     const oneCost = summary.buckets.find((row) => row.bucket === 1);
     expect(oneCost?.total).toBe(4);
     expect(oneCost?.costWeight).toBe(4);
-    expect(oneCost?.byForge.natural).toBe(4);
-    expect(oneCost?.byForge.synthetic).toBe(0);
-    expect(oneCost?.byForgeType.natural.instant).toBe(2);
-    expect(oneCost?.byForgeType.natural.reaction).toBe(2);
-    expect(oneCost && formatTypeMix(oneCost.byForgeType.natural)).toBe(
-      "2 Instant / 2 Reaction",
-    );
+    expect(oneCost?.byType.instant).toBe(2);
+    expect(oneCost?.byType.reaction).toBe(2);
+    expect(oneCost && formatTypeMix(oneCost.byType)).toBe("2 Instant / 2 Reaction");
     expect(oneCost && formatBucketWeight(oneCost)).toBe("4×1=4");
 
     const twoCost = summary.buckets.find((row) => row.bucket === 2);
@@ -48,8 +61,9 @@ describe("summarizeDeckCosts", () => {
     expect(twoCost?.byType.instant).toBe(2);
     expect(twoCost?.byType.reaction).toBe(1);
     expect(twoCost?.byType.equipment).toBe(1);
-    expect(twoCost?.byForge.synthetic).toBe(2);
-    expect(twoCost?.byForge.natural).toBe(2);
+    expect(twoCost && formatTypeMix(twoCost.byType)).toBe(
+      "2 Instant / 1 Reaction / 1 Equipment",
+    );
     expect(twoCost && formatBucketWeight(twoCost)).toBe("4×2=8");
   });
 

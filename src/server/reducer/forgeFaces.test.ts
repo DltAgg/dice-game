@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { COG_DRAFT, TOOLING_ORDER } from "../content/cards.js";
-import { COGTOOTH, getFaceCard } from "../content/faces.js";
+import { getFaceCard } from "../content/faces.js";
+import {
+  TEST_PLAYABLE,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   expectOk,
   forgeAction,
@@ -13,22 +17,56 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
+const CROSS_FORGE_CHOICE = testCard({
+  id: "card-test-cross-forge-choice",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  effect: {
+    requires: { mechanical: 2 },
+    effects: [
+      {
+        type: "choose-effect-mode",
+        modes: [
+          [
+            {
+              type: "replace-synthetic-face",
+              faces: 2,
+              attribute: "luminar",
+              fromAttribute: "mechanical",
+            },
+          ],
+          [
+            {
+              type: "replace-synthetic-face",
+              faces: 2,
+              attribute: "mechanical",
+              fromAttribute: "luminar",
+            },
+          ],
+        ],
+        modeLabels: ["Mechanical → Luminar", "Luminar → Mechanical"],
+      },
+    ],
+  },
+});
+
 describe("forge face selection", () => {
   it("pulls a named synthetic from the controller pool", () => {
-    const ready = withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10);
+    const ready = withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10);
     const dieId = ready.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("die");
-    expect(ready.players[P1]?.facePool).toContain(COGTOOTH);
+    expect(ready.players[P1]?.facePool).toContain(TEST_SYNTHETIC_MECHANICAL_A);
     const forged = expectOk(
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
-    expect(forged.players[P1]?.facePool).not.toContain(COGTOOTH);
-    expect(getFaceCard(COGTOOTH)?.symbol).toBe("mechanical");
+    expect(forged.players[P1]?.facePool).not.toContain(TEST_SYNTHETIC_MECHANICAL_A);
+    expect(getFaceCard(TEST_SYNTHETIC_MECHANICAL_A)?.symbol).toBe("mechanical");
   });
 
-  it("Tooling Order consumes two pool faces when gated", () => {
+  it("gated choose-effect-mode opens after play", () => {
     const ready = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [TOOLING_ORDER]),
+      withHand(withPhase(newMatch(), "actions"), P1, [CROSS_FORGE_CHOICE.id]),
       P1,
       10,
     );

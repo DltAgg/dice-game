@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest";
-import {
-  COG_DRAFT,
-  GLINT_VEIL,
-  LANTERN_OATH,
-  MIRRORWARD,
-} from "../content/cards.js";
 import { asEffectInstanceId } from "../model/ids.js";
 import type { AttributeTokens } from "../model/symbols.js";
 import { currentLife } from "../rules/creatures.js";
 import { createDraft } from "./draft.js";
 import { advance } from "./reduce.js";
 import { drainResolution, pushEffect } from "./resolution.js";
+import {
+  TEST_PLAYABLE,
+  TEST_REACTION_PREVENT,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -30,6 +29,29 @@ import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL, KINDLE, KINDLE_FUEL }
 
 const HEAVY_AXE = DRIVE_SHAFT;
 const CHARGE = KINDLE;
+
+const PREVENT_AND_DRAW = testCard({
+  id: "card-test-prevent-and-draw",
+  playCost: { luminar: 2 },
+  attribute: "luminar",
+  type: "reaction",
+  forge: { faces: 2, kind: "synthetic", attribute: "luminar", target: "own-die" },
+  effect: {
+    effects: [
+      { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+      { type: "draw-cards", amount: 1 },
+    ],
+  },
+});
+
+const PREVENT_REFLECT = testCard({
+  id: "card-test-prevent-reflect",
+  playCost: { luminar: 3 },
+  attribute: "luminar",
+  type: "reaction",
+  forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
+  effect: { effects: [{ type: "prevent-attack-reflect" }] },
+});
 
 function combatWithAttacker(tokens: AttributeTokens) {
   const base = withPhase(newMatch(), "actions");
@@ -53,7 +75,6 @@ function combatWithDriveShaft() {
   };
 }
 
-/** Dawn Warden Kindle deals 2 and has no ignore-shield, so 009 shield tests stay vanilla. */
 function combatWithCharge() {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 1);
@@ -67,7 +88,6 @@ function combatWithCharge() {
 
 describe("true prevent (009)", () => {
   it("cancels the whole attack before shields", () => {
-    // Charge deals 2 (no pierce). Attack-prevent 1 + shield 1 → 0 HP, Shield unused.
     const { attacker, target, state: combat } = combatWithCharge();
     const armed = {
       ...combat,
@@ -105,9 +125,9 @@ describe("true prevent (009)", () => {
     ).toBe(false);
   });
 
-  it("Lantern Oath prevents the waiting attack on the attack target", () => {
+  it("a prevent reaction stops the waiting attack on the attack target", () => {
     const { attacker, target, state: combat } = combatWithAttacker(CRANK_FUEL);
-    const withBarrier = withHand(withPile(combat, P2, 10), P2, [LANTERN_OATH]);
+    const withBarrier = withHand(withPile(combat, P2, 10), P2, [TEST_REACTION_PREVENT]);
 
     const opened = expectOk(
       advance(withBarrier, {
@@ -134,11 +154,11 @@ describe("true prevent (009)", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("rejects Glint Veil when the top link is not an attack", () => {
+  it("rejects a prevent reaction when the top link is not an attack", () => {
     const ready = withHand(
-      withPile(withHand(withPhase(newMatch(), "actions"), P1, [COG_DRAFT]), P1, 10),
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]), P1, 10),
       P2,
-      [GLINT_VEIL],
+      [TEST_REACTION_PREVENT],
     );
     const opened = expectOk(
       advance(ready, {
@@ -157,10 +177,10 @@ describe("true prevent (009)", () => {
     expect(denied.error).toBe("INVALID_CHAIN_TARGET");
   });
 
-  it("Mirrorward prevents the attack and reflects to the attacker", () => {
+  it("prevent-reflect stops the attack and reflects to the attacker", () => {
     const { attacker, target, state: combat } = combatWithDriveShaft();
     const lifeBefore = currentLife(combat.creatures[attacker]!);
-    const withJudgement = withHand(withPile(combat, P2, 10), P2, [MIRRORWARD]);
+    const withJudgement = withHand(withPile(combat, P2, 10), P2, [PREVENT_REFLECT.id]);
 
     const opened = expectOk(
       advance(withJudgement, {
@@ -185,9 +205,9 @@ describe("true prevent (009)", () => {
     expect(eventTypes(resolved)).toContain("damage-prevented");
   });
 
-  it("Lantern Oath draws when prevent resolves", () => {
+  it("prevent plus draw draws when prevent resolves", () => {
     const { attacker, target, state: combat } = combatWithAttacker(CRANK_FUEL);
-    const seeded = withHand(withPile(combat, P2, 10), P2, [LANTERN_OATH, COG_DRAFT, COG_DRAFT]);
+    const seeded = withHand(withPile(combat, P2, 10), P2, [PREVENT_AND_DRAW.id, TEST_PLAYABLE, TEST_PLAYABLE]);
     const player = seeded.players[P2];
     if (player === undefined) throw new Error("test: no p2");
     const deckA = handCardIdAt(seeded, P2, 1);
@@ -283,7 +303,6 @@ describe("true prevent (009)", () => {
   });
 
   it("shield-only path still prevents with source shield", () => {
-    // 1 shield vs Charge 2 → 0 shields, 1 damage.
     const { attacker, target, state: combat } = combatWithCharge();
     const shielded = withShields(combat, target, 1);
     const after = resolveOpenChain(
@@ -343,7 +362,6 @@ describe("true prevent (009)", () => {
       attackFollowUpEffects: [],
       ritualDuration: null,
     });
-    // Selector would prefer another ally; engine still only arms the attack target.
     pushEffect(
       draft,
       P1,

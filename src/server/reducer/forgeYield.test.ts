@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MENDING_LIGHT } from "../content/cards.js";
-import { naturalFaceId } from "../content/faces.js";
+import { TEST_NATURAL_FORGE, testNaturalFaceId } from "../testing/fixtures/index.js";
 import { symbolCountsOn } from "../rules/dice.js";
 import {
   expectOk,
@@ -17,7 +16,7 @@ import {
 describe("forge yield", () => {
   it("natural forge does not displace unrelated attributes beyond the batch", () => {
     const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [MENDING_LIGHT]),
+      withHand(withPhase(newMatch(), "actions"), P1, [TEST_NATURAL_FORGE]),
       P1,
       { luminar: 2 },
     );
@@ -28,7 +27,7 @@ describe("forge yield", () => {
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [5])),
     );
     const after = symbolCountsOn(forged.dice[dieId]!);
-    expect(forged.dice[dieId]?.slots[5]?.faceCardId).toBe(naturalFaceId("luminar"));
+    expect(forged.dice[dieId]?.slots[5]?.faceCardId).toBe(testNaturalFaceId("luminar"));
     expect(after.luminar ?? 0).toBe((before.luminar ?? 0) + 1);
   });
 });

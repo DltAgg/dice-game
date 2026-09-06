@@ -1,27 +1,19 @@
 import { describe, expect, it } from "vitest";
-import {
-  BEACON_ARRAY,
-  DRIVESHAFT_RIG,
-  IDLER_GEAR,
-  MACHINE_SHOP,
-  PAWL_SPRING,
-  PRISM_MANTLE,
-  QUICKSET_JIG,
-  RADIANT_ACCORD,
-  getCard,
-} from "../content/cards.js";
-import { TEMPO_SQUAD } from "../content/creatures.js";
-import {
-  COGTOOTH,
-  ENGINE_TEST_FACE_DECK,
-  GEAR_TRAIN,
-  HALO_LAMP,
-  SUNWARD_LENS,
-} from "../content/faces.js";
+import { getCard } from "../content/cards.js";
 import type { DieState } from "../model/dice.js";
-import { asAttackId, asSymbolInstanceId, type CreatureId, type DieId, type FaceCardId } from "../model/ids.js";
+import { asSymbolInstanceId, type CreatureId, type DieId, type FaceCardId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { whileShowingTotals } from "../rules/whileShowing.js";
+import {
+  TEST_BODY_A,
+  TEST_LEGEND,
+  TEST_SQUAD,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  testAttack,
+  testCard,
+  testCreature,
+  testFace,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -37,6 +29,232 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 import { CRANK, DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
+
+const HEAL_ON_LUMINAR = testCard({
+  id: "card-test-trigger-heal-luminar",
+  playCost: { luminar: 2, any: 1 },
+  attribute: "luminar",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-absorb",
+        symbols: ["luminar", "shield"],
+        absorberRelation: "ally",
+        oncePerTurn: true,
+        effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
+      },
+    ],
+  },
+});
+
+const GENERATE_ON_MECHANICAL = testCard({
+  id: "card-test-trigger-generate-mechanical",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-absorb",
+        symbols: ["mechanical"],
+        absorberRelation: "ally",
+        oncePerTurn: true,
+        effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      },
+    ],
+  },
+});
+
+const FORGE_DISCOUNT_ON_ROLL = testCard({
+  id: "card-test-trigger-forge-discount-roll",
+  playCost: { mechanical: 2, any: 1 },
+  attribute: "mechanical",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-roll-symbol",
+        symbol: "mechanical",
+        rollingPlayer: "controller",
+        effects: [{ type: "arm-forge-discount", amount: 1 }],
+      },
+    ],
+  },
+});
+
+const GENERATE_OVERLOAD = testCard({
+  id: "card-test-trigger-overload-generate",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: {
+    faceSymbols: ["mechanical"],
+    onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+  },
+});
+
+const DESYNTH_OVERLOAD = testCard({
+  id: "card-test-trigger-overload-desynth",
+  playCost: { mechanical: 2, any: 1 },
+  attribute: "mechanical",
+  type: "overload",
+  overload: {
+    faceSymbols: ["mechanical"],
+    faceKinds: ["synthetic"],
+    onRoll: [{ type: "desynthesize", target: { kind: "choose-any-synthetic-slot" } }],
+  },
+});
+
+const REDUCE_GEAR = testCard({
+  id: "card-test-trigger-reduce",
+  playCost: { luminar: 2 },
+  attribute: "luminar",
+  type: "equipment",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [{ type: "on-take-damage", reduceBy: 1, oncePerTurn: true }],
+  },
+});
+
+const STANDING_RITUAL = testCard({
+  id: "card-test-trigger-standing-ritual",
+  playCost: { mechanical: 1, any: 1 },
+  attribute: "mechanical",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { mechanical: 1, any: 1 },
+    effects: [{ type: "reapply-die-modifiers" }],
+    standingAbilities: [
+      {
+        type: "on-roll-symbol",
+        symbol: "martial",
+        rollingPlayer: "controller",
+        effects: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
+      },
+    ],
+  },
+});
+
+const EMPTY_STANDING_RITUAL = testCard({
+  id: "card-test-trigger-empty-standing",
+  playCost: { luminar: 1, any: 1 },
+  attribute: "luminar",
+  type: "ritual",
+  subtypes: ["continuous"],
+  ritual: {
+    spend: { luminar: 2, any: 1 },
+    effects: [
+      {
+        type: "silence",
+        hosts: ["creature", "ritual"],
+        target: { kind: "choose-opponent-silence-host", hosts: ["creature", "ritual"] },
+      },
+    ],
+  },
+});
+
+const TWO_PIP = testFace({
+  id: "face-test-trigger-two-pip",
+  kind: "synthetic",
+  symbol: "mechanical",
+  pips: { mechanical: 2 },
+});
+
+const FORGE_DISCOUNT_STANCE = testFace({
+  id: "face-test-trigger-forge-discount-stance",
+  kind: "synthetic",
+  symbol: "mechanical",
+  pips: { mechanical: 2 },
+  whileShowing: [{ type: "forge-discount", amount: 1 }],
+});
+
+const DUAL_PIP = testFace({
+  id: "face-test-trigger-dual-pip",
+  kind: "synthetic",
+  symbol: "luminar",
+  pips: { luminar: 1, mechanical: 1 },
+});
+
+const DOUBLE_LUMINAR = testFace({
+  id: "face-test-trigger-double-luminar",
+  kind: "synthetic",
+  symbol: "luminar",
+  pips: { luminar: 2 },
+});
+
+const DOUBLE_MECHANICAL = testFace({
+  id: "face-test-trigger-double-mechanical",
+  kind: "synthetic",
+  symbol: "mechanical",
+  pips: { mechanical: 2 },
+});
+
+const FORGE_DISCOUNT_BODY = testCreature({
+  id: "creature-test-trigger-forge-discount",
+  attributes: ["mechanical"],
+  standingAbilities: [
+    {
+      type: "on-absorb",
+      symbols: ["mechanical"],
+      absorberRelation: "ally",
+      oncePerTurn: true,
+      effects: [{ type: "arm-forge-discount", amount: 1 }],
+    },
+  ],
+});
+
+const SHIELD_ON_LUMINAR = testCreature({
+  id: "creature-test-trigger-shield-luminar",
+  attributes: ["luminar"],
+  standingAbilities: [
+    {
+      type: "on-absorb",
+      symbols: ["luminar"],
+      absorberRelation: "ally",
+      oncePerTurn: true,
+      effects: [{ type: "grant-shield", amount: 1, target: { kind: "choose-ally" } }],
+    },
+  ],
+});
+
+const EMPOWER_ON_MECHANICAL = testCreature({
+  id: "creature-test-trigger-empower",
+  life: 22,
+  attributes: ["mechanical", "luminar"],
+  legendary: true,
+  standingAbilities: [
+    {
+      type: "on-absorb",
+      symbols: ["mechanical"],
+      absorberRelation: "ally",
+      oncePerTurn: true,
+      effects: [{ type: "grant-next-attack-bonus", amount: 1, target: { kind: "source-creature" } }],
+    },
+  ],
+  attacks: [
+    testAttack({
+      id: "attack-test-trigger-drive",
+      discards: { mechanical: 1, luminar: 1, any: 1 },
+      effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
+    }),
+  ],
+});
+
+const HEAL_KINDLE = testAttack({
+  id: "attack-test-trigger-heal-kindle",
+  discards: { luminar: 2 },
+  followUpEffects: [{ type: "heal", amount: 1, target: { kind: "choose-ally" } }],
+});
+const HEALER = testCreature({
+  id: "creature-test-trigger-healer",
+  attributes: ["luminar"],
+  attacks: [HEAL_KINDLE],
+});
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -82,8 +300,8 @@ function rollShowingSlot(state: GameState, slot: number): GameState {
 }
 
 describe("on-absorb equipment", () => {
-  it("heals the equipped host when Beacon Array absorbs Luminar", () => {
-    const base = actionsReady([BEACON_ARRAY]);
+  it("heals the equipped host when Luminar is absorbed", () => {
+    const base = actionsReady([HEAL_ON_LUMINAR.id]);
     const hostId = creatureIdAt(base, P1, 0);
     let state = withDamage(equip(base, hostId), hostId, 2);
     state = withPhase(state, "actions");
@@ -124,8 +342,8 @@ describe("on-absorb equipment", () => {
     expect(after.creatures[hostId]?.damage).toBe(1);
   });
 
-  it("generates Mechanical when Drive Shaft Rig absorbs Mechanical", () => {
-    const base = actionsReady([DRIVESHAFT_RIG]);
+  it("generates Mechanical when Mechanical is absorbed", () => {
+    const base = actionsReady([GENERATE_ON_MECHANICAL.id]);
     const hostId = creatureIdAt(base, P1, 0);
     let state = equip(base, hostId);
     state = withPhase(state, "actions");
@@ -158,8 +376,8 @@ describe("on-absorb equipment", () => {
 });
 
 describe("on-roll-symbol equipment", () => {
-  it("arms forge discount when Quickset Jig sees a Mechanical roll", () => {
-    const base = actionsReady([QUICKSET_JIG]);
+  it("arms forge discount when Mechanical is rolled", () => {
+    const base = actionsReady([FORGE_DISCOUNT_ON_ROLL.id]);
     const hostId = creatureIdAt(base, P1, 0);
     const equipped = equip(base, hostId);
     const dieId = dieIdOf(equipped);
@@ -167,7 +385,7 @@ describe("on-roll-symbol equipment", () => {
     if (die === undefined) throw new Error("die");
     const slots = die.slots.map((slot, index) =>
       index === 0
-        ? { ...slot, faceCardId: COGTOOTH, faceCardOwnerId: P1 }
+        ? { ...slot, faceCardId: TEST_SYNTHETIC_MECHANICAL_A, faceCardOwnerId: P1 }
         : slot,
     );
     let rolled: GameState = {
@@ -184,66 +402,66 @@ describe("on-roll-symbol equipment", () => {
 });
 
 describe("on-absorb overloads", () => {
-  it("Idler Gear On roll still banks Cogtooth pips", () => {
-    const base = actionsReady([IDLER_GEAR]);
+  it("On roll still banks synthetic pips plus overload generate", () => {
+    const base = actionsReady([GENERATE_OVERLOAD.id]);
     const attached = expectOk(
-      advance(installFace(base, COGTOOTH), {
+      advance(installFace(base, TWO_PIP.id), {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TWO_PIP.id,
       }),
     );
     const after = rollShowingSlot(attached, 0);
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
   });
 
-  it("Pawl Spring On roll opens Desynthesize rather than a play discount", () => {
-    const base = actionsReady([PAWL_SPRING]);
+  it("Desynthesize On roll does not arm a play discount", () => {
+    const base = actionsReady([DESYNTH_OVERLOAD.id]);
     const attached = expectOk(
-      advance(installFace(base, COGTOOTH), {
+      advance(installFace(base, TEST_SYNTHETIC_MECHANICAL_A), {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(base, P1, 0),
-        declaredFaceCardId: COGTOOTH,
+        declaredFaceCardId: TEST_SYNTHETIC_MECHANICAL_A,
       }),
     );
     const after = rollShowingSlot(attached, 0);
     expect(after.playCostDiscountThisTurn[P1] ?? 0).toBe(0);
   });
 
-  it("Cogtooth While showing is a forge-discount stance, not a this-turn arm from the face", () => {
-    const after = rollShowingSlot(installFace(newMatch(), COGTOOTH), 0);
+  it("While showing is a forge-discount stance, not a this-turn arm from the face", () => {
+    const after = rollShowingSlot(installFace(newMatch(), FORGE_DISCOUNT_STANCE.id), 0);
     expect(whileShowingTotals(after, P1).forgeDiscount).toBe(1);
   });
 });
 
 describe("on-roll / on-absorb faces", () => {
-  it("generates Mechanical on Cogtooth roll", () => {
-    const after = rollShowingSlot(installFace(newMatch(), COGTOOTH), 0);
+  it("generates Mechanical on a 2-pip synthetic roll", () => {
+    const after = rollShowingSlot(installFace(newMatch(), TWO_PIP.id), 0);
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
   });
 
-  it("Sunward Lens banks 1 Luminar and 1 Mechanical from the same die", () => {
-    const after = rollShowingSlot(installFace(newMatch(), SUNWARD_LENS), 0);
+  it("a dual-pip face banks 1 Luminar and 1 Mechanical from the same die", () => {
+    const after = rollShowingSlot(installFace(newMatch(), DUAL_PIP.id), 0);
     expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(1);
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
   });
 
-  it("Halo Lamp banks 2 Luminar on roll", () => {
-    const after = rollShowingSlot(installFace(newMatch(), HALO_LAMP), 0);
+  it("a 2-pip Luminar face banks 2 Luminar on roll", () => {
+    const after = rollShowingSlot(installFace(newMatch(), DOUBLE_LUMINAR.id), 0);
     expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(2);
   });
 
-  it("Gear Train banks 2 Mechanical on roll", () => {
-    const after = rollShowingSlot(installFace(newMatch(), GEAR_TRAIN), 0);
+  it("a 2-pip Mechanical face banks 2 Mechanical on roll", () => {
+    const after = rollShowingSlot(installFace(newMatch(), DOUBLE_MECHANICAL.id), 0);
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
   });
 });
 
 describe("on-take-damage reduce", () => {
-  it("reduces the first hit by 1 once per turn with Prism Mantle", () => {
-    const base = actionsReady([PRISM_MANTLE]);
+  it("reduces the first hit by 1 once per turn", () => {
+    const base = actionsReady([REDUCE_GEAR.id]);
     const bearerId = creatureIdAt(base, P1, 0);
     const attackerId = creatureIdAt(base, P2, 0);
     let state = equip(base, bearerId);
@@ -268,8 +486,8 @@ describe("on-take-damage reduce", () => {
 });
 
 describe("continuous ritual triggers", () => {
-  it("generates Mechanical on roll while Machine Shop is active", () => {
-    const ready = actionsReady([MACHINE_SHOP]);
+  it("generates Mechanical on roll while a standing ritual is active", () => {
+    const ready = actionsReady([STANDING_RITUAL.id]);
     const placed = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -281,17 +499,17 @@ describe("continuous ritual triggers", () => {
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
   });
 
-  it("Radiant Accord has no standing On absorb", () => {
-    expect(getCard(RADIANT_ACCORD)?.ritual?.standingAbilities ?? []).toEqual([]);
+  it("a continuous ritual may have no standing On absorb", () => {
+    expect(getCard(EMPTY_STANDING_RITUAL.id)?.ritual?.standingAbilities ?? []).toEqual([]);
   });
 });
 
 describe("creature standing triggers", () => {
-  it("grants forge discount when Torque Wright's ally absorbs Mechanical", () => {
+  it("grants forge discount when an ally absorbs Mechanical", () => {
     const state = newMatch({
       players: [
-        { id: P1, squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
-        { id: P2, squad: TEMPO_SQUAD, deck: [], faceDeck: ENGINE_TEST_FACE_DECK },
+        { id: P1, squad: [FORGE_DISCOUNT_BODY.id, TEST_BODY_A, TEST_LEGEND], deck: [] },
+        { id: P2, squad: TEST_SQUAD, deck: [] },
       ],
     });
     const allyId = creatureIdAt(state, P1, 1);
@@ -322,9 +540,15 @@ describe("creature standing triggers", () => {
     expect(after.forgeDiscountThisTurn[P1]).toBeGreaterThanOrEqual(1);
   });
 
-  it("opens a Shield target when Dawn Warden's controller banks Luminar", () => {
-    const woundedId = creatureIdAt(newMatch(), P1, 0);
-    let ready = withDamage(withPhase(newMatch(), "actions"), woundedId, 2);
+  it("opens a Shield target when the controller banks Luminar", () => {
+    const match = newMatch({
+      players: [
+        { id: P1, squad: [TEST_BODY_A, SHIELD_ON_LUMINAR.id, TEST_LEGEND], deck: [] },
+        { id: P2, squad: TEST_SQUAD, deck: [] },
+      ],
+    });
+    const woundedId = creatureIdAt(match, P1, 0);
+    let ready = withDamage(withPhase(match, "actions"), woundedId, 2);
     const symbolId = asSymbolInstanceId("sym-luminar-creature");
     ready = {
       ...ready,
@@ -354,9 +578,15 @@ describe("creature standing triggers", () => {
     ).toBe(true);
   });
 
-  it("empowers Lodestar Artificer when an ally absorbs Mechanical", () => {
-    const legendaryId = creatureIdAt(newMatch(), P1, 2);
-    let ready = withPhase(newMatch(), "actions");
+  it("empowers the legendary when an ally absorbs Mechanical", () => {
+    const match = newMatch({
+      players: [
+        { id: P1, squad: [TEST_BODY_A, TEST_BODY_A, EMPOWER_ON_MECHANICAL.id], deck: [] },
+        { id: P2, squad: TEST_SQUAD, deck: [] },
+      ],
+    });
+    const legendaryId = creatureIdAt(match, P1, 2);
+    let ready = withPhase(match, "actions");
     const symbolId = asSymbolInstanceId("sym-mechanical-legendary");
     ready = {
       ...ready,
@@ -384,9 +614,15 @@ describe("creature standing triggers", () => {
 });
 
 describe("on-attack follow-ups", () => {
-  it("heals the most damaged ally after Dawn Warden Kindle", () => {
-    const woundedId = creatureIdAt(newMatch(), P1, 1);
-    let state = withDamage(withPhase(newMatch(), "actions"), woundedId, 2);
+  it("heals the most damaged ally after a heal follow-up strike", () => {
+    const match = newMatch({
+      players: [
+        { id: P1, squad: [TEST_BODY_A, HEALER.id, TEST_LEGEND], deck: [] },
+        { id: P2, squad: TEST_SQUAD, deck: [] },
+      ],
+    });
+    const woundedId = creatureIdAt(match, P1, 1);
+    let state = withDamage(withPhase(match, "actions"), woundedId, 2);
     const attackerId = creatureIdAt(state, P1, 1);
     state = withTokens(state, attackerId, { luminar: 2 });
     const after = expectOk(
@@ -394,7 +630,7 @@ describe("on-attack follow-ups", () => {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: asAttackId("attack-dawn-warden-kindle"),
+        attackId: HEAL_KINDLE.id,
         targetId: creatureIdAt(state, P2, 0),
       }),
     );

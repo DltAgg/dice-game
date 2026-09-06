@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { RETHROW } from "../content/cards.js";
-import { COGTOOTH, DAWNWRIGHT, SHIELD_FACE_ID } from "../content/faces.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
 import { asSymbolInstanceId } from "../model/ids.js";
@@ -8,6 +6,12 @@ import type { GameState } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import type { RNG } from "../rng/rng.js";
 import { usableSymbols } from "../rules/symbols.js";
+import { whileShowingTotals } from "../rules/whileShowing.js";
+import {
+  TEST_SHIELD_FACE_ID,
+  testCard,
+  testFace,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   eventTypes,
@@ -17,9 +21,32 @@ import {
   P1,
   withHand,
   withPhase,
+  withPile,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 import { reduce } from "./reduce.js";
+
+const REROLL = testCard({
+  id: "card-test-reroll",
+  playCost: {},
+  attribute: "mechanical",
+  effect: { effects: [{ type: "optional-reroll-die" }] },
+});
+
+const DUAL_PIP = testFace({
+  id: "face-test-reroll-dual",
+  kind: "natural",
+  symbol: "mechanical",
+  pips: { mechanical: 1, luminar: 1 },
+});
+
+const FORGE_DISCOUNT_STANCE = testFace({
+  id: "face-test-reroll-forge-discount",
+  kind: "synthetic",
+  symbol: "mechanical",
+  pips: { mechanical: 2 },
+  whileShowing: [{ type: "forge-discount", amount: 1 }],
+});
 
 function dieIdOf(state: GameState, index = 0): DieId {
   const id = state.players[P1]?.dieIds[index];
@@ -70,7 +97,6 @@ function withDieResult(
   };
 }
 
-/** `rng.integer(0, 5)` always returns `slot`. */
 function rngLanding(slot: number): RNG {
   return {
     next: () => 0,
@@ -80,17 +106,16 @@ function rngLanding(slot: number): RNG {
   };
 }
 
-/** Shield showing on slot 0; target face on `landSlot`; unabsorbed Shield pip. */
 function shieldShowingReady(landFace: FaceCardId, landSlot: number): GameState {
-  let state = withHand(withPhase(newMatch(), "actions"), P1, [RETHROW]);
+  let state = withPile(withHand(withPhase(newMatch(), "actions"), P1, [REROLL.id]), P1, 10);
   const dieId = dieIdOf(state);
-  state = installSlotFace(state, dieId, 0, SHIELD_FACE_ID);
+  state = installSlotFace(state, dieId, 0, TEST_SHIELD_FACE_ID);
   state = installSlotFace(state, dieId, landSlot, landFace);
   state = withDie(state, dieId, { rolledSlotIndex: 0 });
   return withDieResult(state, dieId, "shield");
 }
 
-function playRethrowOntoDie(state: GameState, dieId: DieId): GameState {
+function playRerollOntoDie(state: GameState, dieId: DieId): GameState {
   const afterPlay = expectOk(
     advance(state, {
       type: "PLAY_CARD",
@@ -104,12 +129,12 @@ function playRethrowOntoDie(state: GameState, dieId: DieId): GameState {
   );
 }
 
-describe("Rethrow [Reroll]", () => {
+describe("[Reroll]", () => {
   it("fires On roll for the new face and banks its Generate", () => {
     const landSlot = 3;
-    const ready = shieldShowingReady(DAWNWRIGHT, landSlot);
+    const ready = shieldShowingReady(DUAL_PIP.id, landSlot);
     const dieId = dieIdOf(ready);
-    const chosen = playRethrowOntoDie(ready, dieId);
+    const chosen = playRerollOntoDie(ready, dieId);
     expect(chosen.pendingDecision?.type).toBe("optional-reroll");
 
     const after = expectOk(
@@ -122,7 +147,7 @@ describe("Rethrow [Reroll]", () => {
 
     expect(after.phase).toBe("actions");
     expect(after.dice[dieId]?.rolledSlotIndex).toBe(landSlot);
-    expect(after.dice[dieId]?.slots[landSlot]?.faceCardId).toBe(DAWNWRIGHT);
+    expect(after.dice[dieId]?.slots[landSlot]?.faceCardId).toBe(DUAL_PIP.id);
     expect(after.players[P1]?.attributePool.luminar ?? 0).toBeGreaterThanOrEqual(1);
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
     expect(
@@ -130,11 +155,11 @@ describe("Rethrow [Reroll]", () => {
     ).toHaveLength(0);
   });
 
-  it("banks the new showing pip and fires On absorb", () => {
+  it("banks the new showing pip and applies While showing forge-discount", () => {
     const landSlot = 4;
-    const ready = shieldShowingReady(COGTOOTH, landSlot);
+    const ready = shieldShowingReady(FORGE_DISCOUNT_STANCE.id, landSlot);
     const dieId = dieIdOf(ready);
-    const chosen = playRethrowOntoDie(ready, dieId);
+    const chosen = playRerollOntoDie(ready, dieId);
 
     const after = expectOk(
       reduce(
@@ -145,7 +170,7 @@ describe("Rethrow [Reroll]", () => {
     );
 
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
-    expect(after.forgeDiscountThisTurn[P1]).toBeGreaterThanOrEqual(1);
+    expect(whileShowingTotals(after, P1).forgeDiscount).toBeGreaterThanOrEqual(1);
     expect(
       Object.values(after.symbols).filter(
         (symbol) => symbol.sourceDieId === dieId && symbol.symbol === "shield",
@@ -155,10 +180,10 @@ describe("Rethrow [Reroll]", () => {
 
   it("changes the showing face instead of only re-firing Stamp", () => {
     const landSlot = 2;
-    const ready = shieldShowingReady(DAWNWRIGHT, landSlot);
+    const ready = shieldShowingReady(DUAL_PIP.id, landSlot);
     const dieId = dieIdOf(ready);
     const priorAppeared = ready.facesAppearedThisRoll;
-    const chosen = playRethrowOntoDie(ready, dieId);
+    const chosen = playRerollOntoDie(ready, dieId);
 
     const after = expectOk(
       reduce(
@@ -169,8 +194,8 @@ describe("Rethrow [Reroll]", () => {
     );
 
     expect(after.dice[dieId]?.rolledSlotIndex).toBe(landSlot);
-    expect(after.dice[dieId]?.slots[0]?.faceCardId).toBe(SHIELD_FACE_ID);
-    expect(after.dice[dieId]?.slots[landSlot]?.faceCardId).toBe(DAWNWRIGHT);
+    expect(after.dice[dieId]?.slots[0]?.faceCardId).toBe(TEST_SHIELD_FACE_ID);
+    expect(after.dice[dieId]?.slots[landSlot]?.faceCardId).toBe(DUAL_PIP.id);
     expect(eventTypes(after)).toContain("die-rolled");
     expect(after.facesAppearedThisRoll).toEqual(
       expect.arrayContaining([
@@ -178,7 +203,7 @@ describe("Rethrow [Reroll]", () => {
         expect.objectContaining({
           dieId,
           slotIndex: landSlot,
-          faceCardId: DAWNWRIGHT,
+          faceCardId: DUAL_PIP.id,
         }),
       ]),
     );
@@ -220,7 +245,7 @@ describe("optional reroll same-face ally damage", () => {
     let state = withPhase(newMatch(), "actions");
     const dieId = dieIdOf(state);
     const original = state.dice[dieId]!.slots[0]!.faceCardId;
-    const other = state.dice[dieId]!.slots[1]!.faceCardId;
+    const other = state.dice[dieId]!.slots[2]!.faceCardId;
     expect(other).not.toBe(original);
     state = installSlotFace(state, dieId, 1, other);
     state = withDie(state, dieId, { rolledSlotIndex: 0 });

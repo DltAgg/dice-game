@@ -12,7 +12,7 @@
   "attribute": "darkness",
   "forge": {
     "faces": 1,
-    "kind": "natural",
+    "kind": "synthetic",
     "attribute": "darkness",
     "target": "own-die"
   },

@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { BRIGHT_CADENCE, COG_DRAFT, SHIM_KIT } from "../content/cards.js";
-import { COGTOOTH, GEAR_TRAIN, MAINSPRING } from "../content/faces.js";
 import { ritualsOf } from "../rules/cards.js";
+import {
+  TEST_FACE_DECK,
+  TEST_PLAYABLE,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  TEST_SYNTHETIC_MECHANICAL_B,
+  TEST_SYNTHETIC_MECHANICAL_C,
+  testCard,
+} from "../testing/fixtures/index.js";
 import {
   creatureIdAt,
   expectOk,
@@ -18,17 +24,44 @@ import {
 } from "../testing/scenario.js";
 import { CRANK, CRANK_FUEL } from "../testing/tempoCatalogue.js";
 
+const SHIELD_AND_EMPOWER = testCard({
+  id: "card-test-aggro-shield-empower",
+  playCost: { luminar: 2 },
+  attribute: "luminar",
+  effect: {
+    effects: [
+      { type: "grant-shield", amount: 2, target: { kind: "choose-ally" } },
+      { type: "next-attack-bonus", amount: 1 },
+    ],
+  },
+});
+
+const SILENCE_FACE = testCard({
+  id: "card-test-aggro-silence",
+  playCost: { mechanical: 2, any: 1 },
+  attribute: "mechanical",
+  effect: {
+    effects: [
+      {
+        type: "silence",
+        hosts: ["face"],
+        target: { kind: "choose-opponent-silence-host", hosts: ["face"] },
+      },
+    ],
+  },
+});
+
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
-describe("Tempo combat package", () => {
-  it("Bright Cadence grants shields and empowers", () => {
-    const allyId = creatureIdAt(actionsReady([BRIGHT_CADENCE]), P1, 0);
+describe("combat package", () => {
+  it("grants shields and empowers", () => {
+    const allyId = creatureIdAt(actionsReady([SHIELD_AND_EMPOWER.id]), P1, 0);
     const played = expectOk(
-      advance(actionsReady([BRIGHT_CADENCE]), {
+      advance(actionsReady([SHIELD_AND_EMPOWER.id]), {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(actionsReady([BRIGHT_CADENCE]), P1, 0),
+        cardInstanceId: handCardIdAt(actionsReady([SHIELD_AND_EMPOWER.id]), P1, 0),
       }),
     );
     const resolved = expectOk(
@@ -42,19 +75,19 @@ describe("Tempo combat package", () => {
     expect(resolved.attackBonusThisTurn[P1]).toBe(1);
   });
 
-  it("Cog Draft fuels the pile and draws", () => {
+  it("a generate-and-draw instant fuels the pile and draws", () => {
     const after = expectOk(
-      advance(actionsReady([COG_DRAFT]), {
+      advance(actionsReady([TEST_PLAYABLE]), {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(actionsReady([COG_DRAFT]), P1, 0),
+        cardInstanceId: handCardIdAt(actionsReady([TEST_PLAYABLE]), P1, 0),
       }),
     );
     expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
   });
 
-  it("Shim Kit opens a silence choice on play", () => {
-    const ready = actionsReady([SHIM_KIT]);
+  it("a silence instant opens a host choice on play", () => {
+    const ready = actionsReady([SILENCE_FACE.id]);
     const after = expectOk(
       advance(ready, {
         type: "PLAY_CARD",
@@ -83,17 +116,23 @@ describe("Tempo combat package", () => {
   });
 });
 
-describe("Tempo face references", () => {
-  it("names the mechanical specials in catalogue order", () => {
-    expect([COGTOOTH, GEAR_TRAIN, MAINSPRING].every(Boolean)).toBe(true);
+describe("face references", () => {
+  it("the test face deck includes the mechanical specials", () => {
+    expect(TEST_FACE_DECK).toEqual(
+      expect.arrayContaining([
+        TEST_SYNTHETIC_MECHANICAL_A,
+        TEST_SYNTHETIC_MECHANICAL_B,
+        TEST_SYNTHETIC_MECHANICAL_C,
+      ]),
+    );
   });
 
   it("has no continuous rituals in instant-only plays", () => {
     const after = expectOk(
-      advance(actionsReady([COG_DRAFT]), {
+      advance(actionsReady([TEST_PLAYABLE]), {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(actionsReady([COG_DRAFT]), P1, 0),
+        cardInstanceId: handCardIdAt(actionsReady([TEST_PLAYABLE]), P1, 0),
       }),
     );
     expect(ritualsOf(after, P1)).toHaveLength(0);

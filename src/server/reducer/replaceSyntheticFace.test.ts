@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { ALLOY_SHIFT, RECAST } from "../content/cards.js";
-import { COGTOOTH, GEAR_TRAIN, HALO_LAMP, MAINSPRING } from "../content/faces.js";
 import type { GameState } from "../model/state.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
 import { eligiblePoolFacesForReforge } from "../rules/reforge.js";
+import {
+  TEST_SYNTHETIC_LUMINAR_A,
+  TEST_SYNTHETIC_MECHANICAL_A,
+  TEST_SYNTHETIC_MECHANICAL_B,
+  TEST_SYNTHETIC_MECHANICAL_C,
+  testCard,
+  testNaturalFaceId,
+} from "../testing/fixtures/index.js";
 import {
   expectOk,
   eventTypes,
@@ -15,6 +21,32 @@ import {
   withPhase,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
+
+const REFORGE_TWO = testCard({
+  id: "card-test-reforge-any-two",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  effect: {
+    effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
+  },
+});
+
+const CROSS_FORGE = testCard({
+  id: "card-test-cross-forge",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  effect: {
+    effects: [
+      {
+        type: "replace-synthetic-face",
+        faces: 1,
+        attribute: "luminar",
+        fromAttribute: "mechanical",
+      },
+    ],
+  },
+});
 
 const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
@@ -55,9 +87,9 @@ function playFromHand(state: GameState): GameState {
   );
 }
 
-describe("replace-synthetic-face (Reforge / Recast)", () => {
+describe("replace-synthetic-face (Reforge)", () => {
   it("opens Reforge 2 for any replaceable faces on one die", () => {
-    const played = playFromHand(actionsReady([RECAST]));
+    const played = playFromHand(actionsReady([REFORGE_TWO.id]));
     expect(played.pendingDecision).toMatchObject({
       type: "replace-synthetic-face",
       faces: 2,
@@ -67,7 +99,7 @@ describe("replace-synthetic-face (Reforge / Recast)", () => {
   });
 
   it("installs two synthetic Mechanical faces from the pool and returns displaced faces when orphaned", () => {
-    const played = playFromHand(actionsReady([RECAST]));
+    const played = playFromHand(actionsReady([REFORGE_TWO.id]));
     const dieId = dieIdOf(played);
     const pool = eligiblePoolFacesForReforge(played, P1, "mechanical");
     const first = pool[0];
@@ -104,7 +136,7 @@ describe("replace-synthetic-face (Reforge / Recast)", () => {
   });
 
   it("rejects duplicate slot indexes", () => {
-    const played = playFromHand(actionsReady([RECAST]));
+    const played = playFromHand(actionsReady([REFORGE_TWO.id]));
     const pool = eligiblePoolFacesForReforge(played, P1, "mechanical");
     const rejected = advance(played, {
       type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
@@ -117,23 +149,35 @@ describe("replace-synthetic-face (Reforge / Recast)", () => {
   });
 
   it("whiffs when the pool has fewer than N destination synthetics", () => {
-    let state = actionsReady([RECAST]);
-    state = installFromPool(state, COGTOOTH, 0, 0);
-    state = installFromPool(state, GEAR_TRAIN, 1, 0);
-    state = installFromPool(state, MAINSPRING, 0, 1);
+    let state = actionsReady([REFORGE_TWO.id]);
+    state = installFromPool(state, TEST_SYNTHETIC_MECHANICAL_A, 0, 0);
+    state = installFromPool(state, TEST_SYNTHETIC_MECHANICAL_B, 1, 0);
+    state = installFromPool(state, TEST_SYNTHETIC_MECHANICAL_C, 0, 1);
     const played = playFromHand(state);
     expect(played.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 });
 
-describe("replace-synthetic-face (Cross forge / Alloy Shift)", () => {
+describe("replace-synthetic-face (Cross forge)", () => {
   it("whiffs when no showing face matches Y", () => {
-    const played = playFromHand(actionsReady([ALLOY_SHIFT]));
+    let ready = actionsReady([CROSS_FORGE.id]);
+    const luminar = testNaturalFaceId("luminar");
+    for (const dieId of ready.players[P1]?.dieIds ?? []) {
+      const die = ready.dice[dieId];
+      if (die === undefined) continue;
+      const slots = die.slots.map((slot) =>
+        slot.faceCardId === testNaturalFaceId("mechanical")
+          ? { ...slot, faceCardId: luminar }
+          : slot,
+      );
+      ready = { ...ready, dice: { ...ready.dice, [dieId]: { ...die, slots } } };
+    }
+    const played = playFromHand(ready);
     expect(played.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("opens Cross forge Mechanical → synthetic Luminar", () => {
-    const ready = installFromPool(actionsReady([ALLOY_SHIFT]), COGTOOTH);
+    const ready = installFromPool(actionsReady([CROSS_FORGE.id]), TEST_SYNTHETIC_MECHANICAL_A);
     const played = playFromHand(ready);
     expect(played.pendingDecision).toMatchObject({
       type: "replace-synthetic-face",
@@ -144,7 +188,7 @@ describe("replace-synthetic-face (Cross forge / Alloy Shift)", () => {
   });
 
   it("installs a synthetic Luminar over a Mechanical slot", () => {
-    const ready = installFromPool(actionsReady([ALLOY_SHIFT]), COGTOOTH);
+    const ready = installFromPool(actionsReady([CROSS_FORGE.id]), TEST_SYNTHETIC_MECHANICAL_A);
     const played = playFromHand(ready);
     const dieId = dieIdOf(played);
     const resolved = expectOk(
@@ -153,23 +197,23 @@ describe("replace-synthetic-face (Cross forge / Alloy Shift)", () => {
         playerId: P1,
         dieId,
         slotIndexes: [0],
-        faceCardIds: [HALO_LAMP],
+        faceCardIds: [TEST_SYNTHETIC_LUMINAR_A],
       }),
     );
-    expect(resolved.dice[dieId]?.slots[0]?.faceCardId).toBe(HALO_LAMP);
-    expect(resolved.players[P1]?.facePool).toContain(COGTOOTH);
-    expect(resolved.players[P1]?.facePool).not.toContain(HALO_LAMP);
+    expect(resolved.dice[dieId]?.slots[0]?.faceCardId).toBe(TEST_SYNTHETIC_LUMINAR_A);
+    expect(resolved.players[P1]?.facePool).toContain(TEST_SYNTHETIC_MECHANICAL_A);
+    expect(resolved.players[P1]?.facePool).not.toContain(TEST_SYNTHETIC_LUMINAR_A);
   });
 
   it("rejects a slot that does not show Y", () => {
-    const ready = installFromPool(actionsReady([ALLOY_SHIFT]), COGTOOTH);
+    const ready = installFromPool(actionsReady([CROSS_FORGE.id]), TEST_SYNTHETIC_MECHANICAL_A);
     const played = playFromHand(ready);
     const rejected = advance(played, {
       type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
       playerId: P1,
       dieId: dieIdOf(played),
       slotIndexes: [3],
-      faceCardIds: [HALO_LAMP],
+      faceCardIds: [TEST_SYNTHETIC_LUMINAR_A],
     });
     expect(rejected.ok).toBe(false);
   });
