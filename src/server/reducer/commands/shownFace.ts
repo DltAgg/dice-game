@@ -6,6 +6,7 @@ import { isAttributeSymbol, type SymbolType } from "../../model/symbols.js";
 import { emit, nextInstanceId, type Draft } from "../draft.js";
 import { createSymbol, pushEffect } from "../resolution.js";
 import { fireEquipmentOnRollSymbol } from "../triggers.js";
+import { offerConvertRollChoice } from "./convertRollChoice.js";
 import { isSlotSilenced } from "../../rules/silence.js";
 
 /** Record that this face showed; does not clear earlier appearances this roll. */
@@ -174,6 +175,10 @@ export function refireShownFaceRollEffects(
   if (face === undefined) return;
 
   const silenced = isSlotSilenced(draft, dieId, slotIndex);
+  if (!silenced && face.convertRoll === true) {
+    offerConvertRollChoice(draft, controllerId, dieId, slotIndex, face);
+    return;
+  }
   if (!silenced && face.convertRoll !== true) {
     applyForgeYieldGenerate(draft, controllerId, slot, face.symbol);
     applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);

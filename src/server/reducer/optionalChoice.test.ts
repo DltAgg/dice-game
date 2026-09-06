@@ -78,12 +78,23 @@ function rollConvert(state: GameState): GameState {
 }
 
 describe("optional pending choices", () => {
-  it("convert roll opens a Strike target choice", () => {
+  it("convert roll opens Choose one before Strike", () => {
     const rolled = rollConvert(installConvert(newMatch()));
     expect(rolled.pendingDecision).toMatchObject({
-      type: "choose-creature",
+      type: "choose-effect-mode",
+      modeLabels: ["Bank this die's pips", "Strike 2"],
     });
     expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
+    const payoff = expectOk(
+      advance(rolled, {
+        type: "RESOLVE_CHOOSE_EFFECT_MODE",
+        playerId: P1,
+        modeIndex: 1,
+      }),
+    );
+    expect(payoff.pendingDecision).toMatchObject({
+      type: "choose-creature",
+    });
   });
 
   it("required discard cannot be declined", () => {

@@ -84,7 +84,7 @@ describe("FaceCardsInPlay while-showing / convert cues", () => {
 
   it("shows a convert cue on a convertRoll face", () => {
     const html = renderFaces(convertFace.id);
-    expect(html).toContain("Convert roll · pips not banked");
+    expect(html).toContain("Choose one");
     expect(html).not.toContain("On absorb");
   });
 });

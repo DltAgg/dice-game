@@ -224,7 +224,7 @@ describe("convertRollCueForFace", () => {
       { dieId: "die-1" as DieId, faceCardId },
     ]);
     expect(convertRollCueForFace(state, playerId, faceCardId)).toBe(
-      "Convert roll · pips not banked",
+      "On roll: Choose one — bank this die's pips or the printed payoff",
     );
   });
 
@@ -237,7 +237,7 @@ describe("convertRollCueForFace", () => {
         { dieId: "die-1" as DieId, faceCardId: faceCardId as FaceCardId },
       ]);
       expect(convertRollCueForFace(state, playerId, faceCardId as FaceCardId)).toContain(
-        "Convert roll",
+        "Choose one",
       );
     }
   });

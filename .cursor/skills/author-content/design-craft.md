@@ -79,9 +79,14 @@ ninth pie.
 
 ## Forge development
 
+Header `forge.faces` follows printed `playCost` total (DECIDED 2026-09-06):
+**cost 3 → Forge 2**, **cost 4 → Forge 3**, **cost 5+ → Forge 4**. Cost 2
+and cheaper stay Forge 1 unless the slot is deliberately denser. Do not
+author a 3-drop with Forge 1.
+
 `forge.faces: 1` + Natural (or Synthetic) of the card’s own attribute is
-the **default sticker**. Stop using it unless that *is* the designed
-choice and the play region sequences with it.
+the **default sticker** for cheap cards. Stop using it on a 3+ unless that
+*is* the designed exception and the play region sequences with it.
 
 Natural own-die forge is no longer sticker-only: the player may **forge** or
 **`[Overcharge]`** (spec `021` / RULEBOOK §11) — spend **any** hand card onto a kept
@@ -95,9 +100,10 @@ and do **not** reprint `[Overcharge]` on the card. Spec `013`
 
 | Slot | What it occupies |
 |---|---|
-| `faces: 1` | The common install. Needs a **rider** or play-text synergy, or it is empty craft. |
-| `faces: 2` | Count as the plus. Rare; costs and pie must justify two installs. |
-| `faces: 3` | Exceptional. Ritual-scale or keyed engine piece, not a habit. |
+| `faces: 1` | Cost ≤2 default. Needs a **rider** or play-text synergy, or it is empty craft. |
+| `faces: 2` | Cost 3 default. |
+| `faces: 3` | Cost 4 default. |
+| `faces: 4` | Cost 5+ default. |
 | `kind: "natural"` | Free install + draw + yield, **or** `[Overcharge]` onto a kept attribute face (master rule — do not print it). Identity face / density. Reason required. |
 | `kind: "synthetic"` | Named special + synthetic bank. Reason required (the special, not “Mechanical cards forge synthetic”). |
 | Named-face install | Play or rider names a **specific** special, not “any of this attribute.” |

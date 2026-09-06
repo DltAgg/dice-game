@@ -14,7 +14,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Reforge 2 Mechanical] any faces on one of your dice.",
+  "rulesText": "[Reforge 3 Mechanical] any faces on one of your dice.",
   "effect": {
     "effects": [
       {

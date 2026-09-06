@@ -11,7 +11,7 @@
   ],
   "attribute": "luminar",
   "forge": {
-    "faces": 1,
+    "faces": 2,
     "kind": "synthetic",
     "attribute": "luminar",
     "target": "own-die"

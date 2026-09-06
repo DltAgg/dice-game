@@ -869,6 +869,8 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
         modes: effect.modes,
         modeLabels: labels,
         ...effectChoiceSource(draft, pending),
+        sourceDieId: pending.sourceDieId,
+        sourceSlotIndex: pending.sourceSlotIndex,
       };
       return true;
     }

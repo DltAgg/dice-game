@@ -31,7 +31,7 @@
         "arcane": 1
       },
       "range": false,
-      "rulesText": "[Strike 2]. [Insight 1].",
+      "rulesText": "[Strike 2].\n[Insight 1].",
       "effect": {
         "type": "damage",
         "amount": 2,

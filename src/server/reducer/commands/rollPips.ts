@@ -7,8 +7,8 @@ import { isSlotSilenced } from "../../rules/silence.js";
 import { createRolledDieSymbol } from "./shownFace.js";
 
 /**
- * `[Convert roll]` payoff can fire: not silenced, not suppress-inherent.
- * When this is true, that die’s pips this roll do not bank.
+ * Convert Choose one can fire: not silenced, not suppress-inherent.
+ * Yield / Overcharge wait until the player picks bank.
  */
 export function isConvertingShownFace(
   face: Pick<FaceCardDefinition, "convertRoll">,

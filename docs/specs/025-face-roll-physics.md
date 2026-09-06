@@ -2,7 +2,7 @@
 
 Status: **IMPLEMENTED** (2026-09-04)
 
-Inherent extra pips, `[Convert roll]`, While showing stances, and dice-geometry
+Inherent extra pips, convert Choose one, While showing stances, and dice-geometry
 On-roll conditions. On absorb on faces is retired as a design axis (auto-bank
 made it fire with On roll). `[Generate]` on tactics is unchanged.
 
@@ -39,15 +39,14 @@ Bible is silent on these axes. User **DECIDED** 2026-09-04. Player wording is
 4. **Stamp.** `[Stamp]` / `refireShownFaceRollEffects` does **not** mint a
    second copy of inherent `pips`. Yield / Overcharge generate still apply
    unless convert skips them.
-5. **`[Convert roll]`** (`convertRoll: true`). When the slot is not silenced
-   (so the payoff can fire): do **not** bank any attribute pips **this die**
-   produced this roll (inherent pips, forge yield, Overcharge).
-   Skip `applyForgeYieldGenerate` / `applyOverchargeGenerate` for that die
-   (those use `createSymbol` and would auto-bank). Fire `onRoll` as the
-   payoff. Not optional, not a prompt. The **other** die banks normally.
-   Convert faces are attribute specials (no Shield leftover). `[Reroll]`
-   applies convert to the **new** roll of that die only. Stamp on a converting
-   face: skip yield/Overcharge generate; re-fire the convert `onRoll`.
+5. **Convert Choose one** (`convertRoll: true`). When the slot is not silenced
+   (so the prompt can open): On roll opens **Choose one** (same pending as
+   Tooling Order). **Bank this die's pips** — yield / Overcharge generate, then
+   bank inherent pips. **Printed payoff** — forfeit this die’s pips (inherent,
+   forge yield, Overcharge) and resolve `onRoll`. Not auto. The **other** die
+   banks normally. Convert faces are attribute specials (no Shield leftover).
+   `[Reroll]` applies convert Choose one to the **new** roll of that die only.
+   Stamp on a converting face: re-open Choose one.
 6. **While showing.** Continuous query from currently showing faces
    (`rolledSlotIndex`). Not a `StandingTrigger`. Holder voice: modifiers apply
    to the **die owner**. Two copies stack. Silenced slots skip.
@@ -116,8 +115,7 @@ None.
 
 - Surface **While showing** modifiers on showing dice (pierce / empower /
   discount / reduce totals for the die owner).
-- A **convert cue** when the showing face has `[Convert roll]` (pips from
-  that die this roll are not banked).
+- A **convert cue** when the showing face has convert Choose one.
 - Do not show On-absorb as a live face axis on these proving faces.
 
 ## Acceptance Criteria

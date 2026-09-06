@@ -91,8 +91,8 @@ export interface FaceCardDefinition {
    */
   readonly pips?: SymbolTokens;
   /**
-   * If true, this die’s pips from this roll do not bank; `onRoll` is the
-   * `[Convert roll]` payoff. Spec `025`.
+   * If true, On roll opens Choose one: bank this die's pips, or take the
+   * printed payoff and do not bank. Spec `025`.
    */
   readonly convertRoll?: boolean;
   /**

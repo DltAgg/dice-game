@@ -35,7 +35,7 @@
     },
     "convertRoll": {
       "type": "boolean",
-      "description": "If true, this die's pips from this roll do not bank (including yield and Overcharge); onRoll is the Convert roll payoff (spec 025)."
+      "description": "If true, On roll opens Choose one: bank this die's pips, or the printed onRoll payoff and do not bank (spec 025)."
     },
     "whileShowing": {
       "type": "array",

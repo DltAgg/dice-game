@@ -1,7 +1,7 @@
 # 004 — Face cards and the face deck
 
 Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; spec `025` roll
-physics (inherent pips, `[Convert roll]`, While showing, geometry). Face On
+physics (inherent pips, convert Choose one, While showing, geometry). Face On
 absorb is retired. Remaining: empty print (Great Spark / Rekindle) —
 [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
@@ -60,7 +60,7 @@ inherent effect). Synthetic installs are still **named specials**, not blank
 basic (setup only — still not forgeable mid-game). No inherent effect, overload
 capacity 1. Shield is not an attribute and is not Natural — `On absorb Natural`
 (Void Summoner) does not fire when a Shield is absorbed. `startingMinShieldsPerDie`
-(ASSUMED, default 1) applies to constructed layouts.
+(DECIDED, default 0) — Shield is optional on constructed opening dice.
 
 ### Specials (Synthetic) — current catalogue
 
@@ -80,7 +80,7 @@ than 1 inherent pip** (spec `025`). Face `onAbsorb` is empty.
 |---|---|---|---|---|
 | `face-synthetic-cogtooth` | Cogtooth | Mechanical | 2 Mechanical | While showing: `[Discount 1]` forge |
 | `face-synthetic-gear-train` | Gear Train | Mechanical | 2 Mechanical | On roll: if your other die shows the same attribute, `[Double]` |
-| `face-synthetic-mainspring` | Mainspring | Mechanical | 2 Mechanical | On roll: `[Convert roll]`. `[Reforge 1 Mechanical]` |
+| `face-synthetic-mainspring` | Mainspring | Mechanical | 2 Mechanical | On roll: Choose one — bank this die's pips, or `[Reforge 1 Mechanical]` |
 | `face-synthetic-halo-lamp` | Halo Lamp | Luminar | 2 Luminar | While showing: `[Pierce 1]` |
 | `face-synthetic-lucent-choir` | Lucent Choir | Luminar | 2 Luminar | While showing: `[Empower 1]` |
 | `face-synthetic-sunward-lens` | Sunward Lens | Luminar | 1 Luminar + 1 Mechanical | Dual-pip |
@@ -90,11 +90,11 @@ than 1 inherent pip** (spec `025`). Face `onAbsorb` is empty.
 | Id | Name | Symbol | Pips | Window |
 |---|---|---|---|---|
 | `face-synthetic-augur-glass` | Augur Glass | Arcane | 2 Arcane | While showing: `[Discount 1]` |
-| `face-synthetic-sigil-flare` | Sigil Flare | Arcane | 2 Arcane | On roll: `[Convert roll]`. `[Strike 2]` |
+| `face-synthetic-sigil-flare` | Sigil Flare | Arcane | 2 Arcane | On roll: Choose one — bank this die's pips, or `[Strike 2]` |
 | `face-synthetic-ward-lattice` | Ward Lattice | Arcane | 2 Arcane | On roll: if your other die shows the same attribute, `[Insight 2]` |
 | `face-synthetic-gloomwell` | Gloomwell | Darkness | 1 Darkness + 1 Arcane | Dual-pip |
 | `face-synthetic-ossuary` | Ossuary | Darkness | 2 Darkness | On roll: `[Recall 1]` that costs 2 or less |
-| `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | 2 Darkness | On roll: `[Convert roll]`. `[Drain 2]` |
+| `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | 2 Darkness | On roll: Choose one — bank this die's pips, or `[Drain 2]` |
 
 **Dual-pip faces.** Yield is one `pips` map, same shape as pile tokens.
 Write the full bag including identity — `{ "mechanical": 1, "luminar": 1 }`

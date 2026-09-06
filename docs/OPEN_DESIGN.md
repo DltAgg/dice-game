@@ -915,7 +915,7 @@ Caps (bible silent on constructed layouts) live on `GameRulesConfig`:
 
 | Knob | Default | Status |
 |---|---|---|
-| `startingMinShieldsPerDie` | 1 | `ASSUMED` |
+| `startingMinShieldsPerDie` | 0 | `DECIDED` (playtest 2026-09-06: Shield optional on opening dice) |
 | `startingMaxSyntheticsPerPlayer` | 2 | `ASSUMED` |
 | `startingMaxSyntheticsPerDie` | 2 | `ASSUMED` |
 | `startingMaxOnRollFacesPerDie` | 2 | `ASSUMED` (non-empty `onRoll`) |

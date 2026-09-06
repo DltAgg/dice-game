@@ -14,10 +14,10 @@ import {
   applyOverchargeGenerate,
   fireShownFaceRollHooks,
 } from "./shownFace.js";
+import { offerConvertRollChoice } from "./convertRollChoice.js";
 import {
   bankableShownFaceIds,
   createShowingFacePips,
-  forfeitRolledPips,
   isConvertingShownFace,
   skipRollYieldAndOvercharge,
   type ShownFaceRollEntry,
@@ -106,8 +106,14 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
   }
 
   // Fire onRoll in die order (later dice push on top so LIFO resolves left-to-right).
-  // Both showing faces are already known (geometry).
+  // Both showing faces are already known (geometry). Convert faces open Choose one
+  // instead of auto-forfeiting.
   for (const entry of [...rolled].reverse()) {
+    const shown = getFaceCard(entry.faceCardId);
+    if (entry.converting && shown !== undefined) {
+      offerConvertRollChoice(draft, playerId, entry.dieId, entry.slotIndex, shown);
+      continue;
+    }
     fireShownFaceRollHooks(
       draft,
       playerId,
@@ -121,9 +127,6 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
 
   drainResolution(draft);
 
-  for (const entry of rolled) {
-    if (entry.converting) forfeitRolledPips(draft, entry.symbolIds);
-  }
   const bankableIds = bankableShownFaceIds(rolled);
   const deferAbsorb =
     draft.pendingDecision !== null || draft.resolutionStack.length > 0;

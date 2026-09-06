@@ -127,9 +127,17 @@ describe("tactic Overcharge", () => {
     expect(charged.players[P1]?.overchargeByFace[CONVERT_KEEPER.id]).toEqual(["arcane"]);
 
     const rolled = rollShowingSlot(charged, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.darkness ?? 0).toBe(0);
-    expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
-    expect(rolled.pendingDecision?.type).toBe("choose-creature");
+    expect(rolled.pendingDecision?.type).toBe("choose-effect-mode");
+    const payoff = expectOk(
+      advance(rolled, {
+        type: "RESOLVE_CHOOSE_EFFECT_MODE",
+        playerId: P1,
+        modeIndex: 1,
+      }),
+    );
+    expect(payoff.players[P1]?.attributePool.darkness ?? 0).toBe(0);
+    expect(payoff.players[P1]?.attributePool.arcane ?? 0).toBe(0);
+    expect(payoff.pendingDecision?.type).toBe("choose-creature");
   });
 
   it("one Overcharge on two copies generates Arcane once per showing die", () => {

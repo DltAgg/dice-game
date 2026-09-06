@@ -4,7 +4,7 @@
   "name": "Sigil Flare",
   "kind": "synthetic",
   "symbol": "arcane",
-  "rulesText": "On roll: [Convert roll]. [Strike 2].",
+  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Strike 2]. Do not bank this die's pips.",
   "pips": {
     "arcane": 2
   },

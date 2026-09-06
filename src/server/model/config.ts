@@ -17,8 +17,8 @@ export interface GameRulesConfig {
   /** DEFINED, bible §9.1. */
   readonly maxFacesOfSameAttributePerDie: number;
   /**
-   * ASSUMED (constructed opening dice). Minimum untyped Shield faces per
-   * opening die. See OPEN_DESIGN.
+   * DECIDED (playtest 2026-09-06). Minimum untyped Shield faces per opening
+   * die. Default 0 — Shield is optional on constructed layouts.
    */
   readonly startingMinShieldsPerDie: number;
   /**
@@ -105,7 +105,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   creaturesPerPlayer: 3,
   dicePerPlayer: 2,
   maxFacesOfSameAttributePerDie: 4,
-  startingMinShieldsPerDie: 1,
+  startingMinShieldsPerDie: 0,
   startingMaxSyntheticsPerPlayer: 2,
   startingMaxSyntheticsPerDie: 2,
   startingMaxOnRollFacesPerDie: 2,

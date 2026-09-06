@@ -571,10 +571,14 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "choose-effect-mode") {
+    const convertFace =
+      pending.sourceFaceCardId === null ? undefined : getFaceCard(pending.sourceFaceCardId);
+    const modeIndex =
+      convertFace?.convertRoll === true && pending.modes.length > 1 ? 1 : 0;
     const result = advance(state, {
       type: "RESOLVE_CHOOSE_EFFECT_MODE",
       playerId: pending.controllerId,
-      modeIndex: 0,
+      modeIndex,
     });
     if (!result.ok) {
       throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_CHOOSE_EFFECT_MODE`);

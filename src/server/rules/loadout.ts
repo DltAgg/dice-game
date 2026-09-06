@@ -41,7 +41,7 @@ export function isOpeningBasicFace(id: FaceCardId): boolean {
   return face.kind === "natural" && isAttributeSymbol(face.symbol) && face.rulesText.trim() === "";
 }
 
-/** On roll, `[Convert roll]`, or While showing — not extra pips alone (spec `025`). */
+/** On roll, convert Choose one, or While showing — not extra pips alone (spec `025`). */
 export function countsTowardOpeningOnRollCap(id: FaceCardId): boolean {
   const definition = getFaceCard(id);
   if (definition === undefined) return false;

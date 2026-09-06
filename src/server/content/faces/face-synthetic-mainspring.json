@@ -4,7 +4,7 @@
   "name": "Mainspring",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll: [Convert roll]. [Reforge 1 Mechanical].",
+  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Reforge 1 Mechanical]. Do not bank this die's pips.",
   "pips": {
     "mechanical": 2
   },

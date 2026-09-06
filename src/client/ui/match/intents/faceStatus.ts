@@ -19,7 +19,7 @@ export type WhileShowingCue = {
   readonly label: string;
 };
 
-const CONVERT_ROLL_CUE = "Convert roll · pips not banked";
+const CONVERT_ROLL_CUE = "On roll: Choose one — bank this die's pips or the printed payoff";
 
 /** Player-facing chips for `whileShowingTotals` — do not recompute stance in React. */
 export function whileShowingCues(totals: WhileShowingTotals): readonly WhileShowingCue[] {
@@ -55,7 +55,7 @@ export function whileShowingStatusForPlayer(
 }
 
 /**
- * Cue on a showing `[Convert roll]` face: that die's pips this roll do not bank.
+ * Cue on a showing convert face: On roll opens Choose one (bank vs payoff).
  * Hidden when every showing copy is silenced (convert does not fire; pips still generate).
  */
 export function convertRollCueForFace(

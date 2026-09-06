@@ -160,7 +160,7 @@ Bible is silent on constructed layouts. Use config, not hardcoded UI:
 
 | Knob | Suggested default | Why |
 |---|---|---|
-| `startingMinShieldsPerDie` | 1 | Keep absorb-or-engine tension; Shield is the untyped baseline |
+| `startingMinShieldsPerDie` | 0 | Shield is optional on opening dice (playtest 2026-09-06) |
 | `startingMaxSyntheticsPerPlayer` | 2 | Across both dice; rest must be basics. Stops a 12-synth opener |
 | `startingMaxSyntheticsPerDie` | 2 | Two named specials may share one die; player cap still 2 |
 | `startingMaxOnRollFacesPerDie` | 2 | Count slots whose face def has non-empty `onRoll`. Limits explosive engines |

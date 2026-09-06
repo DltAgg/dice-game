@@ -169,33 +169,68 @@ describe("inherent extra pips", () => {
   });
 });
 
-describe("[Convert roll]", () => {
-  it("does not bank Arcane from a convert face; Strike 2 queues; other die still banks", () => {
+describe("convert Choose one", () => {
+  it("opens Choose one; payoff forfeits Arcane, queues Strike 2; other die still banks", () => {
     let state = installFace(newMatch(), CONVERT_STRIKE.id, 0, 0);
     state = installFace(state, MARTIAL, 1, 0);
-    const after = rollShowingSlots(state, 0, 0);
-    expect(poolOf(after, "arcane")).toBe(0);
-    expect(poolOf(after, "martial")).toBe(1);
-    expect(after.pendingDecision?.type).toBe("choose-creature");
-    const enemy = creatureIdAt(after, P2, 0);
+    const afterRoll = rollShowingSlots(state, 0, 0);
+    expect(afterRoll.pendingDecision?.type).toBe("choose-effect-mode");
+    expect(afterRoll.pendingDecision).toMatchObject({
+      modeLabels: ["Bank this die's pips", "Strike 2"],
+    });
+    expect(poolOf(afterRoll, "arcane")).toBe(0);
+    expect(poolOf(afterRoll, "martial")).toBe(1);
+    const afterPick = expectOk(
+      advance(afterRoll, {
+        type: "RESOLVE_CHOOSE_EFFECT_MODE",
+        playerId: P1,
+        modeIndex: 1,
+      }),
+    );
+    expect(afterPick.pendingDecision?.type).toBe("choose-creature");
+    const enemy = creatureIdAt(afterPick, P2, 0);
     const resolved = expectOk(
-      advance(after, { type: "RESOLVE_CHOOSE_CREATURE", playerId: P1, creatureId: enemy }),
+      advance(afterPick, { type: "RESOLVE_CHOOSE_CREATURE", playerId: P1, creatureId: enemy }),
     );
     expect(resolved.creatures[enemy]?.damage).toBe(2);
+    expect(poolOf(resolved, "arcane")).toBe(0);
   });
 
-  it("Overcharge attributes on a convert face do not bank", () => {
+  it("bank mode banks Arcane and does not Strike", () => {
+    let state = installFace(newMatch(), CONVERT_STRIKE.id, 0, 0);
+    state = installFace(state, MARTIAL, 1, 0);
+    const afterRoll = rollShowingSlots(state, 0, 0);
+    const afterPick = expectOk(
+      advance(afterRoll, {
+        type: "RESOLVE_CHOOSE_EFFECT_MODE",
+        playerId: P1,
+        modeIndex: 0,
+      }),
+    );
+    expect(afterPick.pendingDecision).toBeNull();
+    expect(poolOf(afterPick, "arcane")).toBe(2);
+    expect(poolOf(afterPick, "martial")).toBe(1);
+  });
+
+  it("Overcharge attributes on a convert payoff do not bank", () => {
     let state = installFace(
       withHand(withPhase(newMatch(), "actions"), P1, [TEST_OVERCHARGE_ARCANE]),
       CONVERT_STRIKE.id,
     );
     state = expectOk(advance(state, overchargeAction(P1, handCardIdAt(state, P1, 0), CONVERT_STRIKE.id)));
     state = installFace(state, MARTIAL, 1, 0);
-    const after = rollShowingSlots(state, 0, 0);
+    const afterRoll = rollShowingSlots(state, 0, 0);
+    const after = expectOk(
+      advance(afterRoll, {
+        type: "RESOLVE_CHOOSE_EFFECT_MODE",
+        playerId: P1,
+        modeIndex: 1,
+      }),
+    );
     expect(poolOf(after, "arcane")).toBe(0);
   });
 
-  it("forge yield on a convert face does not bank", () => {
+  it("forge yield on a convert payoff does not bank", () => {
     let state = installFace(newMatch(), CONVERT_STRIKE.id);
     const dieId = dieIdOf(state);
     const die = state.dice[dieId]!;
@@ -204,7 +239,14 @@ describe("[Convert roll]", () => {
     );
     state = { ...state, dice: { ...state.dice, [dieId]: { ...die, slots } } };
     state = installFace(state, MARTIAL, 1, 0);
-    const after = rollShowingSlots(state, 0, 0);
+    const afterRoll = rollShowingSlots(state, 0, 0);
+    const after = expectOk(
+      advance(afterRoll, {
+        type: "RESOLVE_CHOOSE_EFFECT_MODE",
+        playerId: P1,
+        modeIndex: 1,
+      }),
+    );
     expect(poolOf(after, "arcane")).toBe(0);
   });
 

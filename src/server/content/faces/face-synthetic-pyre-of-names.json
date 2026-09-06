@@ -4,7 +4,7 @@
   "name": "Pyre of Names",
   "kind": "synthetic",
   "symbol": "darkness",
-  "rulesText": "On roll: [Convert roll]. [Drain 2].",
+  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Drain 2]. Do not bank this die's pips.",
   "pips": {
     "darkness": 2
   },

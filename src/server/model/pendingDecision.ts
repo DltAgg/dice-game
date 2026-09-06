@@ -143,6 +143,8 @@ export type PendingDecision =
       readonly modeLabels: readonly string[];
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
+      readonly sourceDieId: DieId | null;
+      readonly sourceSlotIndex: number | null;
     }
   | {
       readonly type: "choose-die";

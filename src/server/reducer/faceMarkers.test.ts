@@ -44,7 +44,7 @@ describe("face markers", () => {
     expect(face?.whileShowing).toEqual([{ type: "forge-discount", amount: 1 }]);
   });
 
-  it("geometry Double is On roll; Convert roll Reforge is convertRoll", () => {
+  it("geometry Double is On roll; convert Choose one Reforge is convertRoll", () => {
     expect(getFaceCard(DOUBLE_ON_ROLL.id)?.onRoll.length).toBeGreaterThan(0);
     expect(getFaceCard(CONVERT_REFORGE.id)?.convertRoll).toBe(true);
     expect(getFaceCard(DOUBLE_ON_ROLL.id)?.onAbsorb).toEqual([]);

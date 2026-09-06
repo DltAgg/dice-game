@@ -85,7 +85,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
 | [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` any hand card | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
 | [MA-16](#ma-16-instant-rituals) | Ritual / Instant (place → Active-when → activate → GY) | Ritual place + activate | None as a band | Worthless vs equipment / overload / continuous | `RETARGETED` |
-| [MA-17](#ma-17-convert-roll) | `[Convert roll]` forfeit that die’s roll for On-roll payoff | On roll (face) | Tempo / Control closers | Untested | `WATCH` |
+| [MA-17](#ma-17-convert-roll) | On roll Choose one: bank this die’s pips or payoff (do not bank) | On roll (face) | Tempo / Control closers | Prompted 2026-09-06 | `WATCH` |
 | [MA-18](#ma-18-while-showing) | While showing stance (Pierce / Empower / Discount / Reduce) | Showing face (continuous) | Tempo / Support | Untested | `WATCH` |
 
 ---
@@ -378,24 +378,26 @@ GY replay as Continuous activate is warped.
 
 ### MA-17 Convert roll
 
-**Mechanic:** `[Convert roll]` — that die’s pips this roll do not bank
-(inherent extra pips, showing pip, forge yield, Overcharge). On roll is the
-payoff (`onRoll` only; `convertRoll: true` is the flag). Distinct from
-`[Convert N]` (pool → Natural).
+**Mechanic:** On roll **Choose one** — bank this die’s pips, or take the
+printed payoff and do not bank (inherent extra pips, showing pip, forge yield,
+Overcharge). Flag `convertRoll: true`. Distinct from `[Convert N]` (pool →
+Natural). Print matches Tooling Order (Choose one), not a `[Convert roll]`
+keyword.
 
-**Window:** On roll (face).
+**Window:** On roll (face), player prompt.
 
 **Intended home:** Tempo / Control closers (engine-converted damage, MA-06).
 
-**Playtest feel:** Untested. Hypothesis: converting a 2-pip special plus
-Overcharge investment for Strike / similar closer reads Control; cheap
-convert-into-combat on Aggro would leak.
+**Playtest feel:** 2026-09-06 — automatic convert felt un-chosen; now a prompt.
+Hypothesis: converting a 2-pip special plus Overcharge investment for Strike /
+similar closer reads Control; cheap convert-into-combat on Aggro would leak.
 
 **Why:** Overcharge stacks extra pips on the face; converting trades that whole
 investment. Auto-bank made On-absorb-on-faces fire with On roll, so convert
-replaces “bank then On absorb closer.”
+replaces “bank then On absorb closer.” The choice is the play.
 
 **Evidence:** 2026-09-04 · engine proving `face-synthetic-sigil-flare`.
+2026-09-06 · optional Choose one (playtest).
 
 **Status:** `WATCH` · 2026-09-04
 

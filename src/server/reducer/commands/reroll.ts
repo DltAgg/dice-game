@@ -9,6 +9,7 @@ import { emit, patchDie, type Draft } from "../draft.js";
 import { dealDamage, drainResolution } from "../resolution.js";
 import { bankRolledSymbols } from "../rollBank.js";
 import { resumeAfterEffectPause } from "./priority.js";
+import { offerConvertRollChoice } from "./convertRollChoice.js";
 import {
   appendFaceAppeared,
   applyForgeYieldGenerate,
@@ -17,7 +18,6 @@ import {
 } from "./shownFace.js";
 import {
   bankableShownFaceIds,
-  forfeitRolledPips,
   isConvertingShownFace,
   replaceShowingFacePips,
   skipRollYieldAndOvercharge,
@@ -58,40 +58,44 @@ export function resolveOptionalReroll(
     appendFaceAppeared(draft, dieId, slotIndex, slot.faceCardId, face.kind);
     const silenced = isSlotSilenced(draft, dieId, slotIndex);
     const converting = isConvertingShownFace(face, silenced);
-    if (!skipRollYieldAndOvercharge(face, silenced)) {
-      applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
-      applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
-    }
-    fireShownFaceRollHooks(
-      draft,
-      playerId,
-      dieId,
-      slotIndex,
-      slot.faceCardId,
-      face.symbol,
-    );
-    drainResolution(draft);
-    if (converting) forfeitRolledPips(draft, symbolIds);
-    const deferAbsorb =
-      draft.pendingDecision !== null || draft.resolutionStack.length > 0;
-    bankRolledSymbols(
-      draft,
-      playerId,
-      bankableShownFaceIds([
-        {
-          dieId,
-          slotIndex,
-          faceCardId: slot.faceCardId,
-          symbol: face.symbol,
-          suppressInherent: false,
-          symbolIds,
-          converting,
-        },
-      ]),
-      deferAbsorb,
-    );
-    if (!deferAbsorb) {
+    if (converting) {
+      offerConvertRollChoice(draft, playerId, dieId, slotIndex, face);
       drainResolution(draft);
+    } else {
+      if (!skipRollYieldAndOvercharge(face, silenced)) {
+        applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
+        applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
+      }
+      fireShownFaceRollHooks(
+        draft,
+        playerId,
+        dieId,
+        slotIndex,
+        slot.faceCardId,
+        face.symbol,
+      );
+      drainResolution(draft);
+      const deferAbsorb =
+        draft.pendingDecision !== null || draft.resolutionStack.length > 0;
+      bankRolledSymbols(
+        draft,
+        playerId,
+        bankableShownFaceIds([
+          {
+            dieId,
+            slotIndex,
+            faceCardId: slot.faceCardId,
+            symbol: face.symbol,
+            suppressInherent: false,
+            symbolIds,
+            converting: false,
+          },
+        ]),
+        deferAbsorb,
+      );
+      if (!deferAbsorb) {
+        drainResolution(draft);
+      }
     }
   }
 

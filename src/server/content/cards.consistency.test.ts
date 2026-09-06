@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDefinition, CardSubtype, CardType } from "../model/cards.js";
+import { playCostTotal } from "../rules/cards.js";
 import { ALL_CARDS } from "./cards.js";
 
 /**
@@ -79,5 +80,15 @@ describe("card type ↔ region consistency", () => {
         `${card.name} is type ritual but still has Instant subtype`,
       ).toBe(false);
     }
+  });
+
+  it.each(ALL_CARDS)("$name: header forge faces follow the playCost curve", (card) => {
+    const cost = playCostTotal(card);
+    const expected =
+      cost >= 5 ? 4 : cost === 4 ? 3 : cost === 3 ? 2 : card.forge.faces;
+    expect(
+      card.forge.faces,
+      `${card.name} costs ${String(cost)} so forge.faces should be ${String(expected)}`,
+    ).toBe(expected);
   });
 });

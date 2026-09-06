@@ -10,7 +10,7 @@
   "subtypes": [],
   "attribute": "luminar",
   "forge": {
-    "faces": 1,
+    "faces": 3,
     "kind": "synthetic",
     "attribute": "luminar",
     "target": "own-die"

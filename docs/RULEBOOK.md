@@ -49,7 +49,8 @@ Overcharge, never two.
 
 - Basics (identity Natural Martial / Wild / Arcane / Luminar / Toxin /
   Mechanical / Corruption / Darkness, and untyped Shield) may sit on
-  opening slots **without** consuming the face deck.
+  opening slots **without** consuming the face deck. Shield faces are
+  optional; a die may open with none.
 - A named special on an opening slot (including a named natural such as
   Dawnwright) **must** be in the face deck and starts **installed** (not
   also in the leftover pool unless the list has another copy of that id).
@@ -62,9 +63,8 @@ Opening-layout caps (prototype knobs, `ASSUMED` unless noted):
 | Knob | Default |
 |---|---|
 | Same attribute on one die | **4** (`DEFINED`) |
-| Min Shield faces per die | **1** |
 | Named synthetics per player / per die | **2** / **2** |
-| Faces with On roll, `[Convert roll]`, or While showing per die | **2** |
+| Faces with On roll, convert Choose one, or While showing per die | **2** |
 
 Forbidden Heritage, Pestilent Plague, and Arcane Echo are refused on
 `startingDice` (they may still sit in the face deck for mid-game).
@@ -112,11 +112,12 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    one pip** from the showing face itself (inherent extra pips — not a
    `[Generate]` line). On-roll face / overload effects fire as part of the
    roll. **Usable attribute** pips from the roll then **auto-bank** into your
-   attribute pile (On absorb fires), unless that die’s showing face has
-   **`[Convert roll]`** — then **all** pips that die produced this roll
-   (inherent extra pips, showing pip, forge yield, Overcharge) are forfeited
-   and the face’s On roll is the payoff instead. The **other** die banks
-   normally. **Shield** and locked/unusable pips stay in the turn pool.
+   attribute pile (On absorb fires). Some faces print **Choose one** on roll
+   (Sigil Flare, Mainspring, Pyre of Names): **bank this die's pips**, or take
+   the printed payoff and **do not bank** that die (inherent extra pips,
+   showing pip, forge yield, Overcharge are forfeited). It is a real prompt —
+   you pick. The **other** die banks normally. **Shield** and locked/unusable
+   pips stay in the turn pool.
    Effect-generated attributes also auto-bank when created. Then the turn
    enters **actions**.
    **While showing** is a continuous stance while that face is the showing
@@ -129,15 +130,15 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
 `[Reroll]` rolls **that one die** again during **actions** (you do not return
 to the roll phase). The **new** showing face fires On roll (and overloads on
 that face), then a usable attribute pip **auto-banks** (On absorb) unless
-that new face converts. The previous roll of that die is not undone: a token
+that new face offers convert Choose one. The previous roll of that die is not undone: a token
 already in your pile stays, and an unabsorbed leftover (Shield, locked) is
 replaced by the new result rather than sitting beside it. `[Stamp]` is
 different: it re-fires the **current** showing face’s roll effects — On roll,
 overloads on that face, Overcharge pips, forge-yield extra Generate, and
 equipment on-roll-symbol — without changing the face or creating a new rolled
 pip (and without minting a second copy of inherent extra pips). Stamp on a
-converting face skips yield / Overcharge generate and re-fires the convert
-On-roll payoff.
+convert face opens Choose one again (yield / Overcharge wait until you pick
+bank).
 
 On-roll lines may be **conditional on dice geometry** (your other die’s
 showing attribute, how many faces of this attribute sit on this die, both
@@ -171,9 +172,10 @@ Costs never require Shield.
 
 **Rolled and effect-generated usable attributes** auto-bank into your pile
 (On absorb fires). Locked/unusable pips and **Shield** stay in the turn pool.
-A die showing `[Convert roll]` does **not** bank any attribute pips **that
-die** produced on that roll (inherent extra pips, showing pip, forge yield,
-Overcharge). The other die is untouched.
+A die whose showing face offers convert **Choose one** banks only if you pick
+**bank this die's pips**. If you pick the printed payoff, that die’s pips
+from the roll (inherent extra pips, showing pip, forge yield, Overcharge) do
+not bank. The other die is untouched.
 
 `[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
 `[Spend: …]` **burns** from your pile. Resonance wildcards may cover shortfall
@@ -330,8 +332,8 @@ deck still fails the draw quietly. This draw is a forge rule, not card text.
 **Own-die forge yield:** When you install a face onto **your own** die (via
 `FORGE_CARD` or a forge-faces effect), that slot gains **forge yield**. While
 that forged face is showing after your roll, you also generate one extra pip of
-its attribute (same auto-bank path as effect Generate), **unless** the showing
-face has `[Convert roll]`. Shield / untyped faces
+its attribute (same auto-bank path as effect Generate), **unless** you pick
+the convert payoff on that showing face (Choose one). Shield / untyped faces
 grant no yield. Opponent-die installs (Corruption harassment) do **not** gain
 yield. Overwriting or peeling a slot clears yield unless the new install
 re-sets it.
@@ -364,9 +366,11 @@ cannot-replace slots are illegal. The §9.1 attribute cap still applies to the
 finished die. Displaced faces return to pool when orphaned; their overloads /
 Overcharge leave as on overwrite. Mechanical exclusive.
 
-**Choose one.** Some cards (e.g. Tooling Order) read "Choose one — A or B."
-You pick exactly one mode; the other is ignored. If only one mode can legally
-resolve, it is chosen automatically.
+**Choose one.** Some cards (e.g. Tooling Order) and some faces (Sigil Flare,
+Mainspring, Pyre of Names) read "Choose one:" with two modes. You pick exactly
+one; the other is ignored. If only one mode can legally resolve, it is chosen
+automatically. On convert faces the modes are **bank this die's pips** or the
+printed payoff (do not bank).
 
 **Overcharge.** Once per turn during actions, you may spend **any** card
 from hand to Overcharge one **attribute face card** installed on your dice
@@ -374,7 +378,7 @@ from hand to Overcharge one **attribute face card** installed on your dice
 attribute. The next time **any** of your dice show that face after a roll
 (including a retained keep or an actions-window reroll), **each** showing die
 also `[Generate]`s that pip — the same on-roll Generate path as forge yield /
-overload — **unless** that showing face has `[Convert roll]` (those Overcharge
+overload — **unless** you pick that showing face’s convert payoff (those Overcharge
 pips are forfeited with the rest of that die’s roll). One spend covers every
 copy you have showing. Overcharge does
 **not** pay pile cost, does **not** draw, does **not** set forge yield, and

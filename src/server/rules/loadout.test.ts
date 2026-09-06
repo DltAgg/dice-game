@@ -165,7 +165,7 @@ describe("validateStartingDice", () => {
     if (!result.ok) expect(result.reason).toMatch(/mechanical/);
   });
 
-  it("refuses a die with no Shield", () => {
+  it("allows a die with no Shield under the default min of 0", () => {
     const result = validateStartingDice(
       [
         [mechanical, mechanical, mechanical, luminar, luminar, luminar],
@@ -173,6 +173,18 @@ describe("validateStartingDice", () => {
       ],
       TEMPO_FACE_DECK,
       DEFAULT_RULES_CONFIG,
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
+  it("refuses a die with no Shield when the min is restored", () => {
+    const result = validateStartingDice(
+      [
+        [mechanical, mechanical, mechanical, luminar, luminar, luminar],
+        TEMPO_STARTING_DICE[1],
+      ],
+      TEMPO_FACE_DECK,
+      { ...DEFAULT_RULES_CONFIG, startingMinShieldsPerDie: 1 },
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/Shield/);
