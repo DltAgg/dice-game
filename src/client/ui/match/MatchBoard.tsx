@@ -32,6 +32,7 @@ import { Battlefield } from "./board/Battlefield";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
 import { FaceCardsInPlay } from "./board/FaceCardsInPlay";
 import { HandStrip } from "./board/HandStrip";
+import { MatchNotReady } from "./board/MatchNotReady";
 import { PhaseBar } from "./board/PhaseBar";
 import { SpectatorSeatDock } from "./board/SpectatorSeatDock";
 import { SymbolPool } from "./board/SymbolPool";
@@ -165,7 +166,7 @@ export function MatchBoard() {
   const autoRolledKey = useRef<string | null>(null);
   useEffect(() => {
     if (finished || pending !== null || phase !== "roll" || !canAct) return;
-    if (isOnline && !onlineReady) return;
+    if (!onlineReady) return;
     if (isOnline && localPlayerId !== activeId) return;
     const key = `${state.matchId}:${String(state.turn)}`;
     if (autoRolledKey.current === key) return;
@@ -189,7 +190,7 @@ export function MatchBoard() {
   const autoPassedKey = useRef<string | null>(null);
   useEffect(() => {
     if (finished) return;
-    if (isOnline && !onlineReady) return;
+    if (!onlineReady) return;
     if (pending?.type !== "reaction-priority") return;
     const action = autoPassPriorityAction({
       state,
@@ -451,50 +452,16 @@ export function MatchBoard() {
       ? (decks.find((deck) => deck.id === localDeckId)?.name ?? localDeckId)
       : null;
 
-  if (isOnline && !onlineReady) {
+  if (!onlineReady) {
     return (
-      <div className="relative mx-auto flex max-w-lg flex-col gap-4 px-4 pb-16 pt-28 sm:px-6">
-        <div className="fixed inset-x-0 top-14 z-40 border-b border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-lg shadow-black/30 backdrop-blur" data-match-top-bar>
-          <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-3 px-4 py-2.5 sm:px-6">
-            <div>
-              <h1 className="font-[family-name:var(--font-display)] text-2xl leading-none text-[var(--ink)] sm:text-3xl">
-                {mode === "host" ? "Hosting…" : "Joining…"}
-              </h1>
-              <p className="mt-1 text-xs text-[var(--ink-muted)] sm:text-sm">
-                Room <span className="font-mono text-[var(--accent)]">{roomCode}</span>
-                {" · "}
-                {connectionStatus}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-end gap-2">
-              <button type="button" className={btnClass} onClick={() => setView("lobby")}>
-                Lobby
-              </button>
-              <button type="button" className={btnClass} onClick={() => leaveOnline()}>
-                Leave
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded border border-stone-700 bg-stone-950/60 p-6">
-          <p className="text-sm text-stone-300">
-            {mode === "host"
-              ? "Share the room code from Play. Claim seats there — hosting does not put you in P1. The board opens when the room owner starts the match."
-              : "Connecting to the host. You join as a spectator; claim P1 or P2 from Play if a seat is open."}
-          </p>
-          {localDeckName !== null && (
-            <p className="mt-4 text-sm text-stone-100">
-              Your deck: <span className="text-[var(--accent)]">{localDeckName}</span>
-            </p>
-          )}
-          {mode === "host" && roomCode !== null && (
-            <p className="mt-2 font-mono text-2xl tracking-[0.2em] text-[var(--accent)]">
-              {roomCode}
-            </p>
-          )}
-        </div>
-      </div>
+      <MatchNotReady
+        mode={mode}
+        roomCode={roomCode}
+        connectionStatus={connectionStatus}
+        localDeckName={localDeckName}
+        onLobby={() => setView("lobby")}
+        onLeave={leaveOnline}
+      />
     );
   }
 

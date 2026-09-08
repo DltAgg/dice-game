@@ -12,6 +12,7 @@ import {
   forgeCardCountOf,
   forgeCardsOnTurn,
   matchPace,
+  recordedAsLabel,
   turnKind,
   type Insight,
   type MatchRecording,
@@ -83,7 +84,7 @@ export function MetricsDashboard() {
             Metrics
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--ink-muted)]">
-            Local observer for hotseat and online matches. Recordings live in IndexedDB (with a
+            Local observer for hotseat, vs AI, and online matches. Recordings live in IndexedDB (with a
             localStorage fallback) so a refresh does not wipe them. Nothing here is rules — the
             collector only watches <span className="text-stone-300">advance()</span>.
           </p>
@@ -230,6 +231,9 @@ export function MetricsDashboard() {
         >
           <BarList items={aggregates.verdictMix} warnKeys={new Set(["dragging", "grinding", "empty-early"])} />
         </ChartPanel>
+        <ChartPanel title="How you played" caption="Hotseat, local vs AI, host, or guest observer. Same matchId is deduped; vs AI is not the same as hotseat.">
+          <BarList items={aggregates.recordedAsMix} />
+        </ChartPanel>
         <ChartPanel title="Wall-clock duration" caption="How long sessions actually take at the table.">
           <BarList items={aggregates.durationHistogram} />
         </ChartPanel>
@@ -352,7 +356,7 @@ export function MetricsDashboard() {
         </div>
         {recordings.length === 0 ? (
           <p className="mt-3 text-sm text-[var(--ink-muted)]">
-            Play a hotseat or host match. This tab fills as actions resolve.
+            Play a hotseat, vs AI, or host match. This tab fills as actions resolve.
           </p>
         ) : (
           <div className="mt-3 overflow-x-auto rounded border border-stone-800">
@@ -392,7 +396,7 @@ export function MetricsDashboard() {
                         {row.startedAt.slice(0, 19).replace("T", " ")}
                       </td>
                       <td className="px-3 py-2 text-[var(--ink-muted)]">
-                        {statusLabel(row.status)} · {row.recordedAs}
+                        {statusLabel(row.status)} · {recordedAsLabel(row.recordedAs)}
                       </td>
                       <td className={`px-3 py-2 font-mono ${turnsClass}`}>{row.totalTurns}</td>
                       <td className="px-3 py-2 text-xs text-stone-300">{pace.verdict}</td>
@@ -470,7 +474,7 @@ function MatchDetail({ recording }: { recording: MatchRecording }) {
       </h2>
       <p className="mt-1 text-xs text-[var(--ink-muted)]">
         seed {String(recording.seed)} · {recording.p1DeckName} vs {recording.p2DeckName} · recorded as{" "}
-        {recording.recordedAs}
+        {recordedAsLabel(recording.recordedAs)}
         {recording.roomCode !== null ? ` · room ${recording.roomCode}` : ""} · {pace.verdict} · drag{" "}
         {String(pace.dragScore)} (overtime {String(pace.overtimeTurns)} + late idle {String(pace.lateIdleTurns)})
         {" · "}

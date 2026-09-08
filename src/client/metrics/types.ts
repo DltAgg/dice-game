@@ -3,7 +3,8 @@ import { METRICS_SCHEMA_VERSION } from "./thresholds.js";
 
 export type MetricsSchemaVersion = typeof METRICS_SCHEMA_VERSION;
 
-export type MatchMode = "local" | "host" | "client";
+/** Who recorded, and how the local seats were bound. */
+export type MatchMode = "local" | "local-ai" | "host" | "client";
 
 export type RecordingStatus = MatchStatus | "abandoned";
 

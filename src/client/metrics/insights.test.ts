@@ -49,6 +49,14 @@ describe("insights", () => {
     expect(agg.cardForgeMix["Living Library (card-living-library)"]).toBe(4);
   });
 
+  it("separates hotseat from vs AI in recordedAsMix", () => {
+    const agg = aggregateRecordings([
+      fakeRecording({ recordingId: "h", matchId: "hotseat", recordedAs: "local" }),
+      fakeRecording({ recordingId: "a", matchId: "vs-ai", recordedAs: "local-ai" }),
+    ]);
+    expect(agg.recordedAsMix).toEqual({ hotseat: 1, "vs AI": 1 });
+  });
+
   it("correlates effect/turn with forge/turn across matches", () => {
     const agg = aggregateRecordings([
       fakeRecording({

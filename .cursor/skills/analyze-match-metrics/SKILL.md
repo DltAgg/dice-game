@@ -23,7 +23,7 @@ Prefer the JSON from **Copy agent prompt** / **Download JSON**. Markdown
 briefing is enough for a first pass.
 
 Dedupe is already done (`matchId`, richer sample wins). Guest think times
-include network delay; prefer `recordedAs: "host" | "local"`.
+include network delay; prefer `recordedAs: "host" | "local" | "local-ai"`.
 
 Pace is **per match**, not a 11–20 band (`src/client/metrics/pace.ts`):
 

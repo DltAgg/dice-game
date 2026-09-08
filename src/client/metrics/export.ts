@@ -13,7 +13,7 @@ export const METRICS_PROMPT_PREAMBLE = `You are helping diagnose Dice Skirmish p
 
 Players report that matches feel slow. More than ${String(BASELINE_TURNS)} turns is a red-flag baseline — not a 11–20 band. Each match has a drag score = overtime turns past ${String(BASELINE_TURNS)} plus idle turns after the 2-turn arming window. Idle means the player took no meaningful action and opened no decision (no attack, damage, absorb, play, forge, ritual, pending choice, or reaction). Stall is 0 damage and 0 attacks (setup can still be stall). Verdicts: on-pace, empty-early, dragging (overtime is empty), grinding (setup/stall without a close), long-active (combat happens, still too many turns).
 
-The JSON (or Markdown) that follows is a metrics export from the local collector. It is an observer sitting outside the pure reducer: it never changes GameState. Wall-clock think time is time between recorded observations. Guest recordings include network delay; prefer host/local recordings when both exist for the same matchId (the export already dedupes, keeping the richer sample).
+The JSON (or Markdown) that follows is a metrics export from the local collector. It is an observer sitting outside the pure reducer: it never changes GameState. Wall-clock think time is time between recorded observations. Guest recordings include network delay; prefer host, local, or local-ai recordings when both exist for the same matchId (the export already dedupes, keeping the richer sample). recordedAs is local (hotseat), local-ai (Play vs AI), host, or client.
 
 Close timeline (bible §45): median first damage / first attack / first creature death, deaths by turn, first-player win rate, and win rate by deck pair. A first death on turns 1–3 is too early for a three-creature skirmish; a first death after turn 10 (or never) with overtime is a close that is not arriving.
 
@@ -222,6 +222,10 @@ ${mixTable(s.deathsByTurnMix)}
 
 ${mixTable(s.firstPlayerWinMix)}
 
+### How you played
+
+${mixTable(s.recordedAsMix)}
+
 ### Deck pairs (finished)
 
 ${mixTable(s.deckPairMix)}
@@ -298,7 +302,7 @@ ${exported.matches
         return `  - T${String(turn.turn)} ${turn.playerId}: dmg ${String(turn.damageDealt)}, atk ${String(turn.attacksDeclared)}, death ${String(turn.creaturesDefeated)}, play ${String(turn.cardsPlayed)}, forge ${String(turn.cardsForged ?? 0)} cards/${String(turn.forges)} faces, pending ${String(turn.pendingDecisionOpens)}, rxn ${String(turn.reactionWindows)}, ${fmtMs(turn.durationMs)}${idle}${stall}`;
       })
       .join("\n");
-    return `### ${match.matchId} (${match.status}, ${String(match.totalTurns)} turns)\n${turns || "  - (no turns)"}`;
+    return `### ${match.matchId} (${match.status}, ${match.recordedAs}, ${String(match.totalTurns)} turns)\n${turns || "  - (no turns)"}`;
   })
   .join("\n\n")}
 `;

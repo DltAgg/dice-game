@@ -165,6 +165,17 @@ export function abandonRecording(recording: MatchRecording, nowMs: number): Matc
   };
 }
 
+/** Opening tick and/or the board auto-roll — not a played match. Drop on abandon. */
+export function isUnplayedRecording(recording: MatchRecording): boolean {
+  const real = recording.actions.filter((sample) => sample.accepted && !sample.reconstructed);
+  if (real.length === 0) return true;
+  return (
+    recording.totalTurns <= 1 &&
+    real.length === 1 &&
+    real[0]?.actionType === "ROLL_DICE"
+  );
+}
+
 function fold(recording: MatchRecording, observation: Observation, ctx: ObservationContext): MatchRecording {
   const { state, prevState, action, accepted, error } = observation;
   const at = isoFromMs(ctx.nowMs);

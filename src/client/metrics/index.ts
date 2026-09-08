@@ -11,7 +11,8 @@ export type {
   TurnRecord,
   ZoneSnapshot,
 } from "./types.js";
-export { applyObservation, abandonRecording, blankRecording, isMetricsRecording } from "./observe.js";
+export { recordedAsFor, recordedAsLabel, recordedAsMix } from "./recordedAs.js";
+export { applyObservation, abandonRecording, blankRecording, isMetricsRecording, isUnplayedRecording } from "./observe.js";
 export { matchPace, isIdleTurn, isStallTurn, turnKind, type MatchPace, type PaceVerdict } from "./pace.js";
 export {
   firstAttackTurn,

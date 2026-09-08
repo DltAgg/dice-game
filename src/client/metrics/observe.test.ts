@@ -10,7 +10,7 @@ import {
   withHand,
   withPhase,
 } from "@server/testing/scenario.js";
-import { applyObservation } from "./observe.js";
+import { applyObservation, isUnplayedRecording } from "./observe.js";
 import type { ObservationContext } from "./types.js";
 
 const ctx = (nowMs: number, recordingId = "rec-1"): ObservationContext => ({
@@ -162,6 +162,36 @@ describe("applyObservation", () => {
     expect(next.recording.matchId).toBe("match-b");
     expect(next.recording.recordingId).toBe("rec-b");
     expect(next.recording.status).toBe("in-progress");
+  });
+
+  it("treats an opening tick (and auto-roll only) as unplayed", () => {
+    const start = newMatch({ seed: 7 });
+    const opened = applyObservation(
+      null,
+      { prevState: null, state: start, action: null, accepted: true, error: null },
+      ctx(1_000),
+    ).recording;
+    expect(isUnplayedRecording(opened)).toBe(true);
+
+    const action: GameAction = { type: "ROLL_DICE", playerId: P1 };
+    const rolled = advance(start, action);
+    expect(rolled.ok).toBe(true);
+    const afterRoll = applyObservation(
+      opened,
+      { prevState: start, state: rolled.state, action, accepted: true, error: null },
+      ctx(2_000),
+    ).recording;
+    expect(isUnplayedRecording(afterRoll)).toBe(true);
+
+    const end: GameAction = { type: "END_TURN", playerId: P1 };
+    const ended = advance(rolled.state, end);
+    expect(ended.ok).toBe(true);
+    const afterEnd = applyObservation(
+      afterRoll,
+      { prevState: rolled.state, state: ended.state, action: end, accepted: true, error: null },
+      ctx(3_000),
+    ).recording;
+    expect(isUnplayedRecording(afterEnd)).toBe(false);
   });
 
   it("counts PLAY_CARD toward effect plays, not forge", () => {

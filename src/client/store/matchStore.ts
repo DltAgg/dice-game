@@ -5,6 +5,7 @@ import { PROTOTYPE_SAVED_DECK_ID, type SavedDeckId } from "@client/decks";
 import type { RoomSnapshot, SeatId } from "@client/networking";
 import { clearOnlineSessionHint, getOrCreateClientId } from "./onlineSessionHint.js";
 import { observeMatchSfx } from "@client/ui/audio/observeMatchSfx";
+import { recordedAsFor } from "@client/metrics";
 import { trackMetrics } from "./trackMetrics.js";
 import {
   MATCH_P1,
@@ -111,7 +112,7 @@ function observeMatch(
     action,
     accepted,
     error,
-    recordedAs: snapshot.mode,
+    recordedAs: recordedAsFor(snapshot.mode, snapshot.aiPlayerId),
     roomCode: snapshot.roomCode,
     localPlayerId: snapshot.localPlayerId,
     p1DeckId: snapshot.p1DeckId,

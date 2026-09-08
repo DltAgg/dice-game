@@ -68,13 +68,14 @@ wire. Each browser records locally:
 
 | Mode | What is recorded |
 |---|---|
-| `local` | Every accepted/rejected action + think time |
+| `local` | Hotseat: every accepted/rejected action + think time |
+| `local-ai` | Local Play vs AI on this machine (same observer as hotseat; labeled separately) |
 | `host` | Same, via `onAdvance` (complete action types) |
 | `client` | State ticks + log-delta events (action type may be null) |
 
 Aggregates **dedupe by `matchId`**, keeping the recording with more action
 samples (usually the host). Think times on the guest include network delay;
-the export labels `recordedAs`.
+the export labels `recordedAs` (`local` / `local-ai` / `host` / `client`).
 
 ## Persistence
 
@@ -86,7 +87,10 @@ Layer: `src/metrics/` (adapter, like `src/decks/`).
   missing or fails (private mode, quota).
 - **Write cadence:** after every observation (including rejects). In-progress
   matches survive refresh; a new `matchId` **abandons** the previous
-  in-progress recording on this browser.
+  in-progress recording on this browser unless that recording never left the
+  opening auto-roll (those unplayed ticks are dropped instead of kept as
+  1-turn abandoned). Opening the Match tab before Play → Local hotseat / vs AI
+  does not start a recording.
 - **Ids:** `nanoid` at this boundary only.
 - **Cap:** 200 recordings; oldest by `updatedAt` pruned on write.
 - **Schema:** `METRICS_SCHEMA_VERSION = 1`. Unknown versions are ignored.

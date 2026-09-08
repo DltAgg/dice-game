@@ -21,6 +21,7 @@ import {
   LOW_LETHALITY_DAMAGE_PER_TURN,
 } from "./thresholds.js";
 import { matchPace, type MatchPace, type PaceVerdict } from "./pace.js";
+import { recordedAsMix } from "./recordedAs.js";
 import { forgeCardCountOf, forgeCardsOnTurn, mean, median, pearsonCorrelation, percentile } from "./snapshot.js";
 import type { MatchRecording } from "./types.js";
 
@@ -241,6 +242,7 @@ export interface MetricsAggregates {
   readonly p1WinRate: number | null;
   readonly deckPairs: readonly DeckPairRecord[];
   readonly deckPairMix: Readonly<Record<string, number>>;
+  readonly recordedAsMix: Readonly<Record<string, number>>;
   readonly thinkByAction: Readonly<
     Record<string, { readonly n: number; readonly p50: number | null; readonly p90: number | null }>
   >;
@@ -391,6 +393,7 @@ export function aggregateRecordings(recordings: readonly MatchRecording[]): Metr
         pair.matches,
       ]),
     ),
+    recordedAsMix: recordedAsMix(unique),
     thinkByAction,
     verdictMix,
     finishedTurns: turns,
@@ -412,7 +415,7 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       severity: "info",
       title: "Not enough finished matches yet",
       detail:
-        "Play a few games to completion (hotseat or host). Abandoned and in-progress recordings still count toward think-time charts.",
+        "Play a few games to completion (hotseat, vs AI, or host). Abandoned and in-progress recordings still count toward think-time charts.",
       evidence: { recorded: unique.length, finished: 0 },
     });
   }

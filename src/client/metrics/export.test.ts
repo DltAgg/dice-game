@@ -26,6 +26,7 @@ describe("metrics export", () => {
     expect(md).toContain("Effect vs forge by turn");
     expect(md).toContain("First creature death");
     expect(md).toContain("First-player win rate");
+    expect(md).toContain("How you played");
 
     const prompt = formatAgentPrompt(exported);
     expect(prompt).toContain("```json");

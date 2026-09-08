@@ -1,5 +1,5 @@
 import type { GameAction, GameError, GameState } from "@server";
-import { applyObservation, type Observation } from "./observe.js";
+import { applyObservation, isUnplayedRecording, type Observation } from "./observe.js";
 import { eventsSince } from "./snapshot.js";
 import type { Clock, MatchMode, MatchRecording, MetricsRepository, ObservationContext } from "./types.js";
 
@@ -110,7 +110,11 @@ export function createMetricsCollector(options: CollectorOptions): MetricsCollec
 
         const applied = applyObservation(current, observation, ctx);
         if (applied.abandoned !== null) {
-          await persist(applied.abandoned);
+          if (isUnplayedRecording(applied.abandoned)) {
+            await repo.remove(applied.abandoned.recordingId);
+          } else {
+            await persist(applied.abandoned);
+          }
         }
         current = applied.recording;
         await persist(current);
