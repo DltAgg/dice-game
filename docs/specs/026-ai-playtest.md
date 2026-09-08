@@ -25,7 +25,7 @@ into `docs/RULEBOOK.md`.
 ```text
 src/ai/          headless playtest actor — consumes the public `@server` barrel
 src/server/      pure rules (unchanged; must not import src/ai)
-src/client/      UI / store / networking (unchanged; must not import src/ai)
+src/client/      UI / store / networking (may import `@ai` as a player adapter)
 ```
 
 `src/ai` is a sibling of `src/server`, not a reducer module. That keeps CLI I/O
@@ -82,15 +82,17 @@ None.
 
 ## UI
 
-None in this slice, by design. A later `match-ui` change can call
-`chooseAction(state, legal, rng)` (`standard` / `strong`) for a human vs AI
-seat.
+Match-ui consumes this slice for local **Play vs AI** (spec `027`): the store
+calls `chooseAction(state, legal, rng, { strength })` (`standard` by default)
+and `legalActions` / `actingPlayerId`. Headless `npm run playtest:ai` is
+unchanged.
 
 ## Acceptance Criteria
 
 - [x] `src/ai` imports only the public `@server` barrel (not `@server/*`,
       `@client/*`, or `src/server` internals).
-- [x] `src/server` and `src/client` do not import `src/ai`.
+- [x] `src/server` does not import `src/ai`. The client may import `@ai` as a
+      player adapter (spec `027`).
 - [x] Reducer, resolution, and MatchBoard are untouched.
 - [x] Two builtin loadouts can play a seeded match to a decided `winner` or a
       reported stall.

@@ -53,6 +53,7 @@ npm run typecheck && npm test && npm run lint
 | Match metrics / IndexedDB | `src/client/metrics/`, `src/client/ui/metrics/`, `src/client/store/metricsStore.ts` |
 | PeerJS sessions | `src/client/networking/` |
 | Headless AI playtest | `src/ai/` (spec `026`; does not import UI or reducer internals) |
+| Local vs-AI | Lobby **Play vs AI** + `src/ai` (`chooseAction`; spec `027`) |
 
 ## Tests that matter for content
 

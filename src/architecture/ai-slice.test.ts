@@ -4,8 +4,9 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * Spec `026`: the headless AI is a sibling slice. It consumes the public
- * engine barrel and must not be imported by rules or UI.
+ * Spec `026` / `027`: the AI is a sibling slice. It consumes the public
+ * engine barrel. Rules must not import it. The client may import it as a
+ * player adapter (`chooseAction` for local vs-AI).
  */
 
 const REPO_ROOT = fileURLToPath(new URL("../..", import.meta.url));
@@ -57,19 +58,38 @@ describe("AI playtest slice isolation", () => {
     expect(violations).toEqual([]);
   });
 
-  it("src/server and src/client do not import src/ai", () => {
-    const files = [...productionTs("src/server"), ...productionTs("src/client")];
+  it("src/server does not import src/ai", () => {
+    const files = productionTs("src/server");
     const violations: string[] = [];
     for (const rel of files) {
       const specifiers = importSpecifiers(readFileSync(join(REPO_ROOT, rel), "utf8"));
       for (const specifier of specifiers) {
         const mentionsSlice =
+          specifier === "@ai" ||
+          specifier.startsWith("@ai/") ||
           specifier === "@/ai" ||
           specifier.startsWith("@/ai/") ||
-          /(^|\/)ai(\/|$)/.test(specifier);
+          specifier === "src/ai" ||
+          specifier.startsWith("src/ai/") ||
+          /(^|[./])ai(\/|$)/.test(specifier);
         if (mentionsSlice) violations.push(`${rel}: ${specifier}`);
       }
     }
     expect(violations).toEqual([]);
+  });
+
+  it("client may import @ai / @/ai as a player adapter", () => {
+    const files = productionTs("src/client");
+    const clientImportsAi = files.some((rel) => {
+      const specifiers = importSpecifiers(readFileSync(join(REPO_ROOT, rel), "utf8"));
+      return specifiers.some(
+        (specifier) =>
+          specifier === "@ai" ||
+          specifier.startsWith("@ai/") ||
+          specifier === "@/ai" ||
+          specifier.startsWith("@/ai/"),
+      );
+    });
+    expect(clientImportsAi).toBe(true);
   });
 });

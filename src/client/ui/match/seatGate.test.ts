@@ -58,13 +58,65 @@ describe("seatGate — reaction-priority vs missing controllerId", () => {
   });
 
   it("stamps guest intents with the bound seat even if the UI claimed the turn player", () => {
-    const claimedTurnPlayer = seatedAction(true, P2, {
+    const claimedTurnPlayer = seatedAction(P2, {
       type: "PASS_PRIORITY",
       playerId: P1,
     });
     expect(claimedTurnPlayer.playerId).toBe(P2);
   });
+
+  it("hotseat does not stamp when no seat is bound", () => {
+    expect(
+      seatedAction(null, { type: "PASS_PRIORITY", playerId: P1 }).playerId,
+    ).toBe(P1);
+  });
 });
+
+describe("seatGate — local vs-AI bound seat", () => {
+  const p2Turn = stateOf({ activePlayerId: P2 });
+
+  it("lets the human seat act only while they are the acting player", () => {
+    expect(localSeatCanAct(false, P1, stateOf({ activePlayerId: P1 }))).toBe(true);
+    expect(localSeatCanAct(false, P1, p2Turn)).toBe(false);
+  });
+
+  it("does not let the human act for the AI seat", () => {
+    const p2Priority = stateOf({
+      activePlayerId: P1,
+      pending: {
+        type: "reaction-priority",
+        priorityPlayerId: P2,
+        consecutivePasses: 0,
+      },
+    });
+    expect(localSeatCanAct(false, P1, p2Turn)).toBe(false);
+    expect(localSeatIsPendingChooser(false, P1, p2Priority)).toBe(false);
+    expect(localSeatIsPendingChooser(false, P2, p2Priority)).toBe(true);
+  });
+
+  it("stamps vs-AI human intents even though the match is local", () => {
+    expect(
+      seatedAction(P1, { type: "ROLL_DICE", playerId: P2 }).playerId,
+    ).toBe(P1);
+  });
+});
+
+describe("seatGate — hotseat unbound still acts for both seats", () => {
+  it("lets either seat act when localPlayerId is null and not online", () => {
+    const p2Priority = stateOf({
+      activePlayerId: P1,
+      pending: {
+        type: "reaction-priority",
+        priorityPlayerId: P2,
+        consecutivePasses: 0,
+      },
+    });
+    expect(localSeatCanAct(false, null, stateOf({ activePlayerId: P1 }))).toBe(true);
+    expect(localSeatCanAct(false, null, stateOf({ activePlayerId: P2 }))).toBe(true);
+    expect(localSeatIsPendingChooser(false, null, p2Priority)).toBe(true);
+  });
+});
+
 
 describe("seatGate — non-reaction pending chooser vs turn player", () => {
   const p2TurnP1Chooses = stateOf({

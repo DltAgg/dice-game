@@ -14,6 +14,7 @@ export default defineConfig({
       "@server": fileURLToPath(new URL("./src/server", import.meta.url)),
       "@client": fileURLToPath(new URL("./src/client", import.meta.url)),
       "@shared": fileURLToPath(new URL("./src/shared", import.meta.url)),
+      "@ai": fileURLToPath(new URL("./src/ai/index.ts", import.meta.url)),
     },
   },
   test: {

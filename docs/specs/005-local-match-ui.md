@@ -17,6 +17,11 @@ UI  →  Zustand match store  →  advance(action)  →  GameState
 Two players share one browser (hotseat). The active player is always the one
 who may act; the inactive side is read-only until the turn passes.
 
+Local **Play vs AI** is a sibling lobby mode (spec
+[`027-local-vs-ai.md`](./027-local-vs-ai.md)): `localPlayerId` is the human
+seat; the other seat is filled by `src/ai`. Hotseat is unchanged
+(`localPlayerId: null`).
+
 ## Scope
 
 | In | Out |

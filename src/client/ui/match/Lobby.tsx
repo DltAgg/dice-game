@@ -2,17 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import {
   buildBuiltinDecks,
   validateSavedDeck,
-  type SavedDeck,
 } from "@client/decks";
 import { useDeckStore } from "@client/store/deckStore";
 import { useMatchStore } from "@client/store/matchStore";
 import { readOnlineSessionHint } from "@client/store/onlineSessionHint";
-import type { RoomSnapshot, SeatId } from "@client/networking";
+import { btnPrimary } from "./lobby/buttons";
+import { DeckSelect } from "./lobby/DeckSelect";
+import { RoomPanel } from "./lobby/RoomPanel";
+import { VsAiPanel } from "./lobby/VsAiPanel";
 
 export function Lobby() {
   const decks = useDeckStore((s) => s.decks);
   const refresh = useDeckStore((s) => s.refresh);
   const startLocal = useMatchStore((s) => s.startLocal);
+  const startVsAi = useMatchStore((s) => s.startVsAi);
   const hostRoom = useMatchStore((s) => s.hostRoom);
   const joinRoom = useMatchStore((s) => s.joinRoom);
   const claimSeat = useMatchStore((s) => s.claimSeat);
@@ -82,9 +85,9 @@ export function Lobby() {
           Play
         </h1>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Local hotseat on one machine, or host a PeerJS room. Joiners start as spectators;
-          P1 and P2 are claimed seats. The room owner runs the match even while observing.
-          Spectators see both hands and cannot act.
+          Local hotseat, play vs AI on one machine, or host a PeerJS room. Joiners start as
+          spectators; P1 and P2 are claimed seats. The room owner runs the match even while
+          observing. Spectators see both hands and cannot act.
         </p>
       </header>
 
@@ -178,6 +181,17 @@ export function Lobby() {
       </section>
 
       {!inOnlineRoom && (
+        <VsAiPanel
+          p1DeckId={p1DeckId}
+          p2DeckId={p2DeckId}
+          deckOptions={deckOptions}
+          legalityById={legalityById}
+          busy={busy}
+          onStart={(args) => startVsAi(args)}
+        />
+      )}
+
+      {!inOnlineRoom && (
         <>
           <section className="space-y-3 rounded border border-stone-800 bg-stone-950/50 p-4">
             <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
@@ -256,262 +270,3 @@ export function Lobby() {
     </main>
   );
 }
-
-function RoomPanel({
-  mode,
-  roomCode,
-  room,
-  clientId,
-  localPlayerId,
-  connectionStatus,
-  busy,
-  isRoomOwner,
-  p1DeckId,
-  p2DeckId,
-  deckOptions,
-  legalityById,
-  p1Legal,
-  p2Legal,
-  onClaim,
-  onRelease,
-  onStart,
-  onLeave,
-  onBackToMatch,
-  onChangeP1Deck,
-  onChangeP2Deck,
-}: {
-  readonly mode: "host" | "client" | "local";
-  readonly roomCode: string;
-  readonly room: RoomSnapshot | null;
-  readonly clientId: string;
-  readonly localPlayerId: string | null;
-  readonly connectionStatus: string;
-  readonly busy: boolean;
-  readonly isRoomOwner: boolean;
-  readonly p1DeckId: string;
-  readonly p2DeckId: string;
-  readonly deckOptions: readonly Pick<SavedDeck, "id" | "name">[];
-  readonly legalityById: ReadonlyMap<string, ReturnType<typeof validateSavedDeck>>;
-  readonly p1Legal: boolean;
-  readonly p2Legal: boolean;
-  readonly onClaim: (seat: SeatId) => void;
-  readonly onRelease: () => void;
-  readonly onStart: () => void;
-  readonly onLeave: () => void;
-  readonly onBackToMatch: () => void;
-  readonly onChangeP1Deck: (id: string) => void;
-  readonly onChangeP2Deck: (id: string) => void;
-}) {
-  const started = room?.started === true;
-  const bothReady = room?.seats.p1?.ready === true && room.seats.p2?.ready === true;
-  const youAreSpectator = localPlayerId === null;
-  const roleLabel = youAreSpectator ? "spectator" : localPlayerId;
-
-  return (
-    <section className="space-y-4 rounded border border-[var(--accent)]/40 bg-[var(--accent)]/10 p-4">
-      <header className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">
-            Room
-          </h2>
-          <p className="mt-1 font-mono text-2xl tracking-[0.2em] text-[var(--accent)]">{roomCode}</p>
-          <p className="mt-1 text-sm text-stone-300">
-            You are <span className="text-[var(--accent)]">{roleLabel}</span>
-            {mode === "host" ? " · room owner" : null}
-            {" · "}
-            {connectionStatus}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {started && (
-            <button type="button" className={btnPrimary} onClick={onBackToMatch}>
-              Back to match
-            </button>
-          )}
-          <button type="button" className={btnGhost} onClick={onLeave}>
-            Leave
-          </button>
-        </div>
-      </header>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <SeatCard
-          seat="p1"
-          occupant={room?.seats.p1 ?? null}
-          clientId={clientId}
-          youAreSpectator={youAreSpectator}
-          started={started}
-          busy={busy}
-          deckId={p1DeckId}
-          deckOptions={deckOptions}
-          legalityById={legalityById}
-          deckLegal={p1Legal}
-          onChangeDeck={onChangeP1Deck}
-          onClaim={() => onClaim("p1")}
-          onRelease={onRelease}
-        />
-        <SeatCard
-          seat="p2"
-          occupant={room?.seats.p2 ?? null}
-          clientId={clientId}
-          youAreSpectator={youAreSpectator}
-          started={started}
-          busy={busy}
-          deckId={p2DeckId}
-          deckOptions={deckOptions}
-          legalityById={legalityById}
-          deckLegal={p2Legal}
-          onChangeDeck={onChangeP2Deck}
-          onClaim={() => onClaim("p2")}
-          onRelease={onRelease}
-        />
-      </div>
-
-      <div>
-        <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Spectators
-        </h3>
-        <ul className="mt-2 space-y-1 text-sm text-stone-300">
-          {(room?.spectators ?? []).length === 0 ? (
-            <li className="text-stone-500">None</li>
-          ) : (
-            (room?.spectators ?? []).map((member) => (
-              <li key={member.clientId} className="font-mono text-xs">
-                {member.clientId}
-                {member.clientId === clientId ? " (you)" : ""}
-                {room?.hostClientId === member.clientId ? " · owner" : ""}
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
-
-      {isRoomOwner && !started && (
-        <button
-          type="button"
-          className={btnPrimary}
-          disabled={busy || !bothReady}
-          onClick={onStart}
-        >
-          Start match
-        </button>
-      )}
-      {isRoomOwner && !started && !bothReady && (
-        <p className="text-xs text-stone-500">Start when both seats are filled with legal loadouts.</p>
-      )}
-    </section>
-  );
-}
-
-function SeatCard({
-  seat,
-  occupant,
-  clientId,
-  youAreSpectator,
-  started,
-  busy,
-  deckId,
-  deckOptions,
-  legalityById,
-  deckLegal,
-  onChangeDeck,
-  onClaim,
-  onRelease,
-}: {
-  readonly seat: SeatId;
-  readonly occupant: RoomSnapshot["seats"]["p1"];
-  readonly clientId: string;
-  readonly youAreSpectator: boolean;
-  readonly started: boolean;
-  readonly busy: boolean;
-  readonly deckId: string;
-  readonly deckOptions: readonly Pick<SavedDeck, "id" | "name">[];
-  readonly legalityById: ReadonlyMap<string, ReturnType<typeof validateSavedDeck>>;
-  readonly deckLegal: boolean;
-  readonly onChangeDeck: (id: string) => void;
-  readonly onClaim: () => void;
-  readonly onRelease: () => void;
-}) {
-  const open = occupant === null;
-  const isYou = occupant?.clientId === clientId;
-  const label = seat.toUpperCase();
-
-  return (
-    <div className="space-y-2 rounded border border-stone-800 bg-stone-950/60 p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      {open ? (
-        <p className="text-sm text-stone-400">Open seat</p>
-      ) : (
-        <p className="font-mono text-xs text-stone-200">
-          {occupant.clientId}
-          {isYou ? " (you)" : ""}
-          {occupant.ready ? " · ready" : ""}
-        </p>
-      )}
-      {!started && (open || isYou) && (
-        <DeckSelect
-          label={`${label} loadout`}
-          value={deckId}
-          options={deckOptions}
-          legalityById={legalityById}
-          onChange={onChangeDeck}
-        />
-      )}
-      {!started && open && youAreSpectator && (
-        <button
-          type="button"
-          className={btnPrimary}
-          disabled={busy || !deckLegal}
-          onClick={onClaim}
-        >
-          Claim {label}
-        </button>
-      )}
-      {!started && isYou && (
-        <button type="button" className={btnGhost} disabled={busy} onClick={onRelease}>
-          Leave seat (spectate)
-        </button>
-      )}
-    </div>
-  );
-}
-
-function DeckSelect({
-  label,
-  value,
-  options,
-  legalityById,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: readonly Pick<SavedDeck, "id" | "name">[];
-  legalityById: ReadonlyMap<string, ReturnType<typeof validateSavedDeck>>;
-  onChange: (id: string) => void;
-}) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="text-stone-400">{label}</span>
-      <select
-        className="rounded border border-stone-700 bg-stone-950 px-2 py-2 text-stone-100"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        {options.map((deck) => {
-          const legal = legalityById.get(deck.id)?.ok === true;
-          return (
-            <option key={deck.id} value={deck.id}>
-              {deck.name}
-              {legal ? "" : " (illegal)"}
-            </option>
-          );
-        })}
-      </select>
-    </label>
-  );
-}
-
-const btnPrimary =
-  "rounded border border-[var(--accent)] bg-[var(--accent)]/20 px-3 py-2 text-sm text-[var(--accent)] hover:bg-[var(--accent)]/30 disabled:opacity-40";
-const btnGhost =
-  "rounded border border-stone-600 bg-stone-900/80 px-3 py-2 text-sm text-stone-100 hover:border-[var(--accent)] hover:text-[var(--accent)]";

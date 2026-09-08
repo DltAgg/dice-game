@@ -39,6 +39,7 @@ Vite / TypeScript path aliases:
 | `@server/*` | `src/server/*` |
 | `@client/*` | `src/client/*` |
 | `@shared/*` | `src/shared/*` |
+| `@ai` | `src/ai/index.ts` (client adapter; server must not import) |
 | `@/*` | `src/*` (architecture, leftover) |
 
 `src/game` is removed. Importers use `@server` (engine API) or `@server/<path>`

@@ -45,10 +45,11 @@ src/
 └── architecture/          the purity guard (scans src/server)
 ```
 
-Aliases: `@server`, `@server/*`, `@client/*`, `@shared`.
+Aliases: `@server`, `@server/*`, `@client/*`, `@shared`, `@ai`.
 
 `src/ai` is a sibling actor, not a rules module. It proposes `GameAction`
-intents and calls `advance()`. `src/server` and `src/client` must not import it.
+intents and calls `advance()`. `src/server` must not import it. The client
+may import `@ai` as a player adapter (local vs-AI, spec `027`).
 Test-only `src/server/testing/autoplay.ts` is unrelated.
 
 `src/client/networking` wraps `advance()` on the host and ships JSON state to

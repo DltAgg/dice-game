@@ -57,6 +57,7 @@ export default tseslint.config(
             { name: "nanoid", message: "Ids entering the engine are supplied by the caller." },
             { name: "@/metrics", message: "Metrics is an adapter, not a rules source." },
             { name: "@client/metrics", message: "Metrics is an adapter, not a rules source." },
+            { name: "@ai", message: "The game engine must not depend on the AI actor." },
           ],
           patterns: [
             {
