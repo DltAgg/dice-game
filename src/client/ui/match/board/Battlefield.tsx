@@ -1,7 +1,7 @@
 import {
   getCard,
   hasLegalReactionOffer,
-  isLegalRitualReaction,
+  isEnabledRitualReaction,
   isRitualSilenced,
   livingCreaturesOf,
   ritualsOf,
@@ -113,7 +113,7 @@ export function Battlefield({
               if ((def.ritual?.effects?.length ?? 0) === 0) return false;
               if (inReactionWindow) {
                 if (playerId !== actingPlayerId) return false;
-                return isLegalRitualReaction(state, def);
+                return isEnabledRitualReaction(state, playerId, def);
               }
               return isActive && playerId === actingPlayerId && state.phase !== "roll";
             })();

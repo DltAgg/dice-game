@@ -228,7 +228,7 @@ function reactionIntents(state: GameState, playerId: PlayerId): readonly GameAct
   for (const card of ritualsOf(state, playerId)) {
     if (card.ritualOrientation !== "ready") continue;
     const definition = getCard(card.cardId);
-    if (definition === undefined || !isEnabledRitualReaction(state, definition)) continue;
+    if (definition === undefined || !isEnabledRitualReaction(state, playerId, definition)) continue;
     actions.push({ type: "ACTIVATE_RITUAL", playerId, cardInstanceId: card.id });
   }
   return actions;

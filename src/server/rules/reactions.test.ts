@@ -13,6 +13,7 @@ import {
   newMatch,
   P1,
   P2,
+  withAttributePool,
   withPile,
   withHand,
   withPhase,
@@ -104,11 +105,17 @@ describe("reaction chain-target gates (UI queries)", () => {
   });
 });
 
-function openedAttackOnP2(hand: Parameters<typeof withHand>[2]): GameState {
+function openedAttackOnP2(
+  hand: Parameters<typeof withHand>[2],
+  p2Pool?: Parameters<typeof withAttributePool>[2],
+): GameState {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
-  const combat = withHand(withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10), P2, hand);
+  const fueled = withTokens(base, attacker, DRIVE_SHAFT_FUEL);
+  const withP2 =
+    p2Pool === undefined ? withPile(fueled, P2, 10) : withAttributePool(fueled, P2, p2Pool);
+  const combat = withHand(withP2, P2, hand);
   return expectOk(
     advance(combat, {
       type: "ATTACK",
@@ -134,6 +141,14 @@ describe("hasLegalReactionOffer (query)", () => {
     expect(isLegalHandReaction(opened, prevent!)).toBe(true);
     expect(isEnabledHandReaction(opened, P2, prevent!)).toBe(true);
     expect(hasLegalReactionOffer(opened, P2)).toBe(true);
+  });
+
+  it("does not wait when a prevent is chain-legal but the pile cannot pay playCost", () => {
+    const opened = openedAttackOnP2([TEST_REACTION_PREVENT], { mechanical: 10 });
+    const prevent = getCard(TEST_REACTION_PREVENT)!;
+    expect(isLegalHandReaction(opened, prevent)).toBe(true);
+    expect(isEnabledHandReaction(opened, P2, prevent)).toBe(false);
+    expect(hasLegalReactionOffer(opened, P2)).toBe(false);
   });
 
   it("waits when a prevent reaction can answer an attack on you", () => {

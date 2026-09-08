@@ -7,6 +7,7 @@ import {
   newMatch,
   P1,
   P2,
+  withAttributePool,
   withPile,
   withHand,
   withPhase,
@@ -28,11 +29,17 @@ const PREVENT_REACTION = testCard({
   },
 });
 
-function openedAttack(hand: Parameters<typeof withHand>[2]) {
+function openedAttack(
+  hand: Parameters<typeof withHand>[2],
+  p2Pool?: Parameters<typeof withAttributePool>[2],
+) {
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
-  const combat = withHand(withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10), P2, hand);
+  const fueled = withTokens(base, attacker, DRIVE_SHAFT_FUEL);
+  const withP2 =
+    p2Pool === undefined ? withPile(fueled, P2, 10) : withAttributePool(fueled, P2, p2Pool);
+  const combat = withHand(withP2, P2, hand);
   return expectOk(
     advance(combat, {
       type: "ATTACK",
@@ -72,6 +79,18 @@ describe("autoPassPriorityAction", () => {
         canAct: true,
       }),
     ).toBeNull();
+  });
+
+  it("passes when a chain-legal prevent is in hand but the pile cannot pay it", () => {
+    const state = openedAttack([PREVENT_REACTION.id], { mechanical: 10 });
+    expect(
+      autoPassPriorityAction({
+        state,
+        mode: "local",
+        localPlayerId: null,
+        canAct: true,
+      }),
+    ).toEqual({ type: "PASS_PRIORITY", playerId: P2 });
   });
 
   it("never passes for the opponent online", () => {
@@ -122,6 +141,13 @@ describe("autoPassPriorityAction", () => {
       priorityPlayerId: P2,
       consecutivePasses: 0,
     });
+  });
+
+  it("drainEmptyReactionPriority collapses when the only reaction is unaffordable", () => {
+    const opened = openedAttack([PREVENT_REACTION.id], { mechanical: 10 });
+    expect(opened.pendingDecision?.type).toBe("reaction-priority");
+    const drained = drainEmptyReactionPriority(opened);
+    expect(drained.pendingDecision?.type).not.toBe("reaction-priority");
   });
 
   it("dispatches the Pass intent when the helper runs", () => {

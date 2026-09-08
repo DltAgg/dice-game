@@ -8,7 +8,8 @@ import {
   linkMatchesNegateCard,
 } from "../reducer/chain.js";
 import type { Draft } from "../reducer/draft.js";
-import { handOf, isReactionCard, ritualsOf } from "./cards.js";
+import { canAffordPlay, handOf, isReactionCard, ritualsOf } from "./cards.js";
+import { pileRequirementShortfall } from "./tokens.js";
 
 /** Top of the reaction chain (LILO), or `undefined` when empty. */
 export function topChainLinkOf(state: GameState): ChainLink | undefined {
@@ -104,8 +105,8 @@ export function preventEffectsLegalAgainstChain(
 
 /**
  * Same gate as MatchBoard `canRespond`: chain-legal hand Reaction, including
- * prevent vs the current chain (reactions may pay `playCost` without the
- * marker).
+ * prevent vs the current chain, that the seat can actually pay (`canAffordPlay`
+ * — header `[Spend]` / `[Requires]` from the banked pile).
  */
 export function isEnabledHandReaction(
   state: GameState,
@@ -113,16 +114,38 @@ export function isEnabledHandReaction(
   definition: CardDefinition,
 ): boolean {
   if (!isLegalHandReaction(state, definition)) return false;
-  return preventEffectsLegalAgainstChain(state, playerId, definition.effect?.effects ?? []);
+  if (!preventEffectsLegalAgainstChain(state, playerId, definition.effect?.effects ?? [])) {
+    return false;
+  }
+  return canAffordPlay(state, playerId, definition);
+}
+
+/** Ritual-activate `[Spend]` from the banked pile (mirrors `ACTIVATE_RITUAL`). */
+function canAffordRitualReactionActivate(
+  state: GameState,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): boolean {
+  const spend = definition.ritual?.spend;
+  if (spend === undefined) return true;
+  const pile = state.players[playerId]?.attributePool ?? {};
+  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
+  return pileRequirementShortfall(pile, spend) <= wildcards;
 }
 
 /**
  * Same gate as MatchBoard ritual `canActivate` in a reaction window: ready is
- * the caller's job; this is chain-legal ritual-reaction with an activate body.
+ * the caller's job; this is chain-legal ritual-reaction with an activate body
+ * the seat can pay.
  */
-export function isEnabledRitualReaction(state: GameState, definition: CardDefinition): boolean {
+export function isEnabledRitualReaction(
+  state: GameState,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): boolean {
   if ((definition.ritual?.effects.length ?? 0) === 0) return false;
-  return isLegalRitualReaction(state, definition);
+  if (!isLegalRitualReaction(state, definition)) return false;
+  return canAffordRitualReactionActivate(state, playerId, definition);
 }
 
 /**
@@ -139,7 +162,7 @@ export function hasLegalReactionOffer(state: GameState, playerId: PlayerId): boo
   for (const card of ritualsOf(state, playerId)) {
     if (card.ritualOrientation !== "ready") continue;
     const definition = getCard(card.cardId);
-    if (definition !== undefined && isEnabledRitualReaction(state, definition)) {
+    if (definition !== undefined && isEnabledRitualReaction(state, playerId, definition)) {
       return true;
     }
   }

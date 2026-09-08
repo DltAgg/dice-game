@@ -162,10 +162,7 @@ export function HandStrip({
             canAffordPlay(state, playerId, def);
           const canForge = actionsLive && canAffordForge(state, playerId, def);
           const overchargeEnabled = canOvercharge(state, playerId, card.id);
-          const canRespond =
-            reactionsLive &&
-            isEnabledHandReaction(state, playerId, def) &&
-            canAffordPlay(state, playerId, def);
+          const canRespond = reactionsLive && isEnabledHandReaction(state, playerId, def);
 
           return (
             <div
