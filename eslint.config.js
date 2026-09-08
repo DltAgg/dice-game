@@ -12,6 +12,12 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2023,
@@ -63,6 +69,38 @@ export default tseslint.config(
                 "@/metrics/*",
                 "@client/*",
               ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/ai/**/*.ts"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+    rules: {
+      "no-restricted-properties": [
+        "error",
+        { object: "Math", property: "random", message: "Inject an RNG instead." },
+      ],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "react", message: "The playtest AI must not depend on React." },
+            { name: "zustand", message: "The playtest AI must not depend on Zustand." },
+            { name: "peerjs", message: "The playtest AI must not depend on PeerJS." },
+          ],
+          patterns: [
+            {
+              group: ["@/ui/*", "@/store/*", "@/networking/*", "@/decks/*", "@/app/*", "@/metrics/*", "@client/*"],
+              message: "The playtest AI must not import the client.",
+            },
+            {
+              group: ["@server/*"],
+              message: "Import the public @server barrel, not engine internals.",
             },
           ],
         },

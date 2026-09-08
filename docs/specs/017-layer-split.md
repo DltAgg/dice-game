@@ -26,6 +26,7 @@ src/server/          future host process — pure rules
   index.ts           public engine barrel
 src/client/          browser only
   app/ ui/ store/ decks/ networking/ metrics/
+src/ai/              headless playtest AI (spec `026`) — `@server` barrel only
 src/shared/          thin re-exports of wire DTOs (protocol + loadout aliases)
 src/architecture/    purity guard (scans src/server)
 ```

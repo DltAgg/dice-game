@@ -15,6 +15,7 @@ Local match     action → reduce → state
 Host match      action → reduce → state → broadcast
 Replay          action log → reduce → state
 Test            state + action + rng → reduce → expected state
+AI playtest     policy → GameAction → reduce → state
 ```
 
 ## Layout
@@ -31,6 +32,8 @@ src/
 │   ├── setup/             deterministic match construction
 │   └── testing/           scenario helpers and an autoplay driver (test-only)
 │
+├── ai/                    headless playtest AI (spec `026`) — public `@server` only
+│
 ├── client/                browser only
 │   ├── store/             Zustand match + deck stores
 │   ├── decks/             DeckRepository (localStorage) + SavedDeck wrappers
@@ -43,6 +46,10 @@ src/
 ```
 
 Aliases: `@server`, `@server/*`, `@client/*`, `@shared`.
+
+`src/ai` is a sibling actor, not a rules module. It proposes `GameAction`
+intents and calls `advance()`. `src/server` and `src/client` must not import it.
+Test-only `src/server/testing/autoplay.ts` is unrelated.
 
 `src/client/networking` wraps `advance()` on the host and ships JSON state to
 every peer (seated players and spectators). None of it holds rules.
