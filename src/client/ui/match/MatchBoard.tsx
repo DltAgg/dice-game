@@ -121,8 +121,7 @@ export function MatchBoard() {
     pending?.type === "reaction-priority" &&
     hasLegalReactionOffer(state, pending.priorityPlayerId);
   /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. Spectators see both. */
-  const dockPlayerId =
-    isOnline && localPlayerId !== null ? localPlayerId : actingId;
+  const dockPlayerId = localPlayerId !== null ? localPlayerId : actingId;
 
   const canStartNewMatch = useMemo(() => {
     const p1 = decks.find((deck) => deck.id === p1DeckId);
@@ -157,7 +156,7 @@ export function MatchBoard() {
   const clearIntent = () => setIntent({ kind: "idle" });
 
   const tryDispatch = (action: Parameters<typeof dispatch>[0]): boolean => {
-    const ok = dispatch(seatedAction(isOnline, localPlayerId, action));
+    const ok = dispatch(seatedAction(localPlayerId, action));
     if (ok) clearIntent();
     return ok;
   };
@@ -249,7 +248,7 @@ export function MatchBoard() {
     if (finished) return;
 
     if (pending?.type === "choose-creature") {
-      if (isOnline && localPlayerId !== pending.controllerId) return;
+      if (localPlayerId !== null && localPlayerId !== pending.controllerId) return;
       const legal = legalCreaturesForFilter(
         state,
         pending.controllerId,
@@ -266,7 +265,7 @@ export function MatchBoard() {
     }
 
     if (pending?.type === "optional-bonus-attack") {
-      if (isOnline && localPlayerId !== pending.controllerId) return;
+      if (localPlayerId !== null && localPlayerId !== pending.controllerId) return;
       const attacker = state.creatures[pending.creatureId];
       if (attacker === undefined) return;
       const def = getCreatureDefinition(attacker.definitionId);
@@ -345,7 +344,7 @@ export function MatchBoard() {
     // Respond during a reaction chain with a hand Reaction.
     if (pending?.type === "reaction-priority") {
       if (card.ownerId !== actingId) return;
-      if (isOnline && localPlayerId !== pending.priorityPlayerId) return;
+      if (localPlayerId !== null && localPlayerId !== pending.priorityPlayerId) return;
       const def = getCard(card.cardId);
       if (def === undefined || !isEnabledHandReaction(state, actingId, def)) return;
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
@@ -515,7 +514,9 @@ export function MatchBoard() {
                   : mode === "host"
                     ? "Host match"
                     : "Online match"
-                : "Local match"}
+                : localPlayerId !== null
+                  ? "Play vs AI"
+                  : "Local match"}
             </h1>
             <p className="mt-1 text-xs text-[var(--ink-muted)] sm:text-sm">
               {isOnline ? (
@@ -529,7 +530,7 @@ export function MatchBoard() {
                   </span>
                 </>
               ) : (
-                <>Hotseat</>
+                <>{localPlayerId !== null ? "Vs AI" : "Hotseat"}</>
               )}
               {" · seed "}
               {seed} · turn {state.turn} · phase{" "}
@@ -541,7 +542,7 @@ export function MatchBoard() {
                   <span className="text-[var(--accent)]">{pending.priorityPlayerId}</span>
                 </>
               ) : null}
-              {isSpectator ? " · observing" : !canAct && isOnline ? " · waiting for opponent" : null}
+              {isSpectator ? " · observing" : !canAct && localPlayerId !== null ? " · waiting for opponent" : null}
             </p>
           </div>
           <div className="flex flex-wrap items-end gap-2">

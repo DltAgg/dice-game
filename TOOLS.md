@@ -20,6 +20,7 @@ Node + npm as used by the lockfile. No Python content pipeline.
 | `npm run test:watch` | Watch mode while iterating |
 | `npm run lint` | ESLint (includes engine import bans) |
 | `npm run dev` | Vite app — lobby, hotseat, online, decks, catalogues |
+| `npm run playtest:ai` | Headless two-AI match (spec `026`; `--strength fast|standard|strong`) |
 
 **DoD gate** after meaningful changes:
 
@@ -51,6 +52,8 @@ npm run typecheck && npm test && npm run lint
 | Deck store / localStorage | `src/client/store/deckStore.ts`, `src/client/decks/` |
 | Match metrics / IndexedDB | `src/client/metrics/`, `src/client/ui/metrics/`, `src/client/store/metricsStore.ts` |
 | PeerJS sessions | `src/client/networking/` |
+| Headless AI playtest | `src/ai/` (spec `026`; does not import UI or reducer internals) |
+| Local vs-AI | Lobby **Play vs AI** + `src/ai` (`chooseAction`; spec `027`) |
 
 ## Tests that matter for content
 

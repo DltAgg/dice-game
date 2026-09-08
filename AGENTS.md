@@ -13,6 +13,7 @@ Architecture (non-negotiable):
 
 ```text
 UI → Zustand → GameAction → reduce()/advance() → GameState
+AI playtest → GameAction → reduce()/advance() → GameState
 ```
 
 Only `reduce()` advances rules state. Networking and persistence are adapters.
@@ -88,6 +89,8 @@ invoke them separately — do not implement both layers yourself.
 | `docs/specs/019-content-json.md` | Per-entity / per-loadout JSON catalogues |
 | `docs/specs/020-module-split.md` | Reducer commands + MatchBoard carve |
 | `docs/specs/021-overcharge.md` | Tactic `[Overcharge]` (hand-card spend). Not spec `013` `optional-overcharge`. |
+| `docs/specs/026-ai-playtest.md` | Headless two-AI local playtest (`src/ai`; public `@server` only) |
+| `docs/specs/027-local-vs-ai.md` | Lobby + store Play vs AI (`chooseAction` as a player adapter) |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
@@ -105,6 +108,7 @@ Do not commit unless the user asks. Do not push unless the user asks.
 ## Hard rules (summary)
 
 - `src/server` cannot import React, Zustand, PeerJS, nanoid, `@client/*`, or touch DOM / storage / network / clock / `Math.random`.
+- Headless playtest AI lives in `src/ai` (spec `026`). It imports the public `@server` barrel only. `src/server` must not import it. The client may import `@ai` for local vs-AI (lobby + spec `027`).
 - Effects are **data** (JSON AST / discriminated unions), never functions. New tokens are `[Mark]` / `[Strip]` arguments, not new opcodes.
 - Content ids: `card-*`, `creature-*`, `face-*`, `attack-*`, `ability-*` (kebab after prefix).
 - Attachment types (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region and ritual subtypes.
