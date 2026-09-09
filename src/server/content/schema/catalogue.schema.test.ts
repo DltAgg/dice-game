@@ -160,6 +160,30 @@ describe("catalogue JSON schemas", () => {
     ).toBe(true);
   });
 
+  it("accepts forge.effects and forge.rulesText alongside a play effect", () => {
+    expect(
+      validateCard({
+        id: "card-example",
+        name: "Example",
+        type: "instant",
+        subtypes: [],
+        attribute: "martial",
+        forge: {
+          faces: 1,
+          kind: "natural",
+          attribute: "martial",
+          target: "own-die",
+          effects: [{ type: "next-attack-bonus", amount: 1 }],
+          rulesText: "[Empower 1].",
+        },
+        rulesText: "[Strike 2].",
+        effect: {
+          effects: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
+        },
+      }),
+    ).toBe(true);
+  });
+
   it("accepts AST mark with a token", () => {
     expect(
       validateCard({

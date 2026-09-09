@@ -104,7 +104,7 @@ Details: `docs/specs/007-peerjs.md`.
 | `.cursor/skills/develop-engine/` | New effect AST, reducer, hooks |
 | `.cursor/skills/implement-hooks/` | Shared standing trigger events (`010`) |
 | `.cursor/skills/match-ui/` | Lobby / MatchBoard / stores |
-| `.cursor/skills/analyze-match-metrics/` | Diagnose pacing from a Metrics export |
+| `.cursor/skills/analyze-match-metrics/` | Diagnose playability / fun from a Metrics export (Copy prompt + Download JSON) |
 
 ## Subagents (project)
 

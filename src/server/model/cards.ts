@@ -17,9 +17,9 @@ import type { SymbolRequirement, SymbolType } from "./symbols.js";
  *   or
  *   ⟨effect⟩
  *
- * The **or** is the whole design. A card is either forged onto a die or played
- * for its effect, never both, which is bible §19–20's two functional regions
- * expressed as a single choice.
+ * The **or** is the whole design. Play, forge, or Overcharge — never two on
+ * the same use (bible §19–20). The forge half may include optional one-shot
+ * bonus effects that fire only on `FORGE_CARD`; they do not run if you play.
  */
 
 /**
@@ -78,6 +78,17 @@ export interface ForgeRegion {
   readonly kind: ForgeableFaceKind;
   readonly attribute: Attribute;
   readonly target: ForgeTarget;
+  /**
+   * Optional one-shot effects that fire only on `FORGE_CARD` after a successful
+   * install. Play still uses `effect` / equipment / overload / ritual. Absent
+   * or empty = forge installs only (legacy).
+   */
+  readonly effects?: readonly EffectDefinition[];
+  /**
+   * Extra print after the generated `[Forge] …` line (e.g. `[Empower 1].`).
+   * Player-facing; `effects` is engine authority. Omit when there is no bonus.
+   */
+  readonly rulesText?: string;
 }
 
 /**

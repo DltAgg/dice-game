@@ -1108,7 +1108,7 @@
     },
     "forgeRegion": {
       "title": "ForgeRegion",
-      "description": "Every hand card has a forge region. The player chooses play, forge, or (natural own-die only) Overcharge — never two on the same use. faces (1, 2, rarely 3) and natural vs synthetic are designed choices, not a default sticker.",
+      "description": "Every hand card has a forge region. The player chooses play, forge, or (natural own-die only) Overcharge — never two on the same use. Optional bonus effects fire only on FORGE_CARD; play still uses the play region. faces (1, 2, rarely 3) and natural vs synthetic are designed choices, not a default sticker.",
       "type": "object",
       "additionalProperties": false,
       "required": ["faces", "kind", "attribute", "target"],
@@ -1121,7 +1121,16 @@
         },
         "kind": { "$ref": "#/$defs/forgeableFaceKind" },
         "attribute": { "$ref": "#/$defs/attribute" },
-        "target": { "$ref": "#/$defs/forgeTarget" }
+        "target": { "$ref": "#/$defs/forgeTarget" },
+        "effects": {
+          "description": "Optional one-shot effects that fire only on FORGE_CARD after a successful install. Play still uses the play region (effect / equipment / overload / ritual).",
+          "$ref": "#/$defs/effectList"
+        },
+        "rulesText": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Extra print after the generated [Forge] line (e.g. [Empower 1].). Player-facing; effects is engine authority."
+        }
       }
     },
     "effectRegion": {

@@ -166,11 +166,20 @@ export function canAffordPlay(
   );
 }
 
+/** True until this player successfully synthetic-`FORGE_CARD`s this turn. */
+export function isFirstSyntheticForgeThisTurn(
+  state: GameState,
+  playerId: PlayerId,
+): boolean {
+  return state.syntheticForgedThisTurn[playerId] !== true;
+}
+
 /**
  * Whether the player can pay the header pile cost to forge this card (mirrors
- * `payForgeCost`: natural is free; synthetic uses forgeDiscountThisTurn plus
- * While showing `[Discount N] forge` — not play-cost discounts). Free / empty
- * cost → true. Does not mutate state.
+ * `payForgeCost`: natural is free; the first synthetic `FORGE_CARD` each turn
+ * is free; later synthetics use forgeDiscountThisTurn plus While showing
+ * `[Discount N] forge` — not play-cost discounts). Free / empty cost → true.
+ * Does not mutate state.
  */
 export function canAffordForge(
   state: GameState,
@@ -178,6 +187,7 @@ export function canAffordForge(
   definition: CardDefinition,
 ): boolean {
   if (definition.forge.kind === "natural") return true;
+  if (isFirstSyntheticForgeThisTurn(state, playerId)) return true;
   const base = definition.playCost;
   if (base === undefined || !isNonEmptyRequirement(base)) return true;
   const discount =

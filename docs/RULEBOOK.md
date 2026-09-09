@@ -107,22 +107,34 @@ non-legendaries fill frontline first.
 
 Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
 
-1. **Roll.** Roll your non-retained dice. Retained dice keep their showing
-   face and still generate that symbol. Named specials may produce **more than
-   one pip** from the showing face itself (inherent extra pips — not a
-   `[Generate]` line). On-roll face / overload effects fire as part of the
-   roll. **Usable attribute** pips from the roll then **auto-bank** into your
+1. **Roll.** Both players’ dice are rolled on **every** roll phase. The turn
+   player issues the single `ROLL_DICE`; the opponent does not click Roll.
+   Each seat randomizes their non-retained dice, banks **their own** usable
+   attributes, and fires **their** On roll / overloads / convert Choose one
+   (including on the opponent’s turn). Geometry still sees both of **that
+   owner’s** showing faces before their On roll.
+   Named specials may produce **more than one pip** from the showing face
+   itself (inherent extra pips — not a `[Generate]` line). **Usable
+   attribute** pips from the roll then **auto-bank** into that seat’s
    attribute pile (On absorb fires). Some faces print **Choose one** on roll
    (Sigil Flare, Mainspring, Pyre of Names): **bank this die's pips**, or take
    the printed payoff and **do not bank** that die (inherent extra pips,
    showing pip, forge yield, Overcharge are forfeited). It is a real prompt —
-   you pick. The **other** die banks normally. **Shield** and locked/unusable
-   pips stay in the turn pool.
+   the die owner picks. The **other** die of that owner banks normally.
+   **Shield** and locked/unusable pips stay in the turn pool. The non-active
+   player cannot absorb during the turn player’s actions, so **off-turn
+   Shield leftover has no absorb window** — it expires or is replaced like
+   other leftovers. Their attributes still auto-bank into their pile.
    Effect-generated attributes also auto-bank when created. Then the turn
-   enters **actions**.
+   enters **actions** (still only the turn player’s window).
    **While showing** is a continuous stance while that face is the showing
-   face (including retain and the opponent’s turn for defensive modifiers).
-   It is not a second On-roll trigger.
+   face (including retain). Both sides’ showing faces refresh every roll phase,
+   so defensive Reduce on the opponent uses **their new** showing face from
+   this shared roll. It is not a second On-roll trigger.
+   **Retain:** a retained die is never randomized while marked retained. The
+   keep is **not spent** on the opponent’s shared roll (the face stays, and
+   so does retain). It is spent on **your** next roll phase as the turn
+   player.
 2. **Actions.** In any order you may: absorb Shield onto a creature, pay
    `[Spend]` from your pile (and meet `[Requires]` gates), attack, play, forge,
    activate a **ready** ritual, retain/release dice, or end the turn.
@@ -143,8 +155,8 @@ bank).
 On-roll lines may be **conditional on dice geometry** (your other die’s
 showing attribute, how many faces of this attribute sit on this die, both
 showing faces synthetic). Those are ordinary On-roll conditions, not a new
-phase. Both dice are rolled before On roll fires, so geometry can see both
-showing faces.
+phase. Both of that owner’s dice are rolled before their On roll fires, so
+geometry can see both showing faces.
 
 There is no dedicated absorb phase and no leftover-rolled flip. The turn
 pool mainly holds **Shield** (and locked/unusable pips). Attributes live in
@@ -219,8 +231,14 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
 **Forge** depends on the forge region’s face kind:
 
 - **Natural forge** is free (no pile burn). Header `[Spend]` still applies when
-  you **play** the card for its effect.
-- **Synthetic forge** burns the same header `[Spend]` when you install faces.
+  you **play** the card for its effect. Natural `FORGE_CARD` does **not**
+  consume your first-synthetic waiver.
+- **Your first synthetic `FORGE_CARD` each turn is free.** It does not burn
+  header `[Spend]`. Later synthetic `FORGE_CARD`s **this turn** pay as usual
+  (`playCost` minus `forgeDiscountThisTurn` / while-showing `[Discount N] forge`).
+  Ritual / effect `forge-faces` does not count — only player `FORGE_CARD`.
+  Opponent-die synthetic `FORGE_CARD` uses the same waiver. The waiver clears
+  on `END_TURN` with the other ThisTurn bags.
 - **Discounts** (`[Discount N]`) cut N tokens from the header pile total
   (minimum 0). Discount reduces **Any** pips first, then named attributes, so
   `[Spend: Arcane + 2 x Any]` with Discount 1 still needs the Arcane plus one
@@ -230,13 +248,16 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   or Corruption. Any pips may be paid with any attribute leftover after named
   pips. Spend of Any burns leftover tokens in attribute order (Martial first)
   until a picker exists. **On roll** `[Discount N]` (no **forge** word) cheapens
-  the next **play** this turn. `[Discount N] forge` cheapens the next synthetic
-  `FORGE_CARD`. Play-cost discounts do not apply to forge; forge has a
+  the next **play** this turn. `[Discount N] forge` cheapens the next **paid**
+  synthetic `FORGE_CARD`. Play-cost discounts do not apply to forge; forge has a
   separate one-turn discount from some gear that applies only to synthetic
-  forge (natural is already free and does not consume that discount). A
-  synthetic install that **consumes** that forge discount does **not** also
-  get the immediate synthetic forge bank (§11) — Discount 1 on a 2-cost
-  Mechanical synthetic with 1 pip in the pile spends that pip.
+  forge (natural is already free and does not consume that discount). The free
+  first synthetic does **not** consume `forgeDiscountThisTurn` or while-showing
+  forge discount — save it for a later synthetic. That waiver is **not** a
+  consumed forge discount, so the immediate own-die synthetic bank (§11) still
+  applies. A synthetic install that **consumes** a forge discount does **not**
+  also get that bank — Discount 1 on a 2-cost Mechanical synthetic with 1 pip
+  in the pile spends that pip.
   `[Discount]` never reduces a `[Requires]` gate.
 - Attacks (`[Requires]` gate and `[Spend]` discards) and ritual Active-when /
   activate Spend also use the pile (see §6). A card may print header
@@ -323,8 +344,10 @@ a legal whiff; if at least one eligible card exists you always pick.
 
 During actions, `FORGE_CARD` installs a face from your leftover pool **or**
 copies an already-installed matching face onto a legal slot. **Natural** forge
-regions install for free; **synthetic** forge regions burn the card’s header
-`[Spend]` from your pile. Forge does **not** open a reaction window.
+regions install for free (and never consume the first-synthetic waiver).
+**Your first synthetic `FORGE_CARD` each turn is free**; later synthetics this
+turn burn the card’s header `[Spend]` from your pile. Forge does **not** open
+a reaction window.
 
 You draw **one card per face installed** (own die or opponent’s). Empty
 deck still fails the draw quietly. This draw is a forge rule, not card text.
@@ -341,8 +364,16 @@ re-sets it.
 **Synthetic forge bank:** On a successful own-die **synthetic** `FORGE_CARD`
 only, you also bank one of the forged face’s attribute into your pile **per
 face installed** (immediate payoff), **unless this install consumed a forge
-discount**. Natural forge stays free install + draw + yield with no immediate
+discount**. The free first synthetic is not a consumed discount, so it **still
+banks**. Natural forge stays free install + draw + yield with no immediate
 bank. Discount and the bank do not stack on the same card.
+
+**Forge bonus effects.** Some cards print extra keyword clauses on the forge
+line (for example `[Forge] … [Empower 1].`). Those resolve **immediately after
+a successful `FORGE_CARD`**, still **without** a reaction window. They do
+**not** run if you play the card for its effect region (or attach /
+Overcharge). Play vs forge vs Overcharge remains exclusive — you still choose
+one use.
 
 Some faces **stay locked** on a slot for printed turns after install
 (forge-lock). That is not retain.
@@ -528,9 +559,10 @@ its costs paid and skips the body.
 Per die you own, you may mark it retained (or release it) with `RETAIN_DIE`,
 in any phase, including before you roll.
 
-A retained die keeps its showing face for **one** subsequent roll, still
-generates that symbol, then retention clears. It does not persist turn after
-turn unless you set it again. Stunned dice cannot be retained. Setting
+A retained die is never randomized while marked retained. The keep survives
+the opponent’s shared roll without spending; on **your** next roll phase it
+still generates that symbol, then retention clears. It does not persist turn
+after turn unless you set it again. Stunned dice cannot be retained. Setting
 retain needs a known showing face.
 
 ---

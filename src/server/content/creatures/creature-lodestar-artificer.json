@@ -35,8 +35,7 @@
       "kind": "basic",
       "discards": {
         "mechanical": 1,
-        "luminar": 1,
-        "any": 1
+        "luminar": 1
       },
       "range": false,
       "rulesText": "[Strike 3].",

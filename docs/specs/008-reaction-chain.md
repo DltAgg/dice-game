@@ -37,7 +37,9 @@ conducts, its body cannot be interrupted.
    - Equipment attach;
    - Overload attach;
    - Attack declaration.
-6. **What does not open a window:** `FORGE_CARD` only.
+6. **What does not open a window:** `FORGE_CARD` only. Optional bonus effects
+   on the forge region still do not open a window — they drain on the
+   resolution stack after a successful install, like on-roll effects.
 7. **Legal responders:** hand `reaction` cards, and ready ritual-reactions.
 8. **Response kinds:**
    - **Negate** — `negate-card`: legal only when the **top** link is a

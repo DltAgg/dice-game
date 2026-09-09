@@ -113,6 +113,14 @@ describe("016 attribute pile-up", () => {
     expect(
       usableSymbols(after, P1).filter((s) => s.symbol === "martial" && s.status === "rolled"),
     ).toHaveLength(0);
+    const p2Attributes = Object.values(after.symbols).filter(
+      (symbol) => symbol.ownerId === P2 && symbol.symbol !== "shield",
+    );
+    const p2Banked = Object.values(after.players[P2]?.attributePool ?? {}).reduce(
+      (sum, n) => sum + n,
+      0,
+    );
+    expect(p2Banked).toBe(p2Attributes.length);
   });
 
   it("auto-banks effect-generated attributes into the pile", () => {

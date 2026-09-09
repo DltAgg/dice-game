@@ -83,6 +83,7 @@ export function resolveOptionalReroll(
         bankableShownFaceIds([
           {
             dieId,
+            ownerId: die.ownerId,
             slotIndex,
             faceCardId: slot.faceCardId,
             symbol: face.symbol,

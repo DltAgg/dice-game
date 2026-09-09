@@ -20,6 +20,11 @@ by themselves**. Convert trades that whole die’s roll (including Overcharge an
 forge yield) for a stronger On-roll payoff. While showing is a stance, not a
 second On-roll trigger. Geometry is a condition on the controller’s dice.
 
+Every roll phase, **both players’** dice are rolled as part of the turn
+player’s single `ROLL_DICE` (active seat first, then opponent). Each seat
+banks, fires On roll / overloads / convert, and Overcharge-generates as the
+**die owner**. Actions stay active-player-only.
+
 ## Rules
 
 Bible is silent on these axes. User **DECIDED** 2026-09-04. Player wording is
@@ -57,12 +62,17 @@ Bible is silent on these axes. User **DECIDED** 2026-09-04. Player wording is
      this-turn arms; stance is not consumed)
    - `reduce` → incoming hits to the controller’s living creatures, before
      Prevent/Shield, same math as `[Reduce N]`
-   Persists until the die shows something else. Retain keeps it. Opponent’s
-   turn: Reduce still applies; Pierce / Empower / Discount simply do nothing
-   useful on their turn.
+   Persists until the die shows something else. Retain keeps it. Both seats’
+   showing faces refresh every shared `ROLL_DICE`, so defensive Reduce on the
+   opponent uses **their new** showing face from this roll. Pierce / Empower /
+   Discount on an off-turn showing face simply do nothing useful.
+   **Retain spend:** never randomize while `keepsPreviousResult`. Spend retain
+   only when `die.ownerId === activePlayerId`. On the opponent’s shared roll,
+   keep the face and leave `retained: true`.
 7. **Dice geometry** (`ConditionExpr`). Evaluated with controller + source die
-   from `pushEffect(..., dieId, slotIndex)`. Both dice are rolled (pips
-   created, showing slots known) **before** On roll fires.
+   from `pushEffect(..., dieId, slotIndex)`. Both of **that owner’s** dice are
+   rolled (pips created, showing slots known) **before** On roll fires. Active
+   player’s dice first (`diceOf` order), then the opponent’s.
    - `other-die-same-attribute` — the other die has a known showing face whose
      `symbol` equals this face’s attribute. Unrolled other die → false.
    - `this-die-attribute-count` + `atLeast` — count slots on **this** die
@@ -115,7 +125,12 @@ None.
 
 - Surface **While showing** modifiers on showing dice (pierce / empower /
   discount / reduce totals for the die owner).
-- A **convert cue** when the showing face has convert Choose one.
+- A **convert cue** when the showing face has convert Choose one. Convert
+  Choose one may open for the **non-active** seat during the turn player's
+  `ROLL_DICE` (controller is the die owner). Auto-roll already dispatches one
+  `ROLL_DICE` as the active seat — no second roll button.
+- Copy that both dice banks roll. HandStrip/board already read `rolledSlotIndex`
+  per die.
 - Do not show On-absorb as a live face axis on these proving faces.
 
 ## Acceptance Criteria

@@ -4,7 +4,7 @@ import type { Attribute } from "../../model/attributes.js";
 import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, DieId, FaceCardId, PlayerId } from "../../model/ids.js";
 import { isAttributeSymbol } from "../../model/symbols.js";
-import { forgeExceedsAttributeLimit } from "../../rules/cards.js";
+import { forgeExceedsAttributeLimit, isFirstSyntheticForgeThisTurn } from "../../rules/cards.js";
 import {
   countInstalledCopies,
   eligibleFacesForForge,
@@ -18,6 +18,7 @@ import {
 import { addTokens } from "../../rules/tokens.js";
 import { emit, patchDie, patchPlayer, type Draft } from "../draft.js";
 import { payForgeCost, payPileSpend } from "../payments.js";
+import { drainResolution, pushEffect } from "../resolution.js";
 import { clearOverchargeOnFace, clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
 
 export function activateFace(
@@ -131,8 +132,9 @@ export function installFacesOnDie(
  * changes, and the player names which slots to give up because that sacrifice
  * is the decision the card is really asking about.
  *
- * Synthetic forge burns the header pile `playCost` (with forge-discount).
- * Natural forge installs for free — play still pays the header when resolving
+ * Synthetic forge: the first `FORGE_CARD` each turn is free; later ones burn
+ * header pile `playCost` (with forge-discount). Natural forge is always free
+ * and does not consume that waiver — play still pays the header when resolving
  * the effect region instead.
  */
 export function forgeCard(
@@ -188,11 +190,18 @@ export function forgeCard(
   // Capture before payForgeCost consumes forgeDiscountThisTurn. Discount and
   // the immediate synthetic bank do not stack on the same install: otherwise a
   // 2-cost Mechanical synthetic with Discount 1 and 1 pip nets zero (spend 1,
-  // bank 1) and looks like the pile was never charged.
+  // bank 1) and looks like the pile was never charged. The free first synthetic
+  // is not a consumed discount — skip pay and leave the discount for later.
+  const firstSyntheticFree =
+    forge.kind === "synthetic" && isFirstSyntheticForgeThisTurn(draft, playerId);
   const consumedForgeDiscount =
-    forge.kind === "synthetic" && (draft.forgeDiscountThisTurn[playerId] ?? 0) > 0;
-  const forgeCostError = payForgeCost(draft, playerId, definition);
-  if (forgeCostError !== null) return forgeCostError;
+    forge.kind === "synthetic" &&
+    !firstSyntheticFree &&
+    (draft.forgeDiscountThisTurn[playerId] ?? 0) > 0;
+  if (!firstSyntheticFree) {
+    const forgeCostError = payForgeCost(draft, playerId, definition);
+    if (forgeCostError !== null) return forgeCostError;
+  }
 
   const eligible = eligibleFacesForForge(
     draft,
@@ -213,6 +222,13 @@ export function forgeCard(
   );
   if (installed !== null) return installed;
 
+  if (forge.kind === "synthetic") {
+    draft.syntheticForgedThisTurn = {
+      ...draft.syntheticForgedThisTurn,
+      [playerId]: true,
+    };
+  }
+
   // Own-die synthetic FORGE_CARD: immediate pile bank per face (DECIDED
   // 2026-08-29). Natural and opponent-die forge stay install + draw (+ yield
   // when own-die) only.
@@ -223,6 +239,14 @@ export function forgeCard(
   // The card is consumed by being installed, so it goes to the graveyard rather
   // than staying available to be played for its effect as well.
   moveCard(draft, cardInstanceId, "graveyard");
+
+  const forgeEffects = forge.effects ?? [];
+  if (forgeEffects.length > 0) {
+    for (const effect of [...forgeEffects].reverse()) {
+      pushEffect(draft, playerId, effect, null, null, null, null, null, 0, cardInstanceId);
+    }
+    drainResolution(draft);
+  }
   return null;
 }
 

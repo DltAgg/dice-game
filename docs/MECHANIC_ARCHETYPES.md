@@ -129,6 +129,7 @@ engine (cards / mill / Insight) is the plan.
 **Mechanic:** Face or overload `On roll: [Generate 1 SameAttr]`.
 
 **Window:** Die resolution / overload on roll — **not** attack follow-up.
+Shared `ROLL_DICE`: both seats’ On roll fire every roll phase.
 
 **Intended home:** Tempo and Combo die density (Cogtooth and peers). Control
 overloads that bank for **spells** (Runewatch Lens, Nightglass Rune) are the

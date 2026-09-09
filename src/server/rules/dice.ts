@@ -8,7 +8,9 @@ import type { SymbolType } from "../model/symbols.js";
 /** Bible §22: a stunned die is not rolled and contributes nothing to the roll. */
 export const isDieStunned = (die: DieState): boolean => die.stunMarkers > 0;
 
-/** Bible §21: a retained die keeps its previous result instead of rerolling. */
+/** Bible §21: a retained die keeps its previous result instead of rerolling.
+ * Shared `ROLL_DICE` still keeps the face; spend is in `rollDice` when the
+ * owner is the active player. */
 export const keepsPreviousResult = (die: DieState): boolean =>
   die.retained && die.rolledSlotIndex !== null;
 

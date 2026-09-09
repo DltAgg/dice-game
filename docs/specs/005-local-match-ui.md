@@ -14,8 +14,10 @@ Prove the architectural stack outside tests:
 UI  →  Zustand match store  →  advance(action)  →  GameState
 ```
 
-Two players share one browser (hotseat). The active player is always the one
-who may act; the inactive side is read-only until the turn passes.
+Two players share one browser (hotseat). The turn player conducts **actions**;
+the inactive side is read-only then. **Roll** is one `ROLL_DICE` from the turn
+player that randomizes **both** seats’ dice (convert Choose one still binds
+the die owner via `pendingChooserId`).
 
 Local **Play vs AI** is a sibling lobby mode (spec
 [`027-local-vs-ai.md`](./027-local-vs-ai.md)): `localPlayerId` is the human
@@ -59,7 +61,7 @@ Shield absorb happen during **actions** via `ABSORB_SYMBOL`.
 
 | Surface | Behavior |
 |---|---|
-| Phase bar | **Roll \| Actions** only. Highlight `state.phase`. From roll, skip/advance enters actions (or `ROLL_DICE` auto-enters actions). Last phase left only via **End turn**. |
+| Phase bar | **Roll \| Actions** only. Highlight `state.phase`. Auto-`ROLL_DICE` as the turn player rolls **both** seats, then enters actions. Last phase left only via **End turn**. |
 | Symbol pool | During **actions**, the unabsorbed pool is for banking and `[Requires]` spend. Clicking a pool pip can select it for absorb (attribute → pile, Shield → creature). Effect-generated (`available`) and die (`rolled`) pips share the same pool. |
 | Absorb UX | Banking and Shield absorb are legal whenever `phase === "actions"` (and `canAct`). Mid-turn generated pips must be absorbable without changing phase. |
 | Lobby / help | Two-step flow: Roll → Actions. |

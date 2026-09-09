@@ -29,8 +29,9 @@ describe("rolling dice", () => {
     const state = expectOk(advance(newMatch(), roll));
 
     const generated = Object.values(state.symbols);
-    expect(generated).toHaveLength(2);
-    expect(generated.every((symbol) => symbol.ownerId === P1)).toBe(true);
+    expect(generated).toHaveLength(4);
+    expect(generated.filter((symbol) => symbol.ownerId === P1)).toHaveLength(2);
+    expect(generated.filter((symbol) => symbol.ownerId === P2)).toHaveLength(2);
     expect(state.phase).toBe("actions");
     for (const symbol of generated) {
       if (symbol.symbol === SHIELD) {
@@ -45,10 +46,12 @@ describe("rolling dice", () => {
   it("records which physical face came up on each die", () => {
     const state = expectOk(advance(newMatch(), roll));
 
-    for (const die of diceOf(state, P1)) {
-      expect(die.rolledSlotIndex).not.toBeNull();
-      expect(die.rolledSlotIndex).toBeGreaterThanOrEqual(0);
-      expect(die.rolledSlotIndex).toBeLessThan(6);
+    for (const playerId of [P1, P2] as const) {
+      for (const die of diceOf(state, playerId)) {
+        expect(die.rolledSlotIndex).not.toBeNull();
+        expect(die.rolledSlotIndex).toBeGreaterThanOrEqual(0);
+        expect(die.rolledSlotIndex).toBeLessThan(6);
+      }
     }
   });
 
@@ -97,7 +100,10 @@ describe("rolling dice", () => {
 
     const state = expectOk(advance(stunned, roll));
 
-    expect(Object.values(state.symbols)).toHaveLength(1);
+    expect(
+      Object.values(state.symbols).filter((symbol) => symbol.sourceDieId === stunnedId),
+    ).toHaveLength(0);
+    expect(Object.values(state.symbols)).toHaveLength(3);
     expect(state.dice[stunnedId]?.rolledSlotIndex).toBeNull();
     expect(eventTypes(state)).toContain("die-skipped");
   });
@@ -218,6 +224,6 @@ describe("rolling dice", () => {
     const replayed = expectOk(reduce(start, roll, createRng(start.rng)));
 
     expect(JSON.stringify(replayed)).toEqual(JSON.stringify(direct));
-    expect(direct.rng.cursor).toBe(2);
+    expect(direct.rng.cursor).toBe(4);
   });
 });

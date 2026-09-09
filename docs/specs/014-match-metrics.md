@@ -135,7 +135,7 @@ Must provide:
 - Insights list derived from the same thresholds
 - Match table → detail (turn timeline, HP remaining, action samples)
 - Export: download JSON, download Markdown briefing, copy agent prompt
-  (preamble + compact JSON)
+  (preamble only — dump is Download JSON / Markdown)
 
 The match board stays a play surface. Optional: no live charts on
 `MatchBoard`.
@@ -153,8 +153,12 @@ JSON object:
 
 Markdown briefing is the same facts in prose tables so it pastes into a chat.
 
-Skill: `.cursor/skills/analyze-match-metrics/` — use when the user pastes an
-export or asks why matches run long.
+**Copy agent prompt** is the preamble plus a one-line “attach Download JSON”
+note. It does **not** inline the dump.
+
+Skill: `.cursor/skills/analyze-match-metrics/` — use when the user pastes a
+Copy agent prompt and/or attaches Download JSON, or asks why matches feel
+slow or unfun after the pile-only resource change.
 
 ## Acceptance Criteria
 

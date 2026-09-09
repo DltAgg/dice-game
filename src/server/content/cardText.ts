@@ -80,7 +80,11 @@ export function formatForgeLine(forge: ForgeRegion): string {
   const kind = formatFaceKind(forge.kind);
   const faces = forge.faces === 1 ? "1 face" : `${String(forge.faces)} faces`;
   const where = forge.target === "own-die" ? "on your die" : "on the opponent's die";
-  return `[Forge] ${faces} [${kind}] [${ATTRIBUTE_LABEL[forge.attribute]}] ${where}`;
+  const line = `[Forge] ${faces} [${kind}] [${ATTRIBUTE_LABEL[forge.attribute]}] ${where}`;
+  if (forge.rulesText !== undefined && forge.rulesText.length > 0) {
+    return `${line}. ${forge.rulesText}`;
+  }
+  return line;
 }
 
 /**

@@ -9,7 +9,9 @@ describe("metrics export", () => {
     expect(exported.schemaVersion).toBe(METRICS_SCHEMA_VERSION);
     expect(exported.exportedAt).toBe("2026-08-18T15:00:00.000Z");
     expect(exported.promptPreamble).toContain("10");
-    expect(exported.promptPreamble).toContain("drag score");
+    expect(exported.promptPreamble).toContain("playable and fun");
+    expect(exported.promptPreamble).toContain("attribute pile only");
+    expect(exported.promptPreamble).not.toContain("The JSON (or Markdown) that follows");
     expect(exported.matches).toHaveLength(1);
     expect(exported.matches[0]?.totalTurns).toBe(22);
     expect(exported.insights.length).toBeGreaterThan(0);
@@ -29,7 +31,9 @@ describe("metrics export", () => {
     expect(md).toContain("How you played");
 
     const prompt = formatAgentPrompt(exported);
-    expect(prompt).toContain("```json");
-    expect(prompt).toContain('"schemaVersion": 1');
+    expect(prompt).toContain("playable and fun");
+    expect(prompt).toContain("Download JSON");
+    expect(prompt).not.toContain("```json");
+    expect(prompt).not.toContain('"schemaVersion"');
   });
 });

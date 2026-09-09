@@ -108,6 +108,7 @@ export function convertingFromSlot(
 
 export type ShownFaceRollEntry = {
   readonly dieId: DieId;
+  readonly ownerId: PlayerId;
   readonly slotIndex: number;
   readonly faceCardId: FaceCardId;
   readonly symbol: SymbolType;
@@ -122,4 +123,18 @@ export function bankableShownFaceIds(
   return entries.flatMap((entry) =>
     entry.converting || entry.suppressInherent ? [] : [...entry.symbolIds],
   );
+}
+
+/** Bankable pips grouped by die owner (shared `ROLL_DICE` banks each seat). */
+export function bankableShownFaceIdsByOwner(
+  entries: readonly ShownFaceRollEntry[],
+): ReadonlyMap<PlayerId, readonly SymbolInstanceId[]> {
+  const byOwner = new Map<PlayerId, SymbolInstanceId[]>();
+  for (const entry of entries) {
+    if (entry.converting || entry.suppressInherent) continue;
+    const ids = byOwner.get(entry.ownerId) ?? [];
+    ids.push(...entry.symbolIds);
+    byOwner.set(entry.ownerId, ids);
+  }
+  return byOwner;
 }

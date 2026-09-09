@@ -16,6 +16,7 @@ import type { GameState } from "../model/state.js";
 import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols.js";
 import {
   handOf,
+  canAffordForge,
   playCostTotal,
   replayableGraveyardTactics,
   equipmentOf,
@@ -255,12 +256,9 @@ function forgeCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy
 
     const definition = getCard(card.cardId);
     if (definition === undefined) continue;
-    // Natural forge is free; only synthetic forges burn header playCost.
-    if (definition.forge.kind !== "natural" && playCostTotal(definition) > 0) {
-      const pool = current.players[playerId]?.attributePool ?? {};
-      const cost = definition.playCost ?? {};
-      if (pileRequirementShortfall(pool, cost) > 0) continue;
-    }
+    // Natural forge is always free; the first synthetic FORGE_CARD this turn
+    // is also free. Later synthetics pay header playCost (canAffordForge).
+    if (!canAffordForge(current, playerId, definition)) continue;
 
     const plan = shieldSlotsFor(current, playerId, definition.forge.faces);
     if (plan === undefined) continue;

@@ -193,7 +193,8 @@ export function refireShownFaceRollEffects(
   );
 }
 
-/** On roll → overloads on that face → equipment on-roll-symbol (`ROLL_DICE` order). */
+/** On roll → overloads on that face → equipment on-roll-symbol (`ROLL_DICE` order).
+ * `controllerId` is the die owner (also `rollingPlayerId` for on-roll-symbol). */
 export function fireShownFaceRollHooks(
   draft: Draft,
   controllerId: PlayerId,

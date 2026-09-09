@@ -123,7 +123,7 @@ Same idea, different nouns.
 | Print | X is | Means |
 |---|---|---|
 | `[Generate N X]` | A symbol (Martial, Shield, …) | Add N of X to your pool this turn |
-| `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces |
+| `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces. Extra keyword clauses on that line fire only on forge. |
 | `[Reforge N Attr]` | N slots on **one of your dice**; synthetic Attr from your pool | Replace any N replaceable faces; no forge-draw |
 | `[Cross forge N Y / Z]` | N slots showing **Y** on **one of your dice**; synthetic **Z** from your pool | Same as Reforge, but Y → synthetic Z |
 | `[Overcharge]` | A hand card | Spend that card onto one attribute **face card** on **your** dice; every die that shows that face `[Generate]`s +1 of the spent card’s attribute when rolled |
@@ -134,7 +134,14 @@ Same idea, different nouns.
 
 **Forge** already names a target. `[Forge 1 Synthetic Corruption]` on the
 opponent’s die is Corruption’s exclusive (their die). Mechanical forges
-**your** die.
+**your** die. Extra keyword clauses on the forge line (`[Forge] … [Empower 1].`)
+fire only when that card is forged. They do not run if you play, attach, or
+Overcharge the card.
+
+Your first synthetic `FORGE_CARD` each turn is free (a master rule, like
+`[Overcharge]` — not printed on cards). Natural forge never consumes that
+waiver. Later synthetics this turn pay header `[Spend]` as usual. Ritual /
+effect `forge-faces` does not count.
 
 `[Overcharge]` is the master-rule spend of **any** hand card (not a line on
 every card). It is **not** spec `013`’s Mechanical face-marker opcode
@@ -187,7 +194,7 @@ These are not tokens.
 | `[Reroll]` | Roll that die again during actions: On roll fires for the **new** face, then a usable attribute auto-banks (On absorb) unless the new face offers Convert Choose one. Not `[Stamp]` (same showing face, no new pip). |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
 | `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
-| `[Retain]` | Keep a retainable die across the next roll |
+| `[Retain]` | Keep a retainable die for **your** next roll phase. The face also stays through the opponent’s shared roll without spending retain. |
 
 <!--
 Engine: damage | heal (`choose-enemy` / `enemy-all` / `ally-all` / …) |
@@ -226,7 +233,7 @@ These are not effect replacements.
 | `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate). May include **Any**. |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
-| `On roll:` `While showing:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…”. `While showing:` is a continuous stance on the showing face, not a second On-roll trigger. |
+| `On roll:` `While showing:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…”. `On roll:` fires when that face shows after a shared `ROLL_DICE` (both seats each roll phase, including on the opponent’s turn). `While showing:` is a continuous stance on the showing face, not a second On-roll trigger. |
 
 ---
 

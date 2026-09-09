@@ -54,7 +54,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
 | Builtin / constructed loadouts, card-has-no-home, attribute identity in builds | Subagent: [deck-designer](.cursor/agents/deck-designer.md) |
 | New or tuned agents, skills, rules, TOOLS.md, AGENTS.md routing | Subagent: [prompt-engineer](.cursor/agents/prompt-engineer.md) + skill [author-interactions](.cursor/skills/author-interactions/SKILL.md) |
 | After a playtest (notes ± metrics, “felt like the wrong deck”) | Subagent: [post-playtest](.cursor/agents/post-playtest.md) + skill [review-playtest](.cursor/skills/review-playtest/SKILL.md) — updates `docs/MECHANIC_ARCHETYPES.md`, briefs owners; does not author JSON or reducer |
-| Match metrics dump with **no** playtest narrative (pace, drag, stall) | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`) |
+| Match metrics dump with **no** playtest narrative (playable/fun, pace, unpaid attacks, forge vs Overcharge) | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`). Copy agent prompt is instructions only; attach Download JSON. |
 | PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/client/networking` + `docs/specs/007-peerjs.md` |
 
 ## Subagents

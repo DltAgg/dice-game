@@ -8,6 +8,17 @@ function pendingState(pending: GameState["pendingDecision"]): GameState {
   return { pendingDecision: pending } as unknown as GameState;
 }
 
+describe("hintFor roll phase", () => {
+  it("says both players roll", () => {
+    const hint = hintFor(
+      { kind: "idle" },
+      { phase: "roll", pendingDecision: null, status: "in-progress" } as GameState,
+      true,
+    );
+    expect(hint).toContain("Both players");
+  });
+});
+
 describe("hintFor optional discard", () => {
   it("mentions Decline when discard is optional", () => {
     const hint = hintFor(

@@ -192,6 +192,11 @@ export interface GameState {
   /** Next FORGE_CARD this turn costs this much less (Gear absorb). */
   readonly forgeDiscountThisTurn: Readonly<Record<string, number>>;
   /**
+   * True after this player’s first synthetic `FORGE_CARD` this turn. Natural
+   * forge and `forge-faces` do not set it. Cleared on `END_TURN`.
+   */
+  readonly syntheticForgedThisTurn: Readonly<Record<string, boolean>>;
+  /**
    * Next PLAY_CARD this turn costs this much less (On roll `[Discount]`, not
    * forge). Consumed on the next header spend; cleared at end of turn.
    */
@@ -206,8 +211,8 @@ export interface GameState {
   /** Blade Rain: next attack this turn splits its damage. */
   readonly bladeRainArmed: Readonly<Record<string, boolean>>;
   /**
-   * Faces that showed during the active player's last `ROLL_DICE` this turn
-   * (Catalyst absorb). Cleared on `END_TURN` / next roll. Spec `013`.
+   * Faces that showed during the last shared `ROLL_DICE` this turn (both
+   * seats; Catalyst absorb). Cleared on `END_TURN` / next roll. Spec `013`.
    */
   readonly facesAppearedThisRoll: readonly {
     readonly dieId: DieId;
@@ -221,8 +226,8 @@ export interface GameState {
    */
   readonly resolveNextFaceEffectTwice: Readonly<Record<string, boolean>>;
   /**
-   * Banked symbol ids from the active roll whose on-absorb triggers are
-   * waiting for on-roll effects (and choices) to finish first.
+   * Banked symbol ids from this shared `ROLL_DICE` (either owner) whose
+   * on-absorb triggers wait for on-roll effects (and choices) to finish first.
    */
   readonly rollBankQueue: readonly SymbolInstanceId[];
   readonly winner: PlayerId | null;

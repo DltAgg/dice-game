@@ -24,7 +24,7 @@ Live print stays JSON. Rules stay `reduce()`. Lists stay `deck-designer`.
 |---|---|
 | Player notes (“Control felt like Aggro”, “infinite attacks”) | Treat as feel authority |
 | Lists / seats (Tempo, Control, custom) | Read those `loadouts/*.json` and named creatures/cards/faces |
-| Metrics JSON or Markdown (Copy agent prompt / Download JSON) | Run [analyze-match-metrics](../analyze-match-metrics/SKILL.md) for pace, stall, lethality, play-vs-forge |
+| Metrics JSON or Markdown (Copy agent prompt + Download JSON) | Run [analyze-match-metrics](../analyze-match-metrics/SKILL.md) for playability, stall, lethality, forge vs Overcharge |
 | Neither notes nor lists | Ask. Do not guess the archetype from metrics seat labels alone |
 
 Notes win on **feel**. Metrics win on **counts**. If they disagree, say so

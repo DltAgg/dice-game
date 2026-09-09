@@ -86,7 +86,8 @@ export function MetricsDashboard() {
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--ink-muted)]">
             Local observer for hotseat, vs AI, and online matches. Recordings live in IndexedDB (with a
             localStorage fallback) so a refresh does not wipe them. Nothing here is rules — the
-            collector only watches <span className="text-stone-300">advance()</span>.
+            collector only watches <span className="text-stone-300">advance()</span>. Copy agent prompt is
+            instructions only; attach the Download JSON file in the chat.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

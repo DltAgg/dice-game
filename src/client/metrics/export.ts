@@ -9,20 +9,36 @@ import { forgeCardCountOf } from "./snapshot.js";
 import { BASELINE_TURNS, METRICS_SCHEMA_VERSION } from "./thresholds.js";
 import type { MatchRecording } from "./types.js";
 
-export const METRICS_PROMPT_PREAMBLE = `You are helping diagnose Dice Skirmish playtest pacing.
+export const METRICS_PROMPT_PREAMBLE = `You are helping make Dice Skirmish playable and fun again.
 
-Players report that matches feel slow. More than ${String(BASELINE_TURNS)} turns is a red-flag baseline — not a 11–20 band. Each match has a drag score = overtime turns past ${String(BASELINE_TURNS)} plus idle turns after the 2-turn arming window. Idle means the player took no meaningful action and opened no decision (no attack, damage, absorb, play, forge, ritual, pending choice, or reaction). Stall is 0 damage and 0 attacks (setup can still be stall). Verdicts: on-pace, empty-early, dragging (overtime is empty), grinding (setup/stall without a close), long-active (combat happens, still too many turns).
+The game used two resources (energy and attributes). Fuel is now the **attribute pile only** — rolled and generated pips auto-bank. Energy is gone. Ignore leftover energy* keys on old recordings. Do not propose bringing energy back.
 
-The JSON (or Markdown) that follows is a metrics export from the local collector. It is an observer sitting outside the pure reducer: it never changes GameState. Wall-clock think time is time between recorded observations. Guest recordings include network delay; prefer host, local, or local-ai recordings when both exist for the same matchId (the export already dedupes, keeping the richer sample). recordedAs is local (hotseat), local-ai (Play vs AI), host, or client.
+The live set is in a weird, slow state: matches often fail to close, attacks are often unpaid, and forge is a weak third choice behind play and Overcharge. Diagnose **that** — not a generic 11–20 turn band.
 
-Close timeline (bible §45): median first damage / first attack / first creature death, deaths by turn, first-player win rate, and win rate by deck pair. A first death on turns 1–3 is too early for a three-creature skirmish; a first death after turn 10 (or never) with overtime is a close that is not arriving.
+The dump is an observer outside reduce()/advance(). It never changes GameState. Wall-clock think time is time between observations. Guest think times include network delay; prefer recordedAs host / local / local-ai. Deduped by matchId (richer sample wins).
+
+Pace flags (per match, not an 11–20 bucket):
+- Red flag: totalTurns > ${String(BASELINE_TURNS)}. Overtime = max(0, turns − ${String(BASELINE_TURNS)}).
+- Idle: no attack, damage, absorb, play, forge, ritual, heal/prevent, pending, reaction, or chain.
+- Stall: 0 HP damage and 0 attacks (setup can still stall). Late idle = idle after turns 1–2.
+- Drag = overtime + late idle.
+- Verdicts: on-pace, empty-early, dragging (empty overtime), grinding (setup/stall, cannot close), long-active (combat happened, still too many turns).
+
+Playability (pile-only fuel):
+- 0 attacks is not “chose setup.” Check INSUFFICIENT_SYMBOLS, attack discards vs a 2-die roll, and 1-pip leftovers that can pay a 1-cost card or Overcharge (0 pile) but not a 2-token basic.
+- turn.absorbs counts symbol-absorbed **and** symbols-consumed — it is not spare pile.
+- Separate cannot-pay-attack from cannot-kill (prevent/Shield, zero-damage attacks) from not converting setup.
+
+Fun:
+- Close (bible §45): first death on turns 1–3 is too early for a three-creature skirmish; after turn ${String(BASELINE_TURNS)} or never with overtime, the close is not arriving.
+- Forge vs play vs Overcharge: Overcharge is 0 pile and juices every copy of a face; synthetic forge pays playCost. Say whether forge is a line a player would pick.
+- Reaction volume vs dwell: many PASS_PRIORITY with tiny think is window spam, not reading time.
 
 Please:
-1. Per match, correlate overtime with idle vs setup vs combat. Do not treat “11–20 turns” as a default bucket.
-2. Say whether the sample is dragging (empty), grinding (cannot close), or long-active.
-3. Use first-death turn and damage / play-forge mix to separate “cannot kill” from “not converting setup.”
-4. Propose concrete rules or UX experiments — cite the numbers. Do not invent engine behavior that is not in the evidence.
-5. List what extra instrumentation would help if the picture is incomplete.
+1. Per match, correlate overtime with idle vs setup vs combat.
+2. Say whether the sample is dragging, grinding, or long-active — then whether it is unfun because unpaid attacks, unpayable forge, prevent-not-killing, or UX think.
+3. Propose concrete rules or UX experiments that make matches fun to play (cite the numbers). Prefer paying a basic off a normal roll over adding attack rewards. Do not invent engine behavior that is not in the evidence.
+4. List missing instrumentation (pile snapshot, attack-legal, prevent vs Shield).
 
 Do not propose a second rules engine in the UI.`;
 
@@ -308,14 +324,10 @@ ${exported.matches
 `;
 }
 
+/** Clipboard text only — the dump is Download JSON / Download Markdown. */
 export function formatAgentPrompt(exported: MetricsExport): string {
-  const json = JSON.stringify(exported, null, 2);
   return `${exported.promptPreamble}
 
----
-
-\`\`\`json
-${json}
-\`\`\`
+This clipboard is the prompt only. Attach the file from Download JSON (or Download Markdown). A path is enough.
 `;
 }

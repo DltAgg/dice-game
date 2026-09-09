@@ -323,6 +323,7 @@ describe("While showing", () => {
     const showing = {
       ...withAttributePool(rolled, P1, { mechanical: 1 }),
       forgeDiscountThisTurn: {},
+      syntheticForgedThisTurn: { [P1]: true },
     };
     expect(canAffordForge(showing, P1, definition)).toBe(true);
     const off = {
@@ -332,6 +333,7 @@ describe("While showing", () => {
         { mechanical: 1 },
       ),
       forgeDiscountThisTurn: {},
+      syntheticForgedThisTurn: { [P1]: true },
     };
     expect(whileShowingTotals(off, P1).forgeDiscount).toBe(0);
     expect(canAffordForge(off, P1, definition)).toBe(false);

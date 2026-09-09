@@ -32,7 +32,7 @@
       "name": "Kindle",
       "kind": "basic",
       "discards": {
-        "luminar": 2
+        "luminar": 1
       },
       "range": false,
       "rulesText": "[Strike 2].\n[Heal 1] on one of your creatures you choose.",

@@ -72,6 +72,19 @@ describe("English card printing", () => {
     ).toBe("[Forge] 2 faces [Natural] [Martial] on the opponent's die");
   });
 
+  it("appends forge.rulesText after the generated forge sentence", () => {
+    expect(
+      formatForgeLine({
+        faces: 1,
+        kind: "natural",
+        attribute: "martial",
+        target: "own-die",
+        effects: [{ type: "next-attack-bonus", amount: 1 }],
+        rulesText: "[Empower 1].",
+      }),
+    ).toBe("[Forge] 1 face [Natural] [Martial] on your die. [Empower 1].");
+  });
+
   it("prints Active when for ritual requirements", () => {
     const card = exampleCard({
       type: "ritual",

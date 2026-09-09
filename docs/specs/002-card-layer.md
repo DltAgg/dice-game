@@ -51,7 +51,7 @@ Six fields, in the order the layout presents them:
 | Name | header, left | |
 | Play cost | header, right | Pile tokens in `playCost` (`SymbolRequirement`), or `?` = variable (DEFERRED; fixed `playCost` for now) |
 | Type line | text box, first line | `[Instant\|Reaction\|Equipment\|Overload / <attribute>]` or `[Ritual / <subtype…> / <attribute>]` — Ritual subtypes are Instant, Continuous, Reaction |
-| Forge region | text box | how many faces, of which kind and attribute, on which die |
+| Forge region | text box | how many faces, of which kind and attribute, on which die. Optional `effects` / `rulesText` fire only on `FORGE_CARD` |
 | Requirements | text box, bracketed | optional, and specific to the type / ritual subtype |
 | Effect | text box | the alternative to forging |
 

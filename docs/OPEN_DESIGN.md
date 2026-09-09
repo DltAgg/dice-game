@@ -256,10 +256,11 @@ entry below.
 **Status:** `DECIDED` · implemented
 
 A player may choose, per die they own, whether that die is retained. A retained
-die keeps its showing face for **one** subsequent roll instead of rerolling, and
-still generates that symbol. After that kept roll, retention clears
-automatically — it does not persist turn after turn. The owner may also release
-it early with `RETAIN_DIE`. Any number of owned dice may be retained.
+die is never randomized while marked retained. The keep survives the opponent’s
+shared `ROLL_DICE` without spending; on the owner’s next roll phase (as the
+active player) it still generates that symbol, then retention clears. It does not
+persist turn after turn unless set again. The owner may also release it early
+with `RETAIN_DIE`. Any number of owned dice may be retained.
 `RETAIN_DIE` is legal in any phase (including roll, so a player can release
 before rolling). Setting retain requires a known `rolledSlotIndex`; stunned
 dice cannot be retained.
@@ -272,10 +273,12 @@ dice cannot be retained.
 
 **Status:** `DECIDED` · implemented for tactic cards
 
-Playing or forging tactic cards burns the header `playCost` from the owner's
-attribute pile. Engine abilities cost symbols from the turn pool; attacks cost
-pile tokens per `[Requires]` / `[Spend]`. Both `PLAY_CARD` and synthetic
-`FORGE_CARD` pay the printed header `playCost`.
+Playing tactic cards burns the header `playCost` from the owner's attribute
+pile. Engine abilities cost symbols from the turn pool; attacks cost pile
+tokens per `[Requires]` / `[Spend]`. `PLAY_CARD` pays the printed header
+`playCost`. Synthetic `FORGE_CARD`: the first each turn is free; later ones
+this turn pay the header (minus forge discount). Natural `FORGE_CARD` is
+always free and does not consume that waiver.
 
 ### Equipment and opponent forging
 
@@ -318,7 +321,7 @@ every deck can use:
 |---|---|
 | **Forge yield** | `installFacesOnDie` onto a die you own marks each overwritten slot `forgeYield: true`. Opponent-die installs do not. Opening slots have no yield. Overwrite / peel clears yield unless re-set. |
 | **On roll** | When a `forgeYield` slot is showing after `ROLL_DICE`, generate `forgeYieldGenerate` (default **1**) extra of that face’s attribute for the die owner (effect Generate / auto-bank). Skip Shield / untyped. |
-| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed, **unless the install consumed `forgeDiscountThisTurn`**. Natural forge: install + draw + yield only (no immediate bank). Discount + bank on the same install was a playtest leak (Twin Cam / Torque Wright: spend 1, bank 1, pile unchanged). |
+| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed, **unless the install consumed `forgeDiscountThisTurn`**. The free first synthetic each turn is **not** a consumed discount, so it **does** bank. Natural forge: install + draw + yield only (no immediate bank). Discount + bank on the same install was a playtest leak (Twin Cam / Torque Wright: spend 1, bank 1, pile unchanged). |
 
 Config knobs: `GameRulesConfig.forgeYieldGenerate`, `forgeBankPerFace`. See
 `docs/RULEBOOK.md` §11. Not a print keyword — forge rules like draw-on-forge.
@@ -790,7 +793,7 @@ Assumption: **install is affordable; stay and peel are the expense.** Stick come
 | **Resource lock** | Slot flag this turn; if showing, matching rolled/available symbols get `usable: false`. Cannot pay Requires / Active-when / absorb. |
 | **Decay unusable symbol** | Strip face → Shield (like `ACTIVATE_FACE`); create Corruption in **Decay controller’s** pool with `usable: false` (not the face owner’s). |
 | **Toxin receive cap** | At most `amount` markers **gained** while the cap remains (remaining counter), until that creature’s owner’s next turn starts. |
-| **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this controller’s last `ROLL_DICE` (`facesAppearedThisRoll`). Not overloads. |
+| **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this shared `ROLL_DICE` (`facesAppearedThisRoll` records **both** seats). Not overloads. Selector is not filtered to the controller’s dice unless a leak appears. |
 | **Overcharge double** (spec `013` face marker, `optional-overcharge`) | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. **Not** the tactic `[Overcharge]` master rule (spec `021`). |
 | **Instinct absorb** | Optional actions-window basic via `optional-bonus-attack` (see row above). |
 

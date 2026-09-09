@@ -348,7 +348,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
 
   switch (state.phase) {
     case "roll":
-      return "Dice roll automatically. Overloads on showing faces fire immediately, once per die that shows them. Rituals cannot activate during roll.";
+      return "Both players’ dice roll automatically. Each seat banks their own attributes and fires their On roll / overloads. Convert Choose one is picked by the die owner. Rituals cannot activate during roll.";
     case "actions":
       return "Bank attribute pips into your pile (one click), grant Shield onto a creature, spend, attack, play tactics, forge, Overcharge, and activate ready rituals. End turn from the phase bar when finished.";
   }

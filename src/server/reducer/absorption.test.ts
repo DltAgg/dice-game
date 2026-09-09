@@ -121,7 +121,7 @@ describe("attribute pile absorb (spec 016)", () => {
 
   it("auto-banks rolled attributes into the pile without naming a creature", () => {
     const { state, symbols } = afterRoll();
-    const attributes = symbols.filter((s) => s.symbol !== "shield");
+    const attributes = symbols.filter((s) => s.symbol !== "shield" && s.ownerId === P1);
     expect(attributes.length).toBeGreaterThan(0);
     for (const pip of attributes) {
       expect(pip.status).toBe("absorbed");

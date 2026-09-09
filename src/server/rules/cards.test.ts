@@ -43,6 +43,13 @@ function withPlayCostDiscount(
   };
 }
 
+function withSyntheticForgedThisTurn(state: GameState, playerId: PlayerId): GameState {
+  return {
+    ...state,
+    syntheticForgedThisTurn: { ...state.syntheticForgedThisTurn, [playerId]: true },
+  };
+}
+
 describe("canAffordPlay / canAffordForge", () => {
   it("returns true for a free / empty header cost", () => {
     const state = newMatch();
@@ -60,7 +67,8 @@ describe("canAffordPlay / canAffordForge", () => {
     const state = withAttributePool(newMatch(), P1, { mechanical: 1 });
     const card = exampleCard({ playCost: { mechanical: 2 } });
     expect(canAffordPlay(state, P1, card)).toBe(false);
-    expect(canAffordForge(state, P1, card)).toBe(false);
+    expect(canAffordForge(state, P1, card)).toBe(true);
+    expect(canAffordForge(withSyntheticForgedThisTurn(state, P1), P1, card)).toBe(false);
   });
 
   it("returns true when the pile covers the full header cost", () => {
@@ -72,10 +80,9 @@ describe("canAffordPlay / canAffordForge", () => {
 
   it("On roll play-cost-discount covers a play but not a forge", () => {
     const card = exampleCard({ playCost: { mechanical: 2 } });
-    const state = withPlayCostDiscount(
-      withAttributePool(newMatch(), P1, { mechanical: 1 }),
+    const state = withSyntheticForgedThisTurn(
+      withPlayCostDiscount(withAttributePool(newMatch(), P1, { mechanical: 1 }), P1, 1),
       P1,
-      1,
     );
     expect(canAffordPlay(state, P1, card)).toBe(true);
     expect(canAffordForge(state, P1, card)).toBe(false);
@@ -87,8 +94,14 @@ describe("canAffordPlay / canAffordForge", () => {
       playCost: { arcane: 1, any: 2 },
       forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
     });
-    const splash = withAttributePool(newMatch(), P1, { arcane: 1, martial: 2 });
-    const mono = withAttributePool(newMatch(), P1, { martial: 3 });
+    const splash = withSyntheticForgedThisTurn(
+      withAttributePool(newMatch(), P1, { arcane: 1, martial: 2 }),
+      P1,
+    );
+    const mono = withSyntheticForgedThisTurn(
+      withAttributePool(newMatch(), P1, { martial: 3 }),
+      P1,
+    );
     expect(canAffordPlay(splash, P1, card)).toBe(true);
     expect(canAffordForge(splash, P1, card)).toBe(true);
     expect(canAffordPlay(mono, P1, card)).toBe(false);
@@ -97,7 +110,7 @@ describe("canAffordPlay / canAffordForge", () => {
 
   it("applies forgeDiscountThisTurn to forge but not play", () => {
     const state = withForgeDiscount(
-      withAttributePool(newMatch(), P1, { mechanical: 1 }),
+      withSyntheticForgedThisTurn(withAttributePool(newMatch(), P1, { mechanical: 1 }), P1),
       P1,
       1,
     );
@@ -123,11 +136,15 @@ describe("canAffordPlay / canAffordForge", () => {
       forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
     });
     const mechanical = withForgeDiscount(
-      withAttributePool(newMatch(), P1, { mechanical: 1 }),
+      withSyntheticForgedThisTurn(withAttributePool(newMatch(), P1, { mechanical: 1 }), P1),
       P1,
       1,
     );
-    const luminar = withForgeDiscount(withAttributePool(newMatch(), P1, { luminar: 1 }), P1, 1);
+    const luminar = withForgeDiscount(
+      withSyntheticForgedThisTurn(withAttributePool(newMatch(), P1, { luminar: 1 }), P1),
+      P1,
+      1,
+    );
     expect(canAffordForge(mechanical, P1, card)).toBe(true);
     expect(canAffordForge(luminar, P1, card)).toBe(true);
     expect(canAffordPlay(mechanical, P1, card)).toBe(false);
@@ -137,17 +154,27 @@ describe("canAffordPlay / canAffordForge", () => {
   it("Requires gate is unmet even when Discount 1 would cover the header", () => {
     const tooling = getCard(TEST_REQUIRES_GATE);
     if (tooling === undefined) throw new Error("requires-gate fixture");
-    const state = withForgeDiscount(
-      withPlayCostDiscount(
-        withAttributePool(newMatch(), P1, { mechanical: 1 }),
+    const state = withSyntheticForgedThisTurn(
+      withForgeDiscount(
+        withPlayCostDiscount(
+          withAttributePool(newMatch(), P1, { mechanical: 1 }),
+          P1,
+          2,
+        ),
         P1,
-        2,
+        1,
       ),
       P1,
-      1,
     );
     expect(canAffordPlay(state, P1, tooling)).toBe(false);
     expect(canAffordForge(state, P1, tooling)).toBe(true);
+  });
+
+  it("first synthetic forge is affordable on an empty pile; later synthetics are not", () => {
+    const state = withAttributePool(newMatch(), P1, {});
+    const card = exampleCard({ playCost: { mechanical: 2 } });
+    expect(canAffordForge(state, P1, card)).toBe(true);
+    expect(canAffordForge(withSyntheticForgedThisTurn(state, P1), P1, card)).toBe(false);
   });
 });
 

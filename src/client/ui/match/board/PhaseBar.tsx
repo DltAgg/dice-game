@@ -39,7 +39,9 @@ export function PhaseBar({
               aria-current={isCurrent ? "step" : undefined}
               title={
                 isCurrent
-                  ? `Current phase: ${PHASE_LABELS[phase]}`
+                  ? phase === "roll"
+                    ? "Current phase: Roll — both players’ dice"
+                    : `Current phase: ${PHASE_LABELS[phase]}`
                   : canJump
                     ? `Skip to ${PHASE_LABELS[phase]}`
                     : PHASE_LABELS[phase]
