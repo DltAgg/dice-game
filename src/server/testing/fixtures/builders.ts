@@ -72,6 +72,7 @@ export function testAttack(overrides: WithStringId<AttackDefinition> = {}): Atta
     name: "Test Strike",
     kind: "basic",
     range: false,
+    unlock: { mechanical: 1 },
     rulesText: "[Strike 2].",
     effect: { type: "damage", amount: 2, target: { kind: "declared-target" } },
     ...overrides,
@@ -90,7 +91,7 @@ export function testCreature(overrides: WithStringId<CreatureDefinition> = {}): 
     attacks: [
       testAttack({
         id: `${id}-basic`,
-        discards: { [attributes[0] ?? "mechanical"]: 1 },
+        unlock: { [attributes[0] ?? "mechanical"]: 1 },
       }),
     ],
     ...overrides,

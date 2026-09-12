@@ -33,10 +33,10 @@ Status vocabulary:
 
 **Status:** `SUPERSEDED` · 2026-08-24 · by **Attribute pile-up** below
 
-Costs and attack fuel now use the player's **attribute pile**
-(`PlayerState.attributePool`). See
-[`docs/specs/016-attribute-pile-up.md`](./specs/016-attribute-pile-up.md) and
-[`docs/RULEBOOK.md`](./RULEBOOK.md) §§6–8.
+Card / ritual / forge costs use the player's **attribute pile**
+(`PlayerState.attributePool`). Creature **attacks** no longer spend or gate
+on that pile — see **Showing-face attack unlocks** (2026-09-12) and
+[`docs/specs/028-showing-face-combat.md`](./specs/028-showing-face-combat.md).
 
 ### Printed 1-token playCost is exceptional
 
@@ -78,9 +78,9 @@ leftover tokens in `ATTRIBUTES` order (Martial first).
 deterministic. A later `choose-attribute-tokens` reuse (spec `011`) can replace
 that without changing print.
 
-Applies to header `playCost`, `effect.requires`, ritual `activeWhen` / `spend`,
-and attack `requires` / `discards`. Does not apply to `card.attribute`,
-`forge.attribute`, `[Generate]`, or `[Mark]` arguments.
+Applies to header `playCost`, `effect.requires`, ritual `activeWhen` / `spend`.
+Does not apply to `card.attribute`, `forge.attribute`, `[Generate]`, `[Mark]`
+arguments, or creature-attack `[Unlock]` (named attributes only — spec `028`).
 
 ### Battlefield capacity
 
@@ -124,20 +124,20 @@ Attributes the player holds live in a **persistent player pile**
 (`PlayerState.attributePool`).
 
 ```text
-absorb (attribute) → +1 in your pile     → enables attacks / ritual gates / spends
+absorb (attribute) → +1 in your pile     → card / ritual / forge spends and gates
 absorb (Shield)    → Shield on a creature → prevent
-resolve            → stays in turn pool   → `[Requires]` spends this turn
+resolve            → stays in turn pool   → leftover Shield / locked pips
 ```
 
 | Surface | Paid from | Bible |
 |---|---|---|
 | Engine ability | unabsorbed symbols in the turn pool | §17 |
-| Attack | owner’s attribute pile (`requires` gate and/or `discards` Spend) | §7, §31 |
+| Attack | **showing faces** on the attacker’s owner’s dice (`unlock`) — not the pile | §7, §24; **DECIDED** 2026-09-12 |
 | Ritual Active-when / Spend | owner’s attribute pile | layouts / `002` |
 
 - Shield, Toxin, and other **creature** tokens remain on creatures.
-- Absorbing an attribute into the pile is **immediate** (no end-of-turn delay),
-  so same-turn attack after banking is legal.
+- Absorbing an attribute into the pile is **immediate** (no end-of-turn delay).
+  Attacks do not spend the pile (showing-face unlocks, spec `028`).
 - Face / standing `On absorb` fires when a pip is banked into the pile (or
   Shield is granted onto a creature).
 - Ritual `activeWhen` gates readiness from the owner's pile; optional `spend`
@@ -815,6 +815,40 @@ Mechanical face-marker opcode (`optional-overcharge`, suppress inherent,
 | **Always +1** | One pip of the spent card’s `attribute` regardless of `forge.faces`. |
 | **No reaction window** | Same as `FORGE_CARD`. |
 | **No GameState bag** | Once-per-turn uses `spentOncePerTurnKeys` key `"overcharge"`. `state.ts` stays frozen. |
+
+---
+
+## Resolved — design discussion, 2026-09-12 (showing-face combat)
+
+### Showing-face attack unlocks
+
+**Status:** `DECIDED` · 2026-09-12 · spec [`028-showing-face-combat.md`](./specs/028-showing-face-combat.md)
+
+Pile-only fuel made attacking compete with cards for the same tokens, so the
+correct play was always to swing (legendary HP is the only win condition).
+Energy + attributes felt better because the spends were orthogonal. Restoring
+energy is out of scope. A second roll on declare is out of scope (it would
+reroll the engine dice).
+
+**Rule.** Creature attacks do **not** `[Requires]` / `[Spend]` from
+`attributePool`. Each attack prints `[Unlock: …]`. After `ROLL_DICE` (and after
+an actions-window `[Reroll]`), the owner’s **currently showing faces** unlock
+attacks. No extra combat roll. `[Resonance]` wildcards do not cover Unlock.
+Shield / untyped showing faces contribute nothing. Opponent dice do not
+unlock your attacks. Silenced slots still show an attribute and still count.
+`[Frenzy]` extra attacks use the same current showing faces.
+
+`ATTACK` does not burn pile tokens. Card `playCost`, synthetic forge, ritual
+Active-when / Spend, and `[Requires]` on tactics are unchanged.
+
+Keyword: `[Unlock: Mechanical]`, `[Unlock: 2 x Mechanical]`,
+`[Unlock: Mechanical + Luminar]`. Do not reuse `[Requires]` for this gate.
+
+**ASSUMED:** Unlock counts **faces**, not pips (inherent extra pips, forge
+yield, and Overcharge generate do not add extra unlock pips). Dual-attribute
+creature **basics** unlock on **one** listed attribute (the JSON `unlock`
+names it). Dual-color **specials** need one showing face of each named
+attribute.
 
 ---
 

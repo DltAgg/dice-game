@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
 import { asAttackId, asCreatureDefinitionId } from "../model/ids.js";
+import { genericCount } from "../model/symbols.js";
 import { isNonEmptyRequirement } from "../rules/tokens.js";
 import {
   ALL_CREATURES,
@@ -49,41 +50,28 @@ describe("creature catalogue", () => {
     }
   });
 
-  it("gives every attack a Requires gate, a Spend, or both", () => {
+  it("gives every attack a non-empty named-attribute Unlock", () => {
     for (const creature of ALL_CREATURES) {
       if (creature.id.startsWith("creature-baseline-")) continue;
       for (const attack of creature.attacks) {
-        const hasRequires = isNonEmptyRequirement(attack.requires);
-        const hasDiscards = isNonEmptyRequirement(attack.discards);
         expect(
-          hasRequires || hasDiscards,
-          `${creature.name} ${attack.name} needs Requires and/or Spend`,
+          isNonEmptyRequirement(attack.unlock),
+          `${creature.name} ${attack.name} needs Unlock`,
         ).toBe(true);
-        if (attack.kind === "special") {
-          expect(hasRequires, `${creature.name} ${attack.name} special has a Requires gate`).toBe(
-            true,
-          );
-          expect(hasDiscards, `${creature.name} ${attack.name} special Spends`).toBe(true);
-        }
+        expect(genericCount(attack.unlock), `${creature.name} ${attack.name} Unlock has no any`).toBe(
+          0,
+        );
       }
     }
   });
 
-  it("Control attacks that Spend an attribute do not Generate that attribute", () => {
-    const control = new Set<string>(CONTROL_IDS);
-    for (const creature of ALL_CREATURES) {
-      if (!control.has(creature.id)) continue;
-      for (const attack of creature.attacks) {
-        const spent = attack.discards ?? {};
-        for (const effect of attack.followUpEffects ?? []) {
-          if (effect.type !== "generate-symbol") continue;
-          if (effect.symbol === "shield") continue;
-          expect(
-            spent[effect.symbol] ?? 0,
-            `${creature.name} ${attack.name} refunds spent ${effect.symbol}`,
-          ).toBe(0);
-        }
-      }
+  it("keeps Control unlocked basics at Strike 1 with no follow-ups", () => {
+    for (const id of CONTROL_IDS) {
+      const creature = ALL_CREATURES.find((entry) => entry.id === id);
+      expect(creature).toBeDefined();
+      const basic = creature?.attacks.find((attack) => attack.kind === "basic");
+      expect(basic?.effect).toMatchObject({ type: "damage", amount: 1 });
+      expect(basic?.followUpEffects ?? []).toEqual([]);
     }
   });
 });
@@ -94,24 +82,23 @@ describe("English creature printing", () => {
       id: asAttackId("attack-example-heavy-axe"),
       name: "Heavy Axe",
       kind: "basic",
-      requires: { martial: 2 },
+      unlock: { martial: 2 },
       range: false,
       rulesText: "[Strike 3].",
     };
     expect(formatAttackLine(attack)).toBe("Heavy Axe: [Strike 3].");
   });
 
-  it("prints Requires and Spend when an attack has both", () => {
+  it("prints Unlock from showing-face counts", () => {
     const attack: AttackDefinition = {
       id: asAttackId("attack-example-war-charge"),
       name: "War Charge",
       kind: "special",
-      requires: { martial: 1, wild: 1 },
-      discards: { martial: 1 },
+      unlock: { martial: 1, wild: 1 },
       range: false,
       rulesText: "[Strike 4].",
     };
-    expect(formatAttackFuel(attack)).toBe("[Requires: Martial + Wild] [Spend: Martial]");
+    expect(formatAttackFuel(attack)).toBe("[Unlock: Martial + Wild]");
   });
 
   it("prints attack costs as Attr + Attr", () => {

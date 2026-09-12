@@ -5,7 +5,7 @@ import {
   type PlayerId,
 } from "@server";
 
-/** Persistent seat fuel for attacks / ritual Active-when / Spend (spec `016`). */
+/** Persistent seat pile for ritual Active-when / Spend (spec `016`). Attacks use showing-face `[Unlock]`, not this pile. */
 export function AttributePile({
   state,
   playerId,

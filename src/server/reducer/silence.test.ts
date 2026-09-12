@@ -34,6 +34,7 @@ import {
   withHand,
   withPhase,
   withPile,
+  withShowingFaces,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 import { CRANK } from "../testing/tempoCatalogue.js";
@@ -121,8 +122,7 @@ const DISCOUNT_FACE = testFace({
 
 const FOLLOW_UP_ATTACK = testAttack({
   id: "attack-test-silence-follow-up",
-  requires: { mechanical: 2, any: 1 },
-  discards: { mechanical: 2 },
+  unlock: { mechanical: 2 },
   followUpEffects: [{ type: "replace-synthetic-face", faces: 1, attribute: "mechanical" }],
 });
 const FOLLOW_UP_BODY = testCreature({
@@ -262,7 +262,7 @@ describe("[Silence] instant", () => {
     expect(state.forgeDiscountThisTurn[P2] ?? 0).toBe(beforeDiscount);
     expect(state.players[P2]?.attributePool.mechanical ?? 0).toBe(beforePool + 1);
 
-    state = withPile(state, P2, 10);
+    state = withShowingFaces(withPile(state, P2, 10), P2, ["mechanical"]);
     const afterAttack = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -289,7 +289,10 @@ describe("[Silence] instant", () => {
       host: "creature",
       creatureId: attackerId,
     });
-    state = withPile(withActivePlayer(withPhase(state, "actions"), P2), P2, 10);
+    state = withShowingFaces(withPile(withActivePlayer(withPhase(state, "actions"), P2), P2, 10), P2, [
+      "mechanical",
+      "mechanical",
+    ]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",

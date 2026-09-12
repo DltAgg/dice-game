@@ -2,16 +2,11 @@ import { getCreatureDefinition } from "../../content/creatures.js";
 import type { GameError } from "../../model/errors.js";
 import type { AttackId, CreatureId, PlayerId } from "../../model/ids.js";
 import { attackDamageBonus } from "../../rules/cards.js";
+import { attackIsUnlocked } from "../../rules/attackUnlock.js";
 import { isCreatureSilenced } from "../../rules/silence.js";
 import { targetingError } from "../../rules/targeting.js";
-import {
-  attackIsFuelled,
-  isNonEmptyRequirement,
-  pileRequirementShortfall,
-} from "../../rules/tokens.js";
 import { buildAttackLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, patchCreature, type Draft } from "../draft.js";
-import { consumeRequirementWildcards, payPileSpend } from "../payments.js";
 import { drainResolution } from "../resolution.js";
 import { fireOnAttack } from "../triggers.js";
 
@@ -45,34 +40,16 @@ export function attack(
   const targeting = targetingError(draft, attackerId, attackDefinition, targetId);
   if (targeting !== null) return targeting;
 
-  // Paid from the owner's attribute pile (spec `016`). `requires` is a
-  // gate (not spent); `discards` (`[Spend]`) is checked and burned. Both
-  // may apply. Resonance wildcards cover shortfall on either. Same-turn
-  // bank → attack is legal.
-  const pile = draft.players[playerId]?.attributePool ?? {};
-  const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
-  if (!attackIsFuelled(pile, attackDefinition, wildcards.length)) {
-    return "ATTACK_NOT_FUELLED";
+  // Unlock is the owner's currently showing faces (spec `028`). No pile
+  // check, no Spend burn, no Resonance wildcards.
+  if (!attackIsUnlocked(draft, playerId, attackDefinition)) {
+    return "ATTACK_NOT_UNLOCKED";
   }
-  const requires = isNonEmptyRequirement(attackDefinition.requires)
-    ? attackDefinition.requires
-    : undefined;
-  const discards = isNonEmptyRequirement(attackDefinition.discards)
-    ? attackDefinition.discards
-    : undefined;
 
   emit(draft, { type: "attack-declared", attackerId, attackId: attackDefinition.id, targetId });
   patchCreature(draft, attackerId, {
     attacksUsedThisCombat: attacker.attacksUsedThisCombat + 1,
   });
-  if (requires !== undefined) {
-    const short = pileRequirementShortfall(pile, requires);
-    if (short > 0) consumeRequirementWildcards(draft, playerId, short);
-  }
-  if (discards !== undefined) {
-    const spendError = payPileSpend(draft, playerId, discards, attackerId);
-    if (spendError !== null) return spendError;
-  }
 
   const baseEffect = attackDefinition.effect;
   const turnBonus = draft.attackBonusThisTurn[playerId] ?? 0;

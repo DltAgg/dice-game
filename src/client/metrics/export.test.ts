@@ -11,6 +11,9 @@ describe("metrics export", () => {
     expect(exported.promptPreamble).toContain("10");
     expect(exported.promptPreamble).toContain("playable and fun");
     expect(exported.promptPreamble).toContain("attribute pile only");
+    expect(exported.promptPreamble).toContain("showing face");
+    expect(exported.promptPreamble).toContain("ATTACK_NOT_UNLOCKED");
+    expect(exported.promptPreamble).not.toContain("attack discards");
     expect(exported.promptPreamble).not.toContain("The JSON (or Markdown) that follows");
     expect(exported.matches).toHaveLength(1);
     expect(exported.matches[0]?.totalTurns).toBe(22);

@@ -36,10 +36,7 @@ Toxin / Corruption bodies support builtin Burn (`BURN_SQUAD`).
 | Passive | Standing text + `standingAbilities` (`010` / `011`). Attribute absorb
   triggers use `absorberRelation: "ally"` so they fire when the **owner banks**
   into their attribute pile (spec `016`; `self` never matches a player bank). |
-| Basic Attack | Cost icons + name + `effect` + optional `followUpEffects`. `requires`
-  is the `[Requires: …]` **gate** (pile must hold it, not spent). `discards` is
-  `[Spend: …]` (burned from the owner’s **attribute pile**). An attack may
-  print either or both. |
+| Basic Attack | `[Unlock: …]` from the owner’s showing faces (spec `028`) + name + `effect` + optional `followUpEffects`. Attacks do **not** `[Requires]` / `[Spend]` the pile. |
 | Special Attack | Same |
 
 ## Legendaries
@@ -83,40 +80,40 @@ legendaries in loadout lists.
 
 ### Mechanical + Luminar Tempo squad
 
-All three attacks pay the pile: basics `discards`, specials `requires` **and**
-`discards`. Standing passives are `on-absorb` with `absorberRelation: "ally"`
-so player-pile banking (not creature tokens) drives the engine.
+Attacks `[Unlock]` from showing faces (spec `028`): basics need one matching
+face; specials need both dice of that attribute (or Mechanical + Luminar on
+Lodestar). Standing passives are `on-absorb` with `absorberRelation: "ally"`
+so player-pile banking (not creature tokens) drives the engine. Unlocked
+basics may Strike; Heal and engine riders sit on **specials**.
 
 | Id | Name | Life | Attributes | Passive | Basic | Special |
 |---|---|---|---|---|---|---|
-| `creature-torque-wright` | Torque Wright | 14 | Mechanical | On absorb Mechanical, once per turn: `[Discount 1]` forge. | Crank — `[Strike 2]` | Retool — `[Strike 2]`. `[Reforge 1 Mechanical]` any faces on one of your dice. |
-| `creature-dawn-warden` | Dawn Warden | 13 | Luminar | On absorb Luminar, once per turn: `[Mark 1 Shield]` on your most damaged creature. | Kindle — `[Strike 2]`. `[Heal 1]`. | Vigil — `[Strike 2]`. `[Mark 2 Shield]` on an allied creature you choose. |
-| `creature-lodestar-artificer` | Lodestar Artificer **(legendary)** | 22 | Mechanical / Luminar | On absorb Mechanical, once per turn: `[Empower 1]` this creature. | Drive Shaft — `[Strike 3]` | Overdrive — `[Strike 3]`. `[Stamp]`. |
+| `creature-torque-wright` | Torque Wright | 14 | Mechanical | On absorb Mechanical, once per turn: `[Discount 1]` forge. | Crank — `[Unlock: Mechanical]`. `[Strike 2]` | Retool — `[Unlock: 2 x Mechanical]`. `[Strike 2]`. `[Reforge 1 Mechanical]` any faces on one of your dice. |
+| `creature-dawn-warden` | Dawn Warden | 13 | Luminar | On absorb Luminar, once per turn: `[Mark 1 Shield]` on one of your creatures you choose. | Kindle — `[Unlock: Luminar]`. `[Strike 2]` | Vigil — `[Unlock: 2 x Luminar]`. `[Strike 2]`. `[Mark 2 Shield]` this creature. `[Heal 1]` on one of your creatures you choose. |
+| `creature-lodestar-artificer` | Lodestar Artificer **(legendary)** | 22 | Mechanical / Luminar | On absorb Mechanical, once per turn: `[Empower 1]` this creature. | Drive Shaft — `[Unlock: Mechanical]`. `[Strike 3]` | Overdrive — `[Unlock: Mechanical + Luminar]`. `[Strike 4]`. `[Stamp]`. |
 
 Lodestar Artificer is the win target: the passive converts pile banking into
-pressure on the **enemy** legendary, and Overdrive rebuilds the die on the same
-swing — the Tempo loop of pile → forge → pressure in one body.
+pressure, and Overdrive rebuilds the die on the same swing — Tempo’s
+forge → showing-face → pressure loop.
 
 ### Arcane + Darkness Control squad
 
-Same fuel shape as Tempo: basics `discards`, specials `requires` **and**
-`discards`, standing passives on `on-absorb` with `absorberRelation: "ally"`.
-Attacks stay in the Control **2-damage + resource-rider** band — the lethality
-lives on the tactics, rituals, and faces (bible §27). Every special gates on
+Same Unlock grammar as Tempo. Control **basics are Strike 1 with no pie
+riders** so an unlocked swing is a clock, not the engine. Specials still need
+**Arcane + Darkness** showing; lethality and Insight/Draw/Drain live there
+or on cards / rituals / faces (bible §27). Every special unlocks on
 **Arcane + Darkness**, so the squad needs no third attack color.
 
 | Id | Name | Life | Attributes | Passive | Basic | Special |
 |---|---|---|---|---|---|---|
-| `creature-riftscribe-adept` | Riftscribe Adept | 14 | Arcane | On absorb Arcane, once per turn: `[Insight 1]`. | Rune Lash — `[Strike 2]`. `[Draw 1]`. | Ley Surge — `[Strike 2]`. `[Insight 2]`. |
-| `creature-gravemarrow-shade` | Gravemarrow Shade | 13 | Darkness | On absorb Darkness, once per turn: your opponent `[Mill 2]`. | Grave Reach — `[Strike 2]`. Your opponent `[Mill 2]`. | Ebb of Names — `[Strike 2]`. Your opponent `[Mill 3]`. |
-| `creature-duskthrone-oracle` | Duskthrone Oracle **(legendary)** | 21 | Arcane / Darkness | On absorb Arcane, once per turn: `[Drain 1]`. | Nightward Bolt — `[Strike 2]`. `[Insight 1]`. | Verdict of Dusk — `[Strike 2]`. `[Drain 2]`. |
+| `creature-riftscribe-adept` | Riftscribe Adept | 14 | Arcane | On absorb Arcane, once per turn: `[Insight 1]`. | Rune Lash — `[Unlock: Arcane]`. `[Strike 1]` | Ley Surge — `[Unlock: Arcane + Darkness]`. `[Strike 2]`. `[Draw 1]`. |
+| `creature-gravemarrow-shade` | Gravemarrow Shade | 13 | Darkness | On absorb Darkness, once per turn: `[Drain 1]`. | Grave Reach — `[Unlock: Darkness]`. `[Strike 1]` | Ebb of Names — `[Unlock: Darkness + Arcane]`. `[Strike 3]`. `[Mark 1 Shield]` this creature. |
+| `creature-duskthrone-oracle` | Duskthrone Oracle **(legendary)** | 21 | Arcane / Darkness | On absorb Arcane, once per turn: `[Mark 1 Shield]` on one of your creatures you choose. | Nightward Bolt — `[Unlock: Darkness]`. `[Strike 1]` | Verdict of Dusk — `[Unlock: Arcane + Darkness]`. `[Strike 2]`. `[Drain 2]` an opponent's creature to one of your creatures. |
 
-Duskthrone Oracle is the win target and the reason Control can close: the
-passive turns Arcane banking into reach plus sustain every turn, and Verdict of
-Dusk is a four-point swing at the enemy legendary out of one attack.
-Riftscribe draws and Insights; Gravemarrow drives the mill clock. Spending
-pile on a Control attack is a real cost — basics and specials do **not**
-`[Generate]` the attribute they `[Spend]`.
+Duskthrone Oracle is the win target: Verdict of Dusk is the dual-showing
+closer. Riftscribe Insights on absorb and draws on the special; Gravemarrow
+Drains on absorb. Unlocked Control basics do **not** carry Insight / Mill /
+Draw / Drain.
 
 ## Catalogue (Slow game test)
 

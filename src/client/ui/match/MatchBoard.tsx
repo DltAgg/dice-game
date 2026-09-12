@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  attackIsFuelled,
+  attackIsUnlocked,
   basicAttackOf,
   canAbsorbSymbol,
   canResolvePlayEffects,
@@ -273,7 +273,7 @@ export function MatchBoard() {
       const def = getCreatureDefinition(attacker.definitionId);
       const basic = def !== undefined ? basicAttackOf(def) : undefined;
       if (basic === undefined) return;
-      if (!attackIsFuelled(state.players[pending.controllerId]?.attributePool ?? {}, basic)) return;
+      if (!attackIsUnlocked(state, pending.controllerId, basic)) return;
       if (!legalTargetsFor(state, pending.creatureId, basic).includes(creature.id)) return;
       tryDispatch({
         type: "RESOLVE_OPTIONAL_BONUS_ATTACK",

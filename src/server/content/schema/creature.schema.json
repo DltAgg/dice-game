@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dice-skirmish.local/schema/creature.schema.json",
   "title": "CreatureDefinition",
-  "description": "One creature JSON document (src/server/content/creatures/<creature-id>.json). Creatures have no ATK/DEF — an attack is a pile cost plus an effect. Every legal squad has exactly one legendary.",
+  "description": "One creature JSON document (src/server/content/creatures/<creature-id>.json). Creatures have no ATK/DEF — an attack is a showing-face Unlock plus an effect. Every legal squad has exactly one legendary.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id", "name", "life", "attributes", "passiveRulesText", "attacks"],
@@ -37,7 +37,7 @@
       "items": { "$ref": "defs.schema.json#/$defs/standingTrigger" }
     },
     "attacks": {
-      "description": "Printed attacks. Typically one basic and one special. Each has kind, optional requires / discards, range, rulesText, optional effect and followUpEffects.",
+      "description": "Printed attacks. Typically one basic and one special. Each has kind, required unlock (named attributes, no any), range, rulesText, optional effect and followUpEffects. Attack requires / discards are forbidden.",
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "defs.schema.json#/$defs/attackDefinition" }

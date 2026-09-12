@@ -17,7 +17,7 @@ JSON documents must satisfy `src/server/content/schema/*.schema.json`
 (editor `$schema` plus `catalogue.schema.test.ts`). Those schemas spell out
 region fields (`ritual.activeWhen` / `spend` / `effects` /
 `standingAbilities`, `equipment.mayTargetOpponent` / `abilities`, overload
-`onRoll` / `onAbsorb`, attack `requires` / `discards`) and both AST `op`
+`onRoll` / `onAbsorb`, attack `unlock`) and both AST `op`
 nodes and legacy `type` effects.
 
 Id constants and loaders stay in `cards.ts` / `creatures.ts` / `faces.ts`.
@@ -43,9 +43,11 @@ Rules:
   Do not print another attribute’s signature verb (scry, mill, Luminar `[Prevent]`
   on non-reactions, opponent-die, toxin markers, ally swap, own-die reconstruction,
   `[Frenzy]`). `[Prevent]` / `grant-attack-prevent` is **reaction-only** (spec `009`).
-  Attribute fuel is the **player pile** — see `attribute-pile.md`.
+  Attribute fuel is the **player pile** for cards, rituals, and synthetic forge
+  — see `attribute-pile.md`. Creature attacks use `[Unlock]` vs showing faces
+  (spec `028`), not pile `[Requires]` / `[Spend]`.
   Mechanic × archetype feel: `docs/MECHANIC_ARCHETYPES.md` (do not reprint
-  `RETARGETED` leaks such as attack-spend `[Generate]`).
+  `RETARGETED` leaks such as attack follow-up `[Generate]`).
 - **Live JSON** in `src/server/content/{cards,faces,creatures}/` is catalogue
   truth. Spec `002` tables of missing cards are not a pattern. Do not clone
   `forge.faces: 1` stickers or `[Spend] X, [Generate] Y` converter slots

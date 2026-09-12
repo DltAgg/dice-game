@@ -27,34 +27,26 @@
       "id": "attack-riftscribe-adept-rune-lash",
       "name": "Rune Lash",
       "kind": "basic",
-      "discards": {
+      "unlock": {
         "arcane": 1
       },
       "range": false,
-      "rulesText": "[Strike 2].\n[Insight 1].",
+      "rulesText": "[Strike 1].",
       "effect": {
         "type": "damage",
-        "amount": 2,
+        "amount": 1,
         "target": {
           "kind": "declared-target"
         }
-      },
-      "followUpEffects": [
-        {
-          "type": "peek-deck-optional-bottom"
-        }
-      ]
+      }
     },
     {
       "id": "attack-riftscribe-adept-ley-surge",
       "name": "Ley Surge",
       "kind": "special",
-      "requires": {
-        "arcane": 2,
-        "any": 1
-      },
-      "discards": {
-        "arcane": 2
+      "unlock": {
+        "arcane": 1,
+        "darkness": 1
       },
       "range": false,
       "rulesText": "[Strike 2].\n[Draw 1].",

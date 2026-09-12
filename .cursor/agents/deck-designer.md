@@ -29,7 +29,7 @@ strategic vocabulary: three creatures, a tactics deck, and a face deck
 1. `AGENTS.md` and `TOOLS.md`
 2. `.cursor/skills/author-content/design.md` — attribute identities, archetypes, cost bands
 3. `docs/MECHANIC_ARCHETYPES.md` — mechanic × window × deck-style feel (playtest
-   leaks: e.g. attack-fuel `[Generate]` plays as Aggro even on Control)
+   leaks: e.g. attack follow-up `[Generate]` plays as Aggro even on Control)
 4. `.cursor/skills/author-content/attribute-pile.md` — pile gates, banking, deck fuel planning
 5. Bible §§8, 12, 27–30, 34 (`competitive_dice_game_agent_bible.md`)
 6. `docs/specs/002-card-layer.md` (archetype table + Aggro/Control list identity)
@@ -53,7 +53,7 @@ treat unwired clauses as live constructed tools.
   - a card with **no purpose in any build** (orphan)
   - a card that **fights its attribute’s identity** (bible §28–29)
   - a card whose **window** makes the list feel like another archetype
-    (`docs/MECHANIC_ARCHETYPES.md` — e.g. attack-spend `[Generate]` on Control)
+    (`docs/MECHANIC_ARCHETYPES.md` — e.g. attack follow-up `[Generate]` on Control)
 - Keep builtin Aggro (`PROTOTYPE_*`) and Control lists coherent. Do not dump
   a card into both without an identity reason.
 - There is **no** builtin Combo loadout until the user asks (002).
@@ -111,8 +111,9 @@ When reviewing a card or the catalogue, answer:
 5. **Engine-builder test** — unflavored burn with no forge/engine touch is usually a miss (`design.md`). Engine-converted Control damage is **not** a miss.
 6. **Loadout fit** — can this list’s dice plan and face deck **bank** enough of
    each attribute into the pile for its `[Active when]` / `[Spend]` rituals,
-   tactic `[Requires]` / forge costs, and attack fuel? (Spec `016` — fuel is
-   player-held, not on creatures.)
+   tactic `[Requires]` / forge costs? (Spec `016` — pile is player-held, not
+   on creatures.) Creature attacks need matching **showing faces** (`[Unlock]`,
+   spec `028`) — they do not spend the pile.
 
 Do not silently rewrite the card. Write a **brief for `card-designer`**:
 

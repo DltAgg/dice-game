@@ -33,9 +33,8 @@
       "id": "attack-lodestar-artificer-drive-shaft",
       "name": "Drive Shaft",
       "kind": "basic",
-      "discards": {
-        "mechanical": 1,
-        "luminar": 1
+      "unlock": {
+        "mechanical": 1
       },
       "range": false,
       "rulesText": "[Strike 3].",
@@ -51,12 +50,7 @@
       "id": "attack-lodestar-artificer-overdrive",
       "name": "Overdrive",
       "kind": "special",
-      "requires": {
-        "mechanical": 1,
-        "luminar": 1,
-        "any": 2
-      },
-      "discards": {
+      "unlock": {
         "mechanical": 1,
         "luminar": 1
       },

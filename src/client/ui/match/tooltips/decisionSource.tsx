@@ -1,4 +1,5 @@
 import {
+  formatAttackFuel,
   formatAttackLine,
   formatEffectRegion,
   formatFaceKind,
@@ -266,7 +267,10 @@ export function ChainLinkHover({
       <NameInspectHover name={title} negated={link.negated}>
         <p className="text-sm font-medium text-stone-100">{title}</p>
         {attack !== undefined && (
-          <p className="mt-1 text-xs text-stone-400">{formatAttackLine(attack)}</p>
+          <p className="mt-1 text-xs text-stone-400">
+            {formatAttackLine(attack)}
+            {formatAttackFuel(attack) !== "" ? ` · ${formatAttackFuel(attack)}` : ""}
+          </p>
         )}
         {attack?.rulesText !== undefined && attack.rulesText !== "" && (
           <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">

@@ -28,7 +28,7 @@
       "id": "attack-torque-wright-crank",
       "name": "Crank",
       "kind": "basic",
-      "discards": {
+      "unlock": {
         "mechanical": 1
       },
       "range": false,
@@ -45,11 +45,7 @@
       "id": "attack-torque-wright-retool",
       "name": "Retool",
       "kind": "special",
-      "requires": {
-        "mechanical": 2,
-        "any": 1
-      },
-      "discards": {
+      "unlock": {
         "mechanical": 2
       },
       "range": false,

@@ -35,7 +35,6 @@ import {
   withPhase,
   withPile,
   withShields,
-  withTokens,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 import { DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
@@ -300,11 +299,11 @@ describe("While showing", () => {
 
     const attackerId = creatureIdAt(rolled, P1, 2);
     const targetId = creatureIdAt(rolled, P2, 0);
-    const armed = withTokens(withShields(withPhase(rolled, "actions"), targetId, 1), attackerId, {
-      mechanical: 1,
-      luminar: 1,
-      martial: 1,
-    });
+    const armed = withDie(
+      withShields(withPhase(rolled, "actions"), targetId, 1),
+      dieIdOf(rolled, 1),
+      { rolledSlotIndex: 0 },
+    );
     const hit = expectOk(
       advance(armed, { type: "ATTACK", playerId: P1, attackerId, attackId: DRIVE_SHAFT, targetId }),
     );

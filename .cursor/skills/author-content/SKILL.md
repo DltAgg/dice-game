@@ -5,7 +5,7 @@ description: >-
   creatures) as typed data in src/server/content. Use when occupying a new
   catalogue slot, adding print/Figma/CSV text, or when the user mentions
   catalogue, forge, overload, ritual, equipment, face deck, attribute pile,
-  Requires/Spend, uniqueness, deferred effects, or playtest “felt like the
+  Requires/Spend, Unlock, uniqueness, deferred effects, or playtest “felt like the
   wrong archetype.” Do not use to clone the last card or to reprint Forge-1
   Spend/Generate glue.
 ---
@@ -21,7 +21,9 @@ translating print. Design canon: `competitive_dice_game_agent_bible.md`.
 Set craft (uniqueness, forge, bridges, generic reach): [design-craft.md](design-craft.md).
 Philosophy and attribute identities: [design.md](design.md).
 **Attribute pile (fuel, Absorb, gates):** [attribute-pile.md](attribute-pile.md) —
-read before editing rituals, `onAbsorb`, attack costs, or standing `on-absorb`.
+read before editing rituals, `onAbsorb`, header / forge costs, or standing `on-absorb`.
+Creature attacks: [creatures.md](creatures.md) + spec `028` (`[Unlock]` from
+showing faces — not pile).
 Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) — new/edited
 `rulesText` uses `[Mark N X]`, `[Empower N]`, etc. Do not mint Dose/Envenom-style
 verbs for a new token.
@@ -35,7 +37,7 @@ playtest retargets a leak.
 |---|---|---|
 | Tactic + ritual (hand) | `src/server/content/cards/<card-id>.json` | `docs/specs/002-card-layer.md` |
 | Face cards (dice) | `src/server/content/faces/<face-id>.json` | `docs/specs/004-face-cards.md` |
-| Creatures | `src/server/content/creatures/<creature-id>.json` | `docs/specs/003-creature-cards.md` |
+| Creatures | `src/server/content/creatures/<creature-id>.json` | `docs/specs/003-creature-cards.md`, `028-showing-face-combat.md` |
 | Builtin loadouts | `src/server/content/loadouts/<archetype>.json` | `docs/specs/019-content-json.md` |
 
 Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
@@ -78,8 +80,9 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
 8. **Printed 1-token `playCost` is exceptional.** Do not author `playCost`
    totaling 1 token as cheap cycle. Prefer 2+ of the card’s attribute.
    Gates are `[Requires]` only (`effect.requires` holds; it does not burn).
-   Extra burn: raise `playCost`, `ritual.spend`, or attack `discards` — see
-   [attribute-pile.md](attribute-pile.md). `[Discount]` cuts header Spend
+   Extra burn: raise `playCost` or `ritual.spend` — see
+   [attribute-pile.md](attribute-pile.md). Creature attacks use `[Unlock]`
+   (spec `028`), not pile `discards`. `[Discount]` cuts header Spend
    only. Natural forge does not burn `playCost`; synthetic forge does.
    Cheaper plays come from `[Discount]`, not a roster of 1-token cards.
 9. **Do not clone the last card.** Audit live JSON first. Default
@@ -140,7 +143,7 @@ Card Progress:
 - Design / identities / exclusive verbs: [design.md](design.md)
 - Tactics + rituals: [tactics.md](tactics.md)
 - Faces / dice: [faces.md](faces.md)
-- Creatures: [creatures.md](creatures.md)
+- Creatures: [creatures.md](creatures.md) (attacks: `[Unlock]`, spec `028`)
 - CSV column order: [csv-tactics.md](csv-tactics.md)
 
 ## Id conventions

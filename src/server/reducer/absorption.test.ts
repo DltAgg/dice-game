@@ -11,6 +11,7 @@ import {
   withPhase,
   withSymbols,
 } from "../testing/scenario.js";
+import { CRANK } from "../testing/tempoCatalogue.js";
 import { advanceResolvingChain as advance } from "../testing/scenario.js";
 
 const roll = { type: "ROLL_DICE", playerId: P1 } as const;
@@ -96,7 +97,7 @@ describe("attribute pile absorb (spec 016)", () => {
     expect(Object.values(state.symbols)).toHaveLength(0);
   });
 
-  it("same-turn bank enables an attack that requires that attribute", () => {
+  it("same-turn bank does not unlock attacks", () => {
     let state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial", "martial"]);
     for (const pip of Object.values(state.symbols)) {
       state = expectOk(
@@ -106,17 +107,15 @@ describe("attribute pile absorb (spec 016)", () => {
     expect(state.players[P1]?.attributePool.martial).toBe(2);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
-    // Minotaur basic typically needs martial — use whatever attack is fuelled.
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
       attackerId,
-      attackId: "attack-war-minotaur-basic" as never,
+      attackId: CRANK,
       targetId,
     });
-    // May fail if attack id wrong — assert pool was banked either way above.
-    void result;
-    expect(state.players[P1]?.attributePool.martial).toBe(2);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_UNLOCKED");
   });
 
   it("auto-banks rolled attributes into the pile without naming a creature", () => {

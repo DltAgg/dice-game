@@ -136,8 +136,9 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    so does retain). It is spent on **your** next roll phase as the turn
    player.
 2. **Actions.** In any order you may: absorb Shield onto a creature, pay
-   `[Spend]` from your pile (and meet `[Requires]` gates), attack, play, forge,
-   activate a **ready** ritual, retain/release dice, or end the turn.
+   `[Spend]` from your pile (and meet `[Requires]` gates), declare an unlocked
+   attack, play, forge, activate a **ready** ritual, retain/release dice, or
+   end the turn.
 
 `[Reroll]` rolls **that one die** again during **actions** (you do not return
 to the roll phase). The **new** showing face fires On roll (and overloads on
@@ -191,11 +192,12 @@ not bank. The other die is untouched.
 
 `[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
 `[Spend: …]` **burns** from your pile. Resonance wildcards may cover shortfall
-on either. An attack or card may print both. Costs may name attributes and/or
+on either. A card may print both. Costs may name attributes and/or
 **Any** (generic pile tokens of any attribute — not Shield, not a ninth
 colour). Named pips are reserved first; leftover tokens cover Any. Unabsorbed
 turn-pool symbols expire at end of turn. There is no “store a symbol.” The only
-way to keep a **die result** across a roll is **retain**.
+way to keep a **die result** across a roll is **retain**. Creature attacks use
+`[Unlock]` from showing faces (§13), not this pile.
 
 Shield absorb still names a creature (below).
 
@@ -205,7 +207,8 @@ Shield absorb still names a creature (below).
 
 - **Attribute** pips from a **roll** or **effect** bank into **your attribute
   pile** automatically (usable pips only; On absorb fires). The pile persists
-  across turns until spent or removed. Same-turn attack after banking is legal.
+  across turns until spent or removed. Same-turn play or forge after banking
+  is legal. Attacks do not spend the pile.
 - Each **On absorb** hook (standing ability, face, or overload) fires **at
   most once per turn** per source, so generated pips cannot re-trigger the same
   absorb effect in a loop.
@@ -259,8 +262,8 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   also get that bank — Discount 1 on a 2-cost Mechanical synthetic with 1 pip
   in the pile spends that pip.
   `[Discount]` never reduces a `[Requires]` gate.
-- Attacks (`[Requires]` gate and `[Spend]` discards) and ritual Active-when /
-  activate Spend also use the pile (see §6). A card may print header
+- Ritual Active-when / activate Spend also use the pile (see §6). Attacks use
+  showing-face `[Unlock]` (§13), not the pile. A card may print header
   `[Spend]` **and** a `[Requires]` gate; tokens stay unless Spend also names them.
 - Reactions pay pile costs during a reaction window.
 - Turn end is voluntary (`END_TURN`) or from effects that say so.
@@ -280,9 +283,9 @@ During actions (or as a legal reaction — §15):
 | Ritual | Enters the engine area (see §10). |
 
 `[Spend]` burns from your **attribute pile** (wildcards may cover shortfall).
-`[Requires]` on an attack **or on a card’s effect** is a gate: the pile must
-hold it (wildcards may cover), and those tokens stay unless a `[Spend]` also
-names them. `[Discount]` reduces header Spend only — never the Requires gate.
+`[Requires]` on a card’s effect is a gate: the pile must hold it (wildcards
+may cover), and those tokens stay unless a `[Spend]` also names them.
+`[Discount]` reduces header Spend only — never the Requires gate.
 Forge does not check a card’s effect `[Requires]` (play vs forge is exclusive).
 
 Discard-from-hand effects **draw first**, then the player **names** which
@@ -444,14 +447,22 @@ face) fires again.
 
 - Each living creature may attack **once per turn** during actions, unless an
   effect grants extra attacks (`[Frenzy]` — Wild exclusive).
-- Fuel is the **owner’s attribute pile**. An attack may print a **`[Requires: …]`
-  gate** (must hold, not spent), a **`[Spend: …]` cost** (burned on declare),
-  or **both**. Basics usually Spend only. Specials typically Require a mix and
-  Spend one of those attributes.
-- Because banking is immediate, you may attack on the same turn you absorb
-  the fuel.
-- Declaring an attack opens a reaction window (§15). Prevent may answer;
-  negate may not.
+- **Unlock, not fuel.** An attack prints **`[Unlock: …]`** (named attributes
+  only — no Any). After `ROLL_DICE` (and after an actions-window `[Reroll]`),
+  look at **your currently showing faces**. Each owned die whose showing face
+  is an attribute counts **+1** of that attribute (faces, not extra pips).
+  Shield / untyped / a die with no showing slot counts nothing. Opponent dice
+  never unlock your attacks. A silenced showing slot still displays its
+  attribute and still counts. `[Resonance]` wildcards and `[Discount]` do not
+  apply. Declaring does **not** check or burn your attribute pile.
+- **Match.** The attack is unlocked when your showing-attribute counts meet
+  every named count (AND). `[Unlock: Mechanical]` needs one Mechanical face;
+  `[Unlock: 2 x Mechanical]` needs two; `[Unlock: Mechanical + Luminar]` needs
+  one of each. Extra `[Frenzy]` attacks use the **current** showing faces (no
+  extra roll on declare). `[Stamp]` does not change the showing face, so
+  unlocks stay.
+- Declaring an unlocked attack opens a reaction window (§15). Prevent may
+  answer; negate may not.
 - Damage apply order: **`[Reduce]` → prevention → Shield → Life**.
 - `[Reduce N]` subtracts N from that incoming hit (minimum 0) before Prevent
   and Shield. It applies to any damage that hits the creature, not only

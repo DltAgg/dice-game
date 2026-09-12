@@ -460,7 +460,7 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       id: "low-lethality",
       severity: "high",
       title: "Low lethality — matches may not be able to close",
-      detail: `Mean HP damage per turn is ${agg.meanDamagePerTurn.toFixed(2)} (flag below ${String(LOW_LETHALITY_DAMAGE_PER_TURN)}). Check absorb-to-attack delay, prevent/shield, and attack fueling — first turns are expected to arm rather than swing.`,
+      detail: `Mean HP damage per turn is ${agg.meanDamagePerTurn.toFixed(2)} (flag below ${String(LOW_LETHALITY_DAMAGE_PER_TURN)}). Check showing-face Unlock vs prevent/shield — first turns are expected to arm rather than swing.`,
       evidence: { meanDamagePerTurn: Number(agg.meanDamagePerTurn.toFixed(2)) },
     });
   }

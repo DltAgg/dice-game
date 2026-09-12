@@ -169,6 +169,10 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Keep retainable die across next roll.",
   },
   {
+    test: (body) => /^Unlock:/i.test(body),
+    reminder: "Declare this attack only while your showing faces meet this. Faces, not pile.",
+  },
+  {
     test: (body) => /^Requires:/i.test(body),
     reminder: "Pile must hold this. Not spent.",
   },

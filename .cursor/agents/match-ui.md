@@ -61,7 +61,10 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
 ## Hard rules
 
 - **Never** reimplement rules in React. No second legality engine. Query
-  `src/server` (`legalTargetsFor`, `validateLoadout`, formatters, etc.).
+  `src/server` (`legalTargetsFor`, `validateLoadout`, `attackIsUnlocked`,
+  `showingAttributeCounts`, `formatAttackFuel`, other formatters, etc.).
+  Creature attacks print `[Unlock]` from showing faces (spec `028`); do not
+  show pile `[Requires]` / `[Spend]` as attack fuel.
 - Loadout legality is `validateLoadout` in `src/server/rules/loadout.ts` (via
   `validateSavedDeck`). UI may show the reason; it must not invent 40–50 / ≤3
   copy / face-deck rules.

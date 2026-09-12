@@ -1,7 +1,7 @@
 /** Playtest flags — not bible numbers. Retune here, not in the reducer. */
 export const BASELINE_TURNS = 10;
 /**
- * Opening turns are expected to arm (absorb fuel) rather than swing.
+ * Opening turns are expected to arm (matching showing faces) rather than swing.
  * Idle/stall after this window counts against the drag score.
  */
 export const ARMING_TURN_WINDOW = 2;

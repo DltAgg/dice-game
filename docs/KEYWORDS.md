@@ -42,7 +42,7 @@ shared; the argument follows attribute exclusives.
 
 | Layer | What belongs here | Example |
 |---|---|---|
-| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
+| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]`, `[Unlock]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]`, `[Bounce X]` |
 | **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Reduce N]`, `[Prevent]`, `[Silence]`, `[Convert N]`, `[Desynthesize]` |
 
@@ -97,7 +97,8 @@ Remove up to N of token X. Legal to resolve if none remain.
 
 <!--
 Engine: remove-shield | remove-toxin-deal-damage (`amount` fixed). Attribute
-piles are spent with [Spend] / attack discards, not Strip. [Drain N] is life
+piles are spent with [Spend], not Strip. Attacks use [Unlock] from showing
+faces (spec `028`), not the pile. [Drain N] is life
 transfer. Do not mint Detonate / Rend as keywords.
 -->
 
@@ -228,9 +229,10 @@ These are not effect replacements.
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
 | `[Overcharge]` | Third exclusive use of a hand card: spend it onto an attribute face card on your dice |
-| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent). May include **Any** (generic tokens of any attribute). |
+| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent). May include **Any** (generic tokens of any attribute). Not used on creature attacks. |
 | `[Active when: …]` | One-time ritual unlock vs owner’s attribute pile (not repeated in the effect box). May include **Any**. |
-| `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate). May include **Any**. |
+| `[Spend: …]` | Burn from your attribute pile (header `playCost`, ritual activate). May include **Any**. Not used on creature attacks. |
+| `[Unlock: …]` | Creature-attack gate vs **your currently showing faces** (named attributes only — no Any, no Resonance wildcards). `[Unlock: Mechanical]`, `[Unlock: 2 x Mechanical]`, `[Unlock: Mechanical + Luminar]`. Faces, not pips. Shield / opponent dice do not count. Silenced showing slots still count. |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | `On roll:` `While showing:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…”. `On roll:` fires when that face shows after a shared `ROLL_DICE` (both seats each roll phase, including on the opponent’s turn). `While showing:` is a continuous stance on the showing face, not a second On-roll trigger. |
@@ -274,6 +276,7 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Take life from an enemy into an ally | `[Drain N]` |
 | Hold in your pile, don’t spend | `[Requires: Martial + Wild]` or `[Requires: 2 x Martial]` or `[Requires: Arcane + 2 x Any]` |
 | Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` or `[Spend: Arcane + 2 x Any]` |
+| Unlock an attack from showing faces | `[Unlock: Mechanical]` or `[Unlock: 2 x Mechanical]` or `[Unlock: Mechanical + Luminar]` |
 | Pool pip | `[Generate N Arcane]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
 | Swap any faces on one of your dice for synthetics | `[Reforge N Mechanical]` |

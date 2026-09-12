@@ -98,10 +98,10 @@ export interface ForgeRegion {
  * never reduces this gate. Forge does not check `effect.requires`.
  *
  * Rituals print `[Active when: …]` for `ritual.activeWhen` and `[Spend: …]`
- * for `ritual.spend`. Attack `[Requires: …]` is the same kind of gate on
- * `AttackDefinition.requires`. Extra burn that is not a gate belongs in
- * `playCost` / attack `discards` / `ritual.spend`. Any of these maps may
- * include `any` generic pips (`{ arcane: 1, any: 2 }`).
+ * for `ritual.spend`. Creature attacks use showing-face `[Unlock]`
+ * (`AttackDefinition.unlock`, spec `028`), not this pile gate. Extra burn
+ * that is not a gate belongs in `playCost` / `ritual.spend`. Any of these
+ * maps may include `any` generic pips (`{ arcane: 1, any: 2 }`).
  */
 export interface EffectRegion {
   readonly requires?: SymbolRequirement;

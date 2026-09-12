@@ -2,6 +2,7 @@ import type { Attribute } from "@server";
 import {
   attackCostOf,
   basicAttackOf,
+  formatAttackFuel,
   formatAttackLine,
   primaryAttribute,
   specialAttackOf,
@@ -143,6 +144,7 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
           <AttackRow
             text={formatAttackLine(basic)}
             icons={costIcons(attackCostOf(basic))}
+            unlock={formatAttackFuel(basic)}
             className="mt-[0.55em]"
           />
         ) : null}
@@ -151,6 +153,7 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
           <AttackRow
             text={formatAttackLine(special)}
             icons={costIcons(attackCostOf(special))}
+            unlock={formatAttackFuel(special)}
             className="mt-[0.45em]"
           />
         ) : null}
@@ -162,10 +165,12 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
 function AttackRow({
   text,
   icons,
+  unlock,
   className = "",
 }: {
   text: string;
   icons: readonly { attribute: Attribute; key: string }[];
+  unlock: string;
   className?: string;
 }) {
   const colon = text.indexOf(": ");
@@ -174,7 +179,11 @@ function AttackRow({
 
   return (
     <div className={`flex items-start gap-[0.35em] ${className}`}>
-      <div className="flex shrink-0 flex-wrap gap-[0.12em] pt-[0.1em]">
+      <div
+        className="flex shrink-0 flex-wrap gap-[0.12em] pt-[0.1em]"
+        title={unlock === "" ? undefined : unlock}
+        aria-label={unlock === "" ? undefined : unlock}
+      >
         {icons.map((icon) => (
           <img
             key={icon.key}

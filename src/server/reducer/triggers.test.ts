@@ -25,7 +25,7 @@ import {
   withPile,
   withHand,
   withPhase,
-  withTokens,
+  withShowingFaces,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 import { CRANK, DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
@@ -239,7 +239,7 @@ const EMPOWER_ON_MECHANICAL = testCreature({
   attacks: [
     testAttack({
       id: "attack-test-trigger-drive",
-      discards: { mechanical: 1, luminar: 1, any: 1 },
+      unlock: { mechanical: 1 },
       effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
     }),
   ],
@@ -247,7 +247,7 @@ const EMPOWER_ON_MECHANICAL = testCreature({
 
 const HEAL_KINDLE = testAttack({
   id: "attack-test-trigger-heal-kindle",
-  discards: { luminar: 2 },
+  unlock: { luminar: 1 },
   followUpEffects: [{ type: "heal", amount: 1, target: { kind: "choose-ally" } }],
 });
 const HEALER = testCreature({
@@ -470,7 +470,7 @@ describe("on-take-damage reduce", () => {
       activePlayerId: P2,
       phase: "actions",
     };
-    state = withTokens(state, attackerId, { mechanical: 1, martial: 1 });
+    state = withShowingFaces(state, P2, ["mechanical"]);
 
     const after = expectOk(
       advance(state, {
@@ -624,7 +624,7 @@ describe("on-attack follow-ups", () => {
     const woundedId = creatureIdAt(match, P1, 1);
     let state = withDamage(withPhase(match, "actions"), woundedId, 2);
     const attackerId = creatureIdAt(state, P1, 1);
-    state = withTokens(state, attackerId, { luminar: 2 });
+    state = withShowingFaces(state, P1, ["luminar"]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -643,7 +643,7 @@ describe("on-attack follow-ups", () => {
     let state = withPhase(newMatch(), "actions");
     const attackerId = creatureIdAt(state, P1, 2);
     const targetId = creatureIdAt(state, P2, 0);
-    state = withTokens(state, attackerId, { mechanical: 1, luminar: 1, martial: 1 });
+    state = withShowingFaces(state, P1, ["mechanical"]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",

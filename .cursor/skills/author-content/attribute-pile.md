@@ -11,7 +11,7 @@ Content migration notes (faces / rituals / equipment): [`docs/specs/016-content-
 | Pool | Where | Lifetime | Used for |
 |---|---|---|---|
 | **Turn symbol pool** | `GameState.symbols` | Current turn; unbanked pips expire at EOT | Roll display, manual absorb of leftovers, Shield absorb target selection |
-| **Attribute pile** | `PlayerState.attributePool` | Persists across turns until spent or removed | `[Requires]`, `[Active when]`, `[Spend]`, attack `requires` / `discards`, header `playCost` (play + synthetic forge) |
+| **Attribute pile** | `PlayerState.attributePool` | Persists across turns until spent or removed | `[Requires]`, `[Active when]`, `[Spend]`, header `playCost` (play + synthetic forge). **Not** creature attacks — those use `[Unlock]` vs showing faces (spec `028`) |
 
 Usable attribute pips from a **roll** or **effect** **auto-bank** into the pile
 after on-roll effects resolve. Manual `ABSORB_SYMBOL` on a leftover turn-pool
@@ -23,15 +23,15 @@ owned creature** (grants Shield counters — not pile fuel).
 | Printed | Engine | Burns? |
 |---|---|---|
 | Absorb (attribute) | Bank into **your attribute pile** | No — keep prefix **`On absorb:`** (do not invent `On bank:`) |
-| `[Requires: …]` | Attack `requires` **and** card `effect.requires` | **No** — hold-gate (must hold). Spec `002` Twin Cam / Tooling Order / Die Punch / Recast stay gates |
+| `[Requires: …]` | Card `effect.requires` | **No** — hold-gate (must hold). Spec `002` Twin Cam / Tooling Order / Die Punch / Recast stay gates. **Not** creature attacks |
 | `[Active when: …]` | Ritual `activeWhen` | **No** — one-time unlock from owner’s pile. Not in `rulesText`; UI prints it from the field |
-| `[Spend: …]` | Header `playCost` (play + synthetic forge), attack `discards`, ritual `spend`. May include `any` generic pips. | **Yes** |
+| `[Spend: …]` | Header `playCost` (play + synthetic forge), ritual `spend`. May include `any` generic pips. | **Yes** |
 | Ritual `spend` | Optional pile burn on `ACTIVATE_RITUAL` | Yes — often equals `activeWhen` on high-swing instants |
 | Header `playCost` | `CardDefinition.playCost` | Yes on play/place and synthetic forge; natural forge does **not** burn it (`docs/RULEBOOK.md` §8) |
 
-**Gates are never Spend.** `[Discount]` cuts header Spend only — never a Requires / Active-when gate. Extra burn that is not a gate → raise `playCost`, or use `ritual.spend` / attack `discards`. Do **not** mint `effect.spend` or a new opcode. Attack specials: `requires` = gate, `discards` = Spend — do not put a dual-color mix in `discards` as a fake gate.
+**Gates are never Spend.** `[Discount]` cuts header Spend only — never a Requires / Active-when gate. Extra burn that is not a gate → raise `playCost`, or use `ritual.spend`. Do **not** mint `effect.spend` or a new opcode. Creature attacks use `[Unlock]` from showing faces (spec `028`); they do **not** pile `requires` / `discards`. Do not put a dual-color mix in `playCost` as a fake gate.
 
-Wildcards (`[Resonance]`) may cover shortfall on gates and spends for the turn.
+Wildcards (`[Resonance]`) may cover shortfall on **pile** gates and spends for the turn. They do **not** apply to attack `[Unlock]`.
 `any` on a requirement is a **generic count** of leftover pile tokens (any
 attribute, after named pips). Print `[Spend: Arcane + 2 x Any]`. It is not a
 ninth attribute, not Shield, and not an OR-cost.
@@ -83,13 +83,13 @@ passives. Proactive Luminar mitigation → `[Mark N Shield]` / `[Heal]`.
 
 ## Authoring checklist (card-designer)
 
-- [ ] Header / attack costs use pile grammar (`requires` / `effect.requires` = `[Requires]` gate; `playCost` / `discards` / `ritual.spend` = `[Spend]`)
+- [ ] Header costs use pile grammar (`effect.requires` = `[Requires]` gate; `playCost` / `ritual.spend` = `[Spend]`). Attacks use `[Unlock]` (spec `028`), not this grammar
 - [ ] Ritual `activeWhen` is a pile gate; add `spend` only when activate should burn fuel
 - [ ] `On absorb:` clauses assume **bank**, not “put token on creature”
 - [ ] Equipment / continuous ritual `on-absorb` uses `ally` when the clause is “when you bank”
 - [ ] Wild splash uses `[Frenzy]`, `[Generate]`, or `[Drain]`
 - [ ] `[Prevent]` only on Luminar **reactions** — not faces, absorb, or standing
-- [ ] Creature attack print says “in your pile” if editing English (not “absorbed on creature”)
+- [ ] Creature attack print uses `[Unlock: …]` vs showing faces (spec `028`), not “in your pile”
 - [ ] Dual-attribute fuel is for gates/spends that **play both identities**, not
       `[Spend] X, [Generate] Y` converters ([design-craft.md](design-craft.md))
 
@@ -108,7 +108,7 @@ passives. Proactive Luminar mitigation → `[Mark N Shield]` / `[Heal]`.
 | Roll auto-bank | `src/server/reducer/rollBank.ts` |
 | Manual absorb | `src/server/reducer/commands/absorb.ts` |
 | Ritual ready / spend | `src/server/reducer/zones.ts` (`refreshRitualOrientations`) |
-| Attack fuel | `src/server/rules/cards.ts` / attack declare in `reduce.ts` |
+| Attack unlock (not pile) | `src/server/rules/attackUnlock.ts`, `commands/attack.ts` (spec `028`) |
 | Absorb triggers | `src/server/reducer/triggers.ts` (`AbsorbAbsorber`, `queueAbsorbTriggers`) |
 | State | `PlayerState.attributePool` in `src/server/model/state.ts` |
 

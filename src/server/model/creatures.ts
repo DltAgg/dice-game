@@ -14,11 +14,13 @@ import type { SymbolRequirement } from "./symbols.js";
 export type BattlefieldPosition = "frontline" | "back";
 
 /**
- * Bible §7 and §24: creatures have no ATK/DEF. An attack is a cost plus an
- * effect, and the interesting question is whether the cost can be paid.
+ * Bible §7 and §24: creatures have no ATK/DEF. An attack is a showing-face
+ * unlock plus an effect (spec `028`). Complexity stays on the engine, not a
+ * combat minigame.
  *
- * Fuel is the attacker's owner's attribute pile (spec `016`), never the shared
- * turn-pool symbols. Absorbing an attribute banks into that pile immediately.
+ * Unlock is derived from the owner's currently showing faces after
+ * `ROLL_DICE` / `[Reroll]`. Attacks do not check or burn `attributePool`
+ * (that pile still pays cards, rituals, and synthetic forge — spec `016`).
  */
 export interface AttackDefinition {
   readonly id: AttackId;
@@ -26,14 +28,10 @@ export interface AttackDefinition {
   /** Basic vs Special as printed on the creature card. */
   readonly kind: "basic" | "special";
   /**
-   * Pile gate (`[Requires: …]`): must hold, not spent. May accompany `discards`.
+   * Showing-face gate (`[Unlock: …]`). Named attributes only — no `any`.
+   * Met when the owner's showing faces cover every named count (AND).
    */
-  readonly requires?: SymbolRequirement;
-  /**
-   * Pile burn (`[Spend: …]`): removed from the owner's pile on declare.
-   * May accompany `requires` (gate + pay from the same pile).
-   */
-  readonly discards?: SymbolRequirement;
+  readonly unlock: SymbolRequirement;
   /** Bible §6: Range lets an attack ignore the frontline restriction. */
   readonly range: boolean;
   /**

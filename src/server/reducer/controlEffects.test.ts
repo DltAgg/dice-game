@@ -20,9 +20,9 @@ import {
   withPile,
   withHand,
   withPhase,
-  withTokens,
+  withShowingFaces,
 } from "../testing/scenario.js";
-import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
+import { CRANK, DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
 
 const PREVENT_AND_DRAW = testCard({
   id: "card-test-control-prevent-draw",
@@ -53,7 +53,7 @@ describe("control effects", () => {
     const base = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
-    const combat = withHand(withPile(withTokens(base, attacker, CRANK_FUEL), P2, 10), P2, [
+    const combat = withHand(withPile(withShowingFaces(base, P1, ["mechanical"]), P2, 10), P2, [
       PREVENT_AND_DRAW.id,
     ]);
     const opened = expectOk(
@@ -81,7 +81,7 @@ describe("control effects", () => {
     const attacker = creatureIdAt(base, P1, 2);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
-      withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10),
+      withPile(withShowingFaces(base, P1, ["mechanical"]), P2, 10),
       P2,
       [PREVENT_REFLECT.id],
     );

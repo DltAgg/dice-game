@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { AttributeTokens } from "../model/symbols.js";
 import { currentLife, legendaryCreatureOf } from "../rules/creatures.js";
+import { attackIsUnlocked, showingAttributeCounts } from "../rules/attackUnlock.js";
 import {
   TEST_BODY_A,
   TEST_LEGEND,
@@ -19,14 +19,15 @@ import {
   withDefeatedCreature,
   withPhase,
   withShields,
-  withTokens,
+  withShowingFaces,
+  withAttributePool,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL, KINDLE_FUEL, RETOOL, RETOOL_FUEL, VIGIL } from "../testing/tempoCatalogue.js";
+import { CRANK, DRIVE_SHAFT, RETOOL, VIGIL } from "../testing/tempoCatalogue.js";
 
 const HEAL_AFTER_STRIKE = testAttack({
   id: "attack-test-heal-after-strike",
-  discards: { luminar: 2 },
+  unlock: { luminar: 1 },
   followUpEffects: [{ type: "heal", amount: 1, target: { kind: "choose-ally" } }],
 });
 const HEALER = testCreature({
@@ -35,14 +36,14 @@ const HEALER = testCreature({
   attacks: [HEAL_AFTER_STRIKE],
 });
 
-function combatState(creatureIndex: number, tokens: AttributeTokens) {
+function combatState(_creatureIndex: number, showing: readonly ("mechanical" | "luminar" | "martial" | "shield")[] = ["mechanical"]) {
   const state = withPhase(newMatch(), "actions");
-  return withTokens(state, creatureIdAt(state, P1, creatureIndex), tokens);
+  return withShowingFaces(state, P1, showing);
 }
 
 describe("attacking", () => {
-  it("damages the target when the attacker holds the discarded attributes", () => {
-    const state = combatState(0, CRANK_FUEL);
+  it("damages the target when the owner's showing faces meet Unlock", () => {
+    const state = combatState(0);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
 
@@ -56,8 +57,8 @@ describe("attacking", () => {
     expect(currentLife(target)).toBe(12);
   });
 
-  it("refuses an attack the creature has not absorbed the fuel for", () => {
-    const state = combatState(0, { luminar: 1 });
+  it("refuses an attack when showing faces do not meet Unlock", () => {
+    const state = combatState(0, ["luminar"]);
 
     const result = advance(state, {
       type: "ATTACK",
@@ -68,12 +69,13 @@ describe("attacking", () => {
     });
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
+    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_UNLOCKED");
     expect(result.state).toBe(state);
   });
 
-  it("cannot be funded from the shared symbol pool", () => {
-    const state = withPhase(newMatch(), "actions");
+  it("does not unlock from the attribute pile or the turn pool", () => {
+    let state = withPhase(newMatch(), "actions");
+    state = withAttributePool(state, P1, { mechanical: 4, luminar: 4 });
 
     const result = advance(state, {
       type: "ATTACK",
@@ -84,11 +86,14 @@ describe("attacking", () => {
     });
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
+    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_UNLOCKED");
   });
 
-  it("burns Spend tokens on Retool without emptying the Requires gate", () => {
-    const state = combatState(0, RETOOL_FUEL);
+  it("does not burn pile tokens when Retool is declared", () => {
+    const state = withAttributePool(combatState(0, ["mechanical", "mechanical"]), P1, {
+      mechanical: 3,
+      luminar: 1,
+    });
     const attackerId = creatureIdAt(state, P1, 0);
 
     const after = expectOk(
@@ -101,12 +106,12 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({ luminar: 1 });
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.players[P1]?.attributePool).toEqual({ mechanical: 3, luminar: 1 });
+    expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
   });
 
-  it("burns discarded tokens when Drive Shaft is declared", () => {
-    const state = combatState(2, DRIVE_SHAFT_FUEL);
+  it("does not burn pile tokens when Drive Shaft is declared", () => {
+    const state = withAttributePool(combatState(2), P1, { mechanical: 2, luminar: 2 });
     const attackerId = creatureIdAt(state, P1, 2);
 
     const after = expectOk(
@@ -119,12 +124,12 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({});
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.players[P1]?.attributePool).toEqual({ mechanical: 2, luminar: 2 });
+    expect(eventTypes(after)).not.toContain("attribute-tokens-discarded");
   });
 
-  it("still requires every attribute listed on a multi-cost attack", () => {
-    const state = combatState(1, { mechanical: 1 });
+  it("still needs every named showing attribute on a dual Unlock", () => {
+    const state = combatState(1, ["mechanical"]);
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
@@ -133,11 +138,11 @@ describe("attacking", () => {
       targetId: creatureIdAt(state, P2, 0),
     });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
+    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_UNLOCKED");
   });
 
   it("allows only one attack per creature per combat phase", () => {
-    const state = combatState(0, { mechanical: 2 });
+    const state = combatState(0, ["mechanical", "mechanical"]);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const first = expectOk(
@@ -154,8 +159,46 @@ describe("attacking", () => {
     if (!second.ok) expect(second.error).toBe("ATTACK_ALREADY_USED");
   });
 
+  it("lets a Frenzy extra attack use the current showing faces", () => {
+    const state = combatState(0, ["mechanical", "mechanical"]);
+    const attackerId = creatureIdAt(state, P1, 0);
+    const targetId = creatureIdAt(state, P2, 0);
+    const first = expectOk(
+      advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: CRANK, targetId }),
+    );
+    const extra = {
+      ...first,
+      creatures: {
+        ...first.creatures,
+        [attackerId]: { ...first.creatures[attackerId]!, extraAttacksThisTurn: 1 },
+      },
+    };
+    const closed = withShowingFaces(extra, P1, ["luminar", "luminar"]);
+    const denied = advance(closed, {
+      type: "ATTACK",
+      playerId: P1,
+      attackerId,
+      attackId: CRANK,
+      targetId,
+    });
+    expect(denied.ok).toBe(false);
+    if (!denied.ok) expect(denied.error).toBe("ATTACK_NOT_UNLOCKED");
+
+    const stillOpen = withShowingFaces(extra, P1, ["mechanical"]);
+    const second = expectOk(
+      advance(stillOpen, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId,
+        attackId: CRANK,
+        targetId,
+      }),
+    );
+    expect(second.creatures[targetId]?.damage).toBe(4);
+  });
+
   it("lets a creature attack again on the following turn", () => {
-    const state = combatState(0, CRANK_FUEL);
+    const state = combatState(0);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
     const first = expectOk(
@@ -163,7 +206,7 @@ describe("attacking", () => {
     );
     const p2Turn = expectOk(advance(first, { type: "END_TURN", playerId: P1 }));
     const p1TurnAgain = expectOk(advance(p2Turn, { type: "END_TURN", playerId: P2 }));
-    const refreshed = withTokens(withPhase(p1TurnAgain, "actions"), attackerId, CRANK_FUEL);
+    const refreshed = withShowingFaces(withPhase(p1TurnAgain, "actions"), P1, ["mechanical"]);
     const second = advance(refreshed, {
       type: "ATTACK",
       playerId: P1,
@@ -175,7 +218,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack outside the actions phase", () => {
-    const state = withTokens(withPhase(newMatch(), "roll"), creatureIdAt(newMatch(), P1, 0), CRANK_FUEL);
+    const state = withShowingFaces(withPhase(newMatch(), "roll"), P1, ["mechanical"]);
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
@@ -188,7 +231,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack a friendly creature", () => {
-    const state = combatState(0, CRANK_FUEL);
+    const state = combatState(0);
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
@@ -201,7 +244,7 @@ describe("attacking", () => {
   });
 
   it("refuses to attack with a defeated creature", () => {
-    const state = withDefeatedCreature(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P1, 0));
+    const state = withDefeatedCreature(combatState(0), creatureIdAt(combatState(0), P1, 0));
     const attackerId = creatureIdAt(state, P1, 0);
     const result = advance(state, {
       type: "ATTACK",
@@ -215,7 +258,7 @@ describe("attacking", () => {
   });
 
   it("prevents damage one point at a time and is spent doing so", () => {
-    const state = withShields(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P2, 0), 1);
+    const state = withShields(combatState(0), creatureIdAt(combatState(0), P2, 0), 1);
     const targetId = creatureIdAt(state, P2, 0);
     const after = expectOk(
       advance(state, {
@@ -231,7 +274,7 @@ describe("attacking", () => {
   });
 
   it("can absorb an attack outright, leaving the creature untouched", () => {
-    const base = combatState(0, CRANK_FUEL);
+    const base = combatState(0);
     const targetId = creatureIdAt(base, P2, 0);
     const shielded = {
       ...base,
@@ -256,7 +299,7 @@ describe("attacking", () => {
   });
 
   it("survives the end of turn", () => {
-    const state = withDamage(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P2, 0), 5);
+    const state = withDamage(combatState(0), creatureIdAt(combatState(0), P2, 0), 5);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -270,7 +313,7 @@ describe("attacking", () => {
   });
 
   it("stops a melee attack from reaching the back row", () => {
-    const state = combatState(0, CRANK_FUEL);
+    const state = combatState(0);
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
@@ -287,7 +330,7 @@ describe("attacking", () => {
     let state = withPhase(match, "actions");
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 1));
-    state = withTokens(state, creatureIdAt(state, P1, 0), CRANK_FUEL);
+    state = withShowingFaces(state, P1, ["mechanical"]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -301,7 +344,7 @@ describe("attacking", () => {
   });
 
   it("defeats a creature whose damage reaches its life", () => {
-    const state = withDamage(combatState(0, CRANK_FUEL), creatureIdAt(combatState(0, {}), P2, 0), 12);
+    const state = withDamage(combatState(0), creatureIdAt(combatState(0), P2, 0), 12);
     const targetId = creatureIdAt(state, P2, 0);
     const after = expectOk(
       advance(state, {
@@ -323,7 +366,7 @@ describe("attacking", () => {
     const legendaryId = legendaryCreatureOf(state, P2)?.id;
     if (legendaryId === undefined) throw new Error("legendary");
     state = withDamage(state, legendaryId, 21);
-    state = withTokens(state, creatureIdAt(state, P1, 2), DRIVE_SHAFT_FUEL);
+    state = withShowingFaces(state, P1, ["mechanical"]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -338,7 +381,7 @@ describe("attacking", () => {
   });
 
   it("does not end the match when only non-legendaries fall", () => {
-    const state = withDamage(combatState(2, DRIVE_SHAFT_FUEL), creatureIdAt(combatState(2, {}), P2, 0), 12);
+    const state = withDamage(combatState(2), creatureIdAt(combatState(2), P2, 0), 12);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -359,7 +402,7 @@ describe("attacking", () => {
     const legendaryId = legendaryCreatureOf(state, P2)?.id;
     if (legendaryId === undefined) throw new Error("legendary");
     state = withDamage(state, legendaryId, 21);
-    state = withTokens(state, creatureIdAt(state, P1, 2), DRIVE_SHAFT_FUEL);
+    state = withShowingFaces(state, P1, ["mechanical"]);
     state = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -386,7 +429,7 @@ describe("Kindle follow-up", () => {
     const woundedId = creatureIdAt(match, P1, 0);
     let state = withDamage(withPhase(match, "actions"), woundedId, 2);
     const attackerId = creatureIdAt(state, P1, 1);
-    state = withTokens(state, attackerId, KINDLE_FUEL);
+    state = withShowingFaces(state, P1, ["luminar"]);
     const afterAttack = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -407,5 +450,16 @@ describe("Kindle follow-up", () => {
       );
     }
     expect(after.creatures[woundedId]?.damage).toBe(1);
+  });
+});
+
+describe("showing-face queries at the attack command", () => {
+  it("counts one Mechanical face for Crank", () => {
+    const state = combatState(0, ["mechanical", "shield"]);
+    expect(showingAttributeCounts(state, P1)).toEqual({ mechanical: 1 });
+    const attacker = state.creatures[creatureIdAt(state, P1, 0)];
+    if (attacker === undefined) throw new Error("attacker");
+    expect(attackIsUnlocked(state, P1, { unlock: { mechanical: 1 } })).toBe(true);
+    expect(attackIsUnlocked(state, P1, { unlock: { mechanical: 2 } })).toBe(false);
   });
 });

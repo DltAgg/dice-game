@@ -17,7 +17,7 @@ import {
   P2,
   withDefeatedCreature,
   withPhase,
-  withTokens,
+  withShowingFaces,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
@@ -244,7 +244,7 @@ describe("structural invariants across played matches", () => {
 describe("behavioural invariants", () => {
   it("a defeated creature cannot act", () => {
     const phase = withPhase(newMatch(), "actions");
-    const combat = withTokens(phase, creatureIdAt(phase, P1, 0), { martial: 2 });
+    const combat = withShowingFaces(phase, P1, ["mechanical"]);
     const attackerId = creatureIdAt(combat, P1, 0);
 
     const result = advance(withDefeatedCreature(combat, attackerId), {

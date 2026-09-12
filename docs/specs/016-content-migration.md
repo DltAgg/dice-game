@@ -31,7 +31,7 @@ attribute — keep filters.
 
 ## Creatures
 
-- Attack `requires` / `discards` use the owner's attribute pile.
+- Attack `unlock` is the owner's currently showing faces (spec `028`), not the pile.
 - Standing `on-absorb`: `absorberRelation` is player-scoped (`ally` for gear).
 
 ## Equipment / overload

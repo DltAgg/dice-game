@@ -316,7 +316,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
     }
     case "attack":
       return intent.attackId === undefined
-        ? "Choose an attack on the selected creature."
+        ? "Choose an unlocked attack (matching showing face). Locked attacks stay listed."
         : "Click an enemy creature to attack.";
     case "play":
       if (playDefHasOverload(state, intent.cardInstanceId)) {

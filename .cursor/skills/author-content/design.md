@@ -91,7 +91,7 @@ per id; face deck ≤12, ≤3 per attribute.
 
 **Feel vs pie:** exclusive verbs stay in this file. Shared mechanics (`[Generate]`,
 Strike, `[Discount]`) still **feel like a deck style** depending on window —
-attack-spend refund plays as Aggro even on Control. Track and update
+attack-follow-up `[Generate]` plays as Aggro even on Control. Track and update
 [`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md) from playtests.
 
 ## Attribute exclusive mechanics (`DECIDED`)
@@ -219,9 +219,9 @@ vocabulary exists. If a card needs a resource plus, use `[Generate]`,
   Do not also put that line in `rulesText`.
 - Play-region gate: `effect.requires`; UI prints `[Requires: …]` (hold, no
   burn). Twin Cam / Tooling Order / Die Punch / Recast stay gates. Extra
-  burn that is not a gate → raise `playCost`. Attack specials: `requires`
-  = `[Requires]` gate, `discards` = `[Spend]` — do not fake a gate in
-  `discards`. See [attribute-pile.md](attribute-pile.md).
+  burn that is not a gate → raise `playCost`. Creature attacks use `[Unlock]`
+  vs showing faces (spec `028`); they do **not** pile `[Requires]` / `[Spend]`.
+  See [creatures.md](creatures.md) and [attribute-pile.md](attribute-pile.md).
 
 ## Anti-patterns
 

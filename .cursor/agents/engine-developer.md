@@ -4,7 +4,8 @@ model: inherit
 description: >-
   Implements Dice Skirmish rules in src/server: EffectDefinition vocabulary,
   StandingTrigger hooks, reducer/advance, resolution stack, statuses (toxin,
-  shields, prevent), attribute pile (spec 016), RNG, and phases. Use
+  shields, prevent), attribute pile (spec 016), showing-face combat (spec
+  028), RNG, and phases. Use
   proactively for engine, reducer, trigger, resolution, new hooks, new
   GameAction, or wiring deferred catalogue clauses that need new AST. Do not
   use for match UI, lobby, deck persistence, PeerJS, or a playtest debrief
@@ -28,8 +29,9 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
 1. `AGENTS.md` and `TOOLS.md`
 2. `docs/ARCHITECTURE.md`, `docs/RULEBOOK.md` (how play currently works),
    `docs/KEYWORDS.md` (print vocabulary — proving cards and new tokens use it),
-   and `docs/specs/016-attribute-pile-up.md` when touching fuel, absorb, rituals,
-   or attack costs
+   and `docs/specs/016-attribute-pile-up.md` when touching pile fuel, absorb, or
+   rituals. Creature attacks: `docs/specs/028-showing-face-combat.md` (`[Unlock]`
+   from showing faces — **not** pile `[Requires]` / `[Spend]`)
 3. `.cursor/rules/engine-purity.mdc`, `.cursor/rules/scope-and-modules.mdc`, `.cursor/rules/rulebook.mdc`, and
    `.cursor/rules/keywords.mdc`
 4. The matching skill — **read it immediately**; do not improvise workflow:
@@ -69,11 +71,16 @@ Implement engine requirements so content can stay data-driven:
 - Incomplete printed clauses: keep accurate English, leave structured fields empty or omit, row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently.
 - Proving-card print follows holder voice (`you` = the player whose field the card sits on) and `docs/KEYWORDS.md`. Do not invent a 1-cost proving card when a 2+ cost expresses the mechanic. New tokens join `[Mark]` / `[Strip]`; do not mint Dose/Envenom verbs.
 - Hooks are **shared events** + catalogue filters. Never coupled types (`on-ally-attack`, `on-opponent-roll-symbol`). Identity is instance id, not definition id or printed name.
-- **Attribute pile (spec `016`).** Fuel lives on `PlayerState.attributePool`.
-  Attribute absorb banks via `attributeBank.ts`; On absorb uses absorber
-  `{ kind: "player" }`. Shield absorb keeps `{ kind: "creature" }`. Ritual
-  `activeWhen` / optional `spend` are pile gates. Attribute fuel is the
-  player pile, not creature-held tokens.
+- **Attribute pile (spec `016`).** Card / ritual / synthetic-forge fuel lives on
+  `PlayerState.attributePool`. Attribute absorb banks via `attributeBank.ts`;
+  On absorb uses absorber `{ kind: "player" }`. Shield absorb keeps
+  `{ kind: "creature" }`. Ritual `activeWhen` / optional `spend` are pile gates.
+  Attribute fuel is the player pile, not creature-held tokens.
+- **Creature attacks (spec `028`).** Declare uses `[Unlock]` vs the owner’s
+  showing faces (`attackIsUnlocked` in `src/server/rules/attackUnlock.ts`).
+  `ATTACK` does not check or burn `attributePool`. Failure is
+  `ATTACK_NOT_UNLOCKED` (not `ATTACK_NOT_FUELLED`). No energy. No second roll
+  on declare. `[Resonance]` / `[Discount]` / `any` do not apply to unlock.
 - Filters live on ability data (`self` | `ally` | `ally-other` | `any`, `controller` | `opponent` | `any`), not in reducer branch names.
 - Hosts share one trigger union: equipment, creature standing passives, ready continuous rituals. Walk all hosts the same way.
 - Stun is `DEFERRED` in `OPEN_DESIGN.md`. Do not design or build stun unless the user reopens it.
@@ -120,7 +127,8 @@ If the user asks for engine **and** UI in one request: implement engine + spec U
 | StandingTrigger | `src/server/model/cards.ts` |
 | State | `src/server/model/state.ts`, `creatures.ts`, `dice.ts` |
 | Attribute pile | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
-| Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md`, `016-attribute-pile-up.md` |
+| Attack unlock | `src/server/rules/attackUnlock.ts`, `commands/attack.ts` (spec `028`) |
+| Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md`, `016-attribute-pile-up.md`, `028-showing-face-combat.md` |
 | Tactic Overcharge (`021`) | `commands/overcharge.ts`, `rules/overcharge.ts` — `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `canOvercharge` / `legalOverchargeFaces`. **Not** spec `013` `optional-overcharge` (face-marker opcode; `RESOLVE_OPTIONAL_OVERCHARGE`) |
 | Tests / scenarios | `src/server/reducer/*.test.ts`, `src/server/testing/scenario.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |

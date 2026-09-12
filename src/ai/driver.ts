@@ -59,20 +59,27 @@ export function runPlaytestMatch(options: PlaytestOptions): PlaytestReport {
 
     if (actionsThisTurn >= maxActionsPerTurn && chosen.type !== "END_TURN") {
       const end = legal.find((action) => action.type === "END_TURN");
-      if (end === undefined) {
-        return report(
-          options,
-          state,
-          actions,
-          turnsPlayed,
-          "stall",
-          `turn action cap with no END_TURN for ${actor}`,
-        );
+      if (end !== undefined) {
+        state = apply(state, end);
+        actions.push(end);
+        actionsThisTurn += 1;
+        continue;
       }
-      state = apply(state, end);
-      actions.push(end);
-      actionsThisTurn += 1;
-      continue;
+      const pass = legal.find((action) => action.type === "PASS_PRIORITY");
+      if (pass !== undefined) {
+        state = apply(state, pass);
+        actions.push(pass);
+        actionsThisTurn += 1;
+        continue;
+      }
+      return report(
+        options,
+        state,
+        actions,
+        turnsPlayed,
+        "stall",
+        `turn action cap with no END_TURN for ${actor}`,
+      );
     }
 
     state = apply(state, chosen);

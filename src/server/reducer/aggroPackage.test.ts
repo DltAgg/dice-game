@@ -19,10 +19,10 @@ import {
   withHand,
   withPhase,
   withShields,
-  withTokens,
+  withShowingFaces,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { CRANK, CRANK_FUEL } from "../testing/tempoCatalogue.js";
+import { CRANK } from "../testing/tempoCatalogue.js";
 
 const SHIELD_AND_EMPOWER = testCard({
   id: "card-test-aggro-shield-empower",
@@ -101,7 +101,7 @@ describe("combat package", () => {
   it("Crank damages through shields one point at a time", () => {
     const targetId = creatureIdAt(newMatch(), P2, 0);
     let state = withShields(withPhase(newMatch(), "actions"), targetId, 1);
-    state = withTokens(state, creatureIdAt(state, P1, 0), CRANK_FUEL);
+    state = withShowingFaces(state, P1, ["mechanical"]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
