@@ -15,7 +15,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "Choose one:\n• [Cross forge 2 Mechanical / Luminar]\n• [Cross forge 2 Luminar / Mechanical]",
+  "rulesText": "Choose one:\n• [Cross forge 1 Mechanical / Luminar]\n• [Cross forge 1 Luminar / Mechanical]",
   "effect": {
     "requires": {
       "mechanical": 2
@@ -27,7 +27,7 @@
           [
             {
               "type": "replace-synthetic-face",
-              "faces": 2,
+              "faces": 1,
               "attribute": "luminar",
               "fromAttribute": "mechanical"
             }
@@ -35,7 +35,7 @@
           [
             {
               "type": "replace-synthetic-face",
-              "faces": 2,
+              "faces": 1,
               "attribute": "mechanical",
               "fromAttribute": "luminar"
             }

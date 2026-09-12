@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { GameState } from "../model/state.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
-import { eligiblePoolFacesForReforge } from "../rules/reforge.js";
+import {
+  canResolvePlayEffects,
+  eligiblePoolFacesForReforge,
+} from "../rules/reforge.js";
 import {
   TEST_SYNTHETIC_LUMINAR_A,
   TEST_SYNTHETIC_MECHANICAL_A,
@@ -48,6 +51,100 @@ const CROSS_FORGE = testCard({
   },
 });
 
+const CROSS_FORGE_CHOICE = testCard({
+  id: "card-test-cross-forge-choice-play",
+  playCost: { mechanical: 2, any: 1 },
+  attribute: "mechanical",
+  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  effect: {
+    requires: { mechanical: 2 },
+    effects: [
+      {
+        type: "choose-effect-mode",
+        modes: [
+          [
+            {
+              type: "replace-synthetic-face",
+              faces: 2,
+              attribute: "luminar",
+              fromAttribute: "mechanical",
+            },
+          ],
+          [
+            {
+              type: "replace-synthetic-face",
+              faces: 2,
+              attribute: "mechanical",
+              fromAttribute: "luminar",
+            },
+          ],
+        ],
+        modeLabels: ["Mechanical → Luminar", "Luminar → Mechanical"],
+      },
+    ],
+  },
+});
+
+const CROSS_FORGE_CHOICE_ONE = testCard({
+  id: "card-test-cross-forge-choice-one",
+  playCost: { mechanical: 2, any: 1 },
+  attribute: "mechanical",
+  effect: {
+    requires: { mechanical: 2 },
+    effects: [
+      {
+        type: "choose-effect-mode",
+        modes: [
+          [
+            {
+              type: "replace-synthetic-face",
+              faces: 1,
+              attribute: "luminar",
+              fromAttribute: "mechanical",
+            },
+          ],
+          [
+            {
+              type: "replace-synthetic-face",
+              faces: 1,
+              attribute: "mechanical",
+              fromAttribute: "luminar",
+            },
+          ],
+        ],
+        modeLabels: ["Mechanical → Luminar", "Luminar → Mechanical"],
+      },
+    ],
+  },
+});
+
+const REFORGE_THREE = testCard({
+  id: "card-test-reforge-three",
+  playCost: { mechanical: 2 },
+  attribute: "mechanical",
+  effect: {
+    effects: [{ type: "replace-synthetic-face", faces: 3, attribute: "mechanical" }],
+  },
+});
+
+const TEMPO_DIE = [
+  testNaturalFaceId("mechanical"),
+  testNaturalFaceId("mechanical"),
+  testNaturalFaceId("mechanical"),
+  testNaturalFaceId("luminar"),
+  testNaturalFaceId("luminar"),
+  testNaturalFaceId("luminar"),
+] as const;
+
+const FOUR_MECHANICAL_TWO_LUMINAR = [
+  testNaturalFaceId("mechanical"),
+  testNaturalFaceId("mechanical"),
+  testNaturalFaceId("mechanical"),
+  testNaturalFaceId("mechanical"),
+  testNaturalFaceId("luminar"),
+  testNaturalFaceId("luminar"),
+] as const;
+
 const actionsReady = (cards: readonly Parameters<typeof withHand>[2][number][]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
@@ -85,6 +182,38 @@ function playFromHand(state: GameState): GameState {
       cardInstanceId: handCardIdAt(state, P1, 0),
     }),
   );
+}
+
+function withAllDiceFaces(state: GameState, faces: readonly FaceCardId[]): GameState {
+  const player = state.players[P1];
+  if (player === undefined) throw new Error("player");
+  const dice = { ...state.dice };
+  for (const dieId of player.dieIds) {
+    const die = dice[dieId];
+    if (die === undefined) continue;
+    dice[dieId] = {
+      ...die,
+      slots: die.slots.map((slot, index) => ({
+        ...slot,
+        faceCardId: faces[index] ?? slot.faceCardId,
+      })),
+    };
+  }
+  return { ...state, dice };
+}
+
+function dieFaceIds(state: GameState): readonly (readonly FaceCardId[])[] {
+  return (state.players[P1]?.dieIds ?? []).map(
+    (dieId) => state.dice[dieId]?.slots.map((slot) => slot.faceCardId) ?? [],
+  );
+}
+
+function playCardAction(state: GameState) {
+  return {
+    type: "PLAY_CARD" as const,
+    playerId: P1,
+    cardInstanceId: handCardIdAt(state, P1, 0),
+  };
 }
 
 describe("replace-synthetic-face (Reforge)", () => {
@@ -148,18 +277,20 @@ describe("replace-synthetic-face (Reforge)", () => {
     expect(rejected.ok).toBe(false);
   });
 
-  it("whiffs when the pool has fewer than N destination synthetics", () => {
+  it("refuses play when the pool has fewer than N destination synthetics", () => {
     let state = actionsReady([REFORGE_TWO.id]);
     state = installFromPool(state, TEST_SYNTHETIC_MECHANICAL_A, 0, 0);
     state = installFromPool(state, TEST_SYNTHETIC_MECHANICAL_B, 1, 0);
     state = installFromPool(state, TEST_SYNTHETIC_MECHANICAL_C, 0, 1);
-    const played = playFromHand(state);
-    expect(played.pendingDecision?.type).not.toBe("replace-synthetic-face");
+    const refused = advance(state, playCardAction(state));
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.error).toBe("FACE_NOT_AVAILABLE");
+    expect(refused.state).toBe(state);
   });
 });
 
 describe("replace-synthetic-face (Cross forge)", () => {
-  it("whiffs when no showing face matches Y", () => {
+  it("refuses play when no showing face matches Y", () => {
     let ready = actionsReady([CROSS_FORGE.id]);
     const luminar = testNaturalFaceId("luminar");
     for (const dieId of ready.players[P1]?.dieIds ?? []) {
@@ -172,8 +303,10 @@ describe("replace-synthetic-face (Cross forge)", () => {
       );
       ready = { ...ready, dice: { ...ready.dice, [dieId]: { ...die, slots } } };
     }
-    const played = playFromHand(ready);
-    expect(played.pendingDecision?.type).not.toBe("replace-synthetic-face");
+    const refused = advance(ready, playCardAction(ready));
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
+    expect(refused.state).toBe(ready);
   });
 
   it("opens Cross forge Mechanical → synthetic Luminar", () => {
@@ -216,5 +349,55 @@ describe("replace-synthetic-face (Cross forge)", () => {
       faceCardIds: [TEST_SYNTHETIC_LUMINAR_A],
     });
     expect(rejected.ok).toBe(false);
+  });
+});
+
+describe("play refusal and legal Choose one modes", () => {
+  it("refuses Tempo 3/3 Cross forge 2 with ATTRIBUTE_LIMIT_REACHED and keeps the card", () => {
+    const ready = withAllDiceFaces(actionsReady([CROSS_FORGE_CHOICE.id]), [...TEMPO_DIE]);
+    expect(canResolvePlayEffects(ready, P1, CROSS_FORGE_CHOICE)).toBe(false);
+    const beforeFaces = dieFaceIds(ready);
+    const hand = ready.players[P1]?.hand ?? [];
+    const refused = advance(ready, playCardAction(ready));
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.error).toBe("ATTRIBUTE_LIMIT_REACHED");
+    expect(refused.state).toBe(ready);
+    expect(refused.state.players[P1]?.hand).toEqual(hand);
+    expect(dieFaceIds(refused.state)).toEqual(beforeFaces);
+  });
+
+  it("plays Tempo 3/3 Cross forge 1 and opens both directions", () => {
+    const ready = withAllDiceFaces(actionsReady([CROSS_FORGE_CHOICE_ONE.id]), [...TEMPO_DIE]);
+    expect(canResolvePlayEffects(ready, P1, CROSS_FORGE_CHOICE_ONE)).toBe(true);
+    const played = playFromHand(ready);
+    expect(played.pendingDecision).toMatchObject({
+      type: "choose-effect-mode",
+      modeLabels: ["Mechanical → Luminar", "Luminar → Mechanical"],
+    });
+    expect(played.players[P1]?.hand).not.toContain(handCardIdAt(ready, P1, 0));
+  });
+
+  it("auto-picks the only legal Cross forge direction on 4 Mechanical + 2 Luminar", () => {
+    const ready = withAllDiceFaces(
+      actionsReady([CROSS_FORGE_CHOICE.id]),
+      [...FOUR_MECHANICAL_TWO_LUMINAR],
+    );
+    const played = playFromHand(ready);
+    expect(played.pendingDecision?.type).not.toBe("choose-effect-mode");
+    expect(played.pendingDecision).toMatchObject({
+      type: "replace-synthetic-face",
+      faces: 2,
+      attribute: "luminar",
+      fromAttribute: "mechanical",
+    });
+  });
+
+  it("refuses Reforge 3 when the pool has only two matching synthetics", () => {
+    const ready = installFromPool(actionsReady([REFORGE_THREE.id]), TEST_SYNTHETIC_MECHANICAL_A);
+    expect(eligiblePoolFacesForReforge(ready, P1, "mechanical")).toHaveLength(2);
+    const refused = advance(ready, playCardAction(ready));
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.error).toBe("FACE_NOT_AVAILABLE");
+    expect(refused.state).toBe(ready);
   });
 });

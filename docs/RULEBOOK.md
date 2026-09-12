@@ -395,13 +395,16 @@ except those N slots must currently show **Y**, and the installs are synthetic
 **Z**. Neither is a forge (no forge-draw, no yield, no synthetic bank). Stay /
 cannot-replace slots are illegal. The §9.1 attribute cap still applies to the
 finished die. Displaced faces return to pool when orphaned; their overloads /
-Overcharge leave as on overwrite. Mechanical exclusive.
+Overcharge leave as on overwrite. Mechanical exclusive. You cannot play a
+Reforge / Cross forge (or a Choose one whose every mode is Reforge / Cross
+forge) when no legal assignment exists — the card stays in hand; it is not
+spent for a silent no-op.
 
 **Choose one.** Some cards (e.g. Tooling Order) and some faces (Sigil Flare,
 Mainspring, Pyre of Names) read "Choose one:" with two modes. You pick exactly
 one; the other is ignored. If only one mode can legally resolve, it is chosen
-automatically. On convert faces the modes are **bank this die's pips** or the
-printed payoff (do not bank).
+automatically. If none can, the Choose one does nothing. On convert faces the
+modes are **bank this die's pips** or the printed payoff (do not bank).
 
 **Overcharge.** Once per turn during actions, you may spend **any** card
 from hand to Overcharge one **attribute face card** installed on your dice

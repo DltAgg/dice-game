@@ -45,7 +45,9 @@ pending even when they are not the turn player (`actingPlayerIdOf` follows
 `pendingChooserId`). Resolve via
 `useMatchStore.dispatch` only — query `@server` helpers for legal options
 (e.g. `legalSlotsForReplaceSyntheticFace` / `eligiblePoolFacesForReforge` for
-Reforge / Cross forge). Do not special-case catalogue card ids.
+Reforge / Cross forge). Do not special-case catalogue card ids. HandStrip Play
+is enabled when `hasPlayableEffect`, `canAffordPlay`, and `canResolvePlayEffects`
+all pass.
 
 Notable Reforge / Cross forge UX (`replace-synthetic-face`):
 

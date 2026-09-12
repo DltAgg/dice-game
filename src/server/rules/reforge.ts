@@ -1,5 +1,8 @@
 import type { Attribute } from "../model/attributes.js";
+import type { CardDefinition } from "../model/cards.js";
 import type { DieSlot } from "../model/dice.js";
+import type { EffectDefinition } from "../model/effects.js";
+import type { GameError } from "../model/errors.js";
 import type { FaceCardId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import type { Draft } from "../reducer/draft.js";
@@ -9,6 +12,25 @@ import {
   matchingFacesInPool,
   slotCannotBeReplacedByForge,
 } from "./faces.js";
+
+type ChooseEffectModeEffect = Extract<EffectDefinition, { readonly type: "choose-effect-mode" }>;
+type ReplaceSyntheticFaceEffect = Extract<
+  EffectDefinition,
+  { readonly type: "replace-synthetic-face" }
+>;
+type ReforgePlayError = Extract<
+  GameError,
+  "ATTRIBUTE_LIMIT_REACHED" | "FACE_NOT_AVAILABLE" | "INVALID_TARGET"
+>;
+
+export type ChooseEffectModeResolution =
+  | { readonly kind: "whiff" }
+  | { readonly kind: "auto"; readonly mode: readonly EffectDefinition[] }
+  | {
+      readonly kind: "choose";
+      readonly modes: readonly (readonly EffectDefinition[])[];
+      readonly modeLabels: readonly string[];
+    };
 
 export interface ReforgeSpec {
   readonly faces: number;
@@ -123,4 +145,169 @@ export function isLegalReforgeAssignment(
   }
 
   return !forgeExceedsAttributeLimit(die, slotIndexes, spec.attribute, spec.faces, state.config);
+}
+
+function reforgeSpec(effect: ReplaceSyntheticFaceEffect): ReforgeSpec {
+  return {
+    faces: effect.faces,
+    attribute: effect.attribute,
+    ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
+  };
+}
+
+function isReforgeFamilyEffect(effect: EffectDefinition): boolean {
+  return effect.type === "replace-synthetic-face" || effect.type === "choose-effect-mode";
+}
+
+/**
+ * A Choose-one mode is legal iff every `replace-synthetic-face` in it has a
+ * legal assignment. Empty modes and other effect types stay legal (convert
+ * bank vs payoff must still offer both).
+ */
+export function isEffectModeLegal(
+  state: GameState | Draft,
+  controllerId: PlayerId,
+  mode: readonly EffectDefinition[],
+): boolean {
+  for (const effect of mode) {
+    if (effect.type !== "replace-synthetic-face") continue;
+    if (!hasLegalReplaceSyntheticFaceChoice(state, controllerId, reforgeSpec(effect))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function defaultModeLabel(index: number): string {
+  return `Mode ${String(index + 1)}`;
+}
+
+/**
+ * Drop illegal Reforge / Cross forge modes. Keep original labels aligned with
+ * the surviving modes. Empty modes are never dropped.
+ */
+export function legalChooseEffectModes(
+  state: GameState | Draft,
+  controllerId: PlayerId,
+  modes: readonly (readonly EffectDefinition[])[],
+  modeLabels?: readonly string[],
+): {
+  readonly modes: readonly (readonly EffectDefinition[])[];
+  readonly modeLabels: readonly string[];
+} {
+  const keptModes: (readonly EffectDefinition[])[] = [];
+  const keptLabels: string[] = [];
+  for (let index = 0; index < modes.length; index += 1) {
+    const mode = modes[index];
+    if (mode === undefined || !isEffectModeLegal(state, controllerId, mode)) continue;
+    keptModes.push(mode);
+    keptLabels.push(modeLabels?.[index] ?? defaultModeLabel(index));
+  }
+  return { modes: keptModes, modeLabels: keptLabels };
+}
+
+/**
+ * Filter Choose one for resolution: 0 legal → whiff; 1 → auto-pick; 2+ → picker.
+ */
+export function chooseEffectModeResolution(
+  state: GameState | Draft,
+  controllerId: PlayerId,
+  effect: ChooseEffectModeEffect,
+): ChooseEffectModeResolution {
+  if (effect.modes.length === 0) return { kind: "whiff" };
+  const legal = legalChooseEffectModes(state, controllerId, effect.modes, effect.modeLabels);
+  if (legal.modes.length === 0) return { kind: "whiff" };
+  if (legal.modes.length === 1) {
+    return { kind: "auto", mode: legal.modes[0]! };
+  }
+  return { kind: "choose", modes: legal.modes, modeLabels: legal.modeLabels };
+}
+
+function replaceSyntheticFaceBlockReason(
+  state: GameState | Draft,
+  controllerId: PlayerId,
+  spec: ReforgeSpec,
+): ReforgePlayError | null {
+  if (hasLegalReplaceSyntheticFaceChoice(state, controllerId, spec)) return null;
+  if (eligiblePoolFacesForReforge(state, controllerId, spec.attribute).length < spec.faces) {
+    return "FACE_NOT_AVAILABLE";
+  }
+  const player = state.players[controllerId];
+  if (player === undefined) return "INVALID_TARGET";
+  for (const dieId of player.dieIds) {
+    const die = state.dice[dieId];
+    if (die === undefined) continue;
+    const candidates = die.slots
+      .filter((slot) => slotMatchesReforgeFilter(slot, spec.fromAttribute))
+      .map((slot) => slot.index);
+    if (candidates.length < spec.faces) continue;
+    return "ATTRIBUTE_LIMIT_REACHED";
+  }
+  return "INVALID_TARGET";
+}
+
+function combinedReforgePlayError(errors: readonly ReforgePlayError[]): ReforgePlayError {
+  const first = errors[0];
+  if (first !== undefined && errors.every((error) => error === first)) return first;
+  return "ATTRIBUTE_LIMIT_REACHED";
+}
+
+function collectModeReforgeErrors(
+  state: GameState | Draft,
+  playerId: PlayerId,
+  mode: readonly EffectDefinition[],
+): ReforgePlayError[] {
+  const errors: ReforgePlayError[] = [];
+  for (const effect of mode) {
+    if (effect.type !== "replace-synthetic-face") continue;
+    const reason = replaceSyntheticFaceBlockReason(state, playerId, reforgeSpec(effect));
+    if (reason !== null) errors.push(reason);
+  }
+  return errors;
+}
+
+/**
+ * Error if a play region's effects are only Reforge / Cross forge (or a
+ * Choose one of those) and none can legally resolve. Mixed effects (damage +
+ * reforge, …) return null so play still proceeds. Same helper as
+ * `canResolvePlayEffects`.
+ */
+export function playEffectsRefusal(
+  state: GameState | Draft,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): GameError | null {
+  const effects = definition.effect?.effects;
+  if (effects === undefined || effects.length === 0) return null;
+  if (effects.some((effect) => !isReforgeFamilyEffect(effect))) return null;
+
+  const errors: ReforgePlayError[] = [];
+  for (const effect of effects) {
+    if (effect.type === "replace-synthetic-face") {
+      const reason = replaceSyntheticFaceBlockReason(state, playerId, reforgeSpec(effect));
+      if (reason === null) return null;
+      errors.push(reason);
+      continue;
+    }
+    if (effect.type !== "choose-effect-mode") continue;
+    if (effect.modes.some((mode) => isEffectModeLegal(state, playerId, mode))) {
+      return null;
+    }
+    for (const mode of effect.modes) {
+      errors.push(...collectModeReforgeErrors(state, playerId, mode));
+    }
+  }
+  return combinedReforgePlayError(errors);
+}
+
+/**
+ * True when `PLAY_CARD` would not refuse this definition for an unresolvable
+ * Reforge / Cross forge. Hand / AI `canPlay` should AND this query.
+ */
+export function canResolvePlayEffects(
+  state: GameState | Draft,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): boolean {
+  return playEffectsRefusal(state, playerId, definition) === null;
 }

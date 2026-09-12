@@ -14,7 +14,7 @@ This sibling is **craft**. Do not paste it into the agent. Do not treat spec
 Grep and read it **before** choosing a slot.
 
 - Hand cards after the reset are thin. Almost every `forge.faces` is **1**.
-  Play-region `[Forge 2]` (Tempering Line, Tooling Order) is not the card’s
+  Play-region `[Forge 2]` (Tempering Line) is not the card’s
   own forge region occupying a Forge-2 slot.
 - Naturals (`face-natural-*`) are empty `onRoll` / `onAbsorb` with one
   `symbol`. They do not generate a second attribute.

@@ -38,7 +38,10 @@ import {
   takeFaceFromPool,
   withForgeLockResetOnInstall,
 } from "../rules/faces.js";
-import { hasLegalReplaceSyntheticFaceChoice } from "../rules/reforge.js";
+import {
+  chooseEffectModeResolution,
+  hasLegalReplaceSyntheticFaceChoice,
+} from "../rules/reforge.js";
 import {
   legalCreaturesForFilter,
   legalDiceForFilter,
@@ -844,10 +847,10 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       return false;
     }
     case "choose-effect-mode": {
-      const labels = effect.modeLabels ?? effect.modes.map((_m, i) => `Mode ${String(i + 1)}`);
-      if (effect.modes.length === 0) return false;
-      if (effect.modes.length === 1) {
-        for (const child of [...effect.modes[0]!].reverse()) {
+      const next = chooseEffectModeResolution(draft, pending.controllerId, effect);
+      if (next.kind === "whiff") return false;
+      if (next.kind === "auto") {
+        for (const child of [...next.mode].reverse()) {
           pushEffect(
             draft,
             pending.controllerId,
@@ -866,8 +869,8 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       draft.pendingDecision = {
         type: "choose-effect-mode",
         controllerId: pending.controllerId,
-        modes: effect.modes,
-        modeLabels: labels,
+        modes: next.modes,
+        modeLabels: next.modeLabels,
         ...effectChoiceSource(draft, pending),
         sourceDieId: pending.sourceDieId,
         sourceSlotIndex: pending.sourceSlotIndex,

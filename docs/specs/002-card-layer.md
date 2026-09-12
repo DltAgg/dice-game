@@ -177,7 +177,7 @@ tempo back with reaction `[Prevent]`. Every row serves forge or play.
 | Cost | Name | Type line | Printed play region | Role in Tempo |
 |---|---|---|---|---|
 | 2 M | Cog Draft | Instant / Mechanical | `[Generate 2 Mechanical]. [Draw 1].` | Opener. Converts a turn into pile + a card. |
-| 2 M + 1 Any | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. Choose one — `[Cross forge 2 Mechanical / Luminar]` or `[Cross forge 2 Luminar / Mechanical]` on one of your dice. | Flexible die reconstruction: swing two faces between the Tempo pair. |
+| 2 M + 1 Any | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. Choose one — `[Cross forge 1 Mechanical / Luminar]` or `[Cross forge 1 Luminar / Mechanical]` on one of your dice. | Flexible die reconstruction: swing one face either direction between the Tempo pair. Distinct from Alloy Shift (one-way Cross forge 1, no Requires, not in Tempo). |
 | 2 M | Shim Kit | Instant / Mechanical | `[Discount 2]` forge. | One-shot discount that turns a forge into a tempo turn. |
 | 3 M | Quickset Jig | Equipment / Mechanical | On roll Mechanical: `[Discount 1]` forge. | Standing discount engine — rolls, not pile. |
 | 2 M | Die Punch | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Stamp]`. | Own-die reconstruction: reapply your die modifiers. |

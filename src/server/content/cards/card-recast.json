@@ -19,7 +19,7 @@
     "effects": [
       {
         "type": "replace-synthetic-face",
-        "faces": 2,
+        "faces": 3,
         "attribute": "mechanical"
       }
     ]

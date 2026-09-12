@@ -3,6 +3,7 @@ import {
   attackIsFuelled,
   basicAttackOf,
   canAbsorbSymbol,
+  canResolvePlayEffects,
   formatForgeLine,
   getCard,
   getCreatureDefinition,
@@ -354,7 +355,7 @@ export function MatchBoard() {
 
     if (card.ownerId !== activeId || pending !== null || phase !== "actions") return;
     const def = getCard(card.cardId);
-    if (def === undefined || !hasPlayableEffect(def)) return;
+    if (def === undefined || !hasPlayableEffect(def) || !canResolvePlayEffects(state, activeId, def)) return;
 
     if (def.ritual !== undefined) {
       tryDispatch({ type: "PLAY_CARD", playerId: activeId, cardInstanceId: card.id });

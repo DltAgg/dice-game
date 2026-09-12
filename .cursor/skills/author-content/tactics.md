@@ -6,7 +6,7 @@ Design: [design.md](design.md) · craft: [design-craft.md](design-craft.md)
 
 **Audit live JSON first.** Do not clone the last hand card’s `forge.faces: 1`
 sticker. `faces` (1, 2, rarely 3) and natural vs synthetic are designed
-choices. Play-region `[Forge 2]` (Tempering Line, Tooling Order) does **not**
+choices. Play-region `[Forge 2]` (Tempering Line) does **not**
 occupy a Forge-2 **region** slot.
 
 ## Shape
@@ -160,7 +160,7 @@ cards (Bloodline Pact, Ichor Exchange, Eclipse, …) are not copy sources.
 | Thread the Weave | Instant exclusive verb (`[Insight]`) |
 | Recast | Play-region `[Reforge 2 Mechanical]` (Mechanical exclusive) — forge region still 1; do not treat as occupying extra-forge-region |
 | Alloy Shift | Play-region `[Cross forge 1 Mechanical / Luminar]` — proving card for Y → synthetic Z; not a second Recast |
-| Tooling Order | Play-region `[Forge 2]` — **not** `forge.faces: 2` |
+| Tooling Order | Play-region Choose one `[Cross forge 1]` either Tempo direction — not Alloy Shift (one-way), not Recast |
 | Tempering Line | Ritual play-region Forge 2 + Discount |
 | Shim Kit | `[Discount]` payoff |
 | Beacon Array | Dual `playCost` (Luminar+Mechanical) — unfinished as a bridge if the effect ignores the second color |
