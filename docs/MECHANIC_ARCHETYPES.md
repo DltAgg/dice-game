@@ -82,7 +82,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-11](#ma-11-discount) | `[Discount]` | Next forge / play | Tempo, Support, Control sequencing | Makes 2+ cards playable; not Aggro refund | `HOME` |
 | [MA-12](#ma-12-combat-reforge-stamp) | `[Reforge]` / `[Stamp]` on an Unlock-taxed special | Creature special | Tempo (Mechanical exclusive) | Engine during combat, not a pile refund | `HOME` |
 | [MA-13](#ma-13-legendary-strike-band) | Strike 3 vs Strike 2 on legendaries | Creature attack | Tempo hits harder; Control chips | Tempo closer vs Control engine | `WATCH` |
-| [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
+| [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` (bank removed) |
 | [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` any hand card | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
 | [MA-16](#ma-16-instant-rituals) | Ritual / Instant (place → Active-when → activate → GY) | Ritual place + activate | None as a band | Worthless vs equipment / overload / continuous | `RETARGETED` |
 | [MA-17](#ma-17-convert-roll) | On roll Choose one: bank this die’s pips or payoff (do not bank) | On roll (face) | Tempo / Control closers | Prompted 2026-09-06 | `WATCH` |
@@ -318,8 +318,9 @@ shape).
 **Evidence:** 2026-08-30 playtest · Tempo · `card-twin-cam` +
 `creature-torque-wright`.
 
-**Status:** `RETARGETED` · engine: skip synthetic bank when the install
-consumed `forgeDiscountThisTurn`. Undiscounted synthetic still banks.
+**Status:** `RETARGETED` · 2026-09-12 · synthetic install bank removed
+(forge no longer banks the pile). The Discount+bank leak cannot recur. Do not
+restore `forgeBankPerFace`.
 
 ### MA-15 Tactic Overcharge
 
@@ -481,7 +482,7 @@ restore attack pile spend.
 | Archetype | Signature feel to protect | Do not steal |
 |---|---|---|
 | Aggro | Efficient unlocked attacks, `[Frenzy]`, Martial movement | Control mill/Insight as the **plan**; Burn ticks; infinite refunds are a **leak even here** |
-| Tempo | Forge sequencing, on-roll generate, Reforge/Stamp, Discount | Attack refunds (MA-01); Discount + synthetic bank on the same install (MA-14); Control stall as the win |
+| Tempo | Forge sequencing, on-roll generate, Reforge/Stamp, Discount | Attack refunds (MA-01); Control stall as the win |
 | Control | Insight, mill, negate, engine damage, **weak unlocked basics** | MA-01 refunds; Frenzy; Toxin/Corruption DoT; Strike-3 beatstick legendary; pie riders on one-face basics |
 | Combo | Chains, Frenzy, Prevent reactions, Mechanical reconstruction | Cheap Aggro without a combo; Control “no clock” |
 | Burn | Toxin + Corruption ticks onto the legendary | Creature beatdown; Arcane negate as the identity |

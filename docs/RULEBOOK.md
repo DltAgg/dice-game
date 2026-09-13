@@ -256,11 +256,7 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   separate one-turn discount from some gear that applies only to synthetic
   forge (natural is already free and does not consume that discount). The free
   first synthetic does **not** consume `forgeDiscountThisTurn` or while-showing
-  forge discount — save it for a later synthetic. That waiver is **not** a
-  consumed forge discount, so the immediate own-die synthetic bank (§11) still
-  applies. A synthetic install that **consumes** a forge discount does **not**
-  also get that bank — Discount 1 on a 2-cost Mechanical synthetic with 1 pip
-  in the pile spends that pip.
+  forge discount — save it for a later synthetic.
   `[Discount]` never reduces a `[Requires]` gate.
 - Ritual Active-when / activate Spend also use the pile (see §6). Attacks use
   showing-face `[Unlock]` (§13), not the pile. A card may print header
@@ -364,12 +360,9 @@ grant no yield. Opponent-die installs (Corruption harassment) do **not** gain
 yield. Overwriting or peeling a slot clears yield unless the new install
 re-sets it.
 
-**Synthetic forge bank:** On a successful own-die **synthetic** `FORGE_CARD`
-only, you also bank one of the forged face’s attribute into your pile **per
-face installed** (immediate payoff), **unless this install consumed a forge
-discount**. The free first synthetic is not a consumed discount, so it **still
-banks**. Natural forge stays free install + draw + yield with no immediate
-bank. Discount and the bank do not stack on the same card.
+**Forge does not bank the pile.** Installing a face is not an absorb and does
+not add tokens. Card fuel still comes from rolling (including forge yield on
+a later roll) and printed `[Generate]`.
 
 **Forge bonus effects.** Some cards print extra keyword clauses on the forge
 line (for example `[Forge] … [Empower 1].`). Those resolve **immediately after
@@ -395,7 +388,7 @@ generated pip on a showing slot stays; the next roll uses the natural.
 **any** N replaceable faces with N **synthetic** Attr faces from your pool
 (you name the slots and the pool faces). `[Cross forge N Y / Z]` is the same
 except those N slots must currently show **Y**, and the installs are synthetic
-**Z**. Neither is a forge (no forge-draw, no yield, no synthetic bank). Stay /
+**Z**. Neither is a forge (no forge-draw, no yield). Stay /
 cannot-replace slots are illegal. The §9.1 attribute cap still applies to the
 finished die. Displaced faces return to pool when orphaned; their overloads /
 Overcharge leave as on overwrite. Mechanical exclusive. You cannot play a

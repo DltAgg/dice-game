@@ -58,7 +58,7 @@ describe("FORGE_CARD pile cost", () => {
     expect(forged.syntheticForgedThisTurn[P1]).toBeUndefined();
   });
 
-  it("first synthetic forge this turn does not burn playCost and still banks", () => {
+  it("first synthetic forge this turn does not burn playCost and does not bank", () => {
     const ready = withAttributePool(
       withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
       P1,
@@ -69,7 +69,7 @@ describe("FORGE_CARD pile cost", () => {
     const forged = expectOk(
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
-    expect(forged.players[P1]?.attributePool.mechanical).toBe(4);
+    expect(forged.players[P1]?.attributePool.mechanical).toBe(3);
     expect(discardedMechanical(forged)).toBe(0);
     expect(forged.syntheticForgedThisTurn[P1]).toBe(true);
   });
@@ -85,11 +85,11 @@ describe("FORGE_CARD pile cost", () => {
     const first = expectOk(
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
-    expect(first.players[P1]?.attributePool.mechanical).toBe(4);
+    expect(first.players[P1]?.attributePool.mechanical).toBe(3);
     const second = expectOk(
       advance(first, forgeAction(first, P1, handCardIdAt(first, P1, 0), dieId, [5])),
     );
-    expect(second.players[P1]?.attributePool.mechanical).toBe(3);
+    expect(second.players[P1]?.attributePool.mechanical).toBe(1);
   });
 
   it("forge discount reduces a paid synthetic forge cost and is consumed", () => {
@@ -158,7 +158,7 @@ describe("FORGE_CARD pile cost", () => {
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
     expect(discardedMechanical(forged)).toBe(0);
-    expect(forged.players[P1]?.attributePool.mechanical).toBe(4);
+    expect(forged.players[P1]?.attributePool.mechanical).toBe(3);
     expect(forged.syntheticForgedThisTurn[P1]).toBe(true);
     expect(forged.forgeDiscountThisTurn[P1]).toBe(1);
   });
@@ -190,12 +190,12 @@ describe("FORGE_CARD pile cost", () => {
     );
     expect(state.forgeDiscountThisTurn[P1]).toBe(1);
     expect(state.syntheticForgedThisTurn[P1]).toBe(true);
-    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
+    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
     state = expectOk(
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), otherDieId, [4])),
     );
     expect(state.forgeDiscountThisTurn[P1]).toBeUndefined();
-    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
+    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
   });
 
   it("END_TURN clears the waiver so the next turn’s first synthetic is free again", () => {
@@ -222,6 +222,6 @@ describe("FORGE_CARD pile cost", () => {
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), otherDieId, [4])),
     );
     expect(state.syntheticForgedThisTurn[P1]).toBe(true);
-    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
+    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
   });
 });

@@ -1,9 +1,7 @@
 import { getCard } from "../../content/cards.js";
 import { getFaceCard, SHIELD_FACE_ID } from "../../content/faces.js";
-import type { Attribute } from "../../model/attributes.js";
 import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, DieId, FaceCardId, PlayerId } from "../../model/ids.js";
-import { isAttributeSymbol } from "../../model/symbols.js";
 import { forgeExceedsAttributeLimit, isFirstSyntheticForgeThisTurn } from "../../rules/cards.js";
 import {
   countInstalledCopies,
@@ -15,8 +13,7 @@ import {
   takeFaceFromPool,
   withForgeLockResetOnInstall,
 } from "../../rules/faces.js";
-import { addTokens } from "../../rules/tokens.js";
-import { emit, patchDie, patchPlayer, type Draft } from "../draft.js";
+import { emit, patchDie, type Draft } from "../draft.js";
 import { payForgeCost, payPileSpend } from "../payments.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { clearOverchargeOnFace, clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
@@ -187,17 +184,8 @@ export function forgeCard(
     return "INVALID_TARGET";
   }
 
-  // Capture before payForgeCost consumes forgeDiscountThisTurn. Discount and
-  // the immediate synthetic bank do not stack on the same install: otherwise a
-  // 2-cost Mechanical synthetic with Discount 1 and 1 pip nets zero (spend 1,
-  // bank 1) and looks like the pile was never charged. The free first synthetic
-  // is not a consumed discount — skip pay and leave the discount for later.
   const firstSyntheticFree =
     forge.kind === "synthetic" && isFirstSyntheticForgeThisTurn(draft, playerId);
-  const consumedForgeDiscount =
-    forge.kind === "synthetic" &&
-    !firstSyntheticFree &&
-    (draft.forgeDiscountThisTurn[playerId] ?? 0) > 0;
   if (!firstSyntheticFree) {
     const forgeCostError = payForgeCost(draft, playerId, definition);
     if (forgeCostError !== null) return forgeCostError;
@@ -229,13 +217,6 @@ export function forgeCard(
     };
   }
 
-  // Own-die synthetic FORGE_CARD: immediate pile bank per face (DECIDED
-  // 2026-08-29). Natural and opponent-die forge stay install + draw (+ yield
-  // when own-die) only.
-  if (forge.target === "own-die" && forge.kind === "synthetic" && !consumedForgeDiscount) {
-    bankSyntheticForgeReward(draft, playerId, faceCardId, slotIndexes.length);
-  }
-
   // The card is consumed by being installed, so it goes to the graveyard rather
   // than staying available to be played for its effect as well.
   moveCard(draft, cardInstanceId, "graveyard");
@@ -248,31 +229,4 @@ export function forgeCard(
     drainResolution(draft);
   }
   return null;
-}
-
-/** Immediate pile reward for own-die synthetic `FORGE_CARD`. */
-function bankSyntheticForgeReward(
-  draft: Draft,
-  playerId: PlayerId,
-  faceCardId: FaceCardId,
-  facesInstalled: number,
-): void {
-  const face = getFaceCard(faceCardId);
-  if (face === undefined || !isAttributeSymbol(face.symbol)) return;
-  const perFace = draft.config.forgeBankPerFace;
-  if (perFace <= 0 || facesInstalled <= 0) return;
-  const player = draft.players[playerId];
-  if (player === undefined) return;
-  const amount = perFace * facesInstalled;
-  patchPlayer(draft, playerId, {
-    attributePool: addTokens(player.attributePool, {
-      [face.symbol as Attribute]: amount,
-    }),
-  });
-  emit(draft, {
-    type: "attribute-token-gained",
-    playerId,
-    attribute: face.symbol as Attribute,
-    amount,
-  });
 }

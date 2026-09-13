@@ -61,7 +61,7 @@ Craft gates: `.cursor/skills/author-content/design-craft.md`.
 7. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
 8. `.cursor/rules/content-catalogues.mdc`
 9. `docs/RULEBOOK.md` for how systems currently play — especially §11 forge
-   yield / synthetic forge bank (baseline physics, not “the plus”). Do not
+   yield (baseline physics, not “the plus”). Do not
    list individual cards there. New mechanics → engine-developer updates the
    rulebook. Keywords → `docs/KEYWORDS.md`.
 
@@ -78,7 +78,7 @@ Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
   attribute’s exclusive verb.
 - Design **forge intent** before print (`design-craft.md`): vary `faces` /
   natural vs synthetic / riders. Baseline forge physics (draw 1, own-die
-  yield, synthetic bank) are the floor, not the plus.
+  yield) are the floor, not the plus.
 - Write timing-prefixed print (`On roll:` / `On absorb:` / `On …:` — never “Whenever…”).
 - Author JSON in `src/server/content/{cards,faces,creatures}/<id>.json` and the
   matching id constant in `cards.ts` / `faces.ts` / `creatures.ts`.

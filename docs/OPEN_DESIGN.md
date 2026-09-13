@@ -309,22 +309,28 @@ Whenever a player forges a die face — on their own die or an opponent's — th
 draw one card per face installed. This is a forge rule, not a card effect: empty
 deck still stops quietly.
 
-### Forge yield and synthetic forge bank
+### Forge yield
 
-**Status:** `DECIDED` · 2026-08-29 · playtest · implemented
+**Status:** `DECIDED` · 2026-08-29 · playtest · **synthetic install bank removed
+2026-09-12** (showing-face combat)
 
 Forge was too weak as a late-game income path (players still banked ~2
 attributes/turn from opening pips). Own-die forge is the universal scaler
-every deck can use:
+every deck can use — by **yield on a later roll**, not by banking on install.
+Attacks no longer spend the pile (spec `028`); an immediate pip on forge
+was leftover combat fuel.
 
 | Rule | Behaviour |
 |---|---|
 | **Forge yield** | `installFacesOnDie` onto a die you own marks each overwritten slot `forgeYield: true`. Opponent-die installs do not. Opening slots have no yield. Overwrite / peel clears yield unless re-set. |
 | **On roll** | When a `forgeYield` slot is showing after `ROLL_DICE`, generate `forgeYieldGenerate` (default **1**) extra of that face’s attribute for the die owner (effect Generate / auto-bank). Skip Shield / untyped. |
-| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed, **unless the install consumed `forgeDiscountThisTurn`**. The free first synthetic each turn is **not** a consumed discount, so it **does** bank. Natural forge: install + draw + yield only (no immediate bank). Discount + bank on the same install was a playtest leak (Twin Cam / Torque Wright: spend 1, bank 1, pile unchanged). |
+| **No install bank** | `FORGE_CARD` does **not** add pile tokens. Draw + yield (own-die) + printed forge riders only. |
 
-Config knobs: `GameRulesConfig.forgeYieldGenerate`, `forgeBankPerFace`. See
+Config knob: `GameRulesConfig.forgeYieldGenerate`. See
 `docs/RULEBOOK.md` §11. Not a print keyword — forge rules like draw-on-forge.
+
+**SUPERSEDED:** immediate own-die synthetic bank (`forgeBankPerFace`). Discount
++ bank on the same install (MA-14) cannot recur.
 
 ### No mulligan
 
