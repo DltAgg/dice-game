@@ -32,7 +32,7 @@ copy Magic.** This is a dice engine-builder. A mechanic that never touches
 roll / absorb / pile / forge / yield / overload is a miss.
 
 1. **Too complicated.** Dice already carry state (six faces, overloads,
-   pile, forge yield, synthetic bank). One focus per card. No flavor
+   pile, forge yield). One focus per card. No flavor
    add-ons that never matter. Unreadable print and memory issues fail here
    faster than in a spell game.
 2. **No synergy.** If a card has two halves, they must work together. Here
@@ -52,9 +52,10 @@ roll / absorb / pile / forge / yield / overload is a miss.
 **Dice overlay (bible, not Magic):** the die is the protagonist. A
 damage-only card that never touches the engine is usually a miss.
 Engine-converted damage for Control is not a miss. Rulebook §11 own-die
-**forge yield** and **synthetic forge bank** are baseline physics.
-Designers treat those as the floor, then design **extra** forge payoffs —
-not “forge has no pluses besides changing the face.”
+**forge yield** (extra pip when that forged face shows on a later roll) is
+baseline physics. Designers treat that as the floor, then design **extra**
+forge payoffs — not “forge has no pluses besides changing the face.”
+Installing a face does **not** bank the pile.
 
 ## Uniqueness gate (stop circling)
 
@@ -105,21 +106,23 @@ and do **not** reprint `[Overcharge]` on the card. Spec `013`
 | `faces: 3` | Cost 4 default. |
 | `faces: 4` | Cost 5+ default. |
 | `kind: "natural"` | Free install + draw + yield, **or** `[Overcharge]` onto a kept attribute face (master rule — do not print it). Identity face / density. Reason required. |
-| `kind: "synthetic"` | Named special + synthetic bank. Reason required (the special, not “Mechanical cards forge synthetic”). |
+| `kind: "synthetic"` | Named special + yield on later rolls. Reason required (the special, not “Mechanical cards forge synthetic”). |
 | Named-face install | Play or rider names a **specific** special, not “any of this attribute.” |
 | Forge rider | Extra generate, discount, draw, yield synergy, lock, or a trigger that cares the face was forged. |
 | Play sequences with forge | Instant/reaction/equip that is better after you forged, or that sets up the next forge. |
-| Overload that cares it was forged | Fires or scales on yield / synthetic bank / “this face was installed this game.” |
+| Overload that cares it was forged | Fires or scales on yield / “this face was installed this game.” |
 | Dual-pip face (below) | The install *is* the plus: two attributes from one slot. |
 
-Mechanical still owns extra own-die reconstruction (`[Reforge]`, `[Cross forge]`, `[Stamp]`,
-extra forge as the **exclusive verb**). Other attributes may still have
-interesting **forge regions** (count, riders, dual-pip faces) without
-stealing that verb. Opponent-die forge remains Corruption.
+Mechanical still owns extra own-die reconstruction (`[Stamp]`, `[Double]`,
+extra forge, move overloads between **your** faces as the **exclusive verb**).
+Do **not** print `[Reforge]` / `[Cross forge]` (retired overwrite-without-draw).
+Other attributes may still have interesting **forge regions** (count, riders,
+dual-pip faces) without stealing that verb. Opponent-die forge remains
+Corruption. `[Desynthesize]` is not a forge and not `[Stamp]`.
 
 **Baseline physics are not “the plus”:** draw 1 per install; own-die yield
-(+1 pip of the showing face’s attribute); synthetic own-die `FORGE_CARD`
-banks 1 of the forged attribute per face. Layer on top of that.
+(+1 pip of the showing face’s attribute on a later roll). Layer on top of
+that. Do not treat an immediate pile pip on install as a forge plus.
 
 ## Dual-attribute generating faces (first-class hole)
 
@@ -132,12 +135,13 @@ Prefer composing **today**:
 
 ```text
 symbol: martial
-On roll: [Generate 1 Wild].
+On roll: this face also produces 1 Wild.
 ```
 
-The face still shows Martial (yield is Martial). Absorb/on-roll Generate
-supplies the partner. Same pattern for a Synthetic that shows Arcane and
-generates Darkness (or any pair that a constructed home actually wants).
+The face still shows Martial (yield is Martial). Extra pips / the dual-pip
+line supplies the partner — **not** a tactic `[Generate]`. Same pattern for a
+Synthetic that shows Arcane and also produces Darkness (or any pair a
+constructed home actually wants).
 
 If the proving print needs **two inherent pips** or a second `symbol`
 field, write the card, then brief `engine-developer` with the standard

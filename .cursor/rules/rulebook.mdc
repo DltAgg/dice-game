@@ -18,8 +18,8 @@ constraints, **edit `docs/RULEBOOK.md` in that same change**. Specs and
 `OPEN_DESIGN.md` do not replace this.
 
 Examples that **require** a rulebook edit: new/changed phase, pile spend rules,
-absorb vs spend, attack fuel, chain windows, prevent order, draw rate,
-loadout caps, win condition.
+absorb vs spend, showing-face attack unlock (spec `028`), chain windows, prevent
+order, draw rate, loadout caps, win condition.
 
 Examples that **do not**: a new card using existing effects (still update
 `docs/KEYWORDS.md` if you add or rename a keyword); UI/store/PeerJS except the

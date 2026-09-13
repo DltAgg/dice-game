@@ -17,8 +17,8 @@ import {
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const CROSS_FORGE_CHOICE = testCard({
-  id: "card-test-cross-forge-choice",
+const CHOOSE_STAMP_OR_DISCOUNT = testCard({
+  id: "card-test-choose-stamp-or-discount",
   playCost: { mechanical: 2 },
   attribute: "mechanical",
   forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
@@ -28,24 +28,10 @@ const CROSS_FORGE_CHOICE = testCard({
       {
         type: "choose-effect-mode",
         modes: [
-          [
-            {
-              type: "replace-synthetic-face",
-              faces: 2,
-              attribute: "luminar",
-              fromAttribute: "mechanical",
-            },
-          ],
-          [
-            {
-              type: "replace-synthetic-face",
-              faces: 2,
-              attribute: "mechanical",
-              fromAttribute: "luminar",
-            },
-          ],
+          [{ type: "reapply-die-modifiers" }],
+          [{ type: "arm-forge-discount", amount: 2 }],
         ],
-        modeLabels: ["Mechanical → Luminar", "Luminar → Mechanical"],
+        modeLabels: ["Stamp", "Discount 2 forge"],
       },
     ],
   },
@@ -66,7 +52,7 @@ describe("forge face selection", () => {
 
   it("gated choose-effect-mode opens after play", () => {
     const ready = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [CROSS_FORGE_CHOICE.id]),
+      withHand(withPhase(newMatch(), "actions"), P1, [CHOOSE_STAMP_OR_DISCOUNT.id]),
       P1,
       10,
     );

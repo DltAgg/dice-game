@@ -5,11 +5,6 @@ import {
   resolveFaceForForge,
   preferredSlotsForForgeFaces,
 } from "../rules/faces.js";
-import {
-  eligiblePoolFacesForReforge,
-  isLegalReforgeAssignment,
-  legalSlotsForReplaceSyntheticFace,
-} from "../rules/reforge.js";
 import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type FaceCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -30,13 +25,11 @@ import { diceOf } from "../rules/dice.js";
 import { collectLegalSilenceHosts } from "../rules/silence.js";
 import { collectLegalBounceCards } from "../rules/bounce.js";
 import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
-import { legalTargetsFor } from "../rules/targeting.js";
+import { legalSplitDamageTargets, legalTargetsFor } from "../rules/targeting.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
+import { attackIsUnlocked } from "../rules/attackUnlock.js";
 import {
-  addToken,
-  attackIsFuelled,
   discardTokensInAttributeOrder,
-  isNonEmptyRequirement,
   pileRequirementShortfall,
 } from "../rules/tokens.js";
 import { advance } from "../reducer/reduce.js";
@@ -53,16 +46,13 @@ import { advance } from "../reducer/reduce.js";
 
 export interface AutoplayPolicy {
   /**
-   * Absorb symbols a creature still needs to arm one of its attacks. On by
-   * default, because attacks are funded from absorbed tokens: a driver that
-   * never absorbed could never attack, and no match would ever end.
-   * Spec `016`: rolled attributes auto-bank, so this mainly covers Shield and
-   * leftover effect-generated pips.
+   * Absorb leftover unabsorbed attribute pips into the pile (cards / forge).
+   * Attacks unlock from showing faces (spec `028`), not from banking.
    */
   readonly absorbForAttacks: boolean;
   /** Absorb Shield faces onto the most damaged creature rather than wasting them. */
   readonly absorbShields: boolean;
-  /** Declare attacks when a creature's pile requirements are met. */
+  /** Declare attacks when a creature's showing-face unlock is met. */
   readonly attack: boolean;
   /** Play affordable cards for their effect during the actions phase. */
   readonly playCards: boolean;
@@ -109,7 +99,6 @@ function absorb(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): G
   for (const symbol of poolSymbols(current, playerId)) {
     if (isAttributeSymbol(symbol.symbol)) {
       if (!policy.absorbForAttacks) continue;
-      if (creatureNeeding(current, playerId, symbol) === undefined) continue;
       const result = advance(current, {
         type: "ABSORB_SYMBOL",
         playerId,
@@ -139,35 +128,11 @@ const poolSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInsta
     .filter((symbol) => symbol.ownerId === playerId && isUnabsorbedPoolSymbol(symbol))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
-/** True when banking this attribute would newly fuel at least one living creature's attack. */
-function creatureNeeding(
-  state: GameState,
-  playerId: PlayerId,
-  symbol: SymbolInstance,
-): CreatureState | undefined {
-  if (!isAttributeSymbol(symbol.symbol)) return undefined;
-  const attribute = symbol.symbol;
-  const held = state.players[playerId]?.attributePool ?? {};
-  const afterBank = addToken(held, attribute);
-
-  return livingCreaturesOf(state, playerId).find((creature) => {
-    const definition = getCreatureDefinition(creature.definitionId);
-    if (definition === undefined) return false;
-    return definition.attacks.some((attack) => {
-      if (!isNonEmptyRequirement(attack.requires) && !isNonEmptyRequirement(attack.discards)) {
-        return false;
-      }
-      // Both requires (gate) and discards (Spend) must be met — not XOR.
-      return !attackIsFuelled(held, attack) && attackIsFuelled(afterBank, attack);
-    });
-  });
-}
-
 function mostDamaged(state: GameState, playerId: PlayerId): CreatureState | undefined {
   return [...livingCreaturesOf(state, playerId)].sort((a, b) => b.damage - a.damage)[0];
 }
 
-/** Attacks with every creature that is fuelled, hitting the first legal target. */
+/** Attacks with every creature that is unlocked, hitting the first legal target. */
 function fight(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): GameState {
   if (!policy.attack) return state;
   let current = state;
@@ -178,7 +143,7 @@ function fight(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): Ga
     const definition = getCreatureDefinition(creature.definitionId);
     if (definition === undefined) continue;
 
-    // Prefer basics before multi-cost specials.
+    // Prefer basics before dual-color / 2-face specials.
     const attacks = [...definition.attacks].sort((a, b) => {
       if (a.kind === b.kind) return 0;
       return a.kind === "basic" ? -1 : 1;
@@ -186,6 +151,7 @@ function fight(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): Ga
 
     for (const attack of attacks) {
       if (attack.effect === undefined) continue;
+      if (!attackIsUnlocked(current, playerId, attack)) continue;
       const [targetId] = legalTargetsFor(current, creature.id, attack);
       if (targetId === undefined) continue;
 
@@ -520,54 +486,6 @@ function resolvePending(state: GameState): GameState {
     throw new Error("autoplay: no die for forge-faces");
   }
 
-  if (pending.type === "replace-synthetic-face") {
-    const spec = {
-      faces: pending.faces,
-      attribute: pending.attribute,
-      ...(pending.fromAttribute !== undefined ? { fromAttribute: pending.fromAttribute } : {}),
-    };
-    const slots = legalSlotsForReplaceSyntheticFace(state, pending.controllerId, spec);
-    const pool = eligiblePoolFacesForReforge(state, pending.controllerId, pending.attribute);
-    const faceCardIds = pool.slice(0, pending.faces);
-    if (faceCardIds.length < pending.faces) {
-      throw new Error("autoplay: no pool face for replace-synthetic-face");
-    }
-    const byDie = new Map<DieId, number[]>();
-    for (const slot of slots) {
-      const indexes = byDie.get(slot.dieId) ?? [];
-      indexes.push(slot.slotIndex);
-      byDie.set(slot.dieId, indexes);
-    }
-    for (const [dieId, indexes] of byDie) {
-      if (indexes.length < pending.faces) continue;
-      const slotIndexes = indexes.slice(0, pending.faces);
-      if (
-        !isLegalReforgeAssignment(
-          state,
-          pending.controllerId,
-          spec,
-          dieId,
-          slotIndexes,
-          faceCardIds,
-        )
-      ) {
-        continue;
-      }
-      const result = advance(state, {
-        type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
-        playerId: pending.controllerId,
-        dieId,
-        slotIndexes,
-        faceCardIds,
-      });
-      if (!result.ok) {
-        throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_REPLACE_SYNTHETIC_FACE`);
-      }
-      return resolvePending(result.state);
-    }
-    throw new Error("autoplay: no slot for replace-synthetic-face");
-  }
-
   if (pending.type === "choose-effect-mode") {
     const convertFace =
       pending.sourceFaceCardId === null ? undefined : getFaceCard(pending.sourceFaceCardId);
@@ -731,18 +649,7 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "split-damage") {
-    const targetId =
-      pending.attackerId === null
-        ? livingCreaturesOf(state, opponentOf(state, pending.controllerId))[0]?.id
-        : livingCreaturesOf(state, opponentOf(state, pending.controllerId)).find((creature) => {
-            if (creature.position === "back" && !pending.range) {
-              const front = livingCreaturesOf(state, creature.ownerId).filter(
-                (candidate) => candidate.position === "frontline",
-              );
-              return front.length === 0;
-            }
-            return true;
-          })?.id;
+    const targetId = legalSplitDamageTargets(state, pending)[0];
     if (targetId === undefined) {
       throw new Error("autoplay: no split-damage target");
     }

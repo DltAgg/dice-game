@@ -33,7 +33,7 @@ seat; the other seat is filled by `src/ai`. Hotseat is unchanged
 | Board: creatures, dice faces, symbols, attribute pile, phase, hand | Fancy card art on the board (catalogue remains separate) |
 | Actions: roll, then **actions** for absorb / attack / play / forge / activate ritual (any order), retain, resolve search, skip to actions from roll, end turn | Reaction chain UI |
 | Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
-| Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge / Cross forge), `choose-equipment`, and `choose-attribute-tokens` | Second legality engine in React |
+| Pending decision prompts (chooser + waiting banner), including `choose-equipment` and `choose-attribute-tokens`. `replace-synthetic-face` (Reforge / Cross forge) is **removed** | Second legality engine in React |
 | Sticky error snackbar | |
 | Catalogue still reachable from the app shell | Persistence / resume |
 
@@ -43,18 +43,14 @@ seat; the other seat is filled by `src/ai`. Hotseat is unchanged
 controller and a waiting banner for everyone else. The chooser may complete the
 pending even when they are not the turn player (`actingPlayerIdOf` follows
 `pendingChooserId`). Resolve via
-`useMatchStore.dispatch` only — query `@server` helpers for legal options
-(e.g. `legalSlotsForReplaceSyntheticFace` / `eligiblePoolFacesForReforge` for
-Reforge / Cross forge). Do not special-case catalogue card ids. HandStrip Play
-is enabled when `hasPlayableEffect`, `canAffordPlay`, and `canResolvePlayEffects`
-all pass.
+`useMatchStore.dispatch` only — query `@server` helpers for legal options.
+Do not special-case catalogue card ids. HandStrip Play
+is enabled when `hasPlayableEffect` and `canAffordPlay` both pass
+(`canResolvePlayEffects` was a Reforge play-refusal helper and is **removed**).
 
-Notable Reforge / Cross forge UX (`replace-synthetic-face`):
-
-1. Pick N replaceable slots on **one** owned die (Cross forge: those slots must show Y).
-2. Pick N **synthetic** destination faces from the controller's pool.
-3. Dispatch `RESOLVE_REPLACE_SYNTHETIC_FACE` with parallel `slotIndexes` /
-   `faceCardIds` (engine handles uninstall / install; no forge-draw).
+`replace-synthetic-face` pending UX is **removed** (no pending type, no
+`RESOLVE_REPLACE_SYNTHETIC_FACE`, no `eligiblePoolFacesForReforge`, no chooser
+modal).
 
 ## UI — two-phase turn
 
@@ -77,8 +73,8 @@ Do not reimplement absorb legality in React. Dispatch `ABSORB_SYMBOL`; let
 - [x] Illegal actions leave state unchanged and surface the `GameError` code
 - [x] A match can be played to victory through the UI (manual smoke; reducer autoplay covers rules)
 - [x] Engine purity guard still green; store/UI never imported by `src/server`
-- [x] `replace-synthetic-face` pending has chooser + waiting UI
-- [x] Stay-on-slot UI: pestilence uses catalogue `pestilenceSpreadAt`; remaining forge-lock and cannot-replace shown; forge / forge-faces / Reforge omit locked slots; Activate peel stays
+- [x] `replace-synthetic-face` pending **removed**
+- [x] Stay-on-slot UI: pestilence uses catalogue `pestilenceSpreadAt`; remaining forge-lock and cannot-replace shown; forge / forge-faces omit locked slots; Activate peel stays
 
 ## Layout
 
@@ -87,3 +83,5 @@ src/store/matchStore.ts     Zustand + advance()
 src/ui/match/MatchBoard.tsx hotseat board
 src/app/App.tsx             shell (Match | Catalogue)
 ```
+
+Frontline is two fixed columns from `frontlineLaneSlots`; empty seats stay empty (spec `029`).

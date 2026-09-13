@@ -31,7 +31,6 @@ export function FacePickModal({
   attribute,
   forgingCard,
   sourceCard,
-  eligibleIds,
   subtitle,
   onPick,
   onCancel,
@@ -45,16 +44,13 @@ export function FacePickModal({
   forgingCard?: { readonly forgeTags?: readonly string[] };
   /** Tactic/ritual being forged — shown when there is no pending `Caused by` source. */
   sourceCard?: NonNullable<ReturnType<typeof getCard>>;
-  /** When set, overrides forge eligibility (e.g. Reforge pool-only list). */
-  eligibleIds?: readonly FaceCardId[];
   subtitle: string;
   onPick: (faceCardId: FaceCardId) => void;
   onCancel?: () => void;
   onBack?: () => void;
   backLabel?: string;
 }) {
-  const eligible =
-    eligibleIds ?? eligibleFacesForForge(state, playerId, kind, attribute, forgingCard);
+  const eligible = eligibleFacesForForge(state, playerId, kind, attribute, forgingCard);
   const pendingSource = <CausedByLine state={state} />;
 
   return (

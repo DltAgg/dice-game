@@ -34,14 +34,14 @@
       "id": "attack-gravemarrow-shade-grave-reach",
       "name": "Grave Reach",
       "kind": "basic",
-      "discards": {
+      "unlock": {
         "darkness": 1
       },
       "range": false,
-      "rulesText": "[Strike 2].",
+      "rulesText": "[Strike 1].",
       "effect": {
         "type": "damage",
-        "amount": 2,
+        "amount": 1,
         "target": {
           "kind": "declared-target"
         }
@@ -51,11 +51,7 @@
       "id": "attack-gravemarrow-shade-ebb-of-names",
       "name": "Ebb of Names",
       "kind": "special",
-      "requires": {
-        "darkness": 2,
-        "arcane": 1
-      },
-      "discards": {
+      "unlock": {
         "darkness": 1,
         "arcane": 1
       },

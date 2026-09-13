@@ -9,7 +9,6 @@ import type {
   PlayerId,
 } from "../../model/ids.js";
 import { isReactionCard } from "../../rules/cards.js";
-import { playEffectsRefusal } from "../../rules/reforge.js";
 import {
   buildEffectLink,
   buildEquipLink,
@@ -126,9 +125,6 @@ export function playCard(
       return "INVALID_TARGET";
     }
   }
-
-  const reforgeError = playEffectsRefusal(draft, playerId, definition);
-  if (reforgeError !== null) return reforgeError;
 
   const headerCostError = payHeaderCost(draft, playerId, definition, true);
   if (headerCostError !== null) return headerCostError;

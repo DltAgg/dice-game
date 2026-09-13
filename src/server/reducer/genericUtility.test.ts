@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   TEST_PLAYABLE,
-  TEST_SYNTHETIC_MECHANICAL_A,
   testCard,
 } from "../testing/fixtures/index.js";
 import {
@@ -35,16 +34,6 @@ const SILENCE = testCard({
         target: { kind: "choose-opponent-silence-host", hosts: ["face"] },
       },
     ],
-  },
-});
-
-const REFORGE = testCard({
-  id: "card-test-utility-reforge",
-  playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-  effect: {
-    effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
   },
 });
 
@@ -84,33 +73,5 @@ describe("generic utility", () => {
       }),
     );
     expect(after.pendingDecision?.type).toBe("choose-silence-host");
-  });
-
-  it("Reforge opens replace-synthetic-face", () => {
-    let state = actionsReady([REFORGE.id]);
-    const dieId = state.players[P1]?.dieIds[0];
-    if (dieId === undefined) throw new Error("die");
-    state = {
-      ...state,
-      dice: {
-        ...state.dice,
-        [dieId]: {
-          ...state.dice[dieId]!,
-          slots: state.dice[dieId]!.slots.map((slot, index) =>
-            index === 0
-              ? { ...slot, faceCardId: TEST_SYNTHETIC_MECHANICAL_A, faceCardOwnerId: P1 }
-              : slot,
-          ),
-        },
-      },
-    };
-    const played = expectOk(
-      advance(state, {
-        type: "PLAY_CARD",
-        playerId: P1,
-        cardInstanceId: handCardIdAt(state, P1, 0),
-      }),
-    );
-    expect(played.pendingDecision?.type).toBe("replace-synthetic-face");
   });
 });

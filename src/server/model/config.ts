@@ -88,12 +88,6 @@ export interface GameRulesConfig {
    */
   readonly forgeYieldGenerate: number;
   /**
-   * DECIDED (playtest 2026-08-29). Immediate pile bank per face installed by
-   * own-die **synthetic** `FORGE_CARD` only. Natural forge and opponent-die
-   * forge do not bank.
-   */
-  readonly forgeBankPerFace: number;
-  /**
    * DECIDED (playtest 2026-08-29). Soft global cap on Toxin markers per
    * creature. Excess from `[Mark]` is discarded after Adaptive Toxin’s
    * receive cap (if any).
@@ -122,6 +116,5 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   maxResolutionSteps: 64,
   preventExpiry: "end-of-turn",
   forgeYieldGenerate: 1,
-  forgeBankPerFace: 1,
   maxToxinMarkers: 3,
 };

@@ -11,7 +11,7 @@ import type { MatchRecording } from "./types.js";
 
 export const METRICS_PROMPT_PREAMBLE = `You are helping make Dice Skirmish playable and fun again.
 
-The game used two resources (energy and attributes). Fuel is now the **attribute pile only** — rolled and generated pips auto-bank. Energy is gone. Ignore leftover energy* keys on old recordings. Do not propose bringing energy back.
+The game used two resources (energy and attributes). Cards and rituals still spend the **attribute pile only** — rolled and generated pips auto-bank. Energy is gone. Ignore leftover energy* keys on old recordings. Do not propose bringing energy back.
 
 The live set is in a weird, slow state: matches often fail to close, attacks are often unpaid, and forge is a weak third choice behind play and Overcharge. Diagnose **that** — not a generic 11–20 turn band.
 
@@ -24,10 +24,11 @@ Pace flags (per match, not an 11–20 bucket):
 - Drag = overtime + late idle.
 - Verdicts: on-pace, empty-early, dragging (empty overtime), grinding (setup/stall, cannot close), long-active (combat happened, still too many turns).
 
-Playability (pile-only fuel):
-- 0 attacks is not “chose setup.” Check INSUFFICIENT_SYMBOLS, attack discards vs a 2-die roll, and 1-pip leftovers that can pay a 1-cost card or Overcharge (0 pile) but not a 2-token basic.
+Playability (showing-face Unlock):
+- Attacks do **not** spend the pile. Unpaid = no matching **showing face** for [Unlock] (e.g. [Unlock: Mechanical] needs a showing Mechanical face). Do not diagnose leftover pile vs discards as the attack gate.
+- 0 attacks is not “chose setup.” Check ATTACK_NOT_UNLOCKED. INSUFFICIENT_SYMBOLS is pile Spend/Requires (cards/rituals), not attacks.
 - turn.absorbs counts symbol-absorbed **and** symbols-consumed — it is not spare pile.
-- Separate cannot-pay-attack from cannot-kill (prevent/Shield, zero-damage attacks) from not converting setup.
+- Separate cannot-unlock-attack from cannot-kill (prevent/Shield, zero-damage attacks) from not converting setup.
 
 Fun:
 - Close (bible §45): first death on turns 1–3 is too early for a three-creature skirmish; after turn ${String(BASELINE_TURNS)} or never with overtime, the close is not arriving.

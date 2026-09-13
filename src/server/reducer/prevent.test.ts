@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { asEffectInstanceId } from "../model/ids.js";
-import type { AttributeTokens } from "../model/symbols.js";
 import { currentLife } from "../rules/creatures.js";
 import { createDraft } from "./draft.js";
 import { advance } from "./reduce.js";
@@ -23,9 +22,9 @@ import {
   withHand,
   withPhase,
   withShields,
-  withTokens,
+  withShowingFaces,
 } from "../testing/scenario.js";
-import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL, KINDLE, KINDLE_FUEL } from "../testing/tempoCatalogue.js";
+import { CRANK, DRIVE_SHAFT, KINDLE } from "../testing/tempoCatalogue.js";
 
 const HEAVY_AXE = DRIVE_SHAFT;
 const CHARGE = KINDLE;
@@ -53,36 +52,36 @@ const PREVENT_REFLECT = testCard({
   effect: { effects: [{ type: "prevent-attack-reflect" }] },
 });
 
-function combatWithAttacker(tokens: AttributeTokens) {
-  const base = withPhase(newMatch(), "actions");
+function combatWithAttacker() {
+  const base = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["mechanical"]);
   const attacker = creatureIdAt(base, P1, 0);
   const target = creatureIdAt(base, P2, 0);
   return {
     attacker,
     target,
-    state: withTokens(base, attacker, tokens),
+    state: base,
   };
 }
 
 function combatWithDriveShaft() {
-  const base = withPhase(newMatch(), "actions");
+  const base = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["mechanical"]);
   const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
   return {
     attacker,
     target,
-    state: withTokens(base, attacker, DRIVE_SHAFT_FUEL),
+    state: base,
   };
 }
 
 function combatWithCharge() {
-  const base = withPhase(newMatch(), "actions");
+  const base = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["luminar"]);
   const attacker = creatureIdAt(base, P1, 1);
-  const target = creatureIdAt(base, P2, 0);
+  const target = creatureIdAt(base, P2, 1);
   return {
     attacker,
     target,
-    state: withTokens(base, attacker, KINDLE_FUEL),
+    state: base,
   };
 }
 
@@ -126,7 +125,7 @@ describe("true prevent (009)", () => {
   });
 
   it("a prevent reaction stops the waiting attack on the attack target", () => {
-    const { attacker, target, state: combat } = combatWithAttacker(CRANK_FUEL);
+    const { attacker, target, state: combat } = combatWithAttacker();
     const withBarrier = withHand(withPile(combat, P2, 10), P2, [TEST_REACTION_PREVENT]);
 
     const opened = expectOk(
@@ -206,7 +205,7 @@ describe("true prevent (009)", () => {
   });
 
   it("prevent plus draw draws when prevent resolves", () => {
-    const { attacker, target, state: combat } = combatWithAttacker(CRANK_FUEL);
+    const { attacker, target, state: combat } = combatWithAttacker();
     const seeded = withHand(withPile(combat, P2, 10), P2, [PREVENT_AND_DRAW.id, TEST_PLAYABLE, TEST_PLAYABLE]);
     const player = seeded.players[P2];
     if (player === undefined) throw new Error("test: no p2");
@@ -273,7 +272,7 @@ describe("true prevent (009)", () => {
     expect(first.creatures[target]?.attackPreventCount).toBe(0);
     expect(first.creatures[target]?.damage).toBe(0);
 
-    const refreshed = withTokens(
+    const refreshed = withShowingFaces(
       {
         ...first,
         creatures: {
@@ -284,8 +283,8 @@ describe("true prevent (009)", () => {
           },
         },
       },
-      attacker,
-      DRIVE_SHAFT_FUEL,
+      P1,
+      ["mechanical"],
     );
     const second = resolveOpenChain(
       expectOk(

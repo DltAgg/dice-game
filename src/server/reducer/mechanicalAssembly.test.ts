@@ -23,8 +23,8 @@ import {
   withPhase,
 } from "../testing/scenario.js";
 
-const CROSS_FORGE_CHOICE = testCard({
-  id: "card-test-assembly-cross-choice",
+const CHOOSE_STAMP_OR_DISCOUNT = testCard({
+  id: "card-test-assembly-choose-stamp-or-discount",
   playCost: { mechanical: 2, any: 1 },
   attribute: "mechanical",
   forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
@@ -34,24 +34,10 @@ const CROSS_FORGE_CHOICE = testCard({
       {
         type: "choose-effect-mode",
         modes: [
-          [
-            {
-              type: "replace-synthetic-face",
-              faces: 2,
-              attribute: "luminar",
-              fromAttribute: "mechanical",
-            },
-          ],
-          [
-            {
-              type: "replace-synthetic-face",
-              faces: 2,
-              attribute: "mechanical",
-              fromAttribute: "luminar",
-            },
-          ],
+          [{ type: "reapply-die-modifiers" }],
+          [{ type: "arm-forge-discount", amount: 2 }],
         ],
-        modeLabels: ["Mechanical → Luminar", "Luminar → Mechanical"],
+        modeLabels: ["Stamp", "Discount 2 forge"],
       },
     ],
   },
@@ -101,16 +87,6 @@ const DOUBLE_NEXT = testCard({
   },
 });
 
-const REFORGE = testCard({
-  id: "card-test-assembly-reforge",
-  playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
-  effect: {
-    effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
-  },
-});
-
 const SILENCE = testCard({
   id: "card-test-assembly-silence",
   playCost: { mechanical: 2, any: 1 },
@@ -153,8 +129,8 @@ function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): Game
 }
 
 describe("mechanical assembly", () => {
-  it("choose-effect-mode opens for Cross forge", () => {
-    const ready = actionsReady([CROSS_FORGE_CHOICE.id]);
+  it("choose-effect-mode opens for Stamp or Discount", () => {
+    const ready = actionsReady([CHOOSE_STAMP_OR_DISCOUNT.id]);
     const played = playCard(ready);
     expect(played.pendingDecision?.type).toBe("choose-effect-mode");
   });
@@ -200,27 +176,6 @@ describe("mechanical assembly", () => {
   it("Double arms the next face effect", () => {
     const after = playCard(actionsReady([DOUBLE_NEXT.id]));
     expect(after.resolveNextFaceEffectTwice[P1]).toBe(true);
-  });
-
-  it("Reforge opens replace-synthetic-face for any faces on one die", () => {
-    let state = actionsReady([REFORGE.id]);
-    const dieId = dieIdOf(state);
-    state = {
-      ...state,
-      dice: {
-        ...state.dice,
-        [dieId]: {
-          ...state.dice[dieId]!,
-          slots: state.dice[dieId]!.slots.map((slot, index) =>
-            index === 0
-              ? { ...slot, faceCardId: TEST_SYNTHETIC_MECHANICAL_A, faceCardOwnerId: P1 }
-              : slot,
-          ),
-        },
-      },
-    };
-    const played = playCard(state);
-    expect(played.pendingDecision?.type).toBe("replace-synthetic-face");
   });
 
   it("the test face deck lists the mechanical trio", () => {

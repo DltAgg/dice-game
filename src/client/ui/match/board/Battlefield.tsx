@@ -1,9 +1,10 @@
 import {
+  backRowCreatures,
+  frontlineLaneSlots,
   getCard,
   hasLegalReactionOffer,
   isEnabledRitualReaction,
   isRitualSilenced,
-  livingCreaturesOf,
   ritualsOf,
   type AttackId,
   type CardInstanceId,
@@ -15,6 +16,9 @@ import {
 import {
   CreatureTile,
 } from "./CreatureTile";
+import {
+  FrontlineSeat,
+} from "./FrontlineSeat";
 import {
   RitualTile,
 } from "./RitualTile";
@@ -49,9 +53,8 @@ export function Battlefield({
   canAct: boolean;
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
 }) {
-  const living = livingCreaturesOf(state, playerId);
-  const front = living.filter((c) => c.position === "frontline");
-  const back = living.filter((c) => c.position === "back");
+  const [lane0, lane1] = frontlineLaneSlots(state, playerId);
+  const back = backRowCreatures(state, playerId);
   const isActive = state.activePlayerId === playerId;
   const pending = state.pendingDecision;
   const inReactionWindow =
@@ -76,18 +79,22 @@ export function Battlefield({
   );
 
   const frontRow = (
-    <div className="flex justify-center gap-3">
-      {front.map((creature) => (
-        <CreatureTile
-          key={creature.id}
-          state={state}
-          creature={creature}
-          intent={intent}
-          onCreatureClick={onCreatureClick}
-          onAttackChoose={onAttackChoose}
-          onCancelAttack={onCancelAttack}
-        />
-      ))}
+    <div className="mx-auto grid w-fit grid-cols-2 gap-3" data-frontline-row="">
+      {([lane0, lane1] as const).map((occupant, index) => {
+        const lane = index as 0 | 1;
+        return (
+          <FrontlineSeat
+            key={occupant?.id ?? `empty-lane-${String(lane)}`}
+            lane={lane}
+            occupant={occupant}
+            state={state}
+            intent={intent}
+            onCreatureClick={onCreatureClick}
+            onAttackChoose={onAttackChoose}
+            onCancelAttack={onCancelAttack}
+          />
+        );
+      })}
     </div>
   );
 

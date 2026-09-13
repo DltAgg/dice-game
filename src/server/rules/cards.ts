@@ -137,7 +137,7 @@ export const playCostTotal = (definition: CardDefinition): number =>
 
 /**
  * Whether the player can meet the `[Requires]` gate and pay discounted header
- * `[Spend]` to play this card (same pile, not additive — like `attackIsFuelled`).
+ * `[Spend]` to play this card (same pile, not additive).
  * `[Discount]` cuts header Spend only, never the gate. Forge ignores the gate
  * (`canAffordForge`). Does not mutate state.
  */

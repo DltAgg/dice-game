@@ -46,7 +46,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
 | Task | Start here |
 |---|---|
 | Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
-| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb; [MECHANIC_ARCHETYPES.md](docs/MECHANIC_ARCHETYPES.md) for mechanic × deck-style feel |
+| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for pile fuel / Absorb; [creatures.md](.cursor/skills/author-content/creatures.md) + spec `028` for attack `[Unlock]`; [MECHANIC_ARCHETYPES.md](docs/MECHANIC_ARCHETYPES.md) for mechanic × deck-style feel |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
@@ -54,7 +54,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
 | Builtin / constructed loadouts, card-has-no-home, attribute identity in builds | Subagent: [deck-designer](.cursor/agents/deck-designer.md) |
 | New or tuned agents, skills, rules, TOOLS.md, AGENTS.md routing | Subagent: [prompt-engineer](.cursor/agents/prompt-engineer.md) + skill [author-interactions](.cursor/skills/author-interactions/SKILL.md) |
 | After a playtest (notes ± metrics, “felt like the wrong deck”) | Subagent: [post-playtest](.cursor/agents/post-playtest.md) + skill [review-playtest](.cursor/skills/review-playtest/SKILL.md) — updates `docs/MECHANIC_ARCHETYPES.md`, briefs owners; does not author JSON or reducer |
-| Match metrics dump with **no** playtest narrative (playable/fun, pace, unpaid attacks, forge vs Overcharge) | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`). Copy agent prompt is instructions only; attach Download JSON. |
+| Match metrics dump with **no** playtest narrative (playable/fun, pace, locked attacks / showing-face mismatch, forge vs Overcharge) | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`). Copy agent prompt is instructions only; attach Download JSON. |
 | PeerJS / protocol (adapter side) | Subagent: [match-ui](.cursor/agents/match-ui.md) + `src/client/networking` + `docs/specs/007-peerjs.md` |
 
 ## Subagents
@@ -91,6 +91,8 @@ invoke them separately — do not implement both layers yourself.
 | `docs/specs/021-overcharge.md` | Tactic `[Overcharge]` (hand-card spend). Not spec `013` `optional-overcharge`. |
 | `docs/specs/026-ai-playtest.md` | Headless two-AI local playtest (`src/ai`; public `@server` only) |
 | `docs/specs/027-local-vs-ai.md` | Lobby + store Play vs AI (`chooseAction` as a player adapter) |
+| `docs/specs/028-showing-face-combat.md` | Creature attacks `[Unlock]` from showing faces (not pile) |
+| `docs/specs/029-lane-combat.md` | Creature attacks target by column (lane); legendary / breach / Range |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
@@ -116,5 +118,8 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.
 - Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
 - Printed `playCost` totaling **1 pile token** is exceptional and niche. Players should reach 1-token plays mainly via **cost reduction** (`[Discount]`), not a catalogue of 1-drops.
+- Creature attacks use `[Unlock]` from the owner’s **showing faces** (spec `028`); they do **not** `[Requires]` / `[Spend]` `attributePool`. Pile still pays cards, rituals, and synthetic forge. No energy. No second roll on declare. Query `attackIsUnlocked` — do not teach `attackIsFuelled` / `ATTACK_NOT_FUELLED`.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).
+- Do not reauthor `[Reforge]` / `[Cross forge]` / `replace-synthetic-face` (overwrite-without-draw removed). `[Desynthesize]` is not a forge / not `[Stamp]`.
+- Do not print `[Generate]` on tactics, creatures, rituals, equipment, or overloads. Extra pips are faces and `[Overcharge]`.

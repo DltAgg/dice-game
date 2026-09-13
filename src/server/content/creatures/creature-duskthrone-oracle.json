@@ -33,15 +33,14 @@
       "id": "attack-duskthrone-oracle-nightward-bolt",
       "name": "Nightward Bolt",
       "kind": "basic",
-      "discards": {
-        "darkness": 1,
-        "any": 1
+      "unlock": {
+        "darkness": 1
       },
       "range": false,
-      "rulesText": "[Strike 3].",
+      "rulesText": "[Strike 1].",
       "effect": {
         "type": "damage",
-        "amount": 3,
+        "amount": 1,
         "target": {
           "kind": "declared-target"
         }
@@ -51,12 +50,7 @@
       "id": "attack-duskthrone-oracle-verdict-of-dusk",
       "name": "Verdict of Dusk",
       "kind": "special",
-      "requires": {
-        "arcane": 1,
-        "darkness": 1,
-        "any": 1
-      },
-      "discards": {
+      "unlock": {
         "arcane": 1,
         "darkness": 1
       },

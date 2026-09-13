@@ -25,7 +25,9 @@ On roll: this face also produces 1 Luminar.
 Inherent extra pips on a named face are **physics**, not `[Generate]`. Print
 the showing attribute as the face’s symbol; dual-pip bonus uses
 `On roll: this face also produces 1 Luminar.` (or the matching attribute).
-Do not reprint `[Generate]` for those pips. Convert faces print **Choose one**
+Do **not** print `[Generate]` on tactics, creatures, rituals, equipment, or
+overloads — extra pips are **faces** (`pips` / dual-pip line) and
+`[Overcharge]`. Convert faces print **Choose one**
 (bank this die's pips, or the payoff and do not bank) — they are not
 `[Convert N]`.
 
@@ -42,7 +44,7 @@ shared; the argument follows attribute exclusives.
 
 | Layer | What belongs here | Example |
 |---|---|---|
-| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
+| **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]`, `[Unlock]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]`, `[Bounce X]` |
 | **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Reduce N]`, `[Prevent]`, `[Silence]`, `[Convert N]`, `[Desynthesize]` |
 
@@ -97,7 +99,8 @@ Remove up to N of token X. Legal to resolve if none remain.
 
 <!--
 Engine: remove-shield | remove-toxin-deal-damage (`amount` fixed). Attribute
-piles are spent with [Spend] / attack discards, not Strip. [Drain N] is life
+piles are spent with [Spend], not Strip. Attacks use [Unlock] from showing
+faces (spec `028`), not the pile. [Drain N] is life
 transfer. Do not mint Detonate / Rend as keywords.
 -->
 
@@ -110,7 +113,7 @@ transfer. Do not mint Detonate / Rend as keywords.
 | `[Prevent]` | Reaction to an attack declaration. Grants attack-prevent on the attack’s target (before Shield). Luminar exclusive. Not a token you Mark. Unused charges expire at end of turn. |
 | `[Reduce N]` | Incoming hit math. That hit deals N less (minimum 0) before `[Prevent]` and Shield. Not a token. Distinct from `[Prevent]` (cancel the attack) and `[Discount]` (pile costs). |
 | `[Silence]` | Physics. Chosen opposing host cannot fire or activate its effects until the start of your next turn. Not a Mark token. Distinct from `[Negate]`. |
-| `[Desynthesize]` | Physics. Replace a synthetic attribute face on any die with that attribute’s natural. Not a Mark token. Distinct from `[Reforge]` / `[Cross forge]`. |
+| `[Desynthesize]` | Physics. Replace a synthetic attribute face on any die with that attribute’s natural. Not a Mark token. Distinct from a forge and from `[Stamp]`. |
 | `[Empower N]` | Extra damage on an attack. Not a token. Next-attack Instant arms `nextAttackBonus` (consume-once). **While showing** `[Empower N]` is every attack while the face is showing. |
 | `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. **While showing** `[Pierce N]` lasts until the die shows something else. |
 
@@ -122,10 +125,8 @@ Same idea, different nouns.
 
 | Print | X is | Means |
 |---|---|---|
-| `[Generate N X]` | A symbol (Martial, Shield, …) | Add N of X to your pool this turn |
+| `[Generate N X]` | A symbol (Martial, Shield, …) | **Do not print on cards.** Extra pips are face physics and `[Overcharge]`. |
 | `[Forge N]` | Face kind + attribute; **your die** or **the opponent’s die** | Install N matching faces. Extra keyword clauses on that line fire only on forge. |
-| `[Reforge N Attr]` | N slots on **one of your dice**; synthetic Attr from your pool | Replace any N replaceable faces; no forge-draw |
-| `[Cross forge N Y / Z]` | N slots showing **Y** on **one of your dice**; synthetic **Z** from your pool | Same as Reforge, but Y → synthetic Z |
 | `[Overcharge]` | A hand card | Spend that card onto one attribute **face card** on **your** dice; every die that shows that face `[Generate]`s +1 of the spent card’s attribute when rolled |
 | `[Negate]` / `[Negate Instant]` / `[Negate Ritual]` | Chain-link type | Negate the top matching card link |
 | `[Destroy Equipment]` / `[Destroy Ritual]` / `[Destroy Overload]` | A card on the field | Send one to its owner’s graveyard |
@@ -180,7 +181,7 @@ These are not tokens.
 | `[Reduce N]` | That incoming hit deals N less (minimum 0), before `[Prevent]` and Shield. Any damage to the creature, not only attacks. Does not cancel the attack. Standing `On take damage:` (optional `, once per turn`) is the usual window. |
 | `[Prevent]` | Prevent the next attack against the creature under attack (before Shield). Luminar **reaction** exclusive — not a proactive arm. Unused charges expire at end of turn. |
 | `[Silence]` | The chosen opposing creature, field ritual, or die slot cannot activate or fire its effects until the start of **your** next turn. Not a token. Distinct from `[Negate]` / the reaction card Arcane Silence. |
-| `[Desynthesize]` | Replace a synthetic attribute face on **any die** with that attribute’s natural identity. Not a forge. Not `[Reforge]`. Overloads on the orphaned face leave. Stay / forge-lock does not block it. |
+| `[Desynthesize]` | Replace a synthetic attribute face on **any die** with that attribute’s natural identity. Not a forge. Not `[Stamp]`. Overloads on the orphaned face leave. Stay / forge-lock does not block it. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
 | `[Discount N]` | The next matching play costs N fewer pile tokens (minimum 0). On roll / Instant without **forge** arms that play discount for this turn. `[Discount N] forge` cheapens the next synthetic forge instead. **While showing** `[Discount N]` / `[Discount N] forge` is a continuous stance (stacks with those arms; not consumed). Discount reduces `[Spend]` **Any** pips first, then named attributes. Remaining named cost may be paid with any mix of attributes on the printed cost, without exceeding each attribute’s printed count. |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |
@@ -188,8 +189,6 @@ These are not tokens.
 | `[Recall N]` | Return up to N cards from your graveyard to your hand |
 | `[Mill N]` | Put cards from a deck into a graveyard. Darkness exclusive. |
 | `[Reposition]` / `[Swap]` | Move an ally frontline ↔ back / swap with an ally. Martial exclusive. |
-| `[Reforge N Attr]` | On **one of your dice**, replace **any** N replaceable faces with N **synthetic** Attr faces from your pool (you pick slots and pool faces). No forge-draw. Mechanical exclusive. Distinct from `[Desynthesize]` and `[Cross forge]`. |
-| `[Cross forge N Y / Z]` | Same as `[Reforge]`, but the N slots must currently show **Y**; the installs are synthetic **Z**. Mechanical exclusive. |
 | `[Stamp]` | Re-fire a showing face’s roll effects (On roll, overloads, Overcharge, forge yield, equipment on-roll-symbol). No new rolled pip and no second copy of inherent extra pips. Mechanical exclusive. |
 | `[Reroll]` | Roll that die again during actions: On roll fires for the **new** face, then a usable attribute auto-banks (On absorb) unless the new face offers Convert Choose one. Not `[Stamp]` (same showing face, no new pip). |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
@@ -203,7 +202,7 @@ grant-next-attack-bonus | ignore-shield / arm-ignore-shield |
 on-take-damage.reduceBy (`[Reduce N]`, before prevent/Shield) | grant-attack-prevent |
 convert-symbols | play-cost-discount / arm-forge-discount | look-top-deck /
 peek-deck-optional-bottom | search-deck | search-graveyard | dark-pact |
-reposition-creature | swap-positions | replace-synthetic-face (`[Reforge N Attr]` / `[Cross forge N Y / Z]`) |
+reposition-creature | swap-positions |
 reapply-die-modifiers | arm-resolve-next-face-effect-twice |
 arm-requirement-wildcard | arm-wildcard-from-synthetic-pool | optional-reroll-die |
 retain-die | grant-extra-attack (`[Frenzy]`) | silence (`[Silence]`, spec `022`) |
@@ -214,7 +213,7 @@ Copy Face, Mirror, Exterminate, Mind Control.
 Push is banned. Stun and Scale are deferred — do not print.
 `[Silence]` is not `[Negate]` and not Arcane Silence the reaction card.
 `[Bounce]` is not `[Destroy]` (hand, not GY) and not discard.
-`[Desynthesize]` is not `[Reforge]` / `[Cross forge]` (`replace-synthetic-face`).
+`[Desynthesize]` is not a forge and not `[Stamp]`.
 Wild's exclusive extra-attack verb is `[Frenzy]`.
 -->
 
@@ -228,9 +227,10 @@ These are not effect replacements.
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
 | `[Overcharge]` | Third exclusive use of a hand card: spend it onto an attribute face card on your dice |
-| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent). May include **Any** (generic tokens of any attribute). |
+| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent). May include **Any** (generic tokens of any attribute). Not used on creature attacks. |
 | `[Active when: …]` | One-time ritual unlock vs owner’s attribute pile (not repeated in the effect box). May include **Any**. |
-| `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate). May include **Any**. |
+| `[Spend: …]` | Burn from your attribute pile (header `playCost`, ritual activate). May include **Any**. Not used on creature attacks. |
+| `[Unlock: …]` | Creature-attack gate vs **your currently showing faces** (named attributes only — no Any, no Resonance wildcards). `[Unlock: Mechanical]`, `[Unlock: 2 x Mechanical]`, `[Unlock: Mechanical + Luminar]`. Faces, not pips. Shield / opponent dice do not count. Silenced showing slots still count. |
 | Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | `On roll:` `While showing:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…”. `On roll:` fires when that face shows after a shared `ROLL_DICE` (both seats each roll phase, including on the opponent’s turn). `While showing:` is a continuous stance on the showing face, not a second On-roll trigger. |
@@ -249,7 +249,7 @@ The verb may be shared. The **argument** is exclusive.
 | **Corruption** | `[Forge]` on **their** die; `[Mark N Corruption]` | `[Mark N Toxin]`; opponent-die forge on Mechanical |
 | **Toxin** | `[Mark N Toxin]` and `on attacks` | Corruption face marks; delayed damage with no Toxin token |
 | **Martial** | `[Reposition]`, `[Swap]` | Enemy push; `[Frenzy]` |
-| **Mechanical** | `[Reforge N Attr]`, `[Cross forge N Y / Z]`, `[Stamp]`, `[Double]`, own-die `[Forge]` | Opponent-die Forge; `[Insight]` |
+| **Mechanical** | `[Stamp]`, `[Double]`, own-die `[Forge]` | Opponent-die Forge; `[Insight]` |
 | **Wild** | `[Frenzy]` | `[Reposition]`; `[Mark N Toxin]` / `[Mark N Corruption]` |
 
 Shared on purpose: Strike, Heal, Draw, Generate, Empower, Pierce, Reduce, Discount,
@@ -274,10 +274,9 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 | Take life from an enemy into an ally | `[Drain N]` |
 | Hold in your pile, don’t spend | `[Requires: Martial + Wild]` or `[Requires: 2 x Martial]` or `[Requires: Arcane + 2 x Any]` |
 | Burn from your pile | `[Spend: Martial]` or `[Spend: 2 x Arcane]` or `[Spend: Arcane + 2 x Any]` |
-| Pool pip | `[Generate N Arcane]` |
+| Unlock an attack from showing faces | `[Unlock: Mechanical]` or `[Unlock: 2 x Mechanical]` or `[Unlock: Mechanical + Luminar]` |
+| Extra pips this roll | Face `pips` / “this face also produces” / `[Overcharge]` — not tactic `[Generate]` |
 | Install faces | `[Forge 1 Synthetic Mechanical]` on your die |
-| Swap any faces on one of your dice for synthetics | `[Reforge N Mechanical]` |
-| Swap Y faces on one of your dice for synthetic Z | `[Cross forge N Mechanical / Luminar]` |
 | Overcharge a kept face | `[Overcharge]` (hand-card spend) |
 | Install on them | `[Forge 1 Synthetic Corruption]` on the opponent’s die |
 | Extra attack damage | `[Empower]`, never `[Mark N Damage]` |

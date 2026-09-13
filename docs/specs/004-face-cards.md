@@ -80,7 +80,7 @@ than 1 inherent pip** (spec `025`). Face `onAbsorb` is empty.
 |---|---|---|---|---|
 | `face-synthetic-cogtooth` | Cogtooth | Mechanical | 2 Mechanical | While showing: `[Discount 1]` forge |
 | `face-synthetic-gear-train` | Gear Train | Mechanical | 2 Mechanical | On roll: if your other die shows the same attribute, `[Double]` |
-| `face-synthetic-mainspring` | Mainspring | Mechanical | 2 Mechanical | On roll: Choose one — bank this die's pips, or `[Reforge 1 Mechanical]` |
+| `face-synthetic-mainspring` | Mainspring | Mechanical | 2 Mechanical | On roll: Choose one — bank this die's pips, or `[Discount 1] forge` |
 | `face-synthetic-halo-lamp` | Halo Lamp | Luminar | 2 Luminar | While showing: `[Pierce 1]` |
 | `face-synthetic-lucent-choir` | Lucent Choir | Luminar | 2 Luminar | While showing: `[Empower 1]` |
 | `face-synthetic-sunward-lens` | Sunward Lens | Luminar | 1 Luminar + 1 Mechanical | Dual-pip |
@@ -226,7 +226,7 @@ helper until densified separately.
 
 ## Actions
 
-`FORGE_CARD` / `forge-faces` / `replace-synthetic-face` refuse slots that
+`FORGE_CARD` / `forge-faces` refuse slots that
 `slotCannotBeReplacedByForge` (Heritage always; Plague while `forgeLockRemaining > 0`).
 `ACTIVATE_FACE` for Heritage / Plague peel (spec `012`) remains legal while locked.
 
@@ -234,12 +234,12 @@ helper until densified separately.
 
 Match-ui must show **remaining forge-lock** on Pestilent Plague slots and a
 **cannot-replace** cue on Forbidden Heritage (and locked Plague) so players do
-not target those slots for forge / Reforge. Do not hide `ACTIVATE_FACE` peel.
+not target those slots for forge. Do not hide `ACTIVATE_FACE` peel.
 Engine query: `slotCannotBeReplacedByForge` from `src/server/rules/faces.ts`.
 
 - [x] Remaining forge-lock on Pestilent Plague slots (`DieSlot.forgeLockRemaining`)
 - [x] Cannot-replace cue (Heritage always; Plague while lock > 0)
-- [x] Forge / forge-faces / Reforge omit locked slots; `ACTIVATE_FACE` peel stays
+- [x] Forge / forge-faces omit locked slots; `ACTIVATE_FACE` peel stays
 
 ## Acceptance Criteria
 

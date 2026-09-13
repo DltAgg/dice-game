@@ -1,7 +1,9 @@
 import { getCard } from "../content/cards.js";
+import { getFaceCard } from "../content/faces.js";
 import type { CardInstance } from "../model/cards.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
+import type { DieState } from "../model/dice.js";
 import {
   asCardInstanceId,
   asPlayerId,
@@ -305,7 +307,8 @@ export function withAttributePool(
 
 /**
  * Fuels the creature owner's attribute pile. Prefer `withAttributePool` for
- * new tests.
+ * new tests. Attacks no longer use the pile (spec `028`) — use
+ * `withShowingFaces` to arm combat.
  */
 export function withTokens(
   state: GameState,
@@ -315,6 +318,42 @@ export function withTokens(
   const creature = state.creatures[creatureId];
   if (creature === undefined) throw new Error(`scenario: unknown creature ${creatureId}`);
   return withAttributePool(state, creature.ownerId, tokens);
+}
+
+export function withDie(state: GameState, dieId: DieId, patch: Partial<DieState>): GameState {
+  const die = state.dice[dieId];
+  if (die === undefined) throw new Error(`scenario: unknown die ${dieId}`);
+  return { ...state, dice: { ...state.dice, [dieId]: { ...die, ...patch } } };
+}
+
+/**
+ * Sets each of `playerId`'s dice to show a face of the given symbol (in die
+ * order). Extra dice past `symbols.length` keep a null showing slot.
+ */
+export function withShowingFaces(
+  state: GameState,
+  playerId: PlayerId,
+  symbols: readonly SymbolType[],
+): GameState {
+  const ids = state.players[playerId]?.dieIds ?? [];
+  let next = state;
+  for (let index = 0; index < ids.length; index += 1) {
+    const dieId = ids[index];
+    if (dieId === undefined) continue;
+    const symbol = symbols[index];
+    if (symbol === undefined) {
+      next = withDie(next, dieId, { rolledSlotIndex: null });
+      continue;
+    }
+    const die = next.dice[dieId];
+    if (die === undefined) throw new Error(`scenario: unknown die ${dieId}`);
+    const slot = die.slots.find((candidate) => getFaceCard(candidate.faceCardId)?.symbol === symbol);
+    if (slot === undefined) {
+      throw new Error(`scenario: ${playerId} die ${String(index)} has no ${symbol} face`);
+    }
+    next = withDie(next, dieId, { rolledSlotIndex: slot.index });
+  }
+  return next;
 }
 
 export function withShields(state: GameState, creatureId: CreatureId, shields: number): GameState {

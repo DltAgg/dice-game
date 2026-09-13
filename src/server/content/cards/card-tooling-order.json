@@ -15,7 +15,7 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "Choose one:\n• [Cross forge 1 Mechanical / Luminar]\n• [Cross forge 1 Luminar / Mechanical]",
+  "rulesText": "Choose one:\n• [Stamp]\n• [Discount 2] forge",
   "effect": {
     "requires": {
       "mechanical": 2
@@ -26,24 +26,19 @@
         "modes": [
           [
             {
-              "type": "replace-synthetic-face",
-              "faces": 1,
-              "attribute": "luminar",
-              "fromAttribute": "mechanical"
+              "type": "reapply-die-modifiers"
             }
           ],
           [
             {
-              "type": "replace-synthetic-face",
-              "faces": 1,
-              "attribute": "mechanical",
-              "fromAttribute": "luminar"
+              "type": "arm-forge-discount",
+              "amount": 2
             }
           ]
         ],
         "modeLabels": [
-          "Mechanical → Luminar",
-          "Luminar → Mechanical"
+          "Stamp",
+          "Discount 2 forge"
         ]
       }
     ]

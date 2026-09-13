@@ -93,7 +93,7 @@ Playtest Progress:
 - [ ] 2. Pace / lethality (analyze-match-metrics) if an export exists
 - [ ] 3. Feel: what it played like vs intended home (design.md)
 - [ ] 4. Map mechanic × window → MECHANIC_ARCHETYPES (new or revise)
-- [ ] 5. Grep live JSON for the proving print / attack fuel
+- [ ] 5. Grep live JSON for the proving print / attack `unlock`
 - [ ] 6. Classify owner: print | physics | list | UI | OPEN rule
 - [ ] 7. Update MECHANIC_ARCHETYPES.md (same change as the debrief)
 - [ ] 8. Write specialist brief(s); do not implement

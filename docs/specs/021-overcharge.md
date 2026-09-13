@@ -44,8 +44,7 @@ this spend.
    other player once-per-turn keys.
 4. **Cost.** The card is consumed to the graveyard. No pile `[Spend]`.
    Overcharge does not burn `playCost`, does not consume
-   `forgeDiscountThisTurn`, and does **not** draw, set forge yield, or pay the
-   synthetic forge bank.
+   `forgeDiscountThisTurn`, and does **not** draw or set forge yield.
 5. **Target.** Choose one **face card** installed on **your** dice whose
    definition has an **attribute** symbol (natural or synthetic). Shield /
    untyped is illegal. Stay/cannot-replace does not block Overcharge (you are

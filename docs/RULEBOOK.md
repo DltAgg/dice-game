@@ -77,19 +77,26 @@ There is **no mulligan**. The opening hand of **5** is the hand you play.
 
 Each player has:
 
-- **Frontline** (2 slots) and **Back** (the third creature at setup is the
-  legendary). Frontline protects the back: a non-Range attack may hit a
-  back-row creature only if that player has **no living frontline**. Range
-  ignores this. Card and face effects that name creatures are not attacks:
-  they ignore this unless print says otherwise. Print that names **each
-  enemy** or **each ally** hits every living creature on that side.
+- **Frontline** (two **columns**, 0 and 1) and **Back** (the third creature
+  at setup is the legendary). Non-legendaries occupy a stable column.
+  A non-Range creature attack may only hit the enemy **in front of them**
+  (same column). The **legendary** may attack either column. When a column
+  has no living enemy frontliner, that column is a **breach**: an attacker
+  who can choose that column may attack the **enemy legendary** even if the
+  other enemy frontliner is still alive. Defeating a creature does not slide
+  the survivor into the empty column. Range attacks ignore columns and
+  breach — they may target any living enemy. Card and face effects that name
+  creatures are not attacks: they ignore columns unless print says
+  otherwise. Print that names **each enemy** or **each ally** hits every
+  living creature on that side.
 - **Engine area** for rituals.
 - **Two dice**, each with six faces that reference face cards.
 - Hand, tactics deck (top-first), graveyard, equipment, overloads.
 
-Squad order (`creatureIds`) is left-to-right on the battlefield. Opening
-rows ignore squad index for the legendary: it is always placed **back**;
-non-legendaries fill frontline first.
+Squad order (`creatureIds`) is left-to-right. Opening rows ignore squad
+index for the legendary: it is always placed **back** with no numbered
+column; the first non-legendary in squad order takes **column 0**, the
+second takes **column 1**.
 
 ---
 
@@ -136,8 +143,9 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    so does retain). It is spent on **your** next roll phase as the turn
    player.
 2. **Actions.** In any order you may: absorb Shield onto a creature, pay
-   `[Spend]` from your pile (and meet `[Requires]` gates), attack, play, forge,
-   activate a **ready** ritual, retain/release dice, or end the turn.
+   `[Spend]` from your pile (and meet `[Requires]` gates), declare an unlocked
+   attack, play, forge, activate a **ready** ritual, retain/release dice, or
+   end the turn.
 
 `[Reroll]` rolls **that one die** again during **actions** (you do not return
 to the roll phase). The **new** showing face fires On roll (and overloads on
@@ -191,11 +199,12 @@ not bank. The other die is untouched.
 
 `[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
 `[Spend: …]` **burns** from your pile. Resonance wildcards may cover shortfall
-on either. An attack or card may print both. Costs may name attributes and/or
+on either. A card may print both. Costs may name attributes and/or
 **Any** (generic pile tokens of any attribute — not Shield, not a ninth
 colour). Named pips are reserved first; leftover tokens cover Any. Unabsorbed
 turn-pool symbols expire at end of turn. There is no “store a symbol.” The only
-way to keep a **die result** across a roll is **retain**.
+way to keep a **die result** across a roll is **retain**. Creature attacks use
+`[Unlock]` from showing faces (§13), not this pile.
 
 Shield absorb still names a creature (below).
 
@@ -205,7 +214,8 @@ Shield absorb still names a creature (below).
 
 - **Attribute** pips from a **roll** or **effect** bank into **your attribute
   pile** automatically (usable pips only; On absorb fires). The pile persists
-  across turns until spent or removed. Same-turn attack after banking is legal.
+  across turns until spent or removed. Same-turn play or forge after banking
+  is legal. Attacks do not spend the pile.
 - Each **On absorb** hook (standing ability, face, or overload) fires **at
   most once per turn** per source, so generated pips cannot re-trigger the same
   absorb effect in a loop.
@@ -253,14 +263,10 @@ An unabsorbed Shield is wasted: nothing spends Shield from the pool.
   separate one-turn discount from some gear that applies only to synthetic
   forge (natural is already free and does not consume that discount). The free
   first synthetic does **not** consume `forgeDiscountThisTurn` or while-showing
-  forge discount — save it for a later synthetic. That waiver is **not** a
-  consumed forge discount, so the immediate own-die synthetic bank (§11) still
-  applies. A synthetic install that **consumes** a forge discount does **not**
-  also get that bank — Discount 1 on a 2-cost Mechanical synthetic with 1 pip
-  in the pile spends that pip.
+  forge discount — save it for a later synthetic.
   `[Discount]` never reduces a `[Requires]` gate.
-- Attacks (`[Requires]` gate and `[Spend]` discards) and ritual Active-when /
-  activate Spend also use the pile (see §6). A card may print header
+- Ritual Active-when / activate Spend also use the pile (see §6). Attacks use
+  showing-face `[Unlock]` (§13), not the pile. A card may print header
   `[Spend]` **and** a `[Requires]` gate; tokens stay unless Spend also names them.
 - Reactions pay pile costs during a reaction window.
 - Turn end is voluntary (`END_TURN`) or from effects that say so.
@@ -280,9 +286,9 @@ During actions (or as a legal reaction — §15):
 | Ritual | Enters the engine area (see §10). |
 
 `[Spend]` burns from your **attribute pile** (wildcards may cover shortfall).
-`[Requires]` on an attack **or on a card’s effect** is a gate: the pile must
-hold it (wildcards may cover), and those tokens stay unless a `[Spend]` also
-names them. `[Discount]` reduces header Spend only — never the Requires gate.
+`[Requires]` on a card’s effect is a gate: the pile must hold it (wildcards
+may cover), and those tokens stay unless a `[Spend]` also names them.
+`[Discount]` reduces header Spend only — never the Requires gate.
 Forge does not check a card’s effect `[Requires]` (play vs forge is exclusive).
 
 Discard-from-hand effects **draw first**, then the player **names** which
@@ -361,12 +367,9 @@ grant no yield. Opponent-die installs (Corruption harassment) do **not** gain
 yield. Overwriting or peeling a slot clears yield unless the new install
 re-sets it.
 
-**Synthetic forge bank:** On a successful own-die **synthetic** `FORGE_CARD`
-only, you also bank one of the forged face’s attribute into your pile **per
-face installed** (immediate payoff), **unless this install consumed a forge
-discount**. The free first synthetic is not a consumed discount, so it **still
-banks**. Natural forge stays free install + draw + yield with no immediate
-bank. Discount and the bank do not stack on the same card.
+**Forge does not bank the pile.** Installing a face is not an absorb and does
+not add tokens. Card fuel still comes from rolling (including forge yield on
+a later roll) and printed `[Generate]`.
 
 **Forge bonus effects.** Some cards print extra keyword clauses on the forge
 line (for example `[Forge] … [Empower 1].`). Those resolve **immediately after
@@ -380,25 +383,12 @@ Some faces **stay locked** on a slot for printed turns after install
 
 **Desynthesis.** `[Desynthesize]` peels a **synthetic** attribute face on
 **any die** (yours or the opponent’s) back to that attribute’s **natural**
-identity face. It is not a forge (no forge-draw) and is **not** `[Reforge]`
-or `[Cross forge]` (overwrite slots on **your** die with synthetics from
-your pool). Stay / forge-lock does not block it. The natural belongs to the
+identity face. It is not a forge (no forge-draw) and is not `[Stamp]`. Stay /
+forge-lock does not block it. The natural belongs to the
 **die owner**; the displaced synthetic
 returns to its owner’s pool when the last copy leaves, and overloads /
 Overcharge on that orphaned face leave as they do on overwrite. An already
 generated pip on a showing slot stays; the next roll uses the natural.
-
-**Reforge / Cross forge.** `[Reforge N Attr]` on **one of your dice**: replace
-**any** N replaceable faces with N **synthetic** Attr faces from your pool
-(you name the slots and the pool faces). `[Cross forge N Y / Z]` is the same
-except those N slots must currently show **Y**, and the installs are synthetic
-**Z**. Neither is a forge (no forge-draw, no yield, no synthetic bank). Stay /
-cannot-replace slots are illegal. The §9.1 attribute cap still applies to the
-finished die. Displaced faces return to pool when orphaned; their overloads /
-Overcharge leave as on overwrite. Mechanical exclusive. You cannot play a
-Reforge / Cross forge (or a Choose one whose every mode is Reforge / Cross
-forge) when no legal assignment exists — the card stays in hand; it is not
-spent for a silent no-op.
 
 **Choose one.** Some cards (e.g. Tooling Order) and some faces (Sigil Flare,
 Mainspring, Pyre of Names) read "Choose one:" with two modes. You pick exactly
@@ -444,14 +434,22 @@ face) fires again.
 
 - Each living creature may attack **once per turn** during actions, unless an
   effect grants extra attacks (`[Frenzy]` — Wild exclusive).
-- Fuel is the **owner’s attribute pile**. An attack may print a **`[Requires: …]`
-  gate** (must hold, not spent), a **`[Spend: …]` cost** (burned on declare),
-  or **both**. Basics usually Spend only. Specials typically Require a mix and
-  Spend one of those attributes.
-- Because banking is immediate, you may attack on the same turn you absorb
-  the fuel.
-- Declaring an attack opens a reaction window (§15). Prevent may answer;
-  negate may not.
+- **Unlock, not fuel.** An attack prints **`[Unlock: …]`** (named attributes
+  only — no Any). After `ROLL_DICE` (and after an actions-window `[Reroll]`),
+  look at **your currently showing faces**. Each owned die whose showing face
+  is an attribute counts **+1** of that attribute (faces, not extra pips).
+  Shield / untyped / a die with no showing slot counts nothing. Opponent dice
+  never unlock your attacks. A silenced showing slot still displays its
+  attribute and still counts. `[Resonance]` wildcards and `[Discount]` do not
+  apply. Declaring does **not** check or burn your attribute pile.
+- **Match.** The attack is unlocked when your showing-attribute counts meet
+  every named count (AND). `[Unlock: Mechanical]` needs one Mechanical face;
+  `[Unlock: 2 x Mechanical]` needs two; `[Unlock: Mechanical + Luminar]` needs
+  one of each. Extra `[Frenzy]` attacks use the **current** showing faces (no
+  extra roll on declare). `[Stamp]` does not change the showing face, so
+  unlocks stay.
+- Declaring an unlocked attack opens a reaction window (§15). Prevent may
+  answer; negate may not.
 - Damage apply order: **`[Reduce]` → prevention → Shield → Life**.
 - `[Reduce N]` subtracts N from that incoming hit (minimum 0) before Prevent
   and Shield. It applies to any damage that hits the creature, not only

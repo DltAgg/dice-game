@@ -3,14 +3,11 @@ import {
   collectLegalSilenceHosts,
   diceOf,
   discardTokensInAttributeOrder,
-  eligiblePoolFacesForReforge,
   equipmentOf,
   getCard,
-  isLegalReforgeAssignment,
   legalCreaturesForFilter,
   legalDiceForFilter,
   legalDieSlotsForFilter,
-  legalSlotsForReplaceSyntheticFace,
   livingCreaturesOf,
   opponentOf,
   overloadsOf,
@@ -20,7 +17,6 @@ import {
   ritualsOf,
   searchableInDeck,
   searchableInGraveyard,
-  type DieId,
   type GameAction,
   type GameState,
   type PlayerId,
@@ -153,41 +149,6 @@ export function pendingCandidates(state: GameState, playerId: PlayerId): readonl
           dieId: die.id,
           slotIndexes,
           faceCardId,
-        });
-      }
-      return actions;
-    }
-    case "replace-synthetic-face": {
-      const spec = {
-        faces: pending.faces,
-        attribute: pending.attribute,
-        ...(pending.fromAttribute === undefined ? {} : { fromAttribute: pending.fromAttribute }),
-      };
-      const pool = prefix(
-        eligiblePoolFacesForReforge(state, playerId, pending.attribute),
-        pending.faces,
-      );
-      if (pool.length < pending.faces) return [];
-      const slots = legalSlotsForReplaceSyntheticFace(state, playerId, spec);
-      const byDie = new Map<DieId, number[]>();
-      for (const slot of slots) {
-        const indexes = byDie.get(slot.dieId) ?? [];
-        indexes.push(slot.slotIndex);
-        byDie.set(slot.dieId, indexes);
-      }
-      const actions: GameAction[] = [];
-      for (const [dieId, indexes] of byDie) {
-        if (indexes.length < pending.faces) continue;
-        const slotIndexes = indexes.slice(0, pending.faces);
-        if (!isLegalReforgeAssignment(state, playerId, spec, dieId, slotIndexes, pool)) {
-          continue;
-        }
-        actions.push({
-          type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
-          playerId,
-          dieId,
-          slotIndexes,
-          faceCardIds: pool,
         });
       }
       return actions;

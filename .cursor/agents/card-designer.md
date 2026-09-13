@@ -36,7 +36,9 @@ Craft gates: `.cursor/skills/author-content/design-craft.md`.
    - **Set craft** (uniqueness, forge development, bridges, generic reach,
      dice resonance) → `design-craft.md` — read before choosing a slot
    - **Attribute pile** (fuel, Absorb, `[Requires]` / `[Spend]` / Active-when) →
-     `attribute-pile.md` — read before any ritual, face `onAbsorb`, or attack-cost edit
+     `attribute-pile.md` — read before any ritual, face `onAbsorb`, or header / forge cost edit
+   - **Creature attacks** (`[Unlock]` from showing faces, spec `028`) →
+     `creatures.md` — do **not** put pile `requires` / `discards` on attacks
    - Tactics / rituals / equipment / overload → `tactics.md` + `design.md`
      (including **attribute exclusive mechanics**)
    - Faces → `faces.md` + `design.md`
@@ -47,18 +49,19 @@ Craft gates: `.cursor/skills/author-content/design-craft.md`.
 4. `docs/KEYWORDS.md` — new/edited print uses `[Mark N X]`, `[Empower N]`, etc.
    Do not mint Dose/Envenom/Brand. New tokens join Mark/Strip.
 5. `docs/MECHANIC_ARCHETYPES.md` — mechanic × **window** × deck-style feel.
-   A shared opcode can still be the wrong archetype (attack `[Generate]` of
-   the spent attribute is Aggro, not Control). Update that file in the same
+   A shared opcode can still be the wrong archetype (attack follow-up
+   `[Generate]` of the creature’s own attribute is Aggro, not Control). Update that file in the same
    change when a playtest retargets a leak.
 6. **Live JSON first:** `src/server/content/{cards,faces,creatures}/`. Specs
    `docs/specs/002-card-layer.md`, `003-creature-cards.md`, `004-face-cards.md`,
-   and `016-attribute-pile-up.md` (+ `016-content-migration.md` when retargeting
-   On absorb / rituals) are grammar and rate anchors. Stale spec tables of
+   `016-attribute-pile-up.md` (+ `016-content-migration.md` when retargeting
+   On absorb / rituals), and `028-showing-face-combat.md` (attack `[Unlock]`)
+   are grammar and rate anchors. Stale spec tables of
    missing cards are **not** catalogue truth and not a pattern to copy.
 7. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is incomplete or design is unsettled
 8. `.cursor/rules/content-catalogues.mdc`
 9. `docs/RULEBOOK.md` for how systems currently play — especially §11 forge
-   yield / synthetic forge bank (baseline physics, not “the plus”). Do not
+   yield (baseline physics, not “the plus”). Do not
    list individual cards there. New mechanics → engine-developer updates the
    rulebook. Keywords → `docs/KEYWORDS.md`.
 
@@ -75,7 +78,7 @@ Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
   attribute’s exclusive verb.
 - Design **forge intent** before print (`design-craft.md`): vary `faces` /
   natural vs synthetic / riders. Baseline forge physics (draw 1, own-die
-  yield, synthetic bank) are the floor, not the plus.
+  yield) are the floor, not the plus.
 - Write timing-prefixed print (`On roll:` / `On absorb:` / `On …:` — never “Whenever…”).
 - Author JSON in `src/server/content/{cards,faces,creatures}/<id>.json` and the
   matching id constant in `cards.ts` / `faces.ts` / `creatures.ts`.
@@ -84,16 +87,28 @@ Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
   `On absorb:` means bank into the pile. Ritual `activeWhen` is a pile gate;
   optional `ritual.spend` burns on activate. See `attribute-pile.md`.
   Pile fuel is **not** a license to print `[Spend] X, [Generate] Y` converters.
+  Creature attacks use `[Unlock]` (spec `028`), not the pile.
 - Standing equipment / ritual `on-absorb` for attribute banks needs
   `absorberRelation: "ally"` (default `self` no-ops on pile bank).
 - **`[Prevent]` is reaction-exclusive** (Luminar only; spec `009`). Author
   `grant-attack-prevent` only on `type: "reaction"` cards that answer an attack
   on the chain. Never put `[Prevent]` on faces, On absorb, instants, equipment,
   or standing passives — use `[Mark N Shield]` / `[Heal]` for proactive Luminar.
+- **Mechanical exclusive** remaining: extra own-die forge, `[Stamp]`, `[Double]`,
+  move overloads between **your** faces. Do **not** print `[Reforge]` /
+  `[Cross forge]` (retired overwrite-without-draw). Do not brief
+  `replace-synthetic-face` as a new mechanic. Recast is `[Stamp]` + `[Draw 1]`;
+  Alloy Shift is `[Empower 1]` + `[Stamp]`; Tooling Order is
+  Choose one `[Stamp]` or `[Discount 2] forge`; Mainspring is convert Choose one
+  including `[Discount 1] forge`; Retool is `[Strike 2]` + `[Discount 2] forge`
+  — none of these are Reforge proving cards.
+- **`[Desynthesize]`** is not a forge and not `[Stamp]` (spec `024`). Do not
+  contrast it as “not Reforge.”
 - When a concrete clause needs new vocabulary, **delegate** to `engine-developer`.
-  Dual-attribute generating faces are a **first-class hole**: design the card,
-  compose `symbol` + `[Generate]` if that expresses print, then brief if a
-  second inherent pip / symbol field is required. Do not abandon the slot.
+  Dual-attribute faces are a **first-class hole**: design extra pips on the
+  face (`pips` map / `On roll: this face also produces 1 OtherAttr.`), then brief
+  engine-developer if a second `symbol` field is required. Do not print
+  `[Generate]` on tactics. Do not abandon the slot.
 
 Hand-author catalogue data. Spreadsheets are worksheets — no CSV ingest unless
 the user explicitly asks for tooling.
@@ -116,10 +131,11 @@ the user explicitly asks for tooling.
 - Do not grow `EffectDefinition`, `StandingTrigger`, `GameAction`, `reduce()`, `resolution.ts`, or `triggers.ts` yourself.
 - Do not add copies to builtin decks unless asked — or unless **deck-designer** is driving the list change.
 - Header cost is `playCost` (pile, `[Spend]`). Gates are `[Requires]` only
-  (`effect.requires` and attack `requires` hold; they do not burn). Rituals
-  keep `[Active when]`; extra activate burn is `ritual.spend`. Extra burn
-  that is not a gate → raise `playCost` or use `ritual.spend` / attack
-  `discards` — do not mint `effect.spend`. Fuel grammar: `attribute-pile.md`.
+  (`effect.requires` holds; it does not burn). Rituals keep `[Active when]`;
+  extra activate burn is `ritual.spend`. Extra burn that is not a gate →
+  raise `playCost` or use `ritual.spend` — do not mint `effect.spend`. Fuel
+  grammar: `attribute-pile.md`. Creature attacks use `[Unlock]` vs showing
+  faces (spec `028`); they do **not** `[Requires]` / `[Spend]` the pile.
   Natural forge does not burn `playCost`; synthetic forge does
   (`docs/RULEBOOK.md` §8). Printed `?` uses a fixed `playCost` for now —
   true variable pile pay is DEFERRED.
@@ -178,8 +194,9 @@ Card Progress:
 - [ ] 2. Uniqueness + dice-resonance + forge intent — reject reskins
 - [ ] 3. Kind + attribute identity + exclusive mechanic (design.md)
        + window/feel (`docs/MECHANIC_ARCHETYPES.md` — no `RETARGETED` / `ANTI` leaks)
-- [ ] 4. Pile costs: `[Requires]` / `[Spend]` / Active-when / attack fuel
-       (attribute-pile.md) — not a converter license
+- [ ] 4. Pile costs: `[Requires]` / `[Spend]` / Active-when
+       (attribute-pile.md) — not a converter license. Attacks: `[Unlock]`
+       (`creatures.md`, spec `028`) — not pile
 - [ ] 5. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
 - [ ] 6. Map clauses → existing effects / hooks OR defer OR engine brief
 - [ ] 7. If new mechanic: engine-developer, then resume

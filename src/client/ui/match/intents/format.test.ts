@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { testCard } from "@server/testing/fixtures/index.js";
-import { ritualStayLabel } from "./format.js";
+import { testAttack, testCard } from "@server/testing/fixtures/index.js";
+import { newMatch, P1, withPhase, withShowingFaces } from "@server/testing/scenario.js";
+import { formatAttackLockHint, ritualStayLabel } from "./format.js";
 
 const continuousActivate = testCard({
   type: "ritual",
@@ -43,5 +44,24 @@ describe("ritualStayLabel", () => {
 
   it("returns null for non-rituals", () => {
     expect(ritualStayLabel(nonRitual)).toBeNull();
+  });
+});
+
+describe("formatAttackLockHint", () => {
+  const mechanical = testAttack({ unlock: { mechanical: 1 } });
+
+  it("is null when a matching showing face unlocks the attack", () => {
+    const state = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["mechanical"]);
+    expect(formatAttackLockHint(state, P1, mechanical)).toBeNull();
+  });
+
+  it("contrasts Unlock print with showing counts", () => {
+    const state = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["luminar"]);
+    expect(formatAttackLockHint(state, P1, mechanical)).toBe("locked · showing Luminar");
+  });
+
+  it("says showing none when no attribute face is up", () => {
+    const state = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["shield"]);
+    expect(formatAttackLockHint(state, P1, mechanical)).toBe("locked · showing none");
   });
 });

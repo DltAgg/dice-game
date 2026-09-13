@@ -3,6 +3,7 @@ import type { CardInstance } from "../model/cards.js";
 import { asCardInstanceId, type CardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { graveyardOf, replayableGraveyardTactics, ritualsOf } from "../rules/cards.js";
+import { livingFrontlinerInLane } from "../rules/lanes.js";
 import { advance } from "./reduce.js";
 import {
   TEST_PLAYABLE,
@@ -25,6 +26,7 @@ import {
   withPile,
   withHand,
   withPhase,
+  withShowingFaces,
 } from "../testing/scenario.js";
 
 const DESTROY_EQUIPMENT = testCard({
@@ -135,13 +137,12 @@ const REPLAY = testCard({
 
 const GRAVE_REACH = testAttack({
   id: "attack-test-control-grave-reach",
-  discards: { darkness: 1 },
+  unlock: { mechanical: 1 },
 });
 const LEY_SURGE = testAttack({
   id: "attack-test-control-ley-surge",
   kind: "special",
-  requires: { arcane: 2, any: 1 },
-  discards: { arcane: 2 },
+  unlock: { mechanical: 1, luminar: 1 },
   followUpEffects: [{ type: "draw-cards", amount: 1 }],
 });
 
@@ -454,12 +455,13 @@ describe("Darkness Control package", () => {
     expect(legendary?.position).toBe("back");
   });
 
-  it("attack Spend burns pile without refunding the spent attribute", () => {
+  it("attack Unlock does not burn the pile; follow-ups still resolve", () => {
     let state = withAttributePool(withPhase(controlMatch(), "actions"), P1, {
       arcane: 2,
       darkness: 2,
       martial: 1,
     });
+    state = withShowingFaces(state, P1, ["mechanical", "luminar"]);
     state = withDeck(state, P2, [TEST_PLAYABLE, TEST_PLAYABLE, TEST_PLAYABLE]);
     state = withDeck(state, P1, [TEST_PLAYABLE, TEST_PLAYABLE, TEST_PLAYABLE]);
 
@@ -469,11 +471,18 @@ describe("Darkness Control package", () => {
     const adept = Object.values(state.creatures).find(
       (creature) => creature.definitionId === ADEPT.id && creature.ownerId === P1,
     );
-    const target = Object.values(state.creatures).find(
-      (creature) => creature.ownerId === P2 && creature.position === "frontline",
-    );
-    if (shade === undefined || adept === undefined || target === undefined) {
-      throw new Error("expected Control frontline attackers and a frontline target");
+    if (shade === undefined || adept === undefined) {
+      throw new Error("expected Control frontline attackers");
+    }
+    const shadeLane = shade.lane;
+    const adeptLane = adept.lane;
+    if (shadeLane === null || adeptLane === null) {
+      throw new Error("expected numbered lanes on Control frontliners");
+    }
+    const shadeTarget = livingFrontlinerInLane(state, P2, shadeLane);
+    const adeptTarget = livingFrontlinerInLane(state, P2, adeptLane);
+    if (shadeTarget === null || adeptTarget === null) {
+      throw new Error("expected Control frontline attackers and a facing target");
     }
 
     state = expectOk(
@@ -482,10 +491,10 @@ describe("Darkness Control package", () => {
         playerId: P1,
         attackerId: shade.id,
         attackId: GRAVE_REACH.id,
-        targetId: target.id,
+        targetId: shadeTarget.id,
       }),
     );
-    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
+    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(2);
     expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(2);
     expect(state.players[P2]?.deck).toHaveLength(3);
 
@@ -495,11 +504,11 @@ describe("Darkness Control package", () => {
         playerId: P1,
         attackerId: adept.id,
         attackId: LEY_SURGE.id,
-        targetId: target.id,
+        targetId: adeptTarget.id,
       }),
     );
-    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(0);
-    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
+    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(2);
+    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(2);
     expect(state.players[P1]?.hand.length).toBeGreaterThan(0);
   });
 });

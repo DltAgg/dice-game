@@ -1,11 +1,9 @@
 import {
   diceOf,
-  livingCreaturesOf,
   opponentOf,
   replayableGraveyardTactics,
   type CardInstance,
   type CardInstanceId,
-  type CreatureId,
   type FaceCardId,
   type GameState,
   type PlayerId,
@@ -44,24 +42,4 @@ export function opposingOverloadedFaces(
     }
   }
   return result;
-}
-
-export function legalSplitDamageTargets(
-  state: GameState,
-  pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "split-damage" }>,
-): readonly CreatureId[] {
-  return Object.values(state.creatures)
-    .filter((creature) => {
-      if (creature.defeated) return false;
-      if (pending.attackerId === null) return true;
-      if (creature.ownerId === pending.controllerId) return false;
-      if (creature.position === "back" && !pending.range) {
-        const front = livingCreaturesOf(state, creature.ownerId).filter(
-          (candidate) => candidate.position === "frontline",
-        );
-        if (front.length > 0) return false;
-      }
-      return true;
-    })
-    .map((creature) => creature.id);
 }

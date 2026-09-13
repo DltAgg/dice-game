@@ -128,15 +128,6 @@ export type PendingDecision =
       readonly sourceFaceCardId: FaceCardId | null;
     }
   | {
-      readonly type: "replace-synthetic-face";
-      readonly controllerId: PlayerId;
-      readonly faces: number;
-      readonly attribute: Attribute;
-      readonly fromAttribute?: Attribute;
-      readonly sourceCardInstanceId: CardInstanceId | null;
-      readonly sourceFaceCardId: FaceCardId | null;
-    }
-  | {
       readonly type: "choose-effect-mode";
       readonly controllerId: PlayerId;
       readonly modes: readonly (readonly EffectDefinition[])[];

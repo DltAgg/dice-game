@@ -11,10 +11,10 @@ import { canAffordUnderCaps } from "./discounts.js";
 
 /**
  * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
- * spec `016`). Attacks and card `[Requires]` gates check (not burn) from there;
- * `[Spend]` (header `playCost`, attack `discards`, ritual `spend`) burns.
- * Ritual Active-when is a one-time pile unlock. Creature Shield / Toxin stay on
- * creatures.
+ * spec `016`). Card `[Requires]` gates check (not burn) from there;
+ * `[Spend]` (header `playCost`, ritual `spend`) burns. Creature attacks use
+ * showing-face `[Unlock]` (spec `028`), not this pile. Ritual Active-when is
+ * a one-time pile unlock. Creature Shield / Toxin stay on creatures.
  */
 
 export const holdsTokens = (
@@ -89,40 +89,6 @@ export const isNonEmptyRequirement = (
   requirement: SymbolRequirement | undefined,
 ): requirement is SymbolRequirement =>
   requirement !== undefined && requirementTotal(requirement) > 0;
-
-/**
- * Attack fuel: the pile must hold every printed `requires` (gate, not spent)
- * and every printed `discards` (Spend — burned on declare). Either or both
- * may be authored; an attack with neither is unfuelled.
- *
- * `[Resonance]` wildcards may cover shortfall on either clause. Gate shortfall
- * is reserved first so Spend still sees remaining wildcards (requires does not
- * remove pile tokens).
- */
-export function attackIsFuelled(
-  tokens: AttributeTokens,
-  attack: {
-    readonly requires?: SymbolRequirement;
-    readonly discards?: SymbolRequirement;
-  },
-  wildcardCount = 0,
-): boolean {
-  const hasRequires = isNonEmptyRequirement(attack.requires);
-  const hasDiscards = isNonEmptyRequirement(attack.discards);
-  if (!hasRequires && !hasDiscards) return false;
-
-  let remaining = wildcardCount;
-  if (hasRequires) {
-    const short = pileRequirementShortfall(tokens, attack.requires);
-    if (short > remaining) return false;
-    remaining -= short;
-  }
-  if (hasDiscards) {
-    const short = pileRequirementShortfall(tokens, attack.discards);
-    if (short > remaining) return false;
-  }
-  return true;
-}
 
 /**
  * Card play fuel: the pile must hold `effect.requires` (gate, not spent) and

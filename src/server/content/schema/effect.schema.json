@@ -50,7 +50,6 @@
         "branch",
         "prompt",
         "prevent-attack-reflect",
-        "replace-synthetic-face",
         "retain-die",
         "replay-graveyard-tactic",
         "copy-pool-symbol",
@@ -208,7 +207,6 @@
         { "$ref": "#/$defs/preventAttackReflect" },
         { "$ref": "#/$defs/armPreventDraw" },
         { "$ref": "#/$defs/forgeFaces" },
-        { "$ref": "#/$defs/replaceSyntheticFace" },
         { "$ref": "#/$defs/repositionCreature" },
         { "$ref": "#/$defs/swapPositions" },
         { "$ref": "#/$defs/conditional" },
@@ -287,7 +285,7 @@
     },
     "generateSymbol": {
       "title": "generate-symbol",
-      "description": "[Generate N Attribute] into the controller's unabsorbed pool.",
+      "description": "Engine-internal pool pip (Overcharge / forge yield / face extra pips). Do not print [Generate] on tactics.",
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "symbol", "amount"],
@@ -489,7 +487,7 @@
     },
     "desynthesize": {
       "title": "desynthesize",
-      "description": "[Desynthesize] a synthetic attribute face on any die to that attribute's natural. Spec 024. Not Reforge.",
+      "description": "[Desynthesize] a synthetic attribute face on any die to that attribute's natural. Spec 024. Not a forge and not Stamp.",
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "target"],
@@ -552,19 +550,6 @@
         "kind": { "$ref": "defs.schema.json#/$defs/forgeableFaceKind" },
         "attribute": { "$ref": "defs.schema.json#/$defs/attribute" },
         "target": { "$ref": "defs.schema.json#/$defs/forgeTarget" }
-      }
-    },
-    "replaceSyntheticFace": {
-      "title": "replace-synthetic-face",
-      "description": "[Reforge N Attribute] / [Cross forge N Y / Z]. Choose N replaceable slots on one owned die, then N synthetic destination faces from the pool. fromAttribute omitted = any showing face (Reforge). Set = Cross forge (slots must show Y). Always installs synthetic attribute. Not a forge — no forge-draw.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "faces", "attribute"],
-      "properties": {
-        "type": { "const": "replace-synthetic-face" },
-        "faces": { "$ref": "defs.schema.json#/$defs/positiveAmount" },
-        "attribute": { "$ref": "defs.schema.json#/$defs/attribute" },
-        "fromAttribute": { "$ref": "defs.schema.json#/$defs/attribute" }
       }
     },
     "repositionCreature": {

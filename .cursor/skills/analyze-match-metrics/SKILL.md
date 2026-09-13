@@ -2,13 +2,13 @@
 name: analyze-match-metrics
 description: >-
   Analyze Dice Skirmish match-metrics JSON or Markdown exports to diagnose
-  whether the pile-only game is playable and fun: unpaid attacks, long games,
-  stall/idle, drag, low lethality, forge vs play vs Overcharge, reaction
-  friction, think time. Use when the user pastes a Copy agent prompt, attaches
-  Download JSON, mentions the Metrics tab, games going past 10 turns, or asks
-  why matches feel slow or unfun. Do not use when they also have playtest notes
-  or “felt like the wrong archetype” — that is post-playtest (skill
-  review-playtest).
+  whether the pile-only game is playable and fun: locked attacks (no matching
+  showing face), long games, stall/idle, drag, low lethality, forge vs play vs
+  Overcharge, reaction friction, think time. Use when the user pastes a Copy
+  agent prompt, attaches Download JSON, mentions the Metrics tab, games going
+  past 10 turns, or asks why matches feel slow or unfun. Do not use when they
+  also have playtest notes or “felt like the wrong archetype” — that is
+  post-playtest (skill review-playtest).
 ---
 
 # Analyze match metrics
@@ -17,8 +17,9 @@ Read `docs/specs/014-match-metrics.md` if you need collector semantics.
 
 The export is an **observer**. It does not change `GameState`. Do not invent
 reducer behavior that is not in the numbers. Do not propose a second rules
-engine in the UI. Do not propose bringing **energy** back — fuel is the
-attribute pile only.
+engine in the UI. Do not propose bringing **energy** back. Cards, rituals, and
+synthetic forge still pay the attribute pile (spec `016`). Creature attacks
+use `[Unlock]` from showing faces (spec `028`) — they do not spend the pile.
 
 ## Goal
 
@@ -57,16 +58,17 @@ Pace is **per match**, not a 11–20 band (`src/client/metrics/pace.ts`):
    `idleTurnCount` vs stall. Dragging = empty overtime. Grinding = setup/stall
    without a close. Long-active = combat happened, still too many turns.
 3. **Can they swing?** 0 attacks is not “chose setup.” Check rejected
-   `ATTACK` / `INSUFFICIENT_SYMBOLS` (often rituals, not attacks), attack
-   `discards` vs a 2-die roll, and 1-pip leftovers that pay a 1-cost card or
-   Overcharge (0 pile) but not a 2-token basic. `turn.absorbs` counts
+   `ATTACK` / `ATTACK_NOT_UNLOCKED` (showing faces vs `unlock`, spec `028` —
+   not leftover pile vs `discards`). `INSUFFICIENT_SYMBOLS` is often rituals
+   or card play, not attacks. 1-pip leftovers still pay a 1-cost card or
+   Overcharge (0 pile) but not a 2-token play. `turn.absorbs` counts
    `symbol-absorbed` **and** `symbols-consumed` — not spare pile.
 4. **Close:** `meanDamagePerTurn`, stall-turn rate, turn kinds, HP at end,
    `medianFirstDefeatTurn`, `medianFirstDamageTurn`, `medianFirstAttackTurn`,
    deaths-by-turn, `pctNeverDefeat`. First death on turns 1–3 is too early for
    a three-creature skirmish; after turn 10 (or never) the close is not arriving.
-   Split cannot-pay-attack from cannot-kill (prevent/Shield) from not converting
-   setup.
+   Split locked-attack (`ATTACK_NOT_UNLOCKED` / no matching showing face) from
+   cannot-kill (prevent/Shield) from not converting setup.
 5. **Forge as a line:** `playVsForgeMix` / Overcharge vs `FORGE_CARD`.
    Overcharge is 0 pile and juices every copy of a face; synthetic forge pays
    `playCost`. Say whether a player would pick forge.
@@ -80,7 +82,7 @@ Pace is **per match**, not a 11–20 band (`src/client/metrics/pace.ts`):
 
 ```markdown
 ## Verdict
-One paragraph: playable/fun or not, and why (unpaid attacks / grinding close /
+One paragraph: playable/fun or not, and why (locked attacks / grinding close /
 forge not a line / think time) — plus dragging / grinding / long-active.
 
 ## Evidence
@@ -89,12 +91,12 @@ seat, play vs forge vs Overcharge per match).
 
 ## Experiments to try
 1. Concrete rules or UX change that makes matches fun to play (cite a spec /
-   bible section if you know it). Prefer paying a basic off a normal roll
-   over adding attack rewards.
+   bible section if you know it). Prefer unlocking a basic off a normal
+   showing-face pair over adding attack rewards.
 2. What to measure next (which chart should move).
 
 ## Missing data
-Only if the sample is too small, guest-only, or pile/attack-legal is absent.
+Only if the sample is too small, guest-only, or unlock/attack-legal is absent.
 ```
 
 Do not change `src/server` from this skill. If a rules experiment is agreed,

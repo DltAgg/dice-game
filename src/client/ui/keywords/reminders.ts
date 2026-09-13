@@ -139,16 +139,6 @@ const STEM_RULES: readonly StemRule[] = [
     reminder: "Ally frontline↔back / swap.",
   },
   {
-    test: (body) => /^Reforge(?:\s+\d+)?(?:\s+[A-Za-z]+)?$/i.test(body),
-    reminder:
-      "On one of your dice, replace any N faces with N synthetic faces of that attribute from your pool (no forge-draw).",
-  },
-  {
-    test: (body) => /^Cross forge(?:\s+\d+)?(?:\s+[A-Za-z]+\s*\/\s*[A-Za-z]+)?$/i.test(body),
-    reminder:
-      "On one of your dice, replace N faces of attribute Y with N synthetic Z faces from your pool (no forge-draw).",
-  },
-  {
     test: (body) => /^Stamp$/i.test(body),
     reminder: "Re-fire showing face roll effects (no new rolled pip).",
   },
@@ -167,6 +157,10 @@ const STEM_RULES: readonly StemRule[] = [
   {
     test: (body) => /^Retain$/i.test(body),
     reminder: "Keep retainable die across next roll.",
+  },
+  {
+    test: (body) => /^Unlock:/i.test(body),
+    reminder: "Declare this attack only while your showing faces meet this. Faces, not pile.",
   },
   {
     test: (body) => /^Requires:/i.test(body),

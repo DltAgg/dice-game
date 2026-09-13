@@ -105,7 +105,7 @@ Generic (prefer these in new JSON):
 | `negate` | `negate-card`, `negate-ritual` (`scope`) |
 | `silence` | `[Silence]` an opposing creature, field ritual, or die slot until the start of your next turn (spec `022`) |
 | `bounce` | `[Bounce]` an opposing ritual, equipment, or overload to its owner’s hand (spec `023`) |
-| `desynthesize` | `[Desynthesize]` a synthetic attribute face on any die to that attribute’s natural (spec `024`). Not `replace-synthetic-face` |
+| `desynthesize` | `[Desynthesize]` a synthetic attribute face on any die to that attribute’s natural (spec `024`). Not a forge / not `[Stamp]` |
 | `modify` | all `arm-*`, `next-attack-bonus`, `grant-next-attack-bonus`, `grant-attack-prevent`, `grant-extra-attack` |
 | `generate-symbol` / `convert-symbols` | same |
 | `sequence` | implicit lists + `then` |
@@ -113,7 +113,7 @@ Generic (prefer these in new JSON):
 | `prompt` | opens a `PendingDecision` kind then resumes |
 
 Named one-offs (keep until a second card needs composition):  
-`prevent-attack-reflect`, `replace-synthetic-face`, `retain-die`,
+`prevent-attack-reflect`, `retain-die`,
 `replay-graveyard-tactic`, `copy-pool-symbol`, `look-top-deck`,
 `peek-deck-optional-bottom`, `dark-pact`, `mind-control`, `extermination`,
 `reapply-die-modifiers`, `copy-other-die-face`, `optional-reroll-die`,

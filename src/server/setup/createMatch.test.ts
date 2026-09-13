@@ -35,6 +35,8 @@ describe("match setup", () => {
     );
 
     expect(positions).toEqual(["frontline", "frontline", "back"]);
+    const lanes = state.players[P1]?.creatureIds.map((id) => state.creatures[id]?.lane);
+    expect(lanes).toEqual([0, 1, null]);
   });
 
   it("places the legendary in the back regardless of squad index", () => {
@@ -62,12 +64,13 @@ describe("match setup", () => {
     const positions = state.players[P1]?.creatureIds.map((id) => ({
       definitionId: state.creatures[id]?.definitionId,
       position: state.creatures[id]?.position,
+      lane: state.creatures[id]?.lane,
     }));
 
     expect(positions).toEqual([
-      { definitionId: TEST_LEGEND, position: "back" },
-      { definitionId: TEST_BODY_A, position: "frontline" },
-      { definitionId: TEST_BODY_B, position: "frontline" },
+      { definitionId: TEST_LEGEND, position: "back", lane: null },
+      { definitionId: TEST_BODY_A, position: "frontline", lane: 0 },
+      { definitionId: TEST_BODY_B, position: "frontline", lane: 1 },
     ]);
   });
 

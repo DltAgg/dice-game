@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { getCreatureDefinition } from "../content/creatures.js";
 import { whileShowingTotals } from "../rules/whileShowing.js";
 import type { DieState } from "../model/dice.js";
 import type { DieId, FaceCardId } from "../model/ids.js";
@@ -26,6 +25,7 @@ import {
   withPile,
   withHand,
   withPhase,
+  withShowingFaces,
   withSymbols,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
@@ -160,25 +160,22 @@ describe("016 attribute pile-up", () => {
     expect(whileShowingTotals(after, P1).empower).toBe(1);
   });
 
-  it("attack requires/discards from owner pile; same-turn bank→attack OK", () => {
-    let state = withPhase(newMatch(), "actions");
+  it("attack Unlock is showing faces, not the pile; ATTACK does not burn tokens", () => {
+    let state = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["mechanical"]);
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
-    const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
-    const attack = def.attacks.find((a) => a.id === TEST_CRANK)!;
-    state = withAttributePool(state, P1, { mechanical: 1, luminar: 1 });
+    state = withAttributePool(state, P1, { mechanical: 3, luminar: 2 });
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: attack.id,
+        attackId: TEST_CRANK,
         targetId,
       }),
     );
     expect(after.log.some((e) => e.event.type === "attack-declared")).toBe(true);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
-    expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(0);
+    expect(after.players[P1]?.attributePool).toEqual({ mechanical: 3, luminar: 2 });
   });
 
   it("ritual without Active-when is ready on place", () => {
@@ -256,29 +253,38 @@ describe("016 attribute pile-up", () => {
     expect(after.players[P1]?.attributePool).toEqual({ martial: 1 });
   });
 
-  it("Resonance wildcards cover attack Requires gate and Spend discards", () => {
+  it("Resonance wildcards do not unlock attacks", () => {
     let state = withPhase(newMatch(), "actions");
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
-    const def = getCreatureDefinition(state.creatures[attackerId]!.definitionId)!;
-    const attack = def.attacks.find((a) => a.id === TEST_RETOOL)!;
     state = withAttributePool(state, P1, { mechanical: 2 });
     state = {
       ...state,
-      requirementWildcardsThisTurn: { [P1]: [{ fromSymbol: "arcane" }] },
+      requirementWildcardsThisTurn: { [P1]: [{ fromSymbol: "arcane" }, { fromSymbol: "arcane" }] },
     };
+    const denied = advance(state, {
+      type: "ATTACK",
+      playerId: P1,
+      attackerId,
+      attackId: TEST_RETOOL,
+      targetId,
+    });
+    expect(denied.ok).toBe(false);
+    if (!denied.ok) expect(denied.error).toBe("ATTACK_NOT_UNLOCKED");
+
+    state = withShowingFaces(state, P1, ["mechanical", "mechanical"]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
         playerId: P1,
         attackerId,
-        attackId: attack.id,
+        attackId: TEST_RETOOL,
         targetId,
       }),
     );
     expect(after.log.some((e) => e.event.type === "attack-declared")).toBe(true);
-    expect(after.players[P1]?.attributePool).toEqual({});
-    expect(after.requirementWildcardsThisTurn[P1] ?? []).toHaveLength(0);
+    expect(after.players[P1]?.attributePool).toEqual({ mechanical: 2 });
+    expect(after.requirementWildcardsThisTurn[P1] ?? []).toHaveLength(2);
   });
 
   it("ritual stays ready after pile spend once Active-when was unlocked", () => {

@@ -11,10 +11,10 @@ import {
   withPile,
   withHand,
   withPhase,
-  withTokens,
+  withShowingFaces,
 } from "@server/testing/scenario.js";
 import { autoPassPriorityAction, drainEmptyReactionPriority, tryAutoPassPriority } from "./autoPassPriority.js";
-import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js";
+import { DRIVE_SHAFT } from "@server/testing/tempoCatalogue.js";
 
 const PREVENT_REACTION = testCard({
   id: asTestCardId("auto-pass-prevent"),
@@ -36,7 +36,7 @@ function openedAttack(
   const base = withPhase(newMatch(), "actions");
   const attacker = creatureIdAt(base, P1, 2);
   const target = creatureIdAt(base, P2, 0);
-  const fueled = withTokens(base, attacker, DRIVE_SHAFT_FUEL);
+  const fueled = withShowingFaces(base, P1, ["mechanical"]);
   const withP2 =
     p2Pool === undefined ? withPile(fueled, P2, 10) : withAttributePool(fueled, P2, p2Pool);
   const combat = withHand(withP2, P2, hand);

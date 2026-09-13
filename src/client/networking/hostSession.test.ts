@@ -16,9 +16,9 @@ import {
   withPile,
   withHand,
   withPhase,
-  withTokens,
+  withShowingFaces,
 } from "@server/testing/scenario.js";
-import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js";
+import { DRIVE_SHAFT } from "@server/testing/tempoCatalogue.js";
 import { ClientSession } from "./clientSession.js";
 import { HostSession } from "./hostSession.js";
 import { attachFakeGuest, openFakeLink } from "./memoryTransport.js";
@@ -778,7 +778,7 @@ describe("host/client reaction-priority (P2 guest)", () => {
     let ready = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(ready, P1, 2);
     const target = creatureIdAt(ready, P2, 0);
-    ready = withHand(withPile(withTokens(ready, attacker, DRIVE_SHAFT_FUEL), P2, 10), P2, [
+    ready = withHand(withPile(withShowingFaces(ready, P1, ["mechanical"]), P2, 10), P2, [
       TEST_REACTION_PREVENT,
     ]);
     const opened = expectOk(
@@ -922,7 +922,7 @@ describe("host/client reaction-priority (P2 guest)", () => {
     let ready = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(ready, P1, 2);
     const target = creatureIdAt(ready, P2, 0);
-    ready = withTokens(withHand(withHand(ready, P1, []), P2, []), attacker, DRIVE_SHAFT_FUEL);
+    ready = withShowingFaces(withHand(withHand(ready, P1, []), P2, []), P1, ["mechanical"]);
     ready = jsonClone(ready);
 
     const { host, guest } = openFakeLink("CHAIN-EMPTY", "g-empty");

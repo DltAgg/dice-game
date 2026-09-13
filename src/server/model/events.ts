@@ -326,21 +326,6 @@ export type GameEvent =
       readonly faceCardId: FaceCardId;
     }
   | {
-      readonly type: "replace-synthetic-face-started";
-      readonly playerId: PlayerId;
-      readonly faces: number;
-      readonly attribute: Attribute;
-      readonly fromAttribute?: Attribute;
-    }
-  | {
-      readonly type: "replace-synthetic-face-resolved";
-      readonly playerId: PlayerId;
-      readonly dieId: DieId;
-      readonly slotIndexes: readonly number[];
-      readonly removedFaceCardIds: readonly FaceCardId[];
-      readonly installedFaceCardIds: readonly FaceCardId[];
-    }
-  | {
       readonly type: "effect-mode-chosen";
       readonly playerId: PlayerId;
       readonly modeIndex: number;

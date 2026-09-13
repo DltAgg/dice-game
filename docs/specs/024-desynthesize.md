@@ -4,9 +4,8 @@ Status: **IMPLEMENTED** (2026-09-01)
 
 `[Desynthesize]` is a physics keyword. It peels a **Synthetic** attribute
 face on **any die** back to that attribute’s **natural** identity face. It is
-**not** `[Reforge]` / `[Cross forge]` (`replace-synthetic-face`: overwrite N
-slots on your die with synthetics from pool, owned die only, blocked by stay /
-forge-lock, Mechanical exclusive).
+**not** a forge and **not** `[Stamp]`. `replace-synthetic-face` / `[Reforge]` /
+`[Cross forge]` is **removed** (it duplicated `FORGE_CARD` without forge-draw).
 
 Related: [`018-ast-engine.md`](./018-ast-engine.md),
 [`KEYWORDS.md`](../KEYWORDS.md), [`RULEBOOK.md`](../RULEBOOK.md) §11,
@@ -43,7 +42,7 @@ Bible is silent. User **DECIDED** and labelled **ASSUMED** rows live in
    natural from anyone’s face pool (basics are identity faces).
 5. **Displaced synthetic.** `returnFaceToPoolIfOrphaned` to
    `slot.faceCardOwnerId`. If last copy of that `faceCardId`+owner is gone,
-   `clearOverloadsOnFace` + `clearOverchargeOnFace` (same as reforge / forge
+   `clearOverloadsOnFace` + `clearOverchargeOnFace` (same as forge
    overwrite).
 6. **Not a forge.** No forge-draw. **Not blocked** by
    `slotCannotBeReplacedByForge` / forge-lock / cannot-replace-by-forge
@@ -56,8 +55,8 @@ Bible is silent. User **DECIDED** and labelled **ASSUMED** rows live in
    Next roll uses the natural.
 9. **Chooser.** Always prompt when ≥1 legal synthetic slot exists (any
    player’s dice). Empty = legal whiff. Not optional (decline is illegal).
-10. Reuses `RESOLVE_CHOOSE_DIE_SLOT`. Does **not** use
-    `replace-synthetic-face`.
+10. Reuses `RESOLVE_CHOOSE_DIE_SLOT`. Does **not** open a forge chooser.
+    `replace-synthetic-face` is **removed**.
 
 ## State Changes
 
@@ -100,8 +99,8 @@ Instructions for **match-ui** (do not implement in this change):
 
 - Die-slot picker for **any synthetic** on **both** players’ dice. Label
   whose die the slot belongs to.
-- Dispatch existing `RESOLVE_CHOOSE_DIE_SLOT`. Do not open the Reforge
-  (`replace-synthetic-face`) chooser.
+- Dispatch existing `RESOLVE_CHOOSE_DIE_SLOT`. Do not open a forge
+  chooser (`replace-synthetic-face` is **removed**).
 - After resolve, the slot’s face print is the **natural** of that attribute
   (optional label that it is now natural). Overloads on an orphaned face
   leave as they do on overwrite.
@@ -114,7 +113,7 @@ Instructions for **match-ui** (do not implement in this change):
 - [x] Forge-lock slot can still be desynthesized
 - [x] Showing slot: pip still present; face id now natural
 - [x] Whiff when no synthetics on any die
-- [x] Does not use `replace-synthetic-face` pending
+- [x] Does not use a forge chooser (`replace-synthetic-face` **removed**)
 - [x] `docs/RULEBOOK.md` / `docs/KEYWORDS.md` / `OPEN_DESIGN.md` updated
 
 ## Tests

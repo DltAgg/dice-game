@@ -12,25 +12,15 @@ export function formatAttackCost(requires: SymbolRequirement): string {
   return formatRequirementBody(requires);
 }
 
-/**
- * Icons on the creature frame: the gate if printed, otherwise the Spend.
- * Text fuel (`formatAttackFuel`) names both when both exist.
- */
+/** Icons on the creature frame: the showing-face `[Unlock]` requirement. */
 export function attackCostOf(attack: AttackDefinition): SymbolRequirement {
-  if (isNonEmptyRequirement(attack.requires)) return attack.requires;
-  return attack.discards ?? {};
+  return attack.unlock;
 }
 
-/** Player-facing fuel: `[Requires: …]` gate, `[Spend: …]` pile burn. */
+/** Player-facing gate: `[Unlock: …]` from showing faces (spec `028`). */
 export function formatAttackFuel(attack: AttackDefinition): string {
-  const parts: string[] = [];
-  if (isNonEmptyRequirement(attack.requires)) {
-    parts.push(`[Requires: ${formatAttackCost(attack.requires)}]`);
-  }
-  if (isNonEmptyRequirement(attack.discards)) {
-    parts.push(`[Spend: ${formatAttackCost(attack.discards)}]`);
-  }
-  return parts.join(" ");
+  if (!isNonEmptyRequirement(attack.unlock)) return "";
+  return `[Unlock: ${formatAttackCost(attack.unlock)}]`;
 }
 
 export function formatAttackLine(attack: AttackDefinition): string {

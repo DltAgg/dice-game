@@ -10,15 +10,20 @@ import type {
 } from "./ids.js";
 import type { SymbolRequirement } from "./symbols.js";
 
-/** Bible §6: the frontline protects the back. */
+/** Frontline column. `null` on `CreatureState.lane` means no numbered seat. */
+export type FrontlineLane = 0 | 1;
+
+/** Row on the battlefield. Attack facing uses `CreatureState.lane` (spec `029`). */
 export type BattlefieldPosition = "frontline" | "back";
 
 /**
- * Bible §7 and §24: creatures have no ATK/DEF. An attack is a cost plus an
- * effect, and the interesting question is whether the cost can be paid.
+ * Bible §7 and §24: creatures have no ATK/DEF. An attack is a showing-face
+ * unlock plus an effect (spec `028`). Complexity stays on the engine, not a
+ * combat minigame.
  *
- * Fuel is the attacker's owner's attribute pile (spec `016`), never the shared
- * turn-pool symbols. Absorbing an attribute banks into that pile immediately.
+ * Unlock is derived from the owner's currently showing faces after
+ * `ROLL_DICE` / `[Reroll]`. Attacks do not check or burn `attributePool`
+ * (that pile still pays cards, rituals, and synthetic forge — spec `016`).
  */
 export interface AttackDefinition {
   readonly id: AttackId;
@@ -26,15 +31,14 @@ export interface AttackDefinition {
   /** Basic vs Special as printed on the creature card. */
   readonly kind: "basic" | "special";
   /**
-   * Pile gate (`[Requires: …]`): must hold, not spent. May accompany `discards`.
+   * Showing-face gate (`[Unlock: …]`). Named attributes only — no `any`.
+   * Met when the owner's showing faces cover every named count (AND).
    */
-  readonly requires?: SymbolRequirement;
+  readonly unlock: SymbolRequirement;
   /**
-   * Pile burn (`[Spend: …]`): removed from the owner's pile on declare.
-   * May accompany `requires` (gate + pay from the same pile).
+   * When true, the attack ignores lane facing and breach (spec `029`) —
+   * any living enemy is legal. No live catalogue attack is Range today.
    */
-  readonly discards?: SymbolRequirement;
-  /** Bible §6: Range lets an attack ignore the frontline restriction. */
   readonly range: boolean;
   /**
    * English rules text for the attack body (after the name), as printed. Kept
@@ -78,6 +82,12 @@ export interface CreatureState {
   readonly definitionId: CreatureDefinitionId;
   readonly ownerId: PlayerId;
   readonly position: BattlefieldPosition;
+  /**
+   * Numbered frontline seat. `0` / `1` at setup for the two non-legendaries.
+   * `null` = not occupying a numbered seat (legendary at setup / legendary
+   * in the back). Spec `029`. Non-legendaries keep this for life (ASSUMED).
+   */
+  readonly lane: FrontlineLane | null;
   /** Damage taken. Max life stays on the definition so it is never desynced. */
   readonly damage: number;
   readonly defeated: boolean;

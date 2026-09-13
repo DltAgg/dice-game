@@ -113,8 +113,6 @@ describe("lookupKeywordReminders", () => {
       "[Recall 1]",
       "[Mill 2]",
       "[Reposition]",
-      "[Reforge 2 Mechanical]",
-      "[Cross forge 1 Mechanical / Luminar]",
       "[Stamp]",
       "[Double]",
       "[Resonance]",
@@ -149,8 +147,6 @@ describe("lookupKeywordReminders", () => {
       "[Recall 1]",
       "[Mill 2]",
       "[Reposition]",
-      "[Reforge 2 Mechanical]",
-      "[Cross forge 1 Mechanical / Luminar]",
       "[Stamp]",
       "[Double]",
       "[Resonance]",
@@ -173,13 +169,11 @@ describe("lookupKeywordReminders", () => {
     expect(rows[0]?.reminder).toMatch(/attribute face card/i);
   });
 
-  it("matches Reforge N Attribute and Cross forge N Y / Z", () => {
-    expect(lookupKeywordReminders("[Reforge 2 Mechanical]").map((row) => row.token)).toEqual([
-      "[Reforge 2 Mechanical]",
-    ]);
-    expect(
-      lookupKeywordReminders("[Cross forge 1 Mechanical / Luminar]").map((row) => row.token),
-    ).toEqual(["[Cross forge 1 Mechanical / Luminar]"]);
+  it("looks up [Unlock: …] as showing-face attack gate", () => {
+    const rows = lookupKeywordReminders("[Unlock: Mechanical]");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.token).toBe("[Unlock: Mechanical]");
+    expect(rows[0]?.reminder).toMatch(/showing faces/i);
   });
 });
 

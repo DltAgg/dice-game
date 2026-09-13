@@ -16,9 +16,9 @@ import {
   withPile,
   withHand,
   withPhase,
-  withTokens,
+  withShowingFaces,
 } from "../testing/scenario.js";
-import { CRANK, CRANK_FUEL } from "../testing/tempoCatalogue.js";
+import { CRANK } from "../testing/tempoCatalogue.js";
 
 const CHOOSE_ALLY_SHIELD = testCard({
   id: "card-test-choose-ally-shield",
@@ -69,7 +69,7 @@ describe("pending decision gates", () => {
     const base = withPhase(newMatch(), "actions");
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
-    const combat = withHand(withPile(withTokens(base, attacker, CRANK_FUEL), P2, 10), P2, [
+    const combat = withHand(withPile(withShowingFaces(base, P1, ["mechanical"]), P2, 10), P2, [
       TEST_REACTION_PREVENT,
     ]);
     const opened = expectOk(

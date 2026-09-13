@@ -148,7 +148,6 @@ describe("[Desynthesize] instant", () => {
     expect(state.dice[dieId]?.slots[0]?.faceCardId).toBe(MECHANICAL_NATURAL);
     expect(state.dice[dieId]?.slots[0]?.faceCardOwnerId).toBe(P1);
     expect(state.players[P1]?.facePool.includes(TEST_SYNTHETIC_MECHANICAL_A)).toBe(true);
-    expect(state.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("peels an opponent-die synthetic; natural belongs to the die owner; synthetic returns to the forger", () => {
@@ -226,14 +225,12 @@ describe("[Desynthesize] instant", () => {
   it("whiffs when no synthetics are on any die", () => {
     const state = playDesynthesize(newMatch());
     expect(state.pendingDecision).toBeNull();
-    expect(state.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
-  it("does not open replace-synthetic-face pending", () => {
+  it("opens choose-die-slot pending", () => {
     const state = installSynthetic(newMatch(), P1, P1, TEST_SYNTHETIC_MECHANICAL_A);
     const opened = playDesynthesize(state);
     expect(opened.pendingDecision?.type).toBe("choose-die-slot");
-    expect(opened.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("applies from a declared slot without a chooser (injected)", () => {
@@ -258,6 +255,5 @@ describe("[Desynthesize] instant", () => {
     });
     drainResolution(draft);
     expect(draft.dice[dieId]?.slots[0]?.faceCardId).toBe(MECHANICAL_NATURAL);
-    expect(draft.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 });

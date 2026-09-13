@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  attackIsFuelled,
+  attackIsUnlocked,
   basicAttackOf,
   canAbsorbSymbol,
-  canResolvePlayEffects,
   formatForgeLine,
   getCard,
   getCreatureDefinition,
@@ -67,7 +66,6 @@ import { OverchargeFacePick } from "./modals/OverchargeFacePick";
 import { OverloadFacePickModal } from "./modals/OverloadFacePickModal";
 import { PeekDeckModal } from "./modals/PeekDeckModal";
 import { ChooseEffectModePrompt } from "./modals/ChooseEffectModePrompt";
-import { ReplaceSyntheticFacePrompt } from "./modals/ReplaceSyntheticFacePrompt";
 import { ReplayGraveyardModal } from "./modals/ReplayGraveyardModal";
 import { SearchPanel } from "./modals/SearchPanel";
 import { SplitDamageModal } from "./modals/SplitDamageModal";
@@ -273,7 +271,7 @@ export function MatchBoard() {
       const def = getCreatureDefinition(attacker.definitionId);
       const basic = def !== undefined ? basicAttackOf(def) : undefined;
       if (basic === undefined) return;
-      if (!attackIsFuelled(state.players[pending.controllerId]?.attributePool ?? {}, basic)) return;
+      if (!attackIsUnlocked(state, pending.controllerId, basic)) return;
       if (!legalTargetsFor(state, pending.creatureId, basic).includes(creature.id)) return;
       tryDispatch({
         type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
@@ -355,7 +353,7 @@ export function MatchBoard() {
 
     if (card.ownerId !== activeId || pending !== null || phase !== "actions") return;
     const def = getCard(card.cardId);
-    if (def === undefined || !hasPlayableEffect(def) || !canResolvePlayEffects(state, activeId, def)) return;
+    if (def === undefined || !hasPlayableEffect(def)) return;
 
     if (def.ritual !== undefined) {
       tryDispatch({ type: "PLAY_CARD", playerId: activeId, cardInstanceId: card.id });
@@ -838,27 +836,6 @@ export function MatchBoard() {
       {pending?.type === "forge-faces" && !isPendingChooser && (
         <WaitingBanner>
           Opponent is choosing a face from their pool to install on your die.
-        </WaitingBanner>
-      )}
-
-      {pending?.type === "replace-synthetic-face" && isPendingChooser && (
-        <ReplaceSyntheticFacePrompt
-          state={state}
-          pending={pending}
-          onResolve={({ dieId, slotIndexes, faceCardIds }) => {
-            tryDispatch({
-              type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
-              playerId: pending.controllerId,
-              dieId,
-              slotIndexes,
-              faceCardIds,
-            });
-          }}
-        />
-      )}
-      {pending?.type === "replace-synthetic-face" && !isPendingChooser && (
-        <WaitingBanner>
-          Opponent is replacing faces on their die.
         </WaitingBanner>
       )}
 

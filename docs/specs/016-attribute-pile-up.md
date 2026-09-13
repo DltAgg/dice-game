@@ -28,18 +28,16 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
    `on-absorb` filters stay; absorber relation is the banking player / their
    field as appropriate.
 6. **`[Requires]` / `[Spend]`.** `[Requires: …]` is a pile **gate** (must hold,
-   not spent) — attack `requires` **and** card `effect.requires`. `[Spend: …]`
-   **burns** from the pile (header `playCost`, ritual activate `spend`, attack
-   `discards`). Either clause may include **`any`** generic pips (`{ any: 2 }`
+   not spent) — card `effect.requires`. `[Spend: …]` **burns** from the pile
+   (header `playCost`, ritual activate `spend`). Either clause may include **`any`** generic pips (`{ any: 2 }`
    or `{ arcane: 1, any: 2 }`): a count of leftover pile tokens of any attribute
    after named pips are reserved. `any` is not stored on `attributePool` and is
    not a ninth attribute. Wildcards may cover shortfall. `[Discount]` reduces
    header Spend only, never a Requires gate, and reduces `any` before named
-   attributes. Forge does not check `effect.requires`.
-7. **Attacks.** `requires` is checked against the attacker's owner's
-   `attributePool` (not spent). `discards` is checked and burned. **Both may
-   apply** on one attack. Same-turn absorb **can** enable an attack
-   (pile updates immediately).
+   attributes. Forge does not check `effect.requires`. Creature attacks do
+   **not** use this pile (spec [`028-showing-face-combat.md`](./028-showing-face-combat.md)).
+7. **Attacks.** Unlock is the owner’s **currently showing faces**, not
+   `attributePool`. See spec `028`. `ATTACK` does not check or burn the pile.
 8. **Rituals.** No progress counters on the ritual card.
    - `activeWhen` (if any): the owner's pile must meet the requirement **once**
      for the ritual to become `ready` (one-time unlock; does not drop back to
@@ -66,7 +64,7 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
 |---|---|
 | `ABSORB_SYMBOL` | Attribute → owner pile. Shield → requires `creatureId`. |
 | `ACTIVATE_RITUAL` | Orientation `ready`; burn `spend` if present |
-| `ATTACK` | Fuel from owner `attributePool` |
+| `ATTACK` | Showing-face `[Unlock]` (spec `028`). Does not burn `attributePool`. |
 | `END_TURN` | Pile persists; turn symbols expire |
 
 ## Validation
@@ -74,7 +72,8 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
 - Attribute absorb: actions phase, active player, unabsorbed usable attribute
   pip, no creature id required.
 - Shield absorb: same plus living owned creature target.
-- Attack: owner pile meets `requires` (gate) and `discards` (Spend) when printed.
+- Attack: owner’s showing faces meet `unlock` (spec `028`). The pile is not
+  checked or burned.
 - Play: pile meets `effect.requires` (gate) and discounted header `playCost`
   (Spend) against the **same** pile (not additive). Forge ignores `effect.requires`.
 - Ritual ready: pile meets `activeWhen` once (or no gate → ready on place).
@@ -86,8 +85,8 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
    face / overload / standing `on-absorb` (bank context).
 2. Shield absorb: grant shield; queue triggers that apply.
 3. Ritual orientation refresh on pile change: `preparing` → `ready` when Active-when is met (one-time unlock).
-4. Attack declare: check gate and Spend → burn discards if printed → open
-   attack chain as today.
+4. Attack declare: showing-face `[Unlock]` (spec `028`) — no pile gate or
+   Spend burn → open attack chain as today.
 
 ## UI
 
@@ -98,9 +97,9 @@ rolled attribute pip into the pile (or granting Shield onto a creature).
 
 ## Acceptance Criteria
 
-- [x] Attacks use `attributePool`
+- [x] Attacks use showing-face `[Unlock]` (spec `028`); pile pays cards/rituals/forge
 - [x] Absorbing Martial increases the player's Martial pile immediately
-- [x] Same-turn absorb can enable an attack that requires that attribute
+- [x] Same-turn absorb can enable a pile `[Requires]` / `[Spend]` (not attacks)
 - [x] Rituals ready/activate from pile; optional spend burns on activate
 - [x] Shield absorb still creature-targeted
 - [x] Rulebook §§6–8, 10, 13 and KEYWORDS Absorb text match play

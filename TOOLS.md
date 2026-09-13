@@ -39,6 +39,7 @@ npm run typecheck && npm test && npm run lint
 | Effect AST | `src/server/ast/` (legacy union still in `src/server/model/effects.ts`) |
 | Card / forge / ritual types | `src/server/model/cards.ts` |
 | Creature / attack types | `src/server/model/creatures.ts` |
+| Attack unlock (showing faces) | `src/server/rules/attackUnlock.ts` (`attackIsUnlocked`, `showingAttributeCounts`; spec `028`) |
 | Die / face types | `src/server/model/dice.ts` |
 | Reducer | `src/server/reducer/reduce.ts` |
 | Effect resolution | `src/server/reducer/resolution.ts` |

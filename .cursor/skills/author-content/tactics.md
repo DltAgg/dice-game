@@ -140,7 +140,9 @@ Read `src/server/model/effects.ts` as authority. Today:
 `arm-attack-toxin`, `negate-card`, `negate-ritual`,
 `destroy-ritual`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`, `forge-faces`,
-`mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-life`
+`mill-cards`, `grant-extra-attack` (`[Frenzy]`), `drain-life`,
+`reapply-die-modifiers` (`[Stamp]`), `desynthesize` (`[Desynthesize]` — not a
+forge, not `[Stamp]`). Do not restore `replace-synthetic-face`.
 
 Targets: `source-creature`, `declared-target`, `most-damaged-ally`,
 `most-damaged-enemy`, `most-shielded-enemy`, `choose-ally`, `choose-enemy`, `choose-opponent-ritual`, `choose-opponent-equipment`, `choose-opponent-overload`,
@@ -158,14 +160,19 @@ cards (Bloodline Pact, Ichor Exchange, Eclipse, …) are not copy sources.
 | Card | Why |
 |---|---|
 | Thread the Weave | Instant exclusive verb (`[Insight]`) |
-| Recast | Play-region `[Reforge 2 Mechanical]` (Mechanical exclusive) — forge region still 1; do not treat as occupying extra-forge-region |
-| Alloy Shift | Play-region `[Cross forge 1 Mechanical / Luminar]` — proving card for Y → synthetic Z; not a second Recast |
-| Tooling Order | Play-region Choose one `[Cross forge 1]` either Tempo direction — not Alloy Shift (one-way), not Recast |
+| Recast | Play-region `[Stamp]. [Draw 1].` — forge region still 2; do not treat as occupying extra-forge-region. Not `[Reforge]` |
+| Alloy Shift | Play-region `[Empower 1]. [Stamp].` — not Die Punch (Stamp only), not Recast (Stamp + Draw). Not `[Generate]` (faces / Overcharge). Not `[Reforge]` |
+| Tooling Order | Play-region Choose one `[Stamp]` or `[Discount 2] forge` — not Recast (Stamp + Draw), not Die Punch (Stamp only). Not `[Reforge]` |
+| Anneal | Play-region `[Desynthesize]` — not a forge, not `[Stamp]` |
 | Tempering Line | Ritual play-region Forge 2 + Discount |
 | Shim Kit | `[Discount]` payoff |
 | Beacon Array | Dual `playCost` (Luminar+Mechanical) — unfinished as a bridge if the effect ignores the second color |
 | Nightglass Rune | Overload On roll + mill |
 | Machine Shop | Equipment `on-roll-symbol` |
+
+Mainspring (face) is convert Choose one including `[Discount 1] forge`.
+Retool (Torque Wright special) is `[Strike 2]` + `[Discount 2] forge`.
+Neither is a `[Reforge]` proving card.
 
 Do not copy Cogtooth-shaped Generate-same-attr, or any live card’s forge
 sticker, as the new card’s entire identity.

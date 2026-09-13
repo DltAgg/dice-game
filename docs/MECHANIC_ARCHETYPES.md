@@ -72,7 +72,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-01](#ma-01-attack-spend-refund) | `[Generate]` same attr as attack `[Spend]` | Creature attack follow-up | None (Aggro-shaped if anywhere) | Aggro (infinite swings) on Control | `RETARGETED` |
 | [MA-02](#ma-02-on-roll-generate-same) | `[Generate]` same attr as the face | On roll (face / overload) | Tempo / Combo engine; Control overloads that bank for **cards** | Engine density, not combat | `HOME` |
 | [MA-03](#ma-03-spend-generate-converter) | `[Spend] X, [Generate] Y` | Play region | — | Fake bridge / glue | `ANTI` |
-| [MA-04](#ma-04-paid-creature-attacks) | Strike while pile actually drains | Creature attack | Aggro/Tempo: higher Strike; Control: modest Strike + pie rider | Control with refunds felt Aggro | `HOME` (after MA-01) |
+| [MA-04](#ma-04-paid-creature-attacks) | Strike while pile actually drains | Creature attack | Aggro/Tempo: higher Strike; Control: modest Strike + pie rider | Control with refunds felt Aggro | `RETARGETED` (pile spend gone; see MA-19) |
 | [MA-05](#ma-05-frenzy-extra-attacks) | `[Frenzy]` | Extra attack grant | Aggro, Combo (Wild exclusive) | More swings | `HOME` |
 | [MA-06](#ma-06-engine-converted-damage) | Drain / consume / delayed / ritual damage | Cards, faces, rituals — not cheap attacks | Control, Combo, Burn closers | Valid lethality; not Aggro | `HOME` |
 | [MA-07](#ma-07-insight-mill-riders) | `[Insight]` / `[Mill]` | Paid attack rider or absorb | Control | Control, if the attack still spends | `HOME` |
@@ -80,13 +80,14 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-09](#ma-09-prevent-reactions) | `[Prevent]` | Attack-chain **reaction** only | Combo / Support (Luminar) | Interaction, not Control mill | `HOME` |
 | [MA-10](#ma-10-one-token-playcost) | `playCost` totaling 1 | Header | Exceptional niche | Cheap cycle / Aggro 1-drops | `ANTI` (as a band) |
 | [MA-11](#ma-11-discount) | `[Discount]` | Next forge / play | Tempo, Support, Control sequencing | Makes 2+ cards playable; not Aggro refund | `HOME` |
-| [MA-12](#ma-12-combat-reforge-stamp) | `[Reforge]` / `[Stamp]` on a **paid** attack | Creature special | Tempo (Mechanical exclusive) | Engine during combat, not pile refund | `HOME` |
+| [MA-12](#ma-12-combat-discount-stamp) | `[Discount]` forge / `[Stamp]` on an Unlock-taxed special | Creature special | Tempo (Mechanical) | Engine during combat, not a pile refund | `HOME` |
 | [MA-13](#ma-13-legendary-strike-band) | Strike 3 vs Strike 2 on legendaries | Creature attack | Tempo hits harder; Control chips | Tempo closer vs Control engine | `WATCH` |
-| [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` |
+| [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` (bank removed) |
 | [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` any hand card | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
 | [MA-16](#ma-16-instant-rituals) | Ritual / Instant (place → Active-when → activate → GY) | Ritual place + activate | None as a band | Worthless vs equipment / overload / continuous | `RETARGETED` |
 | [MA-17](#ma-17-convert-roll) | On roll Choose one: bank this die’s pips or payoff (do not bank) | On roll (face) | Tempo / Control closers | Prompted 2026-09-06 | `WATCH` |
 | [MA-18](#ma-18-while-showing) | While showing stance (Pierce / Empower / Discount / Reduce) | Showing face (continuous) | Tempo / Support | Untested | `WATCH` |
+| [MA-19](#ma-19-showing-face-unlock) | `[Unlock]` from owner showing faces | Creature attack declare | Tempo/Aggro: denser matching faces; Control: weak basics, dual-color specials | Unlocks combat without spending the pile | `HOME` |
 
 ---
 
@@ -161,16 +162,20 @@ failure mode; those JSON files are gone.
 
 **Window:** Creature attack.
 
-**Intended home:**
+**Intended home:** Was Aggro/Tempo (higher Strike) vs Control (modest Strike +
+pie rider) while attacks spent the pile.
 
-- Aggro / Tempo: combat is a win path; Strike can be higher (Lodestar Strike 3).
-- Control: modest Strike + pie rider (Insight / mill). Lethality on the engine
-  (MA-06). Weak attacks are OK; **free** attacks are not.
+**Playtest feel:** Control with MA-01 refunds felt like Aggro. Spend was the
+Control tax — until pile-funded combat made every token an “I have to attack”
+auction.
 
-**Playtest feel:** Control with MA-01 refunds felt like Aggro. After retarget,
-spend is the Control tax.
+**Status:** `RETARGETED` · 2026-09-12 · spec `028`
 
-**Status:** `HOME` once MA-01 stays closed.
+Combat no longer spends the pile. Showing-face `[Unlock]` is the gate
+(MA-19). Control’s tax is **weak unlocked basics** and dual-showing specials,
+not `[Spend]`.
+
+**Do not:** Restore attack `discards` / `requires` as the default combat fuel.
 
 ### MA-05 Frenzy extra attacks
 
@@ -203,16 +208,19 @@ different leak: missing MA-06, not extra MA-01).
 
 ### MA-07 Insight mill riders
 
-**Mechanic:** `[Insight N]` or `[Mill N]` on an attack that still `[Spend]`s.
+**Mechanic:** `[Insight N]` or `[Mill N]` on an attack follow-up or On absorb.
 
-**Window:** Attack follow-up or On absorb (once per turn).
+**Window:** Unlock-taxed **special** follow-up or On absorb (once per turn) —
+**not** an unlocked basic.
 
 **Intended home:** Control (Arcane exclusive Insight, Darkness exclusive mill).
 
-**Playtest feel:** Control, **if** MA-01 is closed. Absorb Mill 2 → paid Grave
-Reach Mill 2 → Ebb Mill 3 is a mill clock, not a combat engine.
+**Playtest feel:** Control when the basic stays a chip (MA-19) and the rider
+is on the dual-showing special or the absorb passive.
 
-**Status:** `HOME` · 2026-08-30 retarget used this as the replacement riders.
+**Status:** `HOME` · 2026-09-12 basics stripped of Insight/Mill under spec `028`.
+
+**Do not:** Put Insight / Mill / Draw / Drain on a one-face unlocked basic.
 
 ### MA-08 DoT ticks
 
@@ -261,15 +269,19 @@ Support sequencing.
 
 **Status:** `HOME`.
 
-### MA-12 Combat Reforge Stamp
+### MA-12 Combat Discount Stamp
 
-**Mechanic:** `[Reforge]` / `[Stamp]` as a **paid** attack follow-up.
-Play-region `[Reforge N Attr]` / `[Cross forge N Y / Z]` (Recast, Alloy Shift)
-are the same Mechanical exclusive, not this combat window.
+**Mechanic:** `[Discount N] forge` / `[Stamp]` as a special-attack follow-up.
+Play-region Recast is `[Stamp]` + Draw; Alloy Shift is `[Empower]` + `[Stamp]`
+— not this combat window. `[Reforge]` / `[Cross forge]` are retired
+(worse `FORGE_CARD`, no forge-draw). Tactics do not print `[Generate]`.
 
-**Window:** Tempo specials (`creature-torque-wright` Retool, `creature-lodestar-artificer` Overdrive). Mechanical exclusive.
+**Window:** Tempo specials (`creature-torque-wright` Retool Discount 2,
+`creature-lodestar-artificer` Overdrive Stamp). Mechanical `[Stamp]` stays
+exclusive; Discount is shared but the Wright’s identity.
 
-**Intended home:** Tempo. Engine during combat, pile still drains.
+**Intended home:** Tempo. Engine during combat; Unlock (both Mechanical, or
+Mechanical + Luminar) is the tax — the pile does not drain.
 
 **Status:** `HOME`. Do not “balance” this by adding Generate-same.
 
@@ -279,13 +291,14 @@ are the same Mechanical exclusive, not this combat window.
 
 **Window:** Creature attack.
 
-**Intended home:** Tempo legendary (Lodestar) Strike 3; Control legendary
-(Duskthrone) Strike 2 + Drain on the special.
+**Intended home:** Tempo legendary (Lodestar) Strike 3 basic / Strike 4 special;
+Control legendary (Duskthrone) Strike 1 basic, Strike 2 + Drain on the
+Unlock-taxed special.
 
 **Playtest feel:** Unconfirmed whether Control Drain-2 special plays as a
-closer (MA-06) or as Aggro combat (MA-04). Special still **spends** Darkness.
+closer (MA-06) or as Aggro combat (MA-19 leak if basics climb again).
 
-**Status:** `WATCH`. Revisit if Control still feels like beatdown after MA-01.
+**Status:** `WATCH`. Revisit if Control still feels like beatdown after 028.
 
 ### MA-14 Discount plus synthetic bank
 
@@ -308,8 +321,9 @@ shape).
 **Evidence:** 2026-08-30 playtest · Tempo · `card-twin-cam` +
 `creature-torque-wright`.
 
-**Status:** `RETARGETED` · engine: skip synthetic bank when the install
-consumed `forgeDiscountThisTurn`. Undiscounted synthetic still banks.
+**Status:** `RETARGETED` · 2026-09-12 · synthetic install bank removed
+(forge no longer banks the pile). The Discount+bank leak cannot recur. Do not
+restore `forgeBankPerFace`.
 
 ### MA-15 Tactic Overcharge
 
@@ -435,13 +449,44 @@ the opponent’s turn without being an On-roll pulse.
 
 ---
 
+### MA-19 Showing-face Unlock
+
+**Mechanic:** Attack legality is `[Unlock: …]` against the owner’s currently
+showing faces. No pile `[Spend]` / `[Requires]`. No second roll on declare.
+
+**Window:** Creature attack declare (after `ROLL_DICE` / `[Reroll]`).
+
+**Intended home:**
+
+- Tempo / Aggro: denser matching faces so basics (and both-dice specials) show
+  up; higher Strike is OK.
+- Control: Strike 1 basics with no pie riders; specials need Arcane + Darkness
+  showing.
+
+**Playtest feel:** Hypothesis — combat is a dice question, cards keep the pile.
+Untested at the table after 2026-09-12 implementation.
+
+**Why:** Pile-funded attacks auctioned against the only win condition (MA-04).
+
+**Evidence:** 2026-09-12 · spec `028` · live six retuned (Control basics Strike 1;
+Dawn Warden Heal moved to Vigil).
+
+**Status:** `HOME` · 2026-09-12
+
+**Do not:** Put Insight / Heal / Drain on a one-face unlocked basic. Do not
+restore attack pile spend.
+
+**Follow-up:** playtest; post-playtest if Control still always-swings as the plan.
+
+---
+
 ## By archetype (what to print / what leaks)
 
 | Archetype | Signature feel to protect | Do not steal |
 |---|---|---|
-| Aggro | Paid efficient attacks, `[Frenzy]`, Martial movement | Control mill/Insight as the **plan**; Burn ticks; infinite refunds are a **leak even here** if they erase the spend decision |
-| Tempo | Forge sequencing, on-roll generate, Reforge/Stamp, Discount | Attack refunds (MA-01); Discount + synthetic bank on the same install (MA-14); Control stall as the win |
-| Control | Insight, mill, negate, engine damage, **attacks that tax pile** | MA-01 refunds; Frenzy; Toxin/Corruption DoT; Strike-3 beatstick legendary |
+| Aggro | Efficient unlocked attacks, `[Frenzy]`, Martial movement | Control mill/Insight as the **plan**; Burn ticks; infinite refunds are a **leak even here** |
+| Tempo | Forge sequencing, on-roll generate, Stamp, Discount | Attack refunds (MA-01); Control stall as the win |
+| Control | Insight, mill, negate, engine damage, **weak unlocked basics** | MA-01 refunds; Frenzy; Toxin/Corruption DoT; Strike-3 beatstick legendary; pie riders on one-face basics |
 | Combo | Chains, Frenzy, Prevent reactions, Mechanical reconstruction | Cheap Aggro without a combo; Control “no clock” |
 | Burn | Toxin + Corruption ticks onto the legendary | Creature beatdown; Arcane negate as the identity |
 | Support | Discount, Shield, splashable utility (not exclusive verbs) | 1-drop cycle (MA-10); a ninth colorless attribute |

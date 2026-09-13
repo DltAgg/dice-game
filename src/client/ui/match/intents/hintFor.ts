@@ -198,17 +198,6 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
     const where = pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
     return `Choose a ${kind} ${pending.attribute} face from your face pool, then install it on ${where} (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}).`;
   }
-  if (state.pendingDecision?.type === "replace-synthetic-face") {
-    if (!isPendingChooser) {
-      return "Waiting for the opponent to replace faces on their die.";
-    }
-    const pending = state.pendingDecision;
-    const dest = pending.attribute;
-    if (pending.fromAttribute !== undefined) {
-      return `Choose ${String(pending.faces)} ${pending.fromAttribute} face(s) on one of your dice, then ${String(pending.faces)} synthetic ${dest} face(s) from your pool (no forge-draw).`;
-    }
-    return `Choose ${String(pending.faces)} replaceable face(s) on one of your dice, then ${String(pending.faces)} synthetic ${dest} face(s) from your pool (no forge-draw).`;
-  }
   if (state.pendingDecision?.type === "choose-effect-mode") {
     if (!isPendingChooser) return "Waiting for the opponent to choose a mode.";
     return `Choose one: ${state.pendingDecision.modeLabels.join(" or ")}.`;
@@ -316,7 +305,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
     }
     case "attack":
       return intent.attackId === undefined
-        ? "Choose an attack on the selected creature."
+        ? "Choose an unlocked attack (matching showing face). Locked attacks stay listed."
         : "Click an enemy creature to attack.";
     case "play":
       if (playDefHasOverload(state, intent.cardInstanceId)) {

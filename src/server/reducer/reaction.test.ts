@@ -19,9 +19,9 @@ import {
   withPile,
   withHand,
   withPhase,
-  withTokens,
+  withShowingFaces,
 } from "../testing/scenario.js";
-import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
+import { CRANK, DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
 
 const EQUIP_CREATURE = testCard({
   id: "card-test-equip-creature",
@@ -87,7 +87,7 @@ describe("reaction chain (008)", () => {
     const attacker = creatureIdAt(base, P1, 2);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
-      withPile(withTokens(base, attacker, DRIVE_SHAFT_FUEL), P2, 10),
+      withPile(withShowingFaces(base, P1, ["mechanical"]), P2, 10),
       P2,
       [TEST_REACTION_PREVENT],
     );
@@ -184,7 +184,7 @@ describe("reaction chain (008)", () => {
     const attacker = creatureIdAt(base, P1, 0);
     const target = creatureIdAt(base, P2, 0);
     const combat = withHand(
-      withPile(withTokens(base, attacker, CRANK_FUEL), P2, 10),
+      withPile(withShowingFaces(base, P1, ["mechanical"]), P2, 10),
       P2,
       [TEST_REACTION_PREVENT],
     );

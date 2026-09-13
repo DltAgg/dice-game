@@ -21,8 +21,9 @@ import {
   withPile,
   withHand,
   withPhase,
+  withShowingFaces,
 } from "../testing/scenario.js";
-import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
+import { DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
 
 const HEAL_RITUAL = testCard({
   id: "card-test-heal-ritual",
@@ -145,7 +146,7 @@ describe("luminar control surface", () => {
     );
     const opened = expectOk(
       advance(
-        { ...combat, players: { ...combat.players, [P1]: { ...combat.players[P1]!, attributePool: { ...DRIVE_SHAFT_FUEL } } } },
+        withShowingFaces(combat, P1, ["mechanical"]),
         {
           type: "ATTACK",
           playerId: P1,

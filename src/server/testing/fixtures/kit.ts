@@ -35,10 +35,19 @@ export const TEST_KINDLE = asTestAttackId("kindle");
 export const TEST_VIGIL = asTestAttackId("vigil");
 export const TEST_DRIVE_SHAFT = asTestAttackId("drive-shaft");
 
-export const TEST_CRANK_FUEL = { mechanical: 1, luminar: 1 } as const;
-export const TEST_RETOOL_FUEL = { mechanical: 2, luminar: 1 } as const;
-export const TEST_KINDLE_FUEL = { luminar: 2 } as const;
-export const TEST_DRIVE_SHAFT_FUEL = { mechanical: 1, luminar: 1, martial: 1 } as const;
+export const TEST_CRANK_UNLOCK = { mechanical: 1 } as const;
+export const TEST_RETOOL_UNLOCK = { mechanical: 2 } as const;
+export const TEST_KINDLE_UNLOCK = { luminar: 1 } as const;
+export const TEST_VIGIL_UNLOCK = { luminar: 2 } as const;
+export const TEST_DRIVE_SHAFT_UNLOCK = { mechanical: 1 } as const;
+/** @deprecated Use showing-face helpers; kept as an alias of the unlock map. */
+export const TEST_CRANK_FUEL = TEST_CRANK_UNLOCK;
+/** @deprecated Use showing-face helpers; kept as an alias of the unlock map. */
+export const TEST_RETOOL_FUEL = TEST_RETOOL_UNLOCK;
+/** @deprecated Use showing-face helpers; kept as an alias of the unlock map. */
+export const TEST_KINDLE_FUEL = TEST_KINDLE_UNLOCK;
+/** @deprecated Use showing-face helpers; kept as an alias of the unlock map. */
+export const TEST_DRIVE_SHAFT_FUEL = TEST_DRIVE_SHAFT_UNLOCK;
 
 export const TEST_SQUAD: readonly CreatureDefinitionId[] = [TEST_BODY_A, TEST_BODY_B, TEST_LEGEND];
 
@@ -112,15 +121,14 @@ function bodyA(): CreatureDefinition {
       testAttack({
         id: TEST_CRANK,
         name: "Crank",
-        discards: { mechanical: 1, any: 1 },
+        unlock: { ...TEST_CRANK_UNLOCK },
         rulesText: "[Strike 2].",
       }),
       testAttack({
         id: TEST_RETOOL,
         name: "Retool",
         kind: "special",
-        requires: { mechanical: 2, any: 1 },
-        discards: { mechanical: 2 },
+        unlock: { ...TEST_RETOOL_UNLOCK },
         rulesText: "[Strike 2].",
       }),
     ],
@@ -137,15 +145,14 @@ function bodyB(): CreatureDefinition {
       testAttack({
         id: TEST_KINDLE,
         name: "Kindle",
-        discards: { luminar: 2 },
+        unlock: { ...TEST_KINDLE_UNLOCK },
         rulesText: "[Strike 2].",
       }),
       testAttack({
         id: TEST_VIGIL,
         name: "Vigil",
         kind: "special",
-        requires: { luminar: 2, any: 1 },
-        discards: { luminar: 2 },
+        unlock: { ...TEST_VIGIL_UNLOCK },
         rulesText: "[Strike 2].",
       }),
     ],
@@ -163,7 +170,7 @@ function legend(): CreatureDefinition {
       testAttack({
         id: TEST_DRIVE_SHAFT,
         name: "Drive Shaft",
-        discards: { mechanical: 1, luminar: 1, any: 1 },
+        unlock: { ...TEST_DRIVE_SHAFT_UNLOCK },
         effect: { type: "damage", amount: 3, target: { kind: "declared-target" } },
         rulesText: "[Strike 3].",
       }),

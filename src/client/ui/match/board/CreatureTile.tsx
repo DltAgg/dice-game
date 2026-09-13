@@ -4,7 +4,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
-  attackIsFuelled,
+  attackIsUnlocked,
   canAbsorbSymbol,
   currentLife,
   formatAttackFuel,
@@ -24,6 +24,7 @@ import {
   attackIsArmed,
 } from "../intents/attack";
 import {
+  formatAttackLockHint,
   formatPlayCostCompact,
 } from "../intents/format";
 import {
@@ -137,19 +138,25 @@ export function CreatureTile({
                     <span className="text-stone-500">Passive:</span> {def.passiveRulesText}
                   </p>
                 )}
-                {def.attacks.map((attack) => (
-                  <p key={attack.id}>
-                    <span className="text-stone-500">
-                      {attack.kind === "basic" ? "Basic" : "Special"}:
-                    </span>{" "}
-                    {formatAttackLine(attack)}
-                    {attack.range ? " (Range)" : ""}
-                    {" · "}
-                    <span className="text-[var(--accent)]">
-                      {formatAttackFuel(attack) || "—"}
-                    </span>
-                  </p>
-                ))}
+                {def.attacks.map((attack) => {
+                  const lockHint = formatAttackLockHint(state, creature.ownerId, attack);
+                  return (
+                    <p key={attack.id}>
+                      <span className="text-stone-500">
+                        {attack.kind === "basic" ? "Basic" : "Special"}:
+                      </span>{" "}
+                      {formatAttackLine(attack)}
+                      {attack.range ? " (Range)" : ""}
+                      {" · "}
+                      <span className="text-[var(--accent)]">
+                        {formatAttackFuel(attack) || "—"}
+                      </span>
+                      {lockHint !== null ? (
+                        <span className="mt-0.5 block text-stone-600">{lockHint}</span>
+                      ) : null}
+                    </p>
+                  );
+                })}
               </div>
             </div>
             <div
@@ -223,25 +230,36 @@ export function CreatureTile({
       </button>
 
       <ul className="mt-2 space-y-1 border-t border-stone-800 pt-2">
-        {def.attacks.map((attack) => (
-          <li key={attack.id} className="text-[0.7rem] leading-snug text-stone-300">
-            <span className="text-stone-500">{attack.kind === "basic" ? "B" : "S"}:</span>{" "}
-            {attack.name}{" "}
-            <span className="text-[var(--accent)]">
-              {formatAttackFuel(attack) || "—"}
-            </span>
-          </li>
-        ))}
+        {def.attacks.map((attack) => {
+          const unlocked = attackIsUnlocked(state, creature.ownerId, attack);
+          const lockHint = formatAttackLockHint(state, creature.ownerId, attack);
+          return (
+            <li
+              key={attack.id}
+              className={
+                unlocked
+                  ? "text-[0.7rem] leading-snug text-stone-300"
+                  : "text-[0.7rem] leading-snug text-stone-500"
+              }
+            >
+              <span className="text-stone-500">{attack.kind === "basic" ? "B" : "S"}:</span>{" "}
+              {attack.name}{" "}
+              <span className={unlocked ? "text-[var(--accent)]" : "text-stone-600"}>
+                {formatAttackFuel(attack) || "—"}
+              </span>
+              {lockHint !== null ? (
+                <span className="block text-[0.65rem] text-stone-600">{lockHint}</span>
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
 
       {selectedAttacker && intent.attackId === undefined && (
         <div className="mt-2 flex flex-col gap-1">
           {def.attacks.map((attack) => {
             const armed = attackIsArmed(state, creature, attack);
-            const fuelled = attackIsFuelled(
-              state.players[creature.ownerId]?.attributePool ?? {},
-              attack,
-            );
+            const unlocked = attackIsUnlocked(state, creature.ownerId, attack);
             return (
               <button
                 key={attack.id}
@@ -251,7 +269,7 @@ export function CreatureTile({
                 onClick={() => onAttackChoose(creature.id, attack.id)}
               >
                 {attack.name}
-                {!fuelled ? " · not fuelled" : ""}
+                {!unlocked ? " · locked" : ""}
               </button>
             );
           })}

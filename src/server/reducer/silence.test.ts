@@ -34,6 +34,7 @@ import {
   withHand,
   withPhase,
   withPile,
+  withShowingFaces,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 import { CRANK } from "../testing/tempoCatalogue.js";
@@ -121,9 +122,8 @@ const DISCOUNT_FACE = testFace({
 
 const FOLLOW_UP_ATTACK = testAttack({
   id: "attack-test-silence-follow-up",
-  requires: { mechanical: 2, any: 1 },
-  discards: { mechanical: 2 },
-  followUpEffects: [{ type: "replace-synthetic-face", faces: 1, attribute: "mechanical" }],
+  unlock: { mechanical: 2 },
+  followUpEffects: [{ type: "arm-forge-discount", amount: 2 }],
 });
 const FOLLOW_UP_BODY = testCreature({
   id: "creature-test-silence-follow-up",
@@ -262,7 +262,7 @@ describe("[Silence] instant", () => {
     expect(state.forgeDiscountThisTurn[P2] ?? 0).toBe(beforeDiscount);
     expect(state.players[P2]?.attributePool.mechanical ?? 0).toBe(beforePool + 1);
 
-    state = withPile(state, P2, 10);
+    state = withShowingFaces(withPile(state, P2, 10), P2, ["mechanical"]);
     const afterAttack = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -273,7 +273,6 @@ describe("[Silence] instant", () => {
       }),
     );
     expect(afterAttack.creatures[targetId]?.damage).toBe(2);
-    expect(afterAttack.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("skips attack follow-up effects on a silenced attacker", () => {
@@ -289,7 +288,10 @@ describe("[Silence] instant", () => {
       host: "creature",
       creatureId: attackerId,
     });
-    state = withPile(withActivePlayer(withPhase(state, "actions"), P2), P2, 10);
+    state = withShowingFaces(withPile(withActivePlayer(withPhase(state, "actions"), P2), P2, 10), P2, [
+      "mechanical",
+      "mechanical",
+    ]);
     const after = expectOk(
       advance(state, {
         type: "ATTACK",
@@ -301,6 +303,7 @@ describe("[Silence] instant", () => {
     );
     expect(after.creatures[targetId]?.damage).toBe(2);
     expect(after.pendingDecision).toBeNull();
+    expect(after.forgeDiscountThisTurn[P2] ?? 0).toBe(0);
   });
 
   it("makes ACTIVATE_RITUAL illegal and skips continuous standing", () => {

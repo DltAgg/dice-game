@@ -9,8 +9,8 @@ export type GameError =
   | "UNKNOWN_ENTITY"
   | "INVALID_TARGET"
   | "INSUFFICIENT_SYMBOLS"
-  /** The attacker has not absorbed the attributes its attack requires. */
-  | "ATTACK_NOT_FUELLED"
+  /** The owner's showing faces do not meet the attack's `[Unlock]`. */
+  | "ATTACK_NOT_UNLOCKED"
   | "SYMBOL_UNAVAILABLE"
   | "INVALID_FACE"
   /** No matching face card is available in the owner's face pool (bible §12). */

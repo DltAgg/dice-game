@@ -33,10 +33,10 @@ Status vocabulary:
 
 **Status:** `SUPERSEDED` · 2026-08-24 · by **Attribute pile-up** below
 
-Costs and attack fuel now use the player's **attribute pile**
-(`PlayerState.attributePool`). See
-[`docs/specs/016-attribute-pile-up.md`](./specs/016-attribute-pile-up.md) and
-[`docs/RULEBOOK.md`](./RULEBOOK.md) §§6–8.
+Card / ritual / forge costs use the player's **attribute pile**
+(`PlayerState.attributePool`). Creature **attacks** no longer spend or gate
+on that pile — see **Showing-face attack unlocks** (2026-09-12) and
+[`docs/specs/028-showing-face-combat.md`](./specs/028-showing-face-combat.md).
 
 ### Printed 1-token playCost is exceptional
 
@@ -78,18 +78,24 @@ leftover tokens in `ATTRIBUTES` order (Martial first).
 deterministic. A later `choose-attribute-tokens` reuse (spec `011`) can replace
 that without changing print.
 
-Applies to header `playCost`, `effect.requires`, ritual `activeWhen` / `spend`,
-and attack `requires` / `discards`. Does not apply to `card.attribute`,
-`forge.attribute`, `[Generate]`, or `[Mark]` arguments.
+Applies to header `playCost`, `effect.requires`, ritual `activeWhen` / `spend`.
+Does not apply to `card.attribute`, `forge.attribute`, `[Generate]`, `[Mark]`
+arguments, or creature-attack `[Unlock]` (named attributes only — spec `028`).
 
 ### Battlefield capacity
 
-**Status:** `DECIDED`
+**Status:** `DECIDED` · columns **DECIDED** 2026-09-12 · spec `029`
 
-Two frontline slots plus a back row, from the diagram in bible §6. A squad of
-three deploys as two frontline and one back. The **legendary** always opens in
-the back (definition flag); non-legendaries fill frontline first — see
-**Legendary commander victory** below.
+Two **numbered frontline columns** (lanes 0 and 1) plus a back row, from the
+diagram in bible §6. A squad of three deploys as two frontline and one back.
+The **legendary** always opens in the back with `lane: null` (definition
+flag); non-legendaries fill frontline first, first in squad order → column
+0, second → column 1 — see **Legendary commander victory** and **Lane combat
+targeting** below.
+
+Creature **attacks** use those columns (facing / legendary privilege /
+breach). They do **not** use “the frontline as a whole protects the back.”
+Card effects that name creatures are not attacks and still ignore columns.
 
 ### Legendary commander victory
 
@@ -100,13 +106,46 @@ Bible §4’s “eliminate opposing creatures” is replaced for constructed pla
 - Every creature definition may set `legendary: true` (omit / false otherwise).
 - Every legal loadout squad has **exactly one** legendary among
   `creaturesPerPlayer` (3) creatures.
-- At match start the legendary is placed **back**; the other two fill
-  **frontline** first. Mid-match `[Swap]` / reposition is unrestricted.
+- At match start the legendary is placed **back** (`lane: null`); the other
+  two fill **frontline** columns 0 then 1. Mid-match `[Swap]` / reposition
+  still changes row; lane seats are **ASSUMED** (see **Lane combat targeting**).
 - When a player’s legendary is defeated (`defeated: true`), the **opponent
   wins** immediately. Defeating the other two alone does not win.
+- The legendary is the only creature that may **attack either column**. A
+  breach in a column (no living enemy frontliner there) lets an attacker who
+  can choose that column hit the enemy legendary even if the other
+  frontliner still lives. Spec `029`.
 
-Implemented in `validateSquad`, `buildCreatures`, `checkVictory`, and
-`docs/RULEBOOK.md` §1–§3.
+Implemented in `validateSquad`, `buildCreatures`, `checkVictory`,
+`targetingError`, and `docs/RULEBOOK.md` §1–§3.
+
+### Lane combat targeting
+
+**Status:** `DECIDED` · 2026-09-12 · spec [`029-lane-combat.md`](./specs/029-lane-combat.md)
+
+Supersedes the prototype “strict frontline wall” reading for **creature
+attacks** (bible §6 “cannot freely bypass the frontline”). Attacks now use
+stable columns:
+
+- Non-legendary, non-Range: only the living enemy frontliner in the
+  attacker’s `lane`, or the enemy **legendary** if that lane is a **breach**.
+- Legendary (definition flag): either living enemy frontliner; the enemy
+  legendary iff **at least one** enemy frontline lane is breached.
+- Defeating a creature does **not** compact the survivor onto column 0.
+- Card/face creature selectors (`choose-enemy`, `enemy-all`, …) are unchanged.
+
+**ASSUMED — Swap / `[Reposition]` lane seats.** Do not invent new Martial
+print. Non-legendaries keep `lane` for life (attack facing stays). Entering
+frontline with `lane: null` takes the seat’s lane (swap partner, or first
+empty 0 then 1). Legendary leaving frontline → `lane: null`. A non-legendary
+with `lane: null` (only after swapping onto the legendary’s unnumbered seat)
+has no facing column: they may target the enemy legendary only if at least
+one enemy frontline lane is empty; they may not pick a living enemy
+frontliner.
+
+**ASSUMED — Range ignores lane.** `attack.range === true` may target any
+living enemy (the privilege the flag used vs the old wall). No live
+catalogue attack is Range today.
 
 ---
 
@@ -124,20 +163,20 @@ Attributes the player holds live in a **persistent player pile**
 (`PlayerState.attributePool`).
 
 ```text
-absorb (attribute) → +1 in your pile     → enables attacks / ritual gates / spends
+absorb (attribute) → +1 in your pile     → card / ritual / forge spends and gates
 absorb (Shield)    → Shield on a creature → prevent
-resolve            → stays in turn pool   → `[Requires]` spends this turn
+resolve            → stays in turn pool   → leftover Shield / locked pips
 ```
 
 | Surface | Paid from | Bible |
 |---|---|---|
 | Engine ability | unabsorbed symbols in the turn pool | §17 |
-| Attack | owner’s attribute pile (`requires` gate and/or `discards` Spend) | §7, §31 |
+| Attack | **showing faces** on the attacker’s owner’s dice (`unlock`) — not the pile | §7, §24; **DECIDED** 2026-09-12 |
 | Ritual Active-when / Spend | owner’s attribute pile | layouts / `002` |
 
 - Shield, Toxin, and other **creature** tokens remain on creatures.
-- Absorbing an attribute into the pile is **immediate** (no end-of-turn delay),
-  so same-turn attack after banking is legal.
+- Absorbing an attribute into the pile is **immediate** (no end-of-turn delay).
+  Attacks do not spend the pile (showing-face unlocks, spec `028`).
 - Face / standing `On absorb` fires when a pip is banked into the pile (or
   Shield is granted onto a creature).
 - Ritual `activeWhen` gates readiness from the owner's pile; optional `spend`
@@ -309,22 +348,28 @@ Whenever a player forges a die face — on their own die or an opponent's — th
 draw one card per face installed. This is a forge rule, not a card effect: empty
 deck still stops quietly.
 
-### Forge yield and synthetic forge bank
+### Forge yield
 
-**Status:** `DECIDED` · 2026-08-29 · playtest · implemented
+**Status:** `DECIDED` · 2026-08-29 · playtest · **synthetic install bank removed
+2026-09-12** (showing-face combat)
 
 Forge was too weak as a late-game income path (players still banked ~2
 attributes/turn from opening pips). Own-die forge is the universal scaler
-every deck can use:
+every deck can use — by **yield on a later roll**, not by banking on install.
+Attacks no longer spend the pile (spec `028`); an immediate pip on forge
+was leftover combat fuel.
 
 | Rule | Behaviour |
 |---|---|
 | **Forge yield** | `installFacesOnDie` onto a die you own marks each overwritten slot `forgeYield: true`. Opponent-die installs do not. Opening slots have no yield. Overwrite / peel clears yield unless re-set. |
 | **On roll** | When a `forgeYield` slot is showing after `ROLL_DICE`, generate `forgeYieldGenerate` (default **1**) extra of that face’s attribute for the die owner (effect Generate / auto-bank). Skip Shield / untyped. |
-| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed, **unless the install consumed `forgeDiscountThisTurn`**. The free first synthetic each turn is **not** a consumed discount, so it **does** bank. Natural forge: install + draw + yield only (no immediate bank). Discount + bank on the same install was a playtest leak (Twin Cam / Torque Wright: spend 1, bank 1, pile unchanged). |
+| **No install bank** | `FORGE_CARD` does **not** add pile tokens. Draw + yield (own-die) + printed forge riders only. |
 
-Config knobs: `GameRulesConfig.forgeYieldGenerate`, `forgeBankPerFace`. See
+Config knob: `GameRulesConfig.forgeYieldGenerate`. See
 `docs/RULEBOOK.md` §11. Not a print keyword — forge rules like draw-on-forge.
+
+**SUPERSEDED:** immediate own-die synthetic bank (`forgeBankPerFace`). Discount
++ bank on the same install (MA-14) cannot recur.
 
 ### No mulligan
 
@@ -678,12 +723,13 @@ Stun stays `DEFERRED`.
 **Status:** `DECIDED` · 2026-09-01 · user-directed · spec `024`
 
 A physics keyword, **not** a Mark token and **not** Mechanical-exclusive
-(Mechanical already has `[Reforge]`). Shared operator. Proving-card source is
+(Mechanical already has `[Stamp]` / `[Double]` / own-die `[Forge]`). Shared
+operator. Proving-card source is
 an instant; the reducer does not hard-ban other sources. Target: a synthetic
 face **slot** on **your die or the opponent’s die**.
 
-**Not** `[Reforge]` / `[Cross forge]` / `replace-synthetic-face` (overwrite N
-slots on your die with synthetics from pool, blocked by stay/forge-lock).
+**Not** a forge and **not** `[Stamp]` (re-fire a showing face’s roll effects).
+Stay / forge-lock does not block Desynthesize.
 
 **ASSUMED** (labelled prototype; bible is silent):
 
@@ -699,7 +745,7 @@ slots on your die with synthetics from pool, blocked by stay/forge-lock).
 | **Chooser** | Always prompt when ≥1 legal synthetic slot exists (any player’s dice). Empty = legal whiff. Not optional. |
 | **Copies** | Per **physical slot**. Other slots with the same synthetic id stay until orphaned-copy rules return the card to pool. |
 
-Stun stays `DEFERRED`. `[Reforge]` stays Mechanical exclusive and is not reused for desynthesis.
+Stun stays `DEFERRED`. `[Stamp]` / `[Double]` stay Mechanical exclusive and are not reused for desynthesis.
 
 ---
 
@@ -712,7 +758,7 @@ is a data / spec edit, not a silent reducer rewrite.
 
 | Topic | Assumption coded |
 |---|---|
-| **Reposition 1 space** | Toggle the creature between `frontline` and `back` via `setCreaturePosition` only. If moving to frontline would exceed `config.frontlineSlots` (2), the controller must **swap** with a living frontline ally (pending choose). Optional (`may`) moves can be declined. Swaps always call `setCreaturePosition` twice. **Push is not reposition.** |
+| **Reposition 1 space** | Toggle the creature between `frontline` and `back` via `setCreaturePosition` only. If moving to frontline would exceed `config.frontlineSlots` (2), the controller must **swap** with a living frontline ally (pending choose). Optional (`may`) moves can be declined. Swaps always call `setCreaturePosition` twice. **Push is not reposition.** Lane seats: spec `029` ASSUMED (non-legendaries keep `lane`; legendary in back is `null`). |
 | **playCost discounts** | Apply to `PLAY_CARD` / ritual place / equip / overload, **not** `FORGE_CARD`. “Used” = played for its play region. Min cost 0. |
 | **Archmage** | First Arcane **card** (any main type) the controller plays that turn costs 1 pile token less from `playCost`. |
 | **Tome of Interdiction** | First Instant Arcane that turn costs 1 less from `playCost`. Stacks with Archmage (Instant Arcane can be −2). Spent keys on the host creature / gear; cleared `END_TURN`. |
@@ -751,7 +797,7 @@ Bible is silent on “cannot be replaced by forging” duration and whose turns 
 
 | Topic | Assumption coded |
 |---|---|
-| **Cannot-replace is data** | `FaceCardDefinition.stayPolicy`. Forbidden Heritage: `{ kind: "cannot-replace-by-forge" }` while the slot shows that face. Not a name check. Blocks `FORGE_CARD`, `forge-faces`, `replace-synthetic-face`, pestilence adjacent spread, and any `installFacesOnDie` overwrite. Unforge / consume / `ACTIVATE_FACE` peel are not this restriction. |
+| **Cannot-replace is data** | `FaceCardDefinition.stayPolicy`. Forbidden Heritage: `{ kind: "cannot-replace-by-forge" }` while the slot shows that face. Not a name check. Blocks `FORGE_CARD`, `forge-faces`, pestilence adjacent spread, and any `installFacesOnDie` overwrite. Unforge / consume / `ACTIVATE_FACE` peel are not this restriction. |
 | **“4 turns”** | Die **owner’s** turns (`DieState.ownerId`), not complete rounds. Decrement remaining lock by 1 on each finish of that owner’s turn (voluntary `END_TURN` or spent-to-zero), floor 0. The opponent’s turn does not tick. |
 | **Lock lives on the slot** | `DieSlot.forgeLockRemaining`, like `pestilenceCounters`. Copies of the same face on other slots / dice do not share it. |
 | **Duration 4 is catalogue** | Pestilent Plague `stayPolicy: { kind: "forge-lock", turns: 4 }`. While remaining > 0 the slot cannot be replaced by forging; at 0, forging over it is legal again. |
@@ -816,6 +862,40 @@ Mechanical face-marker opcode (`optional-overcharge`, suppress inherent,
 | **Always +1** | One pip of the spent card’s `attribute` regardless of `forge.faces`. |
 | **No reaction window** | Same as `FORGE_CARD`. |
 | **No GameState bag** | Once-per-turn uses `spentOncePerTurnKeys` key `"overcharge"`. `state.ts` stays frozen. |
+
+---
+
+## Resolved — design discussion, 2026-09-12 (showing-face combat)
+
+### Showing-face attack unlocks
+
+**Status:** `DECIDED` · 2026-09-12 · spec [`028-showing-face-combat.md`](./specs/028-showing-face-combat.md)
+
+Pile-only fuel made attacking compete with cards for the same tokens, so the
+correct play was always to swing (legendary HP is the only win condition).
+Energy + attributes felt better because the spends were orthogonal. Restoring
+energy is out of scope. A second roll on declare is out of scope (it would
+reroll the engine dice).
+
+**Rule.** Creature attacks do **not** `[Requires]` / `[Spend]` from
+`attributePool`. Each attack prints `[Unlock: …]`. After `ROLL_DICE` (and after
+an actions-window `[Reroll]`), the owner’s **currently showing faces** unlock
+attacks. No extra combat roll. `[Resonance]` wildcards do not cover Unlock.
+Shield / untyped showing faces contribute nothing. Opponent dice do not
+unlock your attacks. Silenced slots still show an attribute and still count.
+`[Frenzy]` extra attacks use the same current showing faces.
+
+`ATTACK` does not burn pile tokens. Card `playCost`, synthetic forge, ritual
+Active-when / Spend, and `[Requires]` on tactics are unchanged.
+
+Keyword: `[Unlock: Mechanical]`, `[Unlock: 2 x Mechanical]`,
+`[Unlock: Mechanical + Luminar]`. Do not reuse `[Requires]` for this gate.
+
+**ASSUMED:** Unlock counts **faces**, not pips (inherent extra pips, forge
+yield, and Overcharge generate do not add extra unlock pips). Dual-attribute
+creature **basics** unlock on **one** listed attribute (the JSON `unlock`
+names it). Dual-color **specials** need one showing face of each named
+attribute.
 
 ---
 

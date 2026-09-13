@@ -26,12 +26,12 @@ const DOUBLE_ON_ROLL = testFace({
   onAbsorb: [],
 });
 
-const CONVERT_REFORGE = testFace({
-  id: "face-test-markers-convert-reforge",
+const CONVERT_DISCOUNT = testFace({
+  id: "face-test-markers-convert-discount",
   kind: "synthetic",
   symbol: "mechanical",
   convertRoll: true,
-  onRoll: [{ type: "replace-synthetic-face", faces: 1, attribute: "mechanical" }],
+  onRoll: [{ type: "arm-forge-discount", amount: 1 }],
   onAbsorb: [],
 });
 
@@ -44,10 +44,10 @@ describe("face markers", () => {
     expect(face?.whileShowing).toEqual([{ type: "forge-discount", amount: 1 }]);
   });
 
-  it("geometry Double is On roll; convert Choose one Reforge is convertRoll", () => {
+  it("geometry Double is On roll; convert Choose one Discount is convertRoll", () => {
     expect(getFaceCard(DOUBLE_ON_ROLL.id)?.onRoll.length).toBeGreaterThan(0);
-    expect(getFaceCard(CONVERT_REFORGE.id)?.convertRoll).toBe(true);
+    expect(getFaceCard(CONVERT_DISCOUNT.id)?.convertRoll).toBe(true);
     expect(getFaceCard(DOUBLE_ON_ROLL.id)?.onAbsorb).toEqual([]);
-    expect(getFaceCard(CONVERT_REFORGE.id)?.onAbsorb).toEqual([]);
+    expect(getFaceCard(CONVERT_DISCOUNT.id)?.onAbsorb).toEqual([]);
   });
 });

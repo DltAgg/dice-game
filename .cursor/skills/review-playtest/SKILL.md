@@ -36,13 +36,13 @@ swings, not a Strike-3 closer).
 | If the leak is… | Owner | Do not |
 |---|---|---|
 | Printed attack/card/face in the wrong **window** (MA-01 refund, converter, 1-drop) | `card-designer` | Edit JSON here |
-| Spend/generate/attack fuel that JSON cannot express (missing opcode, wrong bank timing) | `engine-developer` | Grow the reducer here |
+| Spend/generate/showing-face unlock that JSON cannot express (missing opcode, wrong bank timing, `attackIsUnlocked`) | `engine-developer` | Grow the reducer here |
 | Right cards, wrong **list** (copy counts, squad, splash) | `deck-designer` | Edit `loadouts/` here |
 | Players stall on UI (priority, pending, illegible board) + high think / reject rate | `match-ui` | Restyle MatchBoard here |
 | Bible-silent **rule** | Propose `OPEN` in `OPEN_DESIGN.md` only if asked | Mark `DECIDED` |
 
 Same keyword, different window: `[Generate]` On roll is often `HOME` (MA-02);
-`[Generate]` of the attribute an attack just `[Spend]` is Aggro-shaped (MA-01).
+`[Generate]` as an attack follow-up of the creature’s own attribute is Aggro-shaped (MA-01).
 Read [`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md)
 before proposing a new id.
 
@@ -54,7 +54,7 @@ Playtest Progress:
 - [ ] 2. Metrics pass if an export exists (analyze-match-metrics answer shape)
 - [ ] 3. Feel vs intended home (design.md archetypes)
 - [ ] 4. Mechanic × window → existing MA row or new id
-- [ ] 5. Grep live JSON (`generate-symbol` + `discards`, etc.)
+- [ ] 5. Grep live JSON (`generate-symbol` + attack `unlock`, etc.)
 - [ ] 6. Classify owner (table above)
 - [ ] 7. Update MECHANIC_ARCHETYPES.md (index + entry; never delete RETARGETED/ANTI)
 - [ ] 8. Briefs only; do not implement
@@ -68,7 +68,7 @@ Paste new feel rows from the template at the bottom of
 ```text
 Playtest: YYYY-MM-DD · lists · MA-id
 Print / rule authority: <verbatim notes or rulesText>
-Mechanic × window: <e.g. attack follow-up Generate-same as discards>
+Mechanic × window: <e.g. attack follow-up Generate-same as the creature attribute>
 Live JSON: <ids>
 Why not a reskin of an existing HOME row:
 Must not: <reintroduce MA-01, steal exclusive verb, fake deferred print>
@@ -105,6 +105,6 @@ Only if lists, notes, or sample size are insufficient.
 
 - Authoring catalogue JSON or reducer branches from this skill
 - Deleting `RETARGETED` / `ANTI` rows
-- Treating On-roll Generate-same as the same leak as attack-spend refund
+- Treating On-roll Generate-same as the same leak as attack follow-up Generate
 - Metrics-only dump with no feel → use `analyze-match-metrics`, not this skill
 - “Just implement the plan” across engine + UI + cards

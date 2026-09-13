@@ -10,8 +10,9 @@ pattern. Field-wide `choose-opponent-equipment` / `choose-opponent-overload`
 mirror Unwrite’s `choose-opponent-ritual`.
 
 `[Strip]` is only for creature/face tokens (Shield, Toxin, Pestilence,
-Corruption). Attribute piles are spent with `[Spend]` / attack discards — not
-Strip or Drain.
+Corruption). Attribute piles are spent with `[Spend]` / ritual activate — not
+Strip or Drain. Creature attacks use showing-face `[Unlock]` (spec `028`), not
+pile discards.
 
 ## Intent
 

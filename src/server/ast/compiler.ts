@@ -196,13 +196,6 @@ export class AstCompiler {
           attribute: effect.attribute,
           forgeTarget: effect.target,
         };
-      case "replace-synthetic-face":
-        return {
-          op: "replace-synthetic-face",
-          faces: effect.faces,
-          attribute: effect.attribute,
-          ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
-        };
       case "reposition-creature":
         return {
           op: "reposition",
