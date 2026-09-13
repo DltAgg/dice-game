@@ -442,7 +442,8 @@ Legal response **kind** depends on the top link:
 
 - **`[Prevent]`** grants `attackPreventCount` on a creature (usually 1). The
   next **attack** against that creature is cancelled whole (before Shield).
-  Unused charges persist until consumed (`preventExpiry: "none"`).
+  Unused charges expire at end of turn (`preventExpiry: "end-of-turn"`;
+  `"none"` keeps them until consumed).
 - Damage-prevent **buffers** (`damagePreventBuffer` / `grant-damage-prevent`)
   are **gone** — they mixed with Shield at the table.
 - **Apply order when attack damage lands:** attack-prevent → Shield → HP.

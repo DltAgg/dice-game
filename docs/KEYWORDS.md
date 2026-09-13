@@ -94,7 +94,7 @@ piles use [Drain N], not Strip. Do not mint Detonate / Rend as keywords.
 |---|---|
 | `[Generate N Toxin]` | A **pool symbol**, not a creature/face token. Expires at end of turn. |
 | Absorb Toxin | Banks a pool pip into your attribute pile. Grammar, not an effect keyword. |
-| `[Prevent]` | Combat step before Shield. Luminar exclusive. Not a token you Mark. |
+| `[Prevent]` | Combat step before Shield. Luminar exclusive. Not a token you Mark. Unused charges expire at end of turn. |
 | `[Empower N]` | Extra damage on an attack. Not a token. |
 | `[Pierce N]` | Ignore N Shield. Does not spend or place Shield. |
 
@@ -142,7 +142,7 @@ These are not tokens.
 | `[Empower N]` | The next attack this turn deals +N. Name the creature if it is not yours. |
 | `[Frenzy]` / `[Frenzy N]` | That creature may declare N extra attacks this turn (default 1). Wild exclusive. Does not clear attacks already used. |
 | `[Pierce N]` | Ignore N Shield after Prevent |
-| `[Prevent]` | Prevent the next attack against that creature (before Shield). Luminar exclusive. |
+| `[Prevent]` | Prevent the next attack against that creature (before Shield). Unused charges expire at end of turn. Luminar exclusive. |
 | `[Convert N]` | Convert up to N pool symbols into Natural attributes |
 | `[Discount N]` | The next matching play or forge costs N less Energy (minimum 0) |
 | `[Insight N]` | Look at the top N of your deck; put 1 in hand, rest on the bottom. Arcane exclusive. |

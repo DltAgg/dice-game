@@ -298,8 +298,8 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 **Prevention** (next attack, not a damage buffer):
 
 - `[Prevent]` on a creature cancels the next **attack** against it (the whole
-  instance, before Shield). Unused prevent does **not** expire for now
-  (`preventExpiry: "none"`).
+  instance, before Shield). Unused prevent **expires at end of turn**
+  (`preventExpiry: "end-of-turn"`).
 - Toxin ticks, face `[Strike]`, and other effect damage do **not** consume
   attack-prevent.
 - Prevent reactions (Prismatic Barrier, Sidestep, Luminar Judgement) answer

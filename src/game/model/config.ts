@@ -99,11 +99,11 @@ export interface GameRulesConfig {
    */
   readonly maxResolutionSteps: number;
   /**
-   * DECIDED (009). When unused damage-prevent buffers expire. `"none"` means
-   * they persist until consumed; other policies can be added later without a
-   * reducer rewrite.
+   * DECIDED (009). When unused `[Prevent]` charges (`attackPreventCount`)
+   * expire. `"end-of-turn"` clears them on `END_TURN`; `"none"` leaves them
+   * until consumed (tests / opt-out).
    */
-  readonly preventExpiry: "none";
+  readonly preventExpiry: "none" | "end-of-turn";
   readonly energy: EnergyRulesConfig;
 }
 
@@ -126,7 +126,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   attacksPerCreaturePerCombat: 1,
   frontlineSlots: 2,
   maxResolutionSteps: 64,
-  preventExpiry: "none",
+  preventExpiry: "end-of-turn",
   energy: {
     trackMax: 10,
     startingEnergy: 3,
