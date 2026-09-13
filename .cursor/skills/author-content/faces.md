@@ -127,6 +127,7 @@ Rending Claw / Arcane Echo unless those files exist again.
 | Augur Glass | Generate Arcane + `[Insight]` | Same-attr generate as the whole face |
 | Gloomwell | Generate Darkness + mill | Same-attr generate as the whole face |
 | Gear Train | Conditional generate + `[Double]` | Mechanical reconstruction exclusives on other attributes |
+| Mainspring | Convert Choose one — bank this die's pips, or `[Discount 1] forge` | `[Reforge]` overwrite-without-draw (retired) |
 | Halo Lamp | Generate Shield + `[Mark N Shield]` | Generic-reach faces that ignore dice |
 | Sunward Lens | Cross-attr generate on absorb | Occupying Natural dual-pip |
 

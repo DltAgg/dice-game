@@ -94,10 +94,21 @@ Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
   `grant-attack-prevent` only on `type: "reaction"` cards that answer an attack
   on the chain. Never put `[Prevent]` on faces, On absorb, instants, equipment,
   or standing passives — use `[Mark N Shield]` / `[Heal]` for proactive Luminar.
+- **Mechanical exclusive** remaining: extra own-die forge, `[Stamp]`, `[Double]`,
+  move overloads between **your** faces. Do **not** print `[Reforge]` /
+  `[Cross forge]` (retired overwrite-without-draw). Do not brief
+  `replace-synthetic-face` as a new mechanic. Recast is `[Stamp]` + `[Draw 1]`;
+  Alloy Shift is `[Empower 1]` + `[Stamp]`; Tooling Order is
+  Choose one `[Stamp]` or `[Discount 2] forge`; Mainspring is convert Choose one
+  including `[Discount 1] forge`; Retool is `[Strike 2]` + `[Discount 2] forge`
+  — none of these are Reforge proving cards.
+- **`[Desynthesize]`** is not a forge and not `[Stamp]` (spec `024`). Do not
+  contrast it as “not Reforge.”
 - When a concrete clause needs new vocabulary, **delegate** to `engine-developer`.
-  Dual-attribute generating faces are a **first-class hole**: design the card,
-  compose `symbol` + `[Generate]` if that expresses print, then brief if a
-  second inherent pip / symbol field is required. Do not abandon the slot.
+  Dual-attribute faces are a **first-class hole**: design extra pips on the
+  face (`pips` map / `On roll: this face also produces 1 OtherAttr.`), then brief
+  engine-developer if a second `symbol` field is required. Do not print
+  `[Generate]` on tactics. Do not abandon the slot.
 
 Hand-author catalogue data. Spreadsheets are worksheets — no CSV ingest unless
 the user explicitly asks for tooling.

@@ -123,7 +123,7 @@ const DISCOUNT_FACE = testFace({
 const FOLLOW_UP_ATTACK = testAttack({
   id: "attack-test-silence-follow-up",
   unlock: { mechanical: 2 },
-  followUpEffects: [{ type: "replace-synthetic-face", faces: 1, attribute: "mechanical" }],
+  followUpEffects: [{ type: "arm-forge-discount", amount: 2 }],
 });
 const FOLLOW_UP_BODY = testCreature({
   id: "creature-test-silence-follow-up",
@@ -273,7 +273,6 @@ describe("[Silence] instant", () => {
       }),
     );
     expect(afterAttack.creatures[targetId]?.damage).toBe(2);
-    expect(afterAttack.pendingDecision?.type).not.toBe("replace-synthetic-face");
   });
 
   it("skips attack follow-up effects on a silenced attacker", () => {
@@ -304,6 +303,7 @@ describe("[Silence] instant", () => {
     );
     expect(after.creatures[targetId]?.damage).toBe(2);
     expect(after.pendingDecision).toBeNull();
+    expect(after.forgeDiscountThisTurn[P2] ?? 0).toBe(0);
   });
 
   it("makes ACTIVATE_RITUAL illegal and skips continuous standing", () => {

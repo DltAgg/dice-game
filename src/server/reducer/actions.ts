@@ -161,18 +161,6 @@ export type GameAction =
       readonly slotIndexes: readonly number[];
       readonly faceCardId: FaceCardId;
     }
-  /**
-   * Completes pending `[Reforge]` / `[Cross forge]`: overwrite `slotIndexes` on
-   * one owned die with `faceCardIds` (synthetic destination faces from pool).
-   * Lengths must equal pending `faces`. Not a forge — no forge-draw.
-   */
-  | {
-      readonly type: "RESOLVE_REPLACE_SYNTHETIC_FACE";
-      readonly playerId: PlayerId;
-      readonly dieId: DieId;
-      readonly slotIndexes: readonly number[];
-      readonly faceCardIds: readonly FaceCardId[];
-    }
   | {
       readonly type: "RESOLVE_CHOOSE_EFFECT_MODE";
       readonly playerId: PlayerId;

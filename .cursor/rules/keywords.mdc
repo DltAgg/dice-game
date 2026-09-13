@@ -19,6 +19,10 @@ print:
    faces, **not** pile `[Requires]` / `[Spend]`). Do **not** mint Dose /
    Envenom / Brand / Contaminate for a slightly different window. Spec `013`
    `optional-overcharge` is a Mechanical face-marker opcode, not this keyword.
+   Do **not** mint `[Reforge]` / `[Cross forge]` (retired overwrite-without-draw).
+   `[Desynthesize]` is not a forge and not `[Stamp]`.
+   Do **not** print `[Generate]` on tactics, creatures, rituals, equipment, or
+   overloads — extra pips are faces (`pips` / dual-pip line) and `[Overcharge]`.
 3. A new **token** (creature counter, Shield, face marker) gets a rulebook
    paragraph and joins **X** on `[Mark]` / `[Strip]`. It does not get its own
    keyword. Attribute exclusives still gate the **argument**, not the verb.

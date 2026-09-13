@@ -89,7 +89,7 @@ in UI or comments that disagree with `GameRulesConfig`.
 | Wild | Creature pressure / flexible aggression | Extra attacks (`[Frenzy]`) |
 | Toxin | Attrition / delayed ticks / burn stacking | Toxin counter placement |
 | Luminar | Synergy / support / combo value | `[Prevent]` on **reactions** only (attack chain) |
-| Mechanical | Engine construction / manipulation | Own-die reconstruction |
+| Mechanical | Engine construction / manipulation | Own-die reconstruction (`[Stamp]`, `[Double]`, extra forge, move overloads on **your** faces — not retired `[Reforge]` / overwrite-without-draw) |
 | Arcane | Control / manipulation / support | See and rearrange top of deck |
 | Corruption | Continuous burn (damage over time); contaminate-dice only as spice that feeds burn | Opponent-die manipulation |
 | Darkness | Delayed value / disruption | Mill |

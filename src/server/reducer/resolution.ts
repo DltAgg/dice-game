@@ -38,10 +38,7 @@ import {
   takeFaceFromPool,
   withForgeLockResetOnInstall,
 } from "../rules/faces.js";
-import {
-  chooseEffectModeResolution,
-  hasLegalReplaceSyntheticFaceChoice,
-} from "../rules/reforge.js";
+import { chooseEffectModeResolution } from "../rules/chooseEffectMode.js";
 import {
   legalCreaturesForFilter,
   legalDiceForFilter,
@@ -806,32 +803,6 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       });
       return true;
     }
-    case "replace-synthetic-face": {
-      const spec = {
-        faces: effect.faces,
-        attribute: effect.attribute,
-        ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
-      };
-      if (!hasLegalReplaceSyntheticFaceChoice(draft, pending.controllerId, spec)) {
-        return false;
-      }
-      draft.pendingDecision = {
-        type: "replace-synthetic-face",
-        controllerId: pending.controllerId,
-        faces: effect.faces,
-        attribute: effect.attribute,
-        ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
-        ...effectChoiceSource(draft, pending),
-      };
-      emit(draft, {
-        type: "replace-synthetic-face-started",
-        playerId: pending.controllerId,
-        faces: effect.faces,
-        attribute: effect.attribute,
-        ...(effect.fromAttribute !== undefined ? { fromAttribute: effect.fromAttribute } : {}),
-      });
-      return true;
-    }
     case "reposition-creature": {
       const targetId = resolveTarget(draft, pending, effect.target);
       if (targetId === null) return false;
@@ -847,7 +818,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       return false;
     }
     case "choose-effect-mode": {
-      const next = chooseEffectModeResolution(draft, pending.controllerId, effect);
+      const next = chooseEffectModeResolution(effect);
       if (next.kind === "whiff") return false;
       if (next.kind === "auto") {
         for (const child of [...next.mode].reverse()) {

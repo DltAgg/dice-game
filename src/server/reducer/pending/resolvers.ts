@@ -419,11 +419,6 @@ export function resolveForgeFaces(
   return resumeAfterEffectPause(draft);
 }
 
-/**
- * Completes a pending replace-synthetic-face (Reforge / Cross forge).
- */
-export { resolveReplaceSyntheticFace } from "./replaceSyntheticFace.js";
-
 export function resolveChooseDie(
   draft: Draft,
   playerId: PlayerId,

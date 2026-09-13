@@ -81,13 +81,10 @@ engine can resolve the clause honestly. Movers always go through
   forge overwrite. Plague uses `DieSlot.forgeLockRemaining` (catalogue `turns: 4`,
   ticked on the **die owner’s** turn finish). Installing Plague onto a die
   resets remaining lock to 4 on every Plague slot of **that die**.
-- `replace-synthetic-face` (`[Reforge N Attr]` / `[Cross forge N Y / Z]`):
-  pending choice of N replaceable slots on **one** owned die, then N
-  **synthetic** destination faces from the controller pool. `fromAttribute`
-  omitted = any showing face (Reforge). Set = those slots must show Y (Cross
-  forge). Always installs synthetic `attribute`. Not a forge — no forge-draw.
-  Whiffs when no legal complete choice exists (including fewer than N pool
-  synthetics, stay / cannot-replace, or the §9.1 attribute cap).
+- `replace-synthetic-face` / `[Reforge]` / `[Cross forge]`: **removed**. Those
+  opcodes did what `FORGE_CARD` already does, without forge-draw. Do not
+  reauthor overwrite-without-draw. Stay / cannot-replace still block **forge**
+  overwrites (`FORGE_CARD` / `forge-faces` / `installFacesOnDie`).
 
 ## State Changes
 
@@ -123,7 +120,6 @@ engine can resolve the clause honestly. Movers always go through
 | `RESOLVE_MIND_CONTROL` | Strip overloads (one face all, or one each of up to two) |
 | `RESOLVE_SPLIT_DAMAGE` | Blade Rain / Extermination |
 | `RESOLVE_OPTIONAL_REROLL` | Adrenaline (same-face ally damage); Rethrow (choose a rolled die, no punishment) |
-| `RESOLVE_REPLACE_SYNTHETIC_FACE` | Reforge / Cross forge (`replace-synthetic-face`) |
 | `ACTIVATE_FACE` | Heritage / Plague activated ability |
 
 Illegal moves return `GameError` + original state.
@@ -184,22 +180,21 @@ Match-ui must render these pendings (hotseat + online):
 | `mind-control` | Mode + 1 or 2 opposing face cards; `strip-one-each` also names the overload instance when a face has 2+ |
 | `split-damage` | Assign integer damage that sums to `amount` |
 | `optional-reroll` | Accept or decline reroll of that die (Adrenaline may then deal same-face ally damage; Rethrow does not) |
-| `replace-synthetic-face` | Pick N slots on one owned die, then N synthetic destination faces from pool (`fromAttribute` = Cross forge) |
 
 Also: **Activate** control on a showing Forbidden Heritage / Pestilent Plague
 face during actions (`ACTIVATE_FACE`). Display pile cost
 `2 + Corruption faces on that die`. Show pestilence counters **and remaining
 forge-lock** on Plague slots. Surface **cannot-replace-by-forge** on Heritage
 and on Plague while lock > 0 (forbid targeting those slots for
-`FORGE_CARD` / `forge-faces` / Reforge). Peel stays available.
+`FORGE_CARD` / `forge-faces`). Peel stays available.
 Show optional reposition / swap prompts after Dive / War Charge /
 Instinct.
 
 `choose-creature` already has a Decline path for optional filters.
-`replace-synthetic-face` is wired in MatchBoard (N slots on one die → N pool
-synthetics → `RESOLVE_REPLACE_SYNTHETIC_FACE`). Other pending types above that
-are still missing a chooser will leave the engine sitting on `pendingDecision`
-until the UI dispatches the matching resolve.
+`replace-synthetic-face` is **removed** (not deferred). Match-ui still has a
+chooser modal to delete; engine pending / action / queries are gone. Other
+pending types above that are still missing a chooser will leave the engine
+sitting on `pendingDecision` until the UI dispatches the matching resolve.
 
 ## Acceptance Criteria
 
@@ -217,6 +212,6 @@ until the UI dispatches the matching resolve.
 - [x] `src/server/reducer/discounts.test.ts`
 - [x] `src/server/reducer/replay.test.ts`
 - [x] `src/server/reducer/pierce.test.ts`
-- [x] `src/server/reducer/replaceSyntheticFace.test.ts` (Reforge)
+- [x] `replace-synthetic-face` **removed** (do not restore `replaceSyntheticFace.test.ts`)
 - [x] `src/server/reducer/stayOnSlot.test.ts` (Heritage / Plague stay + spread)
 - [x] Existing combat / prevent / playcard / triggers / autoplay suites

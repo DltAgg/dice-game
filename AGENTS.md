@@ -120,3 +120,5 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Creature attacks use `[Unlock]` from the owner’s **showing faces** (spec `028`); they do **not** `[Requires]` / `[Spend]` `attributePool`. Pile still pays cards, rituals, and synthetic forge. No energy. No second roll on declare. Query `attackIsUnlocked` — do not teach `attackIsFuelled` / `ATTACK_NOT_FUELLED`.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).
+- Do not reauthor `[Reforge]` / `[Cross forge]` / `replace-synthetic-face` (overwrite-without-draw removed). `[Desynthesize]` is not a forge / not `[Stamp]`.
+- Do not print `[Generate]` on tactics, creatures, rituals, equipment, or overloads. Extra pips are faces and `[Overcharge]`.

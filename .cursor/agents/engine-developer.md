@@ -87,6 +87,11 @@ Implement engine requirements so content can stay data-driven:
 - **`[Prevent]` / `grant-attack-prevent`** is **reaction-exclusive** (spec `009`).
   Legal only on an attack chain link, onto that attack’s target. No proactive
   `damagePreventBuffer` / face-or-absorb arms. Proving cards use `type: "reaction"`.
+- **Do not reintroduce** `replace-synthetic-face`, `RESOLVE_REPLACE_SYNTHETIC_FACE`,
+  `eligiblePoolFacesForReforge`, or `canResolvePlayEffects`. `[Reforge]` /
+  `[Cross forge]` overwrite-without-draw is **removed**. `[Desynthesize]`
+  (spec `024`, `op: "desynthesize"`) is not a forge and not `[Stamp]` — reuse
+  `RESOLVE_CHOOSE_DIE_SLOT` / `choose-die-slot`, not a forge chooser.
 - A prototype assumption must be labelled in `OPEN_DESIGN.md` (`ASSUMED`), never silently coded as a rule.
 - Do not commit or push unless the user asks.
 
@@ -130,6 +135,7 @@ If the user asks for engine **and** UI in one request: implement engine + spec U
 | Attack unlock | `src/server/rules/attackUnlock.ts`, `commands/attack.ts` (spec `028`) |
 | Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md`, `016-attribute-pile-up.md`, `028-showing-face-combat.md` |
 | Tactic Overcharge (`021`) | `commands/overcharge.ts`, `rules/overcharge.ts` — `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `canOvercharge` / `legalOverchargeFaces`. **Not** spec `013` `optional-overcharge` (face-marker opcode; `RESOLVE_OPTIONAL_OVERCHARGE`) |
+| Desynthesize (`024`) | `op: "desynthesize"`; chooser is `choose-die-slot` + `RESOLVE_CHOOSE_DIE_SLOT`. **Do not restore** `replace-synthetic-face` |
 | Tests / scenarios | `src/server/reducer/*.test.ts`, `src/server/testing/scenario.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 
@@ -146,6 +152,9 @@ instructions for other layers — you do not implement those layers.
 Spec `013` `optional-overcharge` (Mechanical face marker) ≠ spec `021`
 tactic `[Overcharge]` (`OVERCHARGE_CARD`, already shipped). Do not
 reimplement `021` or treat them as one opcode.
+
+Spec `024` `[Desynthesize]` is shipped (`op: "desynthesize"`). It is not a
+forge and not `[Stamp]`. Do not restore `replace-synthetic-face`.
 
 ## Verify
 

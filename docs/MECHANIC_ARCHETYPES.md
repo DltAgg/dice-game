@@ -80,7 +80,7 @@ creature combat” or “infinite attack turns” belong as evidence here.
 | [MA-09](#ma-09-prevent-reactions) | `[Prevent]` | Attack-chain **reaction** only | Combo / Support (Luminar) | Interaction, not Control mill | `HOME` |
 | [MA-10](#ma-10-one-token-playcost) | `playCost` totaling 1 | Header | Exceptional niche | Cheap cycle / Aggro 1-drops | `ANTI` (as a band) |
 | [MA-11](#ma-11-discount) | `[Discount]` | Next forge / play | Tempo, Support, Control sequencing | Makes 2+ cards playable; not Aggro refund | `HOME` |
-| [MA-12](#ma-12-combat-reforge-stamp) | `[Reforge]` / `[Stamp]` on an Unlock-taxed special | Creature special | Tempo (Mechanical exclusive) | Engine during combat, not a pile refund | `HOME` |
+| [MA-12](#ma-12-combat-discount-stamp) | `[Discount]` forge / `[Stamp]` on an Unlock-taxed special | Creature special | Tempo (Mechanical) | Engine during combat, not a pile refund | `HOME` |
 | [MA-13](#ma-13-legendary-strike-band) | Strike 3 vs Strike 2 on legendaries | Creature attack | Tempo hits harder; Control chips | Tempo closer vs Control engine | `WATCH` |
 | [MA-14](#ma-14-discount-plus-synthetic-bank) | `[Discount]` + synthetic forge bank of the spent attr | Same `FORGE_CARD` | Tempo discount **or** bank, not both | Twin Cam + Torque Wright: pile unchanged | `RETARGETED` (bank removed) |
 | [MA-15](#ma-15-tactic-overcharge) | `[Overcharge]` any hand card | Actions, once per turn (not play, not forge) | Tempo keep-a-face splash; Control (Scholar's Lien → Darkness keeper) | Untested | `WATCH` |
@@ -269,13 +269,16 @@ Support sequencing.
 
 **Status:** `HOME`.
 
-### MA-12 Combat Reforge Stamp
+### MA-12 Combat Discount Stamp
 
-**Mechanic:** `[Reforge]` / `[Stamp]` as a special-attack follow-up.
-Play-region `[Reforge N Attr]` / `[Cross forge N Y / Z]` (Recast, Alloy Shift)
-are the same Mechanical exclusive, not this combat window.
+**Mechanic:** `[Discount N] forge` / `[Stamp]` as a special-attack follow-up.
+Play-region Recast is `[Stamp]` + Draw; Alloy Shift is `[Empower]` + `[Stamp]`
+— not this combat window. `[Reforge]` / `[Cross forge]` are retired
+(worse `FORGE_CARD`, no forge-draw). Tactics do not print `[Generate]`.
 
-**Window:** Tempo specials (`creature-torque-wright` Retool, `creature-lodestar-artificer` Overdrive). Mechanical exclusive.
+**Window:** Tempo specials (`creature-torque-wright` Retool Discount 2,
+`creature-lodestar-artificer` Overdrive Stamp). Mechanical `[Stamp]` stays
+exclusive; Discount is shared but the Wright’s identity.
 
 **Intended home:** Tempo. Engine during combat; Unlock (both Mechanical, or
 Mechanical + Luminar) is the tax — the pile does not drain.
@@ -482,7 +485,7 @@ restore attack pile spend.
 | Archetype | Signature feel to protect | Do not steal |
 |---|---|---|
 | Aggro | Efficient unlocked attacks, `[Frenzy]`, Martial movement | Control mill/Insight as the **plan**; Burn ticks; infinite refunds are a **leak even here** |
-| Tempo | Forge sequencing, on-roll generate, Reforge/Stamp, Discount | Attack refunds (MA-01); Control stall as the win |
+| Tempo | Forge sequencing, on-roll generate, Stamp, Discount | Attack refunds (MA-01); Control stall as the win |
 | Control | Insight, mill, negate, engine damage, **weak unlocked basics** | MA-01 refunds; Frenzy; Toxin/Corruption DoT; Strike-3 beatstick legendary; pie riders on one-face basics |
 | Combo | Chains, Frenzy, Prevent reactions, Mechanical reconstruction | Cheap Aggro without a combo; Control “no clock” |
 | Burn | Toxin + Corruption ticks onto the legendary | Creature beatdown; Arcane negate as the identity |

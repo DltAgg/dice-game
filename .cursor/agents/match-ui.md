@@ -77,6 +77,11 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
   engine, and do not add engine imports of React/Zustand/PeerJS.
 - Prefer extending data the UI already knows how to render (`pendingDecision`,
   `GameError`, catalogue fields) over special-casing a card id.
+- Do **not** document or rebuild a Reforge pending chooser. Engine deleted
+  `replace-synthetic-face` (no pending type, no `RESOLVE_REPLACE_SYNTHETIC_FACE`,
+  no `eligiblePoolFacesForReforge`). `[Desynthesize]` uses existing
+  `choose-die-slot` (`filter: "any-synthetic"`) + `RESOLVE_CHOOSE_DIE_SLOT` —
+  not a forge picker and not `[Stamp]`.
 - Front-end knobs go in `src/client/ui/config.ts` (e.g. `showDeckBuilderCardArt`).
 - Do not commit or push unless the user asks.
 

@@ -683,12 +683,13 @@ Stun stays `DEFERRED`.
 **Status:** `DECIDED` · 2026-09-01 · user-directed · spec `024`
 
 A physics keyword, **not** a Mark token and **not** Mechanical-exclusive
-(Mechanical already has `[Reforge]`). Shared operator. Proving-card source is
+(Mechanical already has `[Stamp]` / `[Double]` / own-die `[Forge]`). Shared
+operator. Proving-card source is
 an instant; the reducer does not hard-ban other sources. Target: a synthetic
 face **slot** on **your die or the opponent’s die**.
 
-**Not** `[Reforge]` / `[Cross forge]` / `replace-synthetic-face` (overwrite N
-slots on your die with synthetics from pool, blocked by stay/forge-lock).
+**Not** a forge and **not** `[Stamp]` (re-fire a showing face’s roll effects).
+Stay / forge-lock does not block Desynthesize.
 
 **ASSUMED** (labelled prototype; bible is silent):
 
@@ -704,7 +705,7 @@ slots on your die with synthetics from pool, blocked by stay/forge-lock).
 | **Chooser** | Always prompt when ≥1 legal synthetic slot exists (any player’s dice). Empty = legal whiff. Not optional. |
 | **Copies** | Per **physical slot**. Other slots with the same synthetic id stay until orphaned-copy rules return the card to pool. |
 
-Stun stays `DEFERRED`. `[Reforge]` stays Mechanical exclusive and is not reused for desynthesis.
+Stun stays `DEFERRED`. `[Stamp]` / `[Double]` stay Mechanical exclusive and are not reused for desynthesis.
 
 ---
 
@@ -756,7 +757,7 @@ Bible is silent on “cannot be replaced by forging” duration and whose turns 
 
 | Topic | Assumption coded |
 |---|---|
-| **Cannot-replace is data** | `FaceCardDefinition.stayPolicy`. Forbidden Heritage: `{ kind: "cannot-replace-by-forge" }` while the slot shows that face. Not a name check. Blocks `FORGE_CARD`, `forge-faces`, `replace-synthetic-face`, pestilence adjacent spread, and any `installFacesOnDie` overwrite. Unforge / consume / `ACTIVATE_FACE` peel are not this restriction. |
+| **Cannot-replace is data** | `FaceCardDefinition.stayPolicy`. Forbidden Heritage: `{ kind: "cannot-replace-by-forge" }` while the slot shows that face. Not a name check. Blocks `FORGE_CARD`, `forge-faces`, pestilence adjacent spread, and any `installFacesOnDie` overwrite. Unforge / consume / `ACTIVATE_FACE` peel are not this restriction. |
 | **“4 turns”** | Die **owner’s** turns (`DieState.ownerId`), not complete rounds. Decrement remaining lock by 1 on each finish of that owner’s turn (voluntary `END_TURN` or spent-to-zero), floor 0. The opponent’s turn does not tick. |
 | **Lock lives on the slot** | `DieSlot.forgeLockRemaining`, like `pestilenceCounters`. Copies of the same face on other slots / dice do not share it. |
 | **Duration 4 is catalogue** | Pestilent Plague `stayPolicy: { kind: "forge-lock", turns: 4 }`. While remaining > 0 the slot cannot be replaced by forging; at 0, forging over it is legal again. |

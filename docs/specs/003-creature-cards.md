@@ -46,7 +46,7 @@ squad; defeating the opposing legendary wins. Opens in the **back** row.
 Type-line / badge — not an effect verb. Life sits above normal beaters
 (~20–24). Attribute exclusives apply: Martial `[Swap]` / position payoffs,
 Wild `[Frenzy]`, Arcane `[Insight]`, Darkness `[Mill]`, Luminar `[Prevent]`,
-Mechanical `[Stamp]` / `[Reforge]`, Toxin `[Mark N Toxin]`, Corruption
+Mechanical `[Stamp]`, Toxin `[Mark N Toxin]`, Corruption
 opponent-die `[Forge]`.
 
 ### Builtin win targets
@@ -66,7 +66,7 @@ opponent-die `[Forge]`.
 | Thornmane Packlord | `creature-thornmane-packlord` | Wild | 21 | Aggro alt | Absorb → Frenzy self; special Frenzy ally |
 | Umbra Gravewarden | `creature-umbra-gravewarden` | Darkness | 21 | Control alt | Absorb → opponent Mill; special Mill 3 |
 | Ashen Plagueking | `creature-ashen-plagueking` | Corruption | 21 | Burn alt | Opponent turn-start ping; special opponent-die Forge |
-| Aethercore Sovereign | `creature-aethercore-sovereign` | Mechanical | 21 | Combo alt | Absorb → Generate Mech; special Reforge |
+| Aethercore Sovereign | `creature-aethercore-sovereign` | Mechanical | 21 | Combo alt | Absorb → Generate Mech; special Stamp |
 
 Deck-designer owns which (if any) constructed alternatives replace builtin
 legendaries in loadout lists.
@@ -88,7 +88,7 @@ basics may Strike; Heal and engine riders sit on **specials**.
 
 | Id | Name | Life | Attributes | Passive | Basic | Special |
 |---|---|---|---|---|---|---|
-| `creature-torque-wright` | Torque Wright | 14 | Mechanical | On absorb Mechanical, once per turn: `[Discount 1]` forge. | Crank — `[Unlock: Mechanical]`. `[Strike 2]` | Retool — `[Unlock: 2 x Mechanical]`. `[Strike 2]`. `[Reforge 1 Mechanical]` any faces on one of your dice. |
+| `creature-torque-wright` | Torque Wright | 14 | Mechanical | On absorb Mechanical, once per turn: `[Discount 1]` forge. | Crank — `[Unlock: Mechanical]`. `[Strike 2]` | Retool — `[Unlock: 2 x Mechanical]`. `[Strike 2]`. `[Discount 2] forge.` |
 | `creature-dawn-warden` | Dawn Warden | 13 | Luminar | On absorb Luminar, once per turn: `[Mark 1 Shield]` on one of your creatures you choose. | Kindle — `[Unlock: Luminar]`. `[Strike 2]` | Vigil — `[Unlock: 2 x Luminar]`. `[Strike 2]`. `[Mark 2 Shield]` this creature. `[Heal 1]` on one of your creatures you choose. |
 | `creature-lodestar-artificer` | Lodestar Artificer **(legendary)** | 22 | Mechanical / Luminar | On absorb Mechanical, once per turn: `[Empower 1]` this creature. | Drive Shaft — `[Unlock: Mechanical]`. `[Strike 3]` | Overdrive — `[Unlock: Mechanical + Luminar]`. `[Strike 4]`. `[Stamp]`. |
 

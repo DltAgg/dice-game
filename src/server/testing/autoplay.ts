@@ -5,11 +5,6 @@ import {
   resolveFaceForForge,
   preferredSlotsForForgeFaces,
 } from "../rules/faces.js";
-import {
-  eligiblePoolFacesForReforge,
-  isLegalReforgeAssignment,
-  legalSlotsForReplaceSyntheticFace,
-} from "../rules/reforge.js";
 import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type FaceCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -489,54 +484,6 @@ function resolvePending(state: GameState): GameState {
       return resolvePending(result.state);
     }
     throw new Error("autoplay: no die for forge-faces");
-  }
-
-  if (pending.type === "replace-synthetic-face") {
-    const spec = {
-      faces: pending.faces,
-      attribute: pending.attribute,
-      ...(pending.fromAttribute !== undefined ? { fromAttribute: pending.fromAttribute } : {}),
-    };
-    const slots = legalSlotsForReplaceSyntheticFace(state, pending.controllerId, spec);
-    const pool = eligiblePoolFacesForReforge(state, pending.controllerId, pending.attribute);
-    const faceCardIds = pool.slice(0, pending.faces);
-    if (faceCardIds.length < pending.faces) {
-      throw new Error("autoplay: no pool face for replace-synthetic-face");
-    }
-    const byDie = new Map<DieId, number[]>();
-    for (const slot of slots) {
-      const indexes = byDie.get(slot.dieId) ?? [];
-      indexes.push(slot.slotIndex);
-      byDie.set(slot.dieId, indexes);
-    }
-    for (const [dieId, indexes] of byDie) {
-      if (indexes.length < pending.faces) continue;
-      const slotIndexes = indexes.slice(0, pending.faces);
-      if (
-        !isLegalReforgeAssignment(
-          state,
-          pending.controllerId,
-          spec,
-          dieId,
-          slotIndexes,
-          faceCardIds,
-        )
-      ) {
-        continue;
-      }
-      const result = advance(state, {
-        type: "RESOLVE_REPLACE_SYNTHETIC_FACE",
-        playerId: pending.controllerId,
-        dieId,
-        slotIndexes,
-        faceCardIds,
-      });
-      if (!result.ok) {
-        throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_REPLACE_SYNTHETIC_FACE`);
-      }
-      return resolvePending(result.state);
-    }
-    throw new Error("autoplay: no slot for replace-synthetic-face");
   }
 
   if (pending.type === "choose-effect-mode") {

@@ -12,7 +12,6 @@ import {
   canAffordForge,
   canAffordPlay,
   canOvercharge,
-  canResolvePlayEffects,
   getCard,
   handOf,
   hasPlayableEffect,
@@ -160,8 +159,7 @@ export function HandStrip({
           const canPlay =
             actionsLive &&
             hasPlayableEffect(def) &&
-            canAffordPlay(state, playerId, def) &&
-            canResolvePlayEffects(state, playerId, def);
+            canAffordPlay(state, playerId, def);
           const canForge = actionsLive && canAffordForge(state, playerId, def);
           const overchargeEnabled = canOvercharge(state, playerId, card.id);
           const canRespond = reactionsLive && isEnabledHandReaction(state, playerId, def);

@@ -376,25 +376,12 @@ Some faces **stay locked** on a slot for printed turns after install
 
 **Desynthesis.** `[Desynthesize]` peels a **synthetic** attribute face on
 **any die** (yours or the opponent’s) back to that attribute’s **natural**
-identity face. It is not a forge (no forge-draw) and is **not** `[Reforge]`
-or `[Cross forge]` (overwrite slots on **your** die with synthetics from
-your pool). Stay / forge-lock does not block it. The natural belongs to the
+identity face. It is not a forge (no forge-draw) and is not `[Stamp]`. Stay /
+forge-lock does not block it. The natural belongs to the
 **die owner**; the displaced synthetic
 returns to its owner’s pool when the last copy leaves, and overloads /
 Overcharge on that orphaned face leave as they do on overwrite. An already
 generated pip on a showing slot stays; the next roll uses the natural.
-
-**Reforge / Cross forge.** `[Reforge N Attr]` on **one of your dice**: replace
-**any** N replaceable faces with N **synthetic** Attr faces from your pool
-(you name the slots and the pool faces). `[Cross forge N Y / Z]` is the same
-except those N slots must currently show **Y**, and the installs are synthetic
-**Z**. Neither is a forge (no forge-draw, no yield). Stay /
-cannot-replace slots are illegal. The §9.1 attribute cap still applies to the
-finished die. Displaced faces return to pool when orphaned; their overloads /
-Overcharge leave as on overwrite. Mechanical exclusive. You cannot play a
-Reforge / Cross forge (or a Choose one whose every mode is Reforge / Cross
-forge) when no legal assignment exists — the card stays in hand; it is not
-spent for a silent no-op.
 
 **Choose one.** Some cards (e.g. Tooling Order) and some faces (Sigil Flare,
 Mainspring, Pyre of Names) read "Choose one:" with two modes. You pick exactly

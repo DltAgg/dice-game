@@ -14,6 +14,10 @@ description: >-
   `MatchBoard.tsx`. See `scope-and-modules.mdc` and `module-budget.test.ts`.
 - UI dispatches `GameAction` intents via `useMatchStore.dispatch`.
 - **Never** reimplement rules in React. Display `GameState`; let `advance()` decide.
+- Do **not** treat a Reforge pending chooser as live. Engine deleted
+  `replace-synthetic-face` (no pending type, no `RESOLVE_REPLACE_SYNTHETIC_FACE`,
+  no `eligiblePoolFacesForReforge`). `[Desynthesize]` uses `choose-die-slot`
+  + `RESOLVE_CHOOSE_DIE_SLOT` — not a forge picker, not `[Stamp]`.
 - Online: `mode` is `local` | `host` | `client`. Host/client sessions live in
   `src/client/networking/`; store routes dispatch. Seat-gate controls with `localPlayerId`.
 - Online hand dock shows **local** seat only; hotseat still follows `activePlayerId`.

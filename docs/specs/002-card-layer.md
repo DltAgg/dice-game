@@ -176,13 +176,13 @@ tempo back with reaction `[Prevent]`. Every row serves forge or play.
 
 | Cost | Name | Type line | Printed play region | Role in Tempo |
 |---|---|---|---|---|
-| 2 M | Cog Draft | Instant / Mechanical | `[Generate 2 Mechanical]. [Draw 1].` | Opener. Converts a turn into pile + a card. |
-| 2 M + 1 Any | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. Choose one — `[Cross forge 1 Mechanical / Luminar]` or `[Cross forge 1 Luminar / Mechanical]` on one of your dice. | Flexible die reconstruction: swing one face either direction between the Tempo pair. Distinct from Alloy Shift (one-way Cross forge 1, no Requires, not in Tempo). |
+| 2 M | Cog Draft | Instant / Mechanical | `[Discount 1] forge. [Draw 1].` | Opener. Cheapens the next install and refills. Extra pips are faces / Overcharge, not a play-region `[Generate]`. |
+| 2 M + 1 Any | Tooling Order | Instant / Mechanical | `[Requires 2 x Mechanical]`. Choose one — `[Stamp]` or `[Discount 2] forge`. | Now vs later: fire a showing face, or cheapen the next synthetic forge. Distinct from Recast (Stamp + Draw, no Requires) and Die Punch (Stamp only). |
 | 2 M | Shim Kit | Instant / Mechanical | `[Discount 2]` forge. | One-shot discount that turns a forge into a tempo turn. |
 | 3 M | Quickset Jig | Equipment / Mechanical | On roll Mechanical: `[Discount 1]` forge. | Standing discount engine — rolls, not pile. |
 | 2 M | Die Punch | Instant / Mechanical | `[Requires 1 x Mechanical]`. `[Stamp]`. | Own-die reconstruction: reapply your die modifiers. |
-| 2 M | Recast | Instant / Mechanical | `[Reforge 2 Mechanical]` any faces on one of your dice. | Rebuilds one die from the synthetic Mechanical pool without a forge-draw. |
-| 2 M | Alloy Shift | Instant / Mechanical | `[Cross forge 1 Mechanical / Luminar]` on one of your dice. | Turns a Mechanical face into a synthetic Luminar from the pool. |
+| 2 M | Recast | Instant / Mechanical | `[Stamp]. [Draw 1].` | Fire a showing face and refill. Distinct from Die Punch (Stamp only) and Twin Cam (`[Double]` twice). Forge region still rebuilds. |
+| 2 M | Alloy Shift | Instant / Mechanical | `[Empower 1]. [Stamp].` | Fire a showing face and swing. Distinct from Die Punch (Stamp only) and Recast (Stamp + Draw). Not in the Tempo loadout. Extra pips are faces / Overcharge, not `[Generate]`. |
 | 2 M | Twin Cam | Instant / Mechanical | `[Requires 2 x Mechanical]`. `[Double]`. | Payoff for a stacked die: next face effect twice. |
 | 2 M | Idler Gear | Overload / Mechanical | Mechanical face only. On roll: `[Generate 1 Mechanical]`. `[Generate 1 Luminar]`. | The two-color bridge welded to the die — Mechanical face, Luminar payout. |
 | 2 M | Pawl Spring | Overload / Mechanical | Mechanical face only. On roll: `[Discount 1]`. On absorb, once per turn: `[Discount 1]` forge. | Roll cheapens the next play; absorb cheapens the next forge. Its natural forge paints the Mechanical face it can later overload. |
@@ -221,7 +221,7 @@ ritual destroy, and cost reduction on its own Instants. Darkness owns
 **`[Mill]`**, graveyard recursion (`[Recall]` / replay), discard-for-fuel, and
 the drain/strike closers. No Corruption opponent-die, no Luminar `[Prevent]`,
 no Toxin markers, no Martial `[Swap]`, no Wild `[Frenzy]`, and Mechanical
-`[Stamp]` / `[Reforge]` stay out.
+`[Stamp]` stay out.
 
 `playCost` is the attribute pile, not generic Energy. All 22 print 2+.
 
@@ -267,7 +267,7 @@ Two cards **both** builtins maindeck. The test is mechanical, not vibes:
 
 - **no header `playCost`** — you never need a pile colour to play them;
 - **no attribute-exclusive verb** (no `[Insight]`, `[Mill]`, `[Prevent]`,
-  `[Reforge]`, `[Stamp]`, `[Double]`) and **no `[Spend] X → [Generate] Y`**
+  `[Stamp]`, `[Double]`) and **no `[Spend] X → [Generate] Y`**
   conversion pretending to be splashable;
 - they still **touch dice** — a reroll and a Shield mark.
 
@@ -402,8 +402,7 @@ Deepens Combo sequencing on the same absorb-vs-pool tension: Transmission /
 Servomotor / Foundry lean absorb; Camshaft / Clockwork / Stamp lean roll-pool;
 Coupling spends a stacked pool; Blueprint / Safety Latch arm forge discounts;
 Recalibrate resets without Arcane negate. Densified in builtin **Combo
-Mechanical**; Tempo takes a lighter cut. **Reforge / Cross forge** use
-`replace-synthetic-face` (spec `012`). Safety Latch is a Mechanical reaction
+Mechanical**; Tempo takes a lighter cut. Safety Latch is a Mechanical reaction
 (next-forge discount), not prevent.
 
 | Cost | Name | Type line | Forge | Effect |
@@ -417,7 +416,7 @@ Mechanical**; Tempo takes a lighter cut. **Reforge / Cross forge** use
 | 3 | Coupling | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical + Mechanical.* [Double]. |
 | 2 | Clockwork | Ritual / Continuous / Mechanical | 1 Synthetic Mechanical, your die | *Active when: Mechanical + Mechanical.* On roll Mechanical: [Generate 1 Mechanical]. |
 | 3 | Recalibrate | Reaction / Mechanical | 1 Synthetic Mechanical, your die | [Recall 1] that costs 2 or less. |
-| 3 | Reforge | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Requires: Mechanical.* [Reforge N Attr]. |
+| 3 | Reforge | Instant / Mechanical | 1 Synthetic Mechanical, your die | *Retired.* `[Reforge]` / `replace-synthetic-face` removed — do not reauthor overwrite-without-draw. |
 
 ### Martial / Wild aggro package (authored)
 

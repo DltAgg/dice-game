@@ -37,6 +37,8 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 - Do not grow a frozen file past `module-budget.test.ts` — extract instead.
 - Do not invent opcodes, `GameState` bags, or HTTP servers “for flexibility.”
 - Incomplete print → `docs/DEFERRED_CATALOGUE.md`, not a silent fake.
+- Do not restore `replace-synthetic-face` / `[Reforge]` / `[Cross forge]`
+  (overwrite-without-draw removed). `[Desynthesize]` is not a forge / not `[Stamp]`.
 
 ## OOP / DRY / KISS / YAGNI (this repo)
 

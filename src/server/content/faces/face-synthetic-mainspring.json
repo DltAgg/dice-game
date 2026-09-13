@@ -4,16 +4,15 @@
   "name": "Mainspring",
   "kind": "synthetic",
   "symbol": "mechanical",
-  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Reforge 1 Mechanical]. Do not bank this die's pips.",
+  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Discount 1] forge. Do not bank this die's pips.",
   "pips": {
     "mechanical": 2
   },
   "convertRoll": true,
   "onRoll": [
     {
-      "type": "replace-synthetic-face",
-      "faces": 1,
-      "attribute": "mechanical"
+      "type": "arm-forge-discount",
+      "amount": 1
     }
   ],
   "onAbsorb": [],

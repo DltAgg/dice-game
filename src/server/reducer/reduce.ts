@@ -34,7 +34,6 @@ import {
   resolveOptionalOvercharge,
   resolvePeekDeck,
   resolveReplayGraveyard,
-  resolveReplaceSyntheticFace,
   resolveSearch,
   resolveSplitDamage,
 } from "./pending/resolvers.js";
@@ -118,8 +117,6 @@ function isMatchingPendingResolve(pending: ChoicePending, action: GameAction): b
       return action.type === "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS";
     case "forge-faces":
       return action.type === "RESOLVE_FORGE_FACES";
-    case "replace-synthetic-face":
-      return action.type === "RESOLVE_REPLACE_SYNTHETIC_FACE";
     case "choose-effect-mode":
       return action.type === "RESOLVE_CHOOSE_EFFECT_MODE";
     case "choose-die":
@@ -219,14 +216,6 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.dieId,
         action.slotIndexes,
         action.faceCardId,
-      );
-    case "RESOLVE_REPLACE_SYNTHETIC_FACE":
-      return resolveReplaceSyntheticFace(
-        draft,
-        action.playerId,
-        action.dieId,
-        action.slotIndexes,
-        action.faceCardIds,
       );
     case "RESOLVE_CHOOSE_EFFECT_MODE":
       return resolveChooseEffectMode(draft, action.playerId, action.modeIndex);

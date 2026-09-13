@@ -113,10 +113,12 @@ and do **not** reprint `[Overcharge]` on the card. Spec `013`
 | Overload that cares it was forged | Fires or scales on yield / “this face was installed this game.” |
 | Dual-pip face (below) | The install *is* the plus: two attributes from one slot. |
 
-Mechanical still owns extra own-die reconstruction (`[Reforge]`, `[Cross forge]`, `[Stamp]`,
-extra forge as the **exclusive verb**). Other attributes may still have
-interesting **forge regions** (count, riders, dual-pip faces) without
-stealing that verb. Opponent-die forge remains Corruption.
+Mechanical still owns extra own-die reconstruction (`[Stamp]`, `[Double]`,
+extra forge, move overloads between **your** faces as the **exclusive verb**).
+Do **not** print `[Reforge]` / `[Cross forge]` (retired overwrite-without-draw).
+Other attributes may still have interesting **forge regions** (count, riders,
+dual-pip faces) without stealing that verb. Opponent-die forge remains
+Corruption. `[Desynthesize]` is not a forge and not `[Stamp]`.
 
 **Baseline physics are not “the plus”:** draw 1 per install; own-die yield
 (+1 pip of the showing face’s attribute on a later roll). Layer on top of
@@ -133,12 +135,13 @@ Prefer composing **today**:
 
 ```text
 symbol: martial
-On roll: [Generate 1 Wild].
+On roll: this face also produces 1 Wild.
 ```
 
-The face still shows Martial (yield is Martial). Absorb/on-roll Generate
-supplies the partner. Same pattern for a Synthetic that shows Arcane and
-generates Darkness (or any pair that a constructed home actually wants).
+The face still shows Martial (yield is Martial). Extra pips / the dual-pip
+line supplies the partner — **not** a tactic `[Generate]`. Same pattern for a
+Synthetic that shows Arcane and also produces Darkness (or any pair a
+constructed home actually wants).
 
 If the proving print needs **two inherent pips** or a second `symbol`
 field, write the card, then brief `engine-developer` with the standard

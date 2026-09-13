@@ -14,14 +14,15 @@
     "attribute": "mechanical",
     "target": "own-die"
   },
-  "rulesText": "[Cross forge 1 Mechanical / Luminar] on one of your dice.",
+  "rulesText": "[Empower 1]. [Stamp].",
   "effect": {
     "effects": [
       {
-        "type": "replace-synthetic-face",
-        "faces": 1,
-        "attribute": "luminar",
-        "fromAttribute": "mechanical"
+        "type": "next-attack-bonus",
+        "amount": 1
+      },
+      {
+        "type": "reapply-die-modifiers"
       }
     ]
   }

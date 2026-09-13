@@ -265,9 +265,9 @@ export function returnFaceToPoolIfOrphaned(
 }
 
 /**
- * True when a forge / forge-faces / replace-synthetic-face / pestilence-spread
- * install may not overwrite this physical slot. Peel (`ACTIVATE_FACE`),
- * consume, and strip-to-Shield are not this check.
+ * True when a forge / forge-faces / pestilence-spread install may not
+ * overwrite this physical slot. Peel (`ACTIVATE_FACE`), consume, and
+ * strip-to-Shield are not this check.
  */
 export function slotCannotBeReplacedByForge(slot: DieSlot): boolean {
   const face = getFaceCard(slot.faceCardId);

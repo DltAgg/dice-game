@@ -13,6 +13,8 @@ alwaysApply: true
 - Incomplete printed clauses → `docs/DEFERRED_CATALOGUE.md`, not approximate silent effects.
 - Player-facing how-it-plays: `docs/RULEBOOK.md`. Update it in the same change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
 - Print / token / mechanic keywords: `docs/KEYWORDS.md` (`.cursor/rules/keywords.mdc`). New and edited print uses the glossary; new tokens join `[Mark]` / `[Strip]`, they do not get a new verb.
+- Retired `[Reforge]` / `[Cross forge]` / `replace-synthetic-face` — do not reauthor overwrite-without-draw. Mechanical exclusive remaining: extra own-die forge, `[Stamp]`, `[Double]`, move overloads between your faces. `[Desynthesize]` is not a forge / not `[Stamp]`.
+- Do **not** print `[Generate]` on tactics, creatures, rituals, equipment, or overloads. Extra pips are faces and `[Overcharge]`.
 - Mechanic × archetype feel (playtests): `docs/MECHANIC_ARCHETYPES.md`. After a session, subagent `.cursor/agents/post-playtest.md` (skill `review-playtest`) updates it and briefs owners. Same opcode, different window, different deck style.
 - DoD: `npm run typecheck && npm test && npm run lint`.
 - Commit / push only when the user asks.

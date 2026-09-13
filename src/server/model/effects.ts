@@ -156,7 +156,7 @@ export type EffectDefinition =
     }
   /**
    * Replace a synthetic attribute face slot on any die with that attribute's
-   * natural identity face. Spec `024`. Not `[Reforge]`.
+   * natural identity face. Spec `024`. Not a forge and not `[Stamp]`.
    */
   | { readonly type: "desynthesize"; readonly target: TargetSelector }
   /**
@@ -188,18 +188,6 @@ export type EffectDefinition =
       readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
-    }
-  /**
-   * `[Reforge N Attribute]` / `[Cross forge N Y / Z]`. Pending: choose N
-   * replaceable slots on **one** owned die, then N **synthetic** `attribute`
-   * faces from the pool. `fromAttribute` omitted = any showing face (Reforge);
-   * set = Cross forge (those slots must show Y). Not a forge — no forge-draw.
-   */
-  | {
-      readonly type: "replace-synthetic-face";
-      readonly faces: number;
-      readonly attribute: Attribute;
-      readonly fromAttribute?: Attribute;
     }
   /**
    * Toggle an **ally** between frontline and back. If moving to frontline would

@@ -49,7 +49,7 @@
         "mechanical": 2
       },
       "range": false,
-      "rulesText": "[Strike 2].\n[Reforge 1 Mechanical] any face on one of your dice.",
+      "rulesText": "[Strike 2].\n[Discount 2] forge.",
       "effect": {
         "type": "damage",
         "amount": 2,
@@ -59,9 +59,8 @@
       },
       "followUpEffects": [
         {
-          "type": "replace-synthetic-face",
-          "faces": 1,
-          "attribute": "mechanical"
+          "type": "arm-forge-discount",
+          "amount": 2
         }
       ]
     }

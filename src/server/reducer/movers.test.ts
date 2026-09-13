@@ -8,25 +8,26 @@ import {
   withPile,
   withHand,
   withPhase,
+  withShowingFaces,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
 
-const REFORGE_TWO = testCard({
-  id: "card-test-reforge-two",
+const STAMP = testCard({
+  id: "card-test-stamp-two",
   playCost: { mechanical: 2 },
   attribute: "mechanical",
   forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
   effect: {
-    effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
+    effects: [{ type: "reapply-die-modifiers" }],
   },
 });
 
-describe("synthetic replacement movers", () => {
-  it("opens replace-synthetic-face for two Mechanical faces", () => {
-    const ready = withPile(
-      withHand(withPhase(newMatch(), "actions"), P1, [REFORGE_TWO.id]),
+describe("Stamp after play", () => {
+  it("opens choose-die for Stamp", () => {
+    const ready = withShowingFaces(
+      withPile(withHand(withPhase(newMatch(), "actions"), P1, [STAMP.id]), P1, 10),
       P1,
-      10,
+      ["mechanical"],
     );
     const played = expectOk(
       advance(ready, {
@@ -35,10 +36,6 @@ describe("synthetic replacement movers", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(played.pendingDecision).toMatchObject({
-      type: "replace-synthetic-face",
-      faces: 2,
-      attribute: "mechanical",
-    });
+    expect(played.pendingDecision?.type).toBe("choose-die");
   });
 });

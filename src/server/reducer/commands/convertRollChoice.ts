@@ -1,7 +1,5 @@
 import type { FaceCardDefinition } from "../../model/dice.js";
 import type { DieId, PlayerId } from "../../model/ids.js";
-import { isAttribute } from "../../model/attributes.js";
-import { attributeLabel } from "../../content/cardText.js";
 import type { Draft } from "../draft.js";
 import { pushEffect } from "../resolution.js";
 
@@ -13,10 +11,7 @@ export function convertPayoffLabel(face: FaceCardDefinition): string {
   if (first === undefined) return "Do not bank this die's pips";
   if (first.type === "damage") return `Strike ${String(first.amount)}`;
   if (first.type === "drain-life") return `Drain ${String(first.amount)}`;
-  if (first.type === "replace-synthetic-face") {
-    const attr = isAttribute(first.attribute) ? attributeLabel(first.attribute) : first.attribute;
-    return `Reforge ${String(first.faces)} ${attr}`;
-  }
+  if (first.type === "arm-forge-discount") return `Discount ${String(first.amount)} forge`;
   return "Do not bank this die's pips";
 }
 

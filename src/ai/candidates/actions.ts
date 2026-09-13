@@ -2,7 +2,6 @@ import {
   canAffordForge,
   canAffordPlay,
   canOvercharge,
-  canResolvePlayEffects,
   diceOf,
   getCard,
   getCreatureDefinition,
@@ -180,7 +179,6 @@ function playIntents(state: GameState, playerId: PlayerId): readonly GameAction[
     const definition = getCard(card.cardId);
     if (definition === undefined || !hasPlayableEffect(definition)) continue;
     if (!canAffordPlay(state, playerId, definition)) continue;
-    if (!canResolvePlayEffects(state, playerId, definition)) continue;
     actions.push(...playCardIntents(state, playerId, card.id, definition));
   }
   return actions;

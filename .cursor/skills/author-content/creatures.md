@@ -9,7 +9,8 @@ on every body (`docs/MECHANIC_ARCHETYPES.md` MA-01 — that shape **feels Aggro*
 even on Control). Audit live `src/server/content/creatures/` first. Dual-attribute
 `unlock` on a special (Riftscribe Adept Ley Surge: Arcane+Darkness) is closer
 to a bridge than `[Spend] X, [Generate] Y`. Creatures still obey exclusive
-verbs in [design.md](design.md).
+verbs in [design.md](design.md). Torque Wright **Retool** is `[Strike 2]` +
+`[Discount 2] forge` — not a `[Reforge]` proving card.
 
 ## Shape
 

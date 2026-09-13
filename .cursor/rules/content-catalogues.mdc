@@ -42,7 +42,10 @@ Rules:
 - Honor **attribute exclusive mechanics** in `.cursor/skills/author-content/design.md`.
   Do not print another attribute’s signature verb (scry, mill, Luminar `[Prevent]`
   on non-reactions, opponent-die, toxin markers, ally swap, own-die reconstruction,
-  `[Frenzy]`). `[Prevent]` / `grant-attack-prevent` is **reaction-only** (spec `009`).
+  `[Frenzy]`). Mechanical exclusive remaining: extra own-die forge, `[Stamp]`,
+  `[Double]`, move overloads between **your** faces — do **not** print `[Reforge]`
+  / `[Cross forge]` (retired overwrite-without-draw). `[Desynthesize]` is not a
+  forge / not `[Stamp]`. `[Prevent]` / `grant-attack-prevent` is **reaction-only** (spec `009`).
   Attribute fuel is the **player pile** for cards, rituals, and synthetic forge
   — see `attribute-pile.md`. Creature attacks use `[Unlock]` vs showing faces
   (spec `028`), not pile `[Requires]` / `[Spend]`.
@@ -51,7 +54,9 @@ Rules:
 - **Live JSON** in `src/server/content/{cards,faces,creatures}/` is catalogue
   truth. Spec `002` tables of missing cards are not a pattern. Do not clone
   `forge.faces: 1` stickers or `[Spend] X, [Generate] Y` converter slots
-  (`.cursor/skills/author-content/design-craft.md`).
+  (`.cursor/skills/author-content/design-craft.md`). Do **not** print
+  `[Generate]` on tactics, creatures, rituals, equipment, or overloads —
+  extra pips are faces and `[Overcharge]`.
 - Print voice is the **holder**: `you` is the player whose field the card sits on; `opponent` is that player’s opponent (including after a hand-off / opponent-die forge / opponent equip).
 - Printed `playCost` totaling 1 pile token is exceptional and niche. Prefer 2+
   of the card’s attribute; cheaper plays come from `[Discount]`, not 1-drops.

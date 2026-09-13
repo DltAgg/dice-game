@@ -26,6 +26,10 @@ description: >-
    `PlayerState.overchargeByFace`, queries `canOvercharge` /
    `legalOverchargeFaces`) is **not** spec `013`
    `optional-overcharge` (Mechanical face-marker opcode).
+   Do **not** restore `replace-synthetic-face` / `[Reforge]` / `[Cross forge]`
+   (overwrite-without-draw; duplicated `FORGE_CARD` without forge-draw).
+   `[Desynthesize]` (`op: "desynthesize"`, spec `024`) is not a forge and not
+   `[Stamp]` — reuse `RESOLVE_CHOOSE_DIE_SLOT`, not a forge chooser.
 6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
 7. **Proving cards** — print uses holder voice and
    [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md); do not default new proving
@@ -59,6 +63,7 @@ Prefer composing existing opcodes + `ValueExpr` + `Duration` in catalogue JSON
 | Attack unlock | `src/server/rules/attackUnlock.ts` (`attackIsUnlocked`; spec `028`) |
 | Queries | `src/server/rules/*` |
 | Tactic Overcharge (`021`) | `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `src/server/rules/overcharge.ts` (`canOvercharge` / `legalOverchargeFaces`). **Not** spec `013` `optional-overcharge`. |
+| Desynthesize (`024`) | `op: "desynthesize"` + `RESOLVE_CHOOSE_DIE_SLOT`. Not a forge / not `[Stamp]`. **Do not restore** `replace-synthetic-face`. |
 | Scenario helpers | `src/server/testing/*` |
 
 ## Networking boundary

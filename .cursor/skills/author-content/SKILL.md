@@ -88,7 +88,17 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
 9. **Do not clone the last card.** Audit live JSON first. Default
    `forge.faces: 1` + own-attribute Natural/Synthetic with no rider is a
    sticker, not a design. `[Spend] X, [Generate] Y` is not a bridge.
+   Do not print `[Generate]` on play/attach/ritual regions.
    Craft: [design-craft.md](design-craft.md).
+10. **Do not print `[Reforge]` / `[Cross forge]`.** Overwrite-without-draw is
+    retired. Mechanical exclusive remaining: extra own-die forge, `[Stamp]`,
+    `[Double]`, move overloads between **your** faces. `[Desynthesize]` is not
+    a forge and not `[Stamp]` (spec `024`). Recast / Alloy Shift / Tooling
+    Order / Mainspring / Retool are Stamp+Draw, Empower+Stamp,
+    Choose one Stamp vs Discount 2 forge, convert Discount 1 forge, Strike 2 +
+    Discount 2 forge — not Reforge proving cards. Do **not** print `[Generate]`
+    on tactics (extra pips are faces / Overcharge). Cog Draft is Discount 1 forge
+    + Draw 1.
 
 ## Workflow
 
