@@ -1,0 +1,278 @@
+import { getCard } from "../../content/cards.js";
+import { getFaceCard, SHIELD_FACE_ID } from "../../content/faces.js";
+import type { Attribute } from "../../model/attributes.js";
+import type { GameError } from "../../model/errors.js";
+import type { CardInstanceId, DieId, FaceCardId, PlayerId } from "../../model/ids.js";
+import { isAttributeSymbol } from "../../model/symbols.js";
+import { forgeExceedsAttributeLimit, isFirstSyntheticForgeThisTurn } from "../../rules/cards.js";
+import {
+  countInstalledCopies,
+  eligibleFacesForForge,
+  isLegalForgeKindForAttribute,
+  overwrittenSlot,
+  returnFaceToPoolIfOrphaned,
+  slotCannotBeReplacedByForge,
+  takeFaceFromPool,
+  withForgeLockResetOnInstall,
+} from "../../rules/faces.js";
+import { addTokens } from "../../rules/tokens.js";
+import { emit, patchDie, patchPlayer, type Draft } from "../draft.js";
+import { payForgeCost, payPileSpend } from "../payments.js";
+import { drainResolution, pushEffect } from "../resolution.js";
+import { clearOverchargeOnFace, clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
+
+export function activateFace(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId,
+  slotIndex: number,
+): GameError | null {
+  if (draft.phase !== "actions") return "INVALID_PHASE";
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
+  if (die.ownerId !== playerId) return "INVALID_TARGET";
+  if (die.rolledSlotIndex !== slotIndex) return "INVALID_FACE";
+  const slot = die.slots[slotIndex];
+  if (slot === undefined) return "INVALID_FACE";
+  const face = getFaceCard(slot.faceCardId);
+  if (face?.activated === undefined) return "CARD_HAS_NO_EFFECT";
+
+  let corruptionFaces = 0;
+  for (const candidate of die.slots) {
+    const definition = getFaceCard(candidate.faceCardId);
+    if (definition?.kind === "synthetic" && definition.symbol === "corruption") {
+      corruptionFaces += 1;
+    }
+  }
+
+  const cost =
+    face.activated.spendBase + face.activated.spendPerCorruptionOnDie * corruptionFaces;
+  const spendError = payPileSpend(draft, playerId, { corruption: cost });
+  if (spendError !== null) return spendError;
+
+  const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
+  const slots = die.slots.map((candidate) =>
+    candidate.index === slotIndex
+      ? overwrittenSlot(candidate, SHIELD_FACE_ID, playerId)
+      : candidate,
+  );
+  patchDie(draft, dieId, { slots });
+  returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
+  if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
+    clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
+    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
+  }
+
+  return null;
+}
+
+/**
+ * Bible §13 install: first copy takes the face from the pool; further copies
+ * of an already-installed face do not. Displaced faces return if orphaned.
+ * Draws one card per face installed.
+ */
+export function installFacesOnDie(
+  draft: Draft,
+  playerId: PlayerId,
+  dieId: DieId,
+  slotIndexes: readonly number[],
+  faceCardId: FaceCardId,
+  cardInstanceId: CardInstanceId | null,
+): GameError | null {
+  const currentDie = draft.dice[dieId];
+  if (currentDie === undefined) return "UNKNOWN_ENTITY";
+  if (
+    slotIndexes.some((index) => {
+      const slot = currentDie.slots[index];
+      return slot !== undefined && slotCannotBeReplacedByForge(slot);
+    })
+  ) {
+    return "INVALID_FACE";
+  }
+
+  const alreadyInstalled = countInstalledCopies(draft, faceCardId, playerId) > 0;
+  if (!alreadyInstalled && !takeFaceFromPool(draft, playerId, faceCardId)) {
+    return "FACE_NOT_AVAILABLE";
+  }
+
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
+
+  const ownDie = die.ownerId === playerId;
+  const displaced: Array<{ faceCardId: FaceCardId; ownerId: PlayerId }> = [];
+  const slots = withForgeLockResetOnInstall(
+    die.slots.map((slot) => {
+      if (!slotIndexes.includes(slot.index)) return slot;
+      displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
+      const next = overwrittenSlot(slot, faceCardId, playerId);
+      return ownDie ? { ...next, forgeYield: true } : next;
+    }),
+    faceCardId,
+  );
+  patchDie(draft, dieId, { slots });
+
+  for (const old of displaced) {
+    returnFaceToPoolIfOrphaned(draft, old.faceCardId, old.ownerId);
+    if (countInstalledCopies(draft, old.faceCardId, old.ownerId) === 0) {
+      clearOverloadsOnFace(draft, old.faceCardId, old.ownerId);
+      clearOverchargeOnFace(draft, old.faceCardId, old.ownerId);
+    }
+  }
+
+  for (const slotIndex of slotIndexes) {
+    emit(draft, { type: "face-forged", playerId, cardInstanceId, dieId, slotIndex, faceCardId });
+  }
+
+  drawCards(draft, playerId, slotIndexes.length);
+  return null;
+}
+
+/**
+ * The forge region (bible §13). Replacing a face is the only way an engine
+ * changes, and the player names which slots to give up because that sacrifice
+ * is the decision the card is really asking about.
+ *
+ * Synthetic forge: the first `FORGE_CARD` each turn is free; later ones burn
+ * header pile `playCost` (with forge-discount). Natural forge is always free
+ * and does not consume that waiver — play still pays the header when resolving
+ * the effect region instead.
+ */
+export function forgeCard(
+  draft: Draft,
+  playerId: PlayerId,
+  cardInstanceId: CardInstanceId,
+  dieId: DieId,
+  slotIndexes: readonly number[],
+  faceCardId: FaceCardId,
+): GameError | null {
+  // Play and forge share the actions window.
+  if (draft.phase !== "actions") return "INVALID_PHASE";
+
+  const card = draft.cards[cardInstanceId];
+  if (card === undefined) return "UNKNOWN_ENTITY";
+  if (card.ownerId !== playerId || card.zone !== "hand") return "CARD_NOT_AVAILABLE";
+
+  const definition = getCard(card.cardId);
+  if (definition === undefined) return "UNKNOWN_ENTITY";
+
+  const { forge } = definition;
+  const unique = new Set(slotIndexes);
+  if (unique.size !== slotIndexes.length || slotIndexes.length !== forge.faces) {
+    return "WRONG_FACE_COUNT";
+  }
+
+  const die = draft.dice[dieId];
+  if (die === undefined) return "UNKNOWN_ENTITY";
+
+  if (forge.target === "own-die") {
+    if (die.ownerId !== playerId) return "INVALID_TARGET";
+  } else if (die.ownerId === playerId) {
+    return "INVALID_TARGET";
+  }
+  if (slotIndexes.some((index) => die.slots[index] === undefined)) return "INVALID_FACE";
+  if (
+    slotIndexes.some((index) => {
+      const slot = die.slots[index];
+      return slot !== undefined && slotCannotBeReplacedByForge(slot);
+    })
+  ) {
+    return "INVALID_FACE";
+  }
+
+  if (forgeExceedsAttributeLimit(die, slotIndexes, forge.attribute, forge.faces, draft.config)) {
+    return "ATTRIBUTE_LIMIT_REACHED";
+  }
+
+  if (!isLegalForgeKindForAttribute(forge.kind, forge.attribute)) {
+    return "INVALID_TARGET";
+  }
+
+  // Capture before payForgeCost consumes forgeDiscountThisTurn. Discount and
+  // the immediate synthetic bank do not stack on the same install: otherwise a
+  // 2-cost Mechanical synthetic with Discount 1 and 1 pip nets zero (spend 1,
+  // bank 1) and looks like the pile was never charged. The free first synthetic
+  // is not a consumed discount — skip pay and leave the discount for later.
+  const firstSyntheticFree =
+    forge.kind === "synthetic" && isFirstSyntheticForgeThisTurn(draft, playerId);
+  const consumedForgeDiscount =
+    forge.kind === "synthetic" &&
+    !firstSyntheticFree &&
+    (draft.forgeDiscountThisTurn[playerId] ?? 0) > 0;
+  if (!firstSyntheticFree) {
+    const forgeCostError = payForgeCost(draft, playerId, definition);
+    if (forgeCostError !== null) return forgeCostError;
+  }
+
+  const eligible = eligibleFacesForForge(
+    draft,
+    playerId,
+    forge.kind,
+    forge.attribute,
+    definition,
+  );
+  if (!eligible.includes(faceCardId)) return "FACE_NOT_AVAILABLE";
+
+  const installed = installFacesOnDie(
+    draft,
+    playerId,
+    dieId,
+    slotIndexes,
+    faceCardId,
+    cardInstanceId,
+  );
+  if (installed !== null) return installed;
+
+  if (forge.kind === "synthetic") {
+    draft.syntheticForgedThisTurn = {
+      ...draft.syntheticForgedThisTurn,
+      [playerId]: true,
+    };
+  }
+
+  // Own-die synthetic FORGE_CARD: immediate pile bank per face (DECIDED
+  // 2026-08-29). Natural and opponent-die forge stay install + draw (+ yield
+  // when own-die) only.
+  if (forge.target === "own-die" && forge.kind === "synthetic" && !consumedForgeDiscount) {
+    bankSyntheticForgeReward(draft, playerId, faceCardId, slotIndexes.length);
+  }
+
+  // The card is consumed by being installed, so it goes to the graveyard rather
+  // than staying available to be played for its effect as well.
+  moveCard(draft, cardInstanceId, "graveyard");
+
+  const forgeEffects = forge.effects ?? [];
+  if (forgeEffects.length > 0) {
+    for (const effect of [...forgeEffects].reverse()) {
+      pushEffect(draft, playerId, effect, null, null, null, null, null, 0, cardInstanceId);
+    }
+    drainResolution(draft);
+  }
+  return null;
+}
+
+/** Immediate pile reward for own-die synthetic `FORGE_CARD`. */
+function bankSyntheticForgeReward(
+  draft: Draft,
+  playerId: PlayerId,
+  faceCardId: FaceCardId,
+  facesInstalled: number,
+): void {
+  const face = getFaceCard(faceCardId);
+  if (face === undefined || !isAttributeSymbol(face.symbol)) return;
+  const perFace = draft.config.forgeBankPerFace;
+  if (perFace <= 0 || facesInstalled <= 0) return;
+  const player = draft.players[playerId];
+  if (player === undefined) return;
+  const amount = perFace * facesInstalled;
+  patchPlayer(draft, playerId, {
+    attributePool: addTokens(player.attributePool, {
+      [face.symbol as Attribute]: amount,
+    }),
+  });
+  emit(draft, {
+    type: "attribute-token-gained",
+    playerId,
+    attribute: face.symbol as Attribute,
+    amount,
+  });
+}

@@ -125,12 +125,10 @@ A roll should never be merely:
 The roll should create choices such as:
 
 - use a symbol for the engine;
-- let a creature absorb it;
-- retain/store it;
-- trigger an effect;
-- preserve a die;
-- alter the die;
-- prepare a ritual;
+- bank an attribute into your pile (or grant Shield onto a creature);
+- retain a die for the next roll;
+- trigger an on-roll effect;
+- prepare or activate a ritual;
 - respond to an opponent.
 
 ---
@@ -188,14 +186,13 @@ Each player has:
 - 3 creatures;
 - 1 tactics/card deck;
 - 1 face deck;
-- energy/memory marker;
+- attribute pile;
 - relevant counters/tokens.
 
 The player also interacts with:
 
-- a shared energy/memory track;
 - dice face cards;
-- retained-resource tokens;
+- turn symbol pool;
 - equipment;
 - rituals;
 - creature states.
@@ -269,20 +266,22 @@ A creature has:
 
 Creatures do not have a conventional attack stat.
 
-## Creature Energy / Absorption
+## Attribute pile / absorption
 
-During the symbol-generation phase, a creature may **absorb** a generated symbol.
+During the symbol-generation phase, rolled attribute pips **auto-bank** into the
+player's **attribute pile** (or the player may manually absorb leftovers).
+Shield absorbs still target a living owned creature.
 
-When a creature absorbs a symbol:
+When an attribute is banked:
 
-1. The symbol is removed from the resources available to the engine for that turn.
-2. The die associated with the absorbed symbol is placed on/over the creature until the end of the turn as a visual marker.
-3. During engine resolution, the absorbed symbol does **not** count as an available engine symbol.
-4. At end of turn, the die is returned and the game may replace the visual marker with an attribute token representing the absorbed energy.
+1. The pip leaves the turn pool.
+2. The owner's `attributePool` gains +1 of that attribute.
+3. `On absorb` effects fire for the banking player.
+4. The pile persists across turns until spent on attacks, `[Spend]`, or effects.
 
 The key gameplay principle is:
 
-> **Absorbing a symbol powers a creature, but sacrifices engine value.**
+> **Banking attributes fuels attacks and card costs, but sacrifices engine value from the turn pool.**
 
 This is one of the game's central decisions.
 
@@ -395,7 +394,7 @@ A face card contains:
 - Intrinsic effect, if any
 - Maximum overload capacity
 
-Face cards do not normally have a direct Energy cost.
+Face cards do not normally have a direct `playCost`.
 
 They enter play by being forged/installed through other effects.
 
@@ -438,7 +437,7 @@ A forging effect specifies:
 - target die;
 - face to install;
 - quantity;
-- Energy cost;
+- `playCost` (pile tokens);
 - optional symbol cost;
 - restrictions;
 - requirements.
@@ -509,7 +508,7 @@ Resolve Engine
    ↓
 Combat
    ↓
-Spend Energy / Execute remaining actions
+Spend pile tokens / play and forge actions
    ↓
 Modify / Forge Dice
    ↓
@@ -567,26 +566,19 @@ The engine should reward sequencing and planning.
 
 ---
 
-# 18. Energy / Memory
+# 18. Costs / attribute pile
 
-The game uses a shared Energy resource inspired by the memory system of Digimon TCG.
+Players hold absorbed attributes in a **persistent attribute pile**
+(`attributePool`). Card header `[Spend]`, attack fuel, ritual gates, and
+reaction costs all draw from that pile (or from the turn symbol pool for
+engine abilities).
 
-Energy can be spent on:
+Spending from the pile creates tempo: banking vs playing from the turn pool,
+sequence of attacks, and ritual activation timing.
 
-- installing faces;
-- equipment;
-- instant effects;
-- rituals;
-- activated abilities;
-- other actions.
+Printed tactic costs should generally start at 2 pile tokens. A header `playCost` totaling 1 token is an exceptional niche tool. Players should more often reach a 1-token play by reducing a heavier card than by drawing a printed 1-drop (see §34.5).
 
-The Energy track creates tempo.
-
-Printed tactic costs should generally start at 2. Energy 1 on a card is an exceptional niche tool. Players should more often reach a 1-Energy play by reducing a heavier card than by drawing a printed 1-drop (see §34.5).
-
-When a player spends beyond the relevant threshold, control passes / the turn ends according to the finalized memory-track rules.
-
-**Implementation note:** The exact numerical threshold and turn-transition rules are **OPEN** and should not be hard-coded until finalized.
+Turn end is voluntary (`END_TURN`) or from effects that say so.
 
 ---
 
@@ -600,7 +592,7 @@ A card may have two functional regions.
 
 Contains:
 
-- Energy cost;
+- `playCost` (pile tokens);
 - optional symbol cost;
 - face being installed;
 - quantity;
@@ -969,7 +961,7 @@ Its central concept is **continuous burn**: damage over time from standing ritua
 
 Corruption effects should:
 
-- be setup-taxed (Energy 2+, Active-when / Requires), not cheap Aggro;
+- be setup-taxed (`playCost` 2+ tokens, Active-when / Requires), not cheap Aggro;
 - stack or persist (each turn, on roll, on absorb);
 - not become generic Arcane negate;
 - not become generic creature-attack text.
@@ -1012,7 +1004,7 @@ For example:
 | Attribute | Primary identity | Exclusive mechanic | Typical archetypes |
 |---|---|---|---|
 | Martial | Direct combat / efficient attacks | Ally creature movement (swap / reposition) | Aggro |
-| Wild | Creature pressure / flexible aggression | Pack feeding (share absorbed tokens) | Aggro, Combo |
+| Wild | Creature pressure / flexible aggression | Extra attacks (`[Frenzy]`) | Aggro, Combo |
 | Toxin | Attrition / delayed ticks / burn stacking | Toxin counter placement | Aggro, Combo, Burn |
 | Luminar | Synergy / support / combo value | Damage prevention | Combo, Support |
 | Mechanical | Engine manipulation / construction | Own-die reconstruction | Combo, Support |
@@ -1040,7 +1032,7 @@ Support may use:
 - Wild;
 - Mechanical.
 
-Utility cards may contribute to multiple archetypes. That does **not** mean they should be printed at Energy 1. Prefer 2+ printed costs; let discounts create 1-Energy plays (§34.5).
+Utility cards may contribute to multiple archetypes. That does **not** mean they should be printed at 1-token `playCost`. Prefer 2+ printed costs; let discounts create 1-token plays (§34.5).
 
 Arcane effects should generally have medium/high costs when they provide strong control.
 
@@ -1137,7 +1129,7 @@ Therefore:
 
 A powerful effect should generally demand one or more of:
 
-- Energy;
+- pile tokens (`playCost` / `[Spend]`);
 - specific symbols;
 - specific attributes;
 - creature positioning;
@@ -1181,13 +1173,13 @@ Control must still **close**. Closing is damage (and other defeat) sufficient to
 
 ---
 
-## 34.5 Printed Energy 1 is exceptional
+## 34.5 Printed 1-token playCost is exceptional
 
-Do not fill the catalogue with 1-cost cards. A printed Energy 1 card must be **narrow and niche** so that 2+ cards remain appealing to hold and sequence.
+Do not fill the catalogue with 1-token cards. A `playCost` totaling **one pile token** must be **narrow and niche** so that 2+ cards remain appealing to hold and sequence.
 
-The **primary** way a player should play a card for 1 Energy is **cost reduction** (next-forge discounts, standing cost reduction, on-roll reduction) applied to a higher printed cost — not a roster of natural 1-drops.
+The **primary** way a player should play a card for 1 pile token is **cost reduction** (next-forge discounts, standing cost reduction, on-roll reduction) applied to a higher printed cost — not a roster of natural 1-drops.
 
-Cheap cycle at 1 Energy flattens tempo and makes medium/high cards feel unplayable. Existing 1-cost cards are not a license to add more. A rare exception (for example a Corruption install whose real tax is stay/peel rather than the header) must be justified in design notes.
+Cheap cycle at 1 token flattens tempo and makes medium/high cards feel unplayable. Existing 1-cost cards are not a license to add more. A rare exception (for example a Corruption install whose real tax is stay/peel rather than the header) must be justified in design notes.
 
 ---
 
@@ -1250,7 +1242,7 @@ Natural faces should establish the game, not create an explosive deterministic o
 
 ### J. Flood the catalogue with printed 1-cost cards
 
-A 1-Energy card that is just an efficient version of a heavier card makes the heavier card unplayable. 1-Energy turns should come from cost reduction.
+A 1-token card that is just an efficient version of a heavier card makes the heavier card unplayable. 1-token turns should come from cost reduction.
 
 ### J. Give Control no damage plan
 
@@ -1264,12 +1256,9 @@ These items should be tracked explicitly instead of being silently decided by ag
 
 ## Rules
 
-- Exact Energy track numbers.
-- Exact threshold for ending/passing a turn.
-- Exact starting Energy.
+- Exact pile-spend balance knobs (discounts, ritual spends, attack gates).
 - Exact starting hand size and draw timing.
 - Exact turn phase ordering.
-- Exact timing of creature absorption markers.
 - Exact rules for stored symbols.
 - Exact distinction between "store" and "retain".
 - Exact stun timing.
@@ -1311,11 +1300,12 @@ Use these terms consistently unless the GDD explicitly changes them.
 | Natural Face | Baseline face |
 | Synthetic Face | Card-created face with special properties |
 | Symbol | Temporary resource generated by a die |
-| Absorb | Creature takes a symbol, removing it from engine resolution |
+| Attribute pile | Persistent bank of attribute tokens (`attributePool`) used for `playCost`, attacks, and ritual gates |
+| Absorb | Bank a rolled attribute into your pile, or grant Shield onto a creature |
 | Engine | The collection of effects resolving from generated symbols |
 | Forge | Replace/install a die face |
 | Overload | Attach a modifier/effect to a die face |
-| Energy | Shared tempo resource |
+| `playCost` | Header pile cost on tactic cards (printed `[Spend]` on instants) |
 | Ritual | Persistent preparation-based card |
 | Reaction | Responsive card/effect |
 | Equipment | Card attached to a creature |
@@ -1446,7 +1436,7 @@ How often can the effect be accessed?
 
 ### Efficiency
 
-How much value is produced per Energy/symbol?
+How much value is produced per pile token / symbol?
 
 ### Flexibility
 
@@ -1495,7 +1485,7 @@ Game
  │    ├── TacticsDeck
  │    ├── Hand
  │    ├── Discard
- │    ├── Energy
+ │    ├── AttributePool
  │    └── StoredResources
  │
  ├── Battlefield
@@ -1605,7 +1595,7 @@ Opponent reactions can occur where intended.
 
 ### Resource accounting
 
-Symbols and Energy are neither duplicated nor lost incorrectly.
+Symbols and pile tokens are neither duplicated nor lost incorrectly.
 
 ### Dice accounting
 
@@ -1633,7 +1623,7 @@ When simulating the game, collect at minimum:
 - turns per game;
 - creature deaths by turn;
 - first creature death turn;
-- average Energy spent per turn;
+- average pile tokens spent per turn;
 - average symbols generated per turn;
 - symbol absorption frequency;
 - dice composition over time;

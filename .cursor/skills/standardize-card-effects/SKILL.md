@@ -17,8 +17,14 @@ on the right hook. Use for **new cards** and for **refactoring** existing
 catalogue entries. Never invent silent approximations. New/edited `rulesText`
 follows [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 
+**Standardizing English is not making every card the same mechanical shape.**
+`On roll:` / `On absorb:` is grammar. Forge-1 + one opcode is not. Unique
+forge riders, dual-pip faces, and bridges still use these prefixes. Do not
+flatten a unique slot into Cogtooth (`On roll: [Generate 1 SameAttr]`).
+
 Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape),
 [develop-engine](../develop-engine/SKILL.md) (new `EffectDefinition` / hooks).
+Attribute pile / bank timing: [attribute-pile.md](../author-content/attribute-pile.md).
 
 ## Gold-standard print shape
 
@@ -51,7 +57,7 @@ Do **not** use “Whenever…”, “When you…”, or “When this creature…
 | `on-roll-symbol` | `On roll <Symbol>:` / `On opponent roll <Symbol>:` |
 | `on-absorb` | `On absorb:` / `On absorb <Symbol>:` / `On absorb Natural:` / `On absorb <Symbol>, once per turn:` |
 | `on-attack` | `On attack:` / `On basic attack:` / `On special attack:` / `On attack, another ally:` |
-| `on-take-damage` | `On take damage:` (add `, once per turn` before the colon when needed) |
+| `on-take-damage` | `On take damage:` / `On take damage, once per turn: [Reduce N].` |
 | `on-discard` | `On discard:` |
 | `attack-damage-bonus` | `On basic attack:` / `On attack:` (+N damage) |
 | `on-turn-start` | `On start of turn:` / `On start of opponent's turn:` |
@@ -64,18 +70,18 @@ Qualifiers use a comma before the colon (`On take damage, once per turn:`), neve
 | Print cue | Catalogue field | Fires when |
 |---|---|---|
 | `On roll:` | Face `onRoll[]` or Overload `onRoll[]` | Die shows that face after `ROLL_DICE` |
-| `On absorb:` | Face `onAbsorb[]` or Overload `onAbsorb[]` | Symbol from that face is absorbed |
+| `On absorb:` | Face `onAbsorb[]` or Overload `onAbsorb[]` | Symbol from that face is **banked into the owner’s attribute pile** |
 | `On deal damage:` | `on-deal-damage` | Bearer deals **HP** damage |
 | `On toxin damage:` | `on-toxin-damage` | Toxin tick deals HP |
 | `On roll <Symbol>:` | `on-roll-symbol` + `symbol` | Matching roll (filter `rollingPlayer`) |
-| `On absorb <Symbol>:` | `on-absorb` (+ filters) | Matching absorb |
+| `On absorb <Symbol>:` | `on-absorb` (+ filters; use `ally` on gear when “you bank”) | Matching attribute bank |
 | `On attack:` / `On basic attack:` / … | `on-attack` | Attack declared |
-| `On take damage:` | `on-take-damage` | Incoming damage |
+| `On take damage:` | `on-take-damage` (`[Reduce N]` / optional `effects`) | Incoming damage |
 | `On discard:` | `on-discard` | Hand discard |
 | `On change position:` | `on-change-position` | Ally moved via `setCreaturePosition` |
 | `On start of turn:` | `on-turn-start` + `whoseTurn` | Incoming player's turn begins (after toxin ticks) |
 
-Shared hook implementation: `src/game/reducer/triggers.ts` · spec
+Shared hook implementation: `src/server/reducer/triggers.ts` · spec
 `docs/specs/010-trigger-hooks.md`.
 
 **Banned forever:** enemy push / forced move of opponent creatures. Do not
@@ -99,7 +105,11 @@ Standardize Progress:
 
 Source of truth: Figma / `002`–`004` / user CSV / existing `rulesText`.
 Do not “improve” flavor by changing meaning. You **may** rewrite into the
-standard timing lines if meaning is preserved.
+standard timing lines if meaning is preserved. You **may not** collapse a
+unique forge shape, dual-pip Generate-other, or bridge into a Forge-1 +
+one-opcode template. Slot uniqueness is decided in
+[author-content](../author-content/SKILL.md) / [design-craft.md](../author-content/design-craft.md)
+**before** this step.
 
 ### 2. Split into timing clauses
 
@@ -116,17 +126,18 @@ structured array empty, row in `docs/DEFERRED_CATALOGUE.md`.
 
 ### 3. Map to existing vocabulary
 
-Prefer members already in `src/game/model/effects.ts` and selectors already in
+Prefer members already in `src/server/model/effects.ts` and selectors already in
 `TargetSelector`. Examples:
 
 | Print fragment | Prefer |
 |---|---|
 | `[Strike N]` / Deal N | `damage` + target |
 | `[Heal N]` | `heal` |
-| `[Gain N Energy]` | `gain-energy` |
+| `[Discount N]` | `arm-forge-discount` / `play-cost-discount` |
 | `[Generate N X]` | `generate-symbol` |
 | `[Draw N]` / `[Discard N]` | `draw-cards` / `discard-cards` |
 | `[Empower N]` | `next-attack-bonus` |
+| `[Prevent]` | `grant-attack-prevent` on **`type: "reaction"`** only (Luminar; attack chain) |
 | `[Mark N Toxin]` | `apply-toxin` |
 | `[Mark N Toxin on attacks]` | `arm-attack-toxin` |
 | `[Mark N Shield]` | `grant-shield` |
@@ -135,6 +146,8 @@ Prefer members already in `src/game/model/effects.ts` and selectors already in
 | `[Reposition]` | `reposition-creature` |
 | Auto-pick damaged ally | `{ kind: "most-damaged-ally" }` |
 | Player picks enemy | `{ kind: "choose-enemy" }` |
+| Each living ally | `{ kind: "ally-all" }` |
+| Each living enemy | `{ kind: "enemy-all" }` |
 
 Conditional “if …” clauses often need **new** effect fields or hooks — do not
 stuff them into an unconditional effect.
@@ -167,7 +180,7 @@ Never add unreachable stubs “for later.”
 npm run typecheck && npm test && npm run lint
 ```
 
-Focused: `src/game/reducer/triggers.test.ts`, face/overload/equipment tests as
+Focused: `src/server/reducer/triggers.test.ts`, face/overload/equipment tests as
 touched. Update `002`/`004` tables when print changes.
 
 ## Authoring templates
@@ -179,11 +192,11 @@ namedSynthetic(
   EXAMPLE_FACE,
   "Example Face",
   "wild",
-  "On roll: [Gain 1 Energy].\n" +
+  "On roll: [Generate 1 Wild].\n" +
     "On absorb: [Empower 1].",
 );
 // When wiring:
-// onRoll: [{ type: "gain-energy", amount: 1 }],
+// onRoll: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
 // onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
 ```
 
@@ -216,19 +229,25 @@ equipment: {
 1. **One timing per line** — never bury absorb inside a roll sentence.
 2. **Reuse hooks** — prefer `on-absorb` / `onRoll` over a new reducer branch.
 3. **Auto vs choose** — use `most-*-*` selectors when print does not ask the
-   player to pick; otherwise `choose-ally` / `choose-enemy`.
-4. **Ritual Instant vs Reaction** — both leave to GY after activate; Reaction
-   only changes *when* it can fire (`008`). Continuous stays / exhausts.
+   player to pick; `ally-all` / `enemy-all` when print names each creature on
+   a side; otherwise `choose-ally` / `choose-enemy`.
+4. **Ritual Instant vs Reaction** — Instant subtype is retired (leftover GY
+   after activate). Reaction stays on the field and exhausts (once per turn);
+   it only changes *when* it can fire (`008`). Continuous stays / exhausts.
 5. **Same meaning, shorter text** — OK; new mechanics — not OK without design.
 
 ## Anti-patterns
 
 - Approximating (Barrier → shields) without OPEN_DESIGN
+- `[Prevent]` on faces, On absorb, instants, equipment, or standing passives —
+  reaction-exclusive; proactive Luminar uses `[Mark N Shield]` / `[Heal]`
 - Putting trigger logic in UI / networking
 - Wiring `onRoll` while absorb clause is silently dropped from `rulesText`
 - Growing `EffectDefinition` without a concrete card + tests
 - Print that still says “Whenever…” / “When you…” for standing triggers —
   rewrite to `On …:` to match the hook
+- Treating “standardize” as “same card”: Forge-1 + one opcode, or every face
+  `On roll: [Generate 1 SameAttr]`. Timing prefixes are shared; slots are not.
 
 ## More detail
 

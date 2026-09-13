@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-ossuary",
+  "name": "Ossuary",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll: [Recall 1] that costs 2 or less.",
+  "pips": {
+    "darkness": 2
+  },
+  "onRoll": [
+    {
+      "type": "search-graveyard",
+      "amount": 1,
+      "maxPlayCost": 2
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

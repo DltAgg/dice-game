@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-swallowed-whole",
+  "name": "Swallowed Whole",
+  "playCost": {
+    "darkness": 1,
+    "any": 1
+  },
+  "type": "reaction",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Negate].",
+  "effect": {
+    "effects": [
+      {
+        "type": "negate-card",
+        "cardTypes": "any"
+      }
+    ]
+  }
+}

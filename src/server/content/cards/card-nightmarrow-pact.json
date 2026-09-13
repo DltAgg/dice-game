@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-nightmarrow-pact",
+  "name": "Nightmarrow Pact",
+  "playCost": {
+    "darkness": 2
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Drain 2].",
+  "ritual": {
+    "spend": {
+      "darkness": 1
+    },
+    "effects": [
+      {
+        "type": "drain-life",
+        "amount": 2,
+        "target": {
+          "kind": "choose-enemy"
+        },
+        "with": {
+          "kind": "choose-ally"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,183 @@
+import { describe, expect, it } from "vitest";
+import { asPlayerId, type GameState, type PlayerId } from "@server";
+import {
+  actingPlayerIdOf,
+  localSeatCanAct,
+  localSeatIsPendingChooser,
+  pendingChooserId,
+  reactionPriorityOf,
+  seatedAction,
+} from "./seatGate.js";
+
+const P1 = asPlayerId("p1");
+const P2 = asPlayerId("p2");
+
+function stateOf(args: {
+  readonly activePlayerId: PlayerId;
+  readonly pending?: GameState["pendingDecision"];
+}): GameState {
+  return {
+    activePlayerId: args.activePlayerId,
+    pendingDecision: args.pending ?? null,
+  } as GameState;
+}
+
+describe("seatGate — reaction-priority vs missing controllerId", () => {
+  const p1TurnP2Priority = stateOf({
+    activePlayerId: P1,
+    pending: {
+      type: "reaction-priority",
+      priorityPlayerId: P2,
+      consecutivePasses: 0,
+    },
+  });
+
+  it("reads priority from priorityPlayerId, not activePlayerId", () => {
+    expect(reactionPriorityOf(p1TurnP2Priority)).toBe(P2);
+    expect(actingPlayerIdOf(p1TurnP2Priority)).toBe(P2);
+    expect(pendingChooserId(p1TurnP2Priority)).toBe(P2);
+  });
+
+  it("lets the guest (P2) act and choose while they hold priority", () => {
+    expect(localSeatCanAct(true, P2, p1TurnP2Priority)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P2, p1TurnP2Priority)).toBe(true);
+  });
+
+  it("does not treat missing controllerId as everyone-can-choose (the stuck case)", () => {
+    // Old MatchBoard: `"controllerId" in pending` is false → chooser null →
+    // isPendingChooser true for P1, while canAct stayed false. Pass/Respond
+    // and the hand dock then disagreed, and P2 could be stranded.
+    expect("controllerId" in (p1TurnP2Priority.pendingDecision ?? {})).toBe(false);
+    expect(localSeatIsPendingChooser(true, P1, p1TurnP2Priority)).toBe(false);
+    expect(localSeatCanAct(true, P1, p1TurnP2Priority)).toBe(false);
+  });
+
+  it("locks an online seat with no bound playerId", () => {
+    expect(localSeatCanAct(true, null, p1TurnP2Priority)).toBe(false);
+    expect(localSeatIsPendingChooser(true, null, p1TurnP2Priority)).toBe(false);
+  });
+
+  it("stamps guest intents with the bound seat even if the UI claimed the turn player", () => {
+    const claimedTurnPlayer = seatedAction(P2, {
+      type: "PASS_PRIORITY",
+      playerId: P1,
+    });
+    expect(claimedTurnPlayer.playerId).toBe(P2);
+  });
+
+  it("hotseat does not stamp when no seat is bound", () => {
+    expect(
+      seatedAction(null, { type: "PASS_PRIORITY", playerId: P1 }).playerId,
+    ).toBe(P1);
+  });
+});
+
+describe("seatGate — local vs-AI bound seat", () => {
+  const p2Turn = stateOf({ activePlayerId: P2 });
+
+  it("lets the human seat act only while they are the acting player", () => {
+    expect(localSeatCanAct(false, P1, stateOf({ activePlayerId: P1 }))).toBe(true);
+    expect(localSeatCanAct(false, P1, p2Turn)).toBe(false);
+  });
+
+  it("does not let the human act for the AI seat", () => {
+    const p2Priority = stateOf({
+      activePlayerId: P1,
+      pending: {
+        type: "reaction-priority",
+        priorityPlayerId: P2,
+        consecutivePasses: 0,
+      },
+    });
+    expect(localSeatCanAct(false, P1, p2Turn)).toBe(false);
+    expect(localSeatIsPendingChooser(false, P1, p2Priority)).toBe(false);
+    expect(localSeatIsPendingChooser(false, P2, p2Priority)).toBe(true);
+  });
+
+  it("stamps vs-AI human intents even though the match is local", () => {
+    expect(
+      seatedAction(P1, { type: "ROLL_DICE", playerId: P2 }).playerId,
+    ).toBe(P1);
+  });
+});
+
+describe("seatGate — hotseat unbound still acts for both seats", () => {
+  it("lets either seat act when localPlayerId is null and not online", () => {
+    const p2Priority = stateOf({
+      activePlayerId: P1,
+      pending: {
+        type: "reaction-priority",
+        priorityPlayerId: P2,
+        consecutivePasses: 0,
+      },
+    });
+    expect(localSeatCanAct(false, null, stateOf({ activePlayerId: P1 }))).toBe(true);
+    expect(localSeatCanAct(false, null, stateOf({ activePlayerId: P2 }))).toBe(true);
+    expect(localSeatIsPendingChooser(false, null, p2Priority)).toBe(true);
+  });
+});
+
+
+describe("seatGate — non-reaction pending chooser vs turn player", () => {
+  const p2TurnP1Chooses = stateOf({
+    activePlayerId: P2,
+    pending: {
+      type: "choose-creature",
+      controllerId: P1,
+      filter: "enemy",
+      deferred: {} as never,
+    },
+  });
+
+  it("treats the pending controller as the acting seat, not the turn player", () => {
+    expect(reactionPriorityOf(p2TurnP1Chooses)).toBeNull();
+    expect(pendingChooserId(p2TurnP1Chooses)).toBe(P1);
+    expect(actingPlayerIdOf(p2TurnP1Chooses)).toBe(P1);
+  });
+
+  it("lets the online chooser act even when they are not the turn player", () => {
+    expect(localSeatCanAct(true, P1, p2TurnP1Chooses)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P1, p2TurnP1Chooses)).toBe(true);
+  });
+
+  it("locks the online turn player while the opponent owns the pending choice", () => {
+    expect(localSeatCanAct(true, P2, p2TurnP1Chooses)).toBe(false);
+    expect(localSeatIsPendingChooser(true, P2, p2TurnP1Chooses)).toBe(false);
+  });
+});
+
+describe("seatGate — choose-silence-host uses controllerId", () => {
+  const silencePending = stateOf({
+    activePlayerId: P2,
+    pending: {
+      type: "choose-silence-host",
+      controllerId: P1,
+      hosts: ["creature", "ritual", "face"],
+      deferred: {} as never,
+    },
+  });
+
+  it("offers the mixed Silence chooser to the controller, not the turn player", () => {
+    expect(pendingChooserId(silencePending)).toBe(P1);
+    expect(localSeatIsPendingChooser(true, P1, silencePending)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P2, silencePending)).toBe(false);
+  });
+});
+
+describe("seatGate — choose-bounce-card uses controllerId", () => {
+  const bouncePending = stateOf({
+    activePlayerId: P2,
+    pending: {
+      type: "choose-bounce-card",
+      controllerId: P1,
+      hosts: ["ritual", "equipment", "overload"],
+      deferred: {} as never,
+    },
+  });
+
+  it("offers the mixed Bounce chooser to the controller, not the turn player", () => {
+    expect(pendingChooserId(bouncePending)).toBe(P1);
+    expect(localSeatIsPendingChooser(true, P1, bouncePending)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P2, bouncePending)).toBe(false);
+  });
+});

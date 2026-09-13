@@ -3,6 +3,13 @@
 Required by the SPDD agent instructions §48. Every question the game bible
 leaves unresolved is tracked here rather than being answered silently in code.
 
+Engine code lives in `src/server`. Catalogue print lives in
+`src/server/content/{cards,creatures,faces}/*.json`.
+
+Mechanic × archetype **feel** (playtest “this played like Aggro”) is
+[`docs/MECHANIC_ARCHETYPES.md`](./MECHANIC_ARCHETYPES.md), not this register.
+Put unresolved **rules** questions here; put window/feel leaks there.
+
 **A prototype assumption must never quietly become a game rule.** Anything
 marked `ASSUMED` below is reachable from a single place — usually
 `GameRulesConfig` or content data — so that settling the question is an edit to
@@ -22,89 +29,103 @@ Status vocabulary:
 
 ## Resolved — design discussion, 2026-08-07 (first round)
 
-### The shape of the Energy track
+### Shared cost marker (superseded)
 
-**Status:** `DECIDED` · implemented in `src/game/rules/energy.ts`
+**Status:** `SUPERSEDED` · 2026-08-24 · by **Attribute pile-up** below
 
-Bible §16 lists a fixed phase sequence ending in "End Turn", while §18 says
-control passes when a player spends beyond a threshold. Those describe
-different turn-end mechanisms. The decision:
+Costs and attack fuel now use the player's **attribute pile**
+(`PlayerState.attributePool`). See
+[`docs/specs/016-attribute-pile-up.md`](./specs/016-attribute-pile-up.md) and
+[`docs/RULEBOOK.md`](./RULEBOOK.md) §§6–8.
 
-- one shared marker on a track running 10 · 0 · 10, Digimon memory style;
-- `value` is the Energy available to whoever holds the marker;
-- a spend that pushes the marker **past** zero ends the turn once the current
-  action has finished;
-- landing exactly on zero does **not** end the turn;
-- the overshoot is mirrored onto the incoming player's side immediately
-  (capped at the track size); when that overshoot actually ends the turn,
-  the incoming player also receives `energyOnOvershootBonus` (+2), still
-  capped at `trackMax`;
-- the starting player opens the match with 3 (not the clean-pass amount).
-
-### Printed Energy 1 is exceptional
+### Printed 1-token playCost is exceptional
 
 **Status:** `DECIDED` · 2026-08-20 · bible §34.5 · `author-content` / card-designer
 
-Do not author `energyCost: 1` as the default cheap band. 1-cost cards must be
-narrow and niche so 2+ cards stay appealing. The primary way to play a card for
-1 Energy is **cost reduction** (next-forge, standing discounts, on-roll
+Do not author `playCost` totaling **1 pile token** as the default cheap band.
+Those cards must be narrow and niche so 2+ cards stay appealing. The primary
+way to play for 1 token is **cost reduction** (next-forge, standing discounts, on-roll
 reduction) applied to a higher printed cost. Remaining 1-costs (Camshaft as a
 Mechanical-face-gated forge-discount enabler, Ritual of Contamination, blessing
 overloads, …) are not a license to add more generic 1-drops. Ritual of
 Contamination remains a documented install exception: the real tax is stay/peel,
 not the header.
 
-### Variable (`?`) tactic Energy costs
+### Variable (`?`) tactic pile costs
 
-**Status:** `DECIDED` · 2026-08-12 · `CardDefinition.variableEnergy` + `energyPaid` on
-`PLAY_CARD` / `FORGE_CARD`
+**Status:** `DEFERRED` · true variable pay-at-least-N is not in the catalogue yet.
 
-Figma header `?` is not "uncosted". It means **pay at least 1 Energy, and as
-much more as you want**. Engine support: `energyCost` minimum +
-`variableEnergy: true`, with declared `energyPaid` an integer ≥ that minimum.
+Figma header `?` means **pay at least one pile token, and optionally more**.
+Until spend UX and `playCostPaid` scaling exist, catalogue cards that print `?`
+use a **fixed** `playCost` (often 2). See `src/server/content/cards.ts` and
+`DEFERRED_CATALOGUE.md`. Do not use that gap as a reason to author 1-token
+`playCost`; prefer 2+ and discounts (see “Printed 1-token playCost is exceptional”).
 
-**TEMP authoring (2026-08-13):** catalogue cards that print `?` currently use
-fixed integer `energyCost` (no `variableEnergy`) until spend UX / scaling
-effects are ready — see comment in `src/game/content/cards.ts`. Do not use that
-gap as a reason to print Energy 1; on-roll support still prefers 2+ with
-discounts as the 1-Energy path (see “Printed Energy 1 is exceptional”).
+### Generic (`Any`) pile pips
 
-Effects that scale off the amount spent (e.g. "spent 3: draw 1") are not yet in
-`EffectDefinition`; park those clauses in `DEFERRED_CATALOGUE.md` until a
-concrete card needs the amount-as-value vocabulary.
+**Status:** `DECIDED` · 2026-08-31 · costs / gates / Spend
+
+`SymbolRequirement` may include `any: N` for a **fixed** count of generic pile
+tokens (any attribute, never Shield). Print: `[Spend: Arcane + 2 x Any]`,
+`[Requires: 2 x Any]`, `[Active when: Arcane + Any]`. Named pips are AND;
+leftover tokens cover Any. This is **not** a ninth colourless attribute, **not**
+an OR-cost (“Martial or Wild”), and **not** variable `?` pay-at-least-N.
+
+`[Discount]` reduces Any first, then named attributes. Spend of Any burns
+leftover tokens in `ATTRIBUTES` order (Martial first).
+
+**ASSUMED:** no player picker for which leftover tokens pay Any; auto-pick is
+deterministic. A later `choose-attribute-tokens` reuse (spec `011`) can replace
+that without changing print.
+
+Applies to header `playCost`, `effect.requires`, ritual `activeWhen` / `spend`,
+and attack `requires` / `discards`. Does not apply to `card.attribute`,
+`forge.attribute`, `[Generate]`, or `[Mark]` arguments.
 
 ### Battlefield capacity
 
 **Status:** `DECIDED`
 
 Two frontline slots plus a back row, from the diagram in bible §6. A squad of
-three deploys as two frontline and one back.
+three deploys as two frontline and one back. The **legendary** always opens in
+the back (definition flag); non-legendaries fill frontline first — see
+**Legendary commander victory** below.
+
+### Legendary commander victory
+
+**Status:** `DECIDED` · 2026-08-29 · playtest · `CreatureDefinition.legendary`
+
+Bible §4’s “eliminate opposing creatures” is replaced for constructed play:
+
+- Every creature definition may set `legendary: true` (omit / false otherwise).
+- Every legal loadout squad has **exactly one** legendary among
+  `creaturesPerPlayer` (3) creatures.
+- At match start the legendary is placed **back**; the other two fill
+  **frontline** first. Mid-match `[Swap]` / reposition is unrestricted.
+- When a player’s legendary is defeated (`defeated: true`), the **opponent
+  wins** immediately. Defeating the other two alone does not win.
+
+Implemented in `validateSquad`, `buildCreatures`, `checkVictory`, and
+`docs/RULEBOOK.md` §1–§3.
 
 ---
 
 ## Resolved — design discussion, 2026-08-07 (second round)
 
-### Attacks are paid from attributes absorbed onto the attacking creature
+### Attacks are paid from attributes absorbed onto the attacking creature (superseded)
 
-**Status:** `SUPERSEDED` · 2026-08-24 · by **Attribute pile-up** below · was
-implemented in `src/game/reducer/reduce.ts` and `src/game/rules/tokens.ts`
-
-~~Attacks are not paid from the shared symbol pool. A creature absorbs
-attributes from rolled dice, and those attributes enable its attacks — the
-Pokémon TCG attachment model.~~ Physical conversion made per-creature attribute
-counters untenable. See **Attribute pile-up (player resource bank)** and
-[`docs/specs/016-attribute-pile-up.md`](./specs/016-attribute-pile-up.md).
+**Status:** `SUPERSEDED` · 2026-08-24 · See **Attribute pile-up** and [`016-attribute-pile-up.md`](./specs/016-attribute-pile-up.md).
 
 ### Attribute pile-up (player resource bank)
 
-**Status:** `DECIDED` · 2026-08-24 · spec `016` · branch `feat/attribute-pile-up`
+**Status:** `DECIDED` · 2026-08-24 · spec `016`
 
 Attributes the player holds live in a **persistent player pile**
-(`PlayerState.attributePool`), not on creatures or rituals.
+(`PlayerState.attributePool`).
 
 ```text
 absorb (attribute) → +1 in your pile     → enables attacks / ritual gates / spends
-absorb (Shield)    → Shield on a creature → prevent (creature token OK)
+absorb (Shield)    → Shield on a creature → prevent
 resolve            → stays in turn pool   → `[Requires]` spends this turn
 ```
 
@@ -119,39 +140,22 @@ resolve            → stays in turn pool   → `[Requires]` spends this turn
   so same-turn attack after banking is legal.
 - Face / standing `On absorb` fires when a pip is banked into the pile (or
   Shield is granted onto a creature).
-- Rituals no longer hold Active-when progress on the card; optional `spend` on
-  activate creates the sink decision formerly served by assigning pips to the
-  ritual.
+- Ritual `activeWhen` gates readiness from the owner's pile; optional `spend`
+  on activate burns pile tokens when the card activates.
 
 Phased delivery: [`016-attribute-pile-up.STATUS.md`](./specs/016-attribute-pile-up.STATUS.md).
 
-### Absorbed energy has a payoff
+### Banked attributes have a payoff (superseded)
 
-**Status:** `DECIDED` — superseded by the entry above.
+**Status:** `DECIDED` — see **Attribute pile-up** above.
 
-Previously flagged as making absorption a pure loss. Resolved: absorbed
-attributes are the fuel for attacks. The engine now proves the point the other
-way round — a simulated player who never absorbs cannot attack at all, and their
-match never resolves.
+### Turn-pass pile grants (superseded)
 
-### The Energy handed over on a voluntary pass
+**Status:** `SUPERSEDED` · 2026-08-24 · by **Attribute pile-up**
 
-**Status:** `DECIDED` · 2026-08-14 · `energyOnVoluntaryPass: 5`,
-`energyOnOvershootBonus: 2`, `startingEnergy: 3`
+Turn end is voluntary (`END_TURN`) or from effects. There is no incoming pile
+grant on pass.
 
-Three distinct amounts:
-
-| When | Incoming Energy |
-|---|---|
-| First player's first turn | `startingEnergy` (3) |
-| Clean `END_TURN` (marker never crossed this turn) | `energyOnVoluntaryPass` (5) |
-| Turn ends because the marker crossed zero | overshoot + `energyOnOvershootBonus` (e.g. spend 3 with 1 → overshoot 2 → incoming 4) |
-
-The +2 is applied when the turn **actually passes**, not at the moment of
-spend, so a reaction can still restore the marker before the bonus lands
-(see “Turn end vs chain” below). The clean-pass 5 is not a floor on
-overshoot: a 1-point overshoot still hands over 3, which is less than a
-clean pass.
 
 ### Every symbol is attribute-typed
 
@@ -175,14 +179,9 @@ mechanical weight.
 No limit. This matches bible §7, which states no restriction, and the physical
 metaphor of several dice resting on one creature.
 
-### Composition of the starting dice
+### Composition of the starting dice (superseded)
 
-**Status:** `SUPERSEDED` · 2026-08-19 · see **Constructed opening dice**
-
-~~Both dice of both players start identical (`STARTING_DIE_SYMBOLS`).~~ Opening
-layouts are per-loadout. The old six-symbol line (Martial, Wild, Arcane,
-Luminar, Shield, Shield) remains `DEFAULT_BASIC_LAYOUT` / `legacyStartingLayout()`
-for engine tests only — live matches must pass `startingDice`.
+**Status:** `SUPERSEDED` · 2026-08-19 · See **Constructed opening dice** below.
 
 ### Attribute naming
 
@@ -257,32 +256,29 @@ entry below.
 **Status:** `DECIDED` · implemented
 
 A player may choose, per die they own, whether that die is retained. A retained
-die keeps its showing face for **one** subsequent roll instead of rerolling, and
-still generates that symbol. After that kept roll, retention clears
-automatically — it does not persist turn after turn. The owner may also release
-it early with `RETAIN_DIE`. Any number of owned dice may be retained.
+die is never randomized while marked retained. The keep survives the opponent’s
+shared `ROLL_DICE` without spending; on the owner’s next roll phase (as the
+active player) it still generates that symbol, then retention clears. It does not
+persist turn after turn unless set again. The owner may also release it early
+with `RETAIN_DIE`. Any number of owned dice may be retained.
 `RETAIN_DIE` is legal in any phase (including roll, so a player can release
 before rolling). Setting retain requires a known `rolledSlotIndex`; stunned
 dice cannot be retained.
 
-### Attributes reachable only by forging
+### Attributes reachable only by forging (superseded)
 
-**Status:** `SUPERSEDED` · 2026-08-19 · see **Constructed opening dice**
+**Status:** `SUPERSEDED` · 2026-08-19 · See **Constructed opening dice** below.
 
-~~Toxin / Mechanical / Corruption / Darkness are reached only by forging.~~
-Those attributes may appear on **opening** dice when the loadout installs a
-legal named special there (paid from the face deck; XOR ledger). Naturals of
-synthetic-only attributes still do not exist. Forging remains the mid-game
-install path from the leftover pool (or copy, bible §13).
-
-### What can cost Energy
+### What costs playCost from the pile
 
 **Status:** `DECIDED` · implemented for tactic cards
 
-Playing tactic cards costs Energy, and that is the overall limit on what a
-player can do in a turn. Engine abilities and attacks cost symbols and absorbed
-attributes respectively, not Energy. Both `PLAY_CARD` and `FORGE_CARD` pay the
-printed header cost.
+Playing tactic cards burns the header `playCost` from the owner's attribute
+pile. Engine abilities cost symbols from the turn pool; attacks cost pile
+tokens per `[Requires]` / `[Spend]`. `PLAY_CARD` pays the printed header
+`playCost`. Synthetic `FORGE_CARD`: the first each turn is free; later ones
+this turn pay the header (minus forge discount). Natural `FORGE_CARD` is
+always free and does not consume that waiver.
 
 ### Equipment and opponent forging
 
@@ -294,7 +290,7 @@ printed header cost.
 - Opponent equipment (Black Plague) may only target theirs.
 - `attack-damage-bonus` abilities add to damage on attack (War Axe; War Banner
   uses `bearerRelation: "left-ally"`).
-- `energy-cost-discount` / `ignore-shield` standing abilities (Archmage, Tome,
+- `play-cost-discount` / `ignore-shield` standing abilities (Archmage, Tome,
   War Minotaur) — spec `012`.
 - `destroy-equipment` removes one piece of gear from a creature (Calculated
   Sacrifice). After the creature is known, 2+ attached pieces open
@@ -312,6 +308,23 @@ hooks landed in `010-trigger-hooks`. Twin Blades push print rewritten (remove Sh
 Whenever a player forges a die face — on their own die or an opponent's — they
 draw one card per face installed. This is a forge rule, not a card effect: empty
 deck still stops quietly.
+
+### Forge yield and synthetic forge bank
+
+**Status:** `DECIDED` · 2026-08-29 · playtest · implemented
+
+Forge was too weak as a late-game income path (players still banked ~2
+attributes/turn from opening pips). Own-die forge is the universal scaler
+every deck can use:
+
+| Rule | Behaviour |
+|---|---|
+| **Forge yield** | `installFacesOnDie` onto a die you own marks each overwritten slot `forgeYield: true`. Opponent-die installs do not. Opening slots have no yield. Overwrite / peel clears yield unless re-set. |
+| **On roll** | When a `forgeYield` slot is showing after `ROLL_DICE`, generate `forgeYieldGenerate` (default **1**) extra of that face’s attribute for the die owner (effect Generate / auto-bank). Skip Shield / untyped. |
+| **Synthetic bank** | Successful own-die **synthetic** `FORGE_CARD` only: bank `forgeBankPerFace` (default **1**) of the forged face’s attribute into the forger’s pile per face installed, **unless the install consumed `forgeDiscountThisTurn`**. The free first synthetic each turn is **not** a consumed discount, so it **does** bank. Natural forge: install + draw + yield only (no immediate bank). Discount + bank on the same install was a playtest leak (Twin Cam / Torque Wright: spend 1, bank 1, pile unchanged). |
+
+Config knobs: `GameRulesConfig.forgeYieldGenerate`, `forgeBankPerFace`. See
+`docs/RULEBOOK.md` §11. Not a print keyword — forge rules like draw-on-forge.
 
 ### No mulligan
 
@@ -358,21 +371,22 @@ A Ritual is played onto the engine area, not resolved from hand like an Instant:
 
 | Orientation | Visual | Meaning |
 |---|---|---|
-| `preparing` | tapped | Waiting for owner’s attribute pile to meet Active-when |
-| `ready` | untapped | Gate met; standing abilities on; may activate if print has an activate body |
+| `preparing` | tapped | Waiting for owner’s attribute pile to meet Active-when (one-time unlock) |
+| `ready` | untapped | Active-when unlocked once; standing abilities on; may activate if print has an activate body |
 | `exhausted` | diagonal | Used this turn (once-per-turn rituals) |
 
-Rituals are placed without progress counters on the card. `activeWhen` is
-checked against the owner’s **attribute pile**. Rituals with no
+Rituals are placed without progress counters on the card. `activeWhen` is a
+**one-time unlock** checked against the owner’s **attribute pile**. Rituals with no
 `[Active when: …]` become ready as soon as they hit the field. Optional
 `spend` on activate burns from the pile (decision sink). Requirement wildcards
 may still help meet Active-when when banking / checking as specified in `016`.
 
-At the start of your turn, exhausted rituals come off diagonal. If the pile
-still meets Active-when the ritual returns to ready, otherwise preparing.
-Instant and reaction rituals leave for the graveyard after one activation;
-only `continuous` rituals stay and exhaust. Standing triggers fire while ready
-and do not spend Active-when / Spend unless the card activates.
+At the start of your turn, exhausted rituals come off diagonal and return to
+ready (already unlocked). Only `preparing` rituals still need the pile gate.
+Continuous and reaction rituals stay and exhaust. Leftover instant-subtype
+rituals still leave for the graveyard after one activation. Ritual / Instant
+is retired from play. Standing triggers fire while ready and do not spend
+Active-when / Spend unless the card activates.
 
 ### Reactions use a Yu-Gi-Oh style chain
 
@@ -425,8 +439,7 @@ Legal response **kind** depends on the top link:
 
 - Negate targets the **top** chain link only, and only when that link is a
   negatable tactic-card link (not an attack).
-- Runic Nullification: header cost paid on place; activation pays an **extra
-  2 Energy**, then negates the top tactic link.
+- Runic Nullification: header `playCost` paid on place; activation pays **`[Spend: 2 x Arcane]`**, then negates the top tactic link.
 
 **Once an effect is conducting**
 
@@ -438,12 +451,17 @@ Legal response **kind** depends on the top link:
 ### Damage prevention
 
 **Status:** `DECIDED` · 2026-08-26 · attack-instance prevent in
-`docs/specs/009-true-prevent.md`
+`docs/specs/009-true-prevent.md` · **tightened 2026-08-29** (reaction-exclusive)
 
-- **`[Prevent]`** grants `attackPreventCount` on a creature (usually 1). The
-  next **attack** against that creature is cancelled whole (before Shield).
-  Unused charges expire at end of turn (`preventExpiry: "end-of-turn"`;
-  `"none"` keeps them until consumed).
+- **`[Prevent]` / `grant-attack-prevent`** is **reaction-exclusive**. It only
+  applies while a living **attack** link is on the chain, and only onto **that
+  attack’s target**. No attack on the chain → the effect **whiffs** (no
+  charge). It is not a proactive “arm next attack” from faces, creature
+  attacks, or absorb passives.
+- A legal reaction grant adds `attackPreventCount` (usually 1). The next
+  **attack** against that creature is cancelled whole (before Shield). Unused
+  charges expire at end of turn (`preventExpiry: "end-of-turn"`; `"none"`
+  keeps them until consumed).
 - Damage-prevent **buffers** (`damagePreventBuffer` / `grant-damage-prevent`)
   are **gone** — they mixed with Shield at the table.
 - **Apply order when attack damage lands:** attack-prevent → Shield → HP.
@@ -451,36 +469,27 @@ Legal response **kind** depends on the top link:
   attack-prevent.
 - **Prismatic Barrier / Sidestep** — **DECIDED** 2026-08-26: `[Prevent]` on
   the **ally targeted by the attack** being responded to (`grant-attack-prevent`
-  1, `chain-attack-target`).
+  1, `chain-attack-target`). Proactive Luminar print uses `[Mark N Shield]` /
+  `[Heal]` instead.
 
 Attack chain links open a reaction window so prevent reactions can respond;
 negate effects refuse attack links.
 
-**Reaction Energy (DECIDED · 2026-08-12):** The Energy track is an opposing
-+/- between the two seats (holder + value on their side). Paying a cost while
-you **hold** the marker moves it toward the opponent (normal spend / overshoot).
-Paying a cost during a reaction-priority window while you **do not** hold the
-marker moves it the other way: the cost is applied as **Energy added to the
-current holder** (capped at `trackMax`). If a prior overshoot already flipped
-the marker to the reactor, their reaction pay is a normal holder spend (still
-toward their opponent — restoring the turn player).
-
-**Turn end vs chain (DECIDED · 2026-08-12):** An overshoot may flip the marker
-when a link’s cost is paid, but **turn end is evaluated only after the entire
-chain (and nested search/discard/choose) finishes**. If a later reaction has
-moved the marker back to the turn player, the turn continues. Example: A holds
-2, plays a 3-cost tactic (marker flips to B); B pays a 3-cost negate (marker
-returns to A); after Pass×2 the chain resolves and A’s turn does **not** end.
+**Reaction costs (DECIDED · current):** Reactions pay `[Spend]` from the
+reactor's **attribute pile** during the reaction window, same as other pile
+costs. Turn end is voluntary (`END_TURN`) or from effects that say so.
 
 ### Toxin counters
 
-**Status:** `DECIDED` · implemented
+**Status:** `DECIDED` · implemented (playtest 2026-08-29: end-of-turn clear)
 
-Toxin counters are tokens on a creature. At the start of that creature's
-owner's turn, the creature takes 1 damage per Toxin counter it holds. Counters
-persist until something removes them. Adaptive Toxin’s absorb is `[Strip 3 Toxin].
-[Strike equal]` (fixed 3, no choose-count pending) and toxin receive cap are
-wired in spec `013`.
+Toxin counters are tokens on a creature. Soft global max is
+`maxToxinMarkers` (default 3) after any Adaptive Toxin receive cap. At the
+**end** of that creature's owner's turn (before the active player switches),
+the creature takes damage equal to its current markers, then all markers are
+cleared. `on-toxin-damage` may re-seed markers after the clear for a later
+cycle. Adaptive Toxin’s absorb is `[Strip 3 Toxin]. [Strike equal]` (fixed 3,
+no choose-count pending) and toxin receive cap are wired in spec `013`.
 
 ---
 
@@ -499,32 +508,23 @@ face pool (or an installed copy) explicitly.
 
 **Status:** `DECIDED` · playtest 2026-08-17 · user-directed
 · bible §16 still lists an Absorption step — this overrides that sequence
-· implemented in `src/game/model/state.ts`, `src/game/rules/symbols.ts`,
-  `src/game/reducer/reduce.ts`
+· implemented in `src/server/model/state.ts`, `src/server/rules/symbols.ts`,
+  `src/server/reducer/reduce.ts`
 
-The game is better with **only two phases: Roll and Actions**. Absorption is
-not a dedicated engine phase. The `actions` window includes everything
-absorption used to allow (creature absorb, ritual absorb, ready-ritual
-activate, Instinct optional bonus basic) and keeps every action already legal
-in `actions` (attack, play, forge, end turn). No new player actions; none
-removed.
+The game has **two phases: Roll and Actions**. Absorption is not a separate
+phase. During **actions**, players may bank attributes, absorb Shield onto
+creatures, attack, play, forge, activate ready rituals, and end the turn.
 
-- `TURN_PHASE_ORDER`: `roll` → `actions`. `END_TURN` stays an action, not a phase.
-- `ROLL_DICE` enters `actions` (not absorption).
-- `ADVANCE_PHASE` from roll → actions. There is no skip-over-absorption.
-  The last phase is left only via `END_TURN`.
-- Absorb (creature + ritual) is legal **throughout actions**, including on
-  symbols created mid-turn (effects, extra rolls).
-- `[Requires]` spends see the same unabsorbed pool. Absorb vs spend is bible
-  §7: absorbed symbols leave the engine pool; spending them for Requires
-  consumes them so they cannot be absorbed.
-- The old “close absorption → flip remaining `rolled` to `available`, absorb
-  now illegal” path is gone. Attribute tokens still pay out at **END_TURN**,
-  not at an absorb-close.
-- Ready rituals may activate during actions (not during roll). Absorb-to-ritual
-  is also available in actions.
-- Instinct’s optional bonus basic is legal in this combined window (same
-  `optional-bonus-attack` pending).
+- `TURN_PHASE_ORDER`: `roll` → `actions`. `END_TURN` is an action, not a phase.
+- `ROLL_DICE` enters `actions`.
+- Absorb is legal throughout **actions**, including on symbols created
+  mid-turn (effects, extra rolls).
+- Ready rituals may activate during actions (not during roll).
+- Instinct's optional bonus basic is legal in actions (`optional-bonus-attack`).
+
+**ASSUMED:** `rolled` vs `available` remain distinct statuses as provenance
+(die pip vs effect-generated). They are **not** a phase gate. Both are the
+same unabsorbed set for absorb and spend (`usableSymbols` / `planConsumption`).
 
 **ASSUMED:** `rolled` vs `available` remain distinct statuses as provenance
 (die pip vs effect-generated). They are **not** a phase gate. Both are the
@@ -561,12 +561,9 @@ matching face (bible §13 — copy is kept).
 Was M4 50–60 / 4 copies. There is no tactics per-attribute cap. (Earlier
 prototype used 12 cards / 3-per-attribute; superseded.)
 
-### One deck, and every card carries both regions
+### One deck, and every card carries both regions (superseded)
 
-**Status:** `SUPERSEDED` by "Face deck and tactics deck are separate" (2026-08-10)
-
-~~There is a single deck, not a face deck and a tactics deck.~~ Tactics cards
-still carry both regions; the face they forge is drawn from the face deck.
+**Status:** `SUPERSEDED` · 2026-08-10 · See **Face deck and tactics deck are separate**. Tactics still carry both regions; faces come from the face deck.
 
 ### Opening hand and draw rate
 
@@ -580,8 +577,8 @@ Open with 5 cards; draw 2 at the start of each of your own turns.
 **Status:** `DECIDED`
 
 Nothing happens. A player with an empty deck simply stops drawing. The match is
-still decided by eliminating creatures, so there is no deck-out loss and no
-reshuffle.
+still decided by defeating the opposing legendary, so there is no deck-out loss
+and no reshuffle.
 
 Worth watching: matches currently run around eighteen turns, so a twelve-card
 deck drawn at two a turn empties well before a winner emerges. That makes the
@@ -619,6 +616,91 @@ Not to be designed or built on for now. `DieState.stunMarkers` and the roll
 rule that honours it stay in place — they are implemented and tested — but no
 effect will apply stun, and no removal timing will be invented.
 
+### Silence (`[Silence]`)
+
+**Status:** `DECIDED` · 2026-09-01 · user-directed · spec `022`
+
+A physics keyword, **not** a Mark token and **not** stun. Legal sources:
+tactic instant `effect`, ritual activate `effects`, overload `onRoll` /
+`onAbsorb` (same `silence` opcode). Target hosts are a non-empty unique
+subset of `"creature" | "ritual" | "face"` per card. Default targeting is
+**opposing** hosts only. Empty legal set is a legal **whiff**.
+
+This is **not** Arcane Silence / `negate-card` (that card stays a `[Negate]`
+reaction). Spec `013` `suppressInherentNextRoll` stays a narrower skip
+(inherent onRoll only; overloads still fire). Stun stays `DEFERRED`.
+
+**ASSUMED** (labelled prototype; bible is silent):
+
+| Topic | Assumption coded |
+|---|---|
+| **Expiry** | `silenceExpiresOnTurn = state.turn + 2`. Host is silenced while `state.turn < silenceExpiresOnTurn`. `GameState.turn` increments every `END_TURN`. Covers remainder of the current turn + the opponent’s intervening turn (= until the start of the silencer’s next turn). |
+| **Storage** | Creature: `CreatureState.silenceExpiresOnTurn`. Ritual: `CardInstance.silenceExpiresOnTurn` (zone `ritual` only). Face: **per physical slot** `DieSlot.silenceExpiresOnTurn` (like forge-lock). Same face on another die is not silenced. |
+| **Pips** | Rolled pips still generate. Silence skips **effects**, not the die result / pile banking of the pip. Forge-yield extra pips and Overcharge generate skip when the showing slot is silenced. |
+| **Attacks** | Silenced creature may still declare. Strike / attack-prevent / Shield still happen. Skip `followUpEffects` when the attacker is silenced. Skip standing `on-attack` / `on-deal-damage` / other hooks from that creature **and its equipment**. |
+| **Modifiers** | Passive `while-attached` modifiers from a silenced creature’s equipment or a silenced continuous ritual do not apply. |
+| **Stamp** | `[Stamp]` / `reapply-die-modifiers` / copy-face re-fires skip a silenced showing slot’s face onRoll and that face’s overloads. |
+| **Not targets** | Equipment is silenced via the host creature. Overloads via the showing slot. Do not silence the opponent’s hand, deck, or unattached cards. |
+| **vs suppress inherent** | Either skip face onRoll. Silence **also** skips overloads; `suppressInherentNextRoll` does not. |
+
+---
+
+### Bounce (`[Bounce]`)
+
+**Status:** `DECIDED` · 2026-09-01 · user-directed · spec `023`
+
+An operator keyword, parameterized like `[Destroy]`: `[Bounce Ritual]` /
+`[Bounce Equipment]` / `[Bounce Overload]` / `[Bounce]` = any of those three.
+Legal sources: tactic instant `effect`, ritual activate `effects`, overload
+`onRoll` / `onAbsorb` (same `bounce` opcode). Target hosts are a non-empty
+unique subset of `"ritual" | "equipment" | "overload"` per card. Destination
+is the **owner’s hand** after detach. Distinct from Destroy (GY).
+
+**ASSUMED** (labelled prototype; bible is silent):
+
+| Topic | Assumption coded |
+|---|---|
+| **Opposing only** | Same as Unwrite / destroy-ritual. Own-field cards are never legal. Empty legal set = legal **whiff**. Always prompt when ≥1 eligible (including exactly one). |
+| **Not discard** | Do not fire `on-discard`. |
+| **Not destroy** | Do not emit `*-destroyed` as the primary event; emit `card-bounced` (zone left + `cardInstanceId`). |
+| **Silence** | Clear `silenceExpiresOnTurn` on the instance; field status does not follow into hand. |
+| **Rituals** | Preparing / ready / exhausted are all legal (same as destroy-ritual). |
+| **Hand size** | No hand-size cap. |
+| **Detach** | Equipment/overload attachment fields clear via `moveCard`. Still detach from `creature.equipmentIds` before the move. |
+| **Chain** | Does not touch the reaction chain (not negate). |
+
+Stun stays `DEFERRED`.
+
+---
+
+### Desynthesize (`[Desynthesize]`)
+
+**Status:** `DECIDED` · 2026-09-01 · user-directed · spec `024`
+
+A physics keyword, **not** a Mark token and **not** Mechanical-exclusive
+(Mechanical already has `[Reforge]`). Shared operator. Proving-card source is
+an instant; the reducer does not hard-ban other sources. Target: a synthetic
+face **slot** on **your die or the opponent’s die**.
+
+**Not** `[Reforge]` / `[Cross forge]` / `replace-synthetic-face` (overwrite N
+slots on your die with synthetics from pool, blocked by stay/forge-lock).
+
+**ASSUMED** (labelled prototype; bible is silent):
+
+| Topic | Assumption coded |
+|---|---|
+| **Counterpart** | `kind === "synthetic"` and `symbol` is an `Attribute` → install `naturalFaceId(symbol)` on that slot. `faceCardOwnerId` of the **natural** = **die owner**. Untyped / non-attribute synthetics are not legal. |
+| **Named naturals** | Named **natural** specials (e.g. Dawnwright) are not synthetic — illegal targets. |
+| **Displaced synthetic** | `returnFaceToPoolIfOrphaned` to `slot.faceCardOwnerId`. If last copy of that faceCardId+owner is gone, `clearOverloadsOnFace` + `clearOverchargeOnFace`. |
+| **Not a forge** | No forge-draw. **Not blocked** by `slotCannotBeReplacedByForge` / forge-lock / cannot-replace-by-forge (peel-class). Lock / pestilence / corruption / silence / suppress / forgeYield on that slot **clear** because the face changed. |
+| **Pool** | Do **not** take the natural from anyone’s face pool (basics are identity faces). |
+| **Attribute cap** | Synthetic X → natural X keeps the same attribute on the slot — legal even at the 4-pip cap. |
+| **Showing slot** | Do **not** rewrite the already-generated unabsorbed pip. Next roll uses the natural. |
+| **Chooser** | Always prompt when ≥1 legal synthetic slot exists (any player’s dice). Empty = legal whiff. Not optional. |
+| **Copies** | Per **physical slot**. Other slots with the same synthetic id stay until orphaned-copy rules return the card to pool. |
+
+Stun stays `DEFERRED`. `[Reforge]` stays Mechanical exclusive and is not reused for desynthesis.
+
 ---
 
 ## Prototype assumptions — deferred vocabulary (2026-08-14)
@@ -631,10 +713,10 @@ is a data / spec edit, not a silent reducer rewrite.
 | Topic | Assumption coded |
 |---|---|
 | **Reposition 1 space** | Toggle the creature between `frontline` and `back` via `setCreaturePosition` only. If moving to frontline would exceed `config.frontlineSlots` (2), the controller must **swap** with a living frontline ally (pending choose). Optional (`may`) moves can be declined. Swaps always call `setCreaturePosition` twice. **Push is not reposition.** |
-| **Energy discounts** | Apply to `PLAY_CARD` / ritual place / equip / overload, **not** `FORGE_CARD`. “Used” = played for its play region. Min cost 0. |
-| **Archmage** | First Arcane **card** (any main type) the controller plays that turn costs 1 Energy less. |
-| **Tome of Interdiction** | First Instant Arcane that turn costs 1 less. Stacks with Archmage (Instant Arcane can be −2). Spent keys on the host creature / gear; cleared `END_TURN`. |
-| **Paradox GY replay** | Choose 1 Instant or Ritual in the controller’s GY; resolve that card’s play effects (`effect.effects` or `ritual.effects`) immediately; ignore `[Requires: …]` / Active-when; do not pay that card’s Energy; the card **stays in the GY**. Creature-target effects open the usual choose pending. Cards without a playable effect body cannot be chosen. |
+| **playCost discounts** | Apply to `PLAY_CARD` / ritual place / equip / overload, **not** `FORGE_CARD`. “Used” = played for its play region. Min cost 0. |
+| **Archmage** | First Arcane **card** (any main type) the controller plays that turn costs 1 pile token less from `playCost`. |
+| **Tome of Interdiction** | First Instant Arcane that turn costs 1 less from `playCost`. Stacks with Archmage (Instant Arcane can be −2). Spent keys on the host creature / gear; cleared `END_TURN`. |
+| **Paradox GY replay** | Choose 1 Instant or Ritual in the controller’s GY; resolve that card’s play effects (`effect.effects` or `ritual.effects`) immediately; ignore `[Requires: …]` / Active-when; do not pay that card’s `playCost` / Spend; the card **stays in the GY**. The replaying source cannot choose itself (Echo as a hand Instant is already in GY). Creature-target effects open the usual choose pending. Cards without a playable effect body cannot be chosen. |
 | **Ignore N Shield / pierce** | When the attacker deals attack damage: prevent buffers first (`009`), then skip up to N Shield (those shields are **not** spent), then remaining shields, then HP. War Minotaur: `ignore-shield` 1 standing. Rust: arm `ignoreShieldThisTurn` 2, clear `END_TURN`. |
 | **Attack follow-ups** | `AttackDefinition.followUpEffects` queues extra `EffectDefinition`s after the damage link. Existing cards omit the field. |
 | **Garuda Dive** | Range 2-damage basic. The optional swap rider was removed (Wild must not print Martial movement). |
@@ -643,7 +725,6 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Alpha's Hide** | On special attack by the bearer: generate 1 Wild into the **controller’s pool** (not attached to the bearer). |
 | **Formation “gains 1 Shield”** | `grant-shield` 1 on a chosen allied frontline creature other than the absorber (`choose-allied-frontline-other`). Playtests replaced the old “+1 Defense this turn” / `grant-damage-prevent` reading — bible has no DEF stat. On roll “if this creature is on the frontline”: at roll time faces have no host creature, so the condition is **controller has a living frontline creature**. |
 | **Opponent draws** | `draw-cards` with `player: "opponent" \| "controller"` (default controller). Forbidden Heritage On roll: opponent draws 1. |
-| **Lose / transfer Energy** | Shared track (holder + value). Lose opponent Energy: decrease opponent-held value without the controller “gaining a spend”. Transfer: same decrease plus the controller becomes/holds the marker toward them. If the opponent does not hold or holds 0 → no-op (no negative Energy). |
 | **Retain-from-effect** | Marks a chosen owned die retained (same rules as `RETAIN_DIE`, including a known rolled slot). |
 | **Requirement wildcard** | One-shot: a matching pool symbol may pay any `[Requires]` / ritual Active-when attribute this turn (Resonance absorb). Consumed when used. |
 | **Pack adjacent** | Another living ally shares a **`creatureIds` neighbor (±1)** among living creatures. At roll, `has-adjacent-ally` is true if any two consecutive entries in the controller’s `creatureIds` are both living. |
@@ -656,7 +737,7 @@ is a data / spec edit, not a silent reducer rewrite.
 | **Extermination consume** | Consumed synthetic Corruption slots are replaced with natural Shield (placeholder so the die stays 6 faces). Not a forge — no forge-draw. Damage `2 * consumed` split across up to 2 creatures. |
 | **Adrenaline self-damage** | After optional reroll, if the new face is still this overloaded face: 1 damage to each of up to 2 **distinct** living allied creatures (fewer if fewer living). |
 | **Pestilent Plague at 2** | Counters **reset** then try to forge another Pestilent Plague onto an adjacent slot of the same die (pool / already-installed copy, existing install rules). Threshold is catalogue `pestilenceSpreadAt` (2). Copy comes from the spreading slot’s `faceCardOwnerId` (the corrupter), not the rolling die owner. If illegal (no slot / cannot-replace / no pool / attribute cap), skip the forge; counters stay at 0. |
-| **ACTIVATE_FACE** | Legal in actions on the showing slot. Cost `energyBase + energyPerCorruptionOnDie * (synthetic Corruption faces on that die)`. Removed face returns to its owner’s pool like unforge; slot becomes Shield. Draw-on-forge does not apply. Peel is **not** blocked by stay / forge-lock. |
+| **ACTIVATE_FACE** | Legal in actions on the showing slot. Cost `spendBase + spendPerCorruptionOnDie * (synthetic Corruption faces on that die)`. Removed face returns to its owner’s pool like unforge; slot becomes Shield. Draw-on-forge does not apply. Peel is **not** blocked by stay / forge-lock. |
 
 Push stays unmodelled (DECIDED no). Stun stays `DEFERRED`.
 
@@ -682,20 +763,23 @@ Bible is silent on “cannot be replaced by forging” duration and whose turns 
 
 ## Prototype assumptions — Corruption install tempo (2026-08-17)
 
-**Status:** `ASSUMED` · catalogue in `src/game/content/{cards,faces}.ts`
+**Status:** `ASSUMED` · catalogue in `src/server/content/{cards,faces}.ts`
 
-Bible §27 says Corruption effects should be **expensive**. Playtests showed Energy 2 + Requires Arcane+Corruption for **one** opponent-die face was too expensive versus own-die forge instants, and free overwrite made contamination a stall rather than a tempo steal.
+Bible §27 says Corruption effects should be **expensive**. Playtests showed
+`playCost` 2 + Requires Arcane+Corruption for **one** opponent-die face was too
+expensive versus own-die forge instants, and free overwrite made contamination a
+stall rather than a tempo steal.
 
 Assumption: **install is affordable; stay and peel are the expense.** Stick comes from stay-on-slot (Forbidden Heritage never-replace; Pestilent Plague 4 die-owner-turn forge-lock that resets on new Plague) plus `ACTIVATE_FACE` peel `2 + Corruption faces on that die`. Stain / Infection remain marker harassment that does not occupy a slot (the cheap dodge of a face install).
 
 | Card | Old | Tempo retune |
 |---|---|---|
-| Ritual of Contamination | Energy 2, Requires Arcane+Corruption, 1 opponent-die face | Energy **1**, Requires **Corruption** (cheaper Instant; still not an ungated copy of own-die forge instants) |
-| Great Contamination | Energy 5, Active when Arcane+Corruption+Corruption, 3 faces | Energy 3, Active when **Corruption+Corruption** (no Arcane; Burn identity 2026-08-20), still 3 faces |
-| Black Plague | Energy 4, forge opponent-die **or** equip | Energy 2 |
-| Persistent Infection | Energy 4, own-die overload | Energy 2 |
-| Latent Corruption | Energy 4, Arcane-face overload | Energy **2** (On-roll refund/engine band) |
-| Extermination | Energy 6, consume Corruption → damage | Unchanged (late conversion, not an install) |
+| Ritual of Contamination | playCost 2, Requires Arcane+Corruption, 1 opponent-die face | playCost **1**, Requires **Corruption** |
+| Great Contamination | playCost 5, Active when Arcane+Corruption+Corruption, 3 faces | playCost 3, Active when **Corruption+Corruption**, still 3 faces |
+| Black Plague | playCost 4, forge opponent-die **or** equip | playCost 2 |
+| Persistent Infection | playCost 4, own-die overload | playCost 2 |
+| Latent Corruption | playCost 4, Arcane-face overload | playCost **2** |
+| Extermination | playCost 6, consume Corruption → damage | Unchanged (late conversion, not an install) |
 
 ---
 
@@ -710,9 +794,28 @@ Assumption: **install is affordable; stay and peel are the expense.** Stick come
 | **Resource lock** | Slot flag this turn; if showing, matching rolled/available symbols get `usable: false`. Cannot pay Requires / Active-when / absorb. |
 | **Decay unusable symbol** | Strip face → Shield (like `ACTIVATE_FACE`); create Corruption in **Decay controller’s** pool with `usable: false` (not the face owner’s). |
 | **Toxin receive cap** | At most `amount` markers **gained** while the cap remains (remaining counter), until that creature’s owner’s next turn starts. |
-| **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this controller’s last `ROLL_DICE` (`facesAppearedThisRoll`). Not overloads. |
-| **Overcharge double** | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. |
+| **Catalyst absorb copy** | Re-queue `onRoll` of a synthetic face that showed during this shared `ROLL_DICE` (`facesAppearedThisRoll` records **both** seats). Not overloads. Selector is not filtered to the controller’s dice unless a leak appears. |
+| **Overcharge double** (spec `013` face marker, `optional-overcharge`) | Next pending effect with `sourceDieId !== null` is applied twice; flag clears. **Not** the tactic `[Overcharge]` master rule (spec `021`). |
 | **Instinct absorb** | Optional actions-window basic via `optional-bonus-attack` (see row above). |
+
+---
+
+## Prototype assumptions — tactic Overcharge (2026-08-30)
+
+**Status:** `ASSUMED` · implemented · spec [`021-overcharge.md`](./specs/021-overcharge.md)
+
+Bible is silent. Player-facing **Overcharge** is this master rule. Spec `013`’s
+Mechanical face-marker opcode (`optional-overcharge`, suppress inherent,
+`resolveNextFaceEffectTwice`) stays for catalogue faces that still use it.
+
+| Topic | Assumption coded |
+|---|---|
+| **Face-card pips** | `PlayerState.overchargeByFace` is `Readonly<Record<string, readonly Attribute[]>>`, keyed by face card. Copies of the same face on this player’s dice share pips. Opponent copies of the same id use that opponent’s map (`die.ownerId`). |
+| **Persist until last copy leaves** | Pips stay until `countInstalledCopies === 0` for that owner, then `clearOverchargeOnFace` deletes the key — same moment as `clearOverloadsOnFace`. Not consumed after the first generate. Overwriting one of two copies keeps the Overcharge. |
+| **Any hand card** | Forge kind and target do not gate Overcharge. Synthetic and opponent-die cards may Overcharge. The pip is the spent card’s `attribute`. |
+| **Always +1** | One pip of the spent card’s `attribute` regardless of `forge.faces`. |
+| **No reaction window** | Same as `FORGE_CARD`. |
+| **No GameState bag** | Once-per-turn uses `spentOncePerTurnKeys` key `"overcharge"`. `state.ts` stays frozen. |
 
 ---
 
@@ -722,7 +825,7 @@ Assumption: **install is affordable; stay and peel are the expense.** Stick come
 
 **Status:** `DECIDED` for the six printed specials (2026-08-10) · engine support in `011`
 
-English printings are in `docs/specs/004-face-cards.md` and `src/game/content/faces.ts`.
+English printings are in `docs/specs/004-face-cards.md` and `src/server/content/faces.ts`.
 Crush, Rending Claw, Arcane Echo (re-fire other die onRoll), Blade Rain, Forbidden
 Heritage, and Pestilent Plague are wired. Great Spark / Rekindle still lack
 printings. Face-marker systems (Stain, Decay, Catalyst, Overcharge, Adaptive Toxin,
@@ -733,45 +836,56 @@ Infection roll, Instinct absorb) are wired in `013-face-markers.md`.
 **Status:** `OPEN` — not blocking (cap still undecided)
 
 **Why it matters.** Tokens persist and are spent by attacks that name
-`discards`, and by drain effects (`drain-attribute-tokens`, spec `011`). A
-player that banks long enough can still accumulate without a hard cap.
+`discards`. A player that banks long enough can still accumulate without a
+hard cap. (`[Drain N]` is life transfer — see DECIDED row below — not pile
+steal.)
 
 **The question.** Is there a cap per player, or per attribute?
 
 **DECIDED (playtest, 2026-08-26).** Attribute tokens live on the player pile.
-Effects **drain** them (`[Drain N]`): take from the opponent’s pile into
-yours. You cannot Strip Martial/Arcane off a creature. Siphon Sigil proves
-`drain-attribute-tokens`: after `choose-enemy`, a mixed pile with
-more tokens than `amount` opens `choose-attribute-tokens` (controller names
-which pips). Homogeneous leftover piles and “take all remaining” are
-deterministic (no real choice). Bible §20 / §25.
+You cannot Strip Martial/Arcane off a creature.
 
-**ASSUMED (label for the no-choice path).** When there is no mix leftover,
-strip uses `ATTRIBUTES` array order (`martial` → … → `darkness`) — equivalent
-to taking from the only pile / taking everything that remains. Token **cap**
-remains OPEN.
+**DECIDED (playtest, 2026-08-29).** `[Drain N]` / `drain-life` transfers life:
+deal up to N damage to a chosen enemy (normal Prevent → Shield → HP), then
+heal your **most-damaged ally** for the **HP actually lost** (auto; no second
+creature choice). Siphon Sigil / Share the Kill / Hexbrand / Nightbound Adept /
+Nightwell / Umbra Gravewarden prove it. Spec `011`.
+
+**ASSUMED (label for homogeneous discard order on other effects).** When
+there is no mix leftover for token discards, strip uses `ATTRIBUTES` array
+order (`martial` → … → `darkness`). Token **cap** remains OPEN.
 
 **Decision (cap).** TBD.
 
 ---
 
-### Optional ally swap / reposition without a decline action
+### Optional “you may” choices (decline)
 
-**Status:** `ASSUMED` · 2026-08-14 · `swap-positions` / `reposition-creature`
+**Status:** `DECIDED` · 2026-08-31 · playtest · `optional` pending
 
-Print often says “you may swap/reposition”. The engine has no cancel /
-decline action for creature choices today.
+Print that says you **may** (optional discard, optional reroll, optional
+reposition / swap) opens a pending with `optional: true`. The controller may
+**Decline** (`creatureId` / `dieId` / slot `null`, or empty discard).
+Declining skips that effect and any “if you do” rider.
 
-**ASSUMED:** when at least one legal ally (or self) move exists, open
-`choose-creature` and the controller must name a legal target; when none
-exist, the effect whiffs. Do not invent `creatureId: null` decline unless
-design reopens optional choices.
+Mandatory targeting (“choose an enemy”, “an allied creature you choose”) is
+not optional: if a legal target exists, one must be named; if none exist, the
+effect whiffs.
 
 War Charge swap is queued as attack `followUpEffects` (after the damage
-effect resolves on the chain). Optional `swap-positions` still supports a
-decline. Garuda Dive no longer swaps.
+effect resolves on the chain). Garuda Dive no longer swaps.
 
 **Banned forever:** any effect that moves an **enemy** creature (push).
+
+---
+
+### Whether a named Natural face is free on opening dice
+
+**Status:** `DECIDED` · 2026-09-04 · spec `025`
+
+Opening basics are **only** `BASIC_FACE_CARDS` (eight identity naturals + Shield).
+`isOpeningBasicFace` is membership in that list. Named naturals (Dawnwright)
+consume the face deck when they sit on `startingDice`.
 
 ---
 
@@ -805,7 +919,7 @@ Caps (bible silent on constructed layouts) live on `GameRulesConfig`:
 
 | Knob | Default | Status |
 |---|---|---|
-| `startingMinShieldsPerDie` | 1 | `ASSUMED` |
+| `startingMinShieldsPerDie` | 0 | `DECIDED` (playtest 2026-09-06: Shield optional on opening dice) |
 | `startingMaxSyntheticsPerPlayer` | 2 | `ASSUMED` |
 | `startingMaxSyntheticsPerDie` | 2 | `ASSUMED` |
 | `startingMaxOnRollFacesPerDie` | 2 | `ASSUMED` (non-empty `onRoll`) |
@@ -848,9 +962,8 @@ a single attack bonus, cost reduction, forge of your own attribute) stay legal.
 | Wild | Extra attacks (`[Frenzy]`) |
 
 Catalogue off-pie leaks (Sift, Sidestep, Predator’s Claws, …) were moved or
-rewritten — do not copy the old print. Wild’s exclusive is `grant-extra-attack`
-(`[Frenzy]`). Former pack feeding (`transfer-attribute-tokens` /
-`copy-attribute-tokens`) is **retired**. Darkness mill is `mill-cards`.
+rewritten — do not copy the old print. Wild's exclusive is `grant-extra-attack`
+(`[Frenzy]`). Darkness mill is `mill-cards`.
 
 ---
 
@@ -873,10 +986,10 @@ Not yet load-bearing; recorded so they are not forgotten.
 
 | Question | Bible | Needed by |
 |---|---|---|
-| Whether forging a card costs its Energy cost, or only playing it does | §19, §20 | Forging |
+| Whether forging a card costs its `playCost`, or only playing it does | §19, §20 | Forging |
 | The keyword for the forging action | — | Card layer |
 | Overload cards allowed per face | §37 | Forging |
-| Secondary victory conditions and ties | §4, §37 | Content |
+| Secondary victory conditions and ties | §4, §37 | Content — primary win is legendary defeat (`DECIDED` 2026-08-29); secondary/ties still open |
 | Stun application and removal timing | §22 | Reopening stun |
 
 Reaction timing windows (bible §37) are **DECIDED** above

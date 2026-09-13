@@ -2,10 +2,13 @@
 name: analyze-match-metrics
 description: >-
   Analyze Dice Skirmish match-metrics JSON or Markdown exports to diagnose
-  long games, stall/idle turns, drag score, low lethality, reaction-window
-  friction, and think time. Use when the user pastes a metrics export, mentions
-  the Metrics tab, games going past 10 turns, drag score, or asks why matches
-  feel slow.
+  whether the pile-only game is playable and fun: unpaid attacks, long games,
+  stall/idle, drag, low lethality, forge vs play vs Overcharge, reaction
+  friction, think time. Use when the user pastes a Copy agent prompt, attaches
+  Download JSON, mentions the Metrics tab, games going past 10 turns, or asks
+  why matches feel slow or unfun. Do not use when they also have playtest notes
+  or “felt like the wrong archetype” — that is post-playtest (skill
+  review-playtest).
 ---
 
 # Analyze match metrics
@@ -14,17 +17,26 @@ Read `docs/specs/014-match-metrics.md` if you need collector semantics.
 
 The export is an **observer**. It does not change `GameState`. Do not invent
 reducer behavior that is not in the numbers. Do not propose a second rules
-engine in the UI.
+engine in the UI. Do not propose bringing **energy** back — fuel is the
+attribute pile only.
+
+## Goal
+
+Make the game **playable and fun** after the energy + attribute split became
+pile-only. Slow / unfun is the default complaint. Pace flags are how you
+describe the dump, not the product goal.
 
 ## Input
 
-Prefer the JSON from **Copy agent prompt** / **Download JSON**. Markdown
-briefing is enough for a first pass.
+**Copy agent prompt** is instructions only. The dump is **Download JSON**
+(or Markdown). A file path or attachment is enough; do not expect JSON
+inlined in the prompt.
 
 Dedupe is already done (`matchId`, richer sample wins). Guest think times
-include network delay; prefer `recordedAs: "host" | "local"`.
+include network delay; prefer `recordedAs: "host" | "local" | "local-ai"`.
+Ignore leftover `energy*` keys on old recordings.
 
-Pace is **per match**, not a 11–20 band (`src/metrics/pace.ts`):
+Pace is **per match**, not a 11–20 band (`src/client/metrics/pace.ts`):
 
 | Flag | Number / rule |
 |---|---|
@@ -44,40 +56,50 @@ Pace is **per match**, not a 11–20 band (`src/metrics/pace.ts`):
 2. **Why it ran long:** per-match `dragScore`, `paceVerdict`, `overtimeTurns`,
    `idleTurnCount` vs stall. Dragging = empty overtime. Grinding = setup/stall
    without a close. Long-active = combat happened, still too many turns.
-3. **Close:** `meanDamagePerTurn`, stall-turn rate, turn kinds, HP at end,
+3. **Can they swing?** 0 attacks is not “chose setup.” Check rejected
+   `ATTACK` / `INSUFFICIENT_SYMBOLS` (often rituals, not attacks), attack
+   `discards` vs a 2-die roll, and 1-pip leftovers that pay a 1-cost card or
+   Overcharge (0 pile) but not a 2-token basic. `turn.absorbs` counts
+   `symbol-absorbed` **and** `symbols-consumed` — not spare pile.
+4. **Close:** `meanDamagePerTurn`, stall-turn rate, turn kinds, HP at end,
    `medianFirstDefeatTurn`, `medianFirstDamageTurn`, `medianFirstAttackTurn`,
    deaths-by-turn, `pctNeverDefeat`. First death on turns 1–3 is too early for
    a three-creature skirmish; after turn 10 (or never) the close is not arriving.
-4. **Energy clock:** `meanEnergySpentPerTurn` and Energy-by-turn (amounts from
-   `energy-spent`, not event counts). High spend + no deaths = conversion; low
-   spend + stall = unused clock. Older recordings may omit amounts.
-5. **Seat / lists:** `firstPlayerWinRate`, `p1WinRate`, deck-pair mix.
-6. **Clock vs rules:** `medianThinkMs` / `p90ThinkMs` vs idle. High think +
+   Split cannot-pay-attack from cannot-kill (prevent/Shield) from not converting
+   setup.
+5. **Forge as a line:** `playVsForgeMix` / Overcharge vs `FORGE_CARD`.
+   Overcharge is 0 pile and juices every copy of a face; synthetic forge pays
+   `playCost`. Say whether a player would pick forge.
+6. **Seat / lists:** `firstPlayerWinRate`, `p1WinRate`, deck-pair mix.
+7. **Clock vs rules:** `medianThinkMs` / `p90ThinkMs` vs idle. High think +
    low idle = UX / reading / reactions. Low think + high idle = the rules are
-   not converting turns into play.
-7. **Friction:** `reaction-priority-opened`, pending mix, reject rate.
-8. **Hand spend:** `playVsForgeMix` / `totalCardsPlayed` vs `totalCardsForged`.
-   Effect-region plays are not the same as tactics spent to install faces.
-   `playForgeCorrelation` is Pearson r of effect/turn vs forge/turn across
-   matches (negative = Energy split between playing and forging). The
-   dashboard stacked chart is mean effect vs forge **by turn number**.
+   not converting turns into play. Many `PASS_PRIORITY` with tiny think is
+   window spam, not reading time.
 
 ## Answer shape
 
 ```markdown
 ## Verdict
-One paragraph: over baseline because dragging / grinding / long-active / think time.
+One paragraph: playable/fun or not, and why (unpaid attacks / grinding close /
+forge not a line / think time) — plus dragging / grinding / long-active.
 
 ## Evidence
-Bullets with numbers from the export (cite drag, idle, overtime per match).
+Bullets with numbers from the export (cite drag, idle, overtime, attacks per
+seat, play vs forge vs Overcharge per match).
 
 ## Experiments to try
-1. Concrete rules or UX change (cite a spec / bible section if you know it).
+1. Concrete rules or UX change that makes matches fun to play (cite a spec /
+   bible section if you know it). Prefer paying a basic off a normal roll
+   over adding attack rewards.
 2. What to measure next (which chart should move).
 
 ## Missing data
-Only if the sample is too small or guest-only.
+Only if the sample is too small, guest-only, or pile/attack-legal is absent.
 ```
 
-Do not change `src/game` from this skill. If a rules experiment is agreed,
+Do not change `src/server` from this skill. If a rules experiment is agreed,
 hand off to `engine-developer`. Match-board chrome stays with `match-ui`.
+If the diagnosis is “this list played like another archetype,” or the user
+also has **playtest notes**, hand the full debrief to **post-playtest**
+(skill `review-playtest`) — it updates `docs/MECHANIC_ARCHETYPES.md` and
+briefs `card-designer`. Metrics-only dumps stay in this skill.

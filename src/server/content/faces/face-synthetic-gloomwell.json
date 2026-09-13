@@ -1,0 +1,16 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-gloomwell",
+  "name": "Gloomwell",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll: this face also produces 1 Arcane.",
+  "pips": {
+    "darkness": 1,
+    "arcane": 1
+  },
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-martial",
+  "name": "Martial",
+  "kind": "natural",
+  "symbol": "martial",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

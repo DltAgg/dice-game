@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-radiant-accord",
+  "name": "Radiant Accord",
+  "playCost": {
+    "luminar": 1,
+    "any": 1
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Silence] an opposing creature or ritual.",
+  "ritual": {
+    "spend": {
+      "luminar": 2,
+      "any": 1
+    },
+    "effects": [
+      {
+        "type": "silence",
+        "hosts": ["creature", "ritual"],
+        "target": {
+          "kind": "choose-opponent-silence-host",
+          "hosts": ["creature", "ritual"]
+        }
+      }
+    ]
+  }
+}

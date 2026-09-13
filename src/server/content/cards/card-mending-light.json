@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-mending-light",
+  "name": "Mending Light",
+  "playCost": {
+    "luminar": 1
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Bounce] an opposing ritual, equipment, or overload.",
+  "effect": {
+    "effects": [
+      {
+        "type": "bounce",
+        "hosts": ["ritual", "equipment", "overload"],
+        "target": {
+          "kind": "choose-opponent-bounce-card",
+          "hosts": ["ritual", "equipment", "overload"]
+        }
+      }
+    ]
+  }
+}

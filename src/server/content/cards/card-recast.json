@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-recast",
+  "name": "Recast",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Reforge 3 Mechanical] any faces on one of your dice.",
+  "effect": {
+    "effects": [
+      {
+        "type": "replace-synthetic-face",
+        "faces": 3,
+        "attribute": "mechanical"
+      }
+    ]
+  }
+}

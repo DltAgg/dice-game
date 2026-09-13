@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-lucent-choir",
+  "name": "Lucent Choir",
+  "kind": "synthetic",
+  "symbol": "luminar",
+  "rulesText": "While showing: [Empower 1].",
+  "pips": {
+    "luminar": 2
+  },
+  "onRoll": [],
+  "onAbsorb": [],
+  "whileShowing": [
+    {
+      "type": "empower",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

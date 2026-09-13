@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-augur-glass",
+  "name": "Augur Glass",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "While showing: [Discount 1].",
+  "pips": {
+    "arcane": 2
+  },
+  "onRoll": [],
+  "onAbsorb": [],
+  "whileShowing": [
+    {
+      "type": "play-discount",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

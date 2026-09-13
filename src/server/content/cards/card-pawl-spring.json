@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-pawl-spring",
+  "name": "Pawl Spring",
+  "playCost": {
+    "mechanical": 2,
+    "any": 1
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Synthetic Mechanical face.\nOn roll: [Desynthesize] a face on any die.",
+  "overload": {
+    "faceSymbols": [
+      "mechanical"
+    ],
+    "faceKinds": [
+      "synthetic"
+    ],
+    "onRoll": [
+      {
+        "type": "desynthesize",
+        "target": {
+          "kind": "choose-any-synthetic-slot"
+        }
+      }
+    ]
+  }
+}

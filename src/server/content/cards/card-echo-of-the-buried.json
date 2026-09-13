@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-echo-of-the-buried",
+  "name": "Echo of the Buried",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Choose an Instant or Ritual card in your graveyard and resolve its effect, ignoring its costs. It stays in your graveyard.",
+  "effect": {
+    "effects": [
+      {
+        "type": "replay-graveyard-tactic"
+      }
+    ]
+  }
+}

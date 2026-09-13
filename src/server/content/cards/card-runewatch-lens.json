@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-runewatch-lens",
+  "name": "Runewatch Lens",
+  "playCost": {
+    "arcane": 2
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload an Arcane face.\nOn roll: [Insight 1]. [Discount 1] next card you play this turn.",
+  "overload": {
+    "faceSymbols": [
+      "arcane"
+    ],
+    "onRoll": [
+      {
+        "type": "peek-deck-optional-bottom"
+      },
+      {
+        "type": "play-cost-discount",
+        "amount": 1
+      }
+    ]
+  }
+}

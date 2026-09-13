@@ -38,26 +38,26 @@ forges, and passes the turn. Reducing an opponent's squad to zero wins.
 | A creature makes at most one attack per Combat phase | §7 |
 | The frontline protects the back row; Range ignores that | §6 |
 | Turn flow: roll, then actions (absorb / spend / attack / play / forge), end | §16, playtest 2026-08-17 |
-| One shared Energy marker; crossing zero ends the turn | §18, decision of 2026-08-07 |
-| First turn 3 Energy; clean pass 5; overshoot pass = overshoot + 2 | decision of 2026-08-14 |
+| Costs and attack fuel from the player's attribute pile | spec `016`, 2026-08-24 |
+| Turn end is voluntary (`END_TURN`) or from effects | spec `016` |
 
-Because fuel appears only at end of turn, a creature can never attack on the
-turn it absorbed. Turn 1 is necessarily spent arming.
+Because attributes bank into the pile immediately, same-turn attack after
+banking is legal. Turn 1 can bank and attack.
 
 The one prototype assumption left in this slice is the strict frontline reading.
 It is registered in `../OPEN_DESIGN.md` and read from `GameRulesConfig`.
 
 ## State Changes
 
-`phase`, `turn`, `activePlayerId`, `status`, `winner`, `energy`, `symbols`,
+`phase`, `turn`, `activePlayerId`, `status`, `winner`, `symbols`,
 `dice[*].rolledSlotIndex`, `dice[*].attachedToCreatureId`, `creatures[*].damage`,
 `creatures[*].defeated`, `creatures[*].attacksUsedThisCombat`,
-`creatures[*].attributeTokens`, `creatures[*].shields`, `resolutionStack`,
+`players[*].attributePool`, `creatures[*].shields`, `resolutionStack`,
 `log`, `rng`, `nextInstanceSeq`.
 
 ## Actions
 
-`ROLL_DICE`, `ABSORB_SYMBOL`, `ABSORB_SYMBOL_TO_RITUAL`, `ADVANCE_PHASE`,
+`ROLL_DICE`, `ABSORB_SYMBOL`, `ADVANCE_PHASE`,
 `ATTACK`, `PLAY_CARD`, `FORGE_CARD`, `ACTIVATE_RITUAL`, `END_TURN`, …. Each names
 its actor and describes intent only — no action carries a damage figure, a dice
 result or a symbol count.
@@ -99,27 +99,27 @@ None in this slice, by design.
 - [x] An absorbed attribute becomes a token at end of turn; an absorbed Shield grants a shield immediately.
 - [x] The absorbing die is freed at end of turn.
 - [x] Engine abilities consume pool symbols and can chain, with order mattering.
-- [x] Attacks are payable only from the attacker's tokens, never from the pool.
+- [x] Attacks are payable only from the owner's attribute pile, never from the turn pool.
 - [x] A plain requirement leaves its fuel intact; a discard burns it.
-- [x] A creature cannot attack on the turn it was fuelled.
+- [x] Same-turn banking can enable an attack that requires that attribute.
 - [x] Shields prevent damage, are spent doing so, and survive the turn.
 - [x] Attacks respect the frontline and honour Range.
 - [x] A creature attacks at most once per turn (actions phase).
 - [x] Damage defeats a creature and defeat can end the match.
-- [x] The Energy marker moves between players on a turn transition.
+- [x] Turn end is voluntary or from effects.
 - [x] An illegal action leaves state untouched.
 - [x] The same seed and action sequence reproduce a match exactly.
 - [x] A full match runs to a decided victory through `reduce()` alone.
 
 ## Tests
 
-- [x] `src/game/rng/rng.test.ts` — determinism, snapshot resume, seed independence.
-- [x] `src/game/setup/createMatch.test.ts` — setup invariants and serialization.
-- [x] `src/game/reducer/dice.test.ts` — rolling, stun, retention, replay.
-- [x] `src/game/reducer/absorption.test.ts` — the tradeoff and what absorbing pays out.
-- [x] `src/game/reducer/engine.test.ts` — costs, chaining, ordering, symbol expiry.
-- [x] `src/game/reducer/combat.test.ts` — token funding, shields, frontline, Range, victory.
-- [x] `src/game/rules/energy.test.ts` — track arithmetic and turn transition.
-- [x] `src/game/reducer/invariants.test.ts` — the invariants of SPDD §38.
-- [x] `src/game/reducer/match.test.ts` — full matches to victory.
+- [x] `src/server/rng/rng.test.ts` — determinism, snapshot resume, seed independence.
+- [x] `src/server/setup/createMatch.test.ts` — setup invariants and serialization.
+- [x] `src/server/reducer/dice.test.ts` — rolling, stun, retention, replay.
+- [x] `src/server/reducer/absorption.test.ts` — banking attributes into the pile and Shield onto creatures.
+- [x] `src/server/reducer/attributePileUp.test.ts` — pile costs, ritual gates, attack fuel.
+- [x] `src/server/reducer/rollBank.test.ts` — auto-bank after roll and manual absorb.
+- [x] `src/server/reducer/combat.test.ts` — pile-funded attacks, shields, frontline, Range, victory.
+- [x] `src/server/reducer/invariants.test.ts` — the invariants of SPDD §38.
+- [x] `src/server/reducer/match.test.ts` — full matches to victory.
 - [x] `src/architecture/engine-purity.test.ts` — the engine imports no outer layer.

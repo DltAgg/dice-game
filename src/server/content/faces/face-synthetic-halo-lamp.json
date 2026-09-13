@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-halo-lamp",
+  "name": "Halo Lamp",
+  "kind": "synthetic",
+  "symbol": "luminar",
+  "rulesText": "While showing: [Pierce 1].",
+  "pips": {
+    "luminar": 2
+  },
+  "onRoll": [],
+  "onAbsorb": [],
+  "whileShowing": [
+    {
+      "type": "pierce",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

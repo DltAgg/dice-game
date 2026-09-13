@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-sigil-flare",
+  "name": "Sigil Flare",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Strike 2]. Do not bank this die's pips.",
+  "pips": {
+    "arcane": 2
+  },
+  "convertRoll": true,
+  "onRoll": [
+    {
+      "type": "damage",
+      "amount": 2,
+      "target": {
+        "kind": "choose-enemy"
+      }
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

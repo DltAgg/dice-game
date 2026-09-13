@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-hollow-tide",
+  "name": "Hollow Tide",
+  "playCost": {
+    "darkness": 3,
+    "any": 3
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 4,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Strike 3] all enemy creatures.",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 3,
+        "target": {
+          "kind": "enemy-all"
+        }
+      }
+    ]
+  }
+}

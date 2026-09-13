@@ -8,16 +8,16 @@
 | on-toxin-damage | `EquipmentAbility` | `triggers.fireOnToxinDamage` |
 | on-roll-symbol | `EquipmentAbility` | `triggers.fireOnRollSymbol` |
 | on-absorb (gear) | `EquipmentAbility` | `triggers.fireOnAbsorbEquipment` |
-| on-absorb (face) | `FaceCardDefinition.onAbsorb` | absorb path in reducer + triggers |
-| on-absorb (overload) | `OverloadRegion.onAbsorb` | same |
+| on-absorb (face) | `FaceCardDefinition.onAbsorb` | attribute bank path → `queueAbsorbTriggers` (spec `016`) |
+| on-absorb (overload) | `OverloadRegion.onAbsorb` | same — fires when pip banks into owner pile |
 | on-roll (face) | `FaceCardDefinition.onRoll` | `ROLL_DICE` in `reduce.ts` |
 | on-roll (overload) | `OverloadRegion.onRoll` | after face onRoll for showing face |
 
 ## Effect union (grow carefully)
 
-See `src/game/model/effects.ts`. Current members include: `damage`, `heal`,
+See `src/server/model/effects.ts`. Current members include: `damage`, `heal`,
 `grant-shield`, `generate-symbol`, `draw-cards`, `discard-cards`, `search-deck`,
-`search-graveyard`, `gain-energy`, `destroy-equipment`, `apply-toxin`,
+`search-graveyard`, `arm-forge-discount`, `destroy-equipment`, `destroy-overload`, `apply-toxin`,
 `remove-shield`, `next-attack-bonus`, `negate-card`, `grant-damage-prevent`,
 `prevent-attack-reflect`, `arm-prevent-draw`.
 
@@ -33,6 +33,9 @@ park until vocabulary exists:
 - Face copy / echo
 - Prevent + reflect (Judgement-style is partially in `009` — check before deferring)
 - Forge-from-effect
+- A second inherent pip / second `symbol` on `FaceCardDefinition` (dual-pip
+  print that cannot be composed as `symbol` + `[Generate]` on roll/absorb) —
+  brief engine-developer; do not skip the slot or clone Generate-same
 
 Do **not** design or restore **enemy push** (forced move of opposing creatures).
 Ally **swap** / **reposition** are legal — prefer:
@@ -44,8 +47,8 @@ Ally **swap** / **reposition** are legal — prefer:
 | An allied creature may reposition | `reposition-creature` + `choose-ally` |
 | On change position: … | `on-change-position` StandingTrigger |
 
-Optional “may” without a decline action → OPEN_DESIGN ASSUMED (choose when
-legal; whiff when none).
+Optional “may” → `optional: true` on the effect; the prompt includes **Decline**.
+Mandatory “choose a creature” targeting is not optional.
 
 ## Ritual timing reminder
 
@@ -60,11 +63,11 @@ Reaction vs Instant = window legality, not field permanence.
 
 | Task | Path |
 |---|---|
-| Face catalogue | `src/game/content/faces.ts` |
-| Tactic catalogue | `src/game/content/cards.ts` |
-| Effects / targets | `src/game/model/effects.ts` |
-| Equipment abilities | `src/game/model/cards.ts` |
-| Hooks | `src/game/reducer/triggers.ts` |
-| Hook tests | `src/game/reducer/triggers.test.ts` |
+| Face catalogue | `src/server/content/faces/*.json` |
+| Tactic catalogue | `src/server/content/cards/*.json` |
+| Effects / targets | `src/server/model/effects.ts` |
+| Equipment abilities | `src/server/model/cards.ts` |
+| Hooks | `src/server/reducer/triggers.ts` |
+| Hook tests | `src/server/reducer/triggers.test.ts` |
 | Spec | `docs/specs/010-trigger-hooks.md` |
 | Backlog | `docs/DEFERRED_CATALOGUE.md` |

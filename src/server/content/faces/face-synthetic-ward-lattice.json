@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-ward-lattice",
+  "name": "Ward Lattice",
+  "kind": "synthetic",
+  "symbol": "arcane",
+  "rulesText": "On roll: if your other die shows the same attribute, [Insight 2].",
+  "pips": {
+    "arcane": 2
+  },
+  "onRoll": [
+    {
+      "type": "conditional",
+      "when": {
+        "type": "other-die-same-attribute"
+      },
+      "then": [
+        {
+          "type": "look-top-deck",
+          "amount": 2
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

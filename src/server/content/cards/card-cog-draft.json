@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-cog-draft",
+  "name": "Cog Draft",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Generate 2 Mechanical]. [Draw 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "generate-symbol",
+        "symbol": "mechanical",
+        "amount": 2
+      },
+      {
+        "type": "draw-cards",
+        "amount": 1
+      }
+    ]
+  }
+}

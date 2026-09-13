@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-untyped-shield",
+  "name": "Shield",
+  "kind": "untyped",
+  "symbol": "shield",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-twin-cam",
+  "name": "Twin Cam",
+  "playCost": {
+    "mechanical": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Stamp].\n[Stamp].",
+  "effect": {
+    "effects": [
+      {
+        "type": "arm-resolve-next-face-effect-twice"
+      },
+      {
+        "type": "arm-resolve-next-face-effect-twice"
+      }
+    ]
+  }
+}

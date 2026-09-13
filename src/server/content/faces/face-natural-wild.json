@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-wild",
+  "name": "Wild",
+  "kind": "natural",
+  "symbol": "wild",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

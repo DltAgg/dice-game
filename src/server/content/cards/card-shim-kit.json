@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-shim-kit",
+  "name": "Shim Kit",
+  "playCost": {
+    "mechanical": 2,
+    "any": 1
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Silence] an opposing face.",
+  "effect": {
+    "effects": [
+      {
+        "type": "silence",
+        "hosts": [
+          "face"
+        ],
+        "target": {
+          "kind": "choose-opponent-silence-host",
+          "hosts": [
+            "face"
+          ]
+        }
+      }
+    ]
+  }
+}

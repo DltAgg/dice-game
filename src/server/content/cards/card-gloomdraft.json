@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-gloomdraft",
+  "name": "Gloomdraft",
+  "playCost": {
+    "darkness": 2
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "[Search 2] Instant or Ritual cards. [Discard 1].",
+  "effect": {
+    "effects": [
+      {
+        "type": "search-deck",
+        "amount": 2,
+        "filter": [
+          "instant",
+          "ritual"
+        ]
+      },
+      {
+        "type": "discard-cards",
+        "amount": 1
+      }
+    ]
+  }
+}

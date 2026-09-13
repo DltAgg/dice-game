@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-tempering-line",
+  "name": "Tempering Line",
+  "playCost": {
+    "mechanical": 2,
+    "any": 1
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Discount 2] forge.",
+  "ritual": {
+    "spend": {
+      "mechanical": 1
+    },
+    "effects": [
+      {
+        "type": "arm-forge-discount",
+        "amount": 1
+      }
+    ]
+  }
+}

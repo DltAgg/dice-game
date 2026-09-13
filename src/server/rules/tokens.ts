@@ -1,0 +1,256 @@
+import type { Attribute } from "../model/attributes.js";
+import { ATTRIBUTES } from "../model/attributes.js";
+import {
+  genericCount,
+  requirementEntries,
+  requirementTotal,
+  type AttributeTokens,
+  type SymbolRequirement,
+} from "../model/symbols.js";
+import { canAffordUnderCaps } from "./discounts.js";
+
+/**
+ * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
+ * spec `016`). Attacks and card `[Requires]` gates check (not burn) from there;
+ * `[Spend]` (header `playCost`, attack `discards`, ritual `spend`) burns.
+ * Ritual Active-when is a one-time pile unlock. Creature Shield / Toxin stay on
+ * creatures.
+ */
+
+export const holdsTokens = (
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): boolean => pileRequirementShortfall(tokens, requirement) === 0;
+
+/**
+ * How many pips of `requirement` the pile cannot cover (before wildcards).
+ * Named attributes are reserved first; leftover tokens cover `any`.
+ */
+export function pileRequirementShortfall(
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): number {
+  const remaining: Partial<Record<Attribute, number>> = { ...tokens };
+  let shortfall = 0;
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const held = remaining[attribute] ?? 0;
+    const take = Math.min(held, count);
+    remaining[attribute] = held - take;
+    shortfall += count - take;
+  }
+  const leftover = totalTokens(remaining);
+  const generic = genericCount(requirement);
+  if (leftover < generic) shortfall += generic - leftover;
+  return shortfall;
+}
+
+/**
+ * Named-then-generic pile burn for `[Spend]`. Takes held tokens only (no
+ * wildcard pad). Generic pips come from leftover tokens in `ATTRIBUTES` order.
+ */
+export function pickPilePayment(
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): AttributeTokens {
+  const spend: Partial<Record<Attribute, number>> = {};
+  const remaining: Partial<Record<Attribute, number>> = { ...tokens };
+
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const have = remaining[attribute] ?? 0;
+    const take = Math.min(have, count);
+    if (take > 0) {
+      spend[attribute] = (spend[attribute] ?? 0) + take;
+      remaining[attribute] = have - take;
+    }
+  }
+
+  let generic = genericCount(requirement);
+  for (const attribute of ATTRIBUTES) {
+    if (generic <= 0) break;
+    const have = remaining[attribute] ?? 0;
+    const take = Math.min(have, generic);
+    if (take > 0) {
+      spend[attribute] = (spend[attribute] ?? 0) + take;
+      remaining[attribute] = have - take;
+      generic -= take;
+    }
+  }
+  return spend;
+}
+
+/** Gate / Spend check: pile plus one-shot Resonance wildcards. */
+export const holdsTokensWithWildcards = (
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+  wildcardCount: number,
+): boolean => pileRequirementShortfall(tokens, requirement) <= wildcardCount;
+
+export const isNonEmptyRequirement = (
+  requirement: SymbolRequirement | undefined,
+): requirement is SymbolRequirement =>
+  requirement !== undefined && requirementTotal(requirement) > 0;
+
+/**
+ * Attack fuel: the pile must hold every printed `requires` (gate, not spent)
+ * and every printed `discards` (Spend — burned on declare). Either or both
+ * may be authored; an attack with neither is unfuelled.
+ *
+ * `[Resonance]` wildcards may cover shortfall on either clause. Gate shortfall
+ * is reserved first so Spend still sees remaining wildcards (requires does not
+ * remove pile tokens).
+ */
+export function attackIsFuelled(
+  tokens: AttributeTokens,
+  attack: {
+    readonly requires?: SymbolRequirement;
+    readonly discards?: SymbolRequirement;
+  },
+  wildcardCount = 0,
+): boolean {
+  const hasRequires = isNonEmptyRequirement(attack.requires);
+  const hasDiscards = isNonEmptyRequirement(attack.discards);
+  if (!hasRequires && !hasDiscards) return false;
+
+  let remaining = wildcardCount;
+  if (hasRequires) {
+    const short = pileRequirementShortfall(tokens, attack.requires);
+    if (short > remaining) return false;
+    remaining -= short;
+  }
+  if (hasDiscards) {
+    const short = pileRequirementShortfall(tokens, attack.discards);
+    if (short > remaining) return false;
+  }
+  return true;
+}
+
+/**
+ * Card play fuel: the pile must hold `effect.requires` (gate, not spent) and
+ * can pay header `[Spend]` (`spend` / `spendNeed` after `[Discount]`). Gate
+ * shortfall reserves wildcards first so Spend still sees remaining wildcards.
+ * `[Discount]` never reduces the Requires gate. Forge does not use this —
+ * it checks header Spend only (`canAffordForge` / `payForgeCost`).
+ */
+export function cardPlayIsFuelled(
+  tokens: AttributeTokens,
+  play: {
+    readonly requires?: SymbolRequirement;
+    readonly spend?: SymbolRequirement;
+    readonly spendNeed?: number;
+  },
+  wildcardCount = 0,
+): boolean {
+  let remaining = wildcardCount;
+  if (isNonEmptyRequirement(play.requires)) {
+    const short = pileRequirementShortfall(tokens, play.requires);
+    if (short > remaining) return false;
+    remaining -= short;
+  }
+
+  const caps = play.spend;
+  const need =
+    play.spendNeed !== undefined
+      ? play.spendNeed
+      : isNonEmptyRequirement(caps)
+        ? requirementTotal(caps)
+        : 0;
+  if (need <= 0) return true;
+  if (!isNonEmptyRequirement(caps)) return need <= remaining;
+  return canAffordUnderCaps(tokens, caps, need, remaining);
+}
+
+export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({
+  ...tokens,
+  [attribute]: (tokens[attribute] ?? 0) + 1,
+});
+
+/** Adds a requirement-shaped pile (Drain dest). */
+export function addTokens(
+  tokens: AttributeTokens,
+  added: SymbolRequirement,
+): AttributeTokens {
+  const next: Partial<Record<keyof AttributeTokens, number>> = { ...tokens };
+  for (const [attribute, count] of requirementEntries(added)) {
+    if (count <= 0) continue;
+    next[attribute] = (next[attribute] ?? 0) + count;
+  }
+  return next;
+}
+
+/**
+ * Removes a requirement's worth of tokens. Zeroed attributes are dropped rather
+ * than left as `0`, so two piles holding the same fuel always serialize
+ * identically and state comparisons in tests stay meaningful.
+ */
+export function removeTokens(
+  tokens: AttributeTokens,
+  requirement: SymbolRequirement,
+): AttributeTokens {
+  const next: Partial<Record<keyof AttributeTokens, number>> = { ...tokens };
+  for (const [attribute, count] of requirementEntries(requirement)) {
+    const remaining = (next[attribute] ?? 0) - count;
+    if (remaining > 0) next[attribute] = remaining;
+    else delete next[attribute];
+  }
+  return next;
+}
+
+/**
+ * Strip up to `amount` tokens in `ATTRIBUTES` order (martial → … → darkness).
+ * Used only when there is no player choice: empty / fewer-than-amount remaining,
+ * or a single attribute pile. Mixed piles with leftover tokens open
+ * `choose-attribute-tokens` instead (spec `011`).
+ */
+export function discardTokensInAttributeOrder(
+  tokens: AttributeTokens,
+  amount: number,
+): { readonly next: AttributeTokens; readonly discarded: SymbolRequirement } {
+  let remaining = amount;
+  const discarded: Partial<Record<(typeof ATTRIBUTES)[number], number>> = {};
+  for (const attribute of ATTRIBUTES) {
+    if (remaining <= 0) break;
+    const have = tokens[attribute] ?? 0;
+    if (have <= 0) continue;
+    const take = Math.min(have, remaining);
+    discarded[attribute] = take;
+    remaining -= take;
+  }
+  return { next: removeTokens(tokens, discarded), discarded };
+}
+
+export const totalTokens = (tokens: AttributeTokens): number =>
+  Object.values(tokens).reduce((sum, count) => sum + count, 0);
+
+/** Attributes that currently hold at least one pip. */
+export const tokenAttributesHeld = (tokens: AttributeTokens): readonly Attribute[] =>
+  ATTRIBUTES.filter((attribute) => (tokens[attribute] ?? 0) > 0);
+
+/**
+ * True when the controller must name which pips to strip: more than `amount`
+ * remain and they sit in more than one attribute. Homogeneous piles and
+ * "take all remaining" strips are deterministic (no real choice).
+ */
+export function tokenChoiceNeeded(tokens: AttributeTokens, amount: number): boolean {
+  if (amount <= 0) return false;
+  if (totalTokens(tokens) <= amount) return false;
+  return tokenAttributesHeld(tokens).length >= 2;
+}
+
+/**
+ * A legal strip pick: totals `min(amount, held)` and is a subset of `tokens`.
+ */
+export function isLegalTokenDiscardPick(
+  tokens: AttributeTokens,
+  discarded: SymbolRequirement,
+  amount: number,
+): boolean {
+  if (genericCount(discarded) > 0) return false;
+  const take = Math.min(amount, totalTokens(tokens));
+  if (take <= 0) return false;
+  if (requirementTotal(discarded) !== take) return false;
+  for (const [attribute, count] of requirementEntries(discarded)) {
+    if (count <= 0) return false;
+    if ((tokens[attribute] ?? 0) < count) return false;
+  }
+  return true;
+}

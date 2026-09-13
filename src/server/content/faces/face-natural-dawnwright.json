@@ -1,0 +1,16 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-dawnwright",
+  "name": "Dawnwright",
+  "kind": "natural",
+  "symbol": "mechanical",
+  "rulesText": "On roll: this face also produces 1 Luminar.",
+  "pips": {
+    "mechanical": 1,
+    "luminar": 1
+  },
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

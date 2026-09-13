@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-pyre-of-names",
+  "name": "Pyre of Names",
+  "kind": "synthetic",
+  "symbol": "darkness",
+  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Drain 2]. Do not bank this die's pips.",
+  "pips": {
+    "darkness": 2
+  },
+  "convertRoll": true,
+  "onRoll": [
+    {
+      "type": "drain-life",
+      "amount": 2,
+      "target": {
+        "kind": "choose-enemy"
+      },
+      "with": {
+        "kind": "most-damaged-ally"
+      }
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

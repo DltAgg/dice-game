@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-arcane",
+  "name": "Arcane",
+  "kind": "natural",
+  "symbol": "arcane",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

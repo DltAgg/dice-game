@@ -1,8 +1,9 @@
 # 004 — Face cards and the face deck
 
-Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; On roll / On absorb
-wired where modellable (`011`–`013`). Remaining: empty print (Great Spark /
-Rekindle) — [`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
+Status: **IMPLEMENTED DEPTH** — catalogue + face-deck ledger; spec `025` roll
+physics (inherent pips, convert Choose one, While showing, geometry). Face On
+absorb is retired. Remaining: empty print (Great Spark / Rekindle) —
+[`DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md).
 
 Derived from the `Face card` page of the `Card layouts` Figma file
 (`0t97sC2tBFYx2Nhe6zeRw7`, node `2:13`).
@@ -59,9 +60,73 @@ inherent effect). Synthetic installs are still **named specials**, not blank
 basic (setup only — still not forgeable mid-game). No inherent effect, overload
 capacity 1. Shield is not an attribute and is not Natural — `On absorb Natural`
 (Void Summoner) does not fire when a Shield is absorbed. `startingMinShieldsPerDie`
-(ASSUMED, default 1) applies to constructed layouts.
+(DECIDED, default 0) — Shield is optional on constructed opening dice.
 
-### Specials (Synthetic)
+### Specials (Synthetic) — current catalogue
+
+> **Catalogue reset (2026-08-29).** `src/server/content/faces/` holds eight
+> identity `face-natural-*`, `face-untyped-shield`, the twelve named synthetics
+> below, and the named naturals listed after them. Any special named later in
+> this spec is **retired print with no catalogue entry** — design reference only.
+
+Twelve synthetics — three per archetype attribute (Mechanical, Luminar, Arcane,
+Darkness) so a 12-card face deck can run either pair inside the 3-per-attribute
+cap. All `maxOverloads: 2`, no forge restriction. Named specials produce **more
+than 1 inherent pip** (spec `025`). Face `onAbsorb` is empty.
+
+**Tempo (Mechanical + Luminar)**
+
+| Id | Name | Symbol | Pips | Window |
+|---|---|---|---|---|
+| `face-synthetic-cogtooth` | Cogtooth | Mechanical | 2 Mechanical | While showing: `[Discount 1]` forge |
+| `face-synthetic-gear-train` | Gear Train | Mechanical | 2 Mechanical | On roll: if your other die shows the same attribute, `[Double]` |
+| `face-synthetic-mainspring` | Mainspring | Mechanical | 2 Mechanical | On roll: Choose one — bank this die's pips, or `[Reforge 1 Mechanical]` |
+| `face-synthetic-halo-lamp` | Halo Lamp | Luminar | 2 Luminar | While showing: `[Pierce 1]` |
+| `face-synthetic-lucent-choir` | Lucent Choir | Luminar | 2 Luminar | While showing: `[Empower 1]` |
+| `face-synthetic-sunward-lens` | Sunward Lens | Luminar | 1 Luminar + 1 Mechanical | Dual-pip |
+
+**Control (Arcane + Darkness)**
+
+| Id | Name | Symbol | Pips | Window |
+|---|---|---|---|---|
+| `face-synthetic-augur-glass` | Augur Glass | Arcane | 2 Arcane | While showing: `[Discount 1]` |
+| `face-synthetic-sigil-flare` | Sigil Flare | Arcane | 2 Arcane | On roll: Choose one — bank this die's pips, or `[Strike 2]` |
+| `face-synthetic-ward-lattice` | Ward Lattice | Arcane | 2 Arcane | On roll: if your other die shows the same attribute, `[Insight 2]` |
+| `face-synthetic-gloomwell` | Gloomwell | Darkness | 1 Darkness + 1 Arcane | Dual-pip |
+| `face-synthetic-ossuary` | Ossuary | Darkness | 2 Darkness | On roll: `[Recall 1]` that costs 2 or less |
+| `face-synthetic-pyre-of-names` | Pyre of Names | Darkness | 2 Darkness | On roll: Choose one — bank this die's pips, or `[Drain 2]` |
+
+**Dual-pip faces.** Yield is one `pips` map, same shape as pile tokens.
+Write the full bag including identity — `{ "mechanical": 1, "luminar": 1 }`
+— not a second field. Gloomwell shows Darkness and also produces 1 Arcane —
+fuel for Control's two-colour gates (Graven Summons, Nightmarrow Pact,
+Lightless Verdict). Sunward Lens is Tempo's synthetic mirror (Luminar +
+Mechanical). Dawnwright is the Natural half (Mechanical + Luminar).
+
+No mill on Arcane / Darkness faces. No draw on Luminar / Mechanical faces.
+No `[Prevent]` on any face.
+
+### Named naturals — current catalogue
+
+A Natural face may also be a **named special** with printed rules text. It is
+packed from the face deck like any synthetic; it is not one of the eight
+opening identity basics, so it must never appear in `BASIC_FACE_CARDS`
+(`faceKindPolicy.test.ts`).
+
+| Id | Name | Symbol | Pips | Window |
+|---|---|---|---|---|
+| `face-natural-dawnwright` | Dawnwright | Mechanical | 1 Mechanical + 1 Luminar | Dual-pip |
+
+Dawnwright is the Natural half of Tempo's dual-pip slot: a Mechanical face that
+funds the Luminar half of Mending Light, Beacon Array, and the Radiant Accord
+gate. Being Natural also matters mechanically — Pawl Spring's natural forge
+installs it, and Pawl Spring and Idler Gear can then overload it, so one face
+is both the payout and the mount. Overload capacity stays at the Natural 1.
+
+Sigil Flare and Pyre of Names are convert closers (forfeit that die's pips,
+including Overcharge, for Strike / Drain). Ossuary returns cheap graveyard
+cards while still banking 2 Darkness. No `[Prevent]` appears on any face —
+that stays reaction-exclusive.
 
 **Authoring:** only **named specials**. Never add blank/generic identity
 synthetics (`face-synthetic-martial`, `face-synthetic-corruption`, Forged
@@ -70,7 +135,7 @@ Martial, Synthetic Corruption, …).
 Every attribute may also be forged as a synthetic; those installs are always
 named specials from the owner's pool (Venom, Gear, Canker, Drain, Warhorn,
 Pack, Insight Rune, …). Enforced by `DUAL_KIND_ATTRIBUTES` (= all attributes)
-and an empty `SYNTHETIC_ONLY_ATTRIBUTES` in `src/game/model/attributes.ts`,
+and an empty `SYNTHETIC_ONLY_ATTRIBUTES` in `src/server/model/attributes.ts`,
 plus face-deck validation, forge eligibility, and catalogue consistency tests.
 There is no identity-only `face-synthetic-<attr>` card.
 
@@ -82,38 +147,38 @@ Named specials:
 | Blade Rain | 3 | On roll: arm next-attack split | `split-damage` pending |
 | Rending Claw | 3 | On roll: remove 3 Shields from most-shielded enemy | |
 | Crush | 3 | On roll: next attack +1 damage | |
-| Forbidden Heritage | 1 | Cannot open; On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel | |
-| Pestilent Plague | 2 | Cannot open; On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` | |
+| Forbidden Heritage | 1 | Cannot open; On roll: opp draw + retain; cannot-replace-by-forge; `ACTIVATE_FACE` peel ([Spend] Corruption scaling) | |
+| Pestilent Plague | 2 | Cannot open; On roll: counters → adjacent forge at 2; 4-turn forge-lock (die owner); `ACTIVATE_FACE` ([Spend] Corruption scaling) | |
 | Insight Rune | 2 | On roll: draw; On absorb: look top 2 | |
-| Conversion Rune | 2 | On roll: convert; On absorb: +Energy | |
-| Resonance Rune | 2 | On roll: conditional Energy; On absorb: requirement wildcard | |
-| Vital Spark | 2 | On roll: heal; On absorb: [Prevent] on choose-ally | Spec `016` pile bank |
+| Conversion Rune | 2 | On roll: convert; On absorb: generate Corruption | |
+| Resonance Rune | 2 | On roll: conditional generate Arcane; On absorb: requirement wildcard | |
+| Vital Spark | 2 | On roll: heal; On absorb: [Mark 1 Shield] on choose-ally | Spec `016` pile bank |
 | Aegis | 2 | On roll: generate Shield; On absorb: redirect on choose-ally | Spec `016` |
 | Revelation | 2 | On roll: generate Luminar; On absorb: heal if damage >½ life | |
-| Instinct | 2 | On roll: ally Empower 1; On absorb: ally Empower 2 | Spec `016` (optional bonus basic retired) |
-| Primordial Fury | 2 | On roll: Energy if ally attacked; On absorb: next attack +1 | Spec `016` |
+| Instinct | 2 | On roll: ally Empower 1; On absorb: ally Empower 2 | Catalogue |
+| Primordial Fury | 2 | On roll: generate Luminar if ally attacked; On absorb: next attack +1 | Spec `016` |
 | Pack | 2 | On roll: adjacent → Wild; On absorb: other ally next-attack +1 | |
-| Pack Share | 2 | On absorb: Generate 1 Wild | Spec `016` (was pack-feed copy) |
+| Pack Share | 2 | On absorb: Generate 1 Wild | Spec `016` |
 | Command | 2 | On roll: ally reposition; On absorb: remove 1 Shield (most-shielded enemy) | |
 | Impact | 2 | On roll: next attack +1; On absorb: next attack +2 | Spec `016` |
-| Formation | 2 | On roll: Energy if controller has FL; On absorb: 1 Shield on another allied FL | Spec `016` |
+| Formation | 2 | On roll: generate Wild if controller has FL; On absorb: 1 Shield on another allied FL | Spec `016` |
 | Venom | 2 | On roll: apply toxin; On absorb: next incoming +1 on choose-enemy | Spec `016` |
 | Spores | 2 | On roll: extra toxin if already toxined; On absorb: heal toxined ally | |
 | Adaptive Toxin | 2 | Cap toxin receive; [Strip 3 Toxin]. [Strike equal] | Spec `013` |
 | Stain | 2 | Corruption marker; lock Corrupted as resource | Spec `013` |
-| Infection | 2 | On roll: spread marker; On absorb: opp loses Energy | Spec `013` |
+| Infection | 2 | On roll: spread marker; On absorb: tax opp attribute pile (deferred) | Spec `013` |
 | Decay | 2 | Suppress Natural inherent; strip → unusable Corruption | Spec `013` |
 | Blight | 2 | On roll: generate Corruption; On absorb: you destroy 1 Ritual your opponent controls | Catalogue (not builtin Control) |
 | Hexbrand | 2 | On roll: [Drain 1]; On absorb: destroy Equipment | Catalogue (not builtin Control); Spec `016` |
 | Canker | 2 | On roll: Corruption marker; On absorb: forge 1 named synthetic Corruption special on opponent die | Catalogue (not builtin Control) |
-| Gear | 2 | On roll: Energy if other Synthetic; On absorb: forge −1 | |
+| Gear | 2 | On roll: generate Corruption if other Synthetic; On absorb: forge −1 | |
 | Catalyst | 2 | Synthetic pool wildcard; copy appeared synthetic onRoll | Spec `013` |
-| Overcharge | 2 | Optional Energy + suppress; next face effect twice | Spec `013` |
-| Flywheel | 2 | On roll: +Energy; On absorb: generate Shield | |
-| Piston | 2 | On roll: generate Mechanical; On absorb: +Energy | |
+| Overcharge | 2 | Optional generate Mechanical + Overcharge suppress; next face effect twice | Spec `013` |
+| Flywheel | 2 | On roll: generate Mechanical; On absorb: generate Shield | |
+| Piston | 2 | On roll: generate Mechanical; On absorb: generate Mechanical | |
 | Shadow Echo | 2 | On roll: optional discard→draw; On absorb: GY ≤2 | |
-| Drain | 2 | On roll: opp loses Energy; On absorb: transfer | |
-| Sacrifice | 2 | On roll: discard→2 Energy; On absorb: discard→2 damage | |
+| Drain | 2 | On roll / absorb: attribute-pile tax / transfer (deferred) | |
+| Sacrifice | 2 | On roll: discard→generate 2 Darkness; On absorb: discard→2 damage | |
 | Nightwell | 2 | On roll: generate Darkness; On absorb: [Drain 1] | Control Darkness fuel; Spec `016` |
 | Runeflare | 2 | On roll: 1 damage; On absorb: draw 1 | Control Arcane chip + filter |
 | Warhorn | 2 | On roll: generate Martial; On absorb: next attack +1 | |
@@ -170,7 +235,7 @@ helper until densified separately.
 Match-ui must show **remaining forge-lock** on Pestilent Plague slots and a
 **cannot-replace** cue on Forbidden Heritage (and locked Plague) so players do
 not target those slots for forge / Reforge. Do not hide `ACTIVATE_FACE` peel.
-Engine query: `slotCannotBeReplacedByForge` from `src/game/rules/faces.ts`.
+Engine query: `slotCannotBeReplacedByForge` from `src/server/rules/faces.ts`.
 
 - [x] Remaining forge-lock on Pestilent Plague slots (`DieSlot.forgeLockRemaining`)
 - [x] Cannot-replace cue (Heritage always; Plague while lock > 0)
@@ -184,13 +249,13 @@ Engine query: `slotCannotBeReplacedByForge` from `src/game/rules/faces.ts`.
 - [x] Crush and Rending Claw on-roll effects
 - [x] Modellable CSV / named special On roll / On absorb wired (`011`–`013`)
 - [x] Face-marker systems (Adaptive Toxin, Stain, Decay, Catalyst, Overcharge, Infection roll; Instinct absorb = Empower 2 choose-ally per `016`)
-- [x] Spec `016` Phase 3: On absorb = pile bank (no creature-local absorber)
+- [x] Spec `016`: On absorb = pile bank
 - [x] Stay-on-slot (Heritage never-replace; Plague forge-lock + spread at 2)
 
 ## Tests
 
-- [x] `src/game/reducer/faceDeck.test.ts`
-- [x] `src/game/reducer/faceMarkers.test.ts`
+- [x] `src/server/reducer/faceDeck.test.ts`
+- [x] `src/server/reducer/faceMarkers.test.ts`
 - [x] Existing forge / invariant / triggers suites
 - [x] Spec `011` / `012` / `013` focused suites
-- [x] `src/game/reducer/stayOnSlot.test.ts`
+- [x] `src/server/reducer/stayOnSlot.test.ts`

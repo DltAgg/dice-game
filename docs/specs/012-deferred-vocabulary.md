@@ -9,7 +9,7 @@ clauses in `002` / `003` / `004` resolve as data. Assumptions live in
 Face markers / Instinct absorb: [`013-face-markers.md`](./013-face-markers.md).
 
 Design cites: bible §6 (frontline), §7 (absorb / retain), §16 (phases),
-§18 (Energy track), §19–20 (play vs forge). Push / enemy move **banned**; ally
+§19–20 (play vs forge). Push / enemy move **banned**; ally
 swap/reposition modelled. Stun stays `DEFERRED`.
 
 ## Intent
@@ -32,7 +32,10 @@ engine can resolve the clause honestly. Movers always go through
 
 ### Cost discounts
 
-- `energy-cost-discount` standing ability on creatures and equipment.
+- `play-cost-discount` standing ability on creatures and equipment.
+- One-shot `play-cost-discount` effect (face / overload On roll): arms
+  `playCostDiscountThisTurn`. Consumed on the next `PLAY_CARD` header spend;
+  cleared at end of turn.
 - Applies to `PLAY_CARD` (effect, ritual place, equip, overload). **Not**
   `FORGE_CARD`.
 - Filters: `cardTypes`, `subtypes`, `attributes`. `oncePerTurn` spends a host
@@ -42,14 +45,15 @@ engine can resolve the clause honestly. Movers always go through
 ### GY replay (Paradox)
 
 - `replay-graveyard-tactic`: choose a GY Instant (`effect`) or Ritual
-  (`ritual`) with playable effects.
+  (`ritual`) with playable effects. The replaying source card cannot choose
+  itself (a hand Instant is already in GY when the choice opens).
 - Resolve those effects immediately. Ignore `[Requires]` / Active-when. Do not
-  pay that card’s Energy. Card stays in GY.
+  pay that card's pile cost. Card stays in GY.
 
 ### Pierce / ignore Shield
 
-- Attack damage order: Aegis redirect → incoming bonus → `on-take-damage`
-  reduce → prevent buffer (`009`) → skip up to N Shield (**not spent**) →
+- Attack damage order: Aegis redirect → incoming bonus → `[Reduce]`
+  (`on-take-damage.reduceBy`) → prevent buffer (`009`) → skip up to N Shield (**not spent**) →
   remaining Shield (spent) → HP.
 - Sources: creature `ignore-shield` standing; Rust `arm-ignore-shield` turn
   buffer.
@@ -60,14 +64,13 @@ engine can resolve the clause honestly. Movers always go through
 - Blade Rain: next attack this turn opens `split-damage` among living enemies
   in range of the attacker (assignments must sum to the damage amount).
 
-### Energy track riders
+### Pile riders
 
-- `lose-energy` / `transfer-energy`: opponent-held value only; no-op at 0.
 - `draw-cards.player`: `"controller"` (default) or `"opponent"`.
 
 ### Faces
 
-- `ACTIVATE_FACE` (actions): pay `energyBase + energyPerCorruptionOnDie ×`
+- `ACTIVATE_FACE` (actions): pay `spendBase + spendPerCorruptionOnDie ×`
   synthetic Corruption faces on that die; strip the showing Corruption face
   back to pool; slot becomes natural Shield. Not a forge (no draw).
 - Pestilent Plague: +1 counter on roll; at `pestilenceSpreadAt` (2), reset and
@@ -78,11 +81,13 @@ engine can resolve the clause honestly. Movers always go through
   forge overwrite. Plague uses `DieSlot.forgeLockRemaining` (catalogue `turns: 4`,
   ticked on the **die owner’s** turn finish). Installing Plague onto a die
   resets remaining lock to 4 on every Plague slot of **that die**.
-- `replace-synthetic-face` (Reforge): pending choice of an owned die slot whose
-  installed face matches `kind`+`attribute` (Synthetic Mechanical), return that
-  face to the pool (last-copy overload detach applies), then install a
-  **different** matching face from the pool onto the same slot. Not a forge —
-  no forge-draw. Whiffs when no legal complete choice exists.
+- `replace-synthetic-face` (`[Reforge N Attr]` / `[Cross forge N Y / Z]`):
+  pending choice of N replaceable slots on **one** owned die, then N
+  **synthetic** destination faces from the controller pool. `fromAttribute`
+  omitted = any showing face (Reforge). Set = those slots must show Y (Cross
+  forge). Always installs synthetic `attribute`. Not a forge — no forge-draw.
+  Whiffs when no legal complete choice exists (including fewer than N pool
+  synthetics, stay / cannot-replace, or the §9.1 attribute cap).
 
 ## State Changes
 
@@ -96,6 +101,7 @@ engine can resolve the clause honestly. Movers always go through
 | `FaceCardDefinition.stayPolicy` / `pestilenceSpreadAt` | Heritage never-replace; Plague lock + spread |
 | `GameState.ignoreShieldThisTurn` | Rust |
 | `GameState.forgeDiscountThisTurn` | Gear absorb |
+| `GameState.playCostDiscountThisTurn` | On roll `[Discount]` (not forge) |
 | `GameState.requirementWildcardsThisTurn` | Resonance |
 | `GameState.bladeRainArmed` | Blade Rain |
 | `PendingEffect.ignoreShield` / `sourceDieId` / `sourceSlotIndex` | Pierce + face context |
@@ -117,7 +123,7 @@ engine can resolve the clause honestly. Movers always go through
 | `RESOLVE_MIND_CONTROL` | Strip overloads (one face all, or one each of up to two) |
 | `RESOLVE_SPLIT_DAMAGE` | Blade Rain / Extermination |
 | `RESOLVE_OPTIONAL_REROLL` | Adrenaline (same-face ally damage); Rethrow (choose a rolled die, no punishment) |
-| `RESOLVE_REPLACE_SYNTHETIC_FACE` | Reforge (`replace-synthetic-face`) |
+| `RESOLVE_REPLACE_SYNTHETIC_FACE` | Reforge / Cross forge (`replace-synthetic-face`) |
 | `ACTIVATE_FACE` | Heritage / Plague activated ability |
 
 Illegal moves return `GameError` + original state.
@@ -131,7 +137,7 @@ Illegal moves return `GameError` + original state.
   Reaction windows still use `NOT_PRIORITY_PLAYER` / the priority allow-list
   (`008`).
 - `ACTIVATE_FACE`: actions phase, owned die, showing slot, face has
-  `activated`, holder has Energy for the computed cost.
+  `activated`, holder can pay the computed pile cost.
 - Convert replacements: eligible ids, Natural attributes, count ≤ pending
   amount.
 - Split-damage assignments: living legal targets, sum equals `amount`.
@@ -178,10 +184,10 @@ Match-ui must render these pendings (hotseat + online):
 | `mind-control` | Mode + 1 or 2 opposing face cards; `strip-one-each` also names the overload instance when a face has 2+ |
 | `split-damage` | Assign integer damage that sums to `amount` |
 | `optional-reroll` | Accept or decline reroll of that die (Adrenaline may then deal same-face ally damage; Rethrow does not) |
-| `replace-synthetic-face` | Pick owned Synthetic Mechanical slot + different matching pool face |
+| `replace-synthetic-face` | Pick N slots on one owned die, then N synthetic destination faces from pool (`fromAttribute` = Cross forge) |
 
 Also: **Activate** control on a showing Forbidden Heritage / Pestilent Plague
-face during actions (`ACTIVATE_FACE`). Display Energy cost
+face during actions (`ACTIVATE_FACE`). Display pile cost
 `2 + Corruption faces on that die`. Show pestilence counters **and remaining
 forge-lock** on Plague slots. Surface **cannot-replace-by-forge** on Heritage
 and on Plague while lock > 0 (forbid targeting those slots for
@@ -190,16 +196,16 @@ Show optional reposition / swap prompts after Dive / War Charge /
 Instinct.
 
 `choose-creature` already has a Decline path for optional filters.
-`replace-synthetic-face` is wired in MatchBoard (slot → pool face →
-`RESOLVE_REPLACE_SYNTHETIC_FACE`). Other pending types above that are still
-missing a chooser will leave the engine sitting on `pendingDecision` until the
-UI dispatches the matching resolve.
+`replace-synthetic-face` is wired in MatchBoard (N slots on one die → N pool
+synthetics → `RESOLVE_REPLACE_SYNTHETIC_FACE`). Other pending types above that
+are still missing a chooser will leave the engine sitting on `pendingDecision`
+until the UI dispatches the matching resolve.
 
 ## Acceptance Criteria
 
 - [x] Reposition/swap uses `setCreaturePosition` (`on-change-position` fires)
 - [x] Archmage / Tome discount first matching play; forge not discounted; stack
-- [x] Paradox replays a GY Instant/Ritual without paying Requires/Energy; card stays GY
+- [x] Paradox replays a GY Instant/Ritual without paying Requires/pile cost; card stays GY
 - [x] Minotaur pierce ignores 1 Shield without spending it
 - [x] Attack follow-ups (Burst draw, Overload shields, Bombardment strip Shield, …)
 - [x] Push clauses remain unwired with accurate print
@@ -207,10 +213,10 @@ UI dispatches the matching resolve.
 
 ## Tests
 
-- [x] `src/game/reducer/movers.test.ts`
-- [x] `src/game/reducer/discounts.test.ts`
-- [x] `src/game/reducer/replay.test.ts`
-- [x] `src/game/reducer/pierce.test.ts`
-- [x] `src/game/reducer/replaceSyntheticFace.test.ts` (Reforge)
-- [x] `src/game/reducer/stayOnSlot.test.ts` (Heritage / Plague stay + spread)
+- [x] `src/server/reducer/movers.test.ts`
+- [x] `src/server/reducer/discounts.test.ts`
+- [x] `src/server/reducer/replay.test.ts`
+- [x] `src/server/reducer/pierce.test.ts`
+- [x] `src/server/reducer/replaceSyntheticFace.test.ts` (Reforge)
+- [x] `src/server/reducer/stayOnSlot.test.ts` (Heritage / Plague stay + spread)
 - [x] Existing combat / prevent / playcard / triggers / autoplay suites

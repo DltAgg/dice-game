@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-choirlight",
+  "name": "Choirlight",
+  "playCost": {
+    "luminar": 3,
+    "any": 1
+  },
+  "type": "overload",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 3,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "Can only overload a Luminar face.\nOn roll: [Shield 2]. [Empower 1].",
+  "overload": {
+    "faceSymbols": [
+      "luminar"
+    ],
+    "onRoll": [
+      {
+        "type": "grant-shield",
+        "amount": 2,
+        "target": {
+          "kind": "choose-ally"
+        }
+      },
+      {
+        "type": "next-attack-bonus",
+        "amount": 1
+      }
+    ]
+  }
+}

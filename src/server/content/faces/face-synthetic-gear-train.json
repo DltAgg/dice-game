@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-gear-train",
+  "name": "Gear Train",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll: if your other die shows the same attribute, [Double].",
+  "pips": {
+    "mechanical": 2
+  },
+  "onRoll": [
+    {
+      "type": "conditional",
+      "when": {
+        "type": "other-die-same-attribute"
+      },
+      "then": [
+        {
+          "type": "arm-resolve-next-face-effect-twice"
+        }
+      ]
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

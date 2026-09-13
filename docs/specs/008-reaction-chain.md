@@ -37,7 +37,9 @@ conducts, its body cannot be interrupted.
    - Equipment attach;
    - Overload attach;
    - Attack declaration.
-6. **What does not open a window:** `FORGE_CARD` only.
+6. **What does not open a window:** `FORGE_CARD` only. Optional bonus effects
+   on the forge region still do not open a window — they drain on the
+   resolution stack after a successful install, like on-roll effects.
 7. **Legal responders:** hand `reaction` cards, and ready ritual-reactions.
 8. **Response kinds:**
    - **Negate** — `negate-card`: legal only when the **top** link is a
@@ -54,21 +56,22 @@ conducts, its body cannot be interrupted.
      so prevent can plug in).
 9. **Negate** targets the **top** chain link only. (`OPEN_DESIGN`; print:
    Runic Nullification, Arcane Silence, Fade — `002`; Seal the Rite — ritual-only.)
-10. **Runic Nullification.** Place as ritual (header Energy). `[Active when:
-    Arcane + Arcane]` (cumulative) → ready. Activation pays **+2 Energy**, then
+10. **Runic Nullification.** Place as ritual (`playCost` 2 Arcane). `[Active when:
+    Arcane + Arcane]` → ready. Activation pays **`[Spend: 2 x Arcane]`**, then
     negates the top link if its source card is an **Instant**
     (`negate-card` / `cardTypes: ["instant"]`).
-11. **Arcane Silence.** Hand reaction; header cost 4; negate top card link
+11. **Arcane Silence.** Hand reaction; header cost 3; negate top card link
     (`negate-card` / `cardTypes: "any"`).
 11b. **Seal the Rite.** Hand reaction; header cost 3; `negate-ritual` only.
 11c. **Fade.** Hand reaction; header cost 3; `negate-card` / `cardTypes: "any"`.
 12. **No mid-conduct reactions.** While `pendingDecision` is `search-deck`,
-    `search-graveyard`, `discard-cards`, `choose-creature`, or `choose-ritual`,
+    `search-graveyard`, `discard-cards`, `choose-creature`, `choose-ritual`,
+    `choose-equipment`, or `choose-overload`,
     no reaction window — those choices are part of conducting.
 13. **Negated card link.** Costs stay paid; body skipped. Ritual place:
     card never sits preparing (ends in GY). Equip/overload: attach does not
-    land. Ritual activate: continuous rituals exhaust; Instant / Reaction
-    rituals leave for the graveyard after resolving.
+    land. Ritual activate: continuous and reaction rituals stay and exhaust;
+    leftover instant-subtype rituals leave for the graveyard after resolving.
     apply after the activation attempt (costs paid).
 
 ## State Changes
@@ -79,12 +82,9 @@ conducts, its body cannot be interrupted.
 | `pendingDecision` | `reaction-window`: `priorityPlayerId`, pass tracking. Priority seat may Pass, play legal reaction, or activate legal ritual-reaction. |
 | Events | `chain-link-added`, `reaction-window-opened`, `priority-passed`, `chain-link-negated`, `chain-link-resolved` (names flexible). |
 
-Energy overshoot may flip the marker when a link’s cost is paid, but **turn
-end is evaluated only after the chain (and nested choices) fully finish**. If
-a later reaction has returned the marker to the turn player, the turn
-continues. The overshoot-pass bonus (`energyOnOvershootBonus`) is added only
-when that evaluation actually ends the turn, not when the marker first
-crosses.
+Turn end is evaluated only after the chain (and nested choices) fully finish.
+Voluntary `END_TURN` or effect-driven turn end is unchanged.
+
 
 ## Actions
 
@@ -161,14 +161,14 @@ None.
 - [ ] Double pass resolves LILO; negated tactic link skips body
 - [ ] Negate illegal against top `attack` link
 - [ ] Runic Nullification + Arcane Silence fully wired and tested
-- [ ] No reaction mid search / discard / choose-creature / choose-ritual
+- [ ] No reaction mid search / discard / choose-creature / choose-ritual / choose-equipment / choose-overload
 - [ ] Host broadcasts chain state
 - [ ] DoD green; `DEFERRED_CATALOGUE.md` updated for chain + negate + those two cards
 
 ## Tests
 
 - [ ] Instant play → Pass ×2 → effect resolves
-- [ ] Nullification negates top tactic link; Energy accounted
+- [ ] Nullification negates top tactic link; pile spend accounted
 - [ ] Silence from hand negates top tactic link
 - [ ] Negate rejected when top is `attack`
 - [ ] Seal the Rite negates ritual place / activate; refused against tactic top

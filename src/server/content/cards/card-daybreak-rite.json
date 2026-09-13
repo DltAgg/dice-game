@@ -1,0 +1,41 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-daybreak-rite",
+  "name": "Daybreak Rite",
+  "playCost": {
+    "luminar": 3
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "[Heal 2] on 2 allied creatures.",
+  "ritual": {
+    "spend": {
+      "luminar": 3
+    },
+    "effects": [
+      {
+        "type": "heal",
+        "amount": 2,
+        "target": {
+          "kind": "choose-ally"
+        }
+      },
+      {
+        "type": "heal",
+        "amount": 2,
+        "target": {
+          "kind": "choose-ally"
+        }
+      }
+    ]
+  }
+}

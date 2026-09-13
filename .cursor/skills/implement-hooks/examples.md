@@ -57,10 +57,12 @@
 }
 ```
 
-## Take-damage reduce (in-event modifier)
+## Take-damage `[Reduce N]` (in-event modifier)
+
+Print: `On take damage, once per turn: [Reduce 1].`
 
 ```ts
-// Hunting Armour
+// Hunting Armour / Prism Mantle
 {
   type: "on-take-damage",
   reduceBy: 1,

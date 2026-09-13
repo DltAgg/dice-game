@@ -68,13 +68,14 @@ wire. Each browser records locally:
 
 | Mode | What is recorded |
 |---|---|
-| `local` | Every accepted/rejected action + think time |
+| `local` | Hotseat: every accepted/rejected action + think time |
+| `local-ai` | Local Play vs AI on this machine (same observer as hotseat; labeled separately) |
 | `host` | Same, via `onAdvance` (complete action types) |
 | `client` | State ticks + log-delta events (action type may be null) |
 
 Aggregates **dedupe by `matchId`**, keeping the recording with more action
 samples (usually the host). Think times on the guest include network delay;
-the export labels `recordedAs`.
+the export labels `recordedAs` (`local` / `local-ai` / `host` / `client`).
 
 ## Persistence
 
@@ -86,24 +87,24 @@ Layer: `src/metrics/` (adapter, like `src/decks/`).
   missing or fails (private mode, quota).
 - **Write cadence:** after every observation (including rejects). In-progress
   matches survive refresh; a new `matchId` **abandons** the previous
-  in-progress recording on this browser.
+  in-progress recording on this browser unless that recording never left the
+  opening auto-roll (those unplayed ticks are dropped instead of kept as
+  1-turn abandoned). Opening the Match tab before Play → Local hotseat / vs AI
+  does not start a recording.
 - **Ids:** `nanoid` at this boundary only.
 - **Cap:** 200 recordings; oldest by `updatedAt` pruned on write.
 - **Schema:** `METRICS_SCHEMA_VERSION = 1`. Unknown versions are ignored.
 
 A recording stores: identity (match/seed/mode/decks), wall-clock span, per-turn
-summaries (damage, attacks, cards, energy start/end **and Energy spent/gained/lost
-amounts**, HP, zones, pending/reaction counts, creature deaths), per-action samples
+summaries (damage, attacks, cards, HP, zones, pending/reaction counts, creature
+deaths), per-action samples
 (think time, action type when known, pending kind, chain depth, event types),
 event-type histograms from `state.log`, and **hand-card spend split**:
 `totalCardsPlayed` / `cardPlayCounts` from `card-played`
 (`PLAY_CARD`, effect region) vs `totalCardsForged` / `cardForgeCounts` from
 unique `face-forged.cardInstanceId` (`FORGE_CARD`, one tactic even if it
 installs several faces). `forge-faces` effect installs leave
-`cardInstanceId` null and are not “cards played to forge.” Older recordings
-without forge fields fall back to counting accepted `FORGE_CARD` actions.
-Older recordings without `energySpent` omit those turns from Energy/turn means
-instead of treating missing amounts as zero.
+`cardInstanceId` null and are not “cards played to forge.”
 
 Derived (no extra engine events): **first damage / first attack / first creature
 death** from turn rows; finished matches with a wipe but no logged death count as
@@ -121,13 +122,11 @@ Must provide:
 
 - KPI row: match count, mean/median turns, % past 10-turn baseline, median
   drag score, idle vs stall rates, median duration, think time, **hand cards
-  play / forge**, **median first death**, **Energy spent / turn**, **first-player
-  win rate**
+  play / forge**, **median first death**, **first-player win rate**
 - Histograms: turns per match (marker at 10), pace verdict mix, wall-clock
 - Lethality: HP damage per turn; idle vs setup vs combat per turn; **deaths by
   turn**; first-death buckets (early / on-pace / overtime / never)
-- Mix charts: action types, event types, pending-decision kinds, energy-pass
-  cause (overshoot vs voluntary), **Energy spent by turn**, **opening seat**,
+- Mix charts: action types, event types, pending-decision kinds, **opening seat**,
   **deck pairs**, **play vs forge** (effect region vs
   `FORGE_CARD`), cards played (effect), cards played to forge, **stacked
   effect vs forge by turn** (mean cards that turn among matches that
@@ -136,7 +135,7 @@ Must provide:
 - Insights list derived from the same thresholds
 - Match table → detail (turn timeline, HP remaining, action samples)
 - Export: download JSON, download Markdown briefing, copy agent prompt
-  (preamble + compact JSON)
+  (preamble only — dump is Download JSON / Markdown)
 
 The match board stays a play surface. Optional: no live charts on
 `MatchBoard`.
@@ -154,8 +153,12 @@ JSON object:
 
 Markdown briefing is the same facts in prose tables so it pastes into a chat.
 
-Skill: `.cursor/skills/analyze-match-metrics/` — use when the user pastes an
-export or asks why matches run long.
+**Copy agent prompt** is the preamble plus a one-line “attach Download JSON”
+note. It does **not** inline the dump.
+
+Skill: `.cursor/skills/analyze-match-metrics/` — use when the user pastes a
+Copy agent prompt and/or attaches Download JSON, or asks why matches feel
+slow or unfun after the pile-only resource change.
 
 ## Acceptance Criteria
 

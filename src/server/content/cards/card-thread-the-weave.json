@@ -1,0 +1,28 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-thread-the-weave",
+  "name": "Thread the Weave",
+  "playCost": {
+    "arcane": 4
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 3,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Destroy Equipment] your opponent controls.",
+  "effect": {
+    "effects": [
+      {
+        "type": "destroy-equipment",
+        "target": {
+          "kind": "choose-opponent-equipment"
+        }
+      }
+    ]
+  }
+}

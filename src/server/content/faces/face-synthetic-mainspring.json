@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-mainspring",
+  "name": "Mainspring",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "On roll choose one:\n• Bank this die's pips.\n• [Reforge 1 Mechanical]. Do not bank this die's pips.",
+  "pips": {
+    "mechanical": 2
+  },
+  "convertRoll": true,
+  "onRoll": [
+    {
+      "type": "replace-synthetic-face",
+      "faces": 1,
+      "attribute": "mechanical"
+    }
+  ],
+  "onAbsorb": [],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

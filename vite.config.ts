@@ -11,10 +11,15 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@server": fileURLToPath(new URL("./src/server", import.meta.url)),
+      "@client": fileURLToPath(new URL("./src/client", import.meta.url)),
+      "@shared": fileURLToPath(new URL("./src/shared", import.meta.url)),
+      "@ai": fileURLToPath(new URL("./src/ai/index.ts", import.meta.url)),
     },
   },
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    setupFiles: [fileURLToPath(new URL("./src/server/testing/setupTestCatalogue.ts", import.meta.url))],
   },
 });

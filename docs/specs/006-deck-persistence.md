@@ -23,12 +23,13 @@ Tactics deck (DECIDED, playtest 2026-08-26 Yu-Gi-Oh-sized — see `docs/OPEN_DES
 | Max copies of one card id | 3 |
 
 Face deck (bible §12): up to 12 faces, at most 3 per attribute.
-Squad: exactly `creaturesPerPlayer` known creature definitions.
+Squad: exactly `creaturesPerPlayer` known creature definitions, including
+**exactly one** with `legendary: true`.
 
 Opening dice (`startingDice`, DECIDED 2026-08-19): two dice × six `FaceCardId`
 slots. Basics (dual-kind naturals + Shield) do not consume the face deck.
 Named specials on opening slots must be present in `faceDeck` (XOR ledger).
-Config caps: `startingMinShieldsPerDie` (1), `startingMaxSyntheticsPerPlayer`
+Config caps: `startingMinShieldsPerDie` (0), `startingMaxSyntheticsPerPlayer`
 (2), `startingMaxSyntheticsPerDie` (2), `startingMaxOnRollFacesPerDie` (2),
 plus `maxFacesOfSameAttributePerDie`. Echo / Heritage / Plague refused on
 opening slots (legal in the face deck for mid-game forge).

@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-beacon-array",
+  "name": "Beacon Array",
+  "playCost": {
+    "luminar": 2,
+    "any": 1
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "luminar",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "On absorb Luminar or Shield, once per turn: [Heal 1] on this creature.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "luminar",
+          "shield"
+        ],
+        "absorberRelation": "ally",
+        "oncePerTurn": true,
+        "effects": [
+          {
+            "type": "heal",
+            "amount": 1,
+            "target": {
+              "kind": "source-creature"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,154 @@
+import type { CardDefinition } from "../model/cards.js";
+import type { GameError } from "../model/errors.js";
+import type { CreatureId, PlayerId } from "../model/ids.js";
+import type { SymbolRequirement } from "../model/symbols.js";
+import {
+  discountedPlayRequirement,
+  reduceRequirement,
+  type DiscountMatch,
+} from "../rules/discounts.js";
+import { whileShowingTotals } from "../rules/whileShowing.js";
+import {
+  isNonEmptyRequirement,
+  pickPilePayment,
+  pileRequirementShortfall,
+  removeTokens,
+} from "../rules/tokens.js";
+import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
+import { refreshRitualOrientations } from "./zones.js";
+
+export function payHeaderCost(
+  draft: Draft,
+  playerId: PlayerId,
+  definition: CardDefinition,
+  applyDiscounts: boolean,
+): GameError | null {
+  const base = definition.playCost;
+  if (base === undefined || !isNonEmptyRequirement(base)) return null;
+  const { cost, matches } = applyDiscounts
+    ? discountedPlayRequirement(draft, playerId, definition, base)
+    : { cost: base, matches: [] as DiscountMatch[] };
+  const armed = applyDiscounts ? (draft.playCostDiscountThisTurn[playerId] ?? 0) : 0;
+  if (!isNonEmptyRequirement(cost)) {
+    markDiscountMatchesSpent(draft, matches);
+    consumePlayCostDiscount(draft, playerId, armed);
+    return null;
+  }
+  const err = payPileSpend(draft, playerId, cost);
+  if (err === null) {
+    markDiscountMatchesSpent(draft, matches);
+    consumePlayCostDiscount(draft, playerId, armed);
+  }
+  return err;
+}
+
+/**
+ * Synthetic forge burns the header `playCost` (minus `forgeDiscountThisTurn`).
+ * Natural forge is free — no pile burn and the forge discount is left unused
+ * so a later synthetic forge this turn can still consume it.
+ */
+export function payForgeCost(
+  draft: Draft,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): GameError | null {
+  if (definition.forge.kind === "natural") return null;
+  const base = definition.playCost;
+  if (base === undefined || !isNonEmptyRequirement(base)) return null;
+  const armedThisTurn = draft.forgeDiscountThisTurn[playerId] ?? 0;
+  const discount = armedThisTurn + whileShowingTotals(draft, playerId).forgeDiscount;
+  if (armedThisTurn > 0) {
+    const next = { ...draft.forgeDiscountThisTurn };
+    delete next[playerId];
+    draft.forgeDiscountThisTurn = next;
+  }
+  const pile = draft.players[playerId]?.attributePool ?? {};
+  const cost = reduceRequirement(base, discount, pile);
+  if (!isNonEmptyRequirement(cost)) return null;
+  return payPileSpend(draft, playerId, cost);
+}
+
+/* ------------------------------------------------------------ shared --- */
+
+/**
+ * Card `[Requires]` gate (`effect.requires`). The pile must hold it; tokens
+ * are not burned. Resonance wildcards cover shortfall only (same as attack
+ * `requires`). Header `[Spend]` is `payHeaderCost`. Name kept for call-site
+ * stability.
+ */
+export function payCardRequires(
+  draft: Draft,
+  playerId: PlayerId,
+  requirement: SymbolRequirement,
+): GameError | null {
+  if (!isNonEmptyRequirement(requirement)) return null;
+  const player = draft.players[playerId];
+  if (player === undefined) return "UNKNOWN_ENTITY";
+  const pile = player.attributePool;
+  const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
+  const shortfall = pileRequirementShortfall(pile, requirement);
+  if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
+  if (shortfall > 0) consumeRequirementWildcards(draft, playerId, shortfall);
+  return null;
+}
+
+/**
+ * Burn a Spend requirement from the owner's pile. Wildcards cover shortfall;
+ * only the pile portion actually removed is emitted as discarded.
+ */
+export function payPileSpend(
+  draft: Draft,
+  playerId: PlayerId,
+  requirement: SymbolRequirement,
+  creatureId?: CreatureId,
+): GameError | null {
+  const player = draft.players[playerId];
+  if (player === undefined) return "UNKNOWN_ENTITY";
+  const pile = player.attributePool;
+  const wildcards = draft.requirementWildcardsThisTurn[playerId] ?? [];
+  const shortfall = pileRequirementShortfall(pile, requirement);
+  if (shortfall > wildcards.length) return "INSUFFICIENT_SYMBOLS";
+
+  const spend = pickPilePayment(pile, requirement);
+  if (Object.keys(spend).length > 0) {
+    patchPlayer(draft, playerId, {
+      attributePool: removeTokens(pile, spend),
+    });
+    refreshRitualOrientations(draft, playerId);
+    emit(draft, {
+      type: "attribute-tokens-discarded",
+      playerId,
+      ...(creatureId !== undefined ? { creatureId } : {}),
+      discarded: spend,
+    });
+  }
+  if (shortfall > 0) consumeRequirementWildcards(draft, playerId, shortfall);
+  return null;
+}
+
+function markDiscountMatchesSpent(draft: Draft, matches: readonly DiscountMatch[]): void {
+  for (const match of matches) {
+    const creature = draft.creatures[match.creatureId];
+    if (creature === undefined) continue;
+    if (creature.spentOncePerTurnTriggers.includes(match.key)) continue;
+    patchCreature(draft, match.creatureId, {
+      spentOncePerTurnTriggers: [...creature.spentOncePerTurnTriggers, match.key],
+    });
+  }
+}
+
+function consumePlayCostDiscount(draft: Draft, playerId: PlayerId, armed: number): void {
+  if (armed <= 0) return;
+  const next = { ...draft.playCostDiscountThisTurn };
+  delete next[playerId];
+  draft.playCostDiscountThisTurn = next;
+}
+
+export function consumeRequirementWildcards(draft: Draft, playerId: PlayerId, count: number): void {
+  if (count <= 0) return;
+  const current = draft.requirementWildcardsThisTurn[playerId] ?? [];
+  const remaining = current.slice(count);
+  const next = { ...draft.requirementWildcardsThisTurn, [playerId]: remaining };
+  if (remaining.length === 0) delete next[playerId];
+  draft.requirementWildcardsThisTurn = next;
+}

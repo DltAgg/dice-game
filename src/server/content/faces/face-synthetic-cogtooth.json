@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-synthetic-cogtooth",
+  "name": "Cogtooth",
+  "kind": "synthetic",
+  "symbol": "mechanical",
+  "rulesText": "While showing: [Discount 1] forge.",
+  "pips": {
+    "mechanical": 2
+  },
+  "onRoll": [],
+  "onAbsorb": [],
+  "whileShowing": [
+    {
+      "type": "forge-discount",
+      "amount": 1
+    }
+  ],
+  "maxOverloads": 2,
+  "forgeRestriction": null
+}

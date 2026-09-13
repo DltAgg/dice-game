@@ -1,0 +1,51 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-cinerary-locket",
+  "name": "Cinerary Locket",
+  "playCost": {
+    "darkness": 3
+  },
+  "type": "equipment",
+  "subtypes": [],
+  "attribute": "darkness",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "darkness",
+    "target": "own-die"
+  },
+  "rulesText": "Can only equip an Arcane or Darkness creature.\nOn absorb Darkness, once per turn: [Strike 1] this creature and [Strike 1] an enemy creature you choose.",
+  "equipment": {
+    "mayTargetOpponent": false,
+    "creatureAttributes": [
+      "arcane",
+      "darkness"
+    ],
+    "abilities": [
+      {
+        "type": "on-absorb",
+        "symbols": [
+          "darkness"
+        ],
+        "absorberRelation": "ally",
+        "oncePerTurn": true,
+        "effects": [
+          {
+            "type": "damage",
+            "amount": 1,
+            "target": {
+              "kind": "source-creature"
+            }
+          },
+          {
+            "type": "damage",
+            "amount": 1,
+            "target": {
+              "kind": "choose-enemy"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

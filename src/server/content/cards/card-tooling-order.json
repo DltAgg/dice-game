@@ -1,0 +1,51 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-tooling-order",
+  "name": "Tooling Order",
+  "playCost": {
+    "mechanical": 2,
+    "any": 1
+  },
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "Choose one:\n• [Cross forge 1 Mechanical / Luminar]\n• [Cross forge 1 Luminar / Mechanical]",
+  "effect": {
+    "requires": {
+      "mechanical": 2
+    },
+    "effects": [
+      {
+        "type": "choose-effect-mode",
+        "modes": [
+          [
+            {
+              "type": "replace-synthetic-face",
+              "faces": 1,
+              "attribute": "luminar",
+              "fromAttribute": "mechanical"
+            }
+          ],
+          [
+            {
+              "type": "replace-synthetic-face",
+              "faces": 1,
+              "attribute": "mechanical",
+              "fromAttribute": "luminar"
+            }
+          ]
+        ],
+        "modeLabels": [
+          "Mechanical → Luminar",
+          "Luminar → Mechanical"
+        ]
+      }
+    ]
+  }
+}

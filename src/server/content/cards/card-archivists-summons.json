@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-archivists-summons",
+  "name": "Archivist's Summons",
+  "playCost": {
+    "arcane": 1
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "arcane",
+  "forge": {
+    "faces": 1,
+    "kind": "synthetic",
+    "attribute": "arcane",
+    "target": "own-die"
+  },
+  "rulesText": "[Discount 1] forge.",
+  "ritual": {
+    "spend": {
+      "arcane": 1
+    },
+    "effects": [
+      {
+        "type": "arm-forge-discount",
+        "amount": 1
+      }
+    ]
+  }
+}

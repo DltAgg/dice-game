@@ -22,7 +22,15 @@
     "skipLibCheck": true,
     "noEmit": true,
 
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"],
+      "@server": ["./src/server/index.ts"],
+      "@server/*": ["./src/server/*"],
+      "@client/*": ["./src/client/*"],
+      "@shared": ["./src/shared/index.ts"],
+      "@shared/*": ["./src/shared/*"],
+      "@ai": ["./src/ai/index.ts"]
+    }
   },
   "include": ["src", "vite.config.ts", "eslint.config.js"]
 }

@@ -1,0 +1,32 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-machine-shop",
+  "name": "Machine Shop",
+  "playCost": {
+    "mechanical": 1,
+    "any": 1
+  },
+  "type": "ritual",
+  "subtypes": [
+    "continuous"
+  ],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 2,
+    "kind": "synthetic",
+    "attribute": "mechanical",
+    "target": "own-die"
+  },
+  "rulesText": "[Stamp].",
+  "ritual": {
+    "spend": {
+      "mechanical": 1,
+      "any": 1
+    },
+    "effects": [
+      {
+        "type": "reapply-die-modifiers"
+      }
+    ]
+  }
+}
