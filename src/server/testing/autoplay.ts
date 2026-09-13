@@ -25,7 +25,7 @@ import { diceOf } from "../rules/dice.js";
 import { collectLegalSilenceHosts } from "../rules/silence.js";
 import { collectLegalBounceCards } from "../rules/bounce.js";
 import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
-import { legalTargetsFor } from "../rules/targeting.js";
+import { legalSplitDamageTargets, legalTargetsFor } from "../rules/targeting.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
 import { attackIsUnlocked } from "../rules/attackUnlock.js";
 import {
@@ -649,18 +649,7 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "split-damage") {
-    const targetId =
-      pending.attackerId === null
-        ? livingCreaturesOf(state, opponentOf(state, pending.controllerId))[0]?.id
-        : livingCreaturesOf(state, opponentOf(state, pending.controllerId)).find((creature) => {
-            if (creature.position === "back" && !pending.range) {
-              const front = livingCreaturesOf(state, creature.ownerId).filter(
-                (candidate) => candidate.position === "frontline",
-              );
-              return front.length === 0;
-            }
-            return true;
-          })?.id;
+    const targetId = legalSplitDamageTargets(state, pending)[0];
     if (targetId === undefined) {
       throw new Error("autoplay: no split-damage target");
     }

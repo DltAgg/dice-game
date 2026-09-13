@@ -4,12 +4,10 @@ import {
 import {
   currentLife,
   getCreatureDefinition,
+  legalSplitDamageTargets,
   type CreatureId,
   type GameState,
 } from "@server";
-import {
-  legalSplitDamageTargets,
-} from "../intents/legalChoices";
 import {
   btnClass,
   btnPrimary,

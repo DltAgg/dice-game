@@ -25,6 +25,7 @@ export * from "./rules/bounce.js";
 export * from "./rules/desynthesize.js";
 export * from "./rules/symbols.js";
 export * from "./rules/tokens.js";
+export * from "./rules/lanes.js";
 export * from "./rules/targeting.js";
 export * from "./rules/targets.js";
 export * from "./rules/whileShowing.js";

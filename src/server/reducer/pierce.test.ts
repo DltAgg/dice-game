@@ -52,7 +52,7 @@ describe("ignore Shield / pierce", () => {
   it("does not pierce on a creature without ignore-shield", () => {
     const match = withPhase(newMatch(), "actions");
     const attackerId = creatureIdAt(match, P1, 1);
-    const targetId = creatureIdAt(match, P2, 0);
+    const targetId = creatureIdAt(match, P2, 1);
     const state = withShields(withShowingFaces(match, P1, ["luminar"]), targetId, 1);
 
     const after = expectOk(

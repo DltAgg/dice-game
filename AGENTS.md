@@ -92,6 +92,7 @@ invoke them separately — do not implement both layers yourself.
 | `docs/specs/026-ai-playtest.md` | Headless two-AI local playtest (`src/ai`; public `@server` only) |
 | `docs/specs/027-local-vs-ai.md` | Lobby + store Play vs AI (`chooseAction` as a player adapter) |
 | `docs/specs/028-showing-face-combat.md` | Creature attacks `[Unlock]` from showing faces (not pile) |
+| `docs/specs/029-lane-combat.md` | Creature attacks target by column (lane); legendary / breach / Range |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |

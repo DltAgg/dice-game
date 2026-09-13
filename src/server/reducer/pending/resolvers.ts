@@ -19,7 +19,8 @@ import {
   replayableGraveyardTactics,
   searchableInGraveyard,
 } from "../../rules/cards.js";
-import { livingCreaturesOf, opponentOf } from "../../rules/creatures.js";
+import { opponentOf } from "../../rules/creatures.js";
+import { legalSplitDamageTargets } from "../../rules/targeting.js";
 import { diceOf } from "../../rules/dice.js";
 import {
   eligibleFacesForForge,
@@ -690,10 +691,9 @@ export function resolveSplitDamage(
   if (total !== pending.amount) return "INVALID_CHOICE";
   if (assignments.some((entry) => entry.amount < 0)) return "INVALID_CHOICE";
 
+  const legalIds = new Set(legalSplitDamageTargets(draft, pending));
   for (const entry of assignments) {
-    if (!isLegalSplitTarget(draft, pending.attackerId, pending.range, playerId, entry.creatureId)) {
-      return "INVALID_CHOICE";
-    }
+    if (!legalIds.has(entry.creatureId)) return "INVALID_CHOICE";
   }
 
   const ignoreShield = pending.ignoreShield ?? 0;
@@ -711,26 +711,6 @@ export function resolveSplitDamage(
 
   draft.pendingDecision = null;
   return resumeAfterEffectPause(draft);
-}
-
-function isLegalSplitTarget(
-  draft: Draft,
-  attackerId: CreatureId | null,
-  range: boolean,
-  controllerId: PlayerId,
-  creatureId: CreatureId,
-): boolean {
-  const creature = draft.creatures[creatureId];
-  if (creature === undefined || creature.defeated) return false;
-  if (attackerId === null) return true;
-  if (creature.ownerId === controllerId) return false;
-  if (creature.position === "back" && !range) {
-    const front = livingCreaturesOf(draft, creature.ownerId).filter(
-      (candidate) => candidate.position === "frontline",
-    );
-    if (front.length > 0) return false;
-  }
-  return true;
 }
 
 export function resolveChooseDieSlot(

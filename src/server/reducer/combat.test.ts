@@ -23,7 +23,7 @@ import {
   withAttributePool,
   advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { CRANK, DRIVE_SHAFT, RETOOL, VIGIL } from "../testing/tempoCatalogue.js";
+import { CRANK, DRIVE_SHAFT, KINDLE, RETOOL, VIGIL } from "../testing/tempoCatalogue.js";
 
 const HEAL_AFTER_STRIKE = testAttack({
   id: "attack-test-heal-after-strike",
@@ -135,7 +135,7 @@ describe("attacking", () => {
       playerId: P1,
       attackerId: creatureIdAt(state, P1, 1),
       attackId: VIGIL,
-      targetId: creatureIdAt(state, P2, 0),
+      targetId: creatureIdAt(state, P2, 1),
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe("ATTACK_NOT_UNLOCKED");
@@ -325,6 +325,67 @@ describe("attacking", () => {
     if (!result.ok) expect(result.error).toBe("INVALID_TARGET");
   });
 
+  it("lets the legendary declare into either frontline lane", () => {
+    const state = combatState(2);
+    const targetId = creatureIdAt(state, P2, 1);
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creatureIdAt(state, P1, 2),
+        attackId: DRIVE_SHAFT,
+        targetId,
+      }),
+    );
+    expect(after.creatures[targetId]?.damage).toBe(3);
+  });
+
+  it("refuses a non-legendary attack into the other frontline lane", () => {
+    const state = combatState(0);
+    const result = advance(state, {
+      type: "ATTACK",
+      playerId: P1,
+      attackerId: creatureIdAt(state, P1, 0),
+      attackId: CRANK,
+      targetId: creatureIdAt(state, P2, 1),
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("INVALID_TARGET");
+  });
+
+  it("lets the facing attacker hit the legendary through a same-lane breach", () => {
+    const match = newMatch();
+    let state = withPhase(match, "actions");
+    state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
+    state = withShowingFaces(state, P1, ["mechanical"]);
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creatureIdAt(state, P1, 0),
+        attackId: CRANK,
+        targetId: creatureIdAt(state, P2, 2),
+      }),
+    );
+    expect(after.creatures[creatureIdAt(after, P2, 2)]?.damage).toBe(2);
+  });
+
+  it("still blocks the other lane from a breach that is not theirs", () => {
+    const match = newMatch();
+    let state = withPhase(match, "actions");
+    state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
+    state = withShowingFaces(state, P1, ["luminar"]);
+    const result = advance(state, {
+      type: "ATTACK",
+      playerId: P1,
+      attackerId: creatureIdAt(state, P1, 1),
+      attackId: KINDLE,
+      targetId: creatureIdAt(state, P2, 2),
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("INVALID_TARGET");
+  });
+
   it("opens the back row to melee once the frontline is gone", () => {
     const match = newMatch();
     let state = withPhase(match, "actions");
@@ -436,7 +497,7 @@ describe("Kindle follow-up", () => {
         playerId: P1,
         attackerId,
         attackId: HEAL_AFTER_STRIKE.id,
-        targetId: creatureIdAt(state, P2, 0),
+        targetId: creatureIdAt(state, P2, 1),
       }),
     );
     let after = afterAttack;

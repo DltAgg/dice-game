@@ -631,7 +631,7 @@ describe("on-attack follow-ups", () => {
         playerId: P1,
         attackerId,
         attackId: HEAL_KINDLE.id,
-        targetId: creatureIdAt(state, P2, 0),
+        targetId: creatureIdAt(state, P2, 1),
       }),
     );
     expect(

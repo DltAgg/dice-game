@@ -77,19 +77,26 @@ There is **no mulligan**. The opening hand of **5** is the hand you play.
 
 Each player has:
 
-- **Frontline** (2 slots) and **Back** (the third creature at setup is the
-  legendary). Frontline protects the back: a non-Range attack may hit a
-  back-row creature only if that player has **no living frontline**. Range
-  ignores this. Card and face effects that name creatures are not attacks:
-  they ignore this unless print says otherwise. Print that names **each
-  enemy** or **each ally** hits every living creature on that side.
+- **Frontline** (two **columns**, 0 and 1) and **Back** (the third creature
+  at setup is the legendary). Non-legendaries occupy a stable column.
+  A non-Range creature attack may only hit the enemy **in front of them**
+  (same column). The **legendary** may attack either column. When a column
+  has no living enemy frontliner, that column is a **breach**: an attacker
+  who can choose that column may attack the **enemy legendary** even if the
+  other enemy frontliner is still alive. Defeating a creature does not slide
+  the survivor into the empty column. Range attacks ignore columns and
+  breach — they may target any living enemy. Card and face effects that name
+  creatures are not attacks: they ignore columns unless print says
+  otherwise. Print that names **each enemy** or **each ally** hits every
+  living creature on that side.
 - **Engine area** for rituals.
 - **Two dice**, each with six faces that reference face cards.
 - Hand, tactics deck (top-first), graveyard, equipment, overloads.
 
-Squad order (`creatureIds`) is left-to-right on the battlefield. Opening
-rows ignore squad index for the legendary: it is always placed **back**;
-non-legendaries fill frontline first.
+Squad order (`creatureIds`) is left-to-right. Opening rows ignore squad
+index for the legendary: it is always placed **back** with no numbered
+column; the first non-legendary in squad order takes **column 0**, the
+second takes **column 1**.
 
 ---
 

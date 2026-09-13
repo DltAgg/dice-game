@@ -77,7 +77,7 @@ function combatWithDriveShaft() {
 function combatWithCharge() {
   const base = withShowingFaces(withPhase(newMatch(), "actions"), P1, ["luminar"]);
   const attacker = creatureIdAt(base, P1, 1);
-  const target = creatureIdAt(base, P2, 0);
+  const target = creatureIdAt(base, P2, 1);
   return {
     attacker,
     target,

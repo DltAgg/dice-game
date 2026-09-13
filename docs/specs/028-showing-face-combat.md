@@ -89,7 +89,7 @@ No new `GameAction`. `ATTACK` legality changes.
 `ATTACK` is legal when today’s checks pass **except** pile fuel:
 
 - actions phase, living owned attacker, attack not already used, effect
-  present, targeting legal (frontline / Range);
+  present, targeting legal (lane facing / legendary / Range — spec `029`);
 - **and** `attackIsUnlocked(state, ownerId, attack)` is true.
 
 Failure: `ATTACK_NOT_UNLOCKED` (replace `ATTACK_NOT_FUELLED` at this call

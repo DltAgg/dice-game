@@ -1,12 +1,11 @@
 import type { CardType, CardZone, RitualOrientation } from "../model/cards.js";
-import type { BattlefieldPosition } from "../model/creatures.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
 import type { RNG } from "../rng/rng.js";
 import { holdsTokensWithWildcards } from "../rules/tokens.js";
 import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
-import { fireOnChangePosition, fireOnDiscard } from "./triggers.js";
+import { fireOnDiscard } from "./triggers.js";
 
 /**
  * Moving cards between deck, hand, graveyard, equipment, overload and ritual.
@@ -410,41 +409,4 @@ export function overloadFitsFace(
   return true;
 }
 
-/**
- * Single mover entry point so standing `on-change-position` triggers always fire
- * (Hunter's Collar). Callers must not patch `position` directly.
- */
-export function setCreaturePosition(
-  draft: Draft,
-  creatureId: CreatureId,
-  to: BattlefieldPosition,
-): void {
-  const creature = draft.creatures[creatureId];
-  if (creature === undefined || creature.defeated) return;
-  if (creature.position === to) return;
-  const from = creature.position;
-  patchCreature(draft, creatureId, { position: to });
-  fireOnChangePosition(draft, creatureId, from, to);
-}
-
-/**
- * Swap two living **allied** creatures via `setCreaturePosition`. Opposing
- * pairs whiff (enemy push/move is banned). Same creature or same position is a
- * no-op (Garuda already frontline swapping with another frontline).
- */
-export function swapCreaturePositions(
-  draft: Draft,
-  firstId: CreatureId,
-  secondId: CreatureId,
-): void {
-  if (firstId === secondId) return;
-  const first = draft.creatures[firstId];
-  const second = draft.creatures[secondId];
-  if (first === undefined || second === undefined) return;
-  if (first.defeated || second.defeated) return;
-  if (first.ownerId !== second.ownerId) return;
-  const firstTo = second.position;
-  const secondTo = first.position;
-  setCreaturePosition(draft, firstId, firstTo);
-  setCreaturePosition(draft, secondId, secondTo);
-}
+export { setCreaturePosition, swapCreaturePositions } from "./creaturePositions.js";

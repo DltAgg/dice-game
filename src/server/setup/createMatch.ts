@@ -127,6 +127,7 @@ function buildCards(
 /**
  * Legendary always opens in the back row (definition flag, not squad index).
  * Non-legendaries fill frontline first (up to `frontlineSlots`), then back.
+ * Frontline seats are stable columns 0 then 1 in squad order (spec `029`).
  */
 function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly CreatureState[] {
   let frontlineAssigned = 0;
@@ -136,10 +137,12 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       throw new Error(`createMatch: unknown creature definition "${definitionId}"`);
     }
     let position: CreatureState["position"];
+    let lane: CreatureState["lane"] = null;
     if (definition.legendary === true) {
       position = "back";
     } else if (frontlineAssigned < config.frontlineSlots) {
       position = "frontline";
+      lane = frontlineAssigned === 0 ? 0 : 1;
       frontlineAssigned += 1;
     } else {
       position = "back";
@@ -149,6 +152,7 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       definitionId,
       ownerId: setup.id,
       position,
+      lane,
       damage: 0,
       defeated: false,
       attacksUsedThisCombat: 0,

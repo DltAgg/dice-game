@@ -83,3 +83,5 @@ src/store/matchStore.ts     Zustand + advance()
 src/ui/match/MatchBoard.tsx hotseat board
 src/app/App.tsx             shell (Match | Catalogue)
 ```
+
+Frontline is two fixed columns from `frontlineLaneSlots`; empty seats stay empty (spec `029`).

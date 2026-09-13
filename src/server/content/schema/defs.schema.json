@@ -1229,7 +1229,7 @@
     },
     "attackDefinition": {
       "title": "AttackDefinition",
-      "description": "Creature attack. Unlock is the owner's currently showing faces (named attributes only, no any). range ignores the frontline restriction. Omit effect when the attack prints but cannot be declared yet. requires / discards are forbidden — attacks do not use the pile.",
+      "description": "Creature attack. Unlock is the owner's currently showing faces (named attributes only, no any). range ignores lane facing and breach (spec 029). Omit effect when the attack prints but cannot be declared yet. requires / discards are forbidden — attacks do not use the pile.",
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "name", "kind", "unlock", "range", "rulesText"],
@@ -1243,7 +1243,7 @@
         },
         "range": {
           "type": "boolean",
-          "description": "When true, the attack may target a back-row enemy through a living frontline."
+          "description": "When true, the attack ignores lane facing and breach (spec 029) and may target any living enemy."
         },
         "rulesText": {
           "type": "string",

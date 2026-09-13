@@ -84,12 +84,18 @@ arguments, or creature-attack `[Unlock]` (named attributes only — spec `028`).
 
 ### Battlefield capacity
 
-**Status:** `DECIDED`
+**Status:** `DECIDED` · columns **DECIDED** 2026-09-12 · spec `029`
 
-Two frontline slots plus a back row, from the diagram in bible §6. A squad of
-three deploys as two frontline and one back. The **legendary** always opens in
-the back (definition flag); non-legendaries fill frontline first — see
-**Legendary commander victory** below.
+Two **numbered frontline columns** (lanes 0 and 1) plus a back row, from the
+diagram in bible §6. A squad of three deploys as two frontline and one back.
+The **legendary** always opens in the back with `lane: null` (definition
+flag); non-legendaries fill frontline first, first in squad order → column
+0, second → column 1 — see **Legendary commander victory** and **Lane combat
+targeting** below.
+
+Creature **attacks** use those columns (facing / legendary privilege /
+breach). They do **not** use “the frontline as a whole protects the back.”
+Card effects that name creatures are not attacks and still ignore columns.
 
 ### Legendary commander victory
 
@@ -100,13 +106,46 @@ Bible §4’s “eliminate opposing creatures” is replaced for constructed pla
 - Every creature definition may set `legendary: true` (omit / false otherwise).
 - Every legal loadout squad has **exactly one** legendary among
   `creaturesPerPlayer` (3) creatures.
-- At match start the legendary is placed **back**; the other two fill
-  **frontline** first. Mid-match `[Swap]` / reposition is unrestricted.
+- At match start the legendary is placed **back** (`lane: null`); the other
+  two fill **frontline** columns 0 then 1. Mid-match `[Swap]` / reposition
+  still changes row; lane seats are **ASSUMED** (see **Lane combat targeting**).
 - When a player’s legendary is defeated (`defeated: true`), the **opponent
   wins** immediately. Defeating the other two alone does not win.
+- The legendary is the only creature that may **attack either column**. A
+  breach in a column (no living enemy frontliner there) lets an attacker who
+  can choose that column hit the enemy legendary even if the other
+  frontliner still lives. Spec `029`.
 
-Implemented in `validateSquad`, `buildCreatures`, `checkVictory`, and
-`docs/RULEBOOK.md` §1–§3.
+Implemented in `validateSquad`, `buildCreatures`, `checkVictory`,
+`targetingError`, and `docs/RULEBOOK.md` §1–§3.
+
+### Lane combat targeting
+
+**Status:** `DECIDED` · 2026-09-12 · spec [`029-lane-combat.md`](./specs/029-lane-combat.md)
+
+Supersedes the prototype “strict frontline wall” reading for **creature
+attacks** (bible §6 “cannot freely bypass the frontline”). Attacks now use
+stable columns:
+
+- Non-legendary, non-Range: only the living enemy frontliner in the
+  attacker’s `lane`, or the enemy **legendary** if that lane is a **breach**.
+- Legendary (definition flag): either living enemy frontliner; the enemy
+  legendary iff **at least one** enemy frontline lane is breached.
+- Defeating a creature does **not** compact the survivor onto column 0.
+- Card/face creature selectors (`choose-enemy`, `enemy-all`, …) are unchanged.
+
+**ASSUMED — Swap / `[Reposition]` lane seats.** Do not invent new Martial
+print. Non-legendaries keep `lane` for life (attack facing stays). Entering
+frontline with `lane: null` takes the seat’s lane (swap partner, or first
+empty 0 then 1). Legendary leaving frontline → `lane: null`. A non-legendary
+with `lane: null` (only after swapping onto the legendary’s unnumbered seat)
+has no facing column: they may target the enemy legendary only if at least
+one enemy frontline lane is empty; they may not pick a living enemy
+frontliner.
+
+**ASSUMED — Range ignores lane.** `attack.range === true` may target any
+living enemy (the privilege the flag used vs the old wall). No live
+catalogue attack is Range today.
 
 ---
 
@@ -718,7 +757,7 @@ is a data / spec edit, not a silent reducer rewrite.
 
 | Topic | Assumption coded |
 |---|---|
-| **Reposition 1 space** | Toggle the creature between `frontline` and `back` via `setCreaturePosition` only. If moving to frontline would exceed `config.frontlineSlots` (2), the controller must **swap** with a living frontline ally (pending choose). Optional (`may`) moves can be declined. Swaps always call `setCreaturePosition` twice. **Push is not reposition.** |
+| **Reposition 1 space** | Toggle the creature between `frontline` and `back` via `setCreaturePosition` only. If moving to frontline would exceed `config.frontlineSlots` (2), the controller must **swap** with a living frontline ally (pending choose). Optional (`may`) moves can be declined. Swaps always call `setCreaturePosition` twice. **Push is not reposition.** Lane seats: spec `029` ASSUMED (non-legendaries keep `lane`; legendary in back is `null`). |
 | **playCost discounts** | Apply to `PLAY_CARD` / ritual place / equip / overload, **not** `FORGE_CARD`. “Used” = played for its play region. Min cost 0. |
 | **Archmage** | First Arcane **card** (any main type) the controller plays that turn costs 1 pile token less from `playCost`. |
 | **Tome of Interdiction** | First Instant Arcane that turn costs 1 less from `playCost`. Stacks with Archmage (Instant Arcane can be −2). Spent keys on the host creature / gear; cleared `END_TURN`. |

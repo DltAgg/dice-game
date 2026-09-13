@@ -36,7 +36,7 @@ forges, and passes the turn. Reducing an opponent's squad to zero wins.
 | A shield prevents 1 damage once, stacks, and persists across turns | decision of 2026-08-07 |
 | The player chooses the order engine effects resolve in | §17 |
 | A creature makes at most one attack per Combat phase | §7 |
-| The frontline protects the back row; Range ignores that | §6 |
+| The two frontline columns face each other; Range ignores lane/breach | §6, spec `029` (2026-09-12) |
 | Turn flow: roll, then actions (absorb / spend / attack / play / forge), end | §16, playtest 2026-08-17 |
 | Costs and attack fuel from the player's attribute pile | spec `016`, 2026-08-24 |
 | Turn end is voluntary (`END_TURN`) or from effects | spec `016` |
@@ -44,8 +44,8 @@ forges, and passes the turn. Reducing an opponent's squad to zero wins.
 Because attributes bank into the pile immediately, same-turn attack after
 banking is legal. Turn 1 can bank and attack.
 
-The one prototype assumption left in this slice is the strict frontline reading.
-It is registered in `../OPEN_DESIGN.md` and read from `GameRulesConfig`.
+The prototype “strict frontline wall” for attacks is **superseded** by lane
+facing (spec `029`, DECIDED 2026-09-12). See `../OPEN_DESIGN.md`.
 
 ## State Changes
 
@@ -103,7 +103,7 @@ None in this slice, by design.
 - [x] A plain requirement leaves its fuel intact; a discard burns it.
 - [x] Same-turn banking can enable an attack that requires that attribute.
 - [x] Shields prevent damage, are spent doing so, and survive the turn.
-- [x] Attacks respect the frontline and honour Range.
+- [x] Attacks respect lane facing / legendary privilege / Range (spec `029`).
 - [x] A creature attacks at most once per turn (actions phase).
 - [x] Damage defeats a creature and defeat can end the match.
 - [x] Turn end is voluntary or from effects.
@@ -119,7 +119,7 @@ None in this slice, by design.
 - [x] `src/server/reducer/absorption.test.ts` — banking attributes into the pile and Shield onto creatures.
 - [x] `src/server/reducer/attributePileUp.test.ts` — pile costs, ritual gates, attack fuel.
 - [x] `src/server/reducer/rollBank.test.ts` — auto-bank after roll and manual absorb.
-- [x] `src/server/reducer/combat.test.ts` — pile-funded attacks, shields, frontline, Range, victory.
+- [x] `src/server/reducer/combat.test.ts` — showing-face unlocks, shields, lane combat, Range, victory.
 - [x] `src/server/reducer/invariants.test.ts` — the invariants of SPDD §38.
 - [x] `src/server/reducer/match.test.ts` — full matches to victory.
 - [x] `src/architecture/engine-purity.test.ts` — the engine imports no outer layer.
