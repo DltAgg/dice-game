@@ -43,6 +43,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   detachDice(draft);
   expireTurnSymbols(draft);
   resetCombatCounters(draft);
+  expireUnusedAttackPrevent(draft);
   draft.attackBonusThisTurn = {};
   draft.attackToxinThisTurn = {};
   draft.preventDrawArmed = {};
@@ -114,5 +115,20 @@ function resetCombatCounters(draft: Draft): void {
         extraAttacksThisTurn: 0,
       };
     }
+  }
+}
+
+/**
+ * Spec `009`: unused `[Prevent]` expires at end of turn when config says so.
+ * Silent like `extraAttacksThisTurn` EOT clears — no per-creature log spam.
+ */
+function expireUnusedAttackPrevent(draft: Draft): void {
+  if (draft.config.preventExpiry !== "end-of-turn") return;
+  for (const creature of Object.values(draft.creatures)) {
+    if (creature.attackPreventCount <= 0) continue;
+    draft.creatures[creature.id] = {
+      ...creature,
+      attackPreventCount: 0,
+    };
   }
 }

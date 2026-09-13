@@ -487,9 +487,9 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
   while a living **attack** link is on the chain, and only onto **that attack’s
   target**. Grants with no attack on the chain whiff (no charge).
 - That charge cancels the next **attack** against the creature (the whole
-  instance, before Shield). Unused charges from a **legal** reaction grant
-  persist until consumed (`preventExpiry: "none"`) — they are not a lasting
-  “arm next attack” you set up on your turn.
+  instance, before Shield). Unused charges **expire at end of turn**
+  (`preventExpiry: "end-of-turn"`) — they are not a lasting “arm next attack”
+  you set up on your turn.
 - Toxin ticks, face `[Strike]`, and other effect damage do **not** consume
   attack-prevent.
 - Prevent reactions (Prismatic Barrier, Sidestep, Luminar Judgement) answer

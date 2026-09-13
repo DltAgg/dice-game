@@ -302,6 +302,38 @@ describe("true prevent (009)", () => {
     expect(second.creatures[target]?.damage).toBe(3);
   });
 
+  it("unused attack-prevent expires at end of turn under default config", () => {
+    const base = withPhase(newMatch(), "actions");
+    const target = creatureIdAt(base, P2, 0);
+    const buffered = {
+      ...base,
+      creatures: {
+        ...base.creatures,
+        [target]: { ...base.creatures[target]!, attackPreventCount: 1 },
+      },
+    };
+    expect(buffered.config.preventExpiry).toBe("end-of-turn");
+
+    const after = expectOk(advance(buffered, { type: "END_TURN", playerId: P1 }));
+    expect(after.creatures[target]?.attackPreventCount).toBe(0);
+  });
+
+  it("unused attack-prevent persists across END_TURN when preventExpiry is none", () => {
+    const base = withPhase(newMatch(), "actions");
+    const target = creatureIdAt(base, P2, 0);
+    const buffered = {
+      ...base,
+      config: { ...base.config, preventExpiry: "none" as const },
+      creatures: {
+        ...base.creatures,
+        [target]: { ...base.creatures[target]!, attackPreventCount: 1 },
+      },
+    };
+
+    const after = expectOk(advance(buffered, { type: "END_TURN", playerId: P1 }));
+    expect(after.creatures[target]?.attackPreventCount).toBe(1);
+  });
+
   it("shield-only path still prevents with source shield", () => {
     const { attacker, target, state: combat } = combatWithCharge();
     const shielded = withShields(combat, target, 1);

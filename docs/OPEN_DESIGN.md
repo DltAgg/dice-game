@@ -460,7 +460,8 @@ Legal response **kind** depends on the top link:
   attacks, or absorb passives.
 - A legal reaction grant adds `attackPreventCount` (usually 1). The next
   **attack** against that creature is cancelled whole (before Shield). Unused
-  charges from legal grants persist until consumed (`preventExpiry: "none"`).
+  charges expire at end of turn (`preventExpiry: "end-of-turn"`; `"none"`
+  keeps them until consumed).
 - Damage-prevent **buffers** (`damagePreventBuffer` / `grant-damage-prevent`)
   are **gone** — they mixed with Shield at the table.
 - **Apply order when attack damage lands:** attack-prevent → Shield → HP.

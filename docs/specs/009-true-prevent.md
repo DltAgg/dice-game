@@ -30,9 +30,10 @@ the chain, and always applies only to that attack’s target.
 3. **Non-attack damage** (toxin ticks, face `[Strike]`, other effect damage)
    does not consume `attackPreventCount`.
 4. **Apply order:** attack-prevent → Shield → HP.
-5. **Unused prevent expiry:** none for now; unused charges from **legal**
-   reaction grants persist until consumed (`preventExpiry: "none"` on
-   `GameRulesConfig`). Not a lasting proactive buffer you arm on your turn.
+5. **Unused prevent expiry:** end of turn by default; unused charges from
+   **legal** reaction grants clear on `END_TURN` (`preventExpiry: "end-of-turn"`
+   on `GameRulesConfig`). `"none"` keeps charges until consumed (tests /
+   opt-out). Not a lasting proactive buffer you arm on your turn.
 6. **Attack window.** Declaring an attack opens a reaction window (`008`).
    Prevent reactions may respond; negate may not.
 7. **Prismatic Barrier / Sidestep:** reaction while top link is an **attack**;
@@ -49,7 +50,7 @@ the chain, and always applies only to that attack’s target.
 | Field | Change |
 |---|---|
 | `CreatureState` | `attackPreventCount: number` (was `damagePreventBuffer`). |
-| `GameRulesConfig` | `preventExpiry: "none"` stub. |
+| `GameRulesConfig` | `preventExpiry: "none" \| "end-of-turn"` (default `"end-of-turn"`). |
 | Events | `damage-prevented` source is `attack-prevent` \| `shield` \| `effect`. |
 | Barrier / Sidestep | `grant-attack-prevent` 1 on `chain-attack-target`. |
 
@@ -98,7 +99,7 @@ None.
 - [x] OPEN_DESIGN prevent + Barrier entries DECIDED and cited
 - [x] Damage apply path: attack-prevent → shield → HP
 - [x] Prismatic Barrier wires prevent-on-attack-target; no damage buffer
-- [x] Unused prevent persists until consumed (no expiry); config hook present
+- [x] Unused prevent expires at end of turn by default; `"none"` opt-out persists until consumed
 - [x] Events distinguish prevented-by-attack-prevent vs shield
 - [x] Judgement / Glimmer wired
 - [x] DoD green
@@ -106,6 +107,8 @@ None.
 ## Tests
 
 - [x] Prevent next attack → whole attack deals 0; later attack without remaining prevent hits
+- [x] Unused prevent cleared after `END_TURN` under default `preventExpiry`
+- [x] Unused prevent persists across `END_TURN` when `preventExpiry: "none"`
 - [x] Barrier illegal when top link is not `attack`
 - [x] Order: attack-prevent then shields (prevented attack leaves Shield unspent)
 - [x] Regression: creatures with only shields still work
@@ -114,4 +117,4 @@ None.
 ## Out of scope
 
 - Stun
-- Expiry other than `none`
+- Expiry policies beyond `"none"` / `"end-of-turn"`

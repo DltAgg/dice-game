@@ -91,7 +91,8 @@ export interface CreatureState {
   readonly shields: number;
   /**
    * Remaining incoming **attacks** to cancel whole (spec `009`). Applied before
-   * Shields. Unused remainder persists until consumed (`preventExpiry: "none"`).
+   * Shields. Unused remainder expires at end of turn by default
+   * (`preventExpiry: "end-of-turn"`); `"none"` keeps charges until consumed.
    * Non-attack damage does not consume this.
    */
   readonly attackPreventCount: number;
