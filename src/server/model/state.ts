@@ -16,7 +16,7 @@ import type {
   PlayerId,
   SymbolInstanceId,
 } from "./ids.js";
-import type { AttributeTokens, SymbolInstance, SymbolType } from "./symbols.js";
+import type { SymbolInstance, SymbolType } from "./symbols.js";
 import type { PendingDecision } from "./pendingDecision.js";
 import type { RngState } from "../rng/rng.js";
 
@@ -66,10 +66,10 @@ export interface ChainLink {
  * legal move is noise rather than a decision point.
  *
  * Turn phases are `roll` and `actions` only — banking happens during actions.
- * `ROLL_DICE` enters `actions`. Attribute pile banking, Shield absorb onto a
- * creature, `[Requires]` gates, `[Spend]` burns, attacks, plays, forges, and
- * ready-ritual activates all share that window. Unabsorbed pool symbols stay
- * absorbable until used or the turn ends. Rituals cannot activate during roll.
+ * `ROLL_DICE` enters `actions`. Rolled pips, Shield absorb onto a creature,
+ * attacks, plays, forges, and ready-ritual activates all share that window.
+ * Unabsorbed pool symbols stay absorbable until used or the turn ends.
+ * Rituals cannot activate during roll.
  */
 export type TurnPhase = "roll" | "actions";
 
@@ -129,11 +129,6 @@ export interface PlayerState {
   readonly overload: readonly CardInstanceId[];
   /** Ritual cards this player owns that are waiting / ready on the engine field. */
   readonly ritual: readonly CardInstanceId[];
-  /**
-   * Persistent attribute pile (spec `016`). Absorbed attribute pips bank here
-   * immediately; attacks and ritual Active-when / Spend read this pool.
-   */
-  readonly attributePool: AttributeTokens;
   /**
    * Player-scoped once-per-turn keys (Adrenaline reroll, etc.). Cleared on END_TURN.
    */

@@ -104,7 +104,7 @@ face({
 - `onRoll` fires when the face is showing after `ROLL_DICE` (and related keep paths).
 - `onAbsorb` fires when a symbol from this face is **banked into the owner’s
   attribute pile** (roll auto-bank, effect generate, or manual absorb — spec `016`).
-  See [attribute-pile.md](attribute-pile.md).
+  See `docs/RULEBOOK.md` §§6–7 (no pile).
 - New dual-region faces: standardize print as `On roll:` / `On absorb:` — see
   [standardize-card-effects](../standardize-card-effects/SKILL.md).
 - Leave arrays empty when print clauses are not fully modelled; keep `rulesText`.

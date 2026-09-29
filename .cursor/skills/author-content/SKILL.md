@@ -4,8 +4,8 @@ description: >-
   Design then author tactic, ritual, and face-card catalogue entries (and
   creatures) as typed data in src/server/content. Use when occupying a new
   catalogue slot, adding print/Figma/CSV text, or when the user mentions
-  catalogue, forge, overload, ritual, equipment, face deck, attribute pile,
-  Requires/Spend, uniqueness, deferred effects, or playtest “felt like the
+  catalogue, forge, overload, ritual, equipment, face deck, uniqueness,
+  deferred effects, or playtest “felt like the
   wrong archetype.” Do not use to clone the last card or to reprint Forge-1
   Spend/Generate glue.
 ---
@@ -17,11 +17,13 @@ under `src/server/content`. There is **no** CSV ingest — spreadsheets are
 worksheets, then catalogue documents. Do not transcribe the last file.
 
 This skill is the path for **new** ritual / tactic / face cards as well as
-translating print. Design canon: `competitive_dice_game_agent_bible.md`.
+translating print. Player-facing rules: [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md).
 Set craft (uniqueness, forge, bridges, generic reach): [design-craft.md](design-craft.md).
 Philosophy and attribute identities: [design.md](design.md).
-**Attribute pile (fuel, Absorb, gates):** [attribute-pile.md](attribute-pile.md) —
-read before editing rituals, `onAbsorb`, attack costs, or standing `on-absorb`.
+**No live attribute pile** — `playCost`, attack `discards`, and `effect.requires`
+in JSON are catalogue leftovers unless engine-developer reintroduces fuel.
+Absorb still resolves **On absorb** and Shield onto creatures; do not write new
+print that assumes banking or spending pile tokens.
 Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) — new/edited
 `rulesText` uses `[Mark N X]`, `[Empower N]`, etc. Do not mint Dose/Envenom-style
 verbs for a new token.
@@ -42,8 +44,8 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
 
 ## Hard rules
 
-1. **Play, forge, or `[Overcharge]` — never two on the same use** (bible §19–20
-   + spec `021`). Every hand card still *has* a forge region. Do **not** print
+1. **Play, forge, or `[Overcharge]` — never two on the same use** (spec `002` /
+   `021`). Every hand card still *has* a forge region. Do **not** print
    `[Overcharge]` on each card (master rule; RULEBOOK §11). Spec
    `013` `optional-overcharge` is a face-marker opcode, not this keyword.
 2. Set structured engine fields **only** when every printed clause is modelled.
@@ -75,13 +77,11 @@ Types: `src/server/model/cards.ts`, `dice.ts`, `effects.ts`, `creatures.ts`.
    players must act, name the actors in print (“you choose…”, “that
    creature’s controller discards…”) instead of relying on owner/controller
    jargon.
-8. **Printed 1-token `playCost` is exceptional.** Do not author `playCost`
-   totaling 1 token as cheap cycle. Prefer 2+ of the card’s attribute.
-   Gates are `[Requires]` only (`effect.requires` holds; it does not burn).
-   Extra burn: raise `playCost`, `ritual.spend`, or attack `discards` — see
-   [attribute-pile.md](attribute-pile.md). `[Discount]` cuts header Spend
-   only. Natural forge does not burn `playCost`; synthetic forge does.
-   Cheaper plays come from `[Discount]`, not a roster of 1-token cards.
+8. **Pile costs are not enforced.** Keep `playCost` / `requires` / attack
+   `discards` aligned with print for a future economy if asked, but do not
+   treat them as live gates. Prefer effects that work without pile fuel.
+   `[Discount]` and forge waiver rules in the rulebook apply only where the
+   engine still implements them.
 9. **Do not clone the last card.** Audit live JSON first. Default
    `forge.faces: 1` + own-attribute Natural/Synthetic with no rider is a
    sticker, not a design. `[Spend] X, [Generate] Y` is not a bridge.
@@ -97,7 +97,7 @@ Card Progress:
 - [ ] 2. Uniqueness + dice-resonance + forge intent — reject reskins
 - [ ] 3. Kind + attribute identity + exclusive mechanic (design.md)
 - [ ] 3b. Window/feel (`docs/MECHANIC_ARCHETYPES.md`) — reject `RETARGETED` / `ANTI`
-- [ ] 4. Pile costs / gates if relevant (attribute-pile.md) — not a converter license
+- [ ] 4. Costs in data vs enforced play (RULEBOOK) — no new pile-fuel cards
 - [ ] 5. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
 - [ ] 6. Map clauses → existing effects / hooks OR defer OR engine brief
 - [ ] 7. Author catalogue entry (ids, forge, play region)
@@ -136,7 +136,6 @@ Card Progress:
 ## Progressive references
 
 - **Set craft** (uniqueness, forge, bridges, generic reach): [design-craft.md](design-craft.md)
-- **Attribute pile (spec `016`):** [attribute-pile.md](attribute-pile.md)
 - Design / identities / exclusive verbs: [design.md](design.md)
 - Tactics + rituals: [tactics.md](tactics.md)
 - Faces / dice: [faces.md](faces.md)

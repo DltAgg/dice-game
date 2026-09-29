@@ -1,5 +1,10 @@
 # Mechanic–archetype catalogue
 
+> **Era note:** This tracker reflects the **previous pile-fuel skirmish** set and
+> playtests from that era. The attribute pile and legendary win are gone; a future
+> tag-fighter design is not documented here. Use for historical feel / retarget
+> archaeology — do not treat it as canon for the next game.
+
 Living playtest tracker: **which mechanic, in which window, feels like which
 deck style.** Use it to keep Aggro, Control, Tempo, Combo, Burn, and Support
 readable, and to retarget leaks after playtests.

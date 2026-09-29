@@ -143,12 +143,12 @@ describe("hasLegalReactionOffer (query)", () => {
     expect(hasLegalReactionOffer(opened, P2)).toBe(true);
   });
 
-  it("does not wait when a prevent is chain-legal but the pile cannot pay playCost", () => {
+  it("still offers a prevent reaction when playCost no longer gates on the pile", () => {
     const opened = openedAttackOnP2([TEST_REACTION_PREVENT], { mechanical: 10 });
     const prevent = getCard(TEST_REACTION_PREVENT)!;
     expect(isLegalHandReaction(opened, prevent)).toBe(true);
-    expect(isEnabledHandReaction(opened, P2, prevent)).toBe(false);
-    expect(hasLegalReactionOffer(opened, P2)).toBe(false);
+    expect(isEnabledHandReaction(opened, P2, prevent)).toBe(true);
+    expect(hasLegalReactionOffer(opened, P2)).toBe(true);
   });
 
   it("waits when a prevent reaction can answer an attack on you", () => {

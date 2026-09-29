@@ -131,8 +131,7 @@ export function Lobby() {
           Local hotseat
         </h2>
         <p className="text-xs text-stone-500">
-          Each loadout needs exactly one legendary creature. Illegal decks show the engine reason
-          below.
+          Illegal decks show the engine reason below.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <DeckSelect

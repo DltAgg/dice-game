@@ -75,15 +75,16 @@ describe("combat package", () => {
     expect(resolved.attackBonusThisTurn[P1]).toBe(1);
   });
 
-  it("a generate-and-draw instant fuels the pile and draws", () => {
+  it("plays a generate-and-draw instant successfully", () => {
+    const ready = actionsReady([TEST_PLAYABLE]);
     const after = expectOk(
-      advance(actionsReady([TEST_PLAYABLE]), {
+      advance(ready, {
         type: "PLAY_CARD",
         playerId: P1,
-        cardInstanceId: handCardIdAt(actionsReady([TEST_PLAYABLE]), P1, 0),
+        cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
+    expect(after.players[P1]?.hand).not.toContain(handCardIdAt(ready, P1, 0));
   });
 
   it("a silence instant opens a host choice on play", () => {

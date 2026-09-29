@@ -8,7 +8,6 @@ import {
   newMatch,
   P1,
   P2,
-  withAttributePool,
   withPile,
   withHand,
   withPhase,
@@ -39,7 +38,6 @@ describe("playing a card for its effect", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.players[P1]?.attributePool.mechanical).toBe(10);
     expect(eventTypes(result.state)).toContain("card-played");
     expect(graveyardOf(result.state, P1).map((card) => card.id)).toEqual([cardInstanceId]);
   });
@@ -94,8 +92,8 @@ describe("playing a card for its effect", () => {
   });
 });
 
-describe("play cost and the pile", () => {
-  it("refuses when the pile lacks the play cost", () => {
+describe("play cost without pile spend", () => {
+  it("plays without a prefilled pile", () => {
     const state = withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]);
 
     const result = advance(state, {
@@ -104,8 +102,7 @@ describe("play cost and the pile", () => {
       cardInstanceId: handCardIdAt(state, P1, 0),
     });
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("INSUFFICIENT_SYMBOLS");
+    expect(result.ok).toBe(true);
   });
 
   it("does not end the turn automatically after playing", () => {
@@ -141,12 +138,8 @@ describe("play cost and the pile", () => {
     if (!result.ok) expect(result.error).toBe("NOT_ACTIVE_PLAYER");
   });
 
-  it("a 2-cost play with exactly 2 Mechanical spends the header once", () => {
-    const state = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [STAMP.id]),
-      P1,
-      { mechanical: 2 },
-    );
+  it("plays a 2-cost header without pile setup", () => {
+    const state = withHand(withPhase(newMatch(), "actions"), P1, [STAMP.id]);
 
     const result = advance(state, {
       type: "PLAY_CARD",
@@ -155,16 +148,10 @@ describe("play cost and the pile", () => {
     });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.state.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
   });
 
-  it("a 2-cost play does not burn a third Mechanical", () => {
-    const state = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [STAMP.id]),
-      P1,
-      { mechanical: 3 },
-    );
+  it("plays TEST_PLAYABLE without pile setup", () => {
+    const state = withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]);
 
     const result = advance(state, {
       type: "PLAY_CARD",
@@ -173,43 +160,6 @@ describe("play cost and the pile", () => {
     });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.state.players[P1]?.attributePool.mechanical).toBe(1);
-  });
-
-  it("a 2-cost play fails when the pile cannot cover the header", () => {
-    const state = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
-      P1,
-      { mechanical: 1 },
-    );
-
-    const result = advance(state, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(state, P1, 0),
-    });
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("INSUFFICIENT_SYMBOLS");
-  });
-
-  it("a stamp instant spends header 2 Mechanical", () => {
-    const state = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [STAMP.id]),
-      P1,
-      { mechanical: 2 },
-    );
-
-    const result = advance(state, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(state, P1, 0),
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.state.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
   });
 });
 

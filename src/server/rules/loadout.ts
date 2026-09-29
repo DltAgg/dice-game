@@ -253,19 +253,11 @@ function validateSquad(
       reason: `squad has ${String(squad.length)} creatures, need ${String(config.creaturesPerPlayer)}`,
     };
   }
-  let legendaryCount = 0;
   for (const definitionId of squad) {
     const definition = getCreatureDefinition(definitionId);
     if (definition === undefined) {
       return { ok: false, reason: `unknown creature "${definitionId}"` };
     }
-    if (definition.legendary === true) legendaryCount += 1;
-  }
-  if (legendaryCount !== 1) {
-    return {
-      ok: false,
-      reason: `squad has ${String(legendaryCount)} legendary creatures, need exactly 1`,
-    };
   }
   return { ok: true };
 }

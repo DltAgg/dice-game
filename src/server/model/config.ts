@@ -88,9 +88,8 @@ export interface GameRulesConfig {
    */
   readonly forgeYieldGenerate: number;
   /**
-   * DECIDED (playtest 2026-08-29). Immediate pile bank per face installed by
-   * own-die **synthetic** `FORGE_CARD` only. Natural forge and opponent-die
-   * forge do not bank.
+   * Unused. Was immediate pile bank per own-die synthetic forge. Kept so
+   * existing `GameRulesConfig` snapshots stay shape-compatible.
    */
   readonly forgeBankPerFace: number;
   /**

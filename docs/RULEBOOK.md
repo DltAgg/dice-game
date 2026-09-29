@@ -15,17 +15,21 @@ src/server/model/config.ts (DEFAULT_RULES_CONFIG).
 
 ## 1. Object of the game
 
-Two players. You win by **defeating the opponent’s legendary creature**
-(Life reduced to 0). Defeating the other two creatures alone does **not**
-win. There is no deck-out loss, no reshuffle, and no secondary victory
-condition.
+Two players skirmish with squads, customizable dice, and tactics.
 
-Every legal squad has **exactly one** legendary. It opens in the **back**
-row; the other two open on the **frontline**. After the match starts, the
-legendary may `[Swap]` / reposition like any other creature.
+**There is currently no automatic victory condition.** Legendary commander win
+was removed; a future “defeat all fighters” / 3v3 wipe rule is **not**
+implemented. Creature Life can still reach 0, but that alone does **not** end
+the match today. `GameState` still has generic `status` / `winner` fields for a
+later win hook. There is no deck-out loss and no reshuffle.
+
+Loadouts need **three** creatures, not exactly one legendary. Catalogue
+creatures may still carry an unused `legendary` flag. Setup places by **squad
+index**: frontline first (up to two), then back. Any creature may `[Swap]` /
+reposition during play.
 
 Creature attacks are **one** damage path. Tactics, rituals, faces, equipment,
-and statuses may also deal the damage that ends the match.
+and statuses may also deal damage.
 
 ---
 
@@ -35,7 +39,7 @@ Each player’s loadout is:
 
 | Piece | Rule |
 |---|---|
-| Squad | Exactly **3** creatures, including **exactly 1** legendary |
+| Squad | Exactly **3** creatures |
 | Tactics deck | **40–50** cards, **≤3** copies of the same card id |
 | Face deck | **≤12** face cards, **≤3** sharing one attribute |
 | Opening dice | Two d6 layouts (`startingDice`) |
@@ -77,8 +81,8 @@ There is **no mulligan**. The opening hand of **5** is the hand you play.
 
 Each player has:
 
-- **Frontline** (2 slots) and **Back** (the third creature at setup is the
-  legendary). Frontline protects the back: a non-Range attack may hit a
+- **Frontline** (2 slots) and **Back** (third creature at setup). Frontline
+  protects the back: a non-Range attack may hit a
   back-row creature only if that player has **no living frontline**. Range
   ignores this. Card and face effects that name creatures are not attacks:
   they ignore this unless print says otherwise. Print that names **each
@@ -87,9 +91,8 @@ Each player has:
 - **Two dice**, each with six faces that reference face cards.
 - Hand, tactics deck (top-first), graveyard, equipment, overloads.
 
-Squad order (`creatureIds`) is left-to-right on the battlefield. Opening
-rows ignore squad index for the legendary: it is always placed **back**;
-non-legendaries fill frontline first.
+Squad order (`creatureIds`) is left-to-right on the battlefield. Setup fills
+**frontline** first (up to two), then **back**, by squad index.
 
 ---
 
@@ -109,24 +112,24 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
 
 1. **Roll.** Both players’ dice are rolled on **every** roll phase. The turn
    player issues the single `ROLL_DICE`; the opponent does not click Roll.
-   Each seat randomizes their non-retained dice, banks **their own** usable
-   attributes, and fires **their** On roll / overloads / convert Choose one
-   (including on the opponent’s turn). Geometry still sees both of **that
-   owner’s** showing faces before their On roll.
+   Each seat randomizes their non-retained dice, **auto-absorbs** their own
+   usable attribute pips (**On absorb** fires), and resolves **their** On roll /
+   overloads / convert Choose one (including on the opponent’s turn). Geometry
+   still sees both of **that owner’s** showing faces before their On roll.
    Named specials may produce **more than one pip** from the showing face
-   itself (inherent extra pips — not a `[Generate]` line). **Usable
-   attribute** pips from the roll then **auto-bank** into that seat’s
-   attribute pile (On absorb fires). Some faces print **Choose one** on roll
-   (Sigil Flare, Mainspring, Pyre of Names): **bank this die's pips**, or take
-   the printed payoff and **do not bank** that die (inherent extra pips,
-   showing pip, forge yield, Overcharge are forfeited). It is a real prompt —
-   the die owner picks. The **other** die of that owner banks normally.
+   itself (inherent extra pips — not a `[Generate]` line). Absorbed attributes
+   leave the turn pool; there is **no** persistent attribute pile. Some faces
+   print **Choose one** on roll (Sigil Flare, Mainspring, Pyre of Names):
+   **absorb this die's usable pips**, or take the printed payoff and **do not
+   absorb** that die (inherent extra pips, showing pip, forge yield, Overcharge
+   are forfeited). It is a real prompt — the die owner picks. The **other**
+   die of that owner auto-absorbs normally.
    **Shield** and locked/unusable pips stay in the turn pool. The non-active
    player cannot absorb during the turn player’s actions, so **off-turn
    Shield leftover has no absorb window** — it expires or is replaced like
-   other leftovers. Their attributes still auto-bank into their pile.
-   Effect-generated attributes also auto-bank when created. Then the turn
-   enters **actions** (still only the turn player’s window).
+   other leftovers. Their usable attributes still auto-absorb on roll.
+   Effect-generated usable attributes also auto-absorb when created. Then the
+   turn enters **actions** (still only the turn player’s window).
    **While showing** is a continuous stance while that face is the showing
    face (including retain). Both sides’ showing faces refresh every roll phase,
    so defensive Reduce on the opponent uses **their new** showing face from
@@ -135,22 +138,24 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    keep is **not spent** on the opponent’s shared roll (the face stays, and
    so does retain). It is spent on **your** next roll phase as the turn
    player.
-2. **Actions.** In any order you may: absorb Shield onto a creature, pay
-   `[Spend]` from your pile (and meet `[Requires]` gates), attack, play, forge,
-   activate a **ready** ritual, retain/release dice, or end the turn.
+2. **Actions.** In any order you may: absorb Shield onto a creature, absorb
+   leftover usable attributes (if any), attack, play, forge, activate a
+   **ready** ritual, retain/release dice, or end the turn. Printed `[Spend]` /
+   `[Requires]` on cards and attacks are **not enforced** (catalogue leftover).
 
 `[Reroll]` rolls **that one die** again during **actions** (you do not return
 to the roll phase). The **new** showing face fires On roll (and overloads on
-that face), then a usable attribute pip **auto-banks** (On absorb) unless
-that new face offers convert Choose one. The previous roll of that die is not undone: a token
-already in your pile stays, and an unabsorbed leftover (Shield, locked) is
-replaced by the new result rather than sitting beside it. `[Stamp]` is
+that face), then a usable attribute pip **auto-absorbs** (On absorb) unless
+that new face offers convert Choose one. The previous roll of that die is not
+undone: an already-absorbed pip stays absorbed, and an unabsorbed leftover
+(Shield, locked) is replaced by the new result rather than sitting beside it.
+`[Stamp]` is
 different: it re-fires the **current** showing face’s roll effects — On roll,
 overloads on that face, Overcharge pips, forge-yield extra Generate, and
 equipment on-roll-symbol — without changing the face or creating a new rolled
 pip (and without minting a second copy of inherent extra pips). Stamp on a
 convert face opens Choose one again (yield / Overcharge wait until you pick
-bank).
+absorb).
 
 On-roll lines may be **conditional on dice geometry** (your other die’s
 showing attribute, how many faces of this attribute sit on this die, both
@@ -159,8 +164,9 @@ phase. Both of that owner’s dice are rolled before their On roll fires, so
 geometry can see both showing faces.
 
 There is no dedicated absorb phase and no leftover-rolled flip. The turn
-pool mainly holds **Shield** (and locked/unusable pips). Attributes live in
-your pile.
+pool mainly holds **Shield** (and locked/unusable pips) until absorbed or
+end of turn. Absorbed attributes are gone from the pool (On absorb only — no
+bank).
 
 Ready rituals may activate during **actions**, not during roll.
 
@@ -176,26 +182,24 @@ exists you must name one; if none exist, the effect whiffs.
 
 ---
 
-## 6. Symbols and the central split
+## 6. Symbols and the turn pool
 
 Every face is attribute-typed except **Shield** (untyped). Attributes are
 Martial, Wild, Toxin, Arcane, Luminar, Mechanical, Corruption, Darkness.
-Costs never require Shield.
 
-**Rolled and effect-generated usable attributes** auto-bank into your pile
-(On absorb fires). Locked/unusable pips and **Shield** stay in the turn pool.
-A die whose showing face offers convert **Choose one** banks only if you pick
-**bank this die's pips**. If you pick the printed payoff, that die’s pips
-from the roll (inherent extra pips, showing pip, forge yield, Overcharge) do
-not bank. The other die is untouched.
+**Rolled and effect-generated usable attributes** auto-absorb (On absorb
+fires). There is **no** cross-turn attribute bank. Locked/unusable pips and
+**Shield** stay in the turn pool until you absorb them or they expire at end
+of turn. Convert **Choose one** faces absorb that die’s usable pips only if
+you pick the absorb branch; the payoff branch forfeits that die’s roll pips
+(inherent extra pips, showing pip, forge yield, Overcharge). The other die is
+untouched.
 
-`[Requires: …]` is a **gate**: your pile must hold it; it is not spent.
-`[Spend: …]` **burns** from your pile. Resonance wildcards may cover shortfall
-on either. An attack or card may print both. Costs may name attributes and/or
-**Any** (generic pile tokens of any attribute — not Shield, not a ninth
-colour). Named pips are reserved first; leftover tokens cover Any. Unabsorbed
-turn-pool symbols expire at end of turn. There is no “store a symbol.” The only
-way to keep a **die result** across a roll is **retain**.
+Printed `[Requires: …]`, `[Spend: …]`, `[Active when: …]`, and **Any** costs
+may still appear on catalogue cards but are **not enforced** today.
+
+Unabsorbed turn-pool symbols expire at end of turn. There is no “store a
+symbol.” The only way to keep a **die result** across a roll is **retain**.
 
 Shield absorb still names a creature (below).
 
@@ -203,9 +207,9 @@ Shield absorb still names a creature (below).
 
 ## 7. Absorption payoff
 
-- **Attribute** pips from a **roll** or **effect** bank into **your attribute
-  pile** automatically (usable pips only; On absorb fires). The pile persists
-  across turns until spent or removed. Same-turn attack after banking is legal.
+- **Attribute** pips from a **roll** or **effect** are marked **absorbed**
+  automatically when eligible (usable pips only; **On absorb** fires). They do
+  not enter a persistent pile.
 - Each **On absorb** hook (standing ability, face, or overload) fires **at
   most once per turn** per source, so generated pips cannot re-trigger the same
   absorb effect in a loop.
@@ -213,57 +217,33 @@ Shield absorb still names a creature (below).
   (1 Shield prevents 1 damage, once). Shields stack and persist until spent.
 - Absorbing a Shield is **not** absorbing a Natural; `On absorb Natural`
   does not fire.
-- Ritual `[Active when: …]` is a **one-time unlock** against your **pile**
-  (Resonance wildcards may help the first time). Once the ritual is **ready**,
-  spending pile tokens elsewhere does not put it back to preparing unless an
-  effect says so. Optional **Spend** on activate still burns from the pile
-  (wildcards may cover shortfall).
+- Ritual **Active-when** pile gates in print are **not enforced**; rituals
+  become ready per engine rules without pile unlock (see §10).
 - **`[Drain]`** deals damage to a chosen enemy creature and heals your
   **most-damaged ally** for the HP actually lost (after Prevent/Shield).
 
-An unabsorbed Shield is wasted: nothing spends Shield from the pool.
+An unabsorbed Shield is wasted: Shield is not a spendable fuel token.
 
 ---
 
 ## 8. Playing and forging costs
 
-**Play** burns the tactic’s header `[Spend: …]` from your **attribute pile**.
-**Forge** depends on the forge region’s face kind:
+Printed header `[Spend: …]`, effect `[Requires: …]`, attack `discards`, and
+ritual Active-when / activate Spend are **not enforced** (catalogue leftovers).
 
-- **Natural forge** is free (no pile burn). Header `[Spend]` still applies when
-  you **play** the card for its effect. Natural `FORGE_CARD` does **not**
-  consume your first-synthetic waiver.
-- **Your first synthetic `FORGE_CARD` each turn is free.** It does not burn
-  header `[Spend]`. Later synthetic `FORGE_CARD`s **this turn** pay as usual
-  (`playCost` minus `forgeDiscountThisTurn` / while-showing `[Discount N] forge`).
-  Ritual / effect `forge-faces` does not count — only player `FORGE_CARD`.
-  Opponent-die synthetic `FORGE_CARD` uses the same waiver. The waiver clears
-  on `END_TURN` with the other ThisTurn bags.
-- **Discounts** (`[Discount N]`) cut N tokens from the header pile total
-  (minimum 0). Discount reduces **Any** pips first, then named attributes, so
-  `[Spend: Arcane + 2 x Any]` with Discount 1 still needs the Arcane plus one
-  Any. After discount you still pay with attributes that appear on the printed
-  cost, without exceeding each named attribute’s printed count — e.g. cost
-  `1 Arcane + 1 Corruption` with discount 1 needs **one** token: either Arcane
-  or Corruption. Any pips may be paid with any attribute leftover after named
-  pips. Spend of Any burns leftover tokens in attribute order (Martial first)
-  until a picker exists. **On roll** `[Discount N]` (no **forge** word) cheapens
-  the next **play** this turn. `[Discount N] forge` cheapens the next **paid**
-  synthetic `FORGE_CARD`. Play-cost discounts do not apply to forge; forge has a
-  separate one-turn discount from some gear that applies only to synthetic
-  forge (natural is already free and does not consume that discount). The free
-  first synthetic does **not** consume `forgeDiscountThisTurn` or while-showing
-  forge discount — save it for a later synthetic. That waiver is **not** a
-  consumed forge discount, so the immediate own-die synthetic bank (§11) still
-  applies. A synthetic install that **consumes** a forge discount does **not**
-  also get that bank — Discount 1 on a 2-cost Mechanical synthetic with 1 pip
-  in the pile spends that pip.
-  `[Discount]` never reduces a `[Requires]` gate.
-- Attacks (`[Requires]` gate and `[Spend]` discards) and ritual Active-when /
-  activate Spend also use the pile (see §6). A card may print header
-  `[Spend]` **and** a `[Requires]` gate; tokens stay unless Spend also names them.
-- Reactions pay pile costs during a reaction window.
-- Turn end is voluntary (`END_TURN`) or from effects that say so.
+**Play** and **forge** are legal when the rest of the action is legal — no pile
+payment step.
+
+**Forge** still distinguishes natural vs synthetic face kinds for install rules
+(§11). **Your first synthetic `FORGE_CARD` each turn** remains free where the
+engine applies that waiver; it does not consume printed `playCost`. Ritual /
+effect `forge-faces` does not count toward that waiver — only player
+`FORGE_CARD`. The waiver clears on `END_TURN` with other per-turn bags.
+
+**Discounts** (`[Discount N]`) may still arm on-roll or while-showing discounts
+on `GameState` where implemented; they do not spend a pile.
+
+Turn end is voluntary (`END_TURN`) or from effects that say so.
 
 ---
 
@@ -273,17 +253,14 @@ During actions (or as a legal reaction — §15):
 
 | Kind | What happens |
 |---|---|
-| Instant | Must meet any `[Requires]` gate, then pays header `[Spend]`, then resolves. |
+| Instant | Resolves when legal (printed costs not enforced). |
 | Reaction | From hand, only while a reaction window is open and the response is legal. |
 | Equipment | Attaches to a creature; stays until destroyed or the host dies. Friendly vs opponent targeting is printed. |
 | Overload | Attaches to a **face card** (shared definition), not a physical die slot. Capacity is per face card. |
 | Ritual | Enters the engine area (see §10). |
 
-`[Spend]` burns from your **attribute pile** (wildcards may cover shortfall).
-`[Requires]` on an attack **or on a card’s effect** is a gate: the pile must
-hold it (wildcards may cover), and those tokens stay unless a `[Spend]` also
-names them. `[Discount]` reduces header Spend only — never the Requires gate.
-Forge does not check a card’s effect `[Requires]` (play vs forge is exclusive).
+Printed `[Spend]` / `[Requires]` on cards and attacks are not enforced. Forge
+does not check a card’s effect `[Requires]` (play vs forge is exclusive).
 
 Discard-from-hand effects **draw first**, then the player **names** which
 cards to discard. The engine never auto-discards the front of the hand.
@@ -303,17 +280,15 @@ Played onto the engine area, not resolved from hand like an Instant.
 
 | Orientation | Meaning |
 |---|---|
-| Preparing | Owner’s attribute pile has not yet met Active-when (one-time unlock) |
-| Ready | Active-when unlocked once (or no Active-when); standing abilities on; may activate if print has an activate body |
+| Preparing | Ritual not yet ready (legacy Active-when in print — **not** pile-gated today) |
+| Ready | Standing abilities on; may activate if print has an activate body |
 | Exhausted | Used this turn (once-per-turn rituals) |
 
-Rituals with no Active-when become ready on place. Otherwise the owner’s
-**attribute pile** must meet the printed Active-when **once** to unlock ready.
-Optional **Spend** on activate burns from that pile only.
+Rituals become **ready** on place when the engine has no Active-when gate to
+enforce. Printed Active-when / activate Spend are catalogue leftovers.
 
 At the start of your turn, exhausted rituals come off exhausted and return to
-**ready** (they were already unlocked). Only rituals still in **preparing**
-need the pile gate.
+**ready**.
 
 **Continuous** and **Reaction** rituals stay on the field. Activating (if they
 have an activate body) exhausts them until the owner's next turn.
@@ -345,8 +320,8 @@ a legal whiff; if at least one eligible card exists you always pick.
 During actions, `FORGE_CARD` installs a face from your leftover pool **or**
 copies an already-installed matching face onto a legal slot. **Natural** forge
 regions install for free (and never consume the first-synthetic waiver).
-**Your first synthetic `FORGE_CARD` each turn is free**; later synthetics this
-turn burn the card’s header `[Spend]` from your pile. Forge does **not** open
+**Your first synthetic `FORGE_CARD` each turn is free** where the waiver
+applies; printed header `[Spend]` is not enforced. Forge does **not** open
 a reaction window.
 
 You draw **one card per face installed** (own die or opponent’s). Empty
@@ -355,18 +330,11 @@ deck still fails the draw quietly. This draw is a forge rule, not card text.
 **Own-die forge yield:** When you install a face onto **your own** die (via
 `FORGE_CARD` or a forge-faces effect), that slot gains **forge yield**. While
 that forged face is showing after your roll, you also generate one extra pip of
-its attribute (same auto-bank path as effect Generate), **unless** you pick
+its attribute (same auto-absorb path as effect Generate), **unless** you pick
 the convert payoff on that showing face (Choose one). Shield / untyped faces
 grant no yield. Opponent-die installs (Corruption harassment) do **not** gain
 yield. Overwriting or peeling a slot clears yield unless the new install
 re-sets it.
-
-**Synthetic forge bank:** On a successful own-die **synthetic** `FORGE_CARD`
-only, you also bank one of the forged face’s attribute into your pile **per
-face installed** (immediate payoff), **unless this install consumed a forge
-discount**. The free first synthetic is not a consumed discount, so it **still
-banks**. Natural forge stays free install + draw + yield with no immediate
-bank. Discount and the bank do not stack on the same card.
 
 **Forge bonus effects.** Some cards print extra keyword clauses on the forge
 line (for example `[Forge] … [Empower 1].`). Those resolve **immediately after
@@ -404,7 +372,8 @@ spent for a silent no-op.
 Mainspring, Pyre of Names) read "Choose one:" with two modes. You pick exactly
 one; the other is ignored. If only one mode can legally resolve, it is chosen
 automatically. If none can, the Choose one does nothing. On convert faces the
-modes are **bank this die's pips** or the printed payoff (do not bank).
+modes are **absorb this die's usable pips** or the printed payoff (do not
+absorb).
 
 **Overcharge.** Once per turn during actions, you may spend **any** card
 from hand to Overcharge one **attribute face card** installed on your dice
@@ -415,7 +384,7 @@ also `[Generate]`s that pip — the same on-roll Generate path as forge yield /
 overload — **unless** you pick that showing face’s convert payoff (those Overcharge
 pips are forfeited with the rest of that die’s roll). One spend covers every
 copy you have showing. Overcharge does
-**not** pay pile cost, does **not** draw, does **not** set forge yield, and
+does **not** draw, does **not** set forge yield, and
 does **not** open a reaction window.
 
 Pips sit on the **face card** until the last copy you own leaves the dice
@@ -444,12 +413,8 @@ face) fires again.
 
 - Each living creature may attack **once per turn** during actions, unless an
   effect grants extra attacks (`[Frenzy]` — Wild exclusive).
-- Fuel is the **owner’s attribute pile**. An attack may print a **`[Requires: …]`
-  gate** (must hold, not spent), a **`[Spend: …]` cost** (burned on declare),
-  or **both**. Basics usually Spend only. Specials typically Require a mix and
-  Spend one of those attributes.
-- Because banking is immediate, you may attack on the same turn you absorb
-  the fuel.
+- Printed attack `[Requires]` / `[Spend]` / `discards` are **not enforced**.
+- You may attack on the same turn you absorb symbols.
 - Declaring an attack opens a reaction window (§15). Prevent may answer;
   negate may not.
 - Damage apply order: **`[Reduce]` → prevention → Shield → Life**.
@@ -479,7 +444,7 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 - `[Reduce N]` on `On take damage:` cuts N from that hit before Prevent and
   Shield. Optional `, once per turn` is a print qualifier, not a second
   keyword. Distinct from `[Prevent]` (cancel the next attack) and
-  `[Discount]` (pile costs).
+  `[Discount]` (legacy cost reduction where armed).
 
 **Prevention** (reaction to an attack declaration — not a proactive buffer):
 
@@ -574,6 +539,8 @@ retain needs a known showing face.
 
 Do not treat the following as current play:
 
+- **Attribute pile** banking, `[Requires]` / `[Spend]` / ritual Active-when
+  **enforcement**, and **legendary commander victory** — removed.
 - Bible §16’s longer phase list (Absorption as its own step) — **overridden**
   by Roll → Actions.
 - Storing a symbol for later — **dropped**; only retain a die remains.
@@ -586,8 +553,7 @@ Do not treat the following as current play:
 
 <!--
 Related docs (agents):
-- competitive_dice_game_agent_bible.md — design canon
-- docs/OPEN_DESIGN.md — OPEN / ASSUMED / DECIDED
+- docs/OPEN_DESIGN.md — OPEN / ASSUMED / DECIDED / cleanup notes
 - docs/DEFERRED_CATALOGUE.md — unmodelled print
 - docs/KEYWORDS.md — print keywords (appended on the Rules tab)
 - docs/ARCHITECTURE.md — software advance path

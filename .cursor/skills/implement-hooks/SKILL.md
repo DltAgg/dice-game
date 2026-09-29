@@ -18,7 +18,7 @@ filters. Do not invent coupled hook names (`on-ally-attack`,
 Companion skills: [develop-engine](../develop-engine/SKILL.md),
 [standardize-card-effects](../standardize-card-effects/SKILL.md),
 [author-content](../author-content/SKILL.md). Spec: `docs/specs/010-trigger-hooks.md`.
-Attribute bank semantics: [attribute-pile.md](../author-content/attribute-pile.md) (spec `016`).
+Absorb semantics: `docs/RULEBOOK.md` §§6–7 (no pile; spec `016` obsolete).
 Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 
 ## Principles

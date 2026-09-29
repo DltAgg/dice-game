@@ -48,7 +48,7 @@ describe("replay", () => {
       }),
     );
     const cloned = jsonClone(played);
-    expect(cloned.players[P1]?.attributePool.mechanical).toBe(played.players[P1]?.attributePool.mechanical);
+    expect(cloned).toEqual(played);
   });
 
   it("replays equipment attach after chain resolves", () => {

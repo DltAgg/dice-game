@@ -2,7 +2,6 @@ import {
   currentLife,
   livingCreaturesOf,
   opponentOf,
-  totalTokens,
   type GameState,
   type PlayerId,
 } from "@server";
@@ -25,7 +24,6 @@ function side(state: GameState, playerId: PlayerId): number {
     attacksLeft += Math.max(0, allowance - creature.attacksUsedThisCombat);
   }
   const player = state.players[playerId];
-  const pile = totalTokens(player?.attributePool ?? {});
   const hand = player?.hand.length ?? 0;
   const board =
     (player?.equipment.length ?? 0) +
@@ -35,7 +33,6 @@ function side(state: GameState, playerId: PlayerId): number {
     living.length * 120 +
     life * 8 +
     shields * 6 +
-    pile * 3 +
     hand * 2 +
     board * 5 +
     attacksLeft * 4 -

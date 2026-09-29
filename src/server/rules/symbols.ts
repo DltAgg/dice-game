@@ -9,7 +9,6 @@ import {
   type SymbolStatus,
   type SymbolType,
 } from "../model/symbols.js";
-import { pileRequirementShortfall } from "./tokens.js";
 
 /**
  * Die pips (`rolled`) and effect-generated symbols (`available`) share one
@@ -56,9 +55,8 @@ export const availableSymbolCounts = (
 
 /**
  * Chooses which specific turn-pool symbols match a requirement, or null when
- * it cannot be paid. Prefer `canPay` / pile checks for `[Spend]` / gates —
- * usable attributes auto-bank into `attributePool` (spec `016`). This planner
- * still matches the turn pool for rare leftover unabsorbed pips.
+ * it cannot be paid. Mostly unused after pile banking was removed; leftover
+ * unabsorbed pips can still be matched.
  */
 export function planConsumption(
   state: GameState,
@@ -99,18 +97,14 @@ export function planConsumption(
 }
 
 /**
- * Whether a pile gate or Spend can be met from the owner's attribute pile
- * (plus Resonance wildcards for shortfall).
+ * Whether a printed requirement can be met. Persistent pile banking was
+ * removed; this always returns true.
  */
 export const canPay = (
-  state: GameState,
-  playerId: PlayerId,
-  requirement: SymbolRequirement,
-): boolean => {
-  const pile = state.players[playerId]?.attributePool ?? {};
-  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
-  return pileRequirementShortfall(pile, requirement) <= wildcards;
-};
+  _state: GameState,
+  _playerId: PlayerId,
+  _requirement: SymbolRequirement,
+): boolean => true;
 
 /** How many requirement pips are unpaid after matching the pool exactly. */
 export function requirementShortfall(

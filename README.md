@@ -1,28 +1,23 @@
-# Dice Skirmish
+# Dice Skirmish (prototype)
 
-A competitive skirmish engine-builder. Each player commands three creatures and
-two customizable dice, forging the dice into an engine over the course of the
-match. Eliminating the opposing squad wins.
+A local and online prototype for **dice-driven creature skirmish**: each player
+fields **three creatures**, **two customizable dice**, and a tactics deck. Roll
+phases, face abilities, forging, cards, shields, and combat still run on a pure
+`reduce()` engine.
 
-Every turn the dice produce symbols and the player splits them two ways, which
-is the decision the whole game is built around:
-
-```text
-absorb  → bank the attribute into your pile (or grant Shield onto a creature)
-resolve → the symbol feeds engine abilities and cards, this turn only
-```
-
-A symbol can do one or the other, never both.
-
-The design lives in [`competitive_dice_game_agent_bible.md`](./competitive_dice_game_agent_bible.md).
+**Not in this prototype today:** a persistent **attribute pile** (banking /
+`[Requires]` / `[Spend]` from pile are removed — catalogue may still print
+costs), and any **automatic match victory** (legendary commander win removed;
+future 3v3 wipe not implemented). A separate tag-fighter design is planned but
+**not** built here yet.
 
 ## Status
 
 | Layer | State |
 |---|---|
-| Game engine | Dice, symbols, attribute pile, engine resolution, shields, combat, cards (play/forge), face deck, victory |
-| Content | Faces, Figma creatures + prototype squad, tactic subset + English printings |
-| UI | **M3** hotseat + **M4** deck builder + Figma catalogues |
+| Game engine | Dice, symbols, absorb / On absorb, shields, combat, cards (play/forge), face deck, phases, chain |
+| Content | Faces, creatures, tactic subset + English printings (some pile-era costs in data) |
+| UI | **M3** hotseat + **M4** deck builder + catalogues |
 | Persistence | **M4** — `DeckRepository` over localStorage; tactics 40–50 / ≤3 copies |
 | Networking | **M5** — PeerJS host authority (room seats, spectators, host-observe) |
 
@@ -57,13 +52,11 @@ the DOM, storage, the clock or `Math.random`.
 
 ## Design questions
 
-How the game currently plays is [`docs/RULEBOOK.md`](./docs/RULEBOOK.md)
+How the game **currently plays** is [`docs/RULEBOOK.md`](./docs/RULEBOOK.md)
 (kept current whenever a rules change affects play). Print keywords are
-[`docs/KEYWORDS.md`](./docs/KEYWORDS.md) (shown on the Rules tab). Rules the
-bible leaves unresolved are tracked in
-[`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md) rather than being decided in
-code. Anything marked `ASSUMED` is reachable from `GameRulesConfig` or content
-data, so settling a question is a data edit rather than an engine change.
+[`docs/KEYWORDS.md`](./docs/KEYWORDS.md) (shown on the Rules tab). Open and
+deferred rules live in [`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md). Anything
+marked `ASSUMED` is reachable from `GameRulesConfig` or content data.
 
 Feature specifications live in [`docs/specs/`](./docs/specs).
 
@@ -78,7 +71,7 @@ proactive: ask for the job, or say `Use the <name> subagent to …`.
 | [engine-developer](.cursor/agents/engine-developer.md) | Pure rules in `src/server`: hooks, `EffectDefinition`, reducer, resolution, statuses | Catalogue beyond the proving card → **card-designer**; play surface → **match-ui** |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, hotseat/online board, deck builder, catalogues, Zustand stores, `src/client/decks/`, PeerJS adapters | Cards → **card-designer**; rules / `pendingDecision` types → **engine-developer**; legal lists → **deck-designer** |
 | [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts (squad / tactics / faces) and constructed critique (orphans, attribute identity) | Card rewrites → **card-designer**; engine / legality rules → **engine-developer**; builder UI → **match-ui** |
-| [post-playtest](.cursor/agents/post-playtest.md) | Playtest debrief: notes + metrics → `docs/MECHANIC_ARCHETYPES.md` + specialist briefs | Print → **card-designer**; fuel physics → **engine-developer**; lists → **deck-designer**; board friction → **match-ui** |
+| [post-playtest](.cursor/agents/post-playtest.md) | Playtest debrief: notes + metrics → `docs/MECHANIC_ARCHETYPES.md` + specialist briefs | Print → **card-designer**; rules → **engine-developer**; lists → **deck-designer**; board friction → **match-ui** |
 | [prompt-engineer](.cursor/agents/prompt-engineer.md) | Cursor subagents, skills, rules, `TOOLS.md`, and routing docs so specialists stay in lane | Cards → **card-designer**; rules engine → **engine-developer**; play surface → **match-ui**; loadouts → **deck-designer** |
 
 Workflows those agents load: [`.cursor/skills/`](./.cursor/skills/)

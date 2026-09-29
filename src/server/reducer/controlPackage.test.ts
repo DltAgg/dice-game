@@ -485,8 +485,6 @@ describe("Darkness Control package", () => {
         targetId: target.id,
       }),
     );
-    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
-    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(2);
     expect(state.players[P2]?.deck).toHaveLength(3);
 
     state = expectOk(
@@ -498,8 +496,6 @@ describe("Darkness Control package", () => {
         targetId: target.id,
       }),
     );
-    expect(state.players[P1]?.attributePool.arcane ?? 0).toBe(0);
-    expect(state.players[P1]?.attributePool.darkness ?? 0).toBe(1);
     expect(state.players[P1]?.hand.length).toBeGreaterThan(0);
   });
 });

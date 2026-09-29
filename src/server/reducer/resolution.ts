@@ -28,7 +28,7 @@ import {
   replayableGraveyardTactics,
   searchableInGraveyard,
 } from "../rules/cards.js";
-import { legendaryCreatureOf, livingCreaturesOf, opponentOf } from "../rules/creatures.js";
+import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import {
   countInstalledCopies,
   hasLegalForgeFacesChoice,
@@ -1588,8 +1588,8 @@ export function createSymbol(
     ...(options?.usable === false ? { usable: false } : {}),
   };
   emit(draft, { type: "symbol-generated", symbolId: id, symbol, ownerId, source });
-  // Spec `016`: usable attribute pips auto-bank (rolled path banks after on-roll;
-  // effect-generated bank immediately so they never sit in the turn pool).
+  // Usable attribute pips auto-absorb (rolled path after on-roll; effect-
+  // generated immediately) so On absorb still fires. No persistent pile.
   if (options?.usable !== false && isAttributeSymbol(symbol)) {
     bankAttributeIntoPile(draft, ownerId, id);
   }
@@ -1932,20 +1932,10 @@ function releaseDiceHeldBy(draft: Draft, creatureId: CreatureId): void {
 }
 
 /**
- * Playtest DECIDED: defeating the opponent's legendary creature wins immediately.
- * Non-legendary defeats do not end the match.
+ * Match termination hook. Legendary commander victory was removed.
+ * Automatic 3v3 "defeat all Fighters" is not implemented — callers still
+ * invoke this so a future win condition can plug in without new commands.
  */
 export function checkVictory(draft: Draft): void {
   if (draft.status === "finished") return;
-
-  for (const playerId of draft.playerOrder) {
-    const legendary = legendaryCreatureOf(draft, playerId);
-    if (legendary === undefined || !legendary.defeated) continue;
-
-    const winnerId = opponentOf(draft, playerId);
-    draft.status = "finished";
-    draft.winner = winnerId;
-    emit(draft, { type: "match-finished", winnerId });
-    return;
-  }
 }

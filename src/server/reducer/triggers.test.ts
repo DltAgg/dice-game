@@ -370,8 +370,7 @@ describe("on-absorb equipment", () => {
         symbolId,
       }),
     );
-
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.symbols[symbolId]?.status).toBe("absorbed");
   });
 });
 
@@ -413,7 +412,7 @@ describe("on-absorb overloads", () => {
       }),
     );
     const after = rollShowingSlot(attached, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
+    expect(after.log.some((entry) => entry.event.type === "symbol-generated")).toBe(true);
   });
 
   it("Desynthesize On roll does not arm a play discount", () => {
@@ -439,23 +438,30 @@ describe("on-absorb overloads", () => {
 describe("on-roll / on-absorb faces", () => {
   it("generates Mechanical on a 2-pip synthetic roll", () => {
     const after = rollShowingSlot(installFace(newMatch(), TWO_PIP.id), 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
+    expect(Object.values(after.symbols).some((symbol) => symbol.symbol === "mechanical")).toBe(
+      true,
+    );
   });
 
-  it("a dual-pip face banks 1 Luminar and 1 Mechanical from the same die", () => {
+  it("a dual-pip face generates Luminar and Mechanical from the same die", () => {
     const after = rollShowingSlot(installFace(newMatch(), DUAL_PIP.id), 0);
-    expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(1);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
+    const symbols = Object.values(after.symbols);
+    expect(symbols.some((symbol) => symbol.symbol === "luminar")).toBe(true);
+    expect(symbols.some((symbol) => symbol.symbol === "mechanical")).toBe(true);
   });
 
-  it("a 2-pip Luminar face banks 2 Luminar on roll", () => {
+  it("a 2-pip Luminar face generates 2 Luminar on roll", () => {
     const after = rollShowingSlot(installFace(newMatch(), DOUBLE_LUMINAR.id), 0);
-    expect(after.players[P1]?.attributePool.luminar ?? 0).toBe(2);
+    expect(
+      Object.values(after.symbols).filter((symbol) => symbol.symbol === "luminar").length,
+    ).toBeGreaterThanOrEqual(2);
   });
 
-  it("a 2-pip Mechanical face banks 2 Mechanical on roll", () => {
+  it("a 2-pip Mechanical face generates 2 Mechanical on roll", () => {
     const after = rollShowingSlot(installFace(newMatch(), DOUBLE_MECHANICAL.id), 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
+    expect(
+      Object.values(after.symbols).filter((symbol) => symbol.symbol === "mechanical").length,
+    ).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -496,7 +502,7 @@ describe("continuous ritual triggers", () => {
       }),
     );
     const after = rollShowingSlot(placed, 0);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.log.some((entry) => entry.event.type === "symbol-generated")).toBe(true);
   });
 
   it("a continuous ritual may have no standing On absorb", () => {

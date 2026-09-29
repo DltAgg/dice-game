@@ -55,7 +55,7 @@ type TriggerHost = {
 
 /**
  * Who absorbed the symbol. Shared `on-absorb` event — not a coupled ritual hook.
- * Attribute pile banking uses `player`; Shield uses `creature`. Spec `016`.
+ * Attribute pips use `player`; Shield uses `creature`.
  */
 export type AbsorbAbsorber =
   | { readonly kind: "creature"; readonly id: CreatureId }
@@ -356,7 +356,7 @@ export function queueAbsorbTriggers(
 
   fireOnAbsorb(draft, absorber, absorbingPlayerId, symbol, faceKind);
 
-  // Face/overload onAbsorb fire when that face's pip is banked (spec `016`).
+  // Face/overload onAbsorb fire when that face's pip is absorbed.
   if (faceCardId === undefined) return;
   const die = sourceDieId === null ? undefined : draft.dice[sourceDieId];
   const slotIndex = die?.rolledSlotIndex ?? null;

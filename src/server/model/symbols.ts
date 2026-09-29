@@ -61,7 +61,8 @@ export interface SymbolInstance {
 
 /**
  * Generic pile pips on a cost / gate / Spend (`{ any: 2 }`). Not a ninth
- * attribute, not Shield, and never stored on `attributePool`.
+ * attribute, not Shield, and never a live resource after pile banking was
+ * removed. Catalogue cost shapes may still use this bag.
  */
 export const ANY_COST = "any";
 export type AnyCostPip = typeof ANY_COST;

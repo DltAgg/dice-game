@@ -236,7 +236,7 @@ export function DeckBuilder() {
           Hover any card to inspect it. Build a loadout (
           {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
           face deck ≤{cfg.faceDeckMaxCards}; opening dice ≤{cfg.startingMaxSyntheticsPerPlayer}{" "}
-          synthetics total, ≤{cfg.startingMaxSyntheticsPerDie} per die; squad exactly 1 legendary).
+          synthetics total, ≤{cfg.startingMaxSyntheticsPerDie} per die).
           Illegal drafts can be saved; Play refuses them until they are legal.
         </p>
         </div>
@@ -271,12 +271,8 @@ export function DeckBuilder() {
 
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Squad ({squad.length}/{cfg.creaturesPerPlayer}) — exactly 1 legendary
+          Squad ({squad.length}/{cfg.creaturesPerPlayer})
         </h2>
-        <p className="mt-1 text-xs text-stone-500">
-          The legendary is your win target (opens back). Pick exactly one; legality shows the
-          engine reason if you have zero or two+.
-        </p>
         <div className="mt-2 grid gap-2 sm:grid-cols-3">
           {squad.map((definitionId, index) => {
             const slotDef = getCreatureDefinition(definitionId);

@@ -1,17 +1,17 @@
 # Design standards (ritual / tactic / face)
 
-Canon: `competitive_dice_game_agent_bible.md` §§19–20, 26–30.
 Grammar: `docs/specs/002-card-layer.md`, `004-face-cards.md`.
+Live play: `docs/RULEBOOK.md` (no attribute pile; no auto win today).
 Set craft (uniqueness, forge development, bridges, generic reach):
 [design-craft.md](design-craft.md). This file stays identity, exclusive
 verbs, kinds, and costs.
 
 ## Game goal
 
-Dice Skirmish is a **competitive skirmish engine-builder**. Cards must serve
-both:
+This catalogue targets the **current prototype**: dice engine-building plus
+creature combat. Cards should still serve both:
 
-1. **Engine construction** — the forge region changes a die (bible §13).
+1. **Engine construction** — the forge region changes a die.
 2. **Moment-to-moment play** — the other region (instant, ritual, equipment,
    overload, or face inherent).
 
@@ -19,14 +19,9 @@ A card that only deals damage and never touches the engine is usually a miss.
 A card that only forges with empty `rulesText` (`""`) is legal (forge-only /
 “None”) but should be rare and intentional.
 
-**Lethality is not reserved for creature attacks** (bible §§4, 24, 27, 33;
-`OPEN_DESIGN.md`). The match ends when the **enemy legendary** is defeated —
-not when the whole squad is cleared. Engine-converted damage — consume,
-delayed, conditional, expensive setup — is a valid play-region payoff, and
-Control **must** have enough of it to pressure the legendary. A Control list
-that can only chip with 1-damage attacks is a miss even if its disruption is
-excellent. Do not avoid authoring Control damage because “combat is supposed
-to close.”
+**There is no automatic match end today** (`OPEN_DESIGN.md`). Lethality on
+cards and attacks is still valid for tempo and setup; do not author as if
+legendary commander win or squad wipe already decides the match.
 
 The **or** between forge and effect is load-bearing: one use, one region.
 The two regions must still **work together** (design-craft synergy). A
@@ -34,16 +29,12 @@ forge that is an unrelated `faces: 1` sticker fails that test.
 
 ## What “good” looks like
 
-- The player is making a **tradeoff** (forge now vs play now; absorb vs leave
-  the symbol in the pool; stack another burn tick vs build your die).
-- The attribute’s **primary identity** is still recognizable (bible §28–29).
-- Costs match role: support and combat tricks still want a real pile cost
-  (usually 2+ tokens); Arcane control generally medium/high. **Printed
-  1-token `playCost` is exceptional** — niche only, so heavier cards stay appealing.
-  The primary way to spend 1 token on a card is **cost reduction** (`[Discount]`),
-  not a 1-token card. A rare 1-token is for a keyed engine piece whose real tax
-  is stay/peel, not cheap cycle. Do not treat that as a band for new generic
-  1-drops.
+- The player is making a **tradeoff** (forge now vs play now; Shield absorb vs
+  leaving a symbol in the pool; stack another burn tick vs build your die).
+- The attribute’s **primary identity** is still recognizable (table below).
+- Printed costs may remain in JSON for legacy / future economy; **pile fuel is
+  not enforced**. Prefer effects that stand on their own without assuming
+  `[Spend]` / `[Requires]` gates work.
 - Opponent-die forges (Corruption, Black Plague, Great Contamination): the
   **controller** names the face from **their** pool and installs it. Ownership
   stays with the forger; the physical face sits on the target die (§12).
@@ -146,15 +137,14 @@ Pairings that keep the pie readable:
 | Equipment | Standing ability on a creature | Attach; abilities as `StandingTrigger` |
 | Overload | Modify an existing face | Attach to face card; `onRoll` / `onAbsorb` |
 | Ritual / Instant | Retired; leftover copies still GY after activate | Prefer a hand Instant. Place → activate → GY if any leftover |
-| Ritual / Reaction | Delayed field responder, once per turn | Place `preparing` → pile meets Active-when → `ACTIVATE_RITUAL` in a window → stay, exhaust |
-| Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Gate is owner’s **attribute pile** |
+| Ritual / Reaction | Delayed field responder, once per turn | Place `preparing` → ready (no pile gate) → `ACTIVATE_RITUAL` in a window → stay, exhaust |
+| Ritual / Continuous | Lasting field engine | `standingAbilities` while ready; Activate only if `ritual.effects` is non-empty (then exhaust). Active-when pile gates are unused |
 | Face (natural) | Starting identity faces | All eight attrs + Shield |
 | Face (synthetic) | Named specials only | Pool → install; `onRoll` / `onAbsorb`. Never blank `face-synthetic-<attr>` |
 
-Rituals are a **main type** (`type: "ritual"`), not a subtype. `activeWhen` is a
-**pile gate** on the owner’s `attributePool` (`Arcane + Corruption + Corruption`
-means hold those counts in the pile). Optional `ritual.spend` burns pile tokens
-on activate. See [attribute-pile.md](attribute-pile.md).
+Rituals are a **main type** (`type: "ritual"`), not a subtype. `activeWhen` and
+optional `ritual.spend` remain catalogue fields; pile spend is not enforced —
+see `docs/RULEBOOK.md`.
 
 Current catalogue cards **forge their own attribute**. Dual-kind cards may forge
 Natural or Synthetic of that attribute — **pick kind with a reason**, not a
@@ -188,7 +178,7 @@ Match live JSON (`card-shim-kit.json`: `"playCost": { "mechanical": 2 }`).
 
 Extra burn that is not a gate → raise header `playCost`. Do not mint
 `effect.spend`. `[Discount]` cuts header Spend only. Fuel grammar:
-[attribute-pile.md](attribute-pile.md).
+`docs/RULEBOOK.md` (no pile enforcement).
 
 **Default printed cost is 2+ pile tokens.** `playCost` totaling 1 token is a
 last-resort niche tool, not the cheap-support band. Cheaper plays come from
@@ -221,7 +211,7 @@ vocabulary exists. If a card needs a resource plus, use `[Generate]`,
   burn). Twin Cam / Tooling Order / Die Punch / Recast stay gates. Extra
   burn that is not a gate → raise `playCost`. Attack specials: `requires`
   = `[Requires]` gate, `discards` = `[Spend]` — do not fake a gate in
-  `discards`. See [attribute-pile.md](attribute-pile.md).
+  `discards`. See `docs/RULEBOOK.md` (no pile enforcement).
 
 ## Anti-patterns
 

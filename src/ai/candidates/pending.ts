@@ -123,9 +123,7 @@ export function pendingCandidates(state: GameState, playerId: PlayerId): readonl
         cardInstanceId: card.id,
       }));
     case "choose-attribute-tokens": {
-      const ownerId = state.creatures[pending.creatureId]?.ownerId;
-      const tokens = (ownerId === undefined ? {} : state.players[ownerId]?.attributePool) ?? {};
-      const { discarded } = discardTokensInAttributeOrder(tokens, pending.amount);
+      const { discarded } = discardTokensInAttributeOrder({}, pending.amount);
       return [{ type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS", playerId, discarded }];
     }
     case "forge-faces": {

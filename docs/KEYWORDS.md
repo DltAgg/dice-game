@@ -9,6 +9,26 @@ asked. New tokens join X on Mark/Strip. Do not mint Dose/Envenom/Brand/Contamina
 
 ## Keywords
 
+### Catalogue leftovers (not enforced today)
+
+The engine **removed** the persistent attribute pile. These keywords may still
+appear on legacy print and in JSON (`playCost`, `effect.requires`, attack
+`discards`, ritual Active-when) but **do not gate play** until a future economy
+ships:
+
+| Print | Was | Today |
+|---|---|---|
+| `[Requires: …]` | Hold tokens in pile | Not enforced |
+| `[Spend: …]` | Burn pile on play / attack / ritual activate | Not enforced |
+| `[Active when: …]` | One-time ritual unlock vs pile | Not enforced |
+| `[Resonance]` | Wildcard pile payment | Not enforced |
+| `[Discount N]` (pile sense) | Reduce header Spend | Only where engine still arms discounts — see rulebook |
+
+**Still live:** `[Mark]` / `[Strip]`, dice timing (`On roll`, `On absorb`, …),
+Shield absorb onto creatures, forge / Overcharge, combat keywords below.
+
+---
+
 Bracketed words on cards — the same grammar as `[Forge]` and `[Requires]`.
 Timing lines stay as prefixes. The keyword is the **clause after the colon**:
 
@@ -106,7 +126,7 @@ transfer. Do not mint Detonate / Rend as keywords.
 | Print | Why it is a different word |
 |---|---|
 | `[Generate N Toxin]` | A **pool symbol** for this turn. Expires at end of turn. |
-| Absorb Toxin | Banks a pool pip into your attribute pile. Grammar, not an effect keyword. |
+| Absorb Toxin | Resolves attribute absorb (On absorb); no pile. Grammar, not an effect keyword. |
 | `[Prevent]` | Reaction to an attack declaration. Grants attack-prevent on the attack’s target (before Shield). Luminar exclusive. Not a token you Mark. Unused charges expire at end of turn. |
 | `[Reduce N]` | Incoming hit math. That hit deals N less (minimum 0) before `[Prevent]` and Shield. Not a token. Distinct from `[Prevent]` (cancel the attack) and `[Discount]` (pile costs). |
 | `[Silence]` | Physics. Chosen opposing host cannot fire or activate its effects until the start of your next turn. Not a Mark token. Distinct from `[Negate]`. |
@@ -193,7 +213,7 @@ These are not tokens.
 | `[Stamp]` | Re-fire a showing face’s roll effects (On roll, overloads, Overcharge, forge yield, equipment on-roll-symbol). No new rolled pip and no second copy of inherent extra pips. Mechanical exclusive. |
 | `[Reroll]` | Roll that die again during actions: On roll fires for the **new** face, then a usable attribute auto-banks (On absorb) unless the new face offers Convert Choose one. Not `[Stamp]` (same showing face, no new pip). |
 | `[Double]` | The next face-sourced effect you resolve this turn happens twice. Mechanical exclusive. |
-| `[Resonance]` | A pool symbol may pay any `[Spend]` / `[Requires]` / `[Active when]` attribute this turn |
+| `[Resonance]` | **Catalogue leftover** — was pile wildcard; not enforced |
 | `[Retain]` | Keep a retainable die for **your** next roll phase. The face also stays through the opponent’s shared roll without spending retain. |
 
 <!--
@@ -228,10 +248,10 @@ These are not effect replacements.
 |---|---|
 | `[Forge]` | Play/forge region **and** the install verb |
 | `[Overcharge]` | Third exclusive use of a hand card: spend it onto an attribute face card on your dice |
-| `[Requires: …]` | Gate vs your **attribute pile** (must hold; not spent). May include **Any** (generic tokens of any attribute). |
-| `[Active when: …]` | One-time ritual unlock vs owner’s attribute pile (not repeated in the effect box). May include **Any**. |
-| `[Spend: …]` | Burn from your attribute pile (header `playCost`, attack `discards`, ritual activate). May include **Any**. |
-| Absorb | Bank an attribute into your pile (rolled and effect-generated usable attributes auto-bank; On absorb fires), or grant Shield onto a creature |
+| `[Requires: …]` | **Catalogue leftover** — was pile gate; not enforced. |
+| `[Active when: …]` | **Catalogue leftover** — was ritual unlock vs pile; not enforced. |
+| `[Spend: …]` | **Catalogue leftover** — was pile burn; not enforced. |
+| Absorb | Mark a usable attribute absorbed (**On absorb** fires) or grant Shield onto a creature |
 | Overload | Card type. Gates stay `Can only overload…` |
 | `On roll:` `While showing:` `On absorb:` `On deal damage:` `On toxin damage:` `On attack:` / `On basic attack:` / `On special attack:` `On take damage:` `On discard:` `On change position:` `On start of turn:` `On prevent damage:` | Timing prefixes. Never “Whenever…”. `On roll:` fires when that face shows after a shared `ROLL_DICE` (both seats each roll phase, including on the opponent’s turn). `While showing:` is a continuous stance on the showing face, not a second On-roll trigger. |
 

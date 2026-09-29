@@ -100,10 +100,6 @@ export function EngineStatus() {
         <div className="mt-2">
           <Row label="Phase" value={state.phase} />
           <Row label="Turn" value={String(state.turn)} />
-          <Row
-            label="Attribute pile (p1)"
-            value={JSON.stringify(state.players[P1]?.attributePool ?? {})}
-          />
           <Row label="Symbols rolled" value={rolledSymbols || "none"} />
           <Row label="Hand size (p1)" value={String(handSize)} />
           <Row

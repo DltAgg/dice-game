@@ -281,26 +281,15 @@ export function withSymbols(
 }
 
 /**
- * Fuels a player's attribute pile directly (spec `016`). Same-turn attack after
- * banking is legal; tests use this to skip the absorb setup.
+ * Test helper kept for call-site stability. Attribute pile banking was removed;
+ * this is a no-op identity.
  */
 export function withAttributePool(
   state: GameState,
-  playerId: PlayerId,
-  tokens: AttributeTokens,
+  _playerId: PlayerId,
+  _tokens: AttributeTokens,
 ): GameState {
-  const player = state.players[playerId];
-  if (player === undefined) throw new Error(`scenario: unknown player ${playerId}`);
-  return {
-    ...state,
-    players: {
-      ...state.players,
-      [playerId]: {
-        ...player,
-        attributePool: { ...player.attributePool, ...tokens },
-      },
-    },
-  };
+  return state;
 }
 
 /**

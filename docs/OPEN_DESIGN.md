@@ -1,7 +1,17 @@
 # Open Design Register
 
-Required by the SPDD agent instructions §48. Every question the game bible
-leaves unresolved is tracked here rather than being answered silently in code.
+Unresolved **rules and product** questions are tracked here rather than being
+answered silently in code.
+
+## Engine cleanup (2026) — no longer in play
+
+| Removed | Notes |
+|---|---|
+| **Attribute pile** | `PlayerState.attributePool`, banking into pile, and enforcement of `[Requires]` / `[Spend]` / ritual Active-when from pile (spec `016` is **obsolete**). Dice still roll attribute faces; **On absorb** still fires; Shield still absorbs onto creatures. |
+| **Legendary victory** | `checkVictory` is a no-op. Defeating a legendary or wiping the squad does **not** auto-end the match today. |
+| **Exactly-one legendary loadout** | Squads are still three creatures; legendary flag in JSON is legacy placement hint only. |
+| **Future win condition** | `GameState.status` / `winner` / match-finished remain for a later rule (e.g. tag-fighter 3v3). **Not decided or implemented in this doc.** |
+| **Future tag-fighter design** | Planned direction only — do not document Meter / Tag / Assist / wipe rules here as shipped play. |
 
 Engine code lives in `src/server`. Catalogue print lives in
 `src/server/content/{cards,creatures,faces}/*.json`.

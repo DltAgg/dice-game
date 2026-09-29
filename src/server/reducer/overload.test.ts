@@ -143,6 +143,6 @@ describe("overloads", () => {
     rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
     rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: 4 });
     const after = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.log.some((entry) => entry.event.type === "symbol-generated")).toBe(true);
   });
 });

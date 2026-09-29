@@ -37,7 +37,7 @@ describe("match setup", () => {
     expect(positions).toEqual(["frontline", "frontline", "back"]);
   });
 
-  it("places the legendary in the back regardless of squad index", () => {
+  it("places squad index 0–1 frontline and index 2 back", () => {
     const state = createMatch({
       matchId: "m",
       seed: 1,
@@ -65,9 +65,9 @@ describe("match setup", () => {
     }));
 
     expect(positions).toEqual([
-      { definitionId: TEST_LEGEND, position: "back" },
+      { definitionId: TEST_LEGEND, position: "frontline" },
       { definitionId: TEST_BODY_A, position: "frontline" },
-      { definitionId: TEST_BODY_B, position: "frontline" },
+      { definitionId: TEST_BODY_B, position: "back" },
     ]);
   });
 

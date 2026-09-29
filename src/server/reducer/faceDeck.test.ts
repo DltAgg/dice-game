@@ -98,7 +98,6 @@ describe("face deck", () => {
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
     expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(testNaturalFaceId("luminar"));
-    expect(forged.state.players[P1]?.attributePool.mechanical ?? 0).toBe(10);
   });
 
   it("installs a named synthetic from the pool via synthetic forge", () => {

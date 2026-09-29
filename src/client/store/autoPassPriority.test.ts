@@ -81,7 +81,7 @@ describe("autoPassPriorityAction", () => {
     ).toBeNull();
   });
 
-  it("passes when a chain-legal prevent is in hand but the pile cannot pay it", () => {
+  it("does not auto-pass when a chain-legal prevent is in hand", () => {
     const state = openedAttack([PREVENT_REACTION.id], { mechanical: 10 });
     expect(
       autoPassPriorityAction({
@@ -90,7 +90,7 @@ describe("autoPassPriorityAction", () => {
         localPlayerId: null,
         canAct: true,
       }),
-    ).toEqual({ type: "PASS_PRIORITY", playerId: P2 });
+    ).toBeNull();
   });
 
   it("never passes for the opponent online", () => {
@@ -143,11 +143,11 @@ describe("autoPassPriorityAction", () => {
     });
   });
 
-  it("drainEmptyReactionPriority collapses when the only reaction is unaffordable", () => {
+  it("drainEmptyReactionPriority keeps the window when a legal reaction is in hand", () => {
     const opened = openedAttack([PREVENT_REACTION.id], { mechanical: 10 });
     expect(opened.pendingDecision?.type).toBe("reaction-priority");
     const drained = drainEmptyReactionPriority(opened);
-    expect(drained.pendingDecision?.type).not.toBe("reaction-priority");
+    expect(drained.pendingDecision?.type).toBe("reaction-priority");
   });
 
   it("dispatches the Pass intent when the helper runs", () => {

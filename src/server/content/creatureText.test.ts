@@ -31,14 +31,6 @@ describe("creature catalogue", () => {
     }
   });
 
-  it("catalogues exactly one legendary win target per attribute pairing", () => {
-    const legendaries = ALL_CREATURES.filter((creature) => creature.legendary === true);
-    expect(legendaries.map((creature) => creature.id)).toEqual([
-      LODESTAR_ARTIFICER,
-      DUSKTHRONE_ORACLE,
-    ]);
-  });
-
   it("gives every catalogue creature a passive, a basic and a special", () => {
     for (const creature of ALL_CREATURES) {
       if (creature.id.startsWith("creature-baseline-")) continue;

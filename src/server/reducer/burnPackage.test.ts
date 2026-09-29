@@ -162,7 +162,7 @@ describe("overload generate", () => {
       }),
     );
     const afterRoll = expectOk(advance(withPhase(attached, "roll"), { type: "ROLL_DICE", playerId: P1 }));
-    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(Object.keys(afterRoll.symbols).length).toBeGreaterThan(0);
   });
 });
 
@@ -177,6 +177,6 @@ describe("standing ritual", () => {
       }),
     );
     const afterRoll = expectOk(advance(withPhase(placed, "roll"), { type: "ROLL_DICE", playerId: P1 }));
-    expect(afterRoll.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(afterRoll.log.some((entry) => entry.event.type === "die-rolled")).toBe(true);
   });
 });

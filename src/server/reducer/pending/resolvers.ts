@@ -27,11 +27,6 @@ import {
   slotCannotBeReplacedByForge,
 } from "../../rules/faces.js";
 import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../../rules/targets.js";
-import {
-  addTokens,
-  isLegalTokenDiscardPick,
-  removeTokens,
-} from "../../rules/tokens.js";
 import { attack } from "../commands/attack.js";
 import { installFacesOnDie } from "../commands/forge.js";
 import { resumeAfterEffectPause } from "../commands/priority.js";
@@ -50,7 +45,6 @@ import {
   destroyOverload,
   discardSpecificCards,
   moveCard,
-  refreshRitualOrientations,
   searchableDeckCards,
   shuffleDeck,
 } from "../zones.js";
@@ -309,10 +303,8 @@ export function resolveChooseOverload(
 }
 
 /**
- * Completes a pending token-drain choice. The named pips must total the pending
- * amount and be a subset of the target creature owner's attribute pile
- * (spec `016`; creature id is targeting context only). Drain adds them to the
- * controller's pile.
+ * Completes a pending token-drain choice. Persistent pile drain was removed;
+ * the prompt closes without moving tokens.
  */
 export function resolveChooseAttributeTokens(
   draft: Draft,
@@ -325,34 +317,12 @@ export function resolveChooseAttributeTokens(
 
   const creature = draft.creatures[pending.creatureId];
   if (creature === undefined || creature.defeated) return "INVALID_CHOICE";
-  const pileOwnerId = creature.ownerId;
-  const pile = draft.players[pileOwnerId]?.attributePool ?? {};
-  if (!isLegalTokenDiscardPick(pile, discarded, pending.amount)) {
-    return "INVALID_CHOICE";
-  }
-
-  const mode = pending.mode ?? "drain";
-  if (mode !== "drain") return "INVALID_CHOICE";
-
-  const next = removeTokens(pile, discarded);
-  const controllerPile = draft.players[playerId]?.attributePool ?? {};
-  patchPlayer(draft, pileOwnerId, { attributePool: next });
-  patchPlayer(draft, playerId, { attributePool: addTokens(controllerPile, discarded) });
-  refreshRitualOrientations(draft, pileOwnerId);
-  refreshRitualOrientations(draft, playerId);
   draft.pendingDecision = null;
   emit(draft, {
     type: "choose-attribute-tokens-resolved",
     playerId,
     creatureId: pending.creatureId,
     discarded,
-  });
-  emit(draft, {
-    type: "attribute-tokens-drained",
-    fromPlayerId: pileOwnerId,
-    toPlayerId: playerId,
-    drained: discarded,
-    creatureId: pending.creatureId,
   });
   return resumeAfterEffectPause(draft);
 }

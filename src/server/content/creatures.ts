@@ -5,9 +5,8 @@ import { catalogueFromModules } from "./catalogueLoader.js";
 import { lookupOverlayCreature } from "./runtimeOverlay.js";
 
 /**
- * Creature catalogue (spec `003`). Two squads, each two bodies plus one
- * legendary win target: Mechanical + Luminar Tempo and Arcane + Darkness
- * Control.
+ * Creature catalogue (spec `003`). Two squads of three creatures each:
+ * Mechanical + Luminar Tempo and Arcane + Darkness Control.
  */
 export const TORQUE_WRIGHT: CreatureDefinitionId =
   asCreatureDefinitionId("creature-torque-wright");

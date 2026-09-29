@@ -32,7 +32,7 @@ export function SymbolPool({
   if (symbols.length === 0) {
     return (
       <p className="text-center text-xs uppercase tracking-[0.18em] text-stone-600">
-        No symbols in the pool · attributes auto-bank into your pile
+        No symbols in the pool
       </p>
     );
   }
@@ -54,13 +54,13 @@ export function SymbolPool({
             disabled={!pickable}
             title={
               unusable
-                ? "Unusable (cannot bank or pay costs)"
+                ? "Unusable this turn"
                 : fromDie
                   ? isAttributeSymbol(symbol.symbol)
-                    ? "Rolled attribute (should already be in your pile)"
+                    ? "Rolled attribute"
                     : "Rolled Shield — click, then choose a creature"
                   : isAttributeSymbol(symbol.symbol)
-                    ? "Effect attribute — click to bank into your pile"
+                    ? "Effect-generated attribute"
                     : "Effect Shield — click, then choose a creature"
             }
             className={

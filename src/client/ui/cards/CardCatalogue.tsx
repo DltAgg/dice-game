@@ -53,8 +53,8 @@ export function CardCatalogue() {
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-400">
           English printing of the Figma Creature card page (Slow game test). Passives print in
-          full; attack costs and damage are what the engine resolves today. Legendaries are the
-          squad win targets — exactly one per legal loadout.
+          full; attack costs and damage are what the engine resolves today. Legendary badge is
+          display-only.
         </p>
 
         <ul className="mt-8 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6 p-0">

@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
 import type { GameState } from "../model/state.js";
-import { requirementTotal } from "../model/symbols.js";
 import { hasSixPhysicalFaces } from "../rules/dice.js";
 import { faceCardLocationIsConsistent, knownFaceCardOwnerships } from "../rules/faces.js";
 import { usableSymbols } from "../rules/symbols.js";
-import { totalTokens } from "../rules/tokens.js";
 import { autoplay } from "../testing/autoplay.js";
 import { CRANK } from "../testing/tempoCatalogue.js";
 import {
@@ -32,8 +30,8 @@ const SAMPLE_SEEDS = [1, 2, 3, 17, 99, 2026];
  * Matches are played with decks so that forging and card play are inside every
  * invariant below, rather than checked only by the scenario tests.
  */
-function everyStateOf(seed: number): readonly GameState[] {
-  return autoplay(newMatchWithDecks({ seed })).states;
+function everyStateOf(seed: number, maxTurns = 25): readonly GameState[] {
+  return autoplay(newMatchWithDecks({ seed }), { maxTurns }).states;
 }
 
 describe("structural invariants across played matches", () => {
@@ -113,37 +111,6 @@ describe("structural invariants across played matches", () => {
       for (const creature of Object.values(state.creatures)) {
         expect(creature.shields).toBe(net.get(creature.id) ?? 0);
         expect(creature.shields).toBeGreaterThanOrEqual(0);
-      }
-    }
-  });
-
-  it.each(SAMPLE_SEEDS)("seed %i: attack fuel is absorb and spend", (seed) => {
-    for (const state of everyStateOf(seed)) {
-      const net = new Map<string, number>();
-      for (const { event } of state.log) {
-        if (event.type === "attribute-token-gained") {
-          net.set(event.playerId, (net.get(event.playerId) ?? 0) + event.amount);
-        }
-        if (event.type === "attribute-tokens-discarded") {
-          const spent = requirementTotal(event.discarded);
-          net.set(event.playerId, (net.get(event.playerId) ?? 0) - spent);
-        }
-        if (event.type === "attribute-tokens-moved") {
-          const moved = requirementTotal(event.tokens);
-          if (!event.copy) {
-            net.set(event.fromPlayerId, (net.get(event.fromPlayerId) ?? 0) - moved);
-          }
-          net.set(event.toPlayerId, (net.get(event.toPlayerId) ?? 0) + moved);
-        }
-        if (event.type === "attribute-tokens-drained") {
-          const moved = requirementTotal(event.drained);
-          net.set(event.fromPlayerId, (net.get(event.fromPlayerId) ?? 0) - moved);
-          net.set(event.toPlayerId, (net.get(event.toPlayerId) ?? 0) + moved);
-        }
-      }
-
-      for (const player of Object.values(state.players)) {
-        expect(totalTokens(player.attributePool)).toBe(net.get(player.id) ?? 0);
       }
     }
   });
@@ -294,11 +261,12 @@ describe("behavioural invariants", () => {
   });
 
   it("different seeds do not all produce the same match", () => {
-    const lengths = new Set(
-      [1, 2, 3, 4, 5, 6, 7, 8].map((seed) => autoplay(newMatchWithDecks({ seed })).turnsPlayed),
-    );
+    const signatures = [1, 2, 3, 4, 5, 6, 7, 8].map((seed) => {
+      const { state } = autoplay(newMatchWithDecks({ seed }), { maxTurns: 20 });
+      return state.log.length;
+    });
 
-    expect(lengths.size).toBeGreaterThan(1);
+    expect(new Set(signatures).size).toBeGreaterThan(1);
   });
 
   it("the shuffle is part of what a seed determines", () => {

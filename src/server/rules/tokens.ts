@@ -7,14 +7,11 @@ import {
   type AttributeTokens,
   type SymbolRequirement,
 } from "../model/symbols.js";
-import { canAffordUnderCaps } from "./discounts.js";
-
 /**
- * Attribute tokens live on the player's pile (`PlayerState.attributePool`,
- * spec `016`). Attacks and card `[Requires]` gates check (not burn) from there;
- * `[Spend]` (header `playCost`, attack `discards`, ritual `spend`) burns.
- * Ritual Active-when is a one-time pile unlock. Creature Shield / Toxin stay on
- * creatures.
+ * Attribute-token helpers remain for catalogue cost shapes (`playCost`,
+ * printed `[Requires]` / `[Spend]`). Persistent pile banking was removed;
+ * attack and play fuel checks always pass.
+ * Creature Shield / Toxin stay on creatures.
  */
 
 export const holdsTokens = (
@@ -91,72 +88,33 @@ export const isNonEmptyRequirement = (
   requirement !== undefined && requirementTotal(requirement) > 0;
 
 /**
- * Attack fuel: the pile must hold every printed `requires` (gate, not spent)
- * and every printed `discards` (Spend — burned on declare). Either or both
- * may be authored; an attack with neither is unfuelled.
- *
- * `[Resonance]` wildcards may cover shortfall on either clause. Gate shortfall
- * is reserved first so Spend still sees remaining wildcards (requires does not
- * remove pile tokens).
+ * Attack fuel gates were removed with the attribute pile. Callers still pass
+ * leftover pile-shaped bags; they are ignored.
  */
 export function attackIsFuelled(
-  tokens: AttributeTokens,
-  attack: {
+  _tokens: AttributeTokens,
+  _attack: {
     readonly requires?: SymbolRequirement;
     readonly discards?: SymbolRequirement;
   },
-  wildcardCount = 0,
+  _wildcardCount = 0,
 ): boolean {
-  const hasRequires = isNonEmptyRequirement(attack.requires);
-  const hasDiscards = isNonEmptyRequirement(attack.discards);
-  if (!hasRequires && !hasDiscards) return false;
-
-  let remaining = wildcardCount;
-  if (hasRequires) {
-    const short = pileRequirementShortfall(tokens, attack.requires);
-    if (short > remaining) return false;
-    remaining -= short;
-  }
-  if (hasDiscards) {
-    const short = pileRequirementShortfall(tokens, attack.discards);
-    if (short > remaining) return false;
-  }
   return true;
 }
 
 /**
- * Card play fuel: the pile must hold `effect.requires` (gate, not spent) and
- * can pay header `[Spend]` (`spend` / `spendNeed` after `[Discount]`). Gate
- * shortfall reserves wildcards first so Spend still sees remaining wildcards.
- * `[Discount]` never reduces the Requires gate. Forge does not use this —
- * it checks header Spend only (`canAffordForge` / `payForgeCost`).
+ * Card play fuel gates were removed with the attribute pile.
  */
 export function cardPlayIsFuelled(
-  tokens: AttributeTokens,
-  play: {
+  _tokens: AttributeTokens,
+  _play: {
     readonly requires?: SymbolRequirement;
     readonly spend?: SymbolRequirement;
     readonly spendNeed?: number;
   },
-  wildcardCount = 0,
+  _wildcardCount = 0,
 ): boolean {
-  let remaining = wildcardCount;
-  if (isNonEmptyRequirement(play.requires)) {
-    const short = pileRequirementShortfall(tokens, play.requires);
-    if (short > remaining) return false;
-    remaining -= short;
-  }
-
-  const caps = play.spend;
-  const need =
-    play.spendNeed !== undefined
-      ? play.spendNeed
-      : isNonEmptyRequirement(caps)
-        ? requirementTotal(caps)
-        : 0;
-  if (need <= 0) return true;
-  if (!isNonEmptyRequirement(caps)) return need <= remaining;
-  return canAffordUnderCaps(tokens, caps, need, remaining);
+  return true;
 }
 
 export const addToken = (tokens: AttributeTokens, attribute: keyof AttributeTokens): AttributeTokens => ({

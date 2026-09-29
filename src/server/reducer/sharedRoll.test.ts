@@ -125,12 +125,8 @@ describe("shared ROLL_DICE", () => {
     const p2Attributes = Object.values(state.symbols).filter(
       (symbol) => symbol.ownerId === P2 && symbol.symbol !== "shield",
     );
-    const p2Banked = Object.values(state.players[P2]?.attributePool ?? {}).reduce(
-      (sum, n) => sum + n,
-      0,
-    );
-    expect(p2Banked).toBe(p2Attributes.length);
     expect(p2Attributes.every((symbol) => symbol.status === "absorbed")).toBe(true);
+    expect(p2Attributes.length).toBeGreaterThan(0);
   });
 
   it("refuses ROLL_DICE from the player who is not active", () => {
@@ -230,7 +226,6 @@ describe("shared ROLL_DICE", () => {
     const afterRoll = expectOk(advance(state, { type: "ROLL_DICE", playerId: P1 }));
     expect(afterRoll.pendingDecision?.type).toBe("choose-effect-mode");
     expect(afterRoll.pendingDecision).toMatchObject({ controllerId: P1 });
-    expect(afterRoll.players[P2]?.attributePool.martial ?? 0).toBe(1);
     expect(afterRoll.forgeDiscountThisTurn[P2] ?? 0).toBe(0);
 
     const afterChoice = expectOk(
@@ -240,7 +235,6 @@ describe("shared ROLL_DICE", () => {
         modeIndex: 0,
       }),
     );
-    expect(afterChoice.players[P2]?.attributePool.martial ?? 0).toBe(1);
     expect(afterChoice.forgeDiscountThisTurn[P2]).toBe(1);
   });
 });

@@ -22,8 +22,8 @@ the rules engine.
 Compose existing opcodes. Never dump print into `cards.ts`. New verbs →
 `engine-developer`. Cross-layer / rewrite requests → skill `slice-changes`.
 
-This game is a competitive skirmish **engine-builder**. The die is the
-protagonist (`competitive_dice_game_agent_bible.md` §§1–3, 13, 19–20, 26–33).
+This game is a dice + creature **prototype** (forge / faces / combat). The die
+is the protagonist. Live play: `docs/RULEBOOK.md` (no attribute pile; no auto win).
 Every card occupies a **slot** the live catalogue does not already fill.
 A damage-only card that never touches the engine is usually a miss.
 Engine-converted damage is **not** a miss.
@@ -35,8 +35,8 @@ Craft gates: `.cursor/skills/author-content/design-craft.md`.
 2. `.cursor/skills/author-content/SKILL.md` — then the matching reference:
    - **Set craft** (uniqueness, forge development, bridges, generic reach,
      dice resonance) → `design-craft.md` — read before choosing a slot
-   - **Attribute pile** (fuel, Absorb, `[Requires]` / `[Spend]` / Active-when) →
-     `attribute-pile.md` — read before any ritual, face `onAbsorb`, or attack-cost edit
+   - **Absorb / On absorb** (no pile) → `docs/RULEBOOK.md` §§6–7 before ritual,
+     face `onAbsorb`, or attack-cost fields in JSON
    - Tactics / rituals / equipment / overload → `tactics.md` + `design.md`
      (including **attribute exclusive mechanics**)
    - Faces → `faces.md` + `design.md`
@@ -82,7 +82,7 @@ Check existing members in `src/server/model/effects.ts` and `StandingTrigger` in
 - Wire structured regions **only** for clauses the engine already models.
 - Attribute fuel is the **player pile** (`attributePool`), not creature tokens.
   `On absorb:` means bank into the pile. Ritual `activeWhen` is a pile gate;
-  optional `ritual.spend` burns on activate. See `attribute-pile.md`.
+  optional `ritual.spend` in JSON is legacy (not enforced). See `docs/RULEBOOK.md`.
   Pile fuel is **not** a license to print `[Spend] X, [Generate] Y` converters.
 - Standing equipment / ritual `on-absorb` for attribute banks needs
   `absorberRelation: "ally"` (default `self` no-ops on pile bank).
@@ -119,7 +119,7 @@ the user explicitly asks for tooling.
   (`effect.requires` and attack `requires` hold; they do not burn). Rituals
   keep `[Active when]`; extra activate burn is `ritual.spend`. Extra burn
   that is not a gate → raise `playCost` or use `ritual.spend` / attack
-  `discards` — do not mint `effect.spend`. Fuel grammar: `attribute-pile.md`.
+  `discards` — do not mint `effect.spend`. Pile costs are catalogue-only.
   Natural forge does not burn `playCost`; synthetic forge does
   (`docs/RULEBOOK.md` §8). Printed `?` uses a fixed `playCost` for now —
   true variable pile pay is DEFERRED.
@@ -179,7 +179,7 @@ Card Progress:
 - [ ] 3. Kind + attribute identity + exclusive mechanic (design.md)
        + window/feel (`docs/MECHANIC_ARCHETYPES.md` — no `RETARGETED` / `ANTI` leaks)
 - [ ] 4. Pile costs: `[Requires]` / `[Spend]` / Active-when / attack fuel
-       (attribute-pile.md) — not a converter license
+       — not a converter license; no new pile-fuel cards
 - [ ] 5. Print / rulesText: timing prefixes + `docs/KEYWORDS.md`
 - [ ] 6. Map clauses → existing effects / hooks OR defer OR engine brief
 - [ ] 7. If new mechanic: engine-developer, then resume

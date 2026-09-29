@@ -24,7 +24,7 @@ flatten a unique slot into Cogtooth (`On roll: [Generate 1 SameAttr]`).
 
 Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape),
 [develop-engine](../develop-engine/SKILL.md) (new `EffectDefinition` / hooks).
-Attribute pile / bank timing: [attribute-pile.md](../author-content/attribute-pile.md).
+Absorb / On absorb timing: `docs/RULEBOOK.md` §§5–7 (no attribute pile).
 
 ## Gold-standard print shape
 

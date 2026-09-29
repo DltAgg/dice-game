@@ -11,9 +11,9 @@ import type { MatchRecording } from "./types.js";
 
 export const METRICS_PROMPT_PREAMBLE = `You are helping make Dice Skirmish playable and fun again.
 
-The game used two resources (energy and attributes). Fuel is now the **attribute pile only** — rolled and generated pips auto-bank. Energy is gone. Ignore leftover energy* keys on old recordings. Do not propose bringing energy back.
+The prototype no longer has a persistent **attribute pile**. Rolled faces still produce symbols; On absorb still fires; Shield still absorbs onto creatures. Printed costs may exist in catalogue data without being enforced. Ignore leftover energy* and pile-fuel keys on old recordings. Do not propose bringing the pile back.
 
-The live set is in a weird, slow state: matches often fail to close, attacks are often unpaid, and forge is a weak third choice behind play and Overcharge. Diagnose **that** — not a generic 11–20 turn band.
+Matches currently have **no automatic victory**. Diagnose pace, combat, dice, and cards — not unpaid pile attacks.
 
 The dump is an observer outside reduce()/advance(). It never changes GameState. Wall-clock think time is time between observations. Guest think times include network delay; prefer recordedAs host / local / local-ai. Deduped by matchId (richer sample wins).
 

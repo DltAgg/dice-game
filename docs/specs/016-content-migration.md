@@ -1,5 +1,8 @@
 # 016 content migration notes
 
+> **OBSOLETE (historical).** Written for the attribute-pile era. Pile fuel is no
+> longer enforced; keep for migration archaeology only.
+
 Catalogue guidance for the attribute pile. Canonical rules:
 [`016-attribute-pile-up.md`](./016-attribute-pile-up.md).
 

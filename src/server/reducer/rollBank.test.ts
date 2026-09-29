@@ -65,15 +65,27 @@ function rollRetainedSlots(state: GameState, slots: readonly [number, number]): 
   return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
 }
 
-describe("roll bank queue", () => {
-  it("a dual-pip face banks 1 Luminar and 1 Mechanical on roll", () => {
+function absorbedAttributeCounts(state: GameState, playerId: typeof P1 = P1) {
+  const counts: Record<string, number> = {};
+  for (const symbol of Object.values(state.symbols)) {
+    if (symbol.ownerId !== playerId || symbol.status !== "absorbed") continue;
+    if (symbol.symbol === "shield") continue;
+    counts[symbol.symbol] = (counts[symbol.symbol] ?? 0) + 1;
+  }
+  return counts;
+}
+
+describe("roll symbol generation", () => {
+  it("a dual-pip face generates 1 Luminar and 1 Mechanical on roll", () => {
     const state = rollRetainedSlots(installFaceOnDie(newMatch(), DUAL_PIP.id, 0), [0, 4]);
-    expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(1);
-    expect(state.players[P1]?.attributePool.mechanical ?? 0).toBe(1);
+    const counts = absorbedAttributeCounts(state);
+    expect(counts.luminar ?? 0).toBe(1);
+    expect(counts.mechanical ?? 0).toBe(1);
   });
 
-  it("a 2-pip Luminar face banks 2 Luminar on roll", () => {
+  it("a 2-pip Luminar face generates 2 Luminar on roll", () => {
     const state = rollRetainedSlots(installFaceOnDie(newMatch(), DOUBLE_LUMINAR.id, 0), [0, 4]);
-    expect(state.players[P1]?.attributePool.luminar ?? 0).toBe(2);
+    const counts = absorbedAttributeCounts(state);
+    expect(counts.luminar ?? 0).toBe(2);
   });
 });

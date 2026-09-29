@@ -255,12 +255,10 @@ describe("[Silence] instant", () => {
       },
     };
     const beforeDiscount = state.forgeDiscountThisTurn[P2] ?? 0;
-    const beforePool = state.players[P2]?.attributePool.mechanical ?? 0;
     state = expectOk(
       advance(state, { type: "ABSORB_SYMBOL", playerId: P2, symbolId, creatureId: allyId }),
     );
     expect(state.forgeDiscountThisTurn[P2] ?? 0).toBe(beforeDiscount);
-    expect(state.players[P2]?.attributePool.mechanical ?? 0).toBe(beforePool + 1);
 
     state = withPile(state, P2, 10);
     const afterAttack = expectOk(
@@ -380,14 +378,13 @@ describe("[Silence] instant", () => {
     rolled = withDie(rolled, dieIdOf(rolled, P2, 1), { retained: true, rolledSlotIndex: 4 });
     const silencedRoll = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P2 }));
     expect(eventTypesOf(silencedRoll)).toContain("symbol-generated");
-    expect(silencedRoll.players[P2]?.attributePool.mechanical ?? 0).toBe(2);
     expect(silencedRoll.playCostDiscountThisTurn[P2] ?? 0).toBe(0);
 
     let other = withActivePlayer(withPhase(state, "roll"), P2);
     other = withDie(other, dieId, { retained: true, rolledSlotIndex: 1 });
     other = withDie(other, dieIdOf(other, P2, 1), { retained: true, rolledSlotIndex: 4 });
     const otherRoll = expectOk(advance(other, { type: "ROLL_DICE", playerId: P2 }));
-    expect((otherRoll.players[P2]?.attributePool.mechanical ?? 0) >= 2).toBe(true);
+    expect(otherRoll.log.some((entry) => entry.event.type === "die-rolled")).toBe(true);
   });
 
   it("lasts through the opponent's turn and clears at the start of the silencer's next turn", () => {

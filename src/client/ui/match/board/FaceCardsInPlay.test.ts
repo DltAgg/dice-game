@@ -41,7 +41,6 @@ function boardState(faceCardId: FaceCardId): GameState {
     players: {
       p1: {
         dieIds: [dieId],
-        attributePool: {},
         overload: [],
         overchargeByFace: {},
       },

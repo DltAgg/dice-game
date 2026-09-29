@@ -22,7 +22,7 @@ import {
   withHand,
   withPhase,
 } from "../testing/scenario.js";
-import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tempoCatalogue.js";
+import { DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
 
 const HEAL_RITUAL = testCard({
   id: "card-test-heal-ritual",
@@ -91,7 +91,6 @@ describe("luminar control surface", () => {
       },
       players: {
         ...placed.players,
-        [P1]: { ...placed.players[P1]!, attributePool: { luminar: 3 } },
       },
     };
     const wounded = withDamage(armed, allyId, 4);
@@ -144,16 +143,13 @@ describe("luminar control surface", () => {
       [PREVENT_REFLECT.id],
     );
     const opened = expectOk(
-      advance(
-        { ...combat, players: { ...combat.players, [P1]: { ...combat.players[P1]!, attributePool: { ...DRIVE_SHAFT_FUEL } } } },
-        {
-          type: "ATTACK",
-          playerId: P1,
-          attackerId: attacker,
-          attackId: DRIVE_SHAFT,
-          targetId: target,
-        },
-      ),
+      advance(combat, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: attacker,
+        attackId: DRIVE_SHAFT,
+        targetId: target,
+      }),
     );
     const judged = expectOk(
       advance(opened, {

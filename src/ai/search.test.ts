@@ -13,18 +13,18 @@ describe("position eval", () => {
     expect(evaluate(state, PLAYTEST_P1)).toBe(-evaluate(state, PLAYTEST_P2));
   });
 
-  it("gives the match winner a terminal score", { timeout: 30_000 }, () => {
+  it("scores in-progress positions without a terminal winner", { timeout: 120_000 }, () => {
     const report = runPlaytestMatch({
       seed: 7,
       p1LoadoutId: "tempo",
       p2LoadoutId: "control",
       strength: "fast",
+      maxTurns: 40,
     });
-    expect(report.winner).toBeTruthy();
-    const winner = report.winner ?? PLAYTEST_P1;
-    expect(evaluate(report.state, winner)).toBe(EVAL_WIN);
-    const loser = winner === PLAYTEST_P1 ? PLAYTEST_P2 : PLAYTEST_P1;
-    expect(evaluate(report.state, loser)).toBe(EVAL_LOSS);
+    expect(report.status).toBe("in-progress");
+    expect(report.winner).toBeNull();
+    expect(evaluate(report.state, PLAYTEST_P1)).not.toBe(EVAL_WIN);
+    expect(evaluate(report.state, PLAYTEST_P1)).not.toBe(EVAL_LOSS);
   });
 });
 

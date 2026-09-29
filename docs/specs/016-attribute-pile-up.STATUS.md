@@ -1,5 +1,8 @@
 # 016 STATUS — Attribute pile-up
 
+> **OBSOLETE (historical).** Pile-up shipped then was removed; this checklist is
+> archival only. See the header on [`016-attribute-pile-up.md`](./016-attribute-pile-up.md).
+
 Living checklist for [`016-attribute-pile-up.md`](./016-attribute-pile-up.md).
 
 **Status:** **done** — engine, catalogue, and match UI all use the player pile.

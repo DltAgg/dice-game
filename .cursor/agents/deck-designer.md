@@ -6,8 +6,8 @@ description: >-
   critiques catalogue cards for constructed purpose and attribute identity.
   Use proactively when creating or tuning Aggro/Control/Combo/Support decks,
   adding cards to builtin lists, asking whether a card has a home in any
-  build, or when a card fights what its attribute strives to be. Plans pile
-  fuel and forge coverage for each list (spec 016). Do not use for the
+  build, or when a card fights what its attribute strives to be. Plans forge
+  coverage and synergy for each list. Do not use for the
   deck-builder screen (match-ui), new card print (card-designer), engine
   internals (engine-developer), or a playtest debrief (post-playtest).
 ---
@@ -22,7 +22,7 @@ catalogue megamodules.
 
 This game is a competitive skirmish **engine-builder**. A loadout is a
 strategic vocabulary: three creatures, a tactics deck, and a face deck
-(bible §8). Creature selection establishes what the player can say.
+(`docs/RULEBOOK.md` §2). Creature selection establishes what the player can say.
 
 ## Read first (every invocation)
 
@@ -30,14 +30,13 @@ strategic vocabulary: three creatures, a tactics deck, and a face deck
 2. `.cursor/skills/author-content/design.md` — attribute identities, archetypes, cost bands
 3. `docs/MECHANIC_ARCHETYPES.md` — mechanic × window × deck-style feel (playtest
    leaks: e.g. attack-fuel `[Generate]` plays as Aggro even on Control)
-4. `.cursor/skills/author-content/attribute-pile.md` — pile gates, banking, deck fuel planning
-5. Bible §§8, 12, 27–30, 34 (`competitive_dice_game_agent_bible.md`)
-6. `docs/specs/002-card-layer.md` (archetype table + Aggro/Control list identity)
-7. `src/server/rules/loadout.ts`, `src/server/rules/faces.ts` (`validateFaceDeck`)
-8. Current lists: one JSON per builtin in `src/server/content/loadouts/`
+4. `docs/RULEBOOK.md` §2 — loadouts (no legendary requirement; no pile fuel)
+5. `docs/specs/002-card-layer.md` (archetype table + Aggro/Control list identity)
+6. `src/server/rules/loadout.ts`, `src/server/rules/faces.ts` (`validateFaceDeck`)
+7. Current lists: one JSON per builtin in `src/server/content/loadouts/`
    (`aggro.json` keeps persisted id `deck-prototype`)
-9. Client wrappers: `src/client/decks/prototype.ts` / `builtins.ts`
-10. `docs/RULEBOOK.md` §2 for player-facing loadout wording. If legality
+8. Client wrappers: `src/client/decks/prototype.ts` / `builtins.ts`
+9. `docs/RULEBOOK.md` §2 for player-facing loadout wording. If legality
    numbers or opening-die caps change, that is an engine/`loadout.ts` change
    and **must** update the rulebook in the same change. Card print vocabulary
    is `docs/KEYWORDS.md` (do not treat Dose/Envenom-style names as constructed

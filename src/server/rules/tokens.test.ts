@@ -9,17 +9,11 @@ describe("cardPlayIsFuelled", () => {
     throw new Error("fixture playCost");
   }
 
-  it("2 Mechanical meets header Spend", () => {
+  it("always returns true after pile fuel gates were removed", () => {
     expect(cardPlayIsFuelled({ mechanical: 2 }, { spend })).toBe(true);
-  });
-
-  it("1 Mechanical fails the header; Discount 1 covers it", () => {
     expect(cardPlayIsFuelled({ mechanical: 1 }, { spend, spendNeed: 1 })).toBe(true);
-    expect(cardPlayIsFuelled({ mechanical: 1 }, { spend })).toBe(false);
-  });
-
-  it("Spend 2 with no gate is fuelled", () => {
-    expect(cardPlayIsFuelled({ mechanical: 2 }, { spend })).toBe(true);
+    expect(cardPlayIsFuelled({ mechanical: 1 }, { spend })).toBe(true);
+    expect(cardPlayIsFuelled({}, { spend })).toBe(true);
   });
 });
 
@@ -43,10 +37,10 @@ describe("any pile pips", () => {
     expect(pickPilePayment({ darkness: 3 }, { any: 2 })).toEqual({ darkness: 2 });
   });
 
-  it("card play with Any spend is fuelled from off-attribute tokens", () => {
+  it("card play fuel ignores pile contents", () => {
     expect(cardPlayIsFuelled({ arcane: 1, wild: 2 }, { spend: hybrid })).toBe(true);
-    expect(cardPlayIsFuelled({ wild: 3 }, { spend: hybrid })).toBe(false);
-    expect(cardPlayIsFuelled({ wild: 2 }, { spend: hybrid, spendNeed: 2 })).toBe(false);
+    expect(cardPlayIsFuelled({ wild: 3 }, { spend: hybrid })).toBe(true);
+    expect(cardPlayIsFuelled({ wild: 2 }, { spend: hybrid, spendNeed: 2 })).toBe(true);
     expect(cardPlayIsFuelled({ arcane: 1, wild: 1 }, { spend: hybrid, spendNeed: 2 })).toBe(
       true,
     );

@@ -148,8 +148,6 @@ describe("[Reroll]", () => {
     expect(after.phase).toBe("actions");
     expect(after.dice[dieId]?.rolledSlotIndex).toBe(landSlot);
     expect(after.dice[dieId]?.slots[landSlot]?.faceCardId).toBe(DUAL_PIP.id);
-    expect(after.players[P1]?.attributePool.luminar ?? 0).toBeGreaterThanOrEqual(1);
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
     expect(
       usableSymbols(after, P1).filter((symbol) => symbol.sourceDieId === dieId),
     ).toHaveLength(0);
@@ -169,7 +167,6 @@ describe("[Reroll]", () => {
       ),
     );
 
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(2);
     expect(whileShowingTotals(after, P1).forgeDiscount).toBeGreaterThanOrEqual(1);
     expect(
       Object.values(after.symbols).filter(

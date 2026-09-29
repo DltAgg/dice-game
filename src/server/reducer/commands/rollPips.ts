@@ -79,7 +79,7 @@ export function replaceShowingFacePips(
   return createFacePips(draft, ownerId, dieId, slotIndex, face);
 }
 
-/** Forfeit converting-die pips so they never enter `attributePool`. */
+/** Forfeit converting-die pips so they are not generated this roll. */
 export function forfeitRolledPips(
   draft: Draft,
   symbolIds: readonly SymbolInstanceId[],

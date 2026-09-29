@@ -20,9 +20,6 @@ import {
 import { KeywordRemindersTooltip } from "@client/ui/keywords/KeywordReminders";
 import { facePrintText } from "@client/ui/keywords/reminders";
 import {
-  AttributePile,
-} from "./AttributePile";
-import {
   activateFaceSpendCost,
   convertRollCueForFace,
   faceMarkerSummary,
@@ -307,7 +304,6 @@ export function FaceCardsInPlay({
   state,
   playerId,
   label,
-  facing,
   actingPlayerId,
   canAct,
   onActivateFace,
@@ -315,7 +311,7 @@ export function FaceCardsInPlay({
   state: GameState;
   playerId: PlayerId;
   label: string;
-  /** Same as Battlefield: P1 `up`, P2 `down` — flips faces vs pile toward the phase bar. */
+  /** Same as Battlefield: P1 `up`, P2 `down` — layout toward the phase bar. */
   facing: "up" | "down";
   actingPlayerId: PlayerId;
   canAct: boolean;
@@ -332,7 +328,7 @@ export function FaceCardsInPlay({
     playerId === actingPlayerId;
 
   const facesPane = (
-    <div className="min-h-0 flex-1 basis-1/2 overflow-y-auto">
+    <div className="min-h-0 flex-1 overflow-y-auto">
       <WhileShowingTotalsStrip state={state} playerId={playerId} />
       <div className="grid grid-cols-2 gap-2">
         {faces.map((entry) => (
@@ -353,37 +349,13 @@ export function FaceCardsInPlay({
     </div>
   );
 
-  const pilePane = (
-    <div
-      className={
-        facing === "down"
-          ? "flex min-h-0 flex-1 basis-1/2 flex-col overflow-hidden border-b border-stone-800/80 pb-2"
-          : "flex min-h-0 flex-1 basis-1/2 flex-col overflow-hidden border-t border-stone-800/80 pt-2"
-      }
-    >
-      <AttributePile state={state} playerId={playerId} dense />
-    </div>
-  );
-
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-stone-800 bg-black/25 p-3">
       <h2 className="mb-2 shrink-0 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
         {label}
         {hasRolled ? " · showing after roll" : " · shared across dice"}
       </h2>
-      <div className="flex min-h-0 flex-1 flex-col gap-2">
-        {facing === "down" ? (
-          <>
-            {pilePane}
-            {facesPane}
-          </>
-        ) : (
-          <>
-            {facesPane}
-            {pilePane}
-          </>
-        )}
-      </div>
+      <div className="flex min-h-0 flex-1 flex-col gap-2">{facesPane}</div>
     </section>
   );
 }

@@ -73,18 +73,6 @@ export function RitualTile({
   const ready = card.ritualOrientation === "ready";
   const preparing = card.ritualOrientation === "preparing";
   const exhausted = card.ritualOrientation === "exhausted";
-  const pile = state.players[card.ownerId]?.attributePool ?? {};
-  const gateVsPile =
-    def.ritual?.activeWhen !== undefined
-      ? Object.entries(def.ritual.activeWhen)
-          .filter(([, n]) => (n ?? 0) > 0)
-          .map(
-            ([attr, needed]) =>
-              `${attr} ${String(pile[attr as keyof typeof pile] ?? 0)}/${String(needed)}`,
-          )
-          .join(" · ")
-      : null;
-
   return (
     <div
       ref={rootRef}
@@ -115,9 +103,6 @@ export function RitualTile({
                 {durationLabel !== null ? ` · ${durationLabel}` : ""}
                 {silenced ? " · Silenced" : ""}
               </p>
-              {gateVsPile !== null && gateVsPile !== "" && preparing && (
-                <p className="mt-1 text-xs text-amber-200/80">Active-when vs pile: {gateVsPile}</p>
-              )}
               {ready && def.ritual?.activeWhen !== undefined && (
                 <p className="mt-1 text-xs text-[var(--accent)]/80">Ready</p>
               )}
@@ -125,7 +110,7 @@ export function RitualTile({
                 <p className="mt-1 text-xs text-stone-400">Exhausted</p>
               )}
               {spendLine !== null && (
-                <p className="mt-0.5 text-xs text-amber-200/70">{spendLine} (from pile on activate)</p>
+                <p className="mt-0.5 text-xs text-amber-200/70">{spendLine}</p>
               )}
               <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 <p>
@@ -191,9 +176,6 @@ export function RitualTile({
         {activeWhen !== null && (
           <p className="mt-1 truncate text-[0.65rem] text-stone-400">{activeWhen}</p>
         )}
-        {gateVsPile !== null && gateVsPile !== "" && preparing && (
-          <p className="mt-0.5 truncate text-[0.6rem] text-amber-200/70">Pile {gateVsPile}</p>
-        )}
         {ready && def.ritual?.activeWhen !== undefined && (
           <p className="mt-0.5 truncate text-[0.6rem] text-[var(--accent)]/70">Ready</p>
         )}
@@ -218,7 +200,7 @@ export function RitualTile({
         </button>
       ) : standingOnly ? (
         <p className="mt-2 text-[0.6rem] leading-snug text-stone-500">
-          Passive while ready — does not spend pile gate / Spend
+          Passive while ready
         </p>
       ) : null}
     </div>

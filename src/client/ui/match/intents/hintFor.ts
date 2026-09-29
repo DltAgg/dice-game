@@ -52,7 +52,7 @@ export function chooseCreatureFilterHint(filter: CreatureChoiceFilter): string {
     case "ally-damage-over-half":
       return "Choose an allied creature with more than half damage.";
     case "ally-with-tokens":
-      return "Choose an allied creature — the strip targets that owner's attribute pile.";
+      return "Choose an allied creature with Shield or Toxin.";
     case "adjacent-ally":
       return "Choose an adjacent allied creature.";
   }
@@ -186,8 +186,8 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
   }
   if (state.pendingDecision?.type === "choose-attribute-tokens") {
     return isPendingChooser
-      ? `Choose ${String(state.pendingDecision.amount)} pip(s) from that creature owner's attribute pile to discard.`
-      : "Waiting for the opponent to discard from an attribute pile.";
+      ? `Choose ${String(state.pendingDecision.amount)} leftover pip(s) to discard.`
+      : "Waiting for the opponent to discard leftover pips.";
   }
   if (state.pendingDecision?.type === "forge-faces") {
     if (!isPendingChooser) {
@@ -305,7 +305,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       : `${who} holds reaction priority. Waiting.`;
   }
   if (state.status === "finished") {
-    return "Match over — the opposing legendary was defeated. Start a new match to play again.";
+    return "Match over. Start a new match to play again.";
   }
 
   switch (intent.kind) {

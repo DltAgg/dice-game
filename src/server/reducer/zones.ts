@@ -4,7 +4,6 @@ import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
 import type { RNG } from "../rng/rng.js";
-import { holdsTokensWithWildcards } from "../rules/tokens.js";
 import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
 import { fireOnChangePosition, fireOnDiscard } from "./triggers.js";
 
@@ -342,30 +341,19 @@ export function setRitualOrientation(
 }
 
 /**
- * Flip preparing → ready when the owner's attribute pile (plus Resonance
- * wildcards) meets Active-when (spec `016`). Active-when is a one-time unlock:
- * once ready, orientation does not drop back to preparing when the pile
- * changes unless an effect says so. Rituals with no Active-when are ready as
- * soon as they hit the field.
+ * Flip preparing → ready when a ritual hits the field. Active-when pile
+ * gates were removed with the attribute pile.
  */
 export function refreshRitualOrientations(draft: Draft, playerId: PlayerId): void {
   const player = draft.players[playerId];
   if (player === undefined) return;
-  const pile = player.attributePool;
-  const wildcards = draft.requirementWildcardsThisTurn[playerId]?.length ?? 0;
 
   for (const cardInstanceId of player.ritual) {
     const card = draft.cards[cardInstanceId];
     const region = card === undefined ? undefined : getCard(card.cardId)?.ritual;
     if (card === undefined || region === undefined) continue;
     if (card.ritualOrientation !== "preparing") continue;
-
-    const active =
-      region.activeWhen === undefined ||
-      holdsTokensWithWildcards(pile, region.activeWhen, wildcards);
-    if (active) {
-      setRitualOrientation(draft, cardInstanceId, "ready");
-    }
+    setRitualOrientation(draft, cardInstanceId, "ready");
   }
 }
 

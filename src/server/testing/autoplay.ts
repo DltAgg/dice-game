@@ -17,7 +17,6 @@ import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols
 import {
   handOf,
   canAffordForge,
-  playCostTotal,
   replayableGraveyardTactics,
   equipmentOf,
   overloadsOf,
@@ -32,13 +31,7 @@ import { collectLegalBounceCards } from "../rules/bounce.js";
 import { isUnabsorbedPoolSymbol } from "../rules/symbols.js";
 import { legalTargetsFor } from "../rules/targeting.js";
 import { legalCreaturesForFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../rules/targets.js";
-import {
-  addToken,
-  attackIsFuelled,
-  discardTokensInAttributeOrder,
-  isNonEmptyRequirement,
-  pileRequirementShortfall,
-} from "../rules/tokens.js";
+import { discardTokensInAttributeOrder } from "../rules/tokens.js";
 import { advance } from "../reducer/reduce.js";
 
 /**
@@ -108,14 +101,6 @@ function absorb(state: GameState, playerId: PlayerId, policy: AutoplayPolicy): G
 
   for (const symbol of poolSymbols(current, playerId)) {
     if (isAttributeSymbol(symbol.symbol)) {
-      if (!policy.absorbForAttacks) continue;
-      if (creatureNeeding(current, playerId, symbol) === undefined) continue;
-      const result = advance(current, {
-        type: "ABSORB_SYMBOL",
-        playerId,
-        symbolId: symbol.id,
-      });
-      if (result.ok) current = resolvePending(result.state);
       continue;
     }
 
@@ -138,30 +123,6 @@ const poolSymbols = (state: GameState, playerId: PlayerId): readonly SymbolInsta
   Object.values(state.symbols)
     .filter((symbol) => symbol.ownerId === playerId && isUnabsorbedPoolSymbol(symbol))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-
-/** True when banking this attribute would newly fuel at least one living creature's attack. */
-function creatureNeeding(
-  state: GameState,
-  playerId: PlayerId,
-  symbol: SymbolInstance,
-): CreatureState | undefined {
-  if (!isAttributeSymbol(symbol.symbol)) return undefined;
-  const attribute = symbol.symbol;
-  const held = state.players[playerId]?.attributePool ?? {};
-  const afterBank = addToken(held, attribute);
-
-  return livingCreaturesOf(state, playerId).find((creature) => {
-    const definition = getCreatureDefinition(creature.definitionId);
-    if (definition === undefined) return false;
-    return definition.attacks.some((attack) => {
-      if (!isNonEmptyRequirement(attack.requires) && !isNonEmptyRequirement(attack.discards)) {
-        return false;
-      }
-      // Both requires (gate) and discards (Spend) must be met — not XOR.
-      return !attackIsFuelled(held, attack) && attackIsFuelled(afterBank, attack);
-    });
-  });
-}
 
 function mostDamaged(state: GameState, playerId: PlayerId): CreatureState | undefined {
   return [...livingCreaturesOf(state, playerId)].sort((a, b) => b.damage - a.damage)[0];
@@ -222,11 +183,6 @@ function playCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy)
 
     const definition = getCard(card.cardId);
     if (definition?.effect === undefined) continue;
-    if (playCostTotal(definition) > 0) {
-      const pool = current.players[playerId]?.attributePool ?? {};
-      const cost = definition.playCost ?? {};
-      if (pileRequirementShortfall(pool, cost) > 0) continue;
-    }
 
     const targetId = mostDamaged(current, playerId)?.id;
     const result = advance(current, {
@@ -469,9 +425,7 @@ function resolvePending(state: GameState): GameState {
   }
 
   if (pending.type === "choose-attribute-tokens") {
-    const ownerId = state.creatures[pending.creatureId]?.ownerId;
-    const tokens = (ownerId === undefined ? {} : state.players[ownerId]?.attributePool) ?? {};
-    const { discarded } = discardTokensInAttributeOrder(tokens, pending.amount);
+    const { discarded } = discardTokensInAttributeOrder({}, pending.amount);
     const result = advance(state, {
       type: "RESOLVE_CHOOSE_ATTRIBUTE_TOKENS",
       playerId: pending.controllerId,

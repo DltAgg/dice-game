@@ -4,7 +4,6 @@ import type { CardInstanceId, CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
 import { isReactionCard, ritualDurationOf } from "../../rules/cards.js";
 import { isRitualSilenced } from "../../rules/silence.js";
-import { pileRequirementShortfall } from "../../rules/tokens.js";
 import {
   buildEffectLink,
   cardCommittedToChain,
@@ -52,14 +51,6 @@ export function activateRitual(
   // During a window only ritual-reactions (or type reaction) may respond.
   if (inReactionWindow && (definition === undefined || !isReactionCard(definition))) {
     return "CARD_NOT_AVAILABLE";
-  }
-
-  if (region.spend !== undefined) {
-    const pile = draft.players[playerId]?.attributePool ?? {};
-    const wildcards = draft.requirementWildcardsThisTurn[playerId]?.length ?? 0;
-    if (pileRequirementShortfall(pile, region.spend) > wildcards) {
-      return "INSUFFICIENT_SYMBOLS";
-    }
   }
 
   if (declaredTargetCreatureId !== null) {

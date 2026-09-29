@@ -11,7 +11,6 @@ import {
 import {
   creatureIdAt,
   expectOk,
-  eventTypes,
   newMatch,
   P1,
   P2,
@@ -56,38 +55,7 @@ describe("attacking", () => {
     expect(currentLife(target)).toBe(12);
   });
 
-  it("refuses an attack the creature has not absorbed the fuel for", () => {
-    const state = combatState(0, { luminar: 1 });
-
-    const result = advance(state, {
-      type: "ATTACK",
-      playerId: P1,
-      attackerId: creatureIdAt(state, P1, 0),
-      attackId: CRANK,
-      targetId: creatureIdAt(state, P2, 0),
-    });
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
-    expect(result.state).toBe(state);
-  });
-
-  it("cannot be funded from the shared symbol pool", () => {
-    const state = withPhase(newMatch(), "actions");
-
-    const result = advance(state, {
-      type: "ATTACK",
-      playerId: P1,
-      attackerId: creatureIdAt(state, P1, 0),
-      attackId: CRANK,
-      targetId: creatureIdAt(state, P2, 0),
-    });
-
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
-  });
-
-  it("burns Spend tokens on Retool without emptying the Requires gate", () => {
+  it("declares Retool without pile spend bookkeeping", () => {
     const state = combatState(0, RETOOL_FUEL);
     const attackerId = creatureIdAt(state, P1, 0);
 
@@ -101,11 +69,10 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({ luminar: 1 });
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.creatures[creatureIdAt(after, P2, 0)]?.damage).toBeGreaterThan(0);
   });
 
-  it("burns discarded tokens when Drive Shaft is declared", () => {
+  it("declares Drive Shaft without pile spend bookkeeping", () => {
     const state = combatState(2, DRIVE_SHAFT_FUEL);
     const attackerId = creatureIdAt(state, P1, 2);
 
@@ -119,21 +86,21 @@ describe("attacking", () => {
       }),
     );
 
-    expect(after.players[P1]?.attributePool).toEqual({});
-    expect(eventTypes(after)).toContain("attribute-tokens-discarded");
+    expect(after.creatures[creatureIdAt(after, P2, 0)]?.damage).toBeGreaterThan(0);
   });
 
-  it("still requires every attribute listed on a multi-cost attack", () => {
-    const state = combatState(1, { mechanical: 1 });
-    const result = advance(state, {
-      type: "ATTACK",
-      playerId: P1,
-      attackerId: creatureIdAt(state, P1, 1),
-      attackId: VIGIL,
-      targetId: creatureIdAt(state, P2, 0),
-    });
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("ATTACK_NOT_FUELLED");
+  it("allows multi-cost attacks without creature fuel", () => {
+    const state = combatState(1, {});
+    const after = expectOk(
+      advance(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creatureIdAt(state, P1, 1),
+        attackId: VIGIL,
+        targetId: creatureIdAt(state, P2, 0),
+      }),
+    );
+    expect(after.creatures[creatureIdAt(after, P2, 0)]?.damage).toBeGreaterThan(0);
   });
 
   it("allows only one attack per creature per combat phase", () => {
@@ -315,7 +282,7 @@ describe("attacking", () => {
     expect(after.creatures[targetId]?.defeated).toBe(true);
   });
 
-  it("ends the match when the opposing legendary falls", () => {
+  it("does not auto-finish when the opposing legendary falls", () => {
     const match = newMatch();
     let state = withPhase(match, "actions");
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
@@ -333,8 +300,9 @@ describe("attacking", () => {
         targetId: legendaryId,
       }),
     );
-    expect(after.status).toBe("finished");
-    expect(after.winner).toBe(P1);
+    expect(after.creatures[legendaryId]?.defeated).toBe(true);
+    expect(after.status).toBe("in-progress");
+    expect(after.winner).toBeNull();
   });
 
   it("does not end the match when only non-legendaries fall", () => {
@@ -351,7 +319,7 @@ describe("attacking", () => {
     expect(after.status).toBe("in-progress");
   });
 
-  it("refuses every action once the match is finished", () => {
+  it("still allows actions after a legendary is defeated", () => {
     const match = newMatch();
     let state = withPhase(match, "actions");
     state = withDefeatedCreature(state, creatureIdAt(state, P2, 0));
@@ -369,9 +337,8 @@ describe("attacking", () => {
         targetId: legendaryId,
       }),
     );
-    const denied = advance(state, { type: "END_TURN", playerId: P1 });
-    expect(denied.ok).toBe(false);
-    if (!denied.ok) expect(denied.error).toBe("GAME_FINISHED");
+    const after = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
+    expect(after.status).toBe("in-progress");
   });
 });
 

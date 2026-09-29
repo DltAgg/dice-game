@@ -9,7 +9,6 @@ import {
 } from "../reducer/chain.js";
 import type { Draft } from "../reducer/draft.js";
 import { canAffordPlay, handOf, isReactionCard, ritualsOf } from "./cards.js";
-import { pileRequirementShortfall } from "./tokens.js";
 
 /** Top of the reaction chain (LILO), or `undefined` when empty. */
 export function topChainLinkOf(state: GameState): ChainLink | undefined {
@@ -122,15 +121,11 @@ export function isEnabledHandReaction(
 
 /** Ritual-activate `[Spend]` from the banked pile (mirrors `ACTIVATE_RITUAL`). */
 function canAffordRitualReactionActivate(
-  state: GameState,
-  playerId: PlayerId,
-  definition: CardDefinition,
+  _state: GameState,
+  _playerId: PlayerId,
+  _definition: CardDefinition,
 ): boolean {
-  const spend = definition.ritual?.spend;
-  if (spend === undefined) return true;
-  const pile = state.players[playerId]?.attributePool ?? {};
-  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
-  return pileRequirementShortfall(pile, spend) <= wildcards;
+  return true;
 }
 
 /**

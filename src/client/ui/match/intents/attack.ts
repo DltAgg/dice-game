@@ -1,5 +1,4 @@
 import {
-  attackIsFuelled,
   getCreatureDefinition,
   legalTargetsFor,
   type AttackDefinition,
@@ -67,7 +66,6 @@ export function attackIsArmed(
   ) {
     return false;
   }
-  if (!attackIsFuelled(state.players[creature.ownerId]?.attributePool ?? {}, attack)) return false;
   return legalTargetsFor(state, creature.id, attack).length > 0;
 }
 

@@ -43,7 +43,7 @@ Rules:
   Do not print another attribute’s signature verb (scry, mill, Luminar `[Prevent]`
   on non-reactions, opponent-die, toxin markers, ally swap, own-die reconstruction,
   `[Frenzy]`). `[Prevent]` / `grant-attack-prevent` is **reaction-only** (spec `009`).
-  Attribute fuel is the **player pile** — see `attribute-pile.md`.
+  No live attribute pile — printed `playCost` / `[Requires]` / `[Spend]` are catalogue leftovers; see `docs/RULEBOOK.md`.
   Mechanic × archetype feel: `docs/MECHANIC_ARCHETYPES.md` (do not reprint
   `RETARGETED` leaks such as attack-spend `[Generate]`).
 - **Live JSON** in `src/server/content/{cards,faces,creatures}/` is catalogue

@@ -268,8 +268,7 @@ export function discountedPlayRequirement(
   const armed = state.playCostDiscountThisTurn[playerId] ?? 0;
   const stance = whileShowingTotals(state, playerId).playDiscount;
   const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed + stance;
-  const pile = state.players[playerId]?.attributePool ?? {};
-  return { cost: reduceRequirement(baseCost, discount, pile), matches };
+  return { cost: reduceRequirement(baseCost, discount, {}), matches };
 }
 
 export function attackIgnoreShieldAmount(

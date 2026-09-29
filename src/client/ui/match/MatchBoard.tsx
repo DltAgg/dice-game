@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  attackIsFuelled,
   basicAttackOf,
   canAbsorbSymbol,
   canResolvePlayEffects,
@@ -273,7 +272,6 @@ export function MatchBoard() {
       const def = getCreatureDefinition(attacker.definitionId);
       const basic = def !== undefined ? basicAttackOf(def) : undefined;
       if (basic === undefined) return;
-      if (!attackIsFuelled(state.players[pending.controllerId]?.attributePool ?? {}, basic)) return;
       if (!legalTargetsFor(state, pending.creatureId, basic).includes(creature.id)) return;
       tryDispatch({
         type: "RESOLVE_OPTIONAL_BONUS_ATTACK",
@@ -442,7 +440,7 @@ export function MatchBoard() {
 
   const winnerLabel =
     finished && state.winner !== null
-      ? `${state.winner} wins — opposing legendary defeated`
+      ? `${state.winner} wins`
       : finished
         ? "Match finished"
         : null;
@@ -779,7 +777,7 @@ export function MatchBoard() {
         />
       )}
       {pending?.type === "choose-attribute-tokens" && !isPendingChooser && (
-        <WaitingBanner>Opponent is choosing pips from an attribute pile.</WaitingBanner>
+        <WaitingBanner>Opponent is choosing leftover pips.</WaitingBanner>
       )}
 
       {pending?.type === "forge-faces" && isPendingChooser && (

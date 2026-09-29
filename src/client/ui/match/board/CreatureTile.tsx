@@ -4,7 +4,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
-  attackIsFuelled,
   canAbsorbSymbol,
   currentLife,
   formatAttackFuel,
@@ -238,10 +237,6 @@ export function CreatureTile({
         <div className="mt-2 flex flex-col gap-1">
           {def.attacks.map((attack) => {
             const armed = attackIsArmed(state, creature, attack);
-            const fuelled = attackIsFuelled(
-              state.players[creature.ownerId]?.attributePool ?? {},
-              attack,
-            );
             return (
               <button
                 key={attack.id}
@@ -251,7 +246,6 @@ export function CreatureTile({
                 onClick={() => onAttackChoose(creature.id, attack.id)}
               >
                 {attack.name}
-                {!fuelled ? " · not fuelled" : ""}
               </button>
             );
           })}

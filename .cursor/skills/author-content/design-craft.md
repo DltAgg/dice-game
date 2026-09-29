@@ -1,6 +1,6 @@
 # Set craft (card designer)
 
-Canon: `competitive_dice_game_agent_bible.md` §§1–3, 13, 19–20, 26–33.
+Grammar: `docs/RULEBOOK.md`, `docs/specs/002-card-layer.md`. Pile fuel removed.
 Identities / exclusive verbs / kinds / costs: [design.md](design.md).
 How forge currently plays: [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md) §11.
 Print: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
@@ -166,7 +166,7 @@ A real bridge **plays like both identities at once** (gate 2, synergy).
 **Converters (anti-pattern):** `[Spend] X, [Generate] Y` glue for
 “stranded pile tokens.” Spec `002` listed Bloodline Pact / Ichor Exchange
 / etc. as that glue. Those files are gone; **do not recreate them**. Pile
-fuel in [attribute-pile.md](attribute-pile.md) is for gates and spends,
+pile print in JSON is legacy only (not enforced); absorb is On absorb + Shield,
 not a converter license.
 
 `playCost` is AND of listed attributes plus optional **`any`** generic pips

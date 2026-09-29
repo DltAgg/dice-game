@@ -1,5 +1,4 @@
 import {
-  attackIsFuelled,
   basicAttackOf,
   currentLife,
   formatAttackFuel,
@@ -29,12 +28,8 @@ export function OptionalBonusAttackModal({
   const creature = state.creatures[creatureId];
   const def = creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
   const basic = def !== undefined ? basicAttackOf(def) : undefined;
-  const fuelled =
-    creature !== undefined &&
-    basic !== undefined &&
-    attackIsFuelled(state.players[creature.ownerId]?.attributePool ?? {}, basic);
   const targets =
-    basic !== undefined && fuelled
+    basic !== undefined && creature !== undefined
       ? legalTargetsFor(state, creatureId, basic)
           .map((id) => state.creatures[id])
           .filter((entry): entry is CreatureState => entry !== undefined)
@@ -54,7 +49,6 @@ export function OptionalBonusAttackModal({
         {basic !== undefined && (
           <p className="mt-2 text-xs text-stone-500">
             {formatAttackLine(basic)} · {formatAttackFuel(basic)}
-            {!fuelled ? " · not fuelled" : ""}
           </p>
         )}
         <ul className="mt-4 space-y-2">
@@ -81,11 +75,8 @@ export function OptionalBonusAttackModal({
               </li>
             );
           })}
-          {basic !== undefined && fuelled && targets.length === 0 && (
+          {basic !== undefined && targets.length === 0 && (
             <li className="text-sm text-red-300">No legal targets for the basic attack.</li>
-          )}
-          {basic !== undefined && !fuelled && (
-            <li className="text-sm text-red-300">Basic attack is not fuelled.</li>
           )}
           {basic === undefined && (
             <li className="text-sm text-red-300">No basic attack on this creature.</li>

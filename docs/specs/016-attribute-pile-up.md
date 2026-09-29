@@ -1,5 +1,11 @@
 # 016 — Attribute pile-up resource system
 
+> **OBSOLETE (historical).** The persistent player attribute pile (`attributePool`),
+> pile banking, and `[Requires]` / `[Spend]` / ritual Active-when **enforcement**
+> were removed from the engine. Catalogue print and JSON may still list costs;
+> [`docs/RULEBOOK.md`](../RULEBOOK.md) describes current play. Do not implement
+> new features against this spec without an explicit engine revival.
+
 Status: **IMPLEMENTED** · checklist
 [`016-attribute-pile-up.STATUS.md`](./016-attribute-pile-up.STATUS.md).
 

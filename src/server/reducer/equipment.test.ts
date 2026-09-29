@@ -151,7 +151,7 @@ describe("equipment", () => {
         symbolId: mech.id,
       }),
     );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBeGreaterThanOrEqual(1);
+    expect(after.symbols[mech.id]?.status).toBe("absorbed");
   });
 
   it("reduce equipment attaches to the declared bearer", () => {

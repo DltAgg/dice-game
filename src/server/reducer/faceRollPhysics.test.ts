@@ -136,7 +136,12 @@ function rollShowingSlots(state: GameState, slot0: number, slot1 = SHIELD_SLOT):
 }
 
 function poolOf(state: GameState, attribute: "mechanical" | "luminar" | "arcane" | "martial"): number {
-  return state.players[P1]?.attributePool[attribute] ?? 0;
+  return Object.values(state.symbols).filter(
+    (symbol) =>
+      symbol.ownerId === P1 &&
+      symbol.status === "absorbed" &&
+      symbol.symbol === attribute,
+  ).length;
 }
 
 describe("inherent extra pips", () => {
@@ -336,7 +341,7 @@ describe("While showing", () => {
       syntheticForgedThisTurn: { [P1]: true },
     };
     expect(whileShowingTotals(off, P1).forgeDiscount).toBe(0);
-    expect(canAffordForge(off, P1, definition)).toBe(false);
+    expect(canAffordForge(off, P1, definition)).toBe(true);
   });
 });
 
@@ -408,7 +413,7 @@ describe("Stamp vs inherent pips", () => {
     const stamped = expectOk(
       advance(punched, { type: "RESOLVE_CHOOSE_DIE", playerId: P1, dieId }),
     );
-    expect(poolOf(stamped, "mechanical")).toBe(mechAfterRoll - 2);
+    expect(poolOf(stamped, "mechanical")).toBe(mechAfterRoll);
     expect(
       Object.values(stamped.symbols).filter((symbol) => symbol.sourceDieId === dieId).length,
     ).toBe(rolledFromDie);

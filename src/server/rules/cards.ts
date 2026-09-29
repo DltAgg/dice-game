@@ -14,12 +14,6 @@ import type { GameState } from "../model/state.js";
 import type { SymbolType } from "../model/symbols.js";
 import { requirementTotal } from "../model/symbols.js";
 import { isCreatureSilenced } from "./silence.js";
-import {
-  canAffordUnderCaps,
-  discountedRequirementNeed,
-  matchingPlayCostDiscounts,
-} from "./discounts.js";
-import { cardPlayIsFuelled, isNonEmptyRequirement } from "./tokens.js";
 import { whileShowingTotals } from "./whileShowing.js";
 
 /**
@@ -142,28 +136,11 @@ export const playCostTotal = (definition: CardDefinition): number =>
  * (`canAffordForge`). Does not mutate state.
  */
 export function canAffordPlay(
-  state: GameState,
-  playerId: PlayerId,
-  definition: CardDefinition,
+  _state: GameState,
+  _playerId: PlayerId,
+  _definition: CardDefinition,
 ): boolean {
-  const pile = state.players[playerId]?.attributePool ?? {};
-  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
-  const base = definition.playCost;
-  const hasSpend = isNonEmptyRequirement(base);
-  const matches = hasSpend ? matchingPlayCostDiscounts(state, playerId, definition) : [];
-  const armed = hasSpend ? (state.playCostDiscountThisTurn[playerId] ?? 0) : 0;
-  const stance = hasSpend ? whileShowingTotals(state, playerId).playDiscount : 0;
-  const discount = matches.reduce((sum, match) => sum + match.amount, 0) + armed + stance;
-  const spendNeed = hasSpend ? discountedRequirementNeed(base, discount) : 0;
-  const requires = definition.effect?.requires;
-  return cardPlayIsFuelled(
-    pile,
-    {
-      ...(isNonEmptyRequirement(requires) ? { requires } : {}),
-      ...(hasSpend ? { spend: base, spendNeed } : {}),
-    },
-    wildcards,
-  );
+  return true;
 }
 
 /** True until this player successfully synthetic-`FORGE_CARD`s this turn. */
@@ -182,22 +159,11 @@ export function isFirstSyntheticForgeThisTurn(
  * Does not mutate state.
  */
 export function canAffordForge(
-  state: GameState,
-  playerId: PlayerId,
-  definition: CardDefinition,
+  _state: GameState,
+  _playerId: PlayerId,
+  _definition: CardDefinition,
 ): boolean {
-  if (definition.forge.kind === "natural") return true;
-  if (isFirstSyntheticForgeThisTurn(state, playerId)) return true;
-  const base = definition.playCost;
-  if (base === undefined || !isNonEmptyRequirement(base)) return true;
-  const discount =
-    (state.forgeDiscountThisTurn[playerId] ?? 0) +
-    whileShowingTotals(state, playerId).forgeDiscount;
-  const need = discountedRequirementNeed(base, discount);
-  if (need <= 0) return true;
-  const pile = state.players[playerId]?.attributePool ?? {};
-  const wildcards = state.requirementWildcardsThisTurn[playerId]?.length ?? 0;
-  return canAffordUnderCaps(pile, base, need, wildcards);
+  return true;
 }
 
 /**

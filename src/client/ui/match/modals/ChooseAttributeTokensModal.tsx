@@ -6,6 +6,7 @@ import {
   ATTRIBUTES,
   requirementTotal,
   type Attribute,
+  type AttributeTokens,
   type GameState,
   type SymbolRequirement,
 } from "@server";
@@ -25,8 +26,7 @@ export function ChooseAttributeTokensModal({
   pending: Extract<NonNullable<GameState["pendingDecision"]>, { type: "choose-attribute-tokens" }>;
   onConfirm: (discarded: SymbolRequirement) => void;
 }) {
-  const tokenOwnerId = state.creatures[pending.creatureId]?.ownerId;
-  const tokens = (tokenOwnerId === undefined ? {} : state.players[tokenOwnerId]?.attributePool) ?? {};
+  const tokens: AttributeTokens = {};
   const [pick, setPick] = useState<Readonly<Partial<Record<Attribute, number>>>>({});
   const assigned = requirementTotal(pick);
   const ready = assigned === pending.amount;
@@ -46,10 +46,10 @@ export function ChooseAttributeTokensModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="max-h-[80vh] w-full max-w-md overflow-auto rounded-lg border border-stone-600 bg-stone-950 p-5 shadow-2xl">
         <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
-          Discard from attribute pile
+          Discard leftover pips
         </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          Name {String(pending.amount)} pip(s) from that creature owner&apos;s attribute pile.
+          Name {String(pending.amount)} leftover pip(s).
           Assigned: {String(assigned)}/{String(pending.amount)}.
         </p>
         <CausedByLine state={state} />

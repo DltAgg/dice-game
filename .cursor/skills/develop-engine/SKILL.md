@@ -2,10 +2,9 @@
 name: develop-engine
 description: >-
   Extend the pure game engine: EffectDefinition vocabulary, reducer actions,
-  resolution, phases, attribute pile (spec 016), purity, and tests. Use when
-  implementing new rules behavior, wiring deferred catalogue clauses, changing
-  reduce()/advance(), RNG, or anything under src/server outside of simple
-  catalogue data edits.
+  resolution, phases, purity, and tests. Use when implementing new rules
+  behavior, wiring deferred catalogue clauses, changing reduce()/advance(),
+  RNG, or anything under src/server outside of simple catalogue data edits.
 ---
 
 # Develop the game engine
@@ -28,7 +27,7 @@ description: >-
 6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
 7. **Proving cards** — print uses holder voice and
    [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md); do not default new proving
-   cards to 1-token `playCost` when 2+ is enough (bible §34.5). A new token joins Mark/Strip
+   cards to 1-token `playCost` when 2+ is enough. A new token joins Mark/Strip
    X — do not add Dose-style verbs. New tokens are Mark/Strip arguments, not new opcodes.
 
 ## Typical change: new effect kind
@@ -54,7 +53,7 @@ Prefer composing existing opcodes + `ValueExpr` + `Duration` in catalogue JSON
 | Effect stack | `src/server/reducer/resolution.ts` |
 | Zones / cards helpers | `src/server/reducer/zones.ts` |
 | Setup | `src/server/setup/createMatch.ts` |
-| Attribute pile | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
+| Absorb / On absorb | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
 | Queries | `src/server/rules/*` |
 | Tactic Overcharge (`021`) | `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `src/server/rules/overcharge.ts` (`canOvercharge` / `legalOverchargeFaces`). **Not** spec `013` `optional-overcharge`. |
 | Scenario helpers | `src/server/testing/*` |
@@ -69,10 +68,9 @@ Never put rules in `src/client/networking/` or the UI.
 
 `TURN_PHASE_ORDER`: `roll` → `actions`.
 `END_TURN` is an action, not a phase. Symbol generation happens inside `ROLL_DICE`,
-which then enters `actions`. Usable rolled attributes **auto-bank** into
-`attributePool` after on-roll effects (spec `016`). Absorb (Shield onto creature;
-leftover attribute bank) and `[Spend]` / `[Requires]` checks use the turn pool
-and/or pile as documented in [attribute-pile.md](../author-content/attribute-pile.md).
+which then enters `actions`. Usable rolled attributes **auto-absorb** (On absorb
+still fires; there is no persistent pile). Shield absorbs onto a creature.
+Printed `[Spend]` / `[Requires]` are not enforced — see `docs/RULEBOOK.md`.
 There is no leftover-rolled flip. The actions phase is one window for absorb,
 attacks, plays, forges, Overcharge, and ready rituals (any order).
 Ready rituals may activate during actions; not during roll.

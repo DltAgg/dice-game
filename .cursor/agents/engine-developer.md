@@ -4,7 +4,7 @@ model: inherit
 description: >-
   Implements Dice Skirmish rules in src/server: EffectDefinition vocabulary,
   StandingTrigger hooks, reducer/advance, resolution stack, statuses (toxin,
-  shields, prevent), attribute pile (spec 016), RNG, and phases. Use
+  shields, prevent), absorb / On absorb (spec `016` obsolete), RNG, and phases. Use
   proactively for engine, reducer, trigger, resolution, new hooks, new
   GameAction, or wiring deferred catalogue clauses that need new AST. Do not
   use for match UI, lobby, deck persistence, PeerJS, or a playtest debrief
@@ -28,8 +28,7 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
 1. `AGENTS.md` and `TOOLS.md`
 2. `docs/ARCHITECTURE.md`, `docs/RULEBOOK.md` (how play currently works),
    `docs/KEYWORDS.md` (print vocabulary — proving cards and new tokens use it),
-   and `docs/specs/016-attribute-pile-up.md` when touching fuel, absorb, rituals,
-   or attack costs
+   when touching absorb, rituals, or legacy cost fields (`docs/specs/016-*` is obsolete)
 3. `.cursor/rules/engine-purity.mdc`, `.cursor/rules/scope-and-modules.mdc`, `.cursor/rules/rulebook.mdc`, and
    `.cursor/rules/keywords.mdc`
 4. The matching skill — **read it immediately**; do not improvise workflow:
@@ -40,9 +39,8 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
    When a fuel / attack / generate change would shift **deck feel**, read and
    update `docs/MECHANIC_ARCHETYPES.md` (do not reintroduce `RETARGETED` leaks).
 
-Design canon: `competitive_dice_game_agent_bible.md`. Cite sections. If the
-bible is silent and `OPEN_DESIGN.md` is `OPEN` / `DEFERRED`, **stop and ask**
-— do not assume a rule.
+Player-facing rules: `docs/RULEBOOK.md`. If `OPEN_DESIGN.md` is `OPEN` /
+`DEFERRED`, **stop and ask** — do not assume a rule.
 
 ## Mission
 
@@ -53,8 +51,8 @@ Implement engine requirements so content can stay data-driven:
 - `GameAction` + `reduce()` / `advance()` branches
 - Resolution stack (`resolution.ts`, `chain.ts`)
 - Status-like state already in the engine: toxin, shields,
-  `attackPreventCount` (reaction-only `[Prevent]` — spec `009`), next-attack bonuses,
-  **`PlayerState.attributePool`** (persistent pile; spec `016`)
+  `attackPreventCount` (reaction-only `[Prevent]` — spec `009`), next-attack bonuses.
+  Persistent `attributePool` pile banking was **removed** (spec `016` obsolete).
 - Pure queries in `src/server/rules/*`, setup in `src/server/setup/*`
 - Focused tests and a proving catalogue wire in the **same** change
 
@@ -69,11 +67,10 @@ Implement engine requirements so content can stay data-driven:
 - Incomplete printed clauses: keep accurate English, leave structured fields empty or omit, row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently.
 - Proving-card print follows holder voice (`you` = the player whose field the card sits on) and `docs/KEYWORDS.md`. Do not invent a 1-cost proving card when a 2+ cost expresses the mechanic. New tokens join `[Mark]` / `[Strip]`; do not mint Dose/Envenom verbs.
 - Hooks are **shared events** + catalogue filters. Never coupled types (`on-ally-attack`, `on-opponent-roll-symbol`). Identity is instance id, not definition id or printed name.
-- **Attribute pile (spec `016`).** Fuel lives on `PlayerState.attributePool`.
-  Attribute absorb banks via `attributeBank.ts`; On absorb uses absorber
-  `{ kind: "player" }`. Shield absorb keeps `{ kind: "creature" }`. Ritual
-  `activeWhen` / optional `spend` are pile gates. Attribute fuel is the
-  player pile, not creature-held tokens.
+- **Attribute pile (spec `016`) is obsolete.** Do not bank into or spend from
+  `PlayerState.attributePool` (the field is gone). On absorb still fires;
+  Shield absorb stays `{ kind: "creature" }`. Printed `[Requires]` / `[Spend]`
+  / ritual `activeWhen` are catalogue leftovers, not live pile gates.
 - Filters live on ability data (`self` | `ally` | `ally-other` | `any`, `controller` | `opponent` | `any`), not in reducer branch names.
 - Hosts share one trigger union: equipment, creature standing passives, ready continuous rituals. Walk all hosts the same way.
 - Stun is `DEFERRED` in `OPEN_DESIGN.md`. Do not design or build stun unless the user reopens it.

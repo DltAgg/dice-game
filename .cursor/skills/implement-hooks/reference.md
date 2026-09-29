@@ -19,7 +19,7 @@ are that union; creatures/rituals reuse it).
 | `on-deal-damage` | After bearer deals HP | Shield-only hits do not fire |
 | `on-toxin-damage` | After toxin HP | Listeners on controller’s creatures’ gear |
 | `on-roll-symbol` | Die shows symbol | Filter `rollingPlayer` |
-| `on-absorb` | Attribute banked into pile (`player` absorber) or Shield onto creature (`creature` absorber) | Filter `absorberRelation` / `symbols` / `faceKinds`; see `attribute-pile.md` |
+| `on-absorb` | Attribute absorbed (`player` absorber) or Shield onto creature (`creature` absorber) | Filter `absorberRelation` / `symbols` / `faceKinds`; `docs/RULEBOOK.md` §7 |
 | `on-attack` | Attack declared | Filter `attackerRelation` / `attackKinds` |
 | `on-take-damage` | Incoming damage | `[Reduce N]` / `reduceBy` mutates amount in `dealDamage`; optional `effects` after |
 | `on-discard` | Cards discarded | Filter `discardingPlayer` |

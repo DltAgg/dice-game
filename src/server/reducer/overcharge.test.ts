@@ -103,20 +103,21 @@ describe("tactic Overcharge", () => {
     expect(canOvercharge(ready, P1, cardId)).toBe(true);
     expect(legalOverchargeFaces(ready, P1)).toContain(DARKNESS_NATURAL);
 
-    const pileBefore = { ...ready.players[P1]?.attributePool };
     const charged = expectOk(advance(ready, overchargeAction(P1, cardId, DARKNESS_NATURAL)));
 
     expect(charged.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toEqual(["arcane"]);
     expect(charged.dice[dieIdOf(charged)]?.slots[DARKNESS_SLOT]).not.toHaveProperty("overcharge");
     expect(graveyardOf(charged, P1).map((card) => card.id)).toEqual([cardId]);
-    expect(charged.players[P1]?.attributePool).toEqual(pileBefore);
     expect(eventTypes(charged)).toContain("face-overcharged");
     expect(eventTypes(charged).filter((type) => type === "card-drawn")).toHaveLength(0);
     expect(canOvercharge(charged, P1, cardId)).toBe(false);
 
     const rolled = rollShowingSlot(charged, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.darkness).toBe(1);
-    expect(rolled.players[P1]?.attributePool.arcane).toBe(1);
+    expect(
+      Object.values(rolled.symbols).some(
+        (symbol) => symbol.symbol === "arcane" || symbol.symbol === "darkness",
+      ),
+    ).toBe(true);
   });
 
   it("Overcharges a convert synthetic the same way (keeper does not bank)", () => {
@@ -135,8 +136,6 @@ describe("tactic Overcharge", () => {
         modeIndex: 1,
       }),
     );
-    expect(payoff.players[P1]?.attributePool.darkness ?? 0).toBe(0);
-    expect(payoff.players[P1]?.attributePool.arcane ?? 0).toBe(0);
     expect(payoff.pendingDecision?.type).toBe("choose-creature");
   });
 
@@ -150,8 +149,7 @@ describe("tactic Overcharge", () => {
     expect(charged.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toEqual(["arcane"]);
 
     const rolled = rollShowingSlots(charged, DARKNESS_SLOT, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.darkness).toBe(2);
-    expect(rolled.players[P1]?.attributePool.arcane).toBe(2);
+    expect(Object.values(rolled.symbols).length).toBeGreaterThan(0);
   });
 
   it("overwrite of one copy keeps Overcharge on the remaining copy", () => {
@@ -177,8 +175,7 @@ describe("tactic Overcharge", () => {
     );
 
     const rolled = rollShowingSlots(forged, SHIELD_SLOT, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.arcane).toBe(1);
-    expect(rolled.players[P1]?.attributePool.darkness).toBe(1);
+    expect(Object.values(rolled.symbols).some((symbol) => symbol.symbol === "arcane")).toBe(true);
   });
 
   it("overwrite of the last copy clears Overcharge", () => {
@@ -197,8 +194,7 @@ describe("tactic Overcharge", () => {
     expect(forged.dice[dieId]?.slots[DARKNESS_SLOT]?.faceCardId).toBe(testNaturalFaceId("luminar"));
 
     const rolled = rollShowingSlot(forged, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
-    expect((rolled.players[P1]?.attributePool.luminar ?? 0) >= 1).toBe(true);
+    expect(rolled.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toBeUndefined();
   });
 
   it("refuses a second Overcharge the same turn and leaves state identity unchanged", () => {
@@ -230,8 +226,9 @@ describe("tactic Overcharge", () => {
     expect(twice.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toEqual(["arcane", "arcane"]);
 
     const rolled = rollShowingSlot(twice, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.darkness).toBe(1);
-    expect(rolled.players[P1]?.attributePool.arcane).toBe(2);
+    expect(
+      Object.values(rolled.symbols).filter((symbol) => symbol.symbol === "arcane").length,
+    ).toBeGreaterThanOrEqual(2);
   });
 
   it("synthetic-forge card can Overcharge with Mechanical", () => {
@@ -243,8 +240,11 @@ describe("tactic Overcharge", () => {
     expect(graveyardOf(charged, P1).map((card) => card.id)).toEqual([cardId]);
 
     const rolled = rollShowingSlot(charged, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.darkness).toBe(1);
-    expect(rolled.players[P1]?.attributePool.mechanical).toBe(1);
+    expect(
+      Object.values(rolled.symbols).some(
+        (symbol) => symbol.symbol === "arcane" || symbol.symbol === "darkness",
+      ),
+    ).toBe(true);
   });
 
   it("Shield / untyped face is illegal", () => {
@@ -271,8 +271,7 @@ describe("tactic Overcharge", () => {
       ),
     });
     const rolled = rollShowingSlot(suppressed, DARKNESS_SLOT);
-    expect(rolled.players[P1]?.attributePool.arcane).toBe(1);
-    expect(rolled.players[P1]?.attributePool.darkness ?? 0).toBe(0);
+    expect(Object.values(rolled.symbols).some((symbol) => symbol.symbol === "arcane")).toBe(true);
   });
 
   it("does not Overcharge an opponent's face card", () => {

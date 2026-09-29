@@ -6,8 +6,12 @@ verification live in [`TOOLS.md`](./TOOLS.md).
 
 ## What this project is
 
-A competitive skirmish engine-builder. Design canon:
-[`competitive_dice_game_agent_bible.md`](./competitive_dice_game_agent_bible.md).
+A **dice + creature combat prototype** (customizable dice, tactics, forging,
+AST resolution, hotseat / online / AI). The repo is being cleaned after removing
+the old **attribute-pile fuel loop** and **legendary victory**; a future **3v3
+tag-fighter** design is **not** implemented here. Player-facing truth:
+[`docs/RULEBOOK.md`](./docs/RULEBOOK.md). Unsettled direction:
+[`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md).
 
 Architecture (non-negotiable):
 
@@ -46,7 +50,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
 | Task | Start here |
 |---|---|
 | Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
-| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [attribute-pile.md](.cursor/skills/author-content/attribute-pile.md) for fuel / Absorb; [MECHANIC_ARCHETYPES.md](docs/MECHANIC_ARCHETYPES.md) for mechanic × deck-style feel |
+| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [MECHANIC_ARCHETYPES.md](docs/MECHANIC_ARCHETYPES.md) for pile-era feel archaeology only |
 | Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
@@ -83,7 +87,7 @@ invoke them separately — do not implement both layers yourself.
 | `docs/specs/006-deck-persistence.md` | Deck builder / loadouts |
 | `docs/specs/007-peerjs.md` | Online host authority |
 | `docs/specs/014-match-metrics.md` | Observer telemetry, dashboard, agent export |
-| `docs/specs/016-attribute-pile-up.md` | Player attribute pile; `[Requires]` / `[Spend]` / ritual gates |
+| `docs/specs/016-attribute-pile-up.md` | **Obsolete** — historical attribute-pile spec |
 | `docs/specs/017-layer-split.md` | `src/server` vs `src/client` import rules |
 | `docs/specs/018-ast-engine.md` | Opcode AST, validator / compiler / executor |
 | `docs/specs/019-content-json.md` | Per-entity / per-loadout JSON catalogues |
@@ -115,6 +119,6 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Grow effect AST only when a concrete card needs it; one opcode handler class + tests in the same change. No unreachable stubs.
 - Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.
 - Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
-- Printed `playCost` totaling **1 pile token** is exceptional and niche. Players should reach 1-token plays mainly via **cost reduction** (`[Discount]`), not a catalogue of 1-drops.
+- Printed `playCost` / attack `requires` / `discards` may remain in catalogue JSON but are **not enforced** (no attribute pile). Do not author new cards as if pile fuel is live.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).

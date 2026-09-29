@@ -10,7 +10,7 @@ describe("metrics export", () => {
     expect(exported.exportedAt).toBe("2026-08-18T15:00:00.000Z");
     expect(exported.promptPreamble).toContain("10");
     expect(exported.promptPreamble).toContain("playable and fun");
-    expect(exported.promptPreamble).toContain("attribute pile only");
+    expect(exported.promptPreamble).toContain("no longer has a persistent");
     expect(exported.promptPreamble).not.toContain("The JSON (or Markdown) that follows");
     expect(exported.matches).toHaveLength(1);
     expect(exported.matches[0]?.totalTurns).toBe(22);

@@ -129,22 +129,20 @@ describe("validateLoadout", () => {
     if (!result.ok) expect(result.reason).toMatch(/squad/);
   });
 
-  it("refuses a squad with no legendary", () => {
+  it("accepts a squad with no legendary", () => {
     const result = validateLoadout(
       { ...TEMPO_LOADOUT, squad: [TORQUE_WRIGHT, DAWN_WARDEN, TORQUE_WRIGHT] },
       DEFAULT_RULES_CONFIG,
     );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/legendary/);
+    expect(result).toEqual({ ok: true });
   });
 
-  it("refuses a squad with two legendaries", () => {
+  it("accepts a squad with two legendaries", () => {
     const result = validateLoadout(
       { ...TEMPO_LOADOUT, squad: [LODESTAR_ARTIFICER, LODESTAR_ARTIFICER, TORQUE_WRIGHT] },
       DEFAULT_RULES_CONFIG,
     );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/legendary/);
+    expect(result).toEqual({ ok: true });
   });
 });
 

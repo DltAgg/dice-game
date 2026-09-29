@@ -14,11 +14,9 @@ import type { SymbolRequirement } from "./symbols.js";
 export type BattlefieldPosition = "frontline" | "back";
 
 /**
- * Bible §7 and §24: creatures have no ATK/DEF. An attack is a cost plus an
- * effect, and the interesting question is whether the cost can be paid.
- *
- * Fuel is the attacker's owner's attribute pile (spec `016`), never the shared
- * turn-pool symbols. Absorbing an attribute banks into that pile immediately.
+ * Creatures have no ATK/DEF. An attack is a named effect (plus optional
+ * printed cost data left on the definition). Pile fuel gates were removed;
+ * declare checks targeting, once-per-turn, and a resolvable `effect`.
  */
 export interface AttackDefinition {
   readonly id: AttackId;
@@ -26,12 +24,11 @@ export interface AttackDefinition {
   /** Basic vs Special as printed on the creature card. */
   readonly kind: "basic" | "special";
   /**
-   * Pile gate (`[Requires: …]`): must hold, not spent. May accompany `discards`.
+   * Printed `[Requires]` gate. Catalogue data only — not enforced.
    */
   readonly requires?: SymbolRequirement;
   /**
-   * Pile burn (`[Spend: …]`): removed from the owner's pile on declare.
-   * May accompany `requires` (gate + pay from the same pile).
+   * Printed `[Spend]`. Catalogue data only — not enforced.
    */
   readonly discards?: SymbolRequirement;
   /** Bible §6: Range lets an attack ignore the frontline restriction. */
@@ -59,8 +56,8 @@ export interface CreatureDefinition {
   readonly life: number;
   readonly attributes: readonly Attribute[];
   /**
-   * Commander-style win target. Omit / false = non-legendary. Every legal
-   * squad has exactly one legendary; defeating it wins the match.
+   * Catalogue flag from the previous commander-win design. Unused for
+   * match termination (no automatic win condition until the 3v3 design).
    */
   readonly legendary?: boolean;
   /** English passive text as printed under the art. Empty when none. */

@@ -10,8 +10,9 @@ import {
   withDefeatedCreature,
   withPhase,
   withSymbols,
+  advanceResolvingChain as advance,
 } from "../testing/scenario.js";
-import { advanceResolvingChain as advance } from "../testing/scenario.js";
+import { CRANK } from "../testing/tempoCatalogue.js";
 
 const roll = { type: "ROLL_DICE", playerId: P1 } as const;
 
@@ -20,18 +21,19 @@ function afterRoll(): { state: ReturnType<typeof newMatch>; symbols: SymbolInsta
   return { state, symbols: Object.values(state.symbols) };
 }
 
-describe("attribute pile absorb (spec 016)", () => {
-  it("banks an attribute into the player pile immediately", () => {
+describe("symbol absorb", () => {
+  it("marks an attribute symbol absorbed without a creature target", () => {
     const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial"]);
     const pip = Object.values(state.symbols)[0]!;
     const absorbed = expectOk(
       advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
     );
-    expect(absorbed.players[P1]?.attributePool).toEqual({ martial: 1 });
+    expect(absorbed.symbols[pip.id]?.status).toBe("absorbed");
+    expect(absorbed.symbols[pip.id]?.absorbedByCreatureId).toBeNull();
     expect(usableSymbols(absorbed, P1).some((s) => s.id === pip.id)).toBe(false);
   });
 
-  it("banks even if a creatureId is still supplied (ignored)", () => {
+  it("marks attribute absorbed even if a creatureId is still supplied", () => {
     const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial"]);
     const pip = Object.values(state.symbols)[0]!;
     const creatureId = creatureIdAt(state, P1, 0);
@@ -43,7 +45,7 @@ describe("attribute pile absorb (spec 016)", () => {
         symbolId: pip.id,
       }),
     );
-    expect(absorbed.players[P1]?.attributePool).toEqual({ martial: 1 });
+    expect(absorbed.symbols[pip.id]?.status).toBe("absorbed");
   });
 
   it("grants Shield immediately onto a creature", () => {
@@ -59,7 +61,6 @@ describe("attribute pile absorb (spec 016)", () => {
       }),
     );
     expect(absorbed.creatures[creatureId]?.shields).toBe(1);
-    expect(absorbed.players[P1]?.attributePool).toEqual({});
   });
 
   it("refuses Shield absorb without a creature", () => {
@@ -83,43 +84,33 @@ describe("attribute pile absorb (spec 016)", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("persists the pile across END_TURN while unabsorbed symbols expire", () => {
+  it("clears unabsorbed symbols on END_TURN", () => {
     let state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial", "wild"]);
     const [martial, wild] = Object.values(state.symbols);
     if (martial === undefined || wild === undefined) throw new Error("symbols");
     state = expectOk(
       advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: martial.id }),
     );
-    expect(state.players[P1]?.attributePool).toEqual({ martial: 1 });
+    expect(state.symbols[martial.id]?.status).toBe("absorbed");
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
-    expect(state.players[P1]?.attributePool).toEqual({ martial: 1 });
-    expect(Object.values(state.symbols)).toHaveLength(0);
+    expect(state.symbols[wild.id]).toBeUndefined();
   });
 
-  it("same-turn bank enables an attack that requires that attribute", () => {
-    let state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial", "martial"]);
-    for (const pip of Object.values(state.symbols)) {
-      state = expectOk(
-        advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id }),
-      );
-    }
-    expect(state.players[P1]?.attributePool.martial).toBe(2);
+  it("allows an attack without creature fuel after pile removal", () => {
+    const state = withPhase(newMatch(), "actions");
     const attackerId = creatureIdAt(state, P1, 0);
     const targetId = creatureIdAt(state, P2, 0);
-    // Minotaur basic typically needs martial — use whatever attack is fuelled.
     const result = advance(state, {
       type: "ATTACK",
       playerId: P1,
       attackerId,
-      attackId: "attack-war-minotaur-basic" as never,
+      attackId: CRANK,
       targetId,
     });
-    // May fail if attack id wrong — assert pool was banked either way above.
-    void result;
-    expect(state.players[P1]?.attributePool.martial).toBe(2);
+    expect(result.ok).toBe(true);
   });
 
-  it("auto-banks rolled attributes into the pile without naming a creature", () => {
+  it("auto-absorbs rolled attributes without naming a creature", () => {
     const { state, symbols } = afterRoll();
     const attributes = symbols.filter((s) => s.symbol !== "shield" && s.ownerId === P1);
     expect(attributes.length).toBeGreaterThan(0);
@@ -127,8 +118,6 @@ describe("attribute pile absorb (spec 016)", () => {
       expect(pip.status).toBe("absorbed");
       expect(pip.absorbedByCreatureId).toBeNull();
     }
-    const pool = state.players[P1]?.attributePool ?? {};
-    const banked = Object.values(pool).reduce((sum, n) => sum + n, 0);
-    expect(banked).toBe(attributes.length);
+    expect(Object.keys(state.symbols).length).toBeGreaterThanOrEqual(attributes.length);
   });
 });

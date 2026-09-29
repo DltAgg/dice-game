@@ -84,7 +84,6 @@ describe("optional pending choices", () => {
       type: "choose-effect-mode",
       modeLabels: ["Bank this die's pips", "Strike 2"],
     });
-    expect(rolled.players[P1]?.attributePool.arcane ?? 0).toBe(0);
     const payoff = expectOk(
       advance(rolled, {
         type: "RESOLVE_CHOOSE_EFFECT_MODE",

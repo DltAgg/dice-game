@@ -11,8 +11,6 @@ import {
   handCardIdAt,
   newMatch,
   P1,
-  withAttributePool,
-  withPile,
   withHand,
   withPhase,
   advanceResolvingChain as advance,
@@ -43,11 +41,11 @@ const CROSSCUT_SYNTHETIC = testCard({
   forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
 });
 
-const actionsReady = (cards: Parameters<typeof withHand>[2], fuel = 10) =>
-  withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, fuel);
+const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
+  withHand(withPhase(newMatch(), "actions"), P1, cards);
 
 describe("forge and play discounts", () => {
-  it("a silence instant opens a host choice without consuming extra pile", () => {
+  it("a silence instant opens a host choice without pile payment", () => {
     const state = actionsReady([SILENCE_FACE.id]);
     const after = expectOk(
       advance(state, {
@@ -57,47 +55,25 @@ describe("forge and play discounts", () => {
       }),
     );
     expect(after.pendingDecision?.type).toBe("choose-silence-host");
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(8);
   });
 
-  it("forge discount reduces synthetic forge payment", () => {
-    const draft = createDraft(
-      withAttributePool(newMatch(), P1, { mechanical: 1 }),
-    );
+  it("payment helpers are no-ops after pile removal", () => {
+    const draft = createDraft(newMatch());
     draft.forgeDiscountThisTurn = { [P1]: 1 };
-    payForgeCost(draft, P1, CROSSCUT_SYNTHETIC);
-    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    expect(payForgeCost(draft, P1, CROSSCUT_SYNTHETIC)).toBeNull();
+    expect(payHeaderCost(draft, P1, getCard(TEST_PLAYABLE)!, false)).toBeNull();
   });
 
-  it("play-cost discounts do not apply to forge header payment", () => {
-    const draft = createDraft(withAttributePool(newMatch(), P1, { mechanical: 2 }));
-    payForgeCost(draft, P1, getCard(TEST_PLAYABLE)!);
-    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
-  });
-
-  it("creature passives are not a play-cost discount on a 2-cost instant", () => {
+  it("plays a header-cost instant without pile setup", () => {
     const state = actionsReady([TEST_PLAYABLE]);
-    const first = expectOk(
+    const after = expectOk(
       advance(state, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(state, P1, 0),
       }),
     );
-    expect(first.players[P1]?.attributePool.mechanical).toBe(10);
-  });
-
-  it("payHeaderCost consumes pile tokens", () => {
-    const draft = createDraft(withAttributePool(newMatch(), P1, { mechanical: 2 }));
-    payHeaderCost(draft, P1, getCard(TEST_PLAYABLE)!, false);
-    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
-  });
-
-  it("multi-attribute forge discount accepts either printed attribute", () => {
-    const draft = createDraft(withAttributePool(newMatch(), P1, { luminar: 1 }));
-    draft.forgeDiscountThisTurn = { [P1]: 1 };
-    payForgeCost(draft, P1, CROSSCUT_SYNTHETIC);
-    expect(draft.players[P1]?.attributePool.luminar ?? 0).toBe(0);
+    expect(after.players[P1]?.hand).not.toContain(handCardIdAt(state, P1, 0));
   });
 
   it("unknown example card id stays typed for payment helpers", () => {
@@ -111,9 +87,8 @@ describe("forge and play discounts", () => {
       forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
       rulesText: "Test.",
     };
-    const draft = createDraft(withAttributePool(newMatch(), P1, { mechanical: 1 }));
-    payHeaderCost(draft, P1, card, false);
-    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+    const draft = createDraft(newMatch());
+    expect(payHeaderCost(draft, P1, card, false)).toBeNull();
   });
 });
 
@@ -137,18 +112,7 @@ describe("On roll play-cost-discount", () => {
   }
 
   it("arms from the on-roll push path and cheapens the next play", () => {
-    const ready = withAttributePool(
-      withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]),
-      P1,
-      { mechanical: 1 },
-    );
-    const denied = advance(ready, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(ready, P1, 0),
-    });
-    expect(denied.ok).toBe(false);
-
+    const ready = withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]);
     const armed = armOnRollDiscount(ready);
     expect(armed.playCostDiscountThisTurn[P1]).toBe(1);
     const after = expectOk(
@@ -158,14 +122,12 @@ describe("On roll play-cost-discount", () => {
         cardInstanceId: handCardIdAt(ready, P1, 0),
       }),
     );
-    expect(after.players[P1]?.attributePool.mechanical ?? 0).toBe(2);
-    expect(after.playCostDiscountThisTurn[P1]).toBeUndefined();
+    expect(after.players[P1]?.hand).not.toContain(handCardIdAt(ready, P1, 0));
   });
 
-  it("does not cheapen synthetic forge", () => {
-    const draft = armOnRollDiscount(withAttributePool(newMatch(), P1, { mechanical: 2 }));
-    payForgeCost(draft, P1, getCard(TEST_PLAYABLE)!);
-    expect(draft.players[P1]?.attributePool.mechanical ?? 0).toBe(0);
+  it("does not change forge payment helpers", () => {
+    const draft = armOnRollDiscount(newMatch());
+    expect(payForgeCost(draft, P1, getCard(TEST_PLAYABLE)!)).toBeNull();
     expect(draft.playCostDiscountThisTurn[P1]).toBe(1);
   });
 

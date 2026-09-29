@@ -6,7 +6,6 @@ import type { GameState } from "../model/state.js";
 import { getFaceCard } from "../content/faces.js";
 import { livingCreaturesOf, opponentOf } from "./creatures.js";
 import { isDieStunned } from "./dice.js";
-import { totalTokens } from "./tokens.js";
 
 type QueryState = Pick<
   GameState,
@@ -54,9 +53,9 @@ export function legalCreaturesForFilter(
       return allyIds.filter(damageOverHalf);
     case "ally-with-tokens":
       return allyIds.filter((id) => {
-        const ownerId = state.creatures[id]?.ownerId;
-        if (ownerId === undefined) return false;
-        return totalTokens(state.players[ownerId]?.attributePool ?? {}) > 0;
+        const creature = state.creatures[id];
+        if (creature === undefined) return false;
+        return creature.shields > 0 || creature.toxinMarkers > 0;
       });
     case "adjacent-ally":
       return adjacentAllyIds(state, sourceCreatureId);
