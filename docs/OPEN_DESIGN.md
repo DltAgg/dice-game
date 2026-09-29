@@ -8,10 +8,10 @@ answered silently in code.
 | Removed | Notes |
 |---|---|
 | **Attribute pile** | `PlayerState.attributePool`, banking into pile, and enforcement of `[Requires]` / `[Spend]` / ritual Active-when from pile (spec `016` is **obsolete**). Dice still roll attribute faces; **On absorb** still fires; Shield still absorbs onto creatures. |
-| **Legendary victory** | `checkVictory` is a no-op. Defeating a legendary or wiping the squad does **not** auto-end the match today. |
+| **Legendary victory** | Removed from play. `checkVictory` is still a no-op until spec `028` ships. |
 | **Exactly-one legendary loadout** | Squads are still three creatures; legendary flag in JSON is legacy placement hint only. |
-| **Future win condition** | `GameState.status` / `winner` / match-finished remain for a later rule (e.g. tag-fighter 3v3). **Not decided or implemented in this doc.** |
-| **Future tag-fighter design** | Planned direction only — do not document Meter / Tag / Assist / wipe rules here as shipped play. |
+| **Future win condition** | Spec [`028-tag-fighter-prototype.md`](./specs/028-tag-fighter-prototype.md): wipe (all 3 fighters `defeated`) — **specified, not implemented**. |
+| **Future tag-fighter design** | Spec `028` + **Prototype assumptions — 3v3 tag-fighter** below. `ASSUMED` playtest knobs, **not** bible, **not** shipped play. |
 
 Engine code lives in `src/server`. Catalogue print lives in
 `src/server/content/{cards,creatures,faces}/*.json`.
@@ -1004,3 +1004,38 @@ Not yet load-bearing; recorded so they are not forgotten.
 
 Reaction timing windows (bible §37) are **DECIDED** above
 (“Reactions use a Yu-Gi-Oh style chain”, 2026-08-12).
+
+---
+
+## Prototype assumptions — 3v3 tag-fighter (2026-09-28)
+
+**Status:** `ASSUMED` · **implemented as playtest knobs** · spec [`028-tag-fighter-prototype.md`](./specs/028-tag-fighter-prototype.md)
+
+Live matches that open **3 dice** use `TAG_FIGHTER_RULES`. Engine regression
+tests keep `DEFAULT_RULES_CONFIG` (2 dice, 40–50 deck, 5-card hand). Do not
+treat these numbers as bible.
+
+| Knob / rule | Prototype default | Notes |
+|---|---|---|
+| `dicePerPlayer` | **3** | One d6 bound to `squad[i]`. `StartingDiceLayout` = `readonly DieFaceLayout[]`, length === this. |
+| `meterCap` | **8** | `PlayerState.meter`. Resource, not a Mark token. |
+| `meterPerDamageDealt` | **1** | Per HP actually lost on an attack Strike (`fromAttack`), dealer gains, clamped to cap. Effect / toxin grant is unset. |
+| `tagCancelMeterCost` | **2** | TAG is free if Active die shows `tag`; else this spend. |
+| `assistMeterCost` | **1** | ASSIST is free if **that Reserve’s** die shows `assist`; else this spend. |
+| `openingHandSize` | **4** | Prefer 4 for this prototype. Current engine is **5**; changing it will break tests/UI that assume 5. Keep 5 only if a later slice proves 4 is too disruptive — then record the revert here. |
+| `deckMinCards` / `deckMaxCards` | **10** / **24** | Prototype constructed size. Live tempo/control lists are 40–50: they already exceed **min**; they **fail max** until rebuilt. `deckMaxCopiesPerCard` stays 3. |
+| `attacksPerCreaturePerCombat` | **2** | Current default is 1. |
+| `comboResetsOnEndTurn` | **true** | `comboCount` also resets on TAG and KO-promote. Increment on Active `ATTACK` declare only (abilities later). |
+| `frontlineSlots` | **1** (when positions are synced) | Player-facing: 1 Active + 2 Reserve. Authority is `activeCreatureId`. |
+| Setup Active | `creatureIds[0]` | Index 0 opens Active. |
+| Attack target | Opponent Active only | Reserve is not a legal attack target. Range does not hit the bench in this prototype. |
+| KO-promote | Lowest-index living Reserve | No meter cost; resets combo. If none, wipe. |
+| Simultaneous wipe | Active player loses | Both squads fully `defeated` in one check. |
+| TAG / ASSIST chain | No reaction window | Like `FORGE_CARD`, until a proving card needs one. |
+| ASSIST once-per-reserve | `assist:<creatureId>` | Cleared `END_TURN`. |
+| `CreatureDefinition.life` | unchanged catalogue | `hp <= 0` = existing `defeated`. No separate HP field. |
+| Archetype ids | unset string | `archetype` / `archetypeRestriction` optional; catalogue fills later. |
+
+**Out of this prototype:** mana dice, temporary face replacement, hard-coded
+fighter instance ids in combat, stun (`DEFERRED`), attribute-pile fuel
+(obsolete), rewriting `resolution.ts` or `MatchBoard` in one slice.

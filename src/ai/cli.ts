@@ -28,10 +28,11 @@ export function parsePlaytestArgs(argv: readonly string[]): {
   readonly strength: AiStrength;
 } {
   const known = ALL_BUILTIN_LOADOUTS;
+  const fallbackId = known[0]?.id ?? "deck-tag-skirmish";
   const defaults = {
     seed: 1,
-    p1LoadoutId: known[0]?.id ?? "deck-tempo",
-    p2LoadoutId: known[1]?.id ?? known[0]?.id ?? "deck-tempo",
+    p1LoadoutId: fallbackId,
+    p2LoadoutId: fallbackId,
     maxTurns: 400,
     matches: 1,
     strength: "standard" as const,

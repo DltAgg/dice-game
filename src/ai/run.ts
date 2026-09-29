@@ -10,7 +10,7 @@ if (args.includes("--help") || args.includes("-h")) {
       "",
       "Usage: npm run playtest:ai -- [--seed N] [--p1 loadout] [--p2 loadout] [--max-turns N] [--matches N] [--strength fast|standard|strong]",
       "",
-      "Loadouts: tempo, control (also deck-tempo, deck-control).",
+      "Loadouts: tag-skirmish (also deck-tag-skirmish). Legacy tempo/control aliases map here.",
       "Strength: fast = 1-ply lookahead; standard = minimax + MCTS (default); strong = deeper search.",
       "",
     ].join("\n"),

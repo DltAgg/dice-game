@@ -1,0 +1,13 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-technique-guard",
+  "name": "Guard",
+  "kind": "natural",
+  "symbol": "luminar",
+  "technique": "guard",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

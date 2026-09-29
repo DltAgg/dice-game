@@ -1,5 +1,5 @@
 import {
-  DEFAULT_RULES_CONFIG,
+  rulesConfigForLoadout,
   validateLoadout,
   type GameRulesConfig,
   type LoadoutValidation,
@@ -8,7 +8,7 @@ import type { DeckDraft, SavedDeck } from "./types.js";
 
 export function validateSavedDeck(
   deck: Pick<SavedDeck, "squad" | "deck" | "faceDeck" | "startingDice"> | DeckDraft,
-  config: GameRulesConfig = DEFAULT_RULES_CONFIG,
+  config: GameRulesConfig = rulesConfigForLoadout(deck.startingDice.length),
 ): LoadoutValidation {
   return validateLoadout(
     {

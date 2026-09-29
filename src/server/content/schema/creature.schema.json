@@ -41,6 +41,17 @@
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "defs.schema.json#/$defs/attackDefinition" }
+    },
+    "archetype": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Fighting-game archetype id (spec 028). Matched by card archetypeRestriction."
+    },
+    "assistName": { "type": "string", "minLength": 1 },
+    "assistRulesText": { "type": "string" },
+    "assistEffects": {
+      "description": "Assist payload while this fighter is Reserve (spec 028).",
+      "$ref": "defs.schema.json#/$defs/effectList"
     }
   }
 }

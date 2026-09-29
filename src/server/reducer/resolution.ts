@@ -53,6 +53,8 @@ import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
 import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
+import { grantMeterFromStrike } from "./meter.js";
+import { checkVictory, promoteOnKo } from "./victory.js";
 import {
   applyDestroyDeclaredCard,
   tryOpenOpposingCardChoice,
@@ -476,6 +478,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
         const dealt = dealDamage(draft, targetId, effect.amount, {
           ignoreShield: pending.ignoreShield,
           fromAttack: pending.fromAttack,
+          dealerId: pending.controllerId,
         });
         if (dealt > 0 && pending.sourceCreatureId !== null) {
           fireOnDealDamage(draft, pending.sourceCreatureId, targetId);
@@ -1794,7 +1797,11 @@ export function dealDamage(
   draft: Draft,
   creatureId: CreatureId,
   amount: number,
-  options?: { readonly ignoreShield?: number; readonly fromAttack?: boolean },
+  options?: {
+    readonly ignoreShield?: number;
+    readonly fromAttack?: boolean;
+    readonly dealerId?: PlayerId;
+  },
 ): number {
   const creature = draft.creatures[creatureId];
   if (creature === undefined || creature.defeated) return 0;
@@ -1874,12 +1881,20 @@ export function dealDamage(
   patchCreature(draft, creatureId, { damage, defeated });
   emit(draft, { type: "damage-dealt", creatureId, amount: remaining });
   fireOnTakeDamageEffects(draft, creatureId);
+  grantMeterFromStrike(
+    draft,
+    creatureId,
+    remaining,
+    options?.fromAttack === true,
+    options?.dealerId,
+  );
 
   if (!defeated) return remaining;
 
   emit(draft, { type: "creature-defeated", creatureId });
   releaseDiceHeldBy(draft, creatureId);
   releaseEquipmentOn(draft, creatureId);
+  promoteOnKo(draft, creatureId);
   checkVictory(draft);
   return remaining;
 }
@@ -1932,10 +1947,7 @@ function releaseDiceHeldBy(draft: Draft, creatureId: CreatureId): void {
 }
 
 /**
- * Match termination hook. Legendary commander victory was removed.
- * Automatic 3v3 "defeat all Fighters" is not implemented — callers still
- * invoke this so a future win condition can plug in without new commands.
+ * Wipe victory lives in `victory.ts` (spec `028`) so this frozen file does
+ * not grow.
  */
-export function checkVictory(draft: Draft): void {
-  if (draft.status === "finished") return;
-}
+export { checkVictory } from "./victory.js";

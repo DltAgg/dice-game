@@ -21,7 +21,7 @@ export interface LoadoutInput {
 
 /** Structural JSON check for persistence / PeerJS — not rules legality. */
 export function isStartingDiceLayout(value: unknown): value is StartingDiceLayout {
-  if (!Array.isArray(value) || value.length !== 2) return false;
+  if (!Array.isArray(value) || (value.length !== 2 && value.length !== 3)) return false;
   return value.every(
     (die) =>
       Array.isArray(die) &&
@@ -51,7 +51,7 @@ export function countsTowardOpeningOnRollCap(id: FaceCardId): boolean {
 }
 
 function flattenStartingDice(startingDice: StartingDiceLayout): readonly FaceCardId[] {
-  return [...startingDice[0], ...startingDice[1]];
+  return startingDice.flat();
 }
 
 /**

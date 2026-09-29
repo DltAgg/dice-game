@@ -1,14 +1,17 @@
 import { ALL_BUILTIN_LOADOUTS } from "@server";
 import { DECK_SCHEMA_VERSION, type SavedDeck, type SavedDeckId } from "./types.js";
 
-export const TEMPO_SAVED_DECK_ID: SavedDeckId = "deck-tempo";
-export const CONTROL_SAVED_DECK_ID: SavedDeckId = "deck-control";
+export const TAG_SKIRMISH_SAVED_DECK_ID: SavedDeckId = "deck-tag-skirmish";
 
-/** Temporary exported-name aliases while the other builtin loadouts are rebuilt. */
-export const PROTOTYPE_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
-export const AGGRO_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
-export const COMBO_MECHANICAL_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
-export const BURN_SAVED_DECK_ID = TEMPO_SAVED_DECK_ID;
+/** Live prototype loadout (spec `028`). */
+export const PROTOTYPE_SAVED_DECK_ID = TAG_SKIRMISH_SAVED_DECK_ID;
+
+/** Legacy aliases — Tempo / Control lists were removed with the pile catalogue. */
+export const TEMPO_SAVED_DECK_ID = TAG_SKIRMISH_SAVED_DECK_ID;
+export const CONTROL_SAVED_DECK_ID = TAG_SKIRMISH_SAVED_DECK_ID;
+export const AGGRO_SAVED_DECK_ID = TAG_SKIRMISH_SAVED_DECK_ID;
+export const COMBO_MECHANICAL_SAVED_DECK_ID = TAG_SKIRMISH_SAVED_DECK_ID;
+export const BURN_SAVED_DECK_ID = TAG_SKIRMISH_SAVED_DECK_ID;
 
 const BUILTIN_IDS: ReadonlySet<string> = new Set(
   ALL_BUILTIN_LOADOUTS.map((loadout) => loadout.id),
@@ -37,26 +40,26 @@ function savedDeckFromLoadout(id: string): SavedDeck {
 }
 
 export function buildAggroSavedDeck(): SavedDeck {
-  return savedDeckFromLoadout(TEMPO_SAVED_DECK_ID);
+  return savedDeckFromLoadout(TAG_SKIRMISH_SAVED_DECK_ID);
 }
 
 /** @deprecated Prefer `buildAggroSavedDeck` — alias kept for older imports. */
 export const buildPrototypeSavedDeck = buildAggroSavedDeck;
 
 export function buildControlSavedDeck(): SavedDeck {
-  return savedDeckFromLoadout(CONTROL_SAVED_DECK_ID);
+  return savedDeckFromLoadout(TAG_SKIRMISH_SAVED_DECK_ID);
 }
 
 export function buildTempoSavedDeck(): SavedDeck {
-  return savedDeckFromLoadout(TEMPO_SAVED_DECK_ID);
+  return savedDeckFromLoadout(TAG_SKIRMISH_SAVED_DECK_ID);
 }
 
 export function buildComboMechanicalSavedDeck(): SavedDeck {
-  return savedDeckFromLoadout(TEMPO_SAVED_DECK_ID);
+  return savedDeckFromLoadout(TAG_SKIRMISH_SAVED_DECK_ID);
 }
 
 export function buildBurnSavedDeck(): SavedDeck {
-  return savedDeckFromLoadout(TEMPO_SAVED_DECK_ID);
+  return savedDeckFromLoadout(TAG_SKIRMISH_SAVED_DECK_ID);
 }
 
 /** Builtin loadouts in catalogue order. */

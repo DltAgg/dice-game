@@ -16,9 +16,8 @@ export function CardCatalogue() {
           Face cards
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-400">
-          English printing of the Figma Face card page. Basics are starting identity
-          faces (Natural attributes plus untyped Shield); named specials are synthetics.
-          The face deck holds up to twelve of these (bible §12).
+          Basics are starting identity faces (Natural attributes plus untyped Shield).
+          Named specials are Tag Skirmish technique faces (Strike, Guard, Heavy, and the rest).
         </p>
 
         <h3 className="mt-8 font-[family-name:var(--font-display)] text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
@@ -52,9 +51,8 @@ export function CardCatalogue() {
           Creature cards
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-400">
-          English printing of the Figma Creature card page (Slow game test). Passives print in
-          full; attack costs and damage are what the engine resolves today. Legendary badge is
-          display-only.
+          Tag Skirmish fighters. Passives print in full; native attacks are what the engine
+          resolves today.
         </p>
 
         <ul className="mt-8 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6 p-0">
@@ -78,8 +76,8 @@ export function CardCatalogue() {
           Tactic cards
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-400">
-          English printing of the Figma card layouts. Each card is either forged onto a die or
-          played for its effect — never both.
+          Tag Skirmish tactics: fighter-locked, archetype, team, and universal cards that
+          extend a Fighter’s moveset.
         </p>
 
         <ul className="mt-8 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6 p-0">

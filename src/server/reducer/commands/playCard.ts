@@ -9,6 +9,7 @@ import type {
   PlayerId,
 } from "../../model/ids.js";
 import { isReactionCard } from "../../rules/cards.js";
+import { cardRestrictionError } from "../../rules/fighters.js";
 import { playEffectsRefusal } from "../../rules/reforge.js";
 import {
   buildEffectLink,
@@ -23,6 +24,7 @@ import {
   topChainLink,
 } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
+import { spendMeter } from "../meter.js";
 import { payCardRequires, payHeaderCost } from "../payments.js";
 import { moveCard, overloadFitsFace } from "../zones.js";
 
@@ -48,6 +50,9 @@ export function playCard(
 
   const definition = getCard(card.cardId);
   if (definition === undefined) return "UNKNOWN_ENTITY";
+
+  const restriction = cardRestrictionError(draft, playerId, definition);
+  if (restriction !== null) return restriction;
 
   // During a reaction window only hand reactions may respond.
   if (inReactionWindow && !isReactionCard(definition)) {
@@ -132,6 +137,8 @@ export function playCard(
 
   const headerCostError = payHeaderCost(draft, playerId, definition, true);
   if (headerCostError !== null) return headerCostError;
+  const meterError = spendMeter(draft, playerId, definition.meterCost ?? 0);
+  if (meterError !== null) return meterError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
   moveCard(draft, cardInstanceId, "graveyard");
@@ -182,6 +189,8 @@ function equipCard(
 
   const headerCostError = payHeaderCost(draft, playerId, definition, true);
   if (headerCostError !== null) return headerCostError;
+  const meterError = spendMeter(draft, playerId, definition.meterCost ?? 0);
+  if (meterError !== null) return meterError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
   // Stay in hand until the chain link resolves (or is negated → GY).
@@ -212,6 +221,8 @@ function overloadCard(
 
   const headerCostError = payHeaderCost(draft, playerId, definition, true);
   if (headerCostError !== null) return headerCostError;
+  const meterError = spendMeter(draft, playerId, definition.meterCost ?? 0);
+  if (meterError !== null) return meterError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
 
@@ -235,6 +246,8 @@ function placeRitualCard(
 ): GameError | null {
   const headerCostError = payHeaderCost(draft, playerId, definition, true);
   if (headerCostError !== null) return headerCostError;
+  const meterError = spendMeter(draft, playerId, definition.meterCost ?? 0);
+  if (meterError !== null) return meterError;
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: definition.id });
 

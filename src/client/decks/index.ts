@@ -15,6 +15,7 @@ export {
   CONTROL_SAVED_DECK_ID,
   isBuiltinDeckId,
   PROTOTYPE_SAVED_DECK_ID,
+  TAG_SKIRMISH_SAVED_DECK_ID,
   TEMPO_SAVED_DECK_ID,
   withBuiltinDecks,
 } from "./prototype.js";

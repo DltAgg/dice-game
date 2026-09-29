@@ -1,0 +1,13 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-technique-signature",
+  "name": "Signature",
+  "kind": "natural",
+  "symbol": "darkness",
+  "technique": "signature",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

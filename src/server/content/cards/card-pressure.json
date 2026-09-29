@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-pressure",
+  "name": "Pressure",
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "martial",
+  "archetypeRestriction": "rushdown",
+  "meterCost": 1,
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "Rushdown. Spend 1 Meter. [Strike 1] an enemy.",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 1,
+        "target": { "kind": "choose-enemy" }
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: card-designer
-model: claude-opus-5-thinking-high
+model: inherit
 description: >-
   Designs Dice Skirmish catalogue cards as set craft: occupies an empty
   slot (attribute × kind × forge shape × payoff × constructed home), then

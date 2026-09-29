@@ -9,20 +9,25 @@ are now data-driven. This file lists only what is still honestly unfinished.
 
 ---
 
+## Catalogue reset (2026-09-28)
+
+Pile-era Tempo / Control tactics, creatures, and named synthetics were removed
+from the live catalogue. The playable set is Tag Skirmish: Korr / Magnus / Nyx,
+eight tactics, identity naturals + Shield, and seven technique faces.
+
+Rows below that name retired print (Choirlight, Drain / Infection faces, Great
+Spark, Rekindle, Alpha's Hide, Reforge, Share the Kill, Den Share) describe
+**cards that no longer have catalogue entries**. They stay as design reference
+for the vocabulary decisions, not as open work.
+
+**Nothing in the current Tag Skirmish catalogue is deferred** beyond clauses
+already listed below.
+
 ## Catalogue reset (2026-08-29)
 
-The catalogue was wiped and reauthored as a Mechanical + Luminar **Tempo** set
-(22 tactics, 3 creatures, 9 naturals + Shield + 6 named synthetics), then an
-Arcane + Darkness **Control** set was added alongside it (22 tactics, 3
-creatures, 6 more named synthetics). Rows below that name retired print (Drain /
-Infection faces, Great Spark, Rekindle, Alpha's Hide, Reforge, Share the Kill,
-Den Share) describe **cards that no longer have catalogue entries**. They stay
-as design reference for the vocabulary decisions, not as open work.
-
-**Nothing in the current Tempo or Control catalogue is deferred.** Every printed
-clause on the 44 tactics, 6 creatures, and 12 synthetic faces is wired to
-existing `EffectDefinition` / `StandingTrigger` vocabulary. No
-`engine-developer` brief was needed.
+Historical: the catalogue was wiped and reauthored as Mechanical + Luminar
+**Tempo**, then Arcane + Darkness **Control**. Those lists are gone; see the
+2026-09-28 reset.
 
 ---
 

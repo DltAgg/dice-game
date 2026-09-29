@@ -1,0 +1,26 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-dragon-strike",
+  "name": "Dragon Strike",
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "martial",
+  "fighterRestriction": "creature-korr",
+  "meterCost": 2,
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "martial",
+    "target": "own-die"
+  },
+  "rulesText": "Korr. Spend 2 Meter. [Strike 4] an enemy.",
+  "effect": {
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 4,
+        "target": { "kind": "choose-enemy" }
+      }
+    ]
+  }
+}

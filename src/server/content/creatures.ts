@@ -5,22 +5,12 @@ import { catalogueFromModules } from "./catalogueLoader.js";
 import { lookupOverlayCreature } from "./runtimeOverlay.js";
 
 /**
- * Creature catalogue (spec `003`). Two squads of three creatures each:
- * Mechanical + Luminar Tempo and Arcane + Darkness Control.
+ * Fighter catalogue for Tag Skirmish (spec `028`). Engine types stay
+ * `Creature*`; print/UI call them Fighters.
  */
-export const TORQUE_WRIGHT: CreatureDefinitionId =
-  asCreatureDefinitionId("creature-torque-wright");
-export const DAWN_WARDEN: CreatureDefinitionId =
-  asCreatureDefinitionId("creature-dawn-warden");
-export const LODESTAR_ARTIFICER: CreatureDefinitionId =
-  asCreatureDefinitionId("creature-lodestar-artificer");
-
-export const RIFTSCRIBE_ADEPT: CreatureDefinitionId =
-  asCreatureDefinitionId("creature-riftscribe-adept");
-export const GRAVEMARROW_SHADE: CreatureDefinitionId =
-  asCreatureDefinitionId("creature-gravemarrow-shade");
-export const DUSKTHRONE_ORACLE: CreatureDefinitionId =
-  asCreatureDefinitionId("creature-duskthrone-oracle");
+export const KORR: CreatureDefinitionId = asCreatureDefinitionId("creature-korr");
+export const MAGNUS: CreatureDefinitionId = asCreatureDefinitionId("creature-magnus");
+export const NYX: CreatureDefinitionId = asCreatureDefinitionId("creature-nyx");
 
 const creatureModules = import.meta.glob("./creatures/creature-*.json", {
   eager: true,

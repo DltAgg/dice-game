@@ -1,7 +1,6 @@
-import type { StartingDiceLayout } from "../../model/dice.js";
+import type { DieFaceLayout, StartingDiceLayout } from "../../model/dice.js";
 import { asCardId, asCreatureDefinitionId, asFaceCardId, type CardId } from "../../model/ids.js";
-import controlDoc from "./control.json";
-import tempoDoc from "./tempo.json";
+import tagSkirmishDoc from "./tag-skirmish.json";
 
 export interface LoadoutDeckCount {
   readonly cardId: string;
@@ -24,7 +23,7 @@ const asSquad = (ids: readonly string[]) => ids.map(asCreatureDefinitionId);
 
 const asFaceDeck = (ids: readonly string[]) => ids.map(asFaceCardId);
 
-const asDie = (faces: readonly string[]): StartingDiceLayout[0] => [
+const asDie = (faces: readonly string[]): DieFaceLayout => [
   asFaceCardId(faces[0]!),
   asFaceCardId(faces[1]!),
   asFaceCardId(faces[2]!),
@@ -34,12 +33,10 @@ const asDie = (faces: readonly string[]): StartingDiceLayout[0] => [
 ];
 
 const asStartingDice = (dice: BuiltinLoadoutDocument["startingDice"]): StartingDiceLayout => {
-  const first = dice[0];
-  const second = dice[1];
-  if (first === undefined || second === undefined) {
-    throw new Error("loadout startingDice must contain two dice");
+  if (dice.length < 2) {
+    throw new Error("loadout startingDice must contain at least two dice");
   }
-  return [asDie(first), asDie(second)];
+  return dice.map((faces) => asDie(faces));
 };
 
 const hydrate = (doc: BuiltinLoadoutDocument) => ({
@@ -52,52 +49,52 @@ const hydrate = (doc: BuiltinLoadoutDocument) => ({
   startingDice: asStartingDice(doc.startingDice),
 });
 
-export const TEMPO_LOADOUT = hydrate(tempoDoc as unknown as BuiltinLoadoutDocument);
-
-export const TEMPO_SQUAD = TEMPO_LOADOUT.squad;
-export const TEMPO_DECK = TEMPO_LOADOUT.deck;
-export const TEMPO_DECK_COUNTS = TEMPO_LOADOUT.deckCounts;
-export const TEMPO_FACE_DECK = TEMPO_LOADOUT.faceDeck;
-export const TEMPO_STARTING_DICE = TEMPO_LOADOUT.startingDice;
-
-export const CONTROL_LOADOUT = hydrate(controlDoc as unknown as BuiltinLoadoutDocument);
-
-export const CONTROL_SQUAD = CONTROL_LOADOUT.squad;
-export const CONTROL_DECK = CONTROL_LOADOUT.deck;
-export const CONTROL_DECK_COUNTS = CONTROL_LOADOUT.deckCounts;
-export const CONTROL_FACE_DECK = CONTROL_LOADOUT.faceDeck;
-export const CONTROL_STARTING_DICE = CONTROL_LOADOUT.startingDice;
+export const TAG_SKIRMISH_LOADOUT = hydrate(tagSkirmishDoc as unknown as BuiltinLoadoutDocument);
 
 /**
- * Temporary compatibility aliases while the other builtin catalogues are
- * rebuilt. Every remaining alias intentionally references the hydrated Tempo value.
+ * Retired Tempo / Control / Aggro / Burn aliases all resolve to Tag Skirmish
+ * so older tests, CLI flags, and saved-deck ids keep working.
  */
-export const AGGRO_LOADOUT = TEMPO_LOADOUT;
-export const COMBO_MECHANICAL_LOADOUT = TEMPO_LOADOUT;
-export const BURN_LOADOUT = TEMPO_LOADOUT;
+export const TEMPO_LOADOUT = TAG_SKIRMISH_LOADOUT;
+export const CONTROL_LOADOUT = TAG_SKIRMISH_LOADOUT;
+export const AGGRO_LOADOUT = TAG_SKIRMISH_LOADOUT;
+export const COMBO_MECHANICAL_LOADOUT = TAG_SKIRMISH_LOADOUT;
+export const BURN_LOADOUT = TAG_SKIRMISH_LOADOUT;
 
-export const AGGRO_SQUAD = TEMPO_SQUAD;
-export const AGGRO_DECK = TEMPO_DECK;
-export const AGGRO_DECK_COUNTS = TEMPO_DECK_COUNTS;
-export const AGGRO_FACE_DECK = TEMPO_FACE_DECK;
-export const AGGRO_STARTING_DICE = TEMPO_STARTING_DICE;
+export const TEMPO_SQUAD = TAG_SKIRMISH_LOADOUT.squad;
+export const TEMPO_DECK = TAG_SKIRMISH_LOADOUT.deck;
+export const TEMPO_DECK_COUNTS = TAG_SKIRMISH_LOADOUT.deckCounts;
+export const TEMPO_FACE_DECK = TAG_SKIRMISH_LOADOUT.faceDeck;
+export const TEMPO_STARTING_DICE = TAG_SKIRMISH_LOADOUT.startingDice;
 
-export const PROTOTYPE_SQUAD = TEMPO_SQUAD;
-export const PROTOTYPE_DECK = TEMPO_DECK;
-export const PROTOTYPE_DECK_COUNTS = TEMPO_DECK_COUNTS;
-export const PROTOTYPE_FACE_DECK = TEMPO_FACE_DECK;
-export const PROTOTYPE_STARTING_DICE = TEMPO_STARTING_DICE;
+export const CONTROL_SQUAD = TAG_SKIRMISH_LOADOUT.squad;
+export const CONTROL_DECK = TAG_SKIRMISH_LOADOUT.deck;
+export const CONTROL_DECK_COUNTS = TAG_SKIRMISH_LOADOUT.deckCounts;
+export const CONTROL_FACE_DECK = TAG_SKIRMISH_LOADOUT.faceDeck;
+export const CONTROL_STARTING_DICE = TAG_SKIRMISH_LOADOUT.startingDice;
 
-export const COMBO_MECHANICAL_SQUAD = TEMPO_SQUAD;
-export const COMBO_MECHANICAL_DECK = TEMPO_DECK;
-export const COMBO_MECHANICAL_DECK_COUNTS = TEMPO_DECK_COUNTS;
-export const COMBO_MECHANICAL_FACE_DECK = TEMPO_FACE_DECK;
-export const COMBO_MECHANICAL_STARTING_DICE = TEMPO_STARTING_DICE;
+export const AGGRO_SQUAD = TAG_SKIRMISH_LOADOUT.squad;
+export const AGGRO_DECK = TAG_SKIRMISH_LOADOUT.deck;
+export const AGGRO_DECK_COUNTS = TAG_SKIRMISH_LOADOUT.deckCounts;
+export const AGGRO_FACE_DECK = TAG_SKIRMISH_LOADOUT.faceDeck;
+export const AGGRO_STARTING_DICE = TAG_SKIRMISH_LOADOUT.startingDice;
 
-export const BURN_SQUAD = TEMPO_SQUAD;
-export const BURN_DECK = TEMPO_DECK;
-export const BURN_DECK_COUNTS = TEMPO_DECK_COUNTS;
-export const BURN_FACE_DECK = TEMPO_FACE_DECK;
-export const BURN_STARTING_DICE = TEMPO_STARTING_DICE;
+export const PROTOTYPE_SQUAD = TAG_SKIRMISH_LOADOUT.squad;
+export const PROTOTYPE_DECK = TAG_SKIRMISH_LOADOUT.deck;
+export const PROTOTYPE_DECK_COUNTS = TAG_SKIRMISH_LOADOUT.deckCounts;
+export const PROTOTYPE_FACE_DECK = TAG_SKIRMISH_LOADOUT.faceDeck;
+export const PROTOTYPE_STARTING_DICE = TAG_SKIRMISH_LOADOUT.startingDice;
 
-export const ALL_BUILTIN_LOADOUTS = [TEMPO_LOADOUT, CONTROL_LOADOUT] as const;
+export const COMBO_MECHANICAL_SQUAD = TAG_SKIRMISH_LOADOUT.squad;
+export const COMBO_MECHANICAL_DECK = TAG_SKIRMISH_LOADOUT.deck;
+export const COMBO_MECHANICAL_DECK_COUNTS = TAG_SKIRMISH_LOADOUT.deckCounts;
+export const COMBO_MECHANICAL_FACE_DECK = TAG_SKIRMISH_LOADOUT.faceDeck;
+export const COMBO_MECHANICAL_STARTING_DICE = TAG_SKIRMISH_LOADOUT.startingDice;
+
+export const BURN_SQUAD = TAG_SKIRMISH_LOADOUT.squad;
+export const BURN_DECK = TAG_SKIRMISH_LOADOUT.deck;
+export const BURN_DECK_COUNTS = TAG_SKIRMISH_LOADOUT.deckCounts;
+export const BURN_FACE_DECK = TAG_SKIRMISH_LOADOUT.faceDeck;
+export const BURN_STARTING_DICE = TAG_SKIRMISH_LOADOUT.startingDice;
+
+export const ALL_BUILTIN_LOADOUTS = [TAG_SKIRMISH_LOADOUT] as const;

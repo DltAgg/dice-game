@@ -11,18 +11,12 @@ import { catalogueFromModules } from "./catalogueLoader.js";
 import { lookupOverlayFace } from "./runtimeOverlay.js";
 
 /**
- * Face cards backing die faces (spec `004`).
+ * Face cards backing die faces (spec `004` / `028`).
  *
  * Basics are starting-die identity faces: natural faces for all eight
- * attributes, plus untyped Shield. Synthetics are **named specials only**
- * — never blank `face-synthetic-<attr>` generics. A natural may also be a
- * named special (Dawnwright); it is packed from the face deck like any
- * other special. Print uses `On roll:` / `While showing:` (spec `025`).
- * Face `onAbsorb` stays empty — auto-bank retired On absorb as a face axis.
- *
- * The special pool holds the Mechanical + Luminar Tempo set and the
- * Arcane + Darkness Control set (3 named specials per attribute, so a face
- * deck can run either pair inside the 3-per-attribute cap).
+ * attributes, plus untyped Shield. Tag Skirmish named specials are the
+ * technique faces (Strike, Guard, Heavy, …). Identity naturals omit
+ * `technique`. Face `onAbsorb` stays empty.
  */
 
 export const naturalFaceId = (attribute: Attribute): FaceCardId =>
@@ -52,34 +46,13 @@ export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
   );
 };
 
-/* ----------------------------------------------------- named specials --- */
-
-/** Mechanical: own-die reconstruction and forge discounts. */
-export const COGTOOTH: FaceCardId = asFaceCardId("face-synthetic-cogtooth");
-export const GEAR_TRAIN: FaceCardId = asFaceCardId("face-synthetic-gear-train");
-export const MAINSPRING: FaceCardId = asFaceCardId("face-synthetic-mainspring");
-
-/** Luminar: Pierce / Empower stances and the Luminar → Mechanical dual-pip. */
-export const HALO_LAMP: FaceCardId = asFaceCardId("face-synthetic-halo-lamp");
-export const LUCENT_CHOIR: FaceCardId = asFaceCardId("face-synthetic-lucent-choir");
-export const SUNWARD_LENS: FaceCardId = asFaceCardId("face-synthetic-sunward-lens");
-
-/** Arcane: play-discount stance, Insight geometry, and convert Strike. */
-export const AUGUR_GLASS: FaceCardId = asFaceCardId("face-synthetic-augur-glass");
-export const SIGIL_FLARE: FaceCardId = asFaceCardId("face-synthetic-sigil-flare");
-export const WARD_LATTICE: FaceCardId = asFaceCardId("face-synthetic-ward-lattice");
-
-/** Darkness: dual-pip Arcane, Recall, and convert Drain. Gloomwell pays Arcane. */
-export const GLOOMWELL: FaceCardId = asFaceCardId("face-synthetic-gloomwell");
-export const OSSUARY: FaceCardId = asFaceCardId("face-synthetic-ossuary");
-export const PYRE_OF_NAMES: FaceCardId = asFaceCardId("face-synthetic-pyre-of-names");
-
-/**
- * Named **natural** special: dual-pip Mechanical + Luminar (`pips` map,
- * spec `025`). Packable like a synthetic — it is not one of the eight
- * opening identity basics, so it never belongs in `BASIC_FACE_CARDS`.
- */
-export const DAWNWRIGHT: FaceCardId = asFaceCardId("face-natural-dawnwright");
+export const TECHNIQUE_STRIKE: FaceCardId = asFaceCardId("face-natural-technique-strike");
+export const TECHNIQUE_GUARD: FaceCardId = asFaceCardId("face-natural-technique-guard");
+export const TECHNIQUE_HEAVY: FaceCardId = asFaceCardId("face-natural-technique-heavy");
+export const TECHNIQUE_SPECIAL: FaceCardId = asFaceCardId("face-natural-technique-special");
+export const TECHNIQUE_TAG: FaceCardId = asFaceCardId("face-natural-technique-tag");
+export const TECHNIQUE_ASSIST: FaceCardId = asFaceCardId("face-natural-technique-assist");
+export const TECHNIQUE_SIGNATURE: FaceCardId = asFaceCardId("face-natural-technique-signature");
 
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);
@@ -98,8 +71,8 @@ export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.sl
 );
 
 /**
- * Packable named specials that have printed rules text: the synthetics plus
- * named naturals such as Dawnwright. Everything after the opening basics.
+ * Packable named specials: Tag Skirmish technique faces. Everything after
+ * the opening basics.
  */
 export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
   DUAL_KIND_ATTRIBUTES.length + 1,
@@ -138,14 +111,13 @@ export function legacyStartingLayout(): StartingDiceLayout {
 }
 
 /**
- * Scenario / forge-test face pool. Unique ids (ledger: pooled xor installed);
- * 3 Mechanical + 3 Luminar stays inside the per-attribute face-deck cap.
+ * Scenario / forge-test face pool: Tag Skirmish technique faces (unique ids).
  */
 export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
-  COGTOOTH,
-  GEAR_TRAIN,
-  MAINSPRING,
-  HALO_LAMP,
-  LUCENT_CHOIR,
-  SUNWARD_LENS,
+  TECHNIQUE_STRIKE,
+  TECHNIQUE_GUARD,
+  TECHNIQUE_HEAVY,
+  TECHNIQUE_SPECIAL,
+  TECHNIQUE_TAG,
+  TECHNIQUE_ASSIST,
 ];

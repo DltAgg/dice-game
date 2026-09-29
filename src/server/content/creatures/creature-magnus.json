@@ -1,0 +1,46 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-magnus",
+  "name": "Magnus",
+  "life": 22,
+  "attributes": ["mechanical"],
+  "archetype": "grappler",
+  "passiveRulesText": "Grappler: high life, heavy throws.",
+  "assistName": "Wall",
+  "assistRulesText": "[Assist]: [Mark 2 Shield] on your Active Fighter.",
+  "assistEffects": [
+    {
+      "type": "grant-shield",
+      "amount": 2,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-magnus-guard",
+      "name": "Guard Stance",
+      "kind": "basic",
+      "range": false,
+      "requiredTechniques": ["guard"],
+      "rulesText": "Requires Guard. [Mark 1 Shield] on you.",
+      "effect": {
+        "type": "grant-shield",
+        "amount": 1,
+        "target": { "kind": "source-creature" }
+      }
+    },
+    {
+      "id": "attack-magnus-grab",
+      "name": "Command Grab",
+      "kind": "special",
+      "range": false,
+      "requiredTechniques": ["heavy"],
+      "rulesText": "Requires Heavy. [Strike 4].",
+      "effect": {
+        "type": "damage",
+        "amount": 4,
+        "target": { "kind": "declared-target" }
+      }
+    }
+  ]
+}

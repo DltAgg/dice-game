@@ -1,0 +1,43 @@
+{
+  "$schema": "../schema/loadout.schema.json",
+  "id": "deck-tag-skirmish",
+  "name": "Tag Skirmish",
+  "squad": ["creature-korr", "creature-magnus", "creature-nyx"],
+  "deckCounts": [
+    { "cardId": "card-pressure", "copies": 2 },
+    { "cardId": "card-command-throw", "copies": 2 },
+    { "cardId": "card-keep-away", "copies": 2 },
+    { "cardId": "card-cross-rush", "copies": 2 },
+    { "cardId": "card-dragon-strike", "copies": 2 },
+    { "cardId": "card-technique-drill", "copies": 2 },
+    { "cardId": "card-focus", "copies": 2 },
+    { "cardId": "card-guard-up", "copies": 2 }
+  ],
+  "faceDeck": [],
+  "startingDice": [
+    [
+      "face-natural-technique-strike",
+      "face-natural-technique-strike",
+      "face-natural-technique-heavy",
+      "face-natural-technique-guard",
+      "face-natural-technique-tag",
+      "face-natural-technique-signature"
+    ],
+    [
+      "face-natural-technique-guard",
+      "face-natural-technique-guard",
+      "face-natural-technique-heavy",
+      "face-natural-technique-strike",
+      "face-natural-technique-tag",
+      "face-natural-technique-assist"
+    ],
+    [
+      "face-natural-technique-special",
+      "face-natural-technique-special",
+      "face-natural-technique-strike",
+      "face-natural-technique-guard",
+      "face-natural-technique-tag",
+      "face-natural-technique-assist"
+    ]
+  ]
+}

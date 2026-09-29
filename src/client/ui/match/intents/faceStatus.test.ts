@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Attribute, DieId, DieSlot, FaceCardId, GameState, PlayerId } from "@server";
+import { testFace } from "@server/testing/fixtures/index.js";
 import {
   convertRollCueForFace,
   faceMarkerSummary,
@@ -10,6 +11,37 @@ import {
   whileShowingStatusForPlayer,
   whileShowingStatusLine,
 } from "./faceStatus.js";
+
+const PIERCE_FACE = testFace({
+  id: "face-test-status-pierce",
+  kind: "synthetic",
+  symbol: "luminar",
+  whileShowing: [{ type: "pierce", amount: 1 }],
+});
+const EMPOWER_FACE = testFace({
+  id: "face-test-status-empower",
+  kind: "synthetic",
+  symbol: "luminar",
+  whileShowing: [{ type: "empower", amount: 1 }],
+});
+const PLAY_DISCOUNT_FACE = testFace({
+  id: "face-test-status-play-discount",
+  kind: "synthetic",
+  symbol: "arcane",
+  whileShowing: [{ type: "play-discount", amount: 1 }],
+});
+const FORGE_DISCOUNT_FACE = testFace({
+  id: "face-test-status-forge-discount",
+  kind: "synthetic",
+  symbol: "mechanical",
+  whileShowing: [{ type: "forge-discount", amount: 1 }],
+});
+const CONVERT_FACE = testFace({
+  id: "face-test-status-convert",
+  kind: "synthetic",
+  symbol: "arcane",
+  convertRoll: true,
+});
 
 function slot(partial: Partial<DieSlot> & { faceCardId: FaceCardId }): DieSlot {
   return {
@@ -173,34 +205,34 @@ describe("whileShowingCues", () => {
 });
 
 describe("whileShowingStatusForPlayer", () => {
-  it("reads Halo Lamp pierce from whileShowingTotals", () => {
+  it("reads pierce from whileShowingTotals", () => {
     const { state, playerId } = playerWithShowingFaces([
-      { dieId: "die-1" as DieId, faceCardId: "face-synthetic-halo-lamp" as FaceCardId },
+      { dieId: "die-1" as DieId, faceCardId: PIERCE_FACE.id },
     ]);
     expect(whileShowingStatusForPlayer(state, playerId)).toBe("While showing · Pierce 1");
   });
 
-  it("stacks Lucent Choir empower with Halo Lamp pierce", () => {
+  it("stacks empower with pierce", () => {
     const { state, playerId } = playerWithShowingFaces([
-      { dieId: "die-1" as DieId, faceCardId: "face-synthetic-halo-lamp" as FaceCardId },
-      { dieId: "die-2" as DieId, faceCardId: "face-synthetic-lucent-choir" as FaceCardId },
+      { dieId: "die-1" as DieId, faceCardId: PIERCE_FACE.id },
+      { dieId: "die-2" as DieId, faceCardId: EMPOWER_FACE.id },
     ]);
     expect(whileShowingStatusForPlayer(state, playerId)).toBe(
       "While showing · Pierce 1 · Empower 1",
     );
   });
 
-  it("labels Augur Glass play discount and Cogtooth forge discount", () => {
-    const glass = playerWithShowingFaces([
-      { dieId: "die-1" as DieId, faceCardId: "face-synthetic-augur-glass" as FaceCardId },
+  it("labels play discount and forge discount", () => {
+    const play = playerWithShowingFaces([
+      { dieId: "die-1" as DieId, faceCardId: PLAY_DISCOUNT_FACE.id },
     ]);
-    expect(whileShowingStatusForPlayer(glass.state, glass.playerId)).toBe(
+    expect(whileShowingStatusForPlayer(play.state, play.playerId)).toBe(
       "While showing · Discount 1",
     );
-    const cog = playerWithShowingFaces([
-      { dieId: "die-1" as DieId, faceCardId: "face-synthetic-cogtooth" as FaceCardId },
+    const forge = playerWithShowingFaces([
+      { dieId: "die-1" as DieId, faceCardId: FORGE_DISCOUNT_FACE.id },
     ]);
-    expect(whileShowingStatusForPlayer(cog.state, cog.playerId)).toBe(
+    expect(whileShowingStatusForPlayer(forge.state, forge.playerId)).toBe(
       "While showing · Discount 1 forge",
     );
   });
@@ -209,7 +241,7 @@ describe("whileShowingStatusForPlayer", () => {
     const { state, playerId } = playerWithShowingFaces([
       {
         dieId: "die-1" as DieId,
-        faceCardId: "face-synthetic-halo-lamp" as FaceCardId,
+        faceCardId: PIERCE_FACE.id,
         silenced: true,
       },
     ]);
@@ -218,34 +250,19 @@ describe("whileShowingStatusForPlayer", () => {
 });
 
 describe("convertRollCueForFace", () => {
-  it("cues when Sigil Flare is showing", () => {
-    const faceCardId = "face-synthetic-sigil-flare" as FaceCardId;
+  it("cues when a convert face is showing", () => {
     const { state, playerId } = playerWithShowingFaces([
-      { dieId: "die-1" as DieId, faceCardId },
+      { dieId: "die-1" as DieId, faceCardId: CONVERT_FACE.id },
     ]);
-    expect(convertRollCueForFace(state, playerId, faceCardId)).toBe(
+    expect(convertRollCueForFace(state, playerId, CONVERT_FACE.id)).toBe(
       "On roll: Choose one — bank this die's pips or the printed payoff",
     );
-  });
-
-  it("cues Mainspring and Pyre of Names when showing", () => {
-    for (const faceCardId of [
-      "face-synthetic-mainspring",
-      "face-synthetic-pyre-of-names",
-    ] as const) {
-      const { state, playerId } = playerWithShowingFaces([
-        { dieId: "die-1" as DieId, faceCardId: faceCardId as FaceCardId },
-      ]);
-      expect(convertRollCueForFace(state, playerId, faceCardId as FaceCardId)).toContain(
-        "Choose one",
-      );
-    }
   });
 
   it("returns null when the convert face is not showing", () => {
     const playerId = "p1" as PlayerId;
     const dieId = "die-1" as DieId;
-    const convertId = "face-synthetic-sigil-flare" as FaceCardId;
+    const convertId = CONVERT_FACE.id;
     const otherId = "face-natural-arcane" as FaceCardId;
     const state = {
       turn: 1,
@@ -261,19 +278,17 @@ describe("convertRollCueForFace", () => {
     expect(convertRollCueForFace(state, playerId, convertId)).toBeNull();
   });
 
-  it("returns null for Halo Lamp (while showing, not convert)", () => {
-    const faceCardId = "face-synthetic-halo-lamp" as FaceCardId;
+  it("returns null for a stance face (while showing, not convert)", () => {
     const { state, playerId } = playerWithShowingFaces([
-      { dieId: "die-1" as DieId, faceCardId },
+      { dieId: "die-1" as DieId, faceCardId: PIERCE_FACE.id },
     ]);
-    expect(convertRollCueForFace(state, playerId, faceCardId)).toBeNull();
+    expect(convertRollCueForFace(state, playerId, PIERCE_FACE.id)).toBeNull();
   });
 
   it("hides the cue when the showing convert slot is silenced", () => {
-    const faceCardId = "face-synthetic-sigil-flare" as FaceCardId;
     const { state, playerId } = playerWithShowingFaces([
-      { dieId: "die-1" as DieId, faceCardId, silenced: true },
+      { dieId: "die-1" as DieId, faceCardId: CONVERT_FACE.id, silenced: true },
     ]);
-    expect(convertRollCueForFace(state, playerId, faceCardId)).toBeNull();
+    expect(convertRollCueForFace(state, playerId, CONVERT_FACE.id)).toBeNull();
   });
 });

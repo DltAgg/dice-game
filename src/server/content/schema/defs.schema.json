@@ -1260,8 +1260,31 @@
         "followUpEffects": {
           "description": "Queued after the damage link (draw, mill, heal, …).",
           "$ref": "#/$defs/effectList"
+        },
+        "requiredTechniques": {
+          "description": "Spec 028. AND-gated on the showing technique of this fighter's bound die.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/technique" }
         }
       }
+    },
+    "technique": {
+      "title": "Technique",
+      "description": "Combat-toolkit face (spec 028). Not mana.",
+      "type": "string",
+      "enum": [
+        "strike",
+        "guard",
+        "heavy",
+        "special",
+        "tag",
+        "assist",
+        "signature",
+        "combo",
+        "dodge",
+        "counter"
+      ]
     },
     "faceStayPolicy": {
       "title": "FaceStayPolicy",

@@ -15,6 +15,10 @@
       "description": "Attribute this face produces, or shield for the untyped starting face.",
       "$ref": "defs.schema.json#/$defs/symbolType"
     },
+    "technique": {
+      "description": "Combat toolkit while showing (spec 028). Identity naturals omit this.",
+      "$ref": "defs.schema.json#/$defs/technique"
+    },
     "rulesText": {
       "type": "string",
       "description": "English inherent-effect region. Empty on identity faces (+1 Attribute is the footer, not rules text). Dual-timing faces use On roll: / On absorb: prefixes."

@@ -1,7 +1,7 @@
 import type { Draft } from "../../reducer/draft.js";
 import type { PendingEffect } from "../../model/state.js";
 import type { TargetSelector } from "../../model/effects.js";
-import type { CreatureId } from "../../model/ids.js";
+import type { CreatureId, PlayerId } from "../../model/ids.js";
 import { ValueEvaluator } from "../evaluate.js";
 import type { ExecutionContext, IOpcodeHandler } from "../registry.js";
 import { OpcodeRegistry } from "../registry.js";
@@ -20,7 +20,11 @@ export interface ResolutionKernel {
     draft: Draft,
     targetId: CreatureId,
     amount: number,
-    opts?: { readonly ignoreShield?: number; readonly fromAttack?: boolean },
+    opts?: {
+      readonly ignoreShield?: number;
+      readonly fromAttack?: boolean;
+      readonly dealerId?: PlayerId;
+    },
   ): number;
   fireOnDealDamage(draft: Draft, sourceId: CreatureId, targetId: CreatureId): void;
   healCreature(draft: Draft, creatureId: CreatureId, amount: number): void;
@@ -47,6 +51,7 @@ class DamageHandler implements IOpcodeHandler {
       const dealt = this.kernel.dealDamage(ctx.draft, targetId, amount, {
         ignoreShield: ctx.pending.ignoreShield,
         fromAttack: ctx.pending.fromAttack,
+        dealerId: ctx.pending.controllerId,
       });
       if (dealt > 0 && ctx.pending.sourceCreatureId !== null) {
         this.kernel.fireOnDealDamage(ctx.draft, ctx.pending.sourceCreatureId, targetId);

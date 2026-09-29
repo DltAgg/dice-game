@@ -17,6 +17,7 @@ import {
   TURN_PHASE_ORDER,
   type CardInstance,
   type CardInstanceId,
+  type CreatureId,
   type CreatureState,
   type DieId,
   type FaceCardId,
@@ -28,7 +29,8 @@ import { useDeckStore } from "@client/store/deckStore";
 import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@client/decks";
 import { actingPlayerIdOf, localSeatCanAct, localSeatIsPendingChooser, seatedAction } from "./seatGate";
 import { AttackArrowOverlay } from "./board/AttackArrowOverlay";
-import { Battlefield } from "./board/Battlefield";
+import { MatchSeatField } from "./board/MatchSeatField";
+import { isTagSkirmishMatch } from "./board/tagAssistLegality";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
 import { FaceCardsInPlay } from "./board/FaceCardsInPlay";
 import { HandStrip } from "./board/HandStrip";
@@ -444,6 +446,16 @@ export function MatchBoard() {
       : finished
         ? "Match finished"
         : null;
+
+  const tagSkirmish = isTagSkirmishMatch(state);
+
+  const onTagReserve = (reserveCreatureId: CreatureId) => {
+    tryDispatch({ type: "TAG", playerId: activeId, reserveCreatureId });
+  };
+
+  const onAssistReserve = (reserveCreatureId: CreatureId) => {
+    tryDispatch({ type: "ASSIST", playerId: activeId, reserveCreatureId });
+  };
 
   const localDeckId = mode === "host" ? p1DeckId : mode === "client" ? p2DeckId : null;
   const localDeckName =
@@ -1250,7 +1262,8 @@ export function MatchBoard() {
 
       {/* Field (≥70%) + faces (≤30%). Phase bar spans full width between seats. */}
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,30%)] items-stretch gap-x-3 gap-y-4">
-        <Battlefield
+        <MatchSeatField
+          tagSkirmish={tagSkirmish}
           state={state}
           playerId={MATCH_P2}
           label="Player 2"
@@ -1267,6 +1280,8 @@ export function MatchBoard() {
           onRitualActivate={(id) =>
             tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
           }
+          onTag={onTagReserve}
+          onAssist={onAssistReserve}
         />
         <FaceCardsInPlay
           state={state}
@@ -1294,7 +1309,8 @@ export function MatchBoard() {
           />
         </div>
 
-        <Battlefield
+        <MatchSeatField
+          tagSkirmish={tagSkirmish}
           state={state}
           playerId={MATCH_P1}
           label="Player 1"
@@ -1311,6 +1327,8 @@ export function MatchBoard() {
           onRitualActivate={(id) =>
             tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
           }
+          onTag={onTagReserve}
+          onAssist={onAssistReserve}
         />
         <FaceCardsInPlay
           state={state}

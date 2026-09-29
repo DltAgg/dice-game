@@ -1,7 +1,14 @@
 import type { Attribute } from "./attributes.js";
 import type { FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { EffectDefinition } from "./effects.js";
-import type { CardId, CardInstanceId, CreatureId, FaceCardId, PlayerId } from "./ids.js";
+import type {
+  CardId,
+  CardInstanceId,
+  CreatureDefinitionId,
+  CreatureId,
+  FaceCardId,
+  PlayerId,
+} from "./ids.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
 
 /**
@@ -348,6 +355,20 @@ export interface CardDefinition {
   readonly overload?: OverloadRegion;
   /** Present on playable Rituals (`type: "ritual"`). */
   readonly ritual?: RitualRegion;
+  /**
+   * Spec `028`. Legal to play only if this definition is in your squad and
+   * living.
+   */
+  readonly fighterRestriction?: CreatureDefinitionId;
+  /**
+   * Spec `028`. Legal if any living squad fighter's `archetype` matches.
+   */
+  readonly archetypeRestriction?: string;
+  /**
+   * Spec `028`. Meter burned on play (in addition to leftover `playCost`
+   * data, which is not enforced). Omit = 0.
+   */
+  readonly meterCost?: number;
 }
 
 /**

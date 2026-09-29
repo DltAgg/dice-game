@@ -32,6 +32,7 @@ describe("named face catalogue (spec 025)", () => {
 
   it("produces more than 1 inherent pip", () => {
     for (const face of SPECIAL_FACE_CARDS) {
+      if (face.technique !== undefined) continue;
       const yieldMap = inherentPipsOf(face);
       expect(yieldMap[face.symbol], face.name).toBeGreaterThanOrEqual(1);
       expect(symbolTokenTotal(yieldMap), face.name).toBeGreaterThan(1);

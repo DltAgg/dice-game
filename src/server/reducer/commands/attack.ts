@@ -2,10 +2,16 @@ import { getCreatureDefinition } from "../../content/creatures.js";
 import type { GameError } from "../../model/errors.js";
 import type { AttackId, CreatureId, PlayerId } from "../../model/ids.js";
 import { attackDamageBonus } from "../../rules/cards.js";
+import {
+  isActiveFighter,
+  opponentActiveId,
+  techniquesFuelAttack,
+} from "../../rules/fighters.js";
 import { isCreatureSilenced } from "../../rules/silence.js";
 import { targetingError } from "../../rules/targeting.js";
 import { buildAttackLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, patchCreature, type Draft } from "../draft.js";
+import { setComboCount } from "../meter.js";
 import { drainResolution } from "../resolution.js";
 import { fireOnAttack } from "../triggers.js";
 
@@ -24,6 +30,8 @@ export function attack(
   if (attacker === undefined) return "UNKNOWN_ENTITY";
   if (attacker.ownerId !== playerId) return "INVALID_TARGET";
   if (attacker.defeated) return "CREATURE_DEFEATED";
+  const actor = draft.players[playerId];
+  if (actor === undefined) return "UNKNOWN_ENTITY";
   if (
     attacker.attacksUsedThisCombat >=
     draft.config.attacksPerCreaturePerCombat + attacker.extraAttacksThisTurn
@@ -36,6 +44,15 @@ export function attack(
   if (attackDefinition === undefined) return "CARD_NOT_AVAILABLE";
   if (attackDefinition.effect === undefined) return "CARD_HAS_NO_EFFECT";
 
+  const gated = (attackDefinition.requiredTechniques?.length ?? 0) > 0;
+  if (gated) {
+    if (!isActiveFighter(actor, attackerId)) return "INVALID_TARGET";
+    if (!techniquesFuelAttack(draft, attackerId, attackDefinition)) {
+      return "ATTACK_NOT_FUELLED";
+    }
+    if (targetId !== opponentActiveId(draft, playerId)) return "INVALID_TARGET";
+  }
+
   const targeting = targetingError(draft, attackerId, attackDefinition, targetId);
   if (targeting !== null) return targeting;
 
@@ -43,6 +60,9 @@ export function attack(
   patchCreature(draft, attackerId, {
     attacksUsedThisCombat: attacker.attacksUsedThisCombat + 1,
   });
+  if (isActiveFighter(actor, attackerId)) {
+    setComboCount(draft, playerId, actor.comboCount + 1);
+  }
 
   const baseEffect = attackDefinition.effect;
   const turnBonus = draft.attackBonusThisTurn[playerId] ?? 0;

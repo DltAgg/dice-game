@@ -6,6 +6,7 @@ import type {
 } from "./ids.js";
 import type { EffectDefinition } from "./effects.js";
 import type { SymbolTokens, SymbolType } from "./symbols.js";
+import type { Technique } from "./techniques.js";
 
 /**
  * Bible §9: the game is played with customizable d6. Six is structural rather
@@ -23,8 +24,8 @@ export type DieFaceLayout = readonly [
   FaceCardId,
 ];
 
-/** Two opening dice (`dicePerPlayer`). */
-export type StartingDiceLayout = readonly [DieFaceLayout, DieFaceLayout];
+/** Opening dice (`length === GameRulesConfig.dicePerPlayer`). */
+export type StartingDiceLayout = readonly DieFaceLayout[];
 
 /**
  * Natural and synthetic are bible §10. Untyped is Shield only: a starting-die
@@ -69,6 +70,12 @@ export interface FaceCardDefinition {
   readonly kind: FaceKind;
   /** The attribute this face produces, or Shield for the untyped starting face. */
   readonly symbol: SymbolType;
+  /**
+   * Combat toolkit this face represents while showing (spec `028`).
+   * Identity naturals omit this. Prototype technique faces set both
+   * `technique` and `symbol`.
+   */
+  readonly technique?: Technique;
   /**
    * English printing of the inherent-effect region. Empty on identity faces
    * (`+1 Attribute` is the footer, not rules text).

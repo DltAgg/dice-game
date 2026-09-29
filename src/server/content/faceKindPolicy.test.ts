@@ -13,11 +13,11 @@ import { ALL_CARDS } from "./cards.js";
 import {
   ALL_FACE_CARDS,
   BASIC_FACE_CARDS,
-  COGTOOTH,
   FACE_CARDS,
   naturalFaceId,
   SHIELD_FACE_ID,
   SPECIAL_FACE_CARDS,
+  TECHNIQUE_HEAVY,
 } from "./faces.js";
 
 describe("attribute face-kind policy", () => {
@@ -62,7 +62,7 @@ describe("attribute face-kind policy", () => {
 
   it("allows a named special beside its natural in a face deck", () => {
     const result = validateFaceDeck(
-      [COGTOOTH, naturalFaceId("mechanical")],
+      [TECHNIQUE_HEAVY, naturalFaceId("mechanical")],
       DEFAULT_RULES_CONFIG,
     );
     expect(result.ok).toBe(true);

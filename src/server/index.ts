@@ -16,6 +16,7 @@ export * from "./rules/cards.js";
 export * from "./rules/creatures.js";
 export * from "./rules/dice.js";
 export * from "./rules/faces.js";
+export * from "./rules/fighters.js";
 export * from "./rules/loadout.js";
 export * from "./rules/overcharge.js";
 export * from "./rules/reforge.js";
@@ -60,19 +61,19 @@ export {
 export {
   ALL_FACE_CARDS,
   BASIC_FACE_CARDS,
-  COGTOOTH,
-  DAWNWRIGHT,
   DEFAULT_BASIC_LAYOUT,
   ENGINE_TEST_FACE_DECK,
   FACE_CARDS,
-  GEAR_TRAIN,
-  HALO_LAMP,
-  LUCENT_CHOIR,
-  MAINSPRING,
   SHIELD_FACE_ID,
   SPECIAL_FACE_CARDS,
   STARTING_DIE_SYMBOLS,
-  SUNWARD_LENS,
+  TECHNIQUE_ASSIST,
+  TECHNIQUE_GUARD,
+  TECHNIQUE_HEAVY,
+  TECHNIQUE_SIGNATURE,
+  TECHNIQUE_SPECIAL,
+  TECHNIQUE_STRIKE,
+  TECHNIQUE_TAG,
   faceIdFor,
   faceIdForSymbol,
   getFaceCard,
@@ -107,6 +108,7 @@ export {
   PROTOTYPE_FACE_DECK,
   PROTOTYPE_SQUAD,
   PROTOTYPE_STARTING_DICE,
+  TAG_SKIRMISH_LOADOUT,
   TEMPO_DECK,
   TEMPO_DECK_COUNTS,
   TEMPO_FACE_DECK,

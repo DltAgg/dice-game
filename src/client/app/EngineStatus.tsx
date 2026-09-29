@@ -10,6 +10,7 @@ import {
   advance,
   asPlayerId,
   createMatch,
+  rulesConfigForLoadout,
   currentLife,
   livingCreaturesOf,
   type GameState,
@@ -29,6 +30,7 @@ function buildSampleTurn(): GameState {
   const start = createMatch({
     matchId: "browser-smoke",
     seed: Date.now() % 100_000,
+    config: rulesConfigForLoadout(PROTOTYPE_STARTING_DICE.length),
     players: [
       {
         id: P1,

@@ -139,6 +139,12 @@ export interface PlayerState {
    * dice. Cleared when the last owned copy leaves.
    */
   readonly overchargeByFace: Readonly<Record<string, readonly Attribute[]>>;
+  /** Spec `028`. Living Active fighter; Reserve is the other squad members. */
+  readonly activeCreatureId: CreatureId;
+  /** Spec `028`. Combat momentum; clamped to `meterCap`. */
+  readonly meter: number;
+  /** Spec `028`. Successful Active `ATTACK` declares this combat. */
+  readonly comboCount: number;
 }
 
 export interface GameState {

@@ -9,6 +9,7 @@ import type {
   PlayerId,
 } from "./ids.js";
 import type { SymbolRequirement } from "./symbols.js";
+import type { Technique } from "./techniques.js";
 
 /** Bible §6: the frontline protects the back. */
 export type BattlefieldPosition = "frontline" | "back";
@@ -48,6 +49,11 @@ export interface AttackDefinition {
    * Existing cards omit this.
    */
   readonly followUpEffects?: readonly EffectDefinition[];
+  /**
+   * Spec `028`. AND-gated on the showing technique of **this** fighter's
+   * bound die. Omit on legacy pile-era attacks (no technique gate).
+   */
+  readonly requiredTechniques?: readonly Technique[];
 }
 
 export interface CreatureDefinition {
@@ -68,6 +74,19 @@ export interface CreatureDefinition {
    */
   readonly standingAbilities?: readonly StandingTrigger[];
   readonly attacks: readonly AttackDefinition[];
+  /**
+   * Fighting-game archetype id (spec `028`). Matched by
+   * `CardDefinition.archetypeRestriction`.
+   */
+  readonly archetype?: string;
+  /**
+   * Assist payload while this fighter is Reserve (spec `028`). Empty / omit
+   * means ASSIST is illegal (`CARD_HAS_NO_EFFECT`).
+   */
+  readonly assistEffects?: readonly EffectDefinition[];
+  /** Player-facing Assist name. */
+  readonly assistName?: string;
+  readonly assistRulesText?: string;
 }
 
 export interface CreatureState {

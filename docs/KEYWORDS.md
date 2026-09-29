@@ -27,6 +27,18 @@ ships:
 **Still live:** `[Mark]` / `[Strip]`, dice timing (`On roll`, `On absorb`, …),
 Shield absorb onto creatures, forge / Overcharge, combat keywords below.
 
+### Tag, Assist, Meter, techniques (spec `028`)
+
+These are **not** Mark tokens. Technique names are **face names** (the die’s
+combat toolkit).
+
+| Print | Meaning |
+|---|---|
+| Strike / Guard / Heavy / Special / Tag / Assist / Signature / Combo / Dodge / Counter | Showing technique on a Fighter’s bound die. Native abilities and some cards require the matching showing face. |
+| `[Tag]` | Switch Active with a living Reserve. Free if Active shows Tag; else spend Meter (Tag-cancel). |
+| `[Assist]` | Fire a Reserve Fighter’s Assist. Free if that Reserve shows Assist; else spend Meter. |
+| Meter | Resource 0–cap. Spend for Tag-cancel, Assist, and cards with a Meter cost. Gained when an attack Strike removes HP. Not `[Generate]`. |
+
 ---
 
 Bracketed words on cards — the same grammar as `[Forge]` and `[Requires]`.

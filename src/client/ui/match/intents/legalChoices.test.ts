@@ -33,9 +33,9 @@ function gyState(cards: readonly CardInstance[]): GameState {
 
 describe("replayableGyCards", () => {
   it("excludes the replaying source instance", () => {
-    const echo = gyCard("echo-1", "card-echo-of-the-buried");
-    const cog = gyCard("cog-1", "card-cog-draft");
-    const listed = replayableGyCards(gyState([cog, echo]), P1, echo.id);
-    expect(listed.map((card) => card.id)).toEqual([cog.id]);
+    const source = gyCard("source-1", "card-focus");
+    const other = gyCard("other-1", "card-pressure");
+    const listed = replayableGyCards(gyState([other, source]), P1, source.id);
+    expect(listed.map((card) => card.id)).toEqual([other.id]);
   });
 });

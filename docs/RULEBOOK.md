@@ -15,21 +15,24 @@ src/server/model/config.ts (DEFAULT_RULES_CONFIG).
 
 ## 1. Object of the game
 
-Two players skirmish with squads, customizable dice, and tactics.
+Two players each control a permanent team of **three Fighters** (the engine
+still calls them creatures). **1 Active**, **2 Reserve**. Fighters persist
+for the whole match.
 
-**There is currently no automatic victory condition.** Legendary commander win
-was removed; a future “defeat all fighters” / 3v3 wipe rule is **not**
-implemented. Creature Life can still reach 0, but that alone does **not** end
-the match today. `GameState` still has generic `status` / `winner` fields for a
-later win hook. There is no deck-out loss and no reshuffle.
+**Win:** the first player whose three Fighters are all defeated loses. The
+opponent wins. If both squads wipe in the same check, the player whose turn
+it is loses. There is no deck-out loss and no reshuffle.
 
-Loadouts need **three** creatures, not exactly one legendary. Catalogue
-creatures may still carry an unused `legendary` flag. Setup places by **squad
-index**: frontline first (up to two), then back. Any creature may `[Swap]` /
-reposition during play.
+The **Tag Skirmish** loadout is the live prototype: technique dice, Meter,
+Tag, Assist, and combo. It is the only builtin list.
 
-Creature attacks are **one** damage path. Tactics, rituals, faces, equipment,
-and statuses may also deal damage.
+Loadouts need **three** Fighters. Setup places by **squad index**: index 0
+opens **Active**. Tag-fighter matches use **one frontline (Active)** and two
+Reserve. Skirmish defaults still place two frontline then back.
+
+Native attacks that list a **technique** may only be declared by the **Active**
+Fighter, and only while that Fighter’s bound die is **showing** the required
+technique. They target the opponent’s Active Fighter.
 
 ---
 
@@ -42,7 +45,7 @@ Each player’s loadout is:
 | Squad | Exactly **3** creatures |
 | Tactics deck | **40–50** cards, **≤3** copies of the same card id |
 | Face deck | **≤12** face cards, **≤3** sharing one attribute |
-| Opening dice | Two d6 layouts (`startingDice`) |
+| Opening dice | **2** d6 (skirmish) or **3** d6 (Tag Skirmish: one die bound to each Fighter) |
 
 Tactics cards always have both a **play** region and a **forge** region. On
 each use you pick one: play **or** forge, never both. Any hand card may
@@ -81,18 +84,22 @@ There is **no mulligan**. The opening hand of **5** is the hand you play.
 
 Each player has:
 
-- **Frontline** (2 slots) and **Back** (third creature at setup). Frontline
-  protects the back: a non-Range attack may hit a
+- **Frontline** and **Reserve**. In Tag Skirmish, **Active** is the only
+  frontline Fighter; the other two are Reserve. A non-Range attack may hit a
   back-row creature only if that player has **no living frontline**. Range
-  ignores this. Card and face effects that name creatures are not attacks:
-  they ignore this unless print says otherwise. Print that names **each
-  enemy** or **each ally** hits every living creature on that side.
+  ignores this. Technique-gated native attacks always target the opponent’s
+  **Active** Fighter.
 - **Engine area** for rituals.
-- **Two dice**, each with six faces that reference face cards.
+- **Dice:** two (skirmish) or **three** (Tag Skirmish). Each Fighter is bound
+  to die index `i` (`dieIds[i]` ↔ `creatureIds[i]`). Faces can be **techniques**
+  (Strike, Guard, Heavy, Special, Tag, Assist, Signature, …) — the die answers
+  what the Fighter can do right now, not a mana total.
+- **Meter** (0–8): combat momentum. Spend on Tag-cancel, Assist (when the
+  technique is not showing), and some cards. Gain Meter when your attack
+  Strike actually removes HP.
+- **Combo:** increments when your Active Fighter successfully declares an
+  attack; resets on Tag, KO-promote, and end of turn.
 - Hand, tactics deck (top-first), graveyard, equipment, overloads.
-
-Squad order (`creatureIds`) is left-to-right on the battlefield. Setup fills
-**frontline** first (up to two), then **back**, by squad index.
 
 ---
 
@@ -430,6 +437,25 @@ face) fires again.
 - **While showing** `[Empower N]` adds N to the controller’s attacks for as
   long as the face is showing (every attack, not next-attack-once).
 - Some attacks queue follow-up effects after the damage link.
+
+**Tag Skirmish (spec `028`)**
+
+- Native attacks with `requiredTechniques` need the **Active** Fighter’s bound
+  die to show that technique. They hit the opponent’s Active only. Each
+  Fighter may attack **twice** per turn in this preset (`attacksPerCreaturePerCombat: 2`).
+- **[Tag]:** switch Active with a living Reserve. Free if the Active die shows
+  Tag; otherwise spend **2 Meter** (Tag-cancel). Resets combo. No reaction
+  window. If Active is KO’d, the lowest-index living Reserve is promoted for
+  free.
+- **[Assist]:** a living Reserve fires its Assist effects. Free if **that**
+  Reserve’s die shows Assist; otherwise spend **1 Meter**. Once per named
+  Reserve per turn. No reaction window.
+- **Meter:** cap **8**. The dealer gains 1 per HP actually lost on an attack
+  Strike. Cards may also print a Meter spend.
+- **Combo:** +1 when Active successfully declares an attack; 0 on Tag,
+  KO-promote, and end of turn.
+- In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
+  face change). No temporary face replacement.
 
 Enemy creature movement (push) is **not** in the game. Ally reposition is
 Martial’s exclusive (`[Reposition]` / `[Swap]`): frontline ↔ back (swap if the

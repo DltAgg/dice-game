@@ -73,10 +73,7 @@ export function createLocalStorageDeckRepository(): DeckRepository {
         squad: [...draft.squad],
         deck: [...draft.deck],
         faceDeck: [...draft.faceDeck],
-        startingDice: [
-          [...draft.startingDice[0]],
-          [...draft.startingDice[1]],
-        ] as StartingDiceLayout,
+        startingDice: draft.startingDice.map((die) => [...die]) as unknown as StartingDiceLayout,
         updatedAt: new Date().toISOString(),
       };
       writeStorage([...current.filter((deck) => deck.id !== saved.id), saved]);

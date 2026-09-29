@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-technique-drill",
+  "name": "Technique Drill",
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "mechanical",
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "mechanical",
+    "target": "own-die",
+    "rulesText": "Install Heavy on their die."
+  },
+  "rulesText": "Draw 1. Or [Forge] 1 Natural Mechanical on your die (in-match dice evolution).",
+  "effect": {
+    "effects": [
+      { "type": "draw-cards", "amount": 1 }
+    ]
+  }
+}

@@ -4,8 +4,10 @@ import type { GameState, PendingDecision } from "../model/state.js";
 import { createRng, type RNG } from "../rng/rng.js";
 import type { GameAction } from "./actions.js";
 import { absorbSymbol } from "./commands/absorb.js";
+import { assist } from "./commands/assist.js";
 import { attack } from "./commands/attack.js";
 import { forgeCard, activateFace } from "./commands/forge.js";
+import { tag } from "./commands/tag.js";
 import { overchargeCard } from "./commands/overcharge.js";
 import { playCard } from "./commands/playCard.js";
 import { passPriority } from "./commands/priority.js";
@@ -165,6 +167,10 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return absorbSymbol(draft, action.playerId, action.symbolId, action.creatureId);
     case "ATTACK":
       return attack(draft, action.playerId, action.attackerId, action.attackId, action.targetId);
+    case "TAG":
+      return tag(draft, action.playerId, action.reserveCreatureId);
+    case "ASSIST":
+      return assist(draft, action.playerId, action.reserveCreatureId);
     case "FORGE_CARD":
       return forgeCard(
         draft,

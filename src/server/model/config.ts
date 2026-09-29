@@ -98,6 +98,33 @@ export interface GameRulesConfig {
    * receive cap (if any).
    */
   readonly maxToxinMarkers: number;
+  /**
+   * ASSUMED (spec `028`). Meter resource cap. Spend on Tag-cancel, Assist,
+   * and cards with `meterCost`. Not a Mark token.
+   */
+  readonly meterCap: number;
+  /**
+   * ASSUMED (spec `028`). Meter granted to the dealer per HP actually lost
+   * on an attack Strike (`fromAttack`).
+   */
+  readonly meterPerDamageDealt: number;
+  /**
+   * ASSUMED (spec `028`). TAG spend when the Active die is not showing `tag`.
+   */
+  readonly tagCancelMeterCost: number;
+  /**
+   * ASSUMED (spec `028`). ASSIST spend when that Reserve die is not showing
+   * `assist`.
+   */
+  readonly assistMeterCost: number;
+  /**
+   * ASSUMED (spec `028`). Clear `comboCount` on `END_TURN`.
+   */
+  readonly comboResetsOnEndTurn: boolean;
+  /**
+   * ASSUMED (spec `028`). When true, all three fighters `defeated` loses.
+   */
+  readonly wipeVictory: boolean;
 }
 
 export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
@@ -123,4 +150,34 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   forgeYieldGenerate: 1,
   forgeBankPerFace: 1,
   maxToxinMarkers: 3,
+  meterCap: 8,
+  meterPerDamageDealt: 1,
+  tagCancelMeterCost: 2,
+  assistMeterCost: 1,
+  comboResetsOnEndTurn: true,
+  wipeVictory: false,
 };
+
+/**
+ * Live 3v3 tag-fighter prototype (spec `028`). Engine tests keep
+ * `DEFAULT_RULES_CONFIG` (2 dice, 40–50 constructed) so existing fixtures
+ * stay legal. Lobby / tag loadouts pass this preset.
+ */
+export const TAG_FIGHTER_RULES: GameRulesConfig = {
+  ...DEFAULT_RULES_CONFIG,
+  dicePerPlayer: 3,
+  frontlineSlots: 1,
+  deckMinCards: 10,
+  deckMaxCards: 24,
+  openingHandSize: 4,
+  cardsDrawnPerTurn: 1,
+  attacksPerCreaturePerCombat: 2,
+  wipeVictory: true,
+};
+
+/** Three bound dice → tag-fighter prototype knobs; otherwise skirmish defaults. */
+export function rulesConfigForLoadout(startingDiceCount: number): GameRulesConfig {
+  return startingDiceCount === TAG_FIGHTER_RULES.dicePerPlayer
+    ? TAG_FIGHTER_RULES
+    : DEFAULT_RULES_CONFIG;
+}

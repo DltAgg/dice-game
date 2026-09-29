@@ -1,0 +1,13 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-technique-heavy",
+  "name": "Heavy",
+  "kind": "natural",
+  "symbol": "mechanical",
+  "technique": "heavy",
+  "rulesText": "",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 1,
+  "forgeRestriction": null
+}

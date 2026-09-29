@@ -1,8 +1,8 @@
 import {
-  DEFAULT_RULES_CONFIG,
   advance,
   asPlayerId,
   createMatch,
+  rulesConfigForLoadout,
   validateLoadout,
   type GameAction,
   type GameError,
@@ -172,6 +172,7 @@ export class HostSession {
       this.state = createMatch({
         matchId: `online-${this.roomCode}`,
         seed: this.seed,
+        config: rulesConfigForLoadout(this.p1.loadout.startingDice.length),
         players: [
           {
             id: P1,
@@ -378,7 +379,10 @@ export class HostSession {
       return fail(`${seat} is already taken`);
     }
 
-    const check = validateLoadout(loadout, DEFAULT_RULES_CONFIG);
+    const check = validateLoadout(
+      loadout,
+      rulesConfigForLoadout(loadout.startingDice.length),
+    );
     if (!check.ok) {
       return fail(check.reason);
     }

@@ -3,7 +3,7 @@ import {
   ALL_CARDS,
   BASIC_FACE_CARDS,
   CREATURES,
-  DEFAULT_RULES_CONFIG,
+  rulesConfigForLoadout,
   leftoverFacePool,
   isOpeningBasicFace,
   PROTOTYPE_DECK,
@@ -98,7 +98,7 @@ export function DeckBuilder() {
     [name, squad, deck, faceDeck, startingDice],
   );
   const legality = validateSavedDeck(draft);
-  const cfg = DEFAULT_RULES_CONFIG;
+  const cfg = rulesConfigForLoadout(startingDice.length);
   const leftoverPool = useMemo(
     () => leftoverFacePool(faceDeck, startingDice),
     [faceDeck, startingDice],
@@ -126,9 +126,11 @@ export function DeckBuilder() {
       setFaceDeck((prev) => (prev.includes(id) ? prev : [...prev, id]));
     }
     setStartingDice((prev) => {
-      const next: [FaceCardId[], FaceCardId[]] = [[...prev[0]], [...prev[1]]];
-      next[paintTarget.die][paintTarget.slot] = id;
-      return [next[0], next[1]] as unknown as StartingDiceLayout;
+      const next = prev.map((die) => [...die]);
+      const die = next[paintTarget.die];
+      if (die === undefined) return prev;
+      die[paintTarget.slot] = id;
+      return next as unknown as StartingDiceLayout;
     });
     setMessage(null);
   };

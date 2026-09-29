@@ -39,6 +39,24 @@ export type GameAction =
       readonly targetId: CreatureId;
     }
   /**
+   * Spec `028`. Switch Active with a living Reserve. Free if Active die
+   * shows `tag`; otherwise spend `tagCancelMeterCost`.
+   */
+  | {
+      readonly type: "TAG";
+      readonly playerId: PlayerId;
+      readonly reserveCreatureId: CreatureId;
+    }
+  /**
+   * Spec `028`. Fire a living Reserve's `assistEffects`. Free if that
+   * fighter's die shows `assist`; otherwise spend `assistMeterCost`.
+   */
+  | {
+      readonly type: "ASSIST";
+      readonly playerId: PlayerId;
+      readonly reserveCreatureId: CreatureId;
+    }
+  /**
    * The card's forge region. The player names which slots to give up and which
    * face card from their face pool (or an already-installed copy) represents
    * the new face — bible §12–13.

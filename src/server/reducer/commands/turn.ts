@@ -3,6 +3,7 @@ import type { PlayerId, SymbolInstanceId } from "../../model/ids.js";
 import { TURN_PHASE_ORDER, type TurnPhase } from "../../model/state.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { emit, type Draft } from "../draft.js";
+import { setComboCount } from "../meter.js";
 import { clearRollBankQueue } from "../rollBank.js";
 import {
   checkVictory,
@@ -61,6 +62,9 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   // Toxin detonates at end of the creature owner's turn (before the switch).
   tickToxins(draft, playerId);
   clearTurnTriggerState(draft);
+  if (draft.config.comboResetsOnEndTurn) {
+    setComboCount(draft, playerId, 0);
+  }
 
   emit(draft, { type: "turn-ended", playerId });
 

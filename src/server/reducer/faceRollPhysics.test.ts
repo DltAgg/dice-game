@@ -436,7 +436,7 @@ describe("opening cap and basics", () => {
     const missing = validateStartingDice(
       [
         [DUAL_PIP_NATURAL.id, MECHANICAL, MARTIAL, testNaturalFaceId("luminar"), testNaturalFaceId("luminar"), TEST_SHIELD_FACE_ID],
-        TEST_STARTING_DICE[1],
+        TEST_STARTING_DICE[1]!,
       ],
       TEST_FACE_DECK,
       DEFAULT_RULES_CONFIG,

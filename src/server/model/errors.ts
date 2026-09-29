@@ -39,4 +39,6 @@ export type GameError =
   | "NOT_PRIORITY_PLAYER"
   /** Negate (or similar) against a link kind that cannot be negated. */
   | "INVALID_CHAIN_TARGET"
-  | "RESOLUTION_LIMIT_EXCEEDED";
+  | "RESOLUTION_LIMIT_EXCEEDED"
+  /** Spec `028`. Meter spend failed (Tag-cancel, Assist, card `meterCost`). */
+  | "INSUFFICIENT_METER";

@@ -214,6 +214,9 @@ export function createMatch(setup: MatchSetup): GameState {
       ritual: [],
       spentOncePerTurnKeys: [],
       overchargeByFace: {},
+      activeCreatureId: squadCreatures[0]!.id,
+      meter: 0,
+      comboCount: 0,
     };
   }
 

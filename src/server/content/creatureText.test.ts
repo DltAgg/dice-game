@@ -1,81 +1,22 @@
 import { describe, expect, it } from "vitest";
 import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
 import { asAttackId, asCreatureDefinitionId } from "../model/ids.js";
-import { isNonEmptyRequirement } from "../rules/tokens.js";
-import {
-  ALL_CREATURES,
-  DAWN_WARDEN,
-  DUSKTHRONE_ORACLE,
-  GRAVEMARROW_SHADE,
-  LODESTAR_ARTIFICER,
-  RIFTSCRIBE_ADEPT,
-  TORQUE_WRIGHT,
-} from "./creatures.js";
+import { ALL_CREATURES, KORR, MAGNUS, NYX } from "./creatures.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine, primaryAttribute } from "./creatureText.js";
 
-const TEMPO_IDS = [DAWN_WARDEN, LODESTAR_ARTIFICER, TORQUE_WRIGHT] as const;
-const CONTROL_IDS = [RIFTSCRIBE_ADEPT, GRAVEMARROW_SHADE, DUSKTHRONE_ORACLE] as const;
+const TAG_SQUAD = [KORR, MAGNUS, NYX] as const;
 
 describe("creature catalogue", () => {
-  it("includes the Mechanical / Luminar Tempo squad", () => {
+  it("includes the Tag Skirmish trio", () => {
     const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
-    for (const id of TEMPO_IDS) {
-      expect(ids.has(id)).toBe(true);
-    }
+    expect([...ids].sort()).toEqual([...TAG_SQUAD].slice().sort());
   });
 
-  it("includes the Arcane / Darkness Control squad", () => {
-    const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
-    for (const id of CONTROL_IDS) {
-      expect(ids.has(id)).toBe(true);
-    }
-  });
-
-  it("gives every catalogue creature a passive, a basic and a special", () => {
+  it("gives every fighter a passive and at least one native attack", () => {
     for (const creature of ALL_CREATURES) {
-      if (creature.id.startsWith("creature-baseline-")) continue;
       expect(creature.passiveRulesText.length).toBeGreaterThan(0);
-      expect(creature.attacks.some((attack) => attack.kind === "basic")).toBe(true);
-      expect(creature.attacks.some((attack) => attack.kind === "special")).toBe(true);
+      expect(creature.attacks.length).toBeGreaterThan(0);
       expect(creature.attacks.every((attack) => attack.effect !== undefined)).toBe(true);
-    }
-  });
-
-  it("gives every attack a Requires gate, a Spend, or both", () => {
-    for (const creature of ALL_CREATURES) {
-      if (creature.id.startsWith("creature-baseline-")) continue;
-      for (const attack of creature.attacks) {
-        const hasRequires = isNonEmptyRequirement(attack.requires);
-        const hasDiscards = isNonEmptyRequirement(attack.discards);
-        expect(
-          hasRequires || hasDiscards,
-          `${creature.name} ${attack.name} needs Requires and/or Spend`,
-        ).toBe(true);
-        if (attack.kind === "special") {
-          expect(hasRequires, `${creature.name} ${attack.name} special has a Requires gate`).toBe(
-            true,
-          );
-          expect(hasDiscards, `${creature.name} ${attack.name} special Spends`).toBe(true);
-        }
-      }
-    }
-  });
-
-  it("Control attacks that Spend an attribute do not Generate that attribute", () => {
-    const control = new Set<string>(CONTROL_IDS);
-    for (const creature of ALL_CREATURES) {
-      if (!control.has(creature.id)) continue;
-      for (const attack of creature.attacks) {
-        const spent = attack.discards ?? {};
-        for (const effect of attack.followUpEffects ?? []) {
-          if (effect.type !== "generate-symbol") continue;
-          if (effect.symbol === "shield") continue;
-          expect(
-            spent[effect.symbol] ?? 0,
-            `${creature.name} ${attack.name} refunds spent ${effect.symbol}`,
-          ).toBe(0);
-        }
-      }
     }
   });
 });

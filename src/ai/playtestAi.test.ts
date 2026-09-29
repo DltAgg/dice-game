@@ -18,10 +18,15 @@ describe("headless AI playtest", () => {
       p2LoadoutId: "control",
       maxTurns: 60,
     });
-    expect(["max-turns", "stall"]).toContain(report.stopReason);
-    expect(report.status).toBe("in-progress");
-    expect(report.winner).toBeNull();
+    expect(["finished", "max-turns", "stall"]).toContain(report.stopReason);
     expect(report.actionsPlayed).toBeGreaterThan(0);
+    if (report.stopReason === "finished") {
+      expect(report.status).toBe("finished");
+      expect(report.winner).not.toBeNull();
+    } else {
+      expect(report.status).toBe("in-progress");
+      expect(report.winner).toBeNull();
+    }
   });
 
   it("reproduces the same match from the same seed", { timeout: 120_000 }, () => {

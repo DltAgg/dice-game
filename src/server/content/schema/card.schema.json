@@ -49,6 +49,20 @@
     "ritual": {
       "description": "Required when type is ritual. activeWhen ([Active when]), spend ([Spend] on activate), effects (activate payload, may be empty), standingAbilities (continuous while ready).",
       "$ref": "defs.schema.json#/$defs/ritualRegion"
+    },
+    "fighterRestriction": {
+      "description": "Spec 028. Legal only if this creature definition is in your living squad.",
+      "$ref": "defs.schema.json#/$defs/creatureId"
+    },
+    "archetypeRestriction": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Spec 028. Legal if any living squad fighter's archetype matches."
+    },
+    "meterCost": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Spec 028. Meter burned on play."
     }
   },
   "allOf": [

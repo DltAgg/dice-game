@@ -43,10 +43,10 @@
       "items": { "$ref": "defs.schema.json#/$defs/faceId" }
     },
     "startingDice": {
-      "description": "Two opening d6 of six face ids each (already expanded naturals + Shield). dicePerPlayer is 2; FACE_SLOTS_PER_DIE is 6.",
+      "description": "Opening d6 layouts. DEFAULT dicePerPlayer is 2; tag-fighter prototype uses 3 (spec 028).",
       "type": "array",
       "minItems": 2,
-      "maxItems": 2,
+      "maxItems": 3,
       "items": {
         "type": "array",
         "minItems": 6,

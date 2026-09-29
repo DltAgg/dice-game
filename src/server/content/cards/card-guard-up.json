@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-guard-up",
+  "name": "Guard Up",
+  "type": "instant",
+  "subtypes": [],
+  "attribute": "luminar",
+  "meterCost": 1,
+  "forge": {
+    "faces": 1,
+    "kind": "natural",
+    "attribute": "luminar",
+    "target": "own-die"
+  },
+  "rulesText": "Universal. Spend 1 Meter. [Mark 1 Shield] on an ally.",
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-shield",
+        "amount": 1,
+        "target": { "kind": "choose-ally" }
+      }
+    ]
+  }
+}

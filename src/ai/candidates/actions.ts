@@ -250,8 +250,24 @@ export function turnCandidates(state: GameState, playerId: PlayerId): readonly G
     ...overchargeIntents(state, playerId),
     ...ritualActivateIntents(state, playerId),
     ...faceActivateIntents(state, playerId),
+    ...tagAssistIntents(state, playerId),
     { type: "END_TURN", playerId },
   ];
+}
+
+function tagAssistIntents(state: GameState, playerId: PlayerId): readonly GameAction[] {
+  if (state.config.dicePerPlayer < 3) return [];
+  const player = state.players[playerId];
+  if (player === undefined || state.phase !== "actions") return [];
+  const actions: GameAction[] = [];
+  for (const creatureId of player.creatureIds) {
+    if (creatureId === player.activeCreatureId) continue;
+    const creature = state.creatures[creatureId];
+    if (creature === undefined || creature.defeated) continue;
+    actions.push({ type: "TAG", playerId, reserveCreatureId: creatureId });
+    actions.push({ type: "ASSIST", playerId, reserveCreatureId: creatureId });
+  }
+  return actions;
 }
 
 export function reactionWindowCandidates(

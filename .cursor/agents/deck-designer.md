@@ -1,6 +1,6 @@
 ---
 name: deck-designer
-model: gpt-5.6-sol-medium
+model: inherit
 description: >-
   Builds legal Dice Skirmish loadouts (squad, tactics 40–50, face deck) and
   critiques catalogue cards for constructed purpose and attribute identity.

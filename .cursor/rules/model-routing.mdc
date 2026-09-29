@@ -1,0 +1,21 @@
+---
+description: Grok/Composer for implementation; Opus/GPT only for orchestration
+alwaysApply: true
+---
+
+# Model routing
+
+Agents are allowed to use **Grok** and **Composer** when needed.
+
+They may use other models (Opus, GPT, and similarly powerful models) **only when strictly required**, and **not for implementation or research**.
+
+Those powerful models may be used for **orchestration and decision making** only.
+
+Scaffolding / implementing project requirements must be done **previously** (by Grok/Composer, or already completed work) and then **handed off** to Opus/GPT-class models for planning and decision making.
+
+- **Grok / Composer (default):** research, scaffolding, implementation, catalogue JSON, engine code, UI, tests, docs that describe shipped play.
+- **Opus / GPT / other powerful models (exception only):** orchestration, routing, planning, go/no-go decisions — after implementation/research already exists and is handed off. Do not use them to write the feature, explore the repo as the primary researcher, or scaffold.
+
+When launching Task subagents, pass `model` as Grok/Composer (`inherit` or an explicit grok/composer slug) for implementation. Pass an Opus/GPT slug only when the task is orchestration/decision-making and the implementation work is already done. Do not pin implementation specialists to Opus or GPT.
+
+Task `model:` slugs in this workspace: Grok `grok-4.7-high-fast`, `cursor-grok-4.6-high`; Composer `composer-2.5`, `composer-2.5-fast`.

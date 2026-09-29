@@ -2,9 +2,17 @@ import {
   ALL_BUILTIN_LOADOUTS,
   asPlayerId,
   createMatch,
+  rulesConfigForLoadout,
   type GameState,
 } from "@server";
 import type { LoadoutId } from "./types.js";
+
+const LEGACY_LOADOUT_ALIASES: Readonly<Record<string, string>> = {
+  tempo: "deck-tag-skirmish",
+  control: "deck-tag-skirmish",
+  "deck-tempo": "deck-tag-skirmish",
+  "deck-control": "deck-tag-skirmish",
+};
 
 const P1 = asPlayerId("p1");
 const P2 = asPlayerId("p2");
@@ -13,7 +21,7 @@ export const PLAYTEST_P1 = P1;
 export const PLAYTEST_P2 = P2;
 
 export function builtinLoadoutById(id: LoadoutId) {
-  const needle = id.trim().toLowerCase();
+  const needle = LEGACY_LOADOUT_ALIASES[id.trim().toLowerCase()] ?? id.trim().toLowerCase();
   const found = ALL_BUILTIN_LOADOUTS.find(
     (loadout) =>
       loadout.id.toLowerCase() === needle ||
@@ -37,6 +45,7 @@ export function createPlaytestMatch(
   return createMatch({
     matchId: `ai-playtest-${String(seed)}`,
     seed,
+    config: rulesConfigForLoadout(p1.startingDice.length),
     players: [
       {
         id: P1,

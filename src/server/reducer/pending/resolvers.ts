@@ -675,7 +675,11 @@ export function resolveSplitDamage(
   const fromAttack = pending.fromAttack === true;
   for (const entry of assignments) {
     if (entry.amount <= 0) continue;
-    dealDamage(draft, entry.creatureId, entry.amount, { ignoreShield, fromAttack });
+    dealDamage(draft, entry.creatureId, entry.amount, {
+      ignoreShield,
+      fromAttack,
+      dealerId: pending.controllerId,
+    });
   }
 
   if (pending.thenEffects !== undefined) {

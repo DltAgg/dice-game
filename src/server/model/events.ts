@@ -102,6 +102,28 @@ export type GameEvent =
     }
   | { readonly type: "creature-defeated"; readonly creatureId: CreatureId }
   | {
+      readonly type: "tag-switched";
+      readonly playerId: PlayerId;
+      readonly fromCreatureId: CreatureId;
+      readonly toCreatureId: CreatureId;
+    }
+  | {
+      readonly type: "assist-declared";
+      readonly playerId: PlayerId;
+      readonly reserveCreatureId: CreatureId;
+    }
+  | {
+      readonly type: "meter-changed";
+      readonly playerId: PlayerId;
+      readonly delta: number;
+      readonly meter: number;
+    }
+  | {
+      readonly type: "combo-changed";
+      readonly playerId: PlayerId;
+      readonly comboCount: number;
+    }
+  | {
       readonly type: "attribute-token-gained";
       readonly playerId: PlayerId;
       readonly attribute: Attribute;

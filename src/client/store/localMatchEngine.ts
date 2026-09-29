@@ -2,6 +2,7 @@ import {
   advance,
   asPlayerId,
   createMatch,
+  rulesConfigForLoadout,
   type GameAction,
   type GameError,
   type GameState,
@@ -70,6 +71,7 @@ export function newMatchState(
   return createMatch({
     matchId: `local-${String(seed)}`,
     seed,
+    config: rulesConfigForLoadout(p1.startingDice.length),
     players: [
       { id: MATCH_P1, squad: p1.squad, deck: p1.deck, faceDeck: p1.faceDeck, startingDice: p1.startingDice },
       { id: MATCH_P2, squad: p2.squad, deck: p2.deck, faceDeck: p2.faceDeck, startingDice: p2.startingDice },

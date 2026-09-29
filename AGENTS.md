@@ -67,6 +67,11 @@ Project specialists live in [`.cursor/agents/`](.cursor/agents/). Delegate rathe
 than doing their job in the parent thread. If a request needs two specialists,
 invoke them separately — do not implement both layers yourself.
 
+When launching a Task subagent, pass `model` as Grok/Composer (`inherit` or a
+grok/composer slug) for implementation. Pass Opus/GPT only for orchestration
+or go/no-go after that work exists. Policy:
+[`.cursor/rules/model-routing.mdc`](.cursor/rules/model-routing.mdc).
+
 | Subagent | Use when |
 |---|---|
 | [card-designer](.cursor/agents/card-designer.md) | Set craft: occupy an empty slot, then author catalogue JSON; delegates new mechanics to engine-developer |
@@ -122,3 +127,4 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - Printed `playCost` / attack `requires` / `discards` may remain in catalogue JSON but are **not enforced** (no attribute pile). Do not author new cards as if pile fuel is live.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).
+- Model routing: Grok/Composer for research, scaffolding, and implementation. Opus/GPT (and similarly powerful models) only for orchestration and decisions after that work is handed off — never to write the feature or explore the repo as the primary researcher. [`.cursor/rules/model-routing.mdc`](.cursor/rules/model-routing.mdc).

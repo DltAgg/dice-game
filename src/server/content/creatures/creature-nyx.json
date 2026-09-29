@@ -1,0 +1,46 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-nyx",
+  "name": "Nyx",
+  "life": 16,
+  "attributes": ["arcane"],
+  "archetype": "zoner",
+  "passiveRulesText": "Zoner: Specials control space.",
+  "assistName": "Poke",
+  "assistRulesText": "[Assist]: [Strike 1] the most damaged enemy.",
+  "assistEffects": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": { "kind": "most-damaged-enemy" }
+    }
+  ],
+  "attacks": [
+    {
+      "id": "attack-nyx-keep-away",
+      "name": "Keep Away",
+      "kind": "basic",
+      "range": true,
+      "requiredTechniques": ["special"],
+      "rulesText": "Requires Special. [Strike 2].",
+      "effect": {
+        "type": "damage",
+        "amount": 2,
+        "target": { "kind": "declared-target" }
+      }
+    },
+    {
+      "id": "attack-nyx-jab",
+      "name": "Check",
+      "kind": "basic",
+      "range": false,
+      "requiredTechniques": ["strike"],
+      "rulesText": "Requires Strike. [Strike 1].",
+      "effect": {
+        "type": "damage",
+        "amount": 1,
+        "target": { "kind": "declared-target" }
+      }
+    }
+  ]
+}
