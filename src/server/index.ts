@@ -17,8 +17,16 @@ export * from "./rules/creatures.js";
 export * from "./rules/dice.js";
 export * from "./rules/faces.js";
 export * from "./rules/fighters.js";
+export * from "./rules/faceActions.js";
 export * from "./rules/loadout.js";
+export * from "./rules/meter.js";
 export * from "./rules/overcharge.js";
+export {
+  grantMeter,
+  spendMeter,
+  setMeter,
+  grantMeterFromStrike,
+} from "./reducer/meter.js";
 export * from "./rules/reforge.js";
 export * from "./rules/reactions.js";
 export * from "./rules/silence.js";

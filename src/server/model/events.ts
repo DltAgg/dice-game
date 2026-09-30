@@ -113,6 +113,23 @@ export type GameEvent =
       readonly reserveCreatureId: CreatureId;
     }
   | {
+      readonly type: "face-used";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+      readonly dieId: DieId;
+      readonly faceCardId: FaceCardId;
+    }
+  | {
+      readonly type: "technique-used";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+      readonly techniqueId: string;
+      readonly primaryDieId: DieId;
+      readonly secondaryDieId: DieId;
+      readonly primaryFaceCardId: FaceCardId;
+      readonly secondaryFaceCardId: FaceCardId;
+    }
+  | {
       readonly type: "meter-changed";
       readonly playerId: PlayerId;
       readonly delta: number;

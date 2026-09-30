@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-grappler-jab",
+  "name": "Jab",
+  "kind": "natural",
+  "symbol": "martial",
+  "faceType": "attack",
+  "rulesText": "Primary: [Strike 1]. Secondary: [Strike 1] to the technique target.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

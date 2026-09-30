@@ -16,8 +16,22 @@
       "$ref": "defs.schema.json#/$defs/symbolType"
     },
     "technique": {
-      "description": "Combat toolkit while showing (spec 028). Identity naturals omit this.",
+      "description": "Combat toolkit while showing (spec 028). Identity naturals omit this. Distinct from faceType (spec 029).",
       "$ref": "defs.schema.json#/$defs/technique"
+    },
+    "faceType": {
+      "description": "Named-action type (spec 029). No inherent damage. Omit on legacy faces.",
+      "$ref": "defs.schema.json#/$defs/faceType"
+    },
+    "primaryEffects": {
+      "description": "Resolved alone via USE_FACE (spec 029). Empty / omit = not usable as a simple action.",
+      "type": "array",
+      "items": { "$ref": "effect.schema.json#/$defs/effect" }
+    },
+    "secondaryEffects": {
+      "description": "Applied when this face is the secondary of a Fighter technique (spec 029). next-attack-bonus here = local technique damage bonus.",
+      "type": "array",
+      "items": { "$ref": "effect.schema.json#/$defs/effect" }
     },
     "rulesText": {
       "type": "string",

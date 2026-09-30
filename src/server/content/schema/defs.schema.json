@@ -1271,7 +1271,7 @@
     },
     "technique": {
       "title": "Technique",
-      "description": "Combat-toolkit face (spec 028). Not mana.",
+      "description": "Combat-toolkit face category (spec 028). Not mana. Distinct from faceType / FighterTechniqueDefinition (spec 029).",
       "type": "string",
       "enum": [
         "strike",
@@ -1285,6 +1285,53 @@
         "dodge",
         "counter"
       ]
+    },
+    "faceType": {
+      "title": "FaceType",
+      "description": "Named-action type on a die face (spec 029). Extensible; no inherent gameplay meaning.",
+      "type": "string",
+      "enum": ["attack", "grab", "guard", "movement", "tag"]
+    },
+    "fighterTechniqueSecondary": {
+      "title": "FighterTechniqueSecondary",
+      "description": "Secondary requirement: specific face id OR face type (spec 029).",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["faceId"],
+          "properties": {
+            "faceId": { "$ref": "#/$defs/faceId" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["faceType"],
+          "properties": {
+            "faceType": { "$ref": "#/$defs/faceType" }
+          }
+        }
+      ]
+    },
+    "fighterTechniqueDefinition": {
+      "title": "FighterTechniqueDefinition",
+      "description": "Two-face Fighter move (spec 029). Not a combo system.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "primaryFaceId", "secondary", "effects"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^technique-"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "primaryFaceId": { "$ref": "#/$defs/faceId" },
+        "secondary": { "$ref": "#/$defs/fighterTechniqueSecondary" },
+        "effects": { "$ref": "#/$defs/effectList" },
+        "rulesText": { "type": "string" }
+      }
     },
     "faceStayPolicy": {
       "title": "FaceStayPolicy",

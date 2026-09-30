@@ -32,7 +32,10 @@ describe("named face catalogue (spec 025)", () => {
 
   it("produces more than 1 inherent pip", () => {
     for (const face of SPECIAL_FACE_CARDS) {
+      // Spec 028 toolkit faces and spec 029 typed combat faces are not
+      // pile-era dual-pip specials.
       if (face.technique !== undefined) continue;
+      if (face.faceType !== undefined) continue;
       const yieldMap = inherentPipsOf(face);
       expect(yieldMap[face.symbol], face.name).toBeGreaterThanOrEqual(1);
       expect(symbolTokenTotal(yieldMap), face.name).toBeGreaterThan(1);

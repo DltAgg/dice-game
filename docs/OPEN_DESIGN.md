@@ -1036,6 +1036,42 @@ treat these numbers as bible.
 | `CreatureDefinition.life` | unchanged catalogue | `hp <= 0` = existing `defeated`. No separate HP field. |
 | Archetype ids | unset string | `archetype` / `archetypeRestriction` optional; catalogue fills later. |
 
+**Conflict with spec `029`:** Meter **generation** (`meterPerDamageDealt` on
+attack Strike), Tag-cancel / Assist spends, and card `meterCost` remain live
+for Tag Skirmish. Spec `029` forbids Meter change from **Use Face / Fighter
+technique** only. Whether the `028` Meter economy stays long-term is
+**NOT DECIDED** — see **Fighter combat core** below.
+
 **Out of this prototype:** mana dice, temporary face replacement, hard-coded
 fighter instance ids in combat, stun (`DEFERRED`), attribute-pile fuel
 (obsolete), rewriting `resolution.ts` or `MatchBoard` in one slice.
+
+---
+
+## Prototype assumptions — Fighter combat core (2026-09-29)
+
+**Status:** `ASSUMED` · **implemented** · spec [`029-fighter-combat-core.md`](./specs/029-fighter-combat-core.md)
+
+Naming: `Technique` (028 toolkit category) ≠ `FaceType` (029) ≠
+`FighterTechniqueDefinition` (029 two-face move).
+
+| Knob / rule | Prototype default | Notes |
+|---|---|---|
+| Secondary die | Any other **owned** rolled die | Query `secondaryDiceFor`. |
+| Actor | Living Active Fighter | Reuse `activeCreatureId`. |
+| Damage target | Effect JSON / opponent Active | Commands pass opponent Active as `declared-target`. |
+| Die consumption | `consumeDiceOnFaceActions: true` | Key `face-action:<dieId>`. |
+| Phase | `actions` | Same seat gates as ATTACK. |
+| Reaction window | **None** | Like TAG / ASSIST. |
+| Legacy faces | No Type / empty Primary | Illegal for `USE_FACE`. |
+| Secondary damage modify | `next-attack-bonus` in `secondaryEffects` | Local technique damage bonus only; does not arm next ATTACK. |
+
+### NOT DECIDED (spec `029`)
+
+- Meter max / generation / spending / gain triggers / costs / Meter abilities
+  for face & technique actions (new actions must not grant/spend today).
+- Whether spec `028` Meter knobs stay long-term (**conflict** above).
+- Full Tag system beyond `faceType: "tag"` as data; Assists; combos; footsies;
+  frames; stun; counter-hit; in-match die craft; fighter/team/universal cards.
+- Whether Use Face / technique ever opens a reaction window.
+- Whether secondary dice may include opponent or Reserve-only dice.

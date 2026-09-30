@@ -52,6 +52,11 @@
     "assistEffects": {
       "description": "Assist payload while this fighter is Reserve (spec 028).",
       "$ref": "defs.schema.json#/$defs/effectList"
+    },
+    "techniques": {
+      "description": "Two-face Fighter moves (spec 029). Distinct from attack requiredTechniques.",
+      "type": "array",
+      "items": { "$ref": "defs.schema.json#/$defs/fighterTechniqueDefinition" }
     }
   }
 }

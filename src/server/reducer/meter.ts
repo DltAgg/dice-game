@@ -1,18 +1,20 @@
 import type { GameError } from "../model/errors.js";
 import type { PlayerId } from "../model/ids.js";
+import { clampMeter } from "../rules/meter.js";
 import { emit, patchPlayer, type Draft } from "./draft.js";
 
 export function grantMeter(draft: Draft, playerId: PlayerId, amount: number): void {
   if (amount <= 0) return;
   const player = draft.players[playerId];
   if (player === undefined) return;
-  const meter = Math.min(draft.config.meterCap, player.meter + amount);
+  const meter = clampMeter(player.meter + amount, draft.config.meterCap);
   if (meter === player.meter) return;
+  const delta = meter - player.meter;
   patchPlayer(draft, playerId, { meter });
   emit(draft, {
     type: "meter-changed",
     playerId,
-    delta: meter - player.meter,
+    delta,
     meter,
   });
 }
@@ -26,10 +28,21 @@ export function spendMeter(
   const player = draft.players[playerId];
   if (player === undefined) return "UNKNOWN_ENTITY";
   if (player.meter < amount) return "INSUFFICIENT_METER";
-  const meter = player.meter - amount;
+  const meter = clampMeter(player.meter - amount, draft.config.meterCap);
   patchPlayer(draft, playerId, { meter });
   emit(draft, { type: "meter-changed", playerId, delta: -amount, meter });
   return null;
+}
+
+/** Set Meter absolutely (clamped). Emits only when the value changes. */
+export function setMeter(draft: Draft, playerId: PlayerId, amount: number): void {
+  const player = draft.players[playerId];
+  if (player === undefined) return;
+  const meter = clampMeter(amount, draft.config.meterCap);
+  if (meter === player.meter) return;
+  const delta = meter - player.meter;
+  patchPlayer(draft, playerId, { meter });
+  emit(draft, { type: "meter-changed", playerId, delta, meter });
 }
 
 export function grantMeterFromStrike(

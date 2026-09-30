@@ -125,6 +125,12 @@ export interface GameRulesConfig {
    * ASSUMED (spec `028`). When true, all three fighters `defeated` loses.
    */
   readonly wipeVictory: boolean;
+  /**
+   * ASSUMED (spec `029`). When true, a die used as primary or secondary for
+   * `USE_FACE` / `USE_TECHNIQUE` cannot be used again this turn
+   * (`spentOncePerTurnKeys` `face-action:<dieId>`).
+   */
+  readonly consumeDiceOnFaceActions: boolean;
 }
 
 export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
@@ -156,6 +162,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   assistMeterCost: 1,
   comboResetsOnEndTurn: true,
   wipeVictory: false,
+  consumeDiceOnFaceActions: true,
 };
 
 /**

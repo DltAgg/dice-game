@@ -30,7 +30,8 @@ Shield absorb onto creatures, forge / Overcharge, combat keywords below.
 ### Tag, Assist, Meter, techniques (spec `028`)
 
 These are **not** Mark tokens. Technique names are **face names** (the die’s
-combat toolkit).
+combat toolkit). Engine type `Technique` = toolkit **category** (strike /
+guard / …), not a two-face Fighter move (see Face types below).
 
 | Print | Meaning |
 |---|---|
@@ -38,6 +39,18 @@ combat toolkit).
 | `[Tag]` | Switch Active with a living Reserve. Free if Active shows Tag; else spend Meter (Tag-cancel). |
 | `[Assist]` | Fire a Reserve Fighter’s Assist. Free if that Reserve shows Assist; else spend Meter. |
 | Meter | Resource 0–cap. Spend for Tag-cancel, Assist, and cards with a Meter cost. Gained when an attack Strike removes HP. Not `[Generate]`. |
+
+### Face types, Primary / Secondary (spec `029`)
+
+Named die faces may carry a **Type** and separate **Primary** / **Secondary**
+effect lines. Types are labels only — they do not imply fixed damage.
+
+| Print | Meaning |
+|---|---|
+| Attack / Grab / Guard / Movement / Tag (face Type) | Classification of a named face. Extensible. No inherent damage. |
+| Primary / Primary Effect | Resolved alone when you **Use Face** (own die showing that face). |
+| Secondary / Secondary Effect | Applied when this face is the **secondary** of a two-face Fighter technique (may modify that technique’s result, e.g. +damage). |
+| Fighter technique | Named move: own die shows the **primary face**, another of your dice shows a matching secondary face or Type. |
 
 ---
 

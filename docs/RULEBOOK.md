@@ -457,6 +457,26 @@ face) fires again.
 - In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
   face change). No temporary face replacement.
 
+**Named faces and Fighter techniques (spec `029`, ASSUMED knobs)**
+
+- Some faces are **named actions** with a **Type** (Attack, Grab, Guard,
+  Movement, Tag, …). Types have **no** fixed damage of their own — the face’s
+  printed effects do.
+- **Primary Effect:** resolve alone with **Use Face** — the Active Fighter
+  uses the showing face on **their own** bound die. No second face needed.
+- **Fighter technique (two faces):** the Active Fighter’s own die shows the
+  technique’s **primary** named face, and **another** of your rolled dice
+  shows a face matching the technique’s **secondary** requirement (a specific
+  face **or** a Type). Resolve the technique’s base effect, then that
+  secondary face’s **Secondary Effect**. Primary and Secondary are ordered
+  roles — swapping which die shows which face does not fire the same
+  technique.
+- A die whose showing face was used as primary or secondary cannot be used
+  again for Use Face / technique this turn (`ASSUMED`).
+- These actions happen in the **actions** phase. They do **not** open a
+  reaction window (`ASSUMED`) and do **not** spend or gain Meter.
+- Legacy faces without a Type / Primary Effect cannot Use Face.
+
 Enemy creature movement (push) is **not** in the game. Ally reposition is
 Martial’s exclusive (`[Reposition]` / `[Swap]`): frontline ↔ back (swap if the
 frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).

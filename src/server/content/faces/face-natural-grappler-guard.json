@@ -1,0 +1,27 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-grappler-guard",
+  "name": "Guard",
+  "kind": "natural",
+  "symbol": "martial",
+  "faceType": "guard",
+  "rulesText": "Primary: [Mark 1 Shield] on you. Secondary: [Mark 1 Shield] on you.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "grant-shield",
+      "amount": 1,
+      "target": { "kind": "source-creature" }
+    }
+  ],
+  "secondaryEffects": [
+    {
+      "type": "grant-shield",
+      "amount": 1,
+      "target": { "kind": "source-creature" }
+    }
+  ],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

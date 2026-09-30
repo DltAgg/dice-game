@@ -5,6 +5,7 @@ import type {
   PlayerId,
 } from "./ids.js";
 import type { EffectDefinition } from "./effects.js";
+import type { FaceType } from "./faceTypes.js";
 import type { SymbolTokens, SymbolType } from "./symbols.js";
 import type { Technique } from "./techniques.js";
 
@@ -73,9 +74,25 @@ export interface FaceCardDefinition {
   /**
    * Combat toolkit this face represents while showing (spec `028`).
    * Identity naturals omit this. Prototype technique faces set both
-   * `technique` and `symbol`.
+   * `technique` and `symbol`. Distinct from `faceType` (spec `029`).
    */
   readonly technique?: Technique;
+  /**
+   * Named-action type (spec `029`). Extensible; no inherent damage.
+   * Omit on legacy / toolkit-only faces — those cannot `USE_FACE`.
+   */
+  readonly faceType?: FaceType;
+  /**
+   * Resolved alone via `USE_FACE` (spec `029`). Empty / omit = not usable
+   * as a simple action.
+   */
+  readonly primaryEffects?: readonly EffectDefinition[];
+  /**
+   * Applied when this face is the **secondary** of a Fighter technique
+   * (spec `029`). `next-attack-bonus` here means local technique damage
+   * bonus for that resolution only.
+   */
+  readonly secondaryEffects?: readonly EffectDefinition[];
   /**
    * English printing of the inherent-effect region. Empty on identity faces
    * (`+1 Attribute` is the footer, not rules text).

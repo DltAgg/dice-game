@@ -57,6 +57,25 @@ export type GameAction =
       readonly reserveCreatureId: CreatureId;
     }
   /**
+   * Spec `029`. Resolve the Active Fighter's showing face **Primary** effects.
+   */
+  | {
+      readonly type: "USE_FACE";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+    }
+  /**
+   * Spec `029`. Resolve a named two-face Fighter technique (own die primary +
+   * another die secondary).
+   */
+  | {
+      readonly type: "USE_TECHNIQUE";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+      readonly techniqueId: string;
+      readonly secondaryDieId: DieId;
+    }
+  /**
    * The card's forge region. The player names which slots to give up and which
    * face card from their face pool (or an already-installed copy) represents
    * the new face — bible §12–13.

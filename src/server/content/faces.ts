@@ -54,6 +54,15 @@ export const TECHNIQUE_TAG: FaceCardId = asFaceCardId("face-natural-technique-ta
 export const TECHNIQUE_ASSIST: FaceCardId = asFaceCardId("face-natural-technique-assist");
 export const TECHNIQUE_SIGNATURE: FaceCardId = asFaceCardId("face-natural-technique-signature");
 
+export const GRAPPLER_LARIAT: FaceCardId = asFaceCardId("face-natural-grappler-lariat");
+export const GRAPPLER_JAB: FaceCardId = asFaceCardId("face-natural-grappler-jab");
+export const GRAPPLER_COMMAND_GRAB: FaceCardId = asFaceCardId(
+  "face-natural-grappler-command-grab",
+);
+export const GRAPPLER_GUARD: FaceCardId = asFaceCardId("face-natural-grappler-guard");
+export const GRAPPLER_MOVEMENT: FaceCardId = asFaceCardId("face-natural-grappler-movement");
+export const GRAPPLER_TAG: FaceCardId = asFaceCardId("face-natural-grappler-tag");
+
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);
 

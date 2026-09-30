@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
 import { asAttackId, asCreatureDefinitionId } from "../model/ids.js";
-import { ALL_CREATURES, KORR, MAGNUS, NYX } from "./creatures.js";
+import { ALL_CREATURES, GRAPPLER, KORR, MAGNUS, NYX } from "./creatures.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine, primaryAttribute } from "./creatureText.js";
 
 const TAG_SQUAD = [KORR, MAGNUS, NYX] as const;
 
 describe("creature catalogue", () => {
-  it("includes the Tag Skirmish trio", () => {
+  it("includes the Tag Skirmish trio plus proving Grappler", () => {
     const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
-    expect([...ids].sort()).toEqual([...TAG_SQUAD].slice().sort());
+    for (const id of TAG_SQUAD) expect(ids.has(id)).toBe(true);
+    expect(ids.has(GRAPPLER)).toBe(true);
+    expect(ids.size).toBe(TAG_SQUAD.length + 1);
   });
 
   it("gives every fighter a passive and at least one native attack", () => {

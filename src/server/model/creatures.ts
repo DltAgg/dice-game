@@ -1,6 +1,7 @@
 import type { Attribute } from "./attributes.js";
 import type { StandingTrigger } from "./cards.js";
 import type { EffectDefinition } from "./effects.js";
+import type { FighterTechniqueDefinition } from "./fighterTechniques.js";
 import type {
   AttackId,
   CardInstanceId,
@@ -87,6 +88,11 @@ export interface CreatureDefinition {
   /** Player-facing Assist name. */
   readonly assistName?: string;
   readonly assistRulesText?: string;
+  /**
+   * Two-face Fighter moves (spec `029`). Distinct from attack
+   * `requiredTechniques` (spec `028` toolkit gate).
+   */
+  readonly techniques?: readonly FighterTechniqueDefinition[];
 }
 
 export interface CreatureState {

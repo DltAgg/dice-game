@@ -1,6 +1,10 @@
 /**
- * Combat-toolkit faces (spec `028`). A showing technique answers “what can
- * this fighter do right now?”, not a mana pip.
+ * Combat-toolkit face **category** (spec `028`). A showing technique answers
+ * “what can this fighter do right now?”, not a mana pip.
+ *
+ * Naming: this is **not** a two-face Fighter move. Those are
+ * `FighterTechniqueDefinition` (spec `029`). Named-action types on faces are
+ * `FaceType` (`attack` / `grab` / …), also spec `029`.
  */
 export const TECHNIQUES = [
   "strike",

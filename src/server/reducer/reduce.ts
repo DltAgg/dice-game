@@ -15,6 +15,8 @@ import { resolveOptionalReroll } from "./commands/reroll.js";
 import { retainDie, rollDice } from "./commands/rollDice.js";
 import { activateRitual } from "./commands/ritual.js";
 import { advancePhase, endTurn } from "./commands/turn.js";
+import { useFace } from "./commands/useFace.js";
+import { useTechnique } from "./commands/useTechnique.js";
 import { createDraft, type Draft } from "./draft.js";
 import {
   resolveChooseAttributeTokens,
@@ -171,6 +173,16 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return tag(draft, action.playerId, action.reserveCreatureId);
     case "ASSIST":
       return assist(draft, action.playerId, action.reserveCreatureId);
+    case "USE_FACE":
+      return useFace(draft, action.playerId, action.creatureId);
+    case "USE_TECHNIQUE":
+      return useTechnique(
+        draft,
+        action.playerId,
+        action.creatureId,
+        action.techniqueId,
+        action.secondaryDieId,
+      );
     case "FORGE_CARD":
       return forgeCard(
         draft,
