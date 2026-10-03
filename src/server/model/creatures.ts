@@ -89,6 +89,11 @@ export interface CreatureDefinition {
   readonly assistName?: string;
   readonly assistRulesText?: string;
   /**
+   * Meter for Assist when this Fighter is not showing assist.
+   * Omit to use `assistMeterCost`. Showing assist spends nothing. Spec `030`.
+   */
+  readonly exceptionalAssistMeter?: number;
+  /**
    * Two-face Fighter moves (spec `029`). Distinct from attack
    * `requiredTechniques` (spec `028` toolkit gate).
    */
@@ -156,4 +161,9 @@ export interface CreatureState {
    * `[Silence]` expiry turn. Silenced while `GameState.turn < this`. Spec `022`.
    */
   readonly silenceExpiresOnTurn?: number;
+  /**
+   * Techniques this Fighter may use even when the secondary input does not
+   * match. A Moveset Modify appends ids. Spec `030`.
+   */
+  readonly enabledTechniqueIds?: readonly string[];
 }

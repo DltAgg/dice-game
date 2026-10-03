@@ -443,15 +443,17 @@ face) fires again.
 - Native attacks with `requiredTechniques` need the **Active** Fighter’s bound
   die to show that technique. They hit the opponent’s Active only. Each
   Fighter may attack **twice** per turn in this preset (`attacksPerCreaturePerCombat: 2`).
-- **[Tag]:** switch Active with a living Reserve. Free if the Active die shows
-  Tag; otherwise spend **2 Meter** (Tag-cancel). Resets combo. No reaction
-  window. If Active is KO’d, the lowest-index living Reserve is promoted for
-  free.
-- **[Assist]:** a living Reserve fires its Assist effects. Free if **that**
-  Reserve’s die shows Assist; otherwise spend **1 Meter**. Once per named
-  Reserve per turn. No reaction window.
-- **Meter:** cap **8**. The dealer gains 1 per HP actually lost on an attack
-  Strike. Cards may also print a Meter spend.
+- **[Tag]:** switch Active with a living Reserve, once per turn. Free in the
+  opening or closing window of the actions phase. Adding Tag to a Chain that
+  is already open spends **2 Meter**. The switch waits for that Chain. A KOed
+  Fighter cannot Tag, and a KO does not switch Active for you.
+- **[Assist]:** a Reserve, including a KOed Reserve, fires its Assist on the
+  Chain. Free if **that** Reserve’s die shows Assist; otherwise spend Meter
+  (**1**, or that Fighter’s exceptional cost). Once per named Reserve per turn.
+  Assist does not change the Active Fighter.
+- **Meter:** cap **8**, one pool for the team. It stays across turns and Tags.
+  On an attack Strike, the dealer and the Fighter who was hit each gain 1 per
+  HP actually lost. Cards may also print a Meter spend.
 - **Combo:** +1 when Active successfully declares an attack; 0 on Tag,
   KO-promote, and end of turn.
 - In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
@@ -465,17 +467,72 @@ face) fires again.
 - **Primary Effect:** resolve alone with **Use Face** — the Active Fighter
   uses the showing face on **their own** bound die. No second face needed.
 - **Fighter technique (two faces):** the Active Fighter’s own die shows the
-  technique’s **primary** named face, and **another** of your rolled dice
-  shows a face matching the technique’s **secondary** requirement (a specific
-  face **or** a Type). Resolve the technique’s base effect, then that
-  secondary face’s **Secondary Effect**. Primary and Secondary are ordered
+  technique’s **primary** named face, and **another** rolled die shows a face
+  matching the technique’s **secondary** requirement (a specific face **or** a
+  Type). Which die may be that secondary input is **not decided**. Resolve the
+  technique’s base effect, then that secondary face’s **Secondary Effect**. Primary and Secondary are ordered
   roles — swapping which die shows which face does not fire the same
   technique.
-- A die whose showing face was used as primary or secondary cannot be used
-  again for Use Face / technique this turn (`ASSUMED`).
-- These actions happen in the **actions** phase. They do **not** open a
-  reaction window (`ASSUMED`) and do **not** spend or gain Meter.
+- These actions happen in the **actions** phase (the Act). Using a face does
+  not spend it. The same face may still be part of a Technique. Repeating the
+  same Action in one sequence is the model under test (spec `030`). What is
+  legal depends on the offensive sequence and that Fighter’s actions, not on
+  a count of dice.
+- The current build still marks a used face `face-action:<dieId>` when
+  `consumeDiceOnFaceActions` is on. That spend is leftover engine behavior,
+  not the rule (spec `030`, revised 2026-10-02).
 - Legacy faces without a Type / Primary Effect cannot Use Face.
+
+**Offensive control (spec `030`, revised 2026-10-03)**
+
+This is how combat plays. Tag, Assist, Meter, and KO follow the same rules
+as the Tag Skirmish lines above.
+
+During the Act there is an **Aggressor** and a **Defender**. Dice show named
+inputs. They are not action points. An Action you cannot legally continue
+with is not available. Declaring it does not end the sequence.
+
+Starter, Extender, and Finisher are properties of an Action or Technique.
+Passing Priority inside a chain only yields Priority. Separately, the
+Aggressor may stop the offensive sequence. A Finisher is the model under
+test for ending a combo and returning to Open. Another Action may also say
+that it ends the sequence. Tag does not always do either.
+
+Immediately after the opening roll, you may reroll any number of your dice
+once, or keep them. Cards can change that roll or that reroll.
+
+A response does not require a Guard face. Cards respond or modify. A
+response does not by itself take the offense. Counter, Reversal, Modifier,
+and Situation are names for a result, not card types.
+
+Declaring an action opens Priority for the player who declared it. While you
+have Priority you may add a legal response or modify, if it has a valid
+target, or you may pass. A pass is not a Chain entry. Adding a response or
+modify does not yield Priority. You may respond only to an opponent’s
+object. Either player may modify while they have Priority. After two passes
+in a row, the chain resolves last in, first out. If a target has become
+invalid by then, that effect does not happen.
+
+A modify can change the roll you just made, or it can permanently change a
+die. Changing the roll does not rewrite the die. There is no temporary die
+change. It can also change what one Fighter’s inputs allow, or redirect a
+target that is already part of the exchange.
+
+Tag is not a card. A turn can offer a Tag Window at the beginning and one
+at the end. You can Tag only once in the turn. The normal Tag does not
+spend Meter. Assist is printed on the Fighter, uses the same chain, and
+does not spend Meter unless that Assist is exceptional. One Meter pool is
+shared by all three Fighters. It stays when you Tag and when the turn
+changes. You can gain it by dealing damage, by taking damage, or from an
+effect that says so.
+
+At 0 HP a Fighter is KOed. They cannot Tag. They can still Assist. The
+sequence ends and the opponent takes initiative. When all three of your
+Fighters are KOed, you lose.
+
+Hand size, draw, deckbuilding, and how dice are customized are **not
+decided** ([`OPEN_DESIGN.md`](./OPEN_DESIGN.md)). There is no Resolve phase
+and no Meter phase.
 
 Enemy creature movement (push) is **not** in the game. Ally reposition is
 Martial’s exclusive (`[Reposition]` / `[Swap]`): frontline ↔ back (swap if the

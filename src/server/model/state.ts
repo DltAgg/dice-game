@@ -1,4 +1,4 @@
-import type { CardDuration, CardInstance } from "./cards.js";
+import type { CardDuration, CardInstance, CardModifyIntent } from "./cards.js";
 import type { GameRulesConfig } from "./config.js";
 import type { CreatureState } from "./creatures.js";
 import type { DieState, FaceKind } from "./dice.js";
@@ -18,6 +18,11 @@ import type {
 } from "./ids.js";
 import type { SymbolInstance, SymbolType } from "./symbols.js";
 import type { PendingDecision } from "./pendingDecision.js";
+import type {
+  OffensiveStateName,
+  PendingOffenseSettle,
+  SequenceRole,
+} from "./offensive.js";
 import type { RngState } from "../rng/rng.js";
 
 export type { PendingDecision };
@@ -29,7 +34,8 @@ export type ChainLinkKind =
   | "ritual-activate"
   | "equip-attach"
   | "overload-attach"
-  | "attack";
+  | "attack"
+  | "combat-action";
 
 /**
  * A waiting chain link. Bodies run only after both seats pass priority
@@ -55,6 +61,28 @@ export interface ChainLink {
   readonly attackFollowUpEffects: readonly EffectDefinition[];
   /** Used when finishing a ritual-activate link (exhaust vs GY). */
   readonly ritualDuration: CardDuration | null;
+  /**
+   * Sequence role for a `combat-action` link (spec `030`). Other kinds omit it.
+   */
+  readonly sequenceRole?: SequenceRole;
+  /** Spent when a non-negated `combat-action` link conducts. */
+  readonly meterCost?: number;
+  /** Granted when a non-negated `combat-action` link conducts, after the spend. */
+  readonly meterGain?: number;
+  /** Hand reaction that takes offensive control if it resolves (spec `030`). */
+  readonly seizesOffense?: boolean;
+  /** Spec `030`. Present on a Modify link. Applied when that link conducts. */
+  readonly modify?: CardModifyIntent;
+  /** Face or technique id used for the once-per-sequence check. */
+  readonly sequenceActionId?: string;
+  /** This action ends the offensive sequence and returns play to Open. */
+  readonly endsSequence?: boolean;
+  /** This action passes initiative. Not implied by ending the sequence. */
+  readonly passesInitiative?: boolean;
+  /** Set when the link is a Tag. Conducted by the shared chain. */
+  readonly tagReserveId?: CreatureId;
+  /** Set when the link is an Assist. Conducted by the shared chain. */
+  readonly assistReserveId?: CreatureId;
 }
 
 /**
@@ -231,6 +259,29 @@ export interface GameState {
    * on-absorb triggers wait for on-roll effects (and choices) to finish first.
    */
   readonly rollBankQueue: readonly SymbolInstanceId[];
+  /**
+   * Seat currently applying offensive pressure (spec `030`). Starts as the
+   * turn owner; a seizing reaction can move it. Not `activePlayerId`.
+   */
+  readonly aggressorPlayerId: PlayerId;
+  /** `open` or `combo`. A finisher returns to `open` (spec `030`). */
+  readonly offensiveState: OffensiveStateName;
+  /** Action ids already used in this offensive sequence. Cleared on return to `open`. */
+  readonly usedSequenceActionIds: readonly string[];
+  /** True immediately after the initial roll, until the reroll or any other Act action. */
+  readonly rerollAvailable: boolean;
+  /** True after the first Act action that is not the opening reroll or Tag. */
+  readonly actEngaged: boolean;
+  /**
+   * Controller of a seize that resolved while a `combat-action` link was
+   * still waiting. Cleared when that action settles.
+   */
+  readonly offenseSeizedBy: PlayerId | null;
+  /**
+   * Set when a `combat-action` body pauses on a player choice. Settled once
+   * that choice and the chain are idle.
+   */
+  readonly pendingOffenseSettle: PendingOffenseSettle | null;
   readonly winner: PlayerId | null;
   readonly log: readonly LoggedEvent[];
 

@@ -4,6 +4,7 @@ import { TURN_PHASE_ORDER, type TurnPhase } from "../../model/state.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { emit, type Draft } from "../draft.js";
 import { setComboCount } from "../meter.js";
+import { beginOffensiveWindow } from "../offensive.js";
 import { clearRollBankQueue } from "../rollBank.js";
 import {
   checkVictory,
@@ -30,6 +31,12 @@ export function advancePhase(draft: Draft): GameError | null {
 export function enterPhase(draft: Draft, phase: TurnPhase): GameError | null {
   draft.phase = phase;
   emit(draft, { type: "phase-entered", phase });
+  if (phase === "actions") {
+    beginOffensiveWindow(draft, draft.activePlayerId);
+    draft.rerollAvailable = true;
+    draft.actEngaged = false;
+    draft.usedSequenceActionIds = [];
+  }
   return null;
 }
 
@@ -85,6 +92,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   drawCards(draft, nextPlayerId, draft.config.cardsDrawnPerTurn);
 
   checkVictory(draft);
+  beginOffensiveWindow(draft, nextPlayerId);
   return enterPhase(draft, "roll");
 }
 

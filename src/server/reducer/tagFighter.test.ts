@@ -25,6 +25,7 @@ import {
   newMatch,
   P1,
   P2,
+  resolveOpenChain,
 } from "../testing/scenario.js";
 
 const STRIKE = asTestFaceId("technique-strike");
@@ -174,35 +175,44 @@ describe("028 tag-fighter prototype", () => {
     expect(showingTechnique(state, creature(state, P1, 0))).toBe("tag");
     const reserve = creature(state, P1, 1);
     const result = expectOk(
-      advance(state, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
+      advanceResolvingChain(state, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
     );
     expect(result.players[P1]?.activeCreatureId).toBe(reserve);
     expect(result.players[P1]?.comboCount).toBe(0);
     expect(result.players[P1]?.meter).toBe(0);
   });
 
-  it("refuses TAG without showing tag or enough meter", () => {
+  it("tags for free in the opening window without the Tag face", () => {
     let state = tagMatch();
     state = show(state, P1, 0, 0);
     const reserve = creature(state, P1, 1);
-    const result = advance(state, { type: "TAG", playerId: P1, reserveCreatureId: reserve });
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("INSUFFICIENT_METER");
+    const result = expectOk(
+      advanceResolvingChain(state, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
+    );
+    expect(result.players[P1]?.activeCreatureId).toBe(reserve);
+    expect(result.players[P1]?.meter).toBe(0);
   });
 
-  it("pays Tag-cancel meter when Tag is not showing", () => {
+  it("spends Tag-cancel meter when Tag is added to an open chain", () => {
     let state = tagMatch();
     state = show(state, P1, 0, 0);
     const p1 = state.players[P1]!;
     state = {
       ...state,
+      pendingDecision: {
+        type: "reaction-priority",
+        priorityPlayerId: P1,
+        consecutivePasses: 0,
+      },
       players: { ...state.players, [P1]: { ...p1, meter: 2 } },
     };
     const reserve = creature(state, P1, 1);
-    const result = expectOk(
+    const declared = expectOk(
       advance(state, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
     );
-    expect(result.players[P1]?.meter).toBe(0);
+    expect(declared.players[P1]?.meter).toBe(0);
+    expect(declared.chainStack.some((link) => link.tagReserveId === reserve)).toBe(true);
+    const result = resolveOpenChain(declared);
     expect(result.players[P1]?.activeCreatureId).toBe(reserve);
   });
 
@@ -212,9 +222,10 @@ describe("028 tag-fighter prototype", () => {
     const reserve = creature(state, P1, 1);
     const active = creature(state, P1, 0);
     const result = expectOk(
-      advance(state, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve }),
+      advanceResolvingChain(state, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve }),
     );
     expect(result.creatures[active]?.shields).toBe(2);
+    expect(result.players[P1]?.activeCreatureId).toBe(active);
   });
 
   it("refuses a second ASSIST from the same reserve this turn", () => {
@@ -308,7 +319,105 @@ describe("028 tag-fighter prototype", () => {
       }),
     );
     expect(result.players[P1]?.meter).toBeGreaterThan(0);
+    expect(result.players[P2]?.meter).toBeGreaterThan(0);
     expect(result.status).toBe("finished");
     expect(result.winner).toBe(P1);
+  });
+
+  it("keeps a KOed Fighter Active, blocks their Tag, and still allows Assist", () => {
+    let state = tagMatch();
+    state = show(state, P1, 0, 0);
+    const victim = creature(state, P2, 0);
+    state = {
+      ...state,
+      creatures: {
+        ...state.creatures,
+        [victim]: { ...state.creatures[victim]!, damage: 7 },
+      },
+    };
+    const ko = expectOk(
+      advanceResolvingChain(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creature(state, P1, 0),
+        attackId: JAB,
+        targetId: victim,
+      }),
+    );
+    expect(ko.creatures[victim]?.defeated).toBe(true);
+    expect(ko.players[P2]?.activeCreatureId).toBe(victim);
+    expect(ko.aggressorPlayerId).toBe(P1);
+    expect(ko.offensiveState).toBe("open");
+    const p2Turn = { ...ko, activePlayerId: P2, phase: "actions" as const };
+    const tagged = advance(p2Turn, {
+      type: "TAG",
+      playerId: P2,
+      reserveCreatureId: creature(p2Turn, P2, 1),
+    });
+    expect(tagged.ok).toBe(false);
+    if (!tagged.ok) expect(tagged.error).toBe("CREATURE_DEFEATED");
+
+    const reserve = creature(ko, P1, 1);
+    const knockedReserve = {
+      ...ko,
+      creatures: {
+        ...ko.creatures,
+        [reserve]: { ...ko.creatures[reserve]!, defeated: true, damage: 99 },
+      },
+    };
+    const assist = expectOk(
+      advanceResolvingChain(knockedReserve, {
+        type: "ASSIST",
+        playerId: P1,
+        reserveCreatureId: reserve,
+      }),
+    );
+    expect(assist.players[P1]?.activeCreatureId).toBe(creature(ko, P1, 0));
+    expect(assist.creatures[creature(ko, P1, 0)]?.shields).toBe(2);
+  });
+
+  it("allows one closing Tag and refuses a second Tag that turn", () => {
+    let state = tagMatch();
+    state = show(state, P1, 0, 0);
+    const acted = expectOk(
+      advanceResolvingChain(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creature(state, P1, 0),
+        attackId: JAB,
+        targetId: creature(state, P2, 0),
+      }),
+    );
+    expect(acted.actEngaged).toBe(true);
+    const reserve = creature(acted, P1, 1);
+    const tagged = expectOk(
+      advanceResolvingChain(acted, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
+    );
+    expect(tagged.players[P1]?.activeCreatureId).toBe(reserve);
+    expect(tagged.chainStack).toHaveLength(0);
+    const again = advance(tagged, {
+      type: "TAG",
+      playerId: P1,
+      reserveCreatureId: creature(tagged, P1, 2),
+    });
+    expect(again.ok).toBe(false);
+    if (!again.ok) expect(again.error).toBe("ALREADY_USED");
+  });
+
+  it("keeps the shared Meter pool across a Tag and the next turn", () => {
+    let state = show(tagMatch(), P1, 0, 0);
+    const seat = state.players[P1]!;
+    state = { ...state, players: { ...state.players, [P1]: { ...seat, meter: 3 } } };
+    const tagged = expectOk(
+      advanceResolvingChain(state, {
+        type: "TAG",
+        playerId: P1,
+        reserveCreatureId: creature(state, P1, 1),
+      }),
+    );
+    expect(tagged.players[P1]?.meter).toBe(3);
+    const ended = expectOk(advance(tagged, { type: "END_TURN", playerId: P1 }));
+    expect(ended.players[P1]?.meter).toBe(3);
+    expect(ended.players[P2]?.meter).toBe(0);
   });
 });

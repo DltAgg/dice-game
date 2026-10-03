@@ -13,6 +13,7 @@ import {
   showingFaceCard,
 } from "../../rules/faceActions.js";
 import { emit, type Draft } from "../draft.js";
+import { openCombatAction, sequenceActionUsed, sequenceDeclarationError } from "../offensive.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { markPlayerSpent } from "../triggerSpent.js";
 
@@ -83,7 +84,21 @@ export function useTechnique(
     return "CARD_HAS_NO_EFFECT";
   }
 
-  if (draft.config.consumeDiceOnFaceActions) {
+  const role = technique.sequenceRole;
+  if (role === undefined && playerId !== draft.activePlayerId) return "INVALID_TARGET";
+  const sequenceActionId = `technique:${technique.id}`;
+  if (role !== undefined) {
+    const sequenceError = sequenceDeclarationError(
+      draft,
+      playerId,
+      role,
+      technique.meterCost ?? 0,
+    );
+    if (sequenceError !== null) return sequenceError;
+    if (sequenceActionUsed(draft, sequenceActionId)) return "ALREADY_USED";
+  }
+
+  if (role === undefined && draft.config.consumeDiceOnFaceActions) {
     markPlayerSpent(draft, playerId, faceActionKey(primaryDie.id));
     markPlayerSpent(draft, playerId, faceActionKey(secondaryDieId));
   }
@@ -104,6 +119,23 @@ export function useTechnique(
     primaryFaceCardId: primaryFace.id,
     secondaryFaceCardId: secondaryFace.id,
   });
+
+  const effects = [...resolvedBase, ...residual];
+  if (role !== undefined) {
+    openCombatAction(draft, {
+      playerId,
+      sourceCreatureId: creatureId,
+      declaredTargetCreatureId: targetId,
+      effects,
+      sequenceRole: role,
+      meterCost: technique.meterCost ?? 0,
+      meterGain: technique.meterGain ?? 0,
+      sequenceActionId,
+      endsSequence: technique.endsSequence === true,
+      passesInitiative: technique.passesInitiative === true,
+    });
+    return null;
+  }
 
   for (const effect of [...residual].reverse()) {
     pushEffect(draft, playerId, effect, creatureId, targetId);

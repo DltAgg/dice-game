@@ -53,6 +53,11 @@
       "description": "Assist payload while this fighter is Reserve (spec 028).",
       "$ref": "defs.schema.json#/$defs/effectList"
     },
+    "exceptionalAssistMeter": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Spec 030. Meter for Assist when this fighter is not showing assist. Omit to use assistMeterCost. Showing assist spends nothing."
+    },
     "techniques": {
       "description": "Two-face Fighter moves (spec 029). Distinct from attack requiredTechniques.",
       "type": "array",

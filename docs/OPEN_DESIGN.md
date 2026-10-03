@@ -1057,21 +1057,64 @@ Naming: `Technique` (028 toolkit category) ≠ `FaceType` (029) ≠
 
 | Knob / rule | Prototype default | Notes |
 |---|---|---|
-| Secondary die | Any other **owned** rolled die | Query `secondaryDiceFor`. |
+| Secondary die | Engine: any other **owned** rolled die | Query `secondaryDiceFor`. Ownership is **open** (spec `030`). |
 | Actor | Living Active Fighter | Reuse `activeCreatureId`. |
 | Damage target | Effect JSON / opponent Active | Commands pass opponent Active as `declared-target`. |
-| Die consumption | `consumeDiceOnFaceActions: true` | Key `face-action:<dieId>`. |
+| Die consumption | **Withdrawn** | Spec `030` (2026-10-03): a used face stays available. Repeating the same Action in one sequence is under test. Engine flag `consumeDiceOnFaceActions` is leftover. |
 | Phase | `actions` | Same seat gates as ATTACK. |
-| Reaction window | **None** | Like TAG / ASSIST. |
+| Reaction window | **Decided** (spec `030`) | Declarer has Priority first. Resolution is last-in, first-out. An invalid target at resolution does not apply. Not “rolled a Guard face.” |
 | Legacy faces | No Type / empty Primary | Illegal for `USE_FACE`. |
 | Secondary damage modify | `next-attack-bonus` in `secondaryEffects` | Local technique damage bonus only; does not arm next ATTACK. |
 
 ### NOT DECIDED (spec `029`)
 
-- Meter max / generation / spending / gain triggers / costs / Meter abilities
-  for face & technique actions (new actions must not grant/spend today).
 - Whether spec `028` Meter knobs stay long-term (**conflict** above).
-- Full Tag system beyond `faceType: "tag"` as data; Assists; combos; footsies;
-  frames; stun; counter-hit; in-match die craft; fighter/team/universal cards.
-- Whether Use Face / technique ever opens a reaction window.
+- Footsies, frames, stun, counter-hit. Tag, Assist, KO, and Meter sources
+  are spec `030` (2026-10-03). Hand, deckbuilding, and dice customization
+  stay deferred there.
 - Whether secondary dice may include opponent or Reserve-only dice.
+
+Offensive sequence, Model C face availability, and the Act loop are spec
+[`030-offensive-control.md`](./specs/030-offensive-control.md) (revised
+2026-10-03). Meter sources are decided there. Amounts are not.
+
+---
+
+## Offensive control (2026-10-03)
+
+**Status:** `DECIDED` where spec `030` says Decided · **to test** where it
+says To test · **`OPEN`** / deferred below · spec
+[`030-offensive-control.md`](./specs/030-offensive-control.md)
+
+The 2026-10-03 build follows the Decided list below. Leftovers that are
+not this design: face spend on a Use Face with no sequence role,
+`sequenceRole` as the continuation table, and `seizesOffense`. Do not
+extend those.
+
+### Decided
+
+- Rolled faces are inputs. They are not consumed, and they are not action points. An illegal Action cannot be declared, and that failure does not end the sequence.
+- Starter, Extender, and Finisher are properties of an Action or Technique. Model C: base Action, then Fighter / Technique.
+- Priority Pass yields Priority inside a Chain. It is not the Aggressor’s choice to end the offensive sequence.
+- An Action or Technique may say that it ends the sequence. Tag does not always end it or always pass initiative. That Tag’s effect says which.
+- Declarer has Priority first. `Response` and `Modify` are Chain objects. Two consecutive Passes close Priority. Resolution is last-in, first-out.
+- A target must be valid when the object enters the Chain. If it is invalid when that object resolves, the effect is not applied.
+- A `Response` targets an opponent’s object only and does not inherently take offensive control.
+- One reroll, immediately after the initial roll, of any number of your dice. Cards may modify or, when they say so, prevent that roll or reroll.
+- Modify targets include the current roll, a permanent die-slot write, one Fighter’s moveset, an existing interaction’s target, and Tag.
+- Tag Windows may include the beginning and the end of the turn. At most one Tag per turn. Tag and Assist use the Chain. Normal Assist does not cost Meter.
+- One Meter pool for all three Fighters. It persists across turns and across a Tag. Gain it when you deal damage, when you take damage, or from an effect that says so. No Combo Meter. No card-mana curve.
+- At 0 HP a Fighter is KOed: no Tag, Assist still allowed, the sequence ends, initiative passes. Three KOed Fighters loses the game.
+- Defense is cards, not a rolled face.
+
+### To test
+
+- A Finisher ends the sequence and returns play to Open.
+- The same Action cannot be used twice in one sequence. The face may still be part of a Technique. A later `Once Per Sequence` mark on specific Actions is not the rule yet.
+
+### Open / deferred
+
+- Who is Aggressor after a voluntary sequence end, and after a Finisher returns play to Open. What moves Neutral into Open.
+- Exact Modify effects and scope. Where the Tag Windows sit inside `roll` / `actions`. A given Assist’s timing.
+- Hand, draw, discard, and card lifecycle. Deckbuilding and which cards belong to which Fighter. Dice customization and how a deck, the Fighters, and the dice are assembled. In-match die writes stay permanent.
+- Meter amounts. Who starts as Aggressor. Which dice are inputs.

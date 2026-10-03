@@ -6,6 +6,7 @@ import type {
   CardInstanceId,
   CreatureDefinitionId,
   CreatureId,
+  DieId,
   FaceCardId,
   PlayerId,
 } from "./ids.js";
@@ -369,6 +370,43 @@ export interface CardDefinition {
    * data, which is not enforced). Omit = 0.
    */
   readonly meterCost?: number;
+  /**
+   * Spec `030`. When this hand reaction resolves and a combat-action link is
+   * still waiting, this player becomes the Aggressor. Does not cancel damage.
+   */
+  readonly seizesOffense?: boolean;
+  /**
+   * Spec `030`. `response` reacts only to an opponent’s Chain object.
+   * `modify` changes a roll, die, moveset, target, or tag. Omit on cards
+   * that are not using this combat behavior. Timing stays the reaction
+   * window and `type: "reaction"` — this is not a second timing system.
+   */
+  readonly behavior?: CardBehavior;
+  /** Required when `behavior` is `"modify"`. */
+  readonly modifySubject?: ModifySubject;
+  /**
+   * Spent only for exceptional mode. Normal mode does not spend it.
+   * Not a generic card cost. Spec `030`.
+   */
+  readonly exceptionalMeterCost?: number;
+}
+
+/** Spec `030`. The only two card behaviors. */
+export type CardBehavior = "response" | "modify";
+
+/**
+ * What a Modify acts on. Not a separate card type.
+ * `roll` changes the showing face. `die` writes a slot permanently.
+ */
+export type ModifySubject = "roll" | "die" | "moveset" | "target" | "tag";
+
+/** Chosen when a Modify is declared. Conduct reads this off the Chain link. */
+export interface CardModifyIntent {
+  readonly subject: ModifySubject;
+  readonly dieId: DieId | null;
+  readonly slotIndex: number | null;
+  readonly faceCardId: FaceCardId | null;
+  readonly techniqueId: string | null;
 }
 
 /**

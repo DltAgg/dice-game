@@ -48,8 +48,13 @@ export function cardCommittedToChain(draft: Draft, cardInstanceId: CardInstanceI
   return draft.chainStack.some((link) => link.cardInstanceId === cardInstanceId);
 }
 
-export function openReactionWindow(draft: Draft, afterControllerId: PlayerId): void {
-  const priorityPlayerId = opponentOf(draft, afterControllerId);
+export function openReactionWindow(
+  draft: Draft,
+  afterControllerId: PlayerId,
+  holder: "opponent" | "same" = "opponent",
+): void {
+  const priorityPlayerId =
+    holder === "same" ? afterControllerId : opponentOf(draft, afterControllerId);
   draft.pendingDecision = {
     type: "reaction-priority",
     priorityPlayerId,

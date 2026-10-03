@@ -249,6 +249,13 @@ export function createMatch(setup: MatchSetup): GameState {
     facesAppearedThisRoll: [],
     resolveNextFaceEffectTwice: {},
     rollBankQueue: [],
+    aggressorPlayerId: first.id,
+    offensiveState: "open",
+    usedSequenceActionIds: [],
+    rerollAvailable: false,
+    actEngaged: false,
+    offenseSeizedBy: null,
+    pendingOffenseSettle: null,
     winner: null,
     log: [
       { seq: 0, turn: 1, event: { type: "match-started", firstPlayerId: first.id } },

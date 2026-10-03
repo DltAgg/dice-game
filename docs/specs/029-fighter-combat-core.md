@@ -2,6 +2,11 @@
 
 Status: **IMPLEMENTED** (engine + Grappler proving catalogue, 2026-09-29)
 
+Offensive sequence, face availability, and the Act loop are spec
+[`030-offensive-control.md`](./030-offensive-control.md) (revised 2026-10-02).
+This spec’s named faces and ordered techniques still stand. Face consumption
+in the rules below is withdrawn by that revision.
+
 Combat-core foundations for Tag Skirmish / future fighters: **named typed
 faces**, **Primary / Secondary face effects**, **simple single-face actions**,
 **two-face Fighter techniques**, and **generic Meter** queries/ops.
@@ -38,8 +43,9 @@ without `faceType` / `primaryEffects` are **not** usable by the new actions.
    technique effects, then apply the secondary face’s **Secondary** effects
    (including local damage modifiers — see ASSUMED).
 4. **Meter** remains a generic `PlayerState.meter` resource with public
-   query/clamp/grant/spend/set. **New** face/technique actions **must not**
-   grant or spend Meter.
+   query/clamp/grant/spend/set. How face and technique actions gain or spend
+   Meter is **open** (spec `030`). The engine fields `meterCost` / `meterGain`
+   are not that rule.
 
 ## Rules
 
@@ -54,19 +60,23 @@ Bible is silent. Rows below are `ASSUMED` where noted; otherwise this brief.
    `activeCreatureId` / `isActiveFighter`).
 4. **Own die.** Primary face is always the showing face on
    `dieForCreature(actor)`.
-5. **Secondary die (`ASSUMED`).** Any **other** die owned by the acting player
-   that is rolled (`rolledSlotIndex !== null`). Single query
-   `secondaryDiceFor(state, playerId, primaryDieId)` so this can change later.
+5. **Secondary die (`ASSUMED` in engine, `OPEN` in spec `030`).** The engine
+   query uses any **other** die owned by the acting player that is rolled
+   (`rolledSlotIndex !== null`): `secondaryDiceFor`. Dice ownership is not a
+   finalized rule.
 6. **Damage target (`ASSUMED`).** Reuse effect JSON selectors; proving content
    uses `declared-target` and commands pass opponent Active (same as gated
    Tag Skirmish attacks).
-7. **Consumption (`ASSUMED`).** When `consumeDiceOnFaceActions` is true
-   (default), each die used as primary or secondary is marked
-   `spentOncePerTurnKeys` `face-action:<dieId>` and cannot be used again this
-   turn for `USE_FACE` / `USE_TECHNIQUE`. Cleared on `END_TURN` with other keys.
+7. **Consumption.** Withdrawn (spec `030`, 2026-10-02). A used face stays
+   available. Repetition is limited by the offensive sequence and the
+   Fighter’s action rules, not by spending the face. The engine flag
+   `consumeDiceOnFaceActions` / `face-action:<dieId>` is leftover from the
+   2026-09-30 slice and is not the design.
 8. **Phase (`ASSUMED`).** `actions` only; same seat/pending gates as `ATTACK`.
-9. **Reaction window (`ASSUMED`).** **None** for `USE_FACE` / `USE_TECHNIQUE`
-   (same as TAG / ASSIST). Do not open the attack reaction chain.
+9. **Reaction window.** Not decided (spec `030`). The Defender’s response is
+   not “they rolled a defensive face.” Exact card and chain rules are open.
+   The engine opens a chain only for faces/techniques that set `sequenceRole`;
+   that flag is leftover, not the rule.
 10. **Legacy faces.** Missing `faceType` or empty `primaryEffects` → illegal
     for `USE_FACE`. Techniques only match faces that satisfy their secondary
     requirement (typed or specific id).
@@ -95,12 +105,13 @@ Bible is silent. Rows below are `ASSUMED` where noted; otherwise this brief.
 | `FaceCardDefinition.primaryEffects?` | Optional `EffectDefinition[]` |
 | `FaceCardDefinition.secondaryEffects?` | Optional `EffectDefinition[]` |
 | `FighterTechniqueDefinition` | On `CreatureDefinition.techniques?` |
-| `GameRulesConfig.consumeDiceOnFaceActions` | ASSUMED default `true` |
+| `GameRulesConfig.consumeDiceOnFaceActions` | Leftover engine flag. Design (spec `030`) does not spend the face. |
 | `GameAction` | `USE_FACE`, `USE_TECHNIQUE` |
 | Log | `face-used`, `technique-used` |
 | `PlayerState.meter` | Unchanged shape; public ops/queries |
 
-No change to `comboCount` from these actions. No Meter delta from these actions.
+No change to `comboCount` from these actions. Whether a face or technique
+changes Meter is open (spec `030`). This slice did not define a delta.
 
 ## Actions
 
@@ -116,8 +127,9 @@ Intent only. Engine derives showing faces, legality, and effects. Host overrides
 
 Both: match in progress; `actions` phase; acting player; no blocking pending
 (except as today’s other actions); `creatureId` is that player’s living Active;
-bound die rolled; when `consumeDiceOnFaceActions`, primary die not already
-`face-action:<dieId>`.
+bound die rolled. The engine still rejects a die already marked
+`face-action:<dieId>` when `consumeDiceOnFaceActions` is set. That check is
+not the design (spec `030`: the face is not consumed).
 
 **USE_FACE:** showing face has non-empty `primaryEffects`.
 
@@ -133,22 +145,28 @@ Illegal → `GameError` + **original** state.
 **USE_FACE**
 
 1. Validate.
-2. Mark primary die spent (if config).
+2. The engine may mark the primary die spent (`consumeDiceOnFaceActions`).
+   Spec `030` withdraws that spend: the face stays available.
 3. Emit `face-used`.
 4. Push `primaryEffects` (reverse order) via `pushEffect` with
    `declaredTargetCreatureId = opponent Active`, `fromAttack = false`.
-5. `drainResolution`. No reaction window.
+5. `drainResolution` in the current engine when `sequenceRole` is omitted. A
+   chain for `sequenceRole` faces is leftover engine behavior. Spec `030` does
+   not decide the response mechanic.
 
 **USE_TECHNIQUE**
 
 1. Validate primary + secondary + technique match.
-2. Mark primary and secondary dice spent (if config).
+2. The engine may mark the primary and secondary dice spent. Spec `030`
+   withdraws that spend.
 3. Emit `technique-used`.
 4. Sum `next-attack-bonus` amounts from secondary face `secondaryEffects`.
 5. For each technique `effects` entry: if `damage`, add that sum to `amount`;
    else unchanged. Push modified base effects (reverse).
 6. Push remaining secondary effects (exclude `next-attack-bonus`) reverse.
-7. `drainResolution`. No reaction window. `fromAttack = false`.
+7. `drainResolution` in the current engine when `sequenceRole` is omitted.
+   Opening a chain from `sequenceRole` is leftover engine behavior, not spec
+   `030`. `fromAttack = false`.
 
 ## Networking
 
@@ -204,7 +222,7 @@ CreatureDefinition += { techniques?: FighterTechniqueDefinition[] }
 
 - Secondary die = any other owned rolled die.
 - Actor = living Active; damage target via effect JSON / opponent Active.
-- Die consumption via `face-action:<dieId>` + `consumeDiceOnFaceActions`.
+- Die consumption is **withdrawn** (spec `030`). The engine flag remains until removed.
 - `actions` phase; no reaction window.
 - Legacy faces without Type/Primary not usable by new actions.
 - `next-attack-bonus` in secondaryEffects = local technique damage bonus.

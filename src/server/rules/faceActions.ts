@@ -8,6 +8,7 @@ import type {
 import type { CreatureId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { dieForCreature, isActiveFighter, opponentActiveId } from "./fighters.js";
+import { sequenceMeterAffordable, sequenceRoleFits } from "./offensive.js";
 
 export function faceActionKey(dieId: DieId): string {
   return `face-action:${dieId}`;
@@ -80,7 +81,12 @@ export function canUseFace(
   if (die === undefined || die.rolledSlotIndex === null) return false;
   if (dieIsFaceActionSpent(state, playerId, die.id)) return false;
   const face = showingFaceCard(state, die.id);
-  return (face?.primaryEffects?.length ?? 0) > 0;
+  if ((face?.primaryEffects?.length ?? 0) === 0) return false;
+  if (face?.sequenceRole !== undefined) {
+    if (state.aggressorPlayerId !== playerId) return false;
+    if (!sequenceRoleFits(state.offensiveState, face.sequenceRole)) return false;
+  }
+  return true;
 }
 
 export function legalFaceActions(
@@ -123,10 +129,17 @@ export function matchingTechniques(
   const out: MatchingTechnique[] = [];
   for (const technique of techniques) {
     if (primaryFace.id !== technique.primaryFaceId) continue;
+    if (technique.sequenceRole !== undefined) {
+      if (state.aggressorPlayerId !== playerId) continue;
+      if (!sequenceRoleFits(state.offensiveState, technique.sequenceRole)) continue;
+      if (!sequenceMeterAffordable(state, playerId, technique.meterCost)) continue;
+    }
+    const relaxed = new Set(creature.enabledTechniqueIds ?? []);
     for (const secondaryDieId of secondaries) {
       const secondaryFace = showingFaceCard(state, secondaryDieId);
       if (secondaryFace === undefined) continue;
-      if (!secondaryMatches(secondaryFace, technique.secondary)) continue;
+      const secondaryOk = secondaryMatches(secondaryFace, technique.secondary);
+      if (!secondaryOk && !relaxed.has(technique.id)) continue;
       out.push({ techniqueId: technique.id, secondaryDieId });
     }
   }

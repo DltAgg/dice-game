@@ -12,6 +12,7 @@ import type {
   PlayerId,
   SymbolInstanceId,
 } from "../model/ids.js";
+import type { OffensiveStateName, PendingOffenseSettle } from "../model/offensive.js";
 import type {
   GameState,
   MatchStatus,
@@ -63,6 +64,13 @@ export interface Draft {
   }>;
   resolveNextFaceEffectTwice: Record<string, boolean>;
   rollBankQueue: SymbolInstanceId[];
+  aggressorPlayerId: PlayerId;
+  offensiveState: OffensiveStateName;
+  usedSequenceActionIds: string[];
+  rerollAvailable: boolean;
+  actEngaged: boolean;
+  offenseSeizedBy: PlayerId | null;
+  pendingOffenseSettle: PendingOffenseSettle | null;
   winner: PlayerId | null;
   log: LoggedEvent[];
   rng: RngState;
@@ -82,6 +90,7 @@ export const createDraft = (state: GameState): Draft => ({
   facesAppearedThisRoll: state.facesAppearedThisRoll.map((entry) => ({ ...entry })),
   resolveNextFaceEffectTwice: { ...state.resolveNextFaceEffectTwice },
   rollBankQueue: [...state.rollBankQueue],
+  usedSequenceActionIds: [...state.usedSequenceActionIds],
   log: [...state.log],
 });
 

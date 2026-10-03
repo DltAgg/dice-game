@@ -13,3 +13,4 @@ export * from "./symbols.js";
 export * from "./techniques.js";
 export * from "./faceTypes.js";
 export * from "./fighterTechniques.js";
+export * from "./offensive.js";

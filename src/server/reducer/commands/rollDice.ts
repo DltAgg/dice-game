@@ -51,6 +51,18 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
     }
   }
 
+  publishShownFaceRolls(draft, rolled);
+  return enterPhase(draft, "actions");
+}
+
+/**
+ * On roll, convert choices, and absorb for a batch of freshly shown faces.
+ * Shared by the opening roll and the once-per-turn reroll (spec `030`).
+ */
+export function publishShownFaceRolls(
+  draft: Draft,
+  rolled: readonly ShownFaceRollEntry[],
+): void {
   // Fire onRoll in die order (later dice push on top so LIFO resolves
   // active die0, active die1, opponent die0, opponent die1). Both of each
   // owner's showing faces are already known (geometry). Convert faces open
@@ -83,8 +95,6 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
   if (!deferAbsorb) {
     drainResolution(draft);
   }
-
-  return enterPhase(draft, "actions");
 }
 
 /**
@@ -92,7 +102,12 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
  * Retain is never randomized while `keepsPreviousResult`; spend retain only
  * when the owner is the active player.
  */
-function rollOneDie(draft: Draft, die: DieState, rng: RNG): ShownFaceRollEntry | undefined {
+export function rollOneDie(
+  draft: Draft,
+  die: DieState,
+  rng: RNG,
+  force = false,
+): ShownFaceRollEntry | undefined {
   const ownerId = die.ownerId;
 
   if (isDieStunned(die)) {
@@ -102,7 +117,7 @@ function rollOneDie(draft: Draft, die: DieState, rng: RNG): ShownFaceRollEntry |
 
   let slotIndex: number;
   let keptByRetain = false;
-  if (keepsPreviousResult(die) && die.rolledSlotIndex !== null) {
+  if (!force && keepsPreviousResult(die) && die.rolledSlotIndex !== null) {
     slotIndex = die.rolledSlotIndex;
     keptByRetain = true;
     emit(draft, { type: "die-skipped", dieId: die.id, reason: "retained" });

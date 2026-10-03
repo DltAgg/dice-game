@@ -1,0 +1,549 @@
+# 030 — Offensive control
+
+Status: **DESIGN** (revised 2026-10-03)
+
+Supersedes the 2026-09-30 engine assumptions that spent a used face, treated
+Starter / Extender / Finisher as a private sequence table, and split “lost
+control” from “stolen initiative.”
+
+Reuses spec `029` (named faces, simple moves, ordered techniques) and one
+`PlayerState.meter` pool. No second action system. No action-point resource.
+No separate resolution path for Modifies, Tags, or Assists. Engine types stay
+`Creature*`. Print says **Fighter**.
+
+Chain Priority is who may add to the unresolved interaction. It is not a
+second offensive-control track. The declarer has Priority first. After
+Priority closes, the Chain resolves **last-in, first-out**. Spec `008` gave
+the opponent Priority first; that part is not this model. The last-in order
+is.
+
+`Open` and `Combo` are states of one offensive sequence. They are not turn
+phases. Starter, Extender, and Finisher are properties of an Action or
+Technique, not states and not card types. Act, Resolve, and Meter are not
+phases. The current turn shape is still `roll` then `actions`. Do not add
+Tag, Meter, or Resolve phases.
+
+## Vocabulary
+
+```text
+Die face → input / roll result → Action → Technique
+        → Chain / Priority → resolution → offensive sequence
+```
+
+- **Die face** — a face on a die. An input. Not an Action by itself.
+- **Action** — an operation a Fighter or player can take.
+- **Technique** — a Fighter-specific Action built from the required inputs.
+- **Tag** — the operation that involves the Active Fighter and a Reserve
+  Fighter. Not a synonym for Action.
+- **Assist** — a Reserve Fighter’s effect. The Reserve does not become Active.
+- **Priority Pass** — during a Chain, yield Priority. Not a Chain object.
+- **Sequence end** — the Aggressor stops the offensive sequence, or an
+  effect says the sequence ends. Not a Priority Pass.
+
+```text
+Fighter
+├── dice
+├── moveset
+├── Techniques
+└── Assist
+
+Cards
+├── Response
+└── Modify
+```
+
+## Decided
+
+### Dice are inputs (Model C)
+
+A rolled face is an input. Using it does not consume it. Dice do not grant a
+number of actions. Do not add an action-point pool.
+
+```text
+Base Action
+      ↓
+Fighter rules / Technique
+      ↓
+Modified interpretation
+      ↓
+Legal sequence behavior
+```
+
+The Fighter can change what an Action means. Techniques build on Actions.
+Do not make a second Action system per Fighter.
+
+An Action is legal only when all of these agree:
+
+```text
+Current offensive state
++ showing inputs
++ Fighter rules
++ Action / Technique requirements
++ sequence restrictions
+= legal Actions
+```
+
+An Action that fails that check is not available. The player cannot declare
+it. Declaring an illegal Action is not how a sequence ends.
+
+### Sequence roles
+
+Starter, Extender, and Finisher are properties of an Action or Technique.
+They are not card types and not separate combat systems.
+
+### Ending a sequence
+
+**Priority Pass** and **sequence end** are different operations.
+
+During a Chain, Pass yields Priority to the opponent. It does not end the
+offensive sequence and it is not a Chain object.
+
+During the Act, the Aggressor may explicitly stop the offensive sequence.
+That choice is the sequence end. It is not a Priority Pass.
+
+An Action or Technique may itself say that it ends the sequence. That is a
+property of that Action or Technique. A Finisher is one such Action. It is
+not the only one.
+
+A sequence does not end because the player attempted an Action the sequence
+does not allow.
+
+Tag does not have one outcome for every Tag. A given Tag effect may end the
+sequence or leave it, and may pass initiative or leave it. It may be
+offensive or defensive. Do not encode “Tag always ends the sequence” or
+“Tag always passes initiative.”
+
+When a Fighter is KOed, that KO ends the current offensive sequence and
+initiative passes to the opposing player. See **KO**.
+
+### Act loop
+
+Declaring an Action, Technique, Tag, or Assist starts an unresolved Chain
+and opens Priority for the player who declared it. There is no Response
+phase and no Modify phase. Both use this Priority.
+
+```text
+Aggressor declares
+        ↓
+That object is on the Chain; the declarer has Priority
+        ↓
+Player with Priority adds a legal Response or Modify, or Passes
+        ↓
+A Pass yields Priority to the opponent
+        ↓
+Two consecutive Passes, with nothing added between them
+        ↓
+Chain resolves last-in, first-out
+        ↓
+Apply what that object does to the offensive sequence
+```
+
+Playing a `Response` or `Modify` adds it to the Chain and clears the
+consecutive-Pass count. It does not yield Priority. Only Pass does.
+
+One Pass from each player at different times does not resolve the Chain.
+The two Passes have to be consecutive. After `B` plays and then Passes, `A`
+must Pass as well. If `A` adds something instead, the count starts over.
+
+There is no fixed number of actions per turn. There is no Meter phase and
+no initiative phase. Chain Priority and offensive control are different.
+
+### Chain resolution
+
+Responses and Modifies are both normal Chain objects. Tags and Assists use
+this same Chain. Do not give Modifies, Tags, or Assists a separate
+resolution system.
+
+Once Priority closes, resolve last-in, first-out.
+
+```text
+A → Lariat
+B → Counter
+A → Counter Counter
+
+Resolve:
+Counter Counter
+→ Counter
+→ Lariat
+```
+
+**Play legality.** A card or effect enters the Chain only with a valid
+target or context at that moment.
+
+**Resolution legality.** If that target is gone or no longer valid when the
+effect would resolve, the effect is not applied. Do not choose a replacement
+target.
+
+```text
+Play legality
+→ target or context must be valid when it enters the Chain
+
+Resolution legality
+→ if the target is no longer valid when it resolves,
+   the effect does not apply
+```
+
+Which further objects a given card may name, beyond the Modify categories
+below, stays open. This is not a second targeting system.
+
+### Fighter identity
+
+Rolled inputs are names. The Fighter decides which Actions those names can
+form. Two Fighters can give the same faces different combo paths.
+
+```text
+Rolled inputs → Fighter moveset → legal Action → Chain → resolution
+```
+
+A Moveset `Modify` changes that reading for one Fighter: a Technique
+requirement, whether a Technique is available, or how an input is read. It
+does not replace the Fighter and it is not a global moveset.
+
+Still from spec `029`: a simple move is the showing face’s Primary effect.
+A Technique is an ordered pair — the Fighter’s primary face, plus a
+secondary face or face type — and the secondary face’s Secondary effect can
+change the result. Face types have no damage or legality of their own.
+
+### Reroll
+
+The player has one reroll, immediately after the initial roll, before the
+Act. It exists to cut variance. It is not an action-point spend.
+
+The player may keep the results. Or they may reroll any number of their
+available dice, under the existing dice model. The reroll replaces those
+results. There is one normal reroll.
+
+```text
+Initial roll
+    ↓
+Roll interactions
+    ↓
+Keep, or reroll the chosen dice
+    ↓
+Reroll interactions
+    ↓
+Final results
+    ↓
+Act
+```
+
+Cards use the existing timing keywords and the Chain. They may modify a
+roll or a reroll when their timing and target are legal, including before
+or after that roll. A card may prevent a roll or a reroll only when that
+effect says so. Do not add a Roll Modifier system.
+
+### Roll result and die configuration
+
+```text
+Roll modification  → the current roll (which face is showing)
+Die modification   → the die’s slots
+```
+
+A roll modification needs a roll that already happened and a slot on that
+die. It does not rewrite the die. A die modification writes a slot and
+stays written. There is no temporary die modification: no until-end-of-turn
+face, no temporary face replacement, no temporary die configuration.
+
+How dice are built, which faces are legal, and how a player acquires faces
+are open. See **Deferred**. Only the in-game write is decided: it is
+permanent.
+
+### Tag
+
+Tag is a normal operation, not a card. A card does not exist so that the
+normal Tag can happen. A `Modify` or `Response` may still affect a Tag.
+
+A turn may contain more than one Tag Window, including one at the beginning
+of the turn and one at the end. Those windows use the existing turn. They
+are not new phases.
+
+A player may Tag at most once per turn. A Tag in the opening window means
+no Tag in the closing window. Skipping the opening window leaves the
+closing window available.
+
+The normal Tag in a Tag Window does not inherently cost Meter. An
+exceptional Tag may.
+
+A Tag can be a Chain object. It can be Responded to and Modified. Its
+effect says whether the sequence ends, whether initiative passes, and
+whether the Tag is offensive or defensive. A defensive Tag that retargets
+an incoming interaction is one such effect, not a rule for every Tag.
+
+A KOed Fighter cannot Tag.
+
+### Assist
+
+Assist belongs to the Fighter, not to the card system. A Reserve Fighter’s
+Assist affects the current situation and that Fighter stays in Reserve.
+
+Normal Assist does not cost Meter. It uses the same Chain as other
+operations: it can be added, Responded to, Modified, and resolved last-in,
+first-out. It is legal when its own timing and conditions are legal. Those
+conditions are part of that Fighter’s Assist. They may be open whenever the
+player has Priority, or they may be narrower. Do not add an Assist
+resolution system, and do not hard-code a list of enhanced Assists.
+
+Meter is not the cost of having an Assist. Meter is for an exceptional
+Assist or for breaking a restriction. A KOed Fighter can still Assist.
+
+### Meter
+
+Each player has one Meter pool, shared by all three Fighters. It is not
+stored on a Fighter. It persists from turn to turn. Changing the Active
+Fighter does not reset it.
+
+Meter is for exceptional actions, powerful effects that justify the
+resource, or breaking a normal restriction. It is not generic card mana.
+A card does not cost Meter merely because it is strong. One card may have
+a normal mode with no Meter and an exceptional mode that spends Meter.
+
+A player can gain Meter when they deal damage and when they receive
+damage. A specific Action, card, or other effect may also grant Meter.
+Those grants are data on the effect. Do not hard-code a source list beyond
+that, and do not add a separate Combo Meter.
+
+A long sequence can be a risk: it can deal damage and generate Meter, and
+it can be interrupted. That risk uses the same pool.
+
+### KO
+
+At 0 HP a Fighter is KOed.
+
+- That Fighter cannot Tag.
+- That Fighter can still Assist.
+- The KO ends the current offensive sequence.
+- Initiative passes to the opposing player.
+- The Fighter stays on the team.
+
+The player replaces a KOed Active Fighter by Tagging, under the Tag rules
+above. Do not add a separate forced-Tag action.
+
+Each player has three Fighters. When all three are KOed, that player loses
+and the game ends.
+
+### Defense
+
+Defense is cards, not a die face. The Defender does not gain a response by
+having rolled Guard, or any other face. A normal Response has no Meter
+cost. An exceptional one may.
+
+A defensive card is a `Response` or a `Modify`: dodge, counter, block,
+damage reduction, prevention, redirection, and anything else that fits
+those two behaviors. Those names are examples, not card types.
+
+A Tag or an Assist may be defensive when that effect says so. Neither is
+defensive for every Tag or every Assist.
+
+### Cards
+
+Cards supply what dice do not. They complement dice and the Fighter. They
+do not replace them, and a basic Action does not require a card.
+
+```text
+Dice             → inputs
+Fighter          → what those inputs mean, Techniques, Tag, Assist
+Cards            → Response or Modify
+Timing           → existing keywords and the reaction window
+Priority / Chain → who may add, then last-in resolution
+Meter            → one shared pool for exceptional use
+Offensive state  → who is continuing the sequence
+```
+
+Two card behaviors only:
+
+```text
+Response
+Modify
+```
+
+Do not add engine types for Counter, Reversal, Modifier, Situation,
+DiceModification, RollModification, MovesetModification, or
+TargetModification.
+
+Timing reuses the reaction window and the existing timing keywords,
+including `type: "reaction"`. Do not add `TimingCondition`,
+`TimingConditionType`, or a second timing system. A timing keyword means
+the effect is eligible in that window. It is not permission by itself.
+
+**Response.** Reacts to an opponent’s Action, Response, Tag, Assist, or
+other valid object already on the Chain. The player who has Priority may
+play one only against an **opponent’s** object. They cannot Response their
+own Action. They can Response an opponent’s Response. A Response does not
+inherently take offensive control. Control changes only when the effect
+says the sequence ends or initiative passes.
+
+Counter (a Response that interrupts) and Reversal (a Response whose result
+is that the Defender becomes Aggressor) are that same behavior with
+different results.
+
+**Modify.** Changes the current situation. Either player may play one
+while they have Priority, when its timing, target, and context are legal.
+One behavior, several targets:
+
+- **Roll** — change which face a die is showing. The slots stay as they are.
+  This includes the initial roll and the reroll.
+- **Die** — permanently change a slot. No temporary die modification.
+- **Moveset** — change what one Fighter can do with the inputs it has.
+- **Target** — redirect a target an unresolved interaction already has.
+  A target Modify with nothing to redirect is illegal.
+- **Tag** — perform or alter a Tag. The normal Tag is not this card.
+- An Action, an effect, or another legal object, when a card names it.
+
+The effect list inside those categories is open. Scope and duration are
+properties of the effect, not a second system.
+
+**Legality.** Priority is not permission to play any card.
+
+```text
+Priority
++ timing
++ Response or Modify legality
++ a valid target or context
++ any required state
++ Meter, when that mode requires it
+```
+
+Cards affect the offensive state only through the result of resolution.
+There is no card initiative track beside the offensive sequence.
+
+## To test
+
+These are the current intended models. They are not frozen implementation
+rules. Do not treat a later playtest change to either one as a reversal of
+the rest of this spec.
+
+### Finisher returns to Open
+
+A Finisher is the current model for ending a sequence by playing it.
+
+```text
+Aggressor
+→ uses a Finisher
+→ the Finisher resolves
+→ the offensive sequence ends
+→ the game returns to Open
+```
+
+The intended sense is: the combo is finished, and play is back in Open.
+Other Actions may also end the sequence by saying so. Who is Aggressor
+after that return to Open is not specified here.
+
+### No repeated Action in one sequence
+
+The same Action cannot normally be used twice in one offensive sequence.
+
+```text
+Lariat
+→ use Lariat
+→ Lariat cannot be used again during this sequence
+```
+
+The face is still an input. It may still be part of a Technique.
+
+```text
+Lariat
+→ used as a simple Action
+
+Later, in the same sequence:
+
+Lariat + Grab
+→ used as a Technique
+```
+
+The restriction is on repeating that Action, not on locking the face out
+of every Technique.
+
+If that proves too narrow, a later model may mark specific Actions
+`Once Per Sequence` instead of restricting every Action. That later model
+is not the rule to use now.
+
+## Deferred
+
+Do not decide these here.
+
+### Hand and card availability
+
+Deck size, hand size, draw, hand limit, discard, card persistence, and
+card lifecycle.
+
+### Deckbuilding and cards
+
+Deck construction, which cards belong to which Fighter, card restrictions,
+card pools, copies, and the Fighter/deck relationship.
+
+### Dice customization
+
+Initial dice, face counts, legal face pools, how dice relate to a deck,
+how new faces are acquired, and how a permanent face is gained outside a
+match. In a match, a die modification is permanent. That is the confirmed
+rule. It is not the rest of this system.
+
+### How a deck, the Fighters, and the dice are assembled
+
+No final structure for putting those three together.
+
+## Open
+
+Do not implement these as if they were decided.
+
+- What moves Neutral into Open, and what maintains a sequence besides the
+  legal-Action check.
+- Who is Aggressor after a voluntary sequence end, and after a Finisher
+  returns play to Open.
+- How a Chain result maps onto the offensive state, beyond the KO rule,
+  the sequence-end property, and the Finisher model under test.
+- The exact effects inside Response and inside each Modify category, and
+  the scope/duration set.
+- Which cards spend exceptional Meter, and the amount of any Meter grant.
+  The sources above are decided. The numbers are data.
+- Where, inside the existing `roll` / `actions` turn, the beginning and
+  end Tag Windows sit. Not a new phase.
+- The timing condition on a particular Assist, beyond “that Fighter’s
+  Assist says when.”
+- Who starts as Aggressor at the beginning of the match.
+- Which dice are inputs, and whether a Technique’s secondary face must be
+  one of yours.
+- Anything not listed under Decided or To test.
+
+## Engine note
+
+Not design. What the build now does, and what it still does not.
+
+Aligned with this revision:
+
+- A sequence-role Action is not spent as a face. The Action id
+  (`face:<id>` or `technique:<id>`) cannot be declared again until the
+  sequence returns to Open. A face used as a simple Action can still be
+  the primary input of a different Technique.
+- A finisher, or `endsSequence`, returns the sequence to Open. Initiative
+  moves only when that Action sets `passesInitiative`, or on KO.
+  `END_SEQUENCE` returns to Open and leaves the Aggressor where they are.
+- One `REROLL_DICE` is legal in the actions phase before any other Act,
+  of any number of your dice. A later Act closes it.
+- `TAG` and `ASSIST` are Chain objects on the existing combat-action
+  link. One Tag per turn. A Tag in the opening or closing actions window
+  is free. Adding Tag to a Chain that is already open spends the existing
+  tag-cancel cost. A KOed Active cannot Tag. A KOed Reserve can Assist.
+  KO does not switch the Active Fighter. It ends the sequence and passes
+  initiative. Three KOed Fighters still loses when `wipeVictory` is on.
+- Attack Strike damage grants the existing per-HP amount to the dealer
+  and to the player who was hit. No second rate was added.
+
+Still not this document:
+
+- `consumeDiceOnFaceActions` still spends a face for a Use Face that has
+  no sequence role.
+- `sequenceRole` is still the continuation check (open takes a starter;
+  combo takes an extender or finisher). That table was not re-specified.
+- `seizesOffense` still takes offensive control by itself.
+- Spec `008` tactic windows still give the opponent Priority first. A
+  combat-action chain, and a card that sets `behavior`, gives Priority to
+  the player who just acted.
+- Tag windows are the actions phase: opening before any Act, closing
+  after. The spec leaves the exact seat inside `roll` / `actions` open.
+- Who is Aggressor after a voluntary end or a Finisher is open. The build
+  leaves them in place unless `passesInitiative` or a KO says otherwise.
+
+`src/server/reducer/offensiveControl.test.ts`,
+`src/server/reducer/tagFighter.test.ts`, and
+`src/server/reducer/cardBehavior.test.ts` lock this slice.

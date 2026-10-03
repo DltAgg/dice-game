@@ -21,6 +21,15 @@ import type { SilenceHostChoice, BounceHostChoice } from "../model/targeting.js"
 export type GameAction =
   | { readonly type: "ROLL_DICE"; readonly playerId: PlayerId }
   /**
+   * Once per turn, reroll any non-empty subset of your own dice (spec `030`).
+   * Legal only while the sequence is still open and you are still Aggressor.
+   */
+  | {
+      readonly type: "REROLL_DICE";
+      readonly playerId: PlayerId;
+      readonly dieIds: readonly DieId[];
+    }
+  /**
    * Bank an unabsorbed attribute into the player's pile, or grant Shield onto
    * a living owned creature (`creatureId` required for Shield only). Spec `016`.
    */
@@ -39,8 +48,9 @@ export type GameAction =
       readonly targetId: CreatureId;
     }
   /**
-   * Spec `028`. Switch Active with a living Reserve. Free if Active die
-   * shows `tag`; otherwise spend `tagCancelMeterCost`.
+   * Spec `030`. Tag Active with a living Reserve. Free in the opening or
+   * closing Tag Window, once per turn. Adding Tag to an open Chain spends
+   * `tagCancelMeterCost`. The switch resolves with the Chain.
    */
   | {
       readonly type: "TAG";
@@ -48,14 +58,20 @@ export type GameAction =
       readonly reserveCreatureId: CreatureId;
     }
   /**
-   * Spec `028`. Fire a living Reserve's `assistEffects`. Free if that
-   * fighter's die shows `assist`; otherwise spend `assistMeterCost`.
+   * Spec `030`. A Reserve Fighter's Assist, including a KOed Reserve.
+   * Free when that die shows assist; otherwise the Fighter's exceptional
+   * Meter, or `assistMeterCost`. Resolves on the Chain.
    */
   | {
       readonly type: "ASSIST";
       readonly playerId: PlayerId;
       readonly reserveCreatureId: CreatureId;
     }
+  /**
+   * Spec `030`. The Aggressor stops the offensive sequence. Not a Priority Pass.
+   * Does not move initiative.
+   */
+  | { readonly type: "END_SEQUENCE"; readonly playerId: PlayerId }
   /**
    * Spec `029`. Resolve the Active Fighter's showing face **Primary** effects.
    */
@@ -107,6 +123,14 @@ export type GameAction =
       readonly declaredTargetCreatureId?: CreatureId;
       /** Required when playing an Overload onto a face card. */
       readonly declaredFaceCardId?: FaceCardId;
+      /**
+       * Spec `030`. `exceptional` spends `exceptionalMeterCost` and may be
+       * played outside the reaction window. Omit for the normal mode.
+       */
+      readonly mode?: "normal" | "exceptional";
+      readonly dieId?: DieId;
+      readonly slotIndex?: number;
+      readonly techniqueId?: string;
     }
   /** Activates a ready Ritual on the engine field. */
   | {

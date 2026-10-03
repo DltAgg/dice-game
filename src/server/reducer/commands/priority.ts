@@ -15,6 +15,10 @@ import {
   refreshRitualOrientations,
 } from "../zones.js";
 import { finishRitualActivation } from "./ritual.js";
+import { conductAssist } from "./assist.js";
+import { conductTag } from "./tag.js";
+import { conductCombatAction, flushPendingOffenseSettle, noteOffenseSeize } from "../offensive.js";
+import { applyCardModify } from "../cardModify.js";
 
 export function passPriority(draft: Draft, playerId: PlayerId): GameError | null {
   const pending = draft.pendingDecision;
@@ -51,6 +55,8 @@ export function resumeAfterEffectPause(draft: Draft): GameError | null {
   if (draft.pendingDecision !== null) return null;
   tryFlushRollBankQueue(draft);
   if (draft.pendingDecision !== null) return null;
+  flushPendingOffenseSettle(draft);
+  if (draft.pendingDecision !== null) return null;
   return drainChain(draft);
 }
 
@@ -69,6 +75,7 @@ function drainChain(draft: Draft): GameError | null {
     if (draft.pendingDecision !== null) return null;
   }
 
+  flushPendingOffenseSettle(draft);
   return null;
 }
 
@@ -80,6 +87,19 @@ function conductLink(draft: Draft, link: ChainLink): void {
     kind: link.kind,
     negated,
   });
+
+  if (link.kind === "combat-action") {
+    if (link.tagReserveId !== undefined) {
+      conductTag(draft, link);
+      return;
+    }
+    if (link.assistReserveId !== undefined) {
+      conductAssist(draft, link);
+      return;
+    }
+    conductCombatAction(draft, link);
+    return;
+  }
 
   if (negated) {
     if (link.kind === "ritual-activate") {
@@ -97,8 +117,11 @@ function conductLink(draft: Draft, link: ChainLink): void {
     return;
   }
 
+  noteOffenseSeize(draft, link);
+
   switch (link.kind) {
     case "tactic-effect": {
+      applyCardModify(draft, link);
       for (const effect of [...link.effects].reverse()) {
         pushEffect(
           draft,

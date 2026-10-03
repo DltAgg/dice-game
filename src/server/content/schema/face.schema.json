@@ -33,6 +33,20 @@
       "type": "array",
       "items": { "$ref": "effect.schema.json#/$defs/effect" }
     },
+    "sequenceRole": {
+      "description": "Spec 030. When set, USE_FACE opens the reaction chain and follows Open / Combo / Finish. Omit for immediate spec 029 resolution.",
+      "$ref": "defs.schema.json#/$defs/sequenceRole"
+    },
+    "meterCost": {
+      "description": "Spec 030. Spent when a sequence-role simple move conducts. Checked at declare.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "meterGain": {
+      "description": "Spec 030. Granted when a sequence-role simple move conducts, after meterCost. Not a generation formula.",
+      "type": "integer",
+      "minimum": 0
+    },
     "rulesText": {
       "type": "string",
       "description": "English inherent-effect region. Empty on identity faces (+1 Attribute is the footer, not rules text). Dual-timing faces use On roll: / On absorb: prefixes."

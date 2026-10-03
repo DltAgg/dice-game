@@ -9,6 +9,7 @@ import {
   showingFaceCard,
 } from "../../rules/faceActions.js";
 import { emit, type Draft } from "../draft.js";
+import { openCombatAction, sequenceActionUsed, sequenceDeclarationError } from "../offensive.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { markPlayerSpent } from "../triggerSpent.js";
 
@@ -37,7 +38,23 @@ export function useFace(
   // Re-check with full GameState shape (draft is a GameState mutation target).
   if (!canUseFace(draft, playerId, creatureId)) return "INVALID_TARGET";
 
-  if (draft.config.consumeDiceOnFaceActions) {
+  const role = face?.sequenceRole;
+  if (role === undefined && playerId !== draft.activePlayerId) return "INVALID_TARGET";
+  const sequenceActionId = face === undefined ? null : `face:${face.id}`;
+  if (role !== undefined) {
+    const sequenceError = sequenceDeclarationError(
+      draft,
+      playerId,
+      role,
+      face?.meterCost ?? 0,
+    );
+    if (sequenceError !== null) return sequenceError;
+    if (sequenceActionId !== null && sequenceActionUsed(draft, sequenceActionId)) {
+      return "ALREADY_USED";
+    }
+  }
+
+  if (role === undefined && draft.config.consumeDiceOnFaceActions) {
     markPlayerSpent(draft, playerId, faceActionKey(die.id));
   }
 
@@ -49,6 +66,22 @@ export function useFace(
     dieId: die.id,
     faceCardId: face!.id,
   });
+
+  if (role !== undefined && face !== undefined) {
+    openCombatAction(draft, {
+      playerId,
+      sourceCreatureId: creatureId,
+      declaredTargetCreatureId: targetId,
+      effects,
+      sequenceRole: role,
+      meterCost: face.meterCost ?? 0,
+      meterGain: face.meterGain ?? 0,
+      sequenceActionId: `face:${face.id}`,
+      endsSequence: face.endsSequence === true,
+      passesInitiative: face.passesInitiative === true,
+    });
+    return null;
+  }
 
   for (const effect of [...effects].reverse()) {
     pushEffect(draft, playerId, effect, creatureId, targetId);

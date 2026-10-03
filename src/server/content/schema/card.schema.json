@@ -63,6 +63,25 @@
       "type": "integer",
       "minimum": 1,
       "description": "Spec 028. Meter burned on play."
+    },
+    "seizesOffense": {
+      "type": "boolean",
+      "description": "Spec 030. Hand reaction that takes offensive control when it resolves against a waiting combat action. Does not cancel that action's damage."
+    },
+    "behavior": {
+      "type": "string",
+      "enum": ["response", "modify"],
+      "description": "Spec 030. Response or Modify. Omit to keep the spec 008 play path."
+    },
+    "modifySubject": {
+      "type": "string",
+      "enum": ["roll", "die", "moveset", "target", "tag"],
+      "description": "Spec 030. What a Modify acts on. Not a separate card type."
+    },
+    "exceptionalMeterCost": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Spec 030. Meter for exceptional mode only. Normal mode does not spend this."
     }
   },
   "allOf": [

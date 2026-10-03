@@ -20,6 +20,7 @@ export * from "./rules/fighters.js";
 export * from "./rules/faceActions.js";
 export * from "./rules/loadout.js";
 export * from "./rules/meter.js";
+export * from "./rules/offensive.js";
 export * from "./rules/overcharge.js";
 export {
   grantMeter,

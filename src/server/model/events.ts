@@ -17,6 +17,7 @@ import type { CreatureChoiceFilter } from "./effects.js";
 import type { BounceHost, BounceHostChoice, SilenceHost, SilenceHostChoice } from "./targeting.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
 import type { ChainLinkKind, TurnPhase } from "./state.js";
+import type { OffensiveStateName } from "./offensive.js";
 
 /**
  * The event log is the seam reactions and triggered abilities will hang off
@@ -129,6 +130,17 @@ export type GameEvent =
       readonly primaryFaceCardId: FaceCardId;
       readonly secondaryFaceCardId: FaceCardId;
     }
+  | {
+      readonly type: "dice-rerolled";
+      readonly playerId: PlayerId;
+      readonly dieIds: readonly DieId[];
+    }
+  | {
+      readonly type: "offensive-state-changed";
+      readonly offensiveState: OffensiveStateName;
+      readonly aggressorPlayerId: PlayerId;
+    }
+  | { readonly type: "offense-seized"; readonly playerId: PlayerId }
   | {
       readonly type: "meter-changed";
       readonly playerId: PlayerId;

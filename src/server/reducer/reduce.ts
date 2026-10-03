@@ -12,9 +12,11 @@ import { overchargeCard } from "./commands/overcharge.js";
 import { playCard } from "./commands/playCard.js";
 import { passPriority } from "./commands/priority.js";
 import { resolveOptionalReroll } from "./commands/reroll.js";
+import { rerollDice } from "./commands/rerollDice.js";
 import { retainDie, rollDice } from "./commands/rollDice.js";
 import { activateRitual } from "./commands/ritual.js";
 import { advancePhase, endTurn } from "./commands/turn.js";
+import { endOffensiveSequence } from "./offensive.js";
 import { useFace } from "./commands/useFace.js";
 import { useTechnique } from "./commands/useTechnique.js";
 import { createDraft, type Draft } from "./draft.js";
@@ -70,19 +72,38 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
     const allowed =
       action.type === "PASS_PRIORITY" ||
       action.type === "PLAY_CARD" ||
-      action.type === "ACTIVATE_RITUAL";
+      action.type === "ACTIVATE_RITUAL" ||
+      action.type === "TAG" ||
+      action.type === "ASSIST";
     if (!allowed) return fail(state, "PENDING_DECISION");
   } else if (pending !== null && pending.type !== "reaction-priority") {
     if (!isMatchingPendingResolve(pending, action)) {
       return fail(state, "PENDING_DECISION");
     }
   } else if (state.activePlayerId !== action.playerId) {
-    return fail(state, "NOT_ACTIVE_PLAYER");
+    const aggressorSequence =
+      state.aggressorPlayerId === action.playerId &&
+      (action.type === "USE_FACE" ||
+        action.type === "USE_TECHNIQUE" ||
+        action.type === "END_SEQUENCE");
+    if (!aggressorSequence) return fail(state, "NOT_ACTIVE_PLAYER");
   }
 
   const draft = createDraft(state);
   const error = applyAction(draft, action, rng);
   if (error !== null) return fail(state, error);
+
+  if (action.type !== "ROLL_DICE" && action.type !== "PASS_PRIORITY" && action.type !== "TAG") {
+    draft.rerollAvailable = false;
+  }
+  if (
+    action.type !== "ROLL_DICE" &&
+    action.type !== "REROLL_DICE" &&
+    action.type !== "PASS_PRIORITY" &&
+    action.type !== "TAG"
+  ) {
+    draft.actEngaged = true;
+  }
 
   draft.rng = rng.snapshot();
   return ok(draft);
@@ -165,6 +186,8 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
   switch (action.type) {
     case "ROLL_DICE":
       return rollDice(draft, action.playerId, rng);
+    case "REROLL_DICE":
+      return rerollDice(draft, action.playerId, action.dieIds, rng);
     case "ABSORB_SYMBOL":
       return absorbSymbol(draft, action.playerId, action.symbolId, action.creatureId);
     case "ATTACK":
@@ -173,6 +196,8 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return tag(draft, action.playerId, action.reserveCreatureId);
     case "ASSIST":
       return assist(draft, action.playerId, action.reserveCreatureId);
+    case "END_SEQUENCE":
+      return endOffensiveSequence(draft, action.playerId);
     case "USE_FACE":
       return useFace(draft, action.playerId, action.creatureId);
     case "USE_TECHNIQUE":
@@ -206,6 +231,12 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
         action.cardInstanceId,
         action.declaredTargetCreatureId ?? null,
         action.declaredFaceCardId ?? null,
+        {
+          ...(action.mode !== undefined ? { mode: action.mode } : {}),
+          ...(action.dieId !== undefined ? { dieId: action.dieId } : {}),
+          ...(action.slotIndex !== undefined ? { slotIndex: action.slotIndex } : {}),
+          ...(action.techniqueId !== undefined ? { techniqueId: action.techniqueId } : {}),
+        },
       );
     case "ACTIVATE_RITUAL":
       return activateRitual(

@@ -5,10 +5,12 @@ import type { GameError } from "../../model/errors.js";
 import type {
   CardInstanceId,
   CreatureId,
+  DieId,
   FaceCardId,
   PlayerId,
 } from "../../model/ids.js";
 import { isReactionCard } from "../../rules/cards.js";
+import { behaviorPlayError } from "../../rules/cardBehavior.js";
 import { cardRestrictionError } from "../../rules/fighters.js";
 import { playEffectsRefusal } from "../../rules/reforge.js";
 import {
@@ -39,6 +41,12 @@ export function playCard(
   cardInstanceId: CardInstanceId,
   declaredTargetCreatureId: CreatureId | null,
   declaredFaceCardId: FaceCardId | null,
+  options: {
+    readonly mode?: "normal" | "exceptional";
+    readonly dieId?: DieId | null;
+    readonly slotIndex?: number | null;
+    readonly techniqueId?: string | null;
+  } = {},
 ): GameError | null {
   const inReactionWindow = draft.pendingDecision?.type === "reaction-priority";
   if (!inReactionWindow && draft.phase !== "actions") return "INVALID_PHASE";
@@ -54,8 +62,24 @@ export function playCard(
   const restriction = cardRestrictionError(draft, playerId, definition);
   if (restriction !== null) return restriction;
 
+  const mode = options.mode ?? "normal";
+  const behaviorError = behaviorPlayError(draft, playerId, definition, {
+    mode,
+    dieId: options.dieId ?? null,
+    slotIndex: options.slotIndex ?? null,
+    faceCardId: declaredFaceCardId,
+    techniqueId: options.techniqueId ?? null,
+    targetCreatureId: declaredTargetCreatureId,
+  });
+  if (behaviorError !== null) return behaviorError;
+
   // During a reaction window only hand reactions may respond.
-  if (inReactionWindow && !isReactionCard(definition)) {
+  // A Modify with `behavior` uses that same window.
+  if (
+    inReactionWindow &&
+    !isReactionCard(definition) &&
+    definition.behavior === undefined
+  ) {
     return "CARD_NOT_AVAILABLE";
   }
 
@@ -73,7 +97,8 @@ export function playCard(
   }
 
   const region = definition.effect;
-  if (region === undefined) return "CARD_HAS_NO_EFFECT";
+  if (region === undefined && definition.behavior === undefined) return "CARD_HAS_NO_EFFECT";
+  const effects = region?.effects ?? [];
 
   if (declaredTargetCreatureId !== null) {
     const target = draft.creatures[declaredTargetCreatureId];
@@ -82,27 +107,27 @@ export function playCard(
   }
 
   // `[Requires]` gate first (hold, not burn), then header `[Spend]`.
-  if (region.requires !== undefined) {
+  if (region !== undefined && region.requires !== undefined) {
     const requiresError = payCardRequires(draft, playerId, region.requires);
     if (requiresError !== null) return requiresError;
   }
 
   // Negate / prevent reactions need a legal top link.
-  for (const effect of region.effects) {
+  for (const effect of effects) {
     if (effect.type !== "negate-card") continue;
     const top = topChainLink(draft);
     if (top === undefined || !linkMatchesNegateCard(draft, top, effect.cardTypes)) {
       return "INVALID_CHAIN_TARGET";
     }
   }
-  if (region.effects.some((effect) => effect.type === "negate-ritual")) {
+  if (effects.some((effect) => effect.type === "negate-ritual")) {
     const top = topChainLink(draft);
     if (top === undefined || top.negated || !isRitualNegatableLinkKind(top.kind)) {
       return "INVALID_CHAIN_TARGET";
     }
   }
   if (
-    region.effects.some(
+    effects.some(
       (effect) =>
         effect.type === "grant-attack-prevent" || effect.type === "prevent-attack-reflect",
     )
@@ -115,7 +140,7 @@ export function playCard(
       return "INVALID_TARGET";
     }
   }
-  if (region.effects.some((effect) => effect.type === "arm-prevent-draw")) {
+  if (effects.some((effect) => effect.type === "arm-prevent-draw")) {
     // Glimmer may sit above other reactions; only require an attack on the chain.
     let attackTargetId: CreatureId | null = null;
     for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
@@ -139,22 +164,44 @@ export function playCard(
   if (headerCostError !== null) return headerCostError;
   const meterError = spendMeter(draft, playerId, definition.meterCost ?? 0);
   if (meterError !== null) return meterError;
+  if (mode === "exceptional") {
+    const exceptional = spendMeter(draft, playerId, definition.exceptionalMeterCost ?? 0);
+    if (exceptional !== null) return exceptional;
+  }
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
   moveCard(draft, cardInstanceId, "graveyard");
 
-  pushChainLink(
-    draft,
-    buildEffectLink({
-      kind: "tactic-effect",
+  const baseLink = {
+    ...buildEffectLink({
+      kind: "tactic-effect" as const,
       controllerId: playerId,
       cardInstanceId,
-      effects: region.effects,
+      effects,
       sourceCreatureId: null,
       declaredTargetCreatureId,
     }),
+    seizesOffense: definition.seizesOffense === true,
+  };
+  pushChainLink(
+    draft,
+    definition.behavior === "modify" && definition.modifySubject !== undefined
+      ? {
+          ...baseLink,
+          modify: {
+            subject: definition.modifySubject,
+            dieId: options.dieId ?? null,
+            slotIndex: options.slotIndex ?? null,
+            faceCardId: declaredFaceCardId,
+            techniqueId: options.techniqueId ?? null,
+          },
+        }
+      : baseLink,
   );
-  openReactionWindow(draft, playerId);
+  const keepPriority =
+    definition.behavior !== undefined ||
+    draft.chainStack.some((link) => link.kind === "combat-action");
+  openReactionWindow(draft, playerId, keepPriority ? "same" : "opponent");
   return null;
 }
 

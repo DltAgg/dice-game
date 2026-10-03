@@ -57,7 +57,9 @@ export function grantMeterFromStrike(
   if (damaged === undefined) return;
   const dealer = dealerId ?? null;
   if (dealer === null || dealer === damaged.ownerId) return;
-  grantMeter(draft, dealer, hpLost * draft.config.meterPerDamageDealt);
+  const amount = hpLost * draft.config.meterPerDamageDealt;
+  grantMeter(draft, dealer, amount);
+  grantMeter(draft, damaged.ownerId, amount);
 }
 
 export function setComboCount(draft: Draft, playerId: PlayerId, comboCount: number): void {

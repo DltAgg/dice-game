@@ -6,6 +6,7 @@ import type {
 } from "./ids.js";
 import type { EffectDefinition } from "./effects.js";
 import type { FaceType } from "./faceTypes.js";
+import type { SequenceRole } from "./offensive.js";
 import type { SymbolTokens, SymbolType } from "./symbols.js";
 import type { Technique } from "./techniques.js";
 
@@ -93,6 +94,19 @@ export interface FaceCardDefinition {
    * bonus for that resolution only.
    */
   readonly secondaryEffects?: readonly EffectDefinition[];
+  /**
+   * When set, `USE_FACE` is a sequence action (spec `030`): starter / extender /
+   * finisher. Omit to keep spec `029` immediate resolution.
+   */
+  readonly sequenceRole?: SequenceRole;
+  /** Ends the sequence after it resolves. A finisher does this even when omitted. */
+  readonly endsSequence?: boolean;
+  /** Passes initiative after it resolves. Not implied by `endsSequence`. */
+  readonly passesInitiative?: boolean;
+  /** Checked at declare and spent when the sequence link conducts. */
+  readonly meterCost?: number;
+  /** Granted when the sequence link conducts, after `meterCost`. */
+  readonly meterGain?: number;
   /**
    * English printing of the inherent-effect region. Empty on identity faces
    * (`+1 Attribute` is the footer, not rules text).

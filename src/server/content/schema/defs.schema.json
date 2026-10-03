@@ -1292,6 +1292,12 @@
       "type": "string",
       "enum": ["attack", "grab", "guard", "movement", "tag"]
     },
+    "sequenceRole": {
+      "title": "SequenceRole",
+      "description": "Spec 030. Starter establishes Combo, extender maintains it, finisher ends it. Not a turn phase.",
+      "type": "string",
+      "enum": ["starter", "extender", "finisher"]
+    },
     "fighterTechniqueSecondary": {
       "title": "FighterTechniqueSecondary",
       "description": "Secondary requirement: specific face id OR face type (spec 029).",
@@ -1330,6 +1336,9 @@
         "primaryFaceId": { "$ref": "#/$defs/faceId" },
         "secondary": { "$ref": "#/$defs/fighterTechniqueSecondary" },
         "effects": { "$ref": "#/$defs/effectList" },
+        "sequenceRole": { "$ref": "#/$defs/sequenceRole" },
+        "meterCost": { "type": "integer", "minimum": 0 },
+        "meterGain": { "type": "integer", "minimum": 0 },
         "rulesText": { "type": "string" }
       }
     },

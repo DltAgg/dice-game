@@ -1,6 +1,8 @@
 import type { CreatureId, PlayerId } from "../model/ids.js";
+import { opponentOf } from "../rules/creatures.js";
 import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
 import { setComboCount } from "./meter.js";
+import { returnToOpen } from "./offensive.js";
 
 export function setActiveFighter(
   draft: Draft,
@@ -17,24 +19,17 @@ export function setActiveFighter(
   patchPlayer(draft, playerId, { activeCreatureId: creatureId });
 }
 
+/**
+ * KO (spec `030`). The Fighter stays where they are. The sequence returns to
+ * Open and initiative passes to the opponent. No automatic Tag.
+ */
 export function promoteOnKo(draft: Draft, defeatedId: CreatureId): void {
   const defeated = draft.creatures[defeatedId];
   if (defeated === undefined) return;
   const player = draft.players[defeated.ownerId];
-  if (player === undefined || player.activeCreatureId !== defeatedId) return;
-  const next = player.creatureIds.find((id) => {
-    const creature = draft.creatures[id];
-    return creature !== undefined && !creature.defeated;
-  });
-  if (next === undefined) return;
-  setActiveFighter(draft, player.id, next);
+  if (player === undefined) return;
   setComboCount(draft, player.id, 0);
-  emit(draft, {
-    type: "tag-switched",
-    playerId: player.id,
-    fromCreatureId: defeatedId,
-    toCreatureId: next,
-  });
+  returnToOpen(draft, opponentOf(draft, defeated.ownerId));
 }
 
 /**
