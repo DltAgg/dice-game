@@ -560,13 +560,17 @@ matching face (bible §13 — copy is kept).
 
 ### Tactics deck size and copies
 
-**Status:** `DECIDED` · implemented (playtest 2026-08-26: Yu-Gi-Oh-sized)
+**Status:** superseded for the live game by spec `030` (2026-10-03).
 
-| Rule | Value |
+The confirmed shape is one fixed `deckSize`. No playtest number is chosen
+yet (`deckSize` null). While it is null, the previous range still applies
+so existing lists stay legal. That range is not the real-game size.
+
+| Previous bound | Value |
 |---|---|
-| Minimum size | 40 |
-| Maximum size | 50 |
-| Max copies of the same card id | 3 |
+| Minimum size | 40 (`deckMinCards`) |
+| Maximum size | 50 (`deckMaxCards`) |
+| Max copies of the same card id | 3 (`deckMaxCopiesPerCard`, still the playtest cap) |
 
 Was M4 50–60 / 4 copies. There is no tactics per-attribute cap. (Earlier
 prototype used 12 cards / 3-per-attribute; superseded.)
@@ -577,23 +581,19 @@ prototype used 12 cards / 3-per-attribute; superseded.)
 
 ### Opening hand and draw rate
 
-**Status:** `DECIDED` · implemented (`openingHandSize: 5`, `cardsDrawnPerTurn: 2`)
-· playtest 2026-08-20: now 2 (was 1)
+**Status:** superseded by spec `030` (2026-10-03).
 
-Open with 5 cards; draw 2 at the start of each of your own turns.
+Both players are dealt `openingHandSize` (playtest **5**). Every turn,
+including the first, draws `cardsDrawnPerTurn` (playtest **1**). There is
+no hand limit (`maxHandSize` null). These are playtest knobs.
 
 ### Running out of cards
 
-**Status:** `DECIDED`
+**Status:** superseded by spec `030` (2026-10-03).
 
-Nothing happens. A player with an empty deck simply stops drawing. The match is
-still decided by defeating the opposing legendary, so there is no deck-out loss
-and no reshuffle.
-
-Worth watching: matches currently run around eighteen turns, so a twelve-card
-deck drawn at two a turn empties well before a winner emerges. That makes the
-back half of a match play out on board state alone, which is a legitimate shape
-but a deliberate one.
+With `deckOutEnabled` (playtest **true**), a draw from an empty deck loses
+the match. With it off, the draw stops and the match continues. No
+reshuffle and no fatigue damage.
 
 ### Damage is not reserved for creature attacks
 
@@ -1069,8 +1069,9 @@ Naming: `Technique` (028 toolkit category) ≠ `FaceType` (029) ≠
 ### NOT DECIDED (spec `029`)
 
 - Whether spec `028` Meter knobs stay long-term (**conflict** above).
-- Footsies, frames, stun, counter-hit. Tag, Assist, KO, and Meter sources
-  are spec `030` (2026-10-03). Hand, deckbuilding, and dice customization
+- Footsies, frames, stun, counter-hit. Tag, Assist, KO, Meter sources,
+  the hand, the one shared deck, and deck-out are spec `030` (2026-10-03).
+  Dice customization stays deferred there. Reusable, Return, and mulligan
   stay deferred there.
 - Whether secondary dice may include opponent or Reserve-only dice.
 

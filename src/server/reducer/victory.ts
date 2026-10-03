@@ -1,6 +1,7 @@
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import { opponentOf } from "../rules/creatures.js";
-import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
+import { patchCreature, patchPlayer, type Draft } from "./draft.js";
+import { loseMatch } from "./matchEnd.js";
 import { setComboCount } from "./meter.js";
 import { returnToOpen } from "./offensive.js";
 
@@ -45,15 +46,7 @@ export function checkVictory(draft: Draft): void {
   });
   if (wiped.length === 0) return;
 
-  const loser =
-    wiped.length === 2
-      ? draft.activePlayerId
-      : wiped[0];
+  const loser = wiped.length === 2 ? draft.activePlayerId : wiped[0];
   if (loser === undefined) return;
-  const winner = draft.playerOrder.find((id) => id !== loser) ?? null;
-  draft.status = "finished";
-  draft.winner = winner;
-  if (winner !== null) {
-    emit(draft, { type: "match-finished", winnerId: winner });
-  }
+  loseMatch(draft, loser);
 }

@@ -82,6 +82,22 @@ describe("validateTacticsDeck", () => {
     if (!result.ok) expect(result.reason).toMatch(/max 50/);
   });
 
+  it("enforces an exact deck size when one is configured", () => {
+    const exact = { ...DEFAULT_RULES_CONFIG, deckSize: 2 };
+    expect(validateTacticsDeck([PRESSURE, PRESSURE], exact)).toEqual({ ok: true });
+    const short = validateTacticsDeck([PRESSURE], exact);
+    expect(short.ok).toBe(false);
+    if (!short.ok) expect(short.reason).toMatch(/deck size 2/);
+  });
+
+  it("uses the configured copy cap", () => {
+    const cap = { ...DEFAULT_RULES_CONFIG, deckMinCards: 0, deckMaxCopiesPerCard: 2 };
+    expect(validateTacticsDeck([PRESSURE, PRESSURE], cap)).toEqual({ ok: true });
+    const over = validateTacticsDeck([PRESSURE, PRESSURE, PRESSURE], cap);
+    expect(over.ok).toBe(false);
+    if (!over.ok) expect(over.reason).toMatch(/max 2/);
+  });
+
   it("refuses one copy over the per-id cap", () => {
     const result = validateTacticsDeck(
       [PRESSURE, PRESSURE, PRESSURE, PRESSURE],

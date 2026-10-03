@@ -17,6 +17,8 @@ import {
 } from "../model/ids.js";
 import type { GameState, PlayerState } from "../model/state.js";
 import { createRng, initialRngState, type RNG } from "../rng/rng.js";
+import { createDraft } from "../reducer/draft.js";
+import { drawCards } from "../reducer/zones.js";
 import { leftoverFacePool, validateLoadout } from "../rules/loadout.js";
 import { openingSlotFromFace } from "../rules/faces.js";
 
@@ -222,7 +224,7 @@ export function createMatch(setup: MatchSetup): GameState {
 
   const [first, second] = setup.players;
 
-  return {
+  const opened: GameState = {
     matchId: asMatchId(setup.matchId),
     status: "in-progress",
     turn: 1,
@@ -266,4 +268,8 @@ export function createMatch(setup: MatchSetup): GameState {
     config,
     nextInstanceSeq: 0,
   };
+  if (config.cardsDrawnPerTurn <= 0) return opened;
+  const draft = createDraft(opened);
+  drawCards(draft, first.id, config.cardsDrawnPerTurn);
+  return draft;
 }

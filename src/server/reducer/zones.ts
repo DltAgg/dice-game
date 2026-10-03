@@ -5,6 +5,7 @@ import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
 import type { RNG } from "../rng/rng.js";
 import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
+import { loseMatch } from "./matchEnd.js";
 import { fireOnChangePosition, fireOnDiscard } from "./triggers.js";
 
 /**
@@ -53,9 +54,9 @@ export function moveCard(draft: Draft, cardInstanceId: CardInstanceId, to: CardZ
 }
 
 /**
- * Drawing takes from the front of the deck. An empty deck is not an error and
- * costs nothing: the register settles running out as simply stopping, so this
- * logs the fact and returns.
+ * Drawing takes from the front of the deck. `maxHandSize` is not applied:
+ * nothing discards down to a hand limit. An empty deck logs `deck-empty`.
+ * When `deckOutEnabled` is on, that player loses. No reshuffle, no damage.
  */
 export function drawCards(draft: Draft, playerId: PlayerId, amount: number): void {
   for (let drawn = 0; drawn < amount; drawn += 1) {
@@ -63,6 +64,7 @@ export function drawCards(draft: Draft, playerId: PlayerId, amount: number): voi
     const cardInstanceId = player?.deck[0];
     if (cardInstanceId === undefined) {
       emit(draft, { type: "deck-empty", playerId });
+      if (draft.config.deckOutEnabled) loseMatch(draft, playerId);
       return;
     }
 

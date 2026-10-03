@@ -82,6 +82,16 @@
       "type": "integer",
       "minimum": 1,
       "description": "Spec 030. Meter for exceptional mode only. Normal mode does not spend this."
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": ["one-shot", "persistent"],
+      "description": "Spec 030. Omit to derive: equipment, overload, and continuous rituals stay in play. Other cards are one-shot."
+    },
+    "afterResolveZone": {
+      "type": "string",
+      "enum": ["deck", "hand", "graveyard", "equipment", "overload", "ritual"],
+      "description": "Spec 030. One-shot destination after the card resolves. Omit to discard (graveyard)."
     }
   },
   "allOf": [

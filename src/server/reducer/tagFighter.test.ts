@@ -116,7 +116,7 @@ const TAG_DICE = [
 function tagMatch(): GameState {
   installTagCatalogue();
   return newMatch({
-    config: { ...TAG_FIGHTER_RULES, deckMinCards: 0 },
+    config: { ...TAG_FIGHTER_RULES, deckMinCards: 0, deckOutEnabled: false },
     players: [
       {
         id: P1,

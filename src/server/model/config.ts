@@ -50,17 +50,36 @@ export interface GameRulesConfig {
    * many copies of the same tactics card id. Was M4 4.
    */
   readonly deckMaxCopiesPerCard: number;
+  /**
+   * Spec `030` playtest. Exact tactics-deck size. Null means a number has
+   * not been chosen, and `deckMinCards` / `deckMaxCards` still apply.
+   * A number requires that count and skips the range.
+   */
+  readonly deckSize: number | null;
   /** DEFINED, bible §12. Face cards selected during deckbuilding. */
   readonly faceDeckMaxCards: number;
   /** DEFINED, bible §12. At most this many face cards share one attribute. */
   readonly faceDeckMaxPerAttribute: number;
-  /** DECIDED. Cards dealt to each player before the first turn. */
+  /**
+   * Spec `030` playtest. Cards dealt to each player at setup. Not a
+   * final balance number.
+   */
   readonly openingHandSize: number;
   /**
-   * DECIDED (playtest 2026-08-20: 2). Drawn at the start of each of your
-   * own turns.
+   * Spec `030` playtest. Drawn at the start of every turn, including the
+   * first. Not a final balance number.
    */
   readonly cardsDrawnPerTurn: number;
+  /**
+   * Spec `030` playtest. Null means no hand limit. A number is stored for
+   * a later limit. The current rules do not discard excess cards.
+   */
+  readonly maxHandSize: number | null;
+  /**
+   * Spec `030` playtest. A draw from an empty deck loses the match when
+   * true. When false, the draw stops and play continues.
+   */
+  readonly deckOutEnabled: boolean;
   /** DEFINED, bible §22. */
   readonly maxStunnedDicePerPlayer: number;
   /** DEFINED, bible §7. */
@@ -144,10 +163,13 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   deckMinCards: 40,
   deckMaxCards: 50,
   deckMaxCopiesPerCard: 3,
+  deckSize: null,
   faceDeckMaxCards: 12,
   faceDeckMaxPerAttribute: 3,
   openingHandSize: 5,
-  cardsDrawnPerTurn: 2,
+  cardsDrawnPerTurn: 1,
+  maxHandSize: null,
+  deckOutEnabled: true,
   maxStunnedDicePerPlayer: 1,
   attacksPerCreaturePerCombat: 1,
   frontlineSlots: 2,
@@ -176,7 +198,7 @@ export const TAG_FIGHTER_RULES: GameRulesConfig = {
   frontlineSlots: 1,
   deckMinCards: 10,
   deckMaxCards: 24,
-  openingHandSize: 4,
+  openingHandSize: 5,
   cardsDrawnPerTurn: 1,
   attacksPerCreaturePerCombat: 2,
   wipeVictory: true,

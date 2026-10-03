@@ -457,30 +457,113 @@ If that proves too narrow, a later model may mark specific Actions
 `Once Per Sequence` instead of restricting every Action. That later model
 is not the rule to use now.
 
+## Hand, deck, and card lifecycle
+
+Confirmed 2026-10-03. The numbers below are the initial playtest
+configuration. They are knobs on `GameRulesConfig`, not final balance.
+
+A player brings one team and one deck.
+
+```text
+Player
+├── Team
+│   ├── Fighter
+│   ├── Fighter
+│   └── Fighter
+└── Deck
+```
+
+There is one deck and one hand. Fighters do not get their own decks or
+hands. The three Fighters are the team’s identity. The deck is the
+strategic list. The same three Fighters may be played with different
+decks. A list may emphasize one Fighter as Active, another through
+Assist, and another through Tag.
+
+Fighters do not restrict what the deck may contain. A deck may mix
+generic cards and cards associated with any of the three Fighters. A
+Fighter-specific card may require that Fighter to be on the team before
+it can be played. That is a play check. It is not a deckbuilding ban.
+“Magnus must be on your team” is not “the deck may only contain Magnus’s
+cards.”
+
+Cards are still only Response or Modify. Counter, Reversal, Block,
+Dodge, and the Modify subjects stay effects on that card. Generic and
+Fighter-specific cards are the same card.
+
+### Confirmed
+
+- Both players are dealt `openingHandSize` at match setup, before anyone
+  acts. Who has the first turn does not change that deal.
+- At the beginning of every turn, including turn 1, the player whose
+  turn it is draws `cardsDrawnPerTurn`. Turn 1 uses that same draw. There
+  is no skipped first turn and no extra first-player draw on top of it.
+- There is no maximum hand size while `maxHandSize` is null. The game
+  does not discard down to a hand limit.
+- A deck contains at most `deckMaxCopiesPerCard` of one card id.
+- One-shot is the default lifecycle for a card that is not already a
+  persistent field card. It leaves the hand. Its normal destination is
+  the discard pile (the graveyard). `afterResolveZone` on that card is
+  the only override, and it applies when the card resolves.
+- Persistent cards stay in play. Equipment, overload, and continuous
+  rituals already do. A card marked `lifecycle: "persistent"` that is
+  not one of those stays in the existing in-play list. Persistent is not
+  a new effect engine.
+- Discard is that destination, not a separate system. A card does not go
+  to discard unless its lifecycle or its own effect sends it there.
+- A Block does not draw a card unless that card’s effect says so. Card
+  advantage is printed on the card. The existing draw effect is the path.
+- When `deckOutEnabled` is true, a draw from an empty deck loses the
+  match. The opponent wins. There is no fatigue damage and no reshuffle.
+  When `deckOutEnabled` is false, that draw stops, the `deck-empty`
+  event is logged, and the match continues.
+- Deck construction checks size, copy limit, and that the card id exists.
+  It does not check Fighter play requirements. Play checks those.
+
+### Initial playtest configuration
+
+| Knob | Config field | Initial value |
+|---|---|---|
+| Starting hand | `openingHandSize` | 5 |
+| Draw at each turn start | `cardsDrawnPerTurn` | 1 |
+| Hand limit | `maxHandSize` | null (no limit, and no discard-to-limit) |
+| Copies of one card | `deckMaxCopiesPerCard` | 3 |
+| Deck out | `deckOutEnabled` | true |
+| Fixed deck size | `deckSize` | null |
+
+`deckSize` null means a playtest has not chosen the fixed size yet. While
+it is null, validation still uses the previous range (`deckMinCards` /
+`deckMaxCards`) so existing lists stay legal. Setting `deckSize` to a
+number requires that exact count and does not also apply the range. A
+later minimum/maximum model can use those range fields without a new
+deck type. The range is not the confirmed real-game size.
+
+`maxHandSize` may be set to a number later. The current rules do not
+discard excess cards even if a number is present.
+
+### Deferred
+
+- Reusable and Return as lifecycle categories. A later card may say what
+  happens to it. That is not a global rule yet.
+- Mulligan.
+- The real-game deck size, and whether that size is a range.
+- Which Fighter requirements exist beyond the current play check: the
+  named Fighter must be on the team and still living
+  (`fighterRestriction`). “On the team even while KOed” is not a separate
+  rule yet.
+- Dice customization, and how dice are assembled with the team and the
+  deck.
+
 ## Deferred
 
 Do not decide these here.
-
-### Hand and card availability
-
-Deck size, hand size, draw, hand limit, discard, card persistence, and
-card lifecycle.
-
-### Deckbuilding and cards
-
-Deck construction, which cards belong to which Fighter, card restrictions,
-card pools, copies, and the Fighter/deck relationship.
 
 ### Dice customization
 
 Initial dice, face counts, legal face pools, how dice relate to a deck,
 how new faces are acquired, and how a permanent face is gained outside a
 match. In a match, a die modification is permanent. That is the confirmed
-rule. It is not the rest of this system.
-
-### How a deck, the Fighters, and the dice are assembled
-
-No final structure for putting those three together.
+rule. It is not the rest of this system. The team-plus-one-deck structure
+is confirmed above. How the dice are built into that loadout is not.
 
 ## Open
 
@@ -528,6 +611,10 @@ Aligned with this revision:
   initiative. Three KOed Fighters still loses when `wipeVictory` is on.
 - Attack Strike damage grants the existing per-HP amount to the dealer
   and to the player who was hit. No second rate was added.
+- Opening hands, the per-turn draw, the copy cap, deck-out, and one-shot
+  versus persistent use the existing deck, hand, graveyard, and in-play
+  lists. `deckSize` null still checks the previous range. `maxHandSize`
+  is stored and does not discard.
 
 Still not this document:
 

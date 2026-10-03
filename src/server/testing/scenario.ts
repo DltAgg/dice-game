@@ -49,6 +49,9 @@ export const P2: PlayerId = asPlayerId("p2");
 const TEST_SETUP_CONFIG = {
   ...DEFAULT_RULES_CONFIG,
   deckMinCards: 0,
+  // Empty harness decks must not lose at setup, and must not shift RNG.
+  cardsDrawnPerTurn: 0,
+  deckOutEnabled: false,
 };
 
 type ScenarioPlayer = Omit<PlayerSetup, "startingDice"> & {

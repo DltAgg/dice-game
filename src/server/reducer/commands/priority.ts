@@ -14,6 +14,7 @@ import {
   placeRitual,
   refreshRitualOrientations,
 } from "../zones.js";
+import { relocateResolvedOneShot } from "./playCard.js";
 import { finishRitualActivation } from "./ritual.js";
 import { conductAssist } from "./assist.js";
 import { conductTag } from "./tag.js";
@@ -137,6 +138,7 @@ function conductLink(draft: Draft, link: ChainLink): void {
         );
       }
       drainResolution(draft);
+      relocateResolvedOneShot(draft, link);
       return;
     }
     case "ritual-activate": {

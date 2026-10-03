@@ -214,12 +214,13 @@ describe("what playing refuses", () => {
 });
 
 describe("drawing", () => {
-  it("deals the opening five and leaves the rest in the deck", () => {
+  it("deals the opening five, then the first player's turn draw", () => {
     const state = newMatchWithDecks();
 
-    expect(state.players[P1]?.hand).toHaveLength(5);
-    expect(state.players[P1]?.deck).toHaveLength(TEST_LEGAL_DECK.length - 5);
+    expect(state.players[P1]?.hand).toHaveLength(6);
+    expect(state.players[P1]?.deck).toHaveLength(TEST_LEGAL_DECK.length - 6);
     expect(state.players[P2]?.hand).toHaveLength(5);
+    expect(state.players[P2]?.deck).toHaveLength(TEST_LEGAL_DECK.length - 5);
   });
 
   it("shuffles the two decks differently from one seed", () => {
@@ -231,19 +232,19 @@ describe("drawing", () => {
     expect(first).not.toEqual(second);
   });
 
-  it("draws two on entering your own turn", () => {
+  it("draws the configured amount on entering your own turn", () => {
     const state = newMatchWithDecks();
 
     const result = advance(state, { type: "END_TURN", playerId: P1 });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.players[P2]?.hand).toHaveLength(7);
-    expect(result.state.players[P1]?.hand).toHaveLength(5);
+    expect(result.state.players[P2]?.hand).toHaveLength(6);
+    expect(result.state.players[P1]?.hand).toHaveLength(6);
     expect(eventTypes(result.state).filter((type) => type === "card-drawn")).toHaveLength(2);
   });
 
-  it("stops quietly once the deck is empty", () => {
+  it("loses when a draw finds an empty deck", () => {
     const state = newMatchWithDecks();
     const player = state.players[P2];
     if (player === undefined) throw new Error("test: no player");
@@ -256,7 +257,9 @@ describe("drawing", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.status).toBe("in-progress");
+    expect(result.state.status).toBe("finished");
+    expect(result.state.winner).toBe(P1);
     expect(eventTypes(result.state)).toContain("deck-empty");
+    expect(result.state.players[P2]?.deck).toHaveLength(0);
   });
 });

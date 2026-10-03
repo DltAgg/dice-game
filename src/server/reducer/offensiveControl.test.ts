@@ -65,6 +65,7 @@ const ANSWER = testCard({
 const CONFIG = {
   ...DEFAULT_RULES_CONFIG,
   deckMinCards: 0,
+  deckOutEnabled: false,
   consumeDiceOnFaceActions: true,
   maxFacesOfSameAttributePerDie: 6,
   startingMaxOnRollFacesPerDie: 6,

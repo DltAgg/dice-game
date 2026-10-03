@@ -76,7 +76,8 @@ Opening-layout caps (prototype knobs, `ASSUMED` unless noted):
 Forbidden Heritage, Pestilent Plague, and Arcane Echo are refused on
 `startingDice` (they may still sit in the face deck for mid-game).
 
-There is **no mulligan**. The opening hand of **5** is the hand you play.
+There is **no mulligan**. Each player is dealt **5** (`openingHandSize`).
+That number is a playtest knob, not a final balance decision.
 
 ---
 
@@ -99,15 +100,27 @@ Each player has:
   Strike actually removes HP.
 - **Combo:** increments when your Active Fighter successfully declares an
   attack; resets on Tag, KO-promote, and end of turn.
-- Hand, tactics deck (top-first), graveyard, equipment, overloads.
+- One hand, one tactics deck (top-first), one graveyard, plus equipment,
+  overloads, and rituals. The three Fighters share that hand and deck.
 
 ---
 
 ## 4. Match start
 
 - First player in `playerOrder` takes turn 1, phase **roll**.
-- Opening hand is 5. The first player does **not** draw extra before acting.
-  You draw **2** when **your** turn begins after an opponent’s turn ends.
+- Opening hand is 5 for both players. At the start of every turn, including
+  the first, the player whose turn it is draws **1** (`cardsDrawnPerTurn`).
+  There is no extra first-player draw and no skipped first draw.
+- There is no hand limit, and the game does not discard down to one.
+- A deck may include at most **3** copies of a card (`deckMaxCopiesPerCard`).
+  The fixed deck size is not chosen yet (`deckSize` null). Until it is, a
+  list still has to sit in the previous size range.
+- Drawing from an empty deck loses the match when deck-out is on. Nothing
+  is reshuffled, and an empty deck does not deal damage. A card draws only
+  when its own effect says so. Playing a card does not draw by itself.
+- A played one-shot goes to the graveyard unless that card names another
+  destination. Equipment, overloads, continuous rituals, and other
+  persistent cards stay in play.
 - Dice are built from that seat’s `startingDice`. Each seat’s leftover face
   pool is independent.
 

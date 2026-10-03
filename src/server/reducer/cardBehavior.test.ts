@@ -212,6 +212,7 @@ function matchWith(squad: readonly CreatureDefinitionId[] = SQUAD): GameState {
     config: {
       ...DEFAULT_RULES_CONFIG,
       deckMinCards: 0,
+      deckOutEnabled: false,
       consumeDiceOnFaceActions: false,
       maxFacesOfSameAttributePerDie: 6,
       startingMaxOnRollFacesPerDie: 6,

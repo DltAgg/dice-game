@@ -212,13 +212,19 @@ export function validateTacticsDeck(
   deck: readonly CardId[],
   config: GameRulesConfig,
 ): LoadoutValidation {
-  if (deck.length < config.deckMinCards) {
+  if (config.deckSize !== null) {
+    if (deck.length !== config.deckSize) {
+      return {
+        ok: false,
+        reason: `tactics deck has ${String(deck.length)} cards, deck size ${String(config.deckSize)}`,
+      };
+    }
+  } else if (deck.length < config.deckMinCards) {
     return {
       ok: false,
       reason: `tactics deck has ${String(deck.length)} cards, min ${String(config.deckMinCards)}`,
     };
-  }
-  if (deck.length > config.deckMaxCards) {
+  } else if (deck.length > config.deckMaxCards) {
     return {
       ok: false,
       reason: `tactics deck has ${String(deck.length)} cards, max ${String(config.deckMaxCards)}`,

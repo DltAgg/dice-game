@@ -1,6 +1,7 @@
 import { getCard } from "../../content/cards.js";
 import { getCreatureDefinition } from "../../content/creatures.js";
 import type { CardDefinition } from "../../model/cards.js";
+import type { ChainLink } from "../../model/state.js";
 import type { GameError } from "../../model/errors.js";
 import type {
   CardInstanceId,
@@ -9,7 +10,7 @@ import type {
   FaceCardId,
   PlayerId,
 } from "../../model/ids.js";
-import { isReactionCard } from "../../rules/cards.js";
+import { isReactionCard, lifecycleOf } from "../../rules/cards.js";
 import { behaviorPlayError } from "../../rules/cardBehavior.js";
 import { cardRestrictionError } from "../../rules/fighters.js";
 import { playEffectsRefusal } from "../../rules/reforge.js";
@@ -170,7 +171,13 @@ export function playCard(
   }
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
-  moveCard(draft, cardInstanceId, "graveyard");
+  // One-shot leaves the hand for the graveyard now. A named destination is
+  // applied when the link resolves. Persistent stays in the in-play list.
+  if (lifecycleOf(definition) === "persistent") {
+    moveCard(draft, cardInstanceId, "ritual");
+  } else {
+    moveCard(draft, cardInstanceId, "graveyard");
+  }
 
   const baseLink = {
     ...buildEffectLink({
@@ -203,6 +210,20 @@ export function playCard(
     draft.chainStack.some((link) => link.kind === "combat-action");
   openReactionWindow(draft, playerId, keepPriority ? "same" : "opponent");
   return null;
+}
+
+/** One-shot destination override. Default discard already happened at play. */
+export function relocateResolvedOneShot(draft: Draft, link: ChainLink): void {
+  if (link.cardInstanceId === null) return;
+  const card = draft.cards[link.cardInstanceId];
+  if (card === undefined) return;
+  const definition = getCard(card.cardId);
+  const zone = definition?.afterResolveZone;
+  if (definition === undefined || lifecycleOf(definition) !== "one-shot" || zone === undefined) {
+    return;
+  }
+  if (card.zone === zone) return;
+  moveCard(draft, card.id, zone);
 }
 
 function equipCard(

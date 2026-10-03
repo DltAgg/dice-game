@@ -87,8 +87,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   // one-time unlock so they return to ready.
   resetExhaustedRituals(draft, nextPlayerId);
 
-  // Drawn on entering your own turn, so the opening hand is not topped up
-  // before the first player has had a turn to use it.
+  // Same draw as turn 1. Setup deals the opening hand, then this draw.
   drawCards(draft, nextPlayerId, draft.config.cardsDrawnPerTurn);
 
   checkVictory(draft);

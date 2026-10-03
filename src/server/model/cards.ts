@@ -389,7 +389,20 @@ export interface CardDefinition {
    * Not a generic card cost. Spec `030`.
    */
   readonly exceptionalMeterCost?: number;
+  /**
+   * Spec `030`. Omit to derive it: equipment, overload, and continuous
+   * rituals are persistent. Everything else is one-shot.
+   */
+  readonly lifecycle?: CardLifecycle;
+  /**
+   * One-shot only. Where the card sits after it resolves. Omit to discard
+   * it (graveyard). Not a separate lifecycle.
+   */
+  readonly afterResolveZone?: CardZone;
 }
+
+/** Spec `030`. One-shot discards after resolution. Persistent stays in play. */
+export type CardLifecycle = "one-shot" | "persistent";
 
 /** Spec `030`. The only two card behaviors. */
 export type CardBehavior = "response" | "modify";

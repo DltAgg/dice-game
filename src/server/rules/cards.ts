@@ -5,6 +5,7 @@ import type {
   CardDefinition,
   CardDuration,
   CardInstance,
+  CardLifecycle,
   CardType,
 } from "../model/cards.js";
 import type { GameRulesConfig } from "../model/config.js";
@@ -54,6 +55,17 @@ export const ritualsOf = (state: GameState, playerId: PlayerId): readonly CardIn
  * - `continuous` or `reaction` → stay on the field, exhausted until the owner's next turn
  * - leftover `instant` (retired) → leave for the graveyard
  */
+/**
+ * Spec `030`. Equipment, overload, and continuous rituals stay in play.
+ * Any other card is one-shot unless it sets `lifecycle`.
+ */
+export function lifecycleOf(card: CardDefinition): CardLifecycle {
+  if (card.lifecycle !== undefined) return card.lifecycle;
+  if (card.type === "equipment" || card.type === "overload") return "persistent";
+  if (card.type === "ritual" && ritualDurationOf(card) === "continuous") return "persistent";
+  return "one-shot";
+}
+
 export function ritualDurationOf(card: CardDefinition): CardDuration | null {
   if (card.type !== "ritual") return null;
   if (card.subtypes.includes("continuous") || card.subtypes.includes("reaction")) {
