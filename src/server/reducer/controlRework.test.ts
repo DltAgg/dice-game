@@ -27,8 +27,7 @@ import { DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
 const HEAL_RITUAL = testCard({
   id: "card-test-heal-ritual",
   playCost: { luminar: 3 },
-  attribute: "luminar",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { luminar: 3 },
@@ -42,8 +41,7 @@ const HEAL_RITUAL = testCard({
 const CONTINUOUS_RITUAL = testCard({
   id: "card-test-stay-ritual",
   playCost: { luminar: 1, any: 1 },
-  attribute: "luminar",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { luminar: 2, any: 1 },
@@ -60,8 +58,7 @@ const CONTINUOUS_RITUAL = testCard({
 const PREVENT_REFLECT = testCard({
   id: "card-test-rework-prevent-reflect",
   playCost: { luminar: 3 },
-  attribute: "luminar",
-  type: "reaction",
+  type: "response",
   effect: { effects: [{ type: "prevent-attack-reflect" }] },
 });
 

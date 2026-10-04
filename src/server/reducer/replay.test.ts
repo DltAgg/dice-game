@@ -21,15 +21,13 @@ import { advance } from "./reduce.js";
 const EQUIP = testCard({
   id: "card-test-replay-equip",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: { mayTargetOpponent: false, abilities: [] },
 });
 
 const REPLAY = testCard({
   id: "card-test-replay-graveyard",
   playCost: { darkness: 3 },
-  attribute: "darkness",
   effect: { effects: [{ type: "replay-graveyard-tactic" }] },
 });
 

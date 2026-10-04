@@ -1,0 +1,74 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-vega",
+  "name": "Vega",
+  "life": 14,
+  "archetype": "rushdown",
+  "passiveRulesText": "Rushdown. The sequence keeps going.",
+  "assistName": "Cross",
+  "assistRulesText": "[Strike 2] the most damaged enemy.",
+  "exceptionalAssistMeter": 0,
+  "assistEffects": [
+    {
+      "type": "damage",
+      "amount": 2,
+      "target": { "kind": "most-damaged-enemy" }
+    }
+  ],
+  "baseDie": [
+    "face-natural-vega-jab",
+    "face-natural-vega-jab",
+    "face-natural-vega-kick",
+    "face-natural-vega-dash",
+    "face-natural-vega-dash",
+    "face-natural-vega-rush"
+  ],
+  "techniques": [
+    {
+      "id": "technique-vega-step-jab",
+      "name": "Step Jab",
+      "primaryFaceId": "face-natural-vega-jab",
+      "secondary": { "faceType": "projectile" },
+      "sequenceRole": "starter",
+      "rulesText": "Jab + any Projectile: [Strike 3], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 3,
+          "target": { "kind": "declared-target" }
+        }
+      ]
+    },
+    {
+      "id": "technique-vega-confirm-kick",
+      "name": "Confirm Kick",
+      "primaryFaceId": "face-natural-vega-kick",
+      "secondary": { "faceType": "attack" },
+      "sequenceRole": "extender",
+      "rulesText": "Kick + Attack: [Strike 3], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 3,
+          "target": { "kind": "declared-target" }
+        }
+      ]
+    },
+    {
+      "id": "technique-vega-chase-kick",
+      "name": "Chase Kick",
+      "primaryFaceId": "face-natural-vega-kick",
+      "secondary": { "faceType": "attack" },
+      "sequenceRole": "finisher",
+      "rulesText": "Kick + Attack: [Strike 4], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 4,
+          "target": { "kind": "declared-target" }
+        }
+      ]
+    }
+  ],
+  "attacks": []
+}

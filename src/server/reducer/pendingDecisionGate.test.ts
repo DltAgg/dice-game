@@ -23,7 +23,6 @@ import { CRANK, CRANK_FUEL } from "../testing/tempoCatalogue.js";
 const CHOOSE_ALLY_SHIELD = testCard({
   id: "card-test-choose-ally-shield",
   playCost: { luminar: 2 },
-  attribute: "luminar",
   effect: {
     effects: [
       { type: "grant-shield", amount: 2, target: { kind: "choose-ally" } },

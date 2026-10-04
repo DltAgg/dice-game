@@ -1,13 +1,4 @@
 [
-  "face-natural-martial",
-  "face-natural-wild",
-  "face-natural-toxin",
-  "face-natural-arcane",
-  "face-natural-luminar",
-  "face-natural-mechanical",
-  "face-natural-corruption",
-  "face-natural-darkness",
-  "face-untyped-shield",
   "face-natural-technique-strike",
   "face-natural-technique-guard",
   "face-natural-technique-heavy",
@@ -20,5 +11,17 @@
   "face-natural-grappler-command-grab",
   "face-natural-grappler-guard",
   "face-natural-grappler-movement",
-  "face-natural-grappler-tag"
+  "face-natural-grappler-tag",
+  "face-natural-magnus-jab",
+  "face-natural-magnus-grab",
+  "face-natural-magnus-lariat",
+  "face-natural-magnus-heavy",
+  "face-natural-vega-jab",
+  "face-natural-vega-kick",
+  "face-natural-vega-dash",
+  "face-natural-vega-rush",
+  "face-natural-ryu-jab",
+  "face-natural-ryu-projectile",
+  "face-natural-ryu-focus",
+  "face-natural-ryu-charge"
 ]

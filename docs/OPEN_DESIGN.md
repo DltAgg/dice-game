@@ -3,15 +3,21 @@
 Unresolved **rules and product** questions are tracked here rather than being
 answered silently in code.
 
+**Content authors:** follow [`docs/specs/030-offensive-control.md`](./specs/030-offensive-control.md)
+and `.cursor/skills/author-content/design.md`. Sections below that describe
+an attribute pile, natural/synthetic faces, Shield as a resource, a face
+deck, or Instant/Reaction/Equipment/Overload/Ritual as the card kinds are
+historical. Do not author new Fighters, faces, or cards from them. Spec `030`
+lines marked open are still open — do not invent answers.
+
 ## Engine cleanup (2026) — no longer in play
 
 | Removed | Notes |
 |---|---|
-| **Attribute pile** | `PlayerState.attributePool`, banking into pile, and enforcement of `[Requires]` / `[Spend]` / ritual Active-when from pile (spec `016` is **obsolete**). Dice still roll attribute faces; **On absorb** still fires; Shield still absorbs onto creatures. |
-| **Legendary victory** | Removed from play. `checkVictory` is still a no-op until spec `028` ships. |
-| **Exactly-one legendary loadout** | Squads are still three creatures; legendary flag in JSON is legacy placement hint only. |
-| **Future win condition** | Spec [`028-tag-fighter-prototype.md`](./specs/028-tag-fighter-prototype.md): wipe (all 3 fighters `defeated`) — **specified, not implemented**. |
-| **Future tag-fighter design** | Spec `028` + **Prototype assumptions — 3v3 tag-fighter** below. `ASSUMED` playtest knobs, **not** bible, **not** shipped play. |
+| **Attribute pile** | Not live fuel. Do not author `[Requires]` / `[Spend]` / Active-when as a cost. |
+| **Legendary victory** | Not how a match ends. Wipe (all three Fighters KOed) is the win in spec `030` when `wipeVictory` is on. |
+| **Exactly-one legendary loadout** | A team is three Fighters plus one shared deck. The `legendary` flag is leftover JSON. |
+| **Natural / synthetic faces and face decks** | Not the current die model. Named faces live on the Fighter's `baseDie`. |
 
 Engine code lives in `src/server`. Catalogue print lives in
 `src/server/content/{cards,creatures,faces}/*.json`.
@@ -1057,7 +1063,7 @@ Naming: `Technique` (028 toolkit category) ≠ `FaceType` (029) ≠
 
 | Knob / rule | Prototype default | Notes |
 |---|---|---|
-| Secondary die | Engine: any other **owned** rolled die | Query `secondaryDiceFor`. Ownership is **open** (spec `030`). |
+| Secondary die | Another die you own | Not an opponent die. One face cannot fill both inputs of the same Technique (spec `030`). |
 | Actor | Living Active Fighter | Reuse `activeCreatureId`. |
 | Damage target | Effect JSON / opponent Active | Commands pass opponent Active as `declared-target`. |
 | Die consumption | **Withdrawn** | Spec `030` (2026-10-03): a used face stays available. Repeating the same Action in one sequence is under test. Engine flag `consumeDiceOnFaceActions` is leftover. |
@@ -1071,7 +1077,8 @@ Naming: `Technique` (028 toolkit category) ≠ `FaceType` (029) ≠
 - Whether spec `028` Meter knobs stay long-term (**conflict** above).
 - Footsies, frames, stun, counter-hit. Tag, Assist, KO, Meter sources,
   the hand, the one shared deck, and deck-out are spec `030` (2026-10-03).
-  Dice customization stays deferred there. Reusable, Return, and mulligan
+  Dice changes do not carry between matches. Face count and the face pool
+  stay open. Reusable, Return, and mulligan
   stay deferred there.
 - Whether secondary dice may include opponent or Reserve-only dice.
 

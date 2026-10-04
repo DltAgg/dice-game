@@ -21,7 +21,7 @@
     },
     "symbolType": {
       "title": "SymbolType",
-      "description": "What a face can produce: an attribute, or Shield (untyped starting face only).",
+      "description": "What a die or an effect can produce. There is no Shield symbol.",
       "type": "string",
       "enum": [
         "martial",
@@ -31,15 +31,14 @@
         "luminar",
         "mechanical",
         "corruption",
-        "darkness",
-        "shield"
+        "darkness"
       ]
     },
     "cardType": {
       "title": "CardType",
-      "description": "Main kind on the type line. Instant / reaction / equipment / overload are first-class. Rituals use type ritual plus a subtype.",
+      "description": "Main kind on the type line. A card is a Modify or a Response. Equipment, overload, and ritual are regions, not types.",
       "type": "string",
-      "enum": ["instant", "reaction", "equipment", "overload", "ritual"]
+      "enum": ["modify", "response"]
     },
     "cardSubtype": {
       "title": "CardSubtype",
@@ -158,7 +157,7 @@
     },
     "symbolTokens": {
       "title": "SymbolTokens",
-      "description": "Face yield, e.g. { \"mechanical\": 1, \"luminar\": 1 } or { \"shield\": 1 }. Same bag as attributeTokens plus Shield. Omitted face pips means one pip of face.symbol.",
+      "description": "Face yield, e.g. { \"mechanical\": 1, \"luminar\": 1 }. Omitted pips produce nothing. There is no Shield yield.",
       "type": "object",
       "minProperties": 1,
       "additionalProperties": false,
@@ -170,8 +169,7 @@
         "luminar": { "$ref": "#/$defs/positiveAmount" },
         "mechanical": { "$ref": "#/$defs/positiveAmount" },
         "corruption": { "$ref": "#/$defs/positiveAmount" },
-        "darkness": { "$ref": "#/$defs/positiveAmount" },
-        "shield": { "$ref": "#/$defs/positiveAmount" }
+        "darkness": { "$ref": "#/$defs/positiveAmount" }
       }
     },
     "silenceHost": {
@@ -1108,19 +1106,17 @@
     },
     "forgeRegion": {
       "title": "ForgeRegion",
-      "description": "Every hand card has a forge region. The player chooses play, forge, or (natural own-die only) Overcharge — never two on the same use. Optional bonus effects fire only on FORGE_CARD; play still uses the play region. faces (1, 2, rarely 3) and natural vs synthetic are designed choices, not a default sticker.",
+      "description": "Every hand card has a forge region. The player names the face to install. There is no face kind and no attribute.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["faces", "kind", "attribute", "target"],
+      "required": ["faces", "target"],
       "properties": {
         "faces": {
           "type": "integer",
           "minimum": 1,
           "maximum": 6,
-          "description": "How many copies of one matching face to install on a single die."
+          "description": "How many copies of one face to install on a single die."
         },
-        "kind": { "$ref": "#/$defs/forgeableFaceKind" },
-        "attribute": { "$ref": "#/$defs/attribute" },
         "target": { "$ref": "#/$defs/forgeTarget" },
         "effects": {
           "description": "Optional one-shot effects that fire only on FORGE_CARD after a successful install. Play still uses the play region (effect / equipment / overload / ritual).",
@@ -1290,7 +1286,7 @@
       "title": "FaceType",
       "description": "Named-action type on a die face (spec 029). Extensible; no inherent gameplay meaning.",
       "type": "string",
-      "enum": ["attack", "grab", "guard", "movement", "tag"]
+      "enum": ["attack", "grab", "guard", "movement", "projectile", "tag"]
     },
     "sequenceRole": {
       "title": "SequenceRole",
@@ -1300,7 +1296,7 @@
     },
     "fighterTechniqueSecondary": {
       "title": "FighterTechniqueSecondary",
-      "description": "Secondary requirement: specific face id OR face type (spec 029).",
+      "description": "Secondary requirement: a named face, any face of a type, or any face with a sequence role.",
       "oneOf": [
         {
           "type": "object",
@@ -1316,6 +1312,14 @@
           "required": ["faceType"],
           "properties": {
             "faceType": { "$ref": "#/$defs/faceType" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sequenceRole"],
+          "properties": {
+            "sequenceRole": { "$ref": "#/$defs/sequenceRole" }
           }
         }
       ]

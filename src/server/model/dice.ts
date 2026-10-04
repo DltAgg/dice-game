@@ -30,18 +30,6 @@ export type DieFaceLayout = readonly [
 export type StartingDiceLayout = readonly DieFaceLayout[];
 
 /**
- * Natural and synthetic are bible §10. Untyped is Shield only: a starting-die
- * identity face that is not an attribute and is not Natural.
- */
-export type FaceKind = "natural" | "synthetic" | "untyped";
-
-/**
- * Attribute-keyed faces that can be forged. Shield is `untyped` and is never
- * a forge target.
- */
-export type ForgeableFaceKind = Exclude<FaceKind, "untyped">;
-
-/**
  * Whether forging (or other overwrite-installs) may replace a slot showing
  * this face. Omitted means the slot may be overwritten. Peel via
  * `ACTIVATE_FACE` / unforge / consume is never this restriction.
@@ -69,13 +57,9 @@ export type WhileShowingModifier =
 export interface FaceCardDefinition {
   readonly id: FaceCardId;
   readonly name: string;
-  readonly kind: FaceKind;
-  /** The attribute this face produces, or Shield for the untyped starting face. */
-  readonly symbol: SymbolType;
   /**
    * Combat toolkit this face represents while showing (spec `028`).
-   * Identity naturals omit this. Prototype technique faces set both
-   * `technique` and `symbol`. Distinct from `faceType` (spec `029`).
+   * Distinct from `faceType` (spec `029`).
    */
   readonly technique?: Technique;
   /**
@@ -168,11 +152,21 @@ export interface FaceCardDefinition {
   readonly pestilenceSpreadAt?: number;
 }
 
-/** Yield minted for a showing face. Omitted `pips` is one pip of `symbol`. */
+/** Yield minted for a showing face. Omitted `pips` produces nothing. */
 export function inherentPipsOf(
-  face: Pick<FaceCardDefinition, "symbol" | "pips">,
+  face: Pick<FaceCardDefinition, "pips">,
 ): SymbolTokens {
-  return face.pips ?? { [face.symbol]: 1 };
+  return face.pips ?? {};
+}
+
+/** Pip symbols this face actually yields. Empty when `pips` is omitted. */
+export function pipSymbolsOf(face: Pick<FaceCardDefinition, "pips">): readonly SymbolType[] {
+  const pips = inherentPipsOf(face);
+  const symbols: SymbolType[] = [];
+  for (const symbol of Object.keys(pips) as SymbolType[]) {
+    if ((pips[symbol] ?? 0) > 0) symbols.push(symbol);
+  }
+  return symbols;
 }
 
 /**
@@ -229,8 +223,16 @@ export interface DieSlot {
 export interface DieState {
   readonly id: DieId;
   readonly ownerId: PlayerId;
-  /** Always exactly FACE_SLOTS_PER_DIE entries, indexed 0..5. */
+  /** Faces in play this match. In-match writes change these only. */
   readonly slots: readonly DieSlot[];
+  /**
+   * Face ids the match started from. Spec `030`: the Fighter's base die.
+   * Not rewritten by in-match modifications. The next match builds a new die
+   * from the base again.
+   */
+  readonly baseSlots: readonly FaceCardId[];
+  /** The Fighter this die belongs to. One die per Fighter. */
+  readonly boundCreatureId: CreatureId | null;
   /** Bible §22. A die with markers is not rolled and produces no symbols. */
   readonly stunMarkers: number;
   /** Bible §21: a retained die keeps its result instead of being rerolled. */

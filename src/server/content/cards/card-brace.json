@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-brace",
+  "name": "Brace",
+  "type": "response",
+  "subtypes": [],
+  "lifecycle": "one-shot",
+  "rulesText": "Block. [Prevent] the Attack on the chain.",
+  "forge": { "faces": 1, "target": "own-die" },
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-attack-prevent",
+        "amount": 1,
+        "target": { "kind": "chain-attack-target" }
+      }
+    ]
+  }
+}

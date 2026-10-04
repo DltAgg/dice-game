@@ -34,10 +34,9 @@ function exampleReaction(effects: readonly EffectDefinition[]): CardDefinition {
     id: asCardId("card-example-reaction"),
     name: "Example Reaction",
     playCost: { luminar: 1 },
-    type: "reaction",
+    type: "response",
     subtypes: [],
-    attribute: "luminar",
-    forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
+    forge: { faces: 1, target: "own-die" },
     rulesText: "Negate.",
     effect: { effects },
   };

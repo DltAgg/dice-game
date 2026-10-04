@@ -8,9 +8,9 @@ import { lookupOverlayCreature } from "./runtimeOverlay.js";
  * Fighter catalogue for Tag Skirmish (spec `028`). Engine types stay
  * `Creature*`; print/UI call them Fighters.
  */
-export const KORR: CreatureDefinitionId = asCreatureDefinitionId("creature-korr");
+export const VEGA: CreatureDefinitionId = asCreatureDefinitionId("creature-vega");
 export const MAGNUS: CreatureDefinitionId = asCreatureDefinitionId("creature-magnus");
-export const NYX: CreatureDefinitionId = asCreatureDefinitionId("creature-nyx");
+export const RYU: CreatureDefinitionId = asCreatureDefinitionId("creature-ryu");
 export const GRAPPLER: CreatureDefinitionId = asCreatureDefinitionId("creature-grappler");
 
 const creatureModules = import.meta.glob("./creatures/creature-*.json", {

@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-reforge-grip",
+  "name": "Reforge Grip",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "one-shot",
+  "modifySubject": "die",
+  "fighterRestriction": "creature-magnus",
+  "rulesText": "Rewrite one slot on Magnus's die. That face stays for the rest of the match.",
+  "forge": { "faces": 1, "target": "own-die" }
+}

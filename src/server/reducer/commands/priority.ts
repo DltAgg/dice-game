@@ -109,7 +109,8 @@ function conductLink(draft: Draft, link: ChainLink): void {
     } else if (
       link.kind === "ritual-place" ||
       link.kind === "equip-attach" ||
-      link.kind === "overload-attach"
+      link.kind === "overload-attach" ||
+      (link.kind === "tactic-effect" && link.modify?.subject === "moveset")
     ) {
       if (link.cardInstanceId !== null) {
         moveCard(draft, link.cardInstanceId, "graveyard");

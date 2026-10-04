@@ -1,22 +1,22 @@
-# Dice Skirmish (prototype)
+# Dice Skirmish
 
-A local and online prototype for **dice-driven creature skirmish**: each player
-fields **three creatures**, **two customizable dice**, and a tactics deck. Roll
-phases, face abilities, forging, cards, shields, and combat still run on a pure
-`reduce()` engine.
+A local and online **3v3 tag fighter**. Each player fields three Fighters, one
+die per Fighter, and one shared deck of Response and Modify cards. One Fighter
+is Active; the others are Reserve. Meter is one shared pool. Confirmed content
+model: [`docs/specs/030-offensive-control.md`](./docs/specs/030-offensive-control.md).
+Shipped play: [`docs/RULEBOOK.md`](./docs/RULEBOOK.md).
 
-**Not in this prototype today:** a persistent **attribute pile** (banking /
-`[Requires]` / `[Spend]` from pile are removed — catalogue may still print
-costs), and any **automatic match victory** (legendary commander win removed;
-future 3v3 wipe not implemented). A separate tag-fighter design is planned but
-**not** built here yet.
+**Not the current model:** attribute-pile fuel, natural/synthetic faces, Shield
+as a resource, per-fighter decks, deckbuilding dice, or Instant / Reaction /
+Equipment / Overload / Ritual as card types. Older JSON may still contain
+those fields. Do not author new content from them.
 
 ## Status
 
 | Layer | State |
 |---|---|
 | Game engine | Dice, symbols, absorb / On absorb, shields, combat, cards (play/forge), face deck, phases, chain |
-| Content | Faces, creatures, tactic subset + English printings (some pile-era costs in data) |
+| Content | Fighters, named faces, Response and Modify cards. Older JSON may still carry pile-era fields |
 | UI | **M3** hotseat + **M4** deck builder + catalogues |
 | Persistence | **M4** — `DeckRepository` over localStorage; tactics 40–50 / ≤3 copies |
 | Networking | **M5** — PeerJS host authority (room seats, spectators, host-observe) |
@@ -67,10 +67,10 @@ proactive: ask for the job, or say `Use the <name> subagent to …`.
 
 | Subagent | Owns | Hands off |
 |---|---|---|
-| [card-designer](.cursor/agents/card-designer.md) | Set craft: occupy an empty slot (attribute × kind × forge × payoff), then author print → JSON in `src/server/content` | New AST / hooks / reducer → **engine-developer**; constructed lists / identity critique → **deck-designer** |
+| [card-designer](.cursor/agents/card-designer.md) | Place the request on a named face, Fighter, Response, or Modify, then author JSON in `src/server/content`. Redirect a Block face, Tag type, or per-fighter deck | New AST / hooks / reducer → **engine-developer**; shared lists → **deck-designer** |
 | [engine-developer](.cursor/agents/engine-developer.md) | Pure rules in `src/server`: hooks, `EffectDefinition`, reducer, resolution, statuses | Catalogue beyond the proving card → **card-designer**; play surface → **match-ui** |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, hotseat/online board, deck builder, catalogues, Zustand stores, `src/client/decks/`, PeerJS adapters | Cards → **card-designer**; rules / `pendingDecision` types → **engine-developer**; legal lists → **deck-designer** |
-| [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts (squad / tactics / faces) and constructed critique (orphans, attribute identity) | Card rewrites → **card-designer**; engine / legality rules → **engine-developer**; builder UI → **match-ui** |
+| [deck-designer](.cursor/agents/deck-designer.md) | One shared deck and three Fighters. Play requirements are not construction bans | Card rewrites → **card-designer**; engine / legality rules → **engine-developer**; builder UI → **match-ui** |
 | [post-playtest](.cursor/agents/post-playtest.md) | Playtest debrief: notes + metrics → `docs/MECHANIC_ARCHETYPES.md` + specialist briefs | Print → **card-designer**; rules → **engine-developer**; lists → **deck-designer**; board friction → **match-ui** |
 | [prompt-engineer](.cursor/agents/prompt-engineer.md) | Cursor subagents, skills, rules, `TOOLS.md`, and routing docs so specialists stay in lane | Cards → **card-designer**; rules engine → **engine-developer**; play surface → **match-ui**; loadouts → **deck-designer** |
 

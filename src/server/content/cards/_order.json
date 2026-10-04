@@ -1,10 +1,12 @@
 [
-  "card-pressure",
-  "card-command-throw",
-  "card-keep-away",
-  "card-cross-rush",
-  "card-dragon-strike",
-  "card-technique-drill",
-  "card-focus",
-  "card-guard-up"
+  "card-brace",
+  "card-counter",
+  "card-open-palm",
+  "card-reforge-grip",
+  "card-vega-drill",
+  "card-ryu-form",
+  "card-open-manual",
+  "card-shift",
+  "card-call-out",
+  "card-anchor"
 ]

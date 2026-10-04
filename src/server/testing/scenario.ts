@@ -24,6 +24,7 @@ import type {
 import type { GameAction } from "../reducer/actions.js";
 import { advance } from "../reducer/reduce.js";
 import { resolveFaceForForge } from "../rules/faces.js";
+import { isOpeningBasicFace } from "../rules/loadout.js";
 import { createMatch, type MatchSetup, type PlayerSetup } from "../setup/createMatch.js";
 import {
   TEST_FACE_DECK,
@@ -52,6 +53,8 @@ const TEST_SETUP_CONFIG = {
   // Empty harness decks must not lose at setup, and must not shift RNG.
   cardsDrawnPerTurn: 0,
   deckOutEnabled: false,
+  // Opening named faces are packed into the harness deck on top of the pool.
+  faceDeckMaxCards: 24,
 };
 
 type ScenarioPlayer = Omit<PlayerSetup, "startingDice"> & {
@@ -80,13 +83,21 @@ export function newMatch(
     },
   ];
   const raw = overrides.players ?? defaultPlayers;
-  const toSetup = (player: ScenarioPlayer): PlayerSetup => ({
-    id: player.id,
-    squad: player.squad,
-    deck: player.deck ?? [],
-    faceDeck: player.faceDeck ?? TEST_FACE_DECK,
-    startingDice: player.startingDice ?? TEST_STARTING_DICE,
-  });
+  const toSetup = (player: ScenarioPlayer): PlayerSetup => {
+    const startingDice = player.startingDice ?? TEST_STARTING_DICE;
+    const faceDeck = [...(player.faceDeck ?? TEST_FACE_DECK)];
+    for (const id of startingDice.flat()) {
+      if (isOpeningBasicFace(id) || faceDeck.includes(id)) continue;
+      faceDeck.push(id);
+    }
+    return {
+      id: player.id,
+      squad: player.squad,
+      deck: player.deck ?? [],
+      faceDeck,
+      startingDice,
+    };
+  };
   const players: [PlayerSetup, PlayerSetup] = [toSetup(raw[0]), toSetup(raw[1])];
   return createMatch({
     matchId: "match-test",
@@ -192,13 +203,7 @@ export function forgeAction(
   if (instance === undefined) throw new Error(`scenario: unknown card ${cardInstanceId}`);
   const definition = getCard(instance.cardId);
   if (definition === undefined) throw new Error(`scenario: unknown definition ${instance.cardId}`);
-  const faceCardId = resolveFaceForForge(
-    state,
-    playerId,
-    definition.forge.kind,
-    definition.forge.attribute,
-    definition,
-  );
+  const faceCardId = resolveFaceForForge(state, playerId, definition);
   if (faceCardId === null) {
     throw new Error(`scenario: no eligible face for ${definition.name}`);
   }

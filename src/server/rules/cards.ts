@@ -1,6 +1,5 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { getFaceCard } from "../content/faces.js";
 import type {
   CardDefinition,
   CardDuration,
@@ -8,11 +7,8 @@ import type {
   CardLifecycle,
   CardType,
 } from "../model/cards.js";
-import type { GameRulesConfig } from "../model/config.js";
-import type { DieState } from "../model/dice.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import type { SymbolType } from "../model/symbols.js";
 import { requirementTotal } from "../model/symbols.js";
 import { isCreatureSilenced } from "./silence.js";
 import { whileShowingTotals } from "./whileShowing.js";
@@ -56,18 +52,18 @@ export const ritualsOf = (state: GameState, playerId: PlayerId): readonly CardIn
  * - leftover `instant` (retired) → leave for the graveyard
  */
 /**
- * Spec `030`. Equipment, overload, and continuous rituals stay in play.
- * Any other card is one-shot unless it sets `lifecycle`.
+ * Spec `030`. An equipment or overload region, or a continuous ritual
+ * region, stays in play. Any other card is one-shot unless it sets `lifecycle`.
  */
 export function lifecycleOf(card: CardDefinition): CardLifecycle {
   if (card.lifecycle !== undefined) return card.lifecycle;
-  if (card.type === "equipment" || card.type === "overload") return "persistent";
-  if (card.type === "ritual" && ritualDurationOf(card) === "continuous") return "persistent";
+  if (card.equipment !== undefined || card.overload !== undefined) return "persistent";
+  if (card.ritual !== undefined && ritualDurationOf(card) === "continuous") return "persistent";
   return "one-shot";
 }
 
 export function ritualDurationOf(card: CardDefinition): CardDuration | null {
-  if (card.type !== "ritual") return null;
+  if (card.ritual === undefined) return null;
   if (card.subtypes.includes("continuous") || card.subtypes.includes("reaction")) {
     return "continuous";
   }
@@ -93,29 +89,6 @@ export const findCardInstance = (
 ): CardInstance | undefined => state.cards[id];
 
 /**
- * Bible §9.1 over a batch. Replacing three Shield faces with three Corruption
- * ones is legal on a die that already holds two Corruption faces only if the
- * total stays inside the cap, which needs the whole substitution modelled at
- * once.
- */
-export function forgeExceedsAttributeLimit(
-  die: DieState,
-  slotIndexes: readonly number[],
-  incoming: SymbolType,
-  faces: number,
-  config: GameRulesConfig,
-): boolean {
-  const counts: Partial<Record<SymbolType, number>> = {};
-  for (const slot of die.slots) {
-    if (slotIndexes.includes(slot.index)) continue;
-    const face = getFaceCard(slot.faceCardId);
-    if (face === undefined) continue;
-    counts[face.symbol] = (counts[face.symbol] ?? 0) + 1;
-  }
-  return (counts[incoming] ?? 0) + faces > config.maxFacesOfSameAttributePerDie;
-}
-
-/**
  * A card is playable from hand when it has a resolvable effect region or a
  * board attachment region (equipment, overload, ritual). Cards that only forge
  * stay forge-only.
@@ -126,16 +99,16 @@ export const hasPlayableEffect = (definition: CardDefinition): boolean =>
   definition.overload !== undefined ||
   definition.ritual !== undefined;
 
-/** True for Instant / Reaction / Equipment / Overload (anything that is not a Ritual). */
+/** True when the card does not place a ritual region. */
 export const isNonRitualCard = (definition: CardDefinition): boolean =>
-  definition.type !== "ritual";
+  definition.ritual === undefined;
 
 /**
- * Hand reactions (`type: "reaction"`) and ritual reactions (`subtypes` include
- * `"reaction"`). Used for reaction-window legality.
+ * Hand Responses, and ritual regions whose subtype is `reaction`.
+ * Used for reaction-window legality.
  */
 export const isReactionCard = (definition: CardDefinition): boolean =>
-  definition.type === "reaction" || definition.subtypes.includes("reaction");
+  definition.type === "response" || definition.subtypes.includes("reaction");
 
 /** Total pile tokens in the header play/forge cost, if any. */
 export const playCostTotal = (definition: CardDefinition): number =>
@@ -182,6 +155,20 @@ export function canAffordForge(
  * Deck cards matching a search filter, in current deck order.
  * A card matches when its main `CardType` is listed in `filter`.
  */
+/** Deck cards that place a ritual region, in current deck order. */
+export function ritualIdsInDeck(
+  state: GameState,
+  playerId: PlayerId,
+): readonly CardInstanceId[] {
+  const player = state.players[playerId];
+  if (player === undefined) return [];
+  return player.deck.filter((id) => {
+    const card = state.cards[id];
+    if (card === undefined) return false;
+    return getCard(card.cardId)?.ritual !== undefined;
+  });
+}
+
 export function searchableInDeck(
   state: GameState,
   playerId: PlayerId,
@@ -235,11 +222,15 @@ export function replayableGraveyardTactics(
     if (card === undefined) return false;
     const definition = getCard(card.cardId);
     if (definition === undefined) return false;
-    if (definition.type === "instant") {
-      return (definition.effect?.effects.length ?? 0) > 0;
+    if (definition.ritual !== undefined) {
+      return definition.ritual.effects.length > 0;
     }
-    if (definition.type === "ritual") {
-      return (definition.ritual?.effects.length ?? 0) > 0;
+    if (
+      definition.type === "modify" &&
+      definition.equipment === undefined &&
+      definition.overload === undefined
+    ) {
+      return (definition.effect?.effects.length ?? 0) > 0;
     }
     return false;
   });

@@ -17,22 +17,20 @@ import {
 const EQUIP = testCard({
   id: "card-test-equip-attach",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: { mayTargetOpponent: false, abilities: [] },
 });
 
 const HEAL_ON_LUMINAR = testCard({
   id: "card-test-equip-heal-luminar",
   playCost: { luminar: 2, any: 1 },
-  attribute: "luminar",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
       {
         type: "on-absorb",
-        symbols: ["luminar", "shield"],
+        symbols: ["luminar"],
         absorberRelation: "ally",
         oncePerTurn: true,
         effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
@@ -44,8 +42,7 @@ const HEAL_ON_LUMINAR = testCard({
 const EMPOWER_ON_MECHANICAL = testCard({
   id: "card-test-equip-empower-mechanical",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
@@ -63,8 +60,7 @@ const EMPOWER_ON_MECHANICAL = testCard({
 const REDUCE_ON_HIT = testCard({
   id: "card-test-equip-reduce",
   playCost: { luminar: 2 },
-  attribute: "luminar",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [{ type: "on-take-damage", reduceBy: 1, oncePerTurn: true }],

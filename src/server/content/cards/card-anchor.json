@@ -1,0 +1,13 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-anchor",
+  "name": "Anchor",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "persistent",
+  "rulesText": "[Draw 1]. This stays in play.",
+  "forge": { "faces": 1, "target": "own-die" },
+  "effect": {
+    "effects": [{ "type": "draw-cards", "amount": 1 }]
+  }
+}

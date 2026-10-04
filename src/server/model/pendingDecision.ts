@@ -1,6 +1,5 @@
 import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
-import type { ForgeableFaceKind } from "./dice.js";
 import type {
   BounceHost,
   CreatureChoiceFilter,
@@ -121,7 +120,6 @@ export type PendingDecision =
       readonly type: "forge-faces";
       readonly controllerId: PlayerId;
       readonly faces: number;
-      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
       readonly sourceCardInstanceId: CardInstanceId | null;

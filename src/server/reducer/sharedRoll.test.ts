@@ -30,15 +30,11 @@ const MARTIAL_SLOT = 4;
 
 const P2_ON_ROLL = testFace({
   id: "face-test-shared-roll-p2-onroll",
-  kind: "synthetic",
-  symbol: "martial",
   onRoll: [{ type: "next-attack-bonus", amount: 1 }],
 });
 
 const CONVERT_STRIKE = testFace({
   id: "face-test-shared-roll-convert",
-  kind: "synthetic",
-  symbol: "arcane",
   convertRoll: true,
   pips: { arcane: 2 },
   onRoll: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
@@ -47,8 +43,7 @@ const CONVERT_STRIKE = testFace({
 const OPPONENT_ROLL_GEAR = testCard({
   id: "card-test-shared-roll-opponent-symbol",
   playCost: { martial: 2 },
-  attribute: "martial",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
@@ -64,7 +59,6 @@ const OPPONENT_ROLL_GEAR = testCard({
 
 const P2_ABSORB = testCreature({
   id: "creature-test-shared-roll-onabsorb",
-  attributes: ["martial"],
   standingAbilities: [
     {
       type: "on-absorb",
@@ -123,7 +117,7 @@ describe("shared ROLL_DICE", () => {
       expect(die.rolledSlotIndex).not.toBeNull();
     }
     const p2Attributes = Object.values(state.symbols).filter(
-      (symbol) => symbol.ownerId === P2 && symbol.symbol !== "shield",
+      (symbol) => symbol.ownerId === P2,
     );
     expect(p2Attributes.every((symbol) => symbol.status === "absorbed")).toBe(true);
     expect(p2Attributes.length).toBeGreaterThan(0);

@@ -7,7 +7,6 @@ import type {
   StandingTrigger,
 } from "../model/cards.js";
 import type { BattlefieldPosition } from "../model/creatures.js";
-import type { FaceKind } from "../model/dice.js";
 import type { EffectDefinition } from "../model/effects.js";
 import {
   asEffectInstanceId,
@@ -209,7 +208,7 @@ function collectHosts(draft: Draft): TriggerHost[] {
   for (const card of Object.values(draft.cards)) {
     if (card.zone !== "ritual" || card.ritualOrientation !== "ready") continue;
     const definition = getCard(card.cardId);
-    if (definition?.type !== "ritual") continue;
+    if (definition?.ritual === undefined) continue;
     if (!definition.subtypes.includes("continuous")) continue;
     const abilities = definition.ritual?.standingAbilities ?? [];
     if (abilities.length === 0) continue;
@@ -340,7 +339,6 @@ export function queueAbsorbTriggers(
   /** Optional source creature for face/overload onAbsorb (`source-creature`). */
   faceSourceCreatureId: CreatureId | null = null,
 ): void {
-  let faceKind: FaceKind | null = null;
   let faceCardId: FaceCardId | undefined;
 
   if (sourceDieId !== null) {
@@ -348,13 +346,10 @@ export function queueAbsorbTriggers(
     const slotIndex = die?.rolledSlotIndex;
     if (die !== undefined && slotIndex !== null && slotIndex !== undefined) {
       faceCardId = die.slots[slotIndex]?.faceCardId;
-      if (faceCardId !== undefined) {
-        faceKind = getFaceCard(faceCardId)?.kind ?? null;
-      }
     }
   }
 
-  fireOnAbsorb(draft, absorber, absorbingPlayerId, symbol, faceKind);
+  fireOnAbsorb(draft, absorber, absorbingPlayerId, symbol);
 
   // Face/overload onAbsorb fire when that face's pip is absorbed.
   if (faceCardId === undefined) return;
@@ -387,18 +382,11 @@ function fireOnAbsorb(
   absorber: AbsorbAbsorber,
   absorberOwnerId: PlayerId,
   symbol: SymbolType,
-  faceKind: FaceKind | null,
 ): void {
   for (const host of collectHosts(draft)) {
     for (const ability of host.abilities) {
       if (ability.type !== "on-absorb") continue;
       if (ability.symbols !== undefined && !ability.symbols.includes(symbol)) continue;
-      if (
-        ability.faceKinds !== undefined &&
-        (faceKind === null || !ability.faceKinds.includes(faceKind))
-      ) {
-        continue;
-      }
       const relation = ability.absorberRelation ?? "self";
       if (!matchesAbsorberRelation(relation, host, absorber, absorberOwnerId)) {
         continue;

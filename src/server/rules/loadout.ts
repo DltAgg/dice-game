@@ -1,11 +1,9 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
-import { attributeAllowsNaturalFaces } from "../model/attributes.js";
 import { FACE_SLOTS_PER_DIE, type StartingDiceLayout } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { CardId, CreatureDefinitionId, FaceCardId } from "../model/ids.js";
-import { isAttributeSymbol, SHIELD } from "../model/symbols.js";
 import { validateFaceDeck } from "./faces.js";
 
 export type LoadoutValidation =
@@ -31,14 +29,15 @@ export function isStartingDiceLayout(value: unknown): value is StartingDiceLayou
 }
 
 /**
- * Identity naturals plus Shield. Named naturals (Dawnwright) print rules text
- * and consume the face deck; identity faces do not.
+ * A blank face. Named faces print rules, a technique, or a face type and
+ * consume the face deck. Blank faces do not.
  */
 export function isOpeningBasicFace(id: FaceCardId): boolean {
   const face = getFaceCard(id);
   if (face === undefined) return false;
-  if (face.kind === "untyped" && face.symbol === SHIELD) return true;
-  return face.kind === "natural" && isAttributeSymbol(face.symbol) && face.rulesText.trim() === "";
+  if (face.rulesText.trim() !== "") return false;
+  if (face.technique !== undefined || face.faceType !== undefined) return false;
+  return face.onRoll.length === 0;
 }
 
 /** On roll, convert Choose one, or While showing — not extra pips alone (spec `025`). */
@@ -55,20 +54,18 @@ function flattenStartingDice(startingDice: StartingDiceLayout): readonly FaceCar
 }
 
 /**
- * Face-deck remainder after consuming non-basic opening installs (multiset).
- * Basics never consume, even if the same id is listed in `faceDeck`.
+ * Face-deck remainder after opening installs. One face card backs every slot
+ * showing that id, so every copy of an installed non-basic leaves the pool.
+ * Blank faces never consume, even when the same id is listed in `faceDeck`.
  */
 export function leftoverFacePool(
   faceDeck: readonly FaceCardId[],
   startingDice: StartingDiceLayout,
 ): FaceCardId[] {
-  const remaining = [...faceDeck];
-  for (const id of flattenStartingDice(startingDice)) {
-    if (isOpeningBasicFace(id)) continue;
-    const index = remaining.indexOf(id);
-    if (index >= 0) remaining.splice(index, 1);
-  }
-  return remaining;
+  const installed = new Set(
+    flattenStartingDice(startingDice).filter((id) => !isOpeningBasicFace(id)),
+  );
+  return faceDeck.filter((id) => !installed.has(id));
 }
 
 function validateOneDie(
@@ -76,32 +73,19 @@ function validateOneDie(
   dieIndex: number,
   config: GameRulesConfig,
 ): LoadoutValidation {
-  if (die.length !== FACE_SLOTS_PER_DIE) {
+  if (die.length !== config.facesPerDie) {
     return {
       ok: false,
-      reason: `starting die ${String(dieIndex + 1)} has ${String(die.length)} faces, need ${String(FACE_SLOTS_PER_DIE)}`,
+      reason: `starting die ${String(dieIndex + 1)} has ${String(die.length)} faces, need ${String(config.facesPerDie)}`,
     };
   }
 
-  let shields = 0;
-  let synthetics = 0;
   let onRollFaces = 0;
-  const byAttribute = new Map<string, number>();
 
   for (const id of die) {
     const definition = getFaceCard(id);
     if (definition === undefined) {
       return { ok: false, reason: `unknown opening face "${id}"` };
-    }
-    if (
-      definition.kind === "natural" &&
-      isAttributeSymbol(definition.symbol) &&
-      !attributeAllowsNaturalFaces(definition.symbol)
-    ) {
-      return {
-        ok: false,
-        reason: `natural faces are not allowed for attribute "${definition.symbol}"`,
-      };
     }
     if (definition.forgeRestriction === "echo-cards") {
       return {
@@ -115,39 +99,14 @@ function validateOneDie(
         reason: `opening dice cannot include stay/lock face "${id}"`,
       };
     }
-    if (definition.symbol === SHIELD) shields += 1;
-    if (definition.kind === "synthetic") synthetics += 1;
     if (countsTowardOpeningOnRollCap(id)) onRollFaces += 1;
-    if (isAttributeSymbol(definition.symbol)) {
-      byAttribute.set(definition.symbol, (byAttribute.get(definition.symbol) ?? 0) + 1);
-    }
   }
 
-  if (shields < config.startingMinShieldsPerDie) {
-    return {
-      ok: false,
-      reason: `starting die ${String(dieIndex + 1)} has ${String(shields)} Shield faces, min ${String(config.startingMinShieldsPerDie)}`,
-    };
-  }
-  if (synthetics > config.startingMaxSyntheticsPerDie) {
-    return {
-      ok: false,
-      reason: `starting die ${String(dieIndex + 1)} has ${String(synthetics)} synthetics, max ${String(config.startingMaxSyntheticsPerDie)}`,
-    };
-  }
   if (onRollFaces > config.startingMaxOnRollFacesPerDie) {
     return {
       ok: false,
       reason: `starting die ${String(dieIndex + 1)} has ${String(onRollFaces)} on-roll faces, max ${String(config.startingMaxOnRollFacesPerDie)}`,
     };
-  }
-  for (const [attribute, count] of byAttribute) {
-    if (count > config.maxFacesOfSameAttributePerDie) {
-      return {
-        ok: false,
-        reason: `starting die ${String(dieIndex + 1)} has ${String(count)} ${attribute} faces, max ${String(config.maxFacesOfSameAttributePerDie)}`,
-      };
-    }
   }
 
   return { ok: true };
@@ -168,8 +127,7 @@ export function validateStartingDice(
     };
   }
 
-  let synthetics = 0;
-  const remaining = [...faceDeck];
+  const packed = new Set(faceDeck);
 
   for (let dieIndex = 0; dieIndex < startingDice.length; dieIndex += 1) {
     const die = startingDice[dieIndex];
@@ -180,25 +138,14 @@ export function validateStartingDice(
     if (!one.ok) return one;
 
     for (const id of die) {
-      const definition = getFaceCard(id);
-      if (definition?.kind === "synthetic") synthetics += 1;
       if (isOpeningBasicFace(id)) continue;
-      const index = remaining.indexOf(id);
-      if (index < 0) {
+      if (!packed.has(id)) {
         return {
           ok: false,
-          reason: `opening special "${id}" is not in the face deck (or a second copy is required)`,
+          reason: `opening special "${id}" is not in the face deck`,
         };
       }
-      remaining.splice(index, 1);
     }
-  }
-
-  if (synthetics > config.startingMaxSyntheticsPerPlayer) {
-    return {
-      ok: false,
-      reason: `opening dice have ${String(synthetics)} synthetics, max ${String(config.startingMaxSyntheticsPerPlayer)}`,
-    };
   }
 
   return { ok: true };

@@ -26,9 +26,11 @@ description: >-
    `optional-overcharge` (Mechanical face-marker opcode).
 6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
 7. **Proving cards** — print uses holder voice and
-   [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md); do not default new proving
-   cards to 1-token `playCost` when 2+ is enough. A new token joins Mark/Strip
-   X — do not add Dose-style verbs. New tokens are Mark/Strip arguments, not new opcodes.
+   [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Follow
+   [`docs/specs/030-offensive-control.md`](../../../docs/specs/030-offensive-control.md):
+   Response or Modify, not pile `playCost`, not a new card type. A new token
+   joins Mark/Strip X — do not add Dose-style verbs. New tokens are Mark/Strip
+   arguments, not new opcodes.
 
 ## Typical change: new effect kind
 
@@ -74,6 +76,9 @@ Printed `[Spend]` / `[Requires]` are not enforced — see `docs/RULEBOOK.md`.
 There is no leftover-rolled flip. The actions phase is one window for absorb,
 attacks, plays, forges, Overcharge, and ready rituals (any order).
 Ready rituals may activate during actions; not during roll.
+New proving cards follow spec `030` (Response or Modify, named faces). Do not
+extend pile absorb, natural/synthetic forge, or ritual types when that card
+can use the current model.
 
 ## When content-only is enough
 

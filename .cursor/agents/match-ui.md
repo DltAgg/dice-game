@@ -83,7 +83,7 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
 |---|---|
 | New card / print / catalogue data | `card-designer` subagent |
 | New `GameAction`, `pendingDecision`, hook, effect, loadout **rule** | `engine-developer` subagent |
-| Legal Aggro/Control/Combo lists, orphan cards, attribute identity | `deck-designer` subagent |
+| Shared deck, orphans, play-check vs construction ban | `deck-designer` subagent |
 | New protocol fields that encode outcomes (damage amounts, rolls) | Stop — that violates host authority. Wrap existing `GameAction` only. |
 
 If engine-developer adds a new `pendingDecision` or action, you surface it

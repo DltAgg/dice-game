@@ -5,10 +5,8 @@ import {
   getFaceCard,
   isFaceCardInPool,
   type FaceCardId,
-  type ForgeableFaceKind,
   type GameState,
   type PlayerId,
-  type SymbolType,
 } from "@server";
 import {
   BoardModal,
@@ -27,8 +25,6 @@ import {
 export function FacePickModal({
   state,
   playerId,
-  kind,
-  attribute,
   forgingCard,
   sourceCard,
   eligibleIds,
@@ -40,8 +36,6 @@ export function FacePickModal({
 }: {
   state: GameState;
   playerId: PlayerId;
-  kind: ForgeableFaceKind;
-  attribute: SymbolType;
   forgingCard?: { readonly forgeTags?: readonly string[] };
   /** Tactic/ritual being forged — shown when there is no pending `Caused by` source. */
   sourceCard?: NonNullable<ReturnType<typeof getCard>>;
@@ -54,7 +48,7 @@ export function FacePickModal({
   backLabel?: string;
 }) {
   const eligible =
-    eligibleIds ?? eligibleFacesForForge(state, playerId, kind, attribute, forgingCard);
+    eligibleIds ?? eligibleFacesForForge(state, playerId, forgingCard);
   const pendingSource = <CausedByLine state={state} />;
 
   return (
@@ -91,7 +85,7 @@ export function FacePickModal({
                     )}
                   </p>
                   <p className="text-xs text-stone-500">
-                    {face?.kind} · {face?.symbol}
+                    {face?.name ?? faceCardId}
                     {inPool ? " · from face pool" : ""}
                     {copies > 0 ? ` · ${String(copies)} already installed (copy)` : ""}
                   </p>

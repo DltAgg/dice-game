@@ -4,26 +4,16 @@ import { getCard, playCostTotal, type CardId, type CardType } from "@server";
 export const COST_CURVE_CAP = 5;
 
 export const CARD_TYPE_LABELS: Record<CardType, string> = {
-  instant: "Instant",
-  reaction: "Reaction",
-  equipment: "Equipment",
-  overload: "Overload",
-  ritual: "Ritual",
+  modify: "Modify",
+  response: "Response",
 };
 
-const CARD_TYPES: readonly CardType[] = [
-  "instant",
-  "reaction",
-  "equipment",
-  "overload",
-  "ritual",
-];
+const CARD_TYPES: readonly CardType[] = ["modify", "response"];
 
 export interface DeckCostCardEntry {
   readonly id: CardId;
   readonly name: string;
   readonly type: CardType;
-  readonly attribute: string;
   readonly cost: number;
   readonly copies: number;
 }
@@ -59,11 +49,8 @@ function bucketLabel(bucket: number): string {
 
 function emptyByType(): Record<CardType, number> {
   return {
-    instant: 0,
-    reaction: 0,
-    equipment: 0,
-    overload: 0,
-    ritual: 0,
+    modify: 0,
+    response: 0,
   };
 }
 
@@ -110,7 +97,6 @@ export function summarizeDeckCosts(deck: readonly CardId[]): DeckCostSummary {
       id,
       name: def.name,
       type: def.type,
-      attribute: def.attribute,
       cost,
       copies,
     });

@@ -1,6 +1,5 @@
 import {
   formatEffectRegion,
-  formatForgeLine,
   formatTypeLine,
   type CardDefinition,
   type FaceCardDefinition,
@@ -263,11 +262,9 @@ export function lookupKeywordReminders(print: string): readonly KeywordReminder[
   return rows;
 }
 
-/** Catalogue print the hover aside should scan (type, forge, effect). */
+/** Catalogue print the hover aside should scan (type and effect). */
 export function tacticPrintText(card: CardDefinition): string {
-  return [formatTypeLine(card), formatForgeLine(card.forge), ...formatEffectRegion(card)].join(
-    "\n",
-  );
+  return [formatTypeLine(card), ...formatEffectRegion(card)].join("\n");
 }
 
 /** Face-card rules text the hover aside should scan. */

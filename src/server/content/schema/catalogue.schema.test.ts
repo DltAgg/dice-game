@@ -56,7 +56,7 @@ describe("catalogue JSON schemas", () => {
       validateCard({
         id: "card-example",
         name: "Example",
-        type: "ritual",
+        type: "modify",
         subtypes: ["continuous"],
         attribute: "arcane",
         forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
@@ -70,7 +70,7 @@ describe("catalogue JSON schemas", () => {
       validateCard({
         id: "card-example",
         name: "Example",
-        type: "equipment",
+        type: "modify",
         subtypes: [],
         attribute: "martial",
         forge: { faces: 1, kind: "natural", attribute: "martial", target: "own-die" },
@@ -85,7 +85,7 @@ describe("catalogue JSON schemas", () => {
       validateCard({
         id: "card-example",
         name: "Example",
-        type: "instant",
+        type: "modify",
         subtypes: [],
         attribute: "arcane",
         forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
@@ -100,7 +100,7 @@ describe("catalogue JSON schemas", () => {
       validateCard({
         id: "card-example",
         name: "Example",
-        type: "instant",
+        type: "modify",
         subtypes: [],
         attribute: "luminar",
         forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
@@ -148,10 +148,9 @@ describe("catalogue JSON schemas", () => {
       validateCard({
         id: "card-example",
         name: "Example",
-        type: "instant",
+        type: "modify",
         subtypes: [],
-        attribute: "darkness",
-        forge: { faces: 1, kind: "natural", attribute: "darkness", target: "own-die" },
+        forge: { faces: 1, target: "own-die" },
         rulesText: "[Strike 1] each enemy.",
         effect: {
           effects: [{ type: "damage", amount: 1, target: { kind: "enemy-all" } }],
@@ -165,13 +164,10 @@ describe("catalogue JSON schemas", () => {
       validateCard({
         id: "card-example",
         name: "Example",
-        type: "instant",
+        type: "modify",
         subtypes: [],
-        attribute: "martial",
         forge: {
           faces: 1,
-          kind: "natural",
-          attribute: "martial",
           target: "own-die",
           effects: [{ type: "next-attack-bonus", amount: 1 }],
           rulesText: "[Empower 1].",
@@ -189,10 +185,9 @@ describe("catalogue JSON schemas", () => {
       validateCard({
         id: "card-example",
         name: "Example",
-        type: "instant",
+        type: "modify",
         subtypes: [],
-        attribute: "toxin",
-        forge: { faces: 1, kind: "natural", attribute: "toxin", target: "own-die" },
+        forge: { faces: 1, target: "own-die" },
         rulesText: "[Mark 1 Toxin].",
         effect: {
           effects: [

@@ -12,15 +12,14 @@ When authoring cards, new mechanics, hooks, tokens, keywords, or other rules
 print:
 
 1. Read `docs/KEYWORDS.md` first.
-2. Prefer an existing operator + argument over a new verb — `[Mark N Toxin]`,
-   `[Mark N Toxin on attacks]`, `[Forge N]` on their die, `[Overcharge]`
-   (spec `021` grammar / master rule — do **not** reprint on every
-   card). Do **not** mint Dose / Envenom / Brand / Contaminate
-   for a slightly different window. Spec `013` `optional-overcharge` is a
-   Mechanical face-marker opcode, not this keyword.
-3. A new **token** (creature counter, Shield, face marker) gets a rulebook
-   paragraph and joins **X** on `[Mark]` / `[Strip]`. It does not get its own
-   keyword. Attribute exclusives still gate the **argument**, not the verb.
+2. Prefer an existing operator + argument over a new verb — `[Mark N X]`,
+   `[Strip N X]`, `[Modify]`. Do **not** mint Dose / Envenom / Brand /
+   Contaminate, or a verb for Block, Dodge, Counter, or Tag. Those are
+   effects or operations, not types. Do not copy the glossary's pile-era
+   `[Forge 1 Synthetic …]` lines or attribute-exclusive table onto new
+   Fighters, faces, or cards.
+3. A new **token** joins **X** on `[Mark]` / `[Strip]`. It does not get its
+   own keyword. Do not author Shield as a resource.
 4. Add a **physics** keyword (`[Empower]`, `[Pierce]`, `[Reduce]`, `[Prevent]`) only when
    the operation is not placing or removing a token.
 5. Timing prefixes stay prefixes: `On roll: [Mark 1 Toxin].` Never “Whenever…”.

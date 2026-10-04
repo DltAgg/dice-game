@@ -1,7 +1,7 @@
 import { getFaceCard } from "../../content/faces.js";
 import { inherentPipsOf, type FaceCardDefinition } from "../../model/dice.js";
 import type { DieId, FaceCardId, PlayerId, SymbolInstanceId } from "../../model/ids.js";
-import { symbolTokenEntries, type SymbolType } from "../../model/symbols.js";
+import { symbolTokenEntries } from "../../model/symbols.js";
 import type { Draft } from "../draft.js";
 import { isSlotSilenced } from "../../rules/silence.js";
 import { createRolledDieSymbol } from "./shownFace.js";
@@ -111,7 +111,6 @@ export type ShownFaceRollEntry = {
   readonly ownerId: PlayerId;
   readonly slotIndex: number;
   readonly faceCardId: FaceCardId;
-  readonly symbol: SymbolType;
   readonly suppressInherent: boolean;
   readonly symbolIds: readonly SymbolInstanceId[];
   readonly converting: boolean;

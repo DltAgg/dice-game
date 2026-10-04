@@ -17,11 +17,11 @@ alwaysApply: true
 - DoD: `npm run typecheck && npm test && npm run lint`.
 - Commit / push only when the user asks.
 - Print voice is the holder (`you` = the player whose field the card sits on; `opponent` = their opponent, including after a hand-off).
-- No live attribute pile: do not author or document `[Requires]` / `[Spend]` / Active-when pile gates as enforced fuel. Catalogue `playCost` may remain unused data until a future economy ships.
-- Content design then authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content` + `.cursor/skills/author-content/design-craft.md`). Playtest debrief → `.cursor/agents/post-playtest.md` first. New mechanics → `engine-developer`, not the parent.
+- Content model is the 3v3 tag fighter (`docs/specs/030-offensive-control.md`): named dice as inputs, Fighters, Response and Modify cards, one shared Meter pool, Tag as an operation, Assist on the Fighter. No attribute-pile fuel, no natural/synthetic face kinds, no Shield resource, no per-fighter decks, no deckbuilding dice. Do not author Instant/Reaction/Equipment/Overload/Ritual as card types.
+- Content design then authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content` + `.cursor/skills/author-content/design.md`). A request that breaks that model is redirected to the closest valid layer, not authored. Playtest debrief → `.cursor/agents/post-playtest.md` first. New mechanics → `engine-developer`, not the parent.
 - Engine/reducer/hooks/resolution → subagent `.cursor/agents/engine-developer.md` (skills `develop-engine`, `implement-hooks`).
 - Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.
 - Match / lobby / deck builder / PeerJS adapters → subagent `.cursor/agents/match-ui.md` (skill `match-ui`). No rules in UI.
 - Match metrics dump with no playtest notes → skill `analyze-match-metrics` plus `src/client/metrics` (spec `014`). Copy agent prompt is instructions only; attach Download JSON. Full debrief (notes + feel) → `post-playtest`.
-- Constructed loadouts / “does this card have a home?” / attribute identity in builds → subagent `.cursor/agents/deck-designer.md`.
+- Constructed loadouts / “does this card have a home?” → subagent `.cursor/agents/deck-designer.md`. One shared deck per team; Fighter play requirements are not construction bans.
 - Human-to-AI interactions (agents, skills, rules, TOOLS.md, AGENTS.md routing) → subagent `.cursor/agents/prompt-engineer.md` (skill `author-interactions`). Do not grow specialists from the parent.

@@ -27,10 +27,11 @@ import {
 import { useDeckStore } from "@client/store/deckStore";
 import { CardInspectPanel } from "@client/ui/decks/CardInspectPanel";
 import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
+import { UI_CONFIG } from "@client/ui/config";
 import { DeckCostCurveSection } from "./DeckCostCurveSection";
+import { OpeningDiceSection } from "./OpeningDiceSection";
 import { CatalogueTab } from "./CatalogueTab";
 import { DeckRow } from "./DeckRow";
-import { FacePaintChip } from "./FacePaintChip";
 import {
   CATALOGUE_FILTERS,
   catalogueSearchLabel,
@@ -237,9 +238,11 @@ export function DeckBuilder() {
         <p className="mt-1 max-w-xl text-sm text-[var(--ink-muted)]">
           Hover any card to inspect it. Build a loadout (
           {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
-          face deck ≤{cfg.faceDeckMaxCards}; opening dice ≤{cfg.startingMaxSyntheticsPerPlayer}{" "}
-          synthetics total, ≤{cfg.startingMaxSyntheticsPerDie} per die).
-          Illegal drafts can be saved; Play refuses them until they are legal.
+          face deck ≤{cfg.faceDeckMaxCards}
+          {UI_CONFIG.showDeckBuilderOpeningDice
+            ? `; opening dice ≤${String(cfg.startingMaxSyntheticsPerPlayer)} synthetics total, ≤${String(cfg.startingMaxSyntheticsPerDie)} per die`
+            : ""}
+          ). Illegal drafts can be saved; Play refuses them until they are legal.
         </p>
         </div>
         <label className="flex w-full max-w-xs flex-col gap-1 text-sm sm:w-56">
@@ -302,111 +305,20 @@ export function DeckBuilder() {
         </div>
       </section>
 
-      <section>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Opening dice
-        </h2>
-        <p className="mt-1 text-xs text-stone-500">
-          Select a slot, then a basic or a face-deck special below (or Place on a face row).
-          Leftover pool is mid-game forge inventory — click a leftover special to install it.
-          {readonly ? " Builtin decks are read-only; Save as new to edit opening dice." : ""}
-        </p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          {startingDice.map((die, dieIndex) => (
-            <div key={`die-${String(dieIndex)}`} className="rounded-xl border border-stone-800 p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/70">
-                Die {dieIndex + 1}
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {die.map((id, slot) => {
-                  const face = getFaceCard(id);
-                  const selectedSlot =
-                    paintTarget?.die === dieIndex && paintTarget.slot === slot;
-                  return (
-                    <button
-                      key={`d${String(dieIndex)}-s${String(slot)}`}
-                      type="button"
-                      disabled={readonly}
-                      className={
-                        selectedSlot
-                          ? "rounded border border-[var(--accent)] bg-[var(--accent)]/15 px-2 py-2 text-left"
-                          : "rounded border border-stone-700 bg-stone-950 px-2 py-2 text-left hover:border-stone-500"
-                      }
-                      onClick={() => setPaintTarget({ die: dieIndex as 0 | 1, slot })}
-                      onMouseEnter={() => setPreview({ kind: "face", id })}
-                    >
-                      <p className="truncate text-sm text-stone-100">{face?.name ?? id}</p>
-                      <p className="truncate text-[10px] capitalize text-stone-500">
-                        {face?.kind} · {face?.symbol}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Basics
-        </p>
-        <div className="mt-1 flex flex-wrap gap-2">
-          {BASIC_FACE_CARDS.map((face) => (
-            <FacePaintChip
-              key={face.id}
-              name={face.name}
-              disabled={readonly || paintTarget === null}
-              onPaint={() => paintSlot(face.id)}
-              onPreview={() => setPreview({ kind: "face", id: face.id })}
-            />
-          ))}
-        </div>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Face-deck specials
-        </p>
-        <div className="mt-1 flex flex-wrap gap-2">
-          {faceDeckSpecials.length === 0 && (
-            <p className="text-xs text-stone-600">
-              No named specials in the face deck yet — add some from the Faces catalogue, then
-              place them here.
-            </p>
-          )}
-          {faceDeckSpecials.map((id) => {
-            const face = getFaceCard(id);
-            return (
-              <FacePaintChip
-                key={id}
-                name={face?.name ?? id}
-                disabled={readonly || paintTarget === null}
-                onPaint={() => paintSlot(id)}
-                onPreview={() => setPreview({ kind: "face", id })}
-              />
-            );
-          })}
-        </div>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-          Leftover pool ({leftoverPool.length})
-        </p>
-        <ul className="mt-1 flex flex-wrap gap-2">
-          {leftoverPool.length === 0 && (
-            <li className="text-xs text-stone-600">Empty — every face-deck special is installed.</li>
-          )}
-          {leftoverPool.map((id, index) => {
-            const face = getFaceCard(id);
-            return (
-              <li key={`${id}-${String(index)}`}>
-                <FacePaintChip
-                  name={face?.name ?? id}
-                  disabled={readonly || paintTarget === null}
-                  onPaint={() => paintSlot(id)}
-                  onPreview={() => setPreview({ kind: "face", id })}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+      {UI_CONFIG.showDeckBuilderOpeningDice ? (
+        <OpeningDiceSection
+          readonly={readonly}
+          startingDice={startingDice}
+          paintTarget={paintTarget}
+          faceDeckSpecials={faceDeckSpecials}
+          leftoverPool={leftoverPool}
+          onSelectSlot={(die, slot) => setPaintTarget({ die, slot })}
+          onPaint={paintSlot}
+          onPreview={setPreview}
+        />
+      ) : null}
 
-      <DeckCostCurveSection deck={deck} />
+      {UI_CONFIG.showDeckBuilderCostCurve ? <DeckCostCurveSection deck={deck} /> : null}
 
       {/* Tactics (left) + preview/search (right): matched fixed height */}
       <div className="grid h-[min(62vh,680px)] grid-cols-1 gap-4 lg:grid-cols-2">
@@ -434,7 +346,7 @@ export function DeckBuilder() {
                 <li key={id}>
                   <DeckRow
                     title={card.name}
-                    subtitle={`${card.attribute} · ${copies}/${cfg.deckMaxCopiesPerCard}`}
+                    subtitle={`${card.type} · ${copies}/${cfg.deckMaxCopiesPerCard}`}
                     copies={copies}
                     maxCopies={cfg.deckMaxCopiesPerCard}
                     active={active}
@@ -498,7 +410,7 @@ export function DeckBuilder() {
                     <li key={card.id}>
                       <DeckRow
                         title={card.name}
-                        subtitle={`${card.type} · ${card.attribute} · in deck ${copies}/${cfg.deckMaxCopiesPerCard}`}
+                        subtitle={`${card.type} · in deck ${copies}/${cfg.deckMaxCopiesPerCard}`}
                         copies={copies}
                         maxCopies={cfg.deckMaxCopiesPerCard}
                         active={active}
@@ -522,15 +434,19 @@ export function DeckBuilder() {
                     <li key={face.id}>
                       <DeckRow
                         title={face.name}
-                        subtitle={`face · ${face.kind} · ${face.symbol} · in deck ×${copies}`}
+                        subtitle={`face · in deck ×${copies}`}
                         copies={copies}
                         maxCopies={cfg.faceDeckMaxCards}
                         active={active}
                         readonly={readonly}
                         addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
                         onHover={() => setPreview({ kind: "face", id: face.id })}
-                        onAssign={() => paintSlot(face.id)}
-                        canAssign={paintTarget !== null}
+                        {...(UI_CONFIG.showDeckBuilderOpeningDice
+                          ? {
+                              onAssign: () => paintSlot(face.id),
+                              canAssign: paintTarget !== null,
+                            }
+                          : {})}
                         onAdd={() =>
                           setFaceDeck(addCopy(faceDeck, face.id, cfg.faceDeckMaxCards))
                         }
@@ -574,15 +490,19 @@ export function DeckBuilder() {
                 <li key={id} className="w-[calc(50%-0.25rem)] min-w-[10rem] sm:w-[calc(33.333%-0.375rem)] lg:w-[calc(25%-0.375rem)] xl:w-[calc(16.666%-0.417rem)]">
                   <DeckRow
                     title={face.name}
-                    subtitle={`${face.kind} · ${face.symbol}`}
+                    subtitle={face.name}
                     copies={copies}
                     maxCopies={cfg.faceDeckMaxCards}
                     active={active}
                     readonly={readonly}
                     addDisabled={faceDeck.length >= cfg.faceDeckMaxCards}
                     onHover={() => setPreview({ kind: "face", id })}
-                    onAssign={() => paintSlot(id)}
-                    canAssign={paintTarget !== null}
+                    {...(UI_CONFIG.showDeckBuilderOpeningDice
+                      ? {
+                          onAssign: () => paintSlot(id),
+                          canAssign: paintTarget !== null,
+                        }
+                      : {})}
                     onAdd={() =>
                       setFaceDeck(addCopy(faceDeck, id, cfg.faceDeckMaxCards))
                     }

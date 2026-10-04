@@ -77,7 +77,10 @@ export function useTechnique(
 
   const secondaryFace = showingFaceCard(draft, secondaryDieId);
   if (secondaryFace === undefined) return "INVALID_TARGET";
-  if (!secondaryMatches(secondaryFace, technique.secondary)) return "ATTACK_NOT_FUELLED";
+  const relaxed = (creature.enabledTechniqueIds ?? []).includes(technique.id);
+  if (!secondaryMatches(secondaryFace, technique.secondary) && !relaxed) {
+    return "ATTACK_NOT_FUELLED";
+  }
 
   const baseEffects = technique.effects;
   if (baseEffects.length === 0 && (secondaryFace.secondaryEffects?.length ?? 0) === 0) {

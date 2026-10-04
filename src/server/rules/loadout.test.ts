@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ALL_CARDS, PRESSURE } from "../content/cards.js";
-import { KORR, MAGNUS, NYX } from "../content/creatures.js";
-import { SHIELD_FACE_ID, naturalFaceId } from "../content/faces.js";
+import { ALL_CARDS, OPEN_PALM } from "../content/cards.js";
+import { MAGNUS, RYU, VEGA } from "../content/creatures.js";
 import {
   AGGRO_LOADOUT,
   ALL_BUILTIN_LOADOUTS,
@@ -24,14 +23,15 @@ import {
 } from "./loadout.js";
 import {
   TEST_FACE_DECK,
+  TEST_SHIELD_FACE_ID,
   TEST_SYNTHETIC_MECHANICAL_A,
   TEST_SYNTHETIC_MECHANICAL_B,
   TEST_SYNTHETIC_MECHANICAL_C,
 } from "../testing/fixtures/index.js";
-import { testFace } from "../testing/fixtures/builders.js";
+import { testFace, testNaturalFaceId } from "../testing/fixtures/builders.js";
 
-const mechanical = naturalFaceId("mechanical");
-const luminar = naturalFaceId("luminar");
+const mechanical = testNaturalFaceId("mechanical");
+const luminar = testNaturalFaceId("luminar");
 
 const identityDie = (
   a = mechanical,
@@ -39,17 +39,17 @@ const identityDie = (
   c = mechanical,
   d = luminar,
   e = luminar,
-  f = SHIELD_FACE_ID,
+  f = TEST_SHIELD_FACE_ID,
 ): DieFaceLayout => [a, b, c, d, e, f];
 
 const identityPair = (): readonly [DieFaceLayout, DieFaceLayout] => [
   identityDie(),
-  identityDie(mechanical, mechanical, luminar, luminar, luminar, SHIELD_FACE_ID),
+  identityDie(mechanical, mechanical, luminar, luminar, luminar, TEST_SHIELD_FACE_ID),
 ];
 
 describe("validateTacticsDeck", () => {
   it("accepts the Tag Skirmish tactics list under TAG_FIGHTER_RULES", () => {
-    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(16);
+    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(20);
     expect(validateTacticsDeck(TAG_SKIRMISH_LOADOUT.deck, TAG_FIGHTER_RULES)).toEqual({
       ok: true,
     });
@@ -66,7 +66,7 @@ describe("validateTacticsDeck", () => {
   });
 
   it("refuses a deck below the minimum", () => {
-    const result = validateTacticsDeck([PRESSURE], DEFAULT_RULES_CONFIG);
+    const result = validateTacticsDeck([OPEN_PALM], DEFAULT_RULES_CONFIG);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/min 40/);
   });
@@ -74,7 +74,7 @@ describe("validateTacticsDeck", () => {
   it("refuses a deck above the maximum", () => {
     const oversized = Array.from(
       { length: DEFAULT_RULES_CONFIG.deckMaxCards + 1 },
-      () => PRESSURE,
+      () => OPEN_PALM,
     );
     expect(oversized).toHaveLength(51);
     const result = validateTacticsDeck(oversized, DEFAULT_RULES_CONFIG);
@@ -84,23 +84,23 @@ describe("validateTacticsDeck", () => {
 
   it("enforces an exact deck size when one is configured", () => {
     const exact = { ...DEFAULT_RULES_CONFIG, deckSize: 2 };
-    expect(validateTacticsDeck([PRESSURE, PRESSURE], exact)).toEqual({ ok: true });
-    const short = validateTacticsDeck([PRESSURE], exact);
+    expect(validateTacticsDeck([OPEN_PALM, OPEN_PALM], exact)).toEqual({ ok: true });
+    const short = validateTacticsDeck([OPEN_PALM], exact);
     expect(short.ok).toBe(false);
     if (!short.ok) expect(short.reason).toMatch(/deck size 2/);
   });
 
   it("uses the configured copy cap", () => {
     const cap = { ...DEFAULT_RULES_CONFIG, deckMinCards: 0, deckMaxCopiesPerCard: 2 };
-    expect(validateTacticsDeck([PRESSURE, PRESSURE], cap)).toEqual({ ok: true });
-    const over = validateTacticsDeck([PRESSURE, PRESSURE, PRESSURE], cap);
+    expect(validateTacticsDeck([OPEN_PALM, OPEN_PALM], cap)).toEqual({ ok: true });
+    const over = validateTacticsDeck([OPEN_PALM, OPEN_PALM, OPEN_PALM], cap);
     expect(over.ok).toBe(false);
     if (!over.ok) expect(over.reason).toMatch(/max 2/);
   });
 
   it("refuses one copy over the per-id cap", () => {
     const result = validateTacticsDeck(
-      [PRESSURE, PRESSURE, PRESSURE, PRESSURE],
+      [OPEN_PALM, OPEN_PALM, OPEN_PALM, OPEN_PALM],
       { ...DEFAULT_RULES_CONFIG, deckMinCards: 0 },
     );
     expect(result.ok).toBe(false);
@@ -109,7 +109,7 @@ describe("validateTacticsDeck", () => {
 
   it("refuses an unknown card id", () => {
     const result = validateTacticsDeck(
-      [PRESSURE, asCardId("card-not-real")],
+      [OPEN_PALM, asCardId("card-not-real")],
       { ...DEFAULT_RULES_CONFIG, deckMinCards: 0 },
     );
     expect(result.ok).toBe(false);
@@ -140,7 +140,7 @@ describe("validateLoadout", () => {
   it("accepts a squad with a repeated fighter", () => {
     expect(
       validateLoadout(
-        { ...TAG_SKIRMISH_LOADOUT, squad: [KORR, MAGNUS, KORR] },
+        { ...TAG_SKIRMISH_LOADOUT, squad: [VEGA, MAGNUS, VEGA] },
         TAG_FIGHTER_RULES,
       ),
     ).toEqual({ ok: true });
@@ -149,7 +149,7 @@ describe("validateLoadout", () => {
   it("accepts two copies of the same fighter plus a third", () => {
     expect(
       validateLoadout(
-        { ...TAG_SKIRMISH_LOADOUT, squad: [NYX, NYX, MAGNUS] },
+        { ...TAG_SKIRMISH_LOADOUT, squad: [RYU, RYU, MAGNUS] },
         TAG_FIGHTER_RULES,
       ),
     ).toEqual({ ok: true });
@@ -157,14 +157,13 @@ describe("validateLoadout", () => {
 });
 
 describe("validateStartingDice", () => {
-  it("refuses five faces of one attribute on a die", () => {
+  it("allows five copies of one blank face on a die", () => {
     const result = validateStartingDice(
-      [identityDie(mechanical, mechanical, mechanical, mechanical, mechanical, SHIELD_FACE_ID), identityPair()[1]!],
+      [identityDie(mechanical, mechanical, mechanical, mechanical, mechanical, TEST_SHIELD_FACE_ID), identityPair()[1]!],
       [],
       DEFAULT_RULES_CONFIG,
     );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/mechanical/);
+    expect(result).toEqual({ ok: true });
   });
 
   it("allows a die with no Shield under the default min of 0", () => {
@@ -179,7 +178,7 @@ describe("validateStartingDice", () => {
     expect(result).toEqual({ ok: true });
   });
 
-  it("refuses a die with no Shield when the min is restored", () => {
+  it("allows a die with no Shield", () => {
     const result = validateStartingDice(
       [
         identityDie(mechanical, mechanical, mechanical, luminar, luminar, luminar),
@@ -188,14 +187,13 @@ describe("validateStartingDice", () => {
       [],
       { ...DEFAULT_RULES_CONFIG, startingMinShieldsPerDie: 1 },
     );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/Shield/);
+    expect(result).toEqual({ ok: true });
   });
 
   it("allows two opening synthetics when both are in the face deck", () => {
     const result = validateStartingDice(
       [
-        identityDie(TEST_SYNTHETIC_MECHANICAL_A, TEST_SYNTHETIC_MECHANICAL_B, mechanical, luminar, luminar, SHIELD_FACE_ID),
+        identityDie(TEST_SYNTHETIC_MECHANICAL_A, TEST_SYNTHETIC_MECHANICAL_B, mechanical, luminar, luminar, TEST_SHIELD_FACE_ID),
         identityPair()[1]!,
       ],
       TEST_FACE_DECK,
@@ -207,28 +205,22 @@ describe("validateStartingDice", () => {
   it("refuses three on-roll faces on one die", () => {
     const rollA = testFace({
       id: "face-test-onroll-a",
-      kind: "synthetic",
-      symbol: "mechanical",
       rulesText: "On roll: draw.",
       onRoll: [{ type: "draw-cards", amount: 1 }],
     }).id;
     const rollB = testFace({
       id: "face-test-onroll-b",
-      kind: "synthetic",
-      symbol: "mechanical",
       rulesText: "On roll: draw.",
       onRoll: [{ type: "draw-cards", amount: 1 }],
     }).id;
     const rollC = testFace({
       id: "face-test-onroll-c",
-      kind: "synthetic",
-      symbol: "mechanical",
       rulesText: "On roll: draw.",
       onRoll: [{ type: "draw-cards", amount: 1 }],
     }).id;
     const result = validateStartingDice(
       [
-        identityDie(rollA, rollB, rollC, mechanical, luminar, SHIELD_FACE_ID),
+        identityDie(rollA, rollB, rollC, mechanical, luminar, TEST_SHIELD_FACE_ID),
         identityPair()[1]!,
       ],
       [rollA, rollB, rollC],
@@ -242,23 +234,22 @@ describe("validateStartingDice", () => {
     if (!result.ok) expect(result.reason).toMatch(/on-roll/);
   });
 
-  it("refuses three synthetics under the default player cap", () => {
+  it("allows named faces on both dice when each id is in the face deck", () => {
     const result = validateStartingDice(
       [
-        identityDie(TEST_SYNTHETIC_MECHANICAL_A, TEST_SYNTHETIC_MECHANICAL_B, mechanical, mechanical, luminar, SHIELD_FACE_ID),
-        identityDie(TEST_SYNTHETIC_MECHANICAL_C, mechanical, mechanical, luminar, luminar, SHIELD_FACE_ID),
+        identityDie(TEST_SYNTHETIC_MECHANICAL_A, TEST_SYNTHETIC_MECHANICAL_B, mechanical, mechanical, luminar, TEST_SHIELD_FACE_ID),
+        identityDie(TEST_SYNTHETIC_MECHANICAL_C, mechanical, mechanical, luminar, luminar, TEST_SHIELD_FACE_ID),
       ],
       TEST_FACE_DECK,
       DEFAULT_RULES_CONFIG,
     );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/synthetics/);
+    expect(result).toEqual({ ok: true });
   });
 
   it("refuses a named special missing from the face deck", () => {
     const result = validateStartingDice(
       [
-        identityDie(TEST_SYNTHETIC_MECHANICAL_A, mechanical, mechanical, luminar, luminar, SHIELD_FACE_ID),
+        identityDie(TEST_SYNTHETIC_MECHANICAL_A, mechanical, mechanical, luminar, luminar, TEST_SHIELD_FACE_ID),
         identityPair()[1]!,
       ],
       TEST_FACE_DECK.filter((id) => id !== TEST_SYNTHETIC_MECHANICAL_A),
@@ -272,7 +263,7 @@ describe("validateStartingDice", () => {
 describe("leftoverFacePool", () => {
   it("removes installed specials and keeps uninstalled pool faces", () => {
     const startingDice = [
-      identityDie(TEST_SYNTHETIC_MECHANICAL_A, mechanical, mechanical, luminar, luminar, SHIELD_FACE_ID),
+      identityDie(TEST_SYNTHETIC_MECHANICAL_A, mechanical, mechanical, luminar, luminar, TEST_SHIELD_FACE_ID),
       identityPair()[1]!,
     ] as const;
     const pool = leftoverFacePool(TEST_FACE_DECK, startingDice);

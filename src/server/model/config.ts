@@ -8,12 +8,18 @@
  *   ASSUMED — a prototype assumption; see docs/OPEN_DESIGN.md.
  */
 
+import { FACE_SLOTS_PER_DIE } from "./dice.js";
 
 export interface GameRulesConfig {
   /** DEFINED, bible §4. */
   readonly creaturesPerPlayer: number;
-  /** DEFINED, bible §5 and §9. */
+  /** DEFINED, bible §5 and §9. One die per Fighter in the tag preset. */
   readonly dicePerPlayer: number;
+  /**
+   * Spec `030` playtest. Faces on each Fighter die. Not a final size.
+   * Current layouts are this long.
+   */
+  readonly facesPerDie: number;
   /** DEFINED, bible §9.1. */
   readonly maxFacesOfSameAttributePerDie: number;
   /**
@@ -155,6 +161,7 @@ export interface GameRulesConfig {
 export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   creaturesPerPlayer: 3,
   dicePerPlayer: 2,
+  facesPerDie: FACE_SLOTS_PER_DIE,
   maxFacesOfSameAttributePerDie: 4,
   startingMinShieldsPerDie: 0,
   startingMaxSyntheticsPerPlayer: 2,
@@ -200,6 +207,7 @@ export const TAG_FIGHTER_RULES: GameRulesConfig = {
   deckMaxCards: 24,
   openingHandSize: 5,
   cardsDrawnPerTurn: 1,
+  consumeDiceOnFaceActions: false,
   attacksPerCreaturePerCombat: 2,
   wipeVictory: true,
 };

@@ -14,18 +14,10 @@ import type {
 import type { DualKindAttribute } from "../../model/attributes.js";
 import type { SymbolRequirement, SymbolType } from "../../model/symbols.js";
 import type { RNG } from "../../rng/rng.js";
-import {
-  forgeExceedsAttributeLimit,
-  replayableGraveyardTactics,
-  searchableInGraveyard,
-} from "../../rules/cards.js";
+import { replayableGraveyardTactics, searchableInGraveyard } from "../../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../../rules/creatures.js";
 import { diceOf } from "../../rules/dice.js";
-import {
-  eligibleFacesForForge,
-  isLegalForgeKindForAttribute,
-  slotCannotBeReplacedByForge,
-} from "../../rules/faces.js";
+import { eligibleFacesForForge, slotCannotBeReplacedByForge } from "../../rules/faces.js";
 import { creatureMatchesFilter, legalDiceForFilter, legalDieSlotsForFilter } from "../../rules/targets.js";
 import { attack } from "../commands/attack.js";
 import { installFacesOnDie } from "../commands/forge.js";
@@ -362,17 +354,7 @@ export function resolveForgeFaces(
     return "INVALID_FACE";
   }
 
-  if (
-    forgeExceedsAttributeLimit(die, slotIndexes, pending.attribute, pending.faces, draft.config)
-  ) {
-    return "ATTRIBUTE_LIMIT_REACHED";
-  }
-
-  if (!isLegalForgeKindForAttribute(pending.kind, pending.attribute)) {
-    return "INVALID_TARGET";
-  }
-
-  const eligible = eligibleFacesForForge(draft, playerId, pending.kind, pending.attribute);
+  const eligible = eligibleFacesForForge(draft, playerId);
   if (!eligible.includes(faceCardId)) return "FACE_NOT_AVAILABLE";
 
   const installed = installFacesOnDie(draft, playerId, dieId, slotIndexes, faceCardId, null);
@@ -486,7 +468,7 @@ export function resolveReplayGraveyard(
   const card = draft.cards[cardInstanceId];
   const definition = card === undefined ? undefined : getCard(card.cardId);
   const effects =
-    definition?.type === "ritual"
+    definition?.ritual !== undefined
       ? definition.ritual?.effects
       : definition?.effect?.effects;
   draft.pendingDecision = null;
@@ -550,15 +532,12 @@ export function resolveDarkPact(
   if (cardInstanceIds[0] === cardInstanceIds[1]) return "INVALID_CHOICE";
 
   const deck = new Set(draft.players[playerId]?.deck ?? []);
-  const attributes: string[] = [];
   for (const id of cardInstanceIds) {
     if (!deck.has(id)) return "INVALID_CHOICE";
     const card = draft.cards[id];
     const definition = card === undefined ? undefined : getCard(card.cardId);
-    if (definition === undefined || definition.type !== "ritual") return "INVALID_CHOICE";
-    attributes.push(definition.attribute);
+    if (definition === undefined || definition.ritual === undefined) return "INVALID_CHOICE";
   }
-  if (attributes[0] === attributes[1]) return "INVALID_CHOICE";
 
   for (const id of cardInstanceIds) {
     moveCard(draft, id, "graveyard");

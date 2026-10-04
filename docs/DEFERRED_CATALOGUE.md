@@ -9,25 +9,31 @@ are now data-driven. This file lists only what is still honestly unfinished.
 
 ---
 
-## Catalogue reset (2026-09-28)
+## Catalogue reset (2026-10-03)
 
-Pile-era Tempo / Control tactics, creatures, and named synthetics were removed
-from the live catalogue. The playable set is Tag Skirmish: Korr / Magnus / Nyx,
-eight tactics, identity naturals + Shield, and seven technique faces.
+The playable team is Vega, Magnus, and Ryu. Korr and Nyx, and the eight
+meter-tax tactics, are gone. Grappler remains the spec `029` proving
+Fighter. The old technique faces, including Guard, stay in the catalogue
+for existing engine fixtures. They are not on the playtest dice.
 
-Rows below that name retired print (Choirlight, Drain / Infection faces, Great
-Spark, Rekindle, Alpha's Hide, Reforge, Share the Kill, Den Share) describe
-**cards that no longer have catalogue entries**. They stay as design reference
-for the vocabulary decisions, not as open work.
+## First-playtest gaps (2026-10-03)
 
-**Nothing in the current Tag Skirmish catalogue is deferred** beyond clauses
-already listed below.
+These clauses were not wired. The printed cards do not claim them.
+
+| Item | Wanted for | Why it is parked |
+|---|---|---|
+| **Dodge** (the attack misses, and is not `[Prevent]` and not a reflected hit) | A Response distinct from Brace and Counter | No miss opcode. `[Prevent]` (`grant-attack-prevent`) only arms a link of kind `attack`. Face and Technique hits are `combat-action` and are not `fromAttack`, so that prevent does not stop them. `negate-card` is Counter. `modifySubject: "target"` is Shift. |
+| **Block a face or Technique** | Brace | Brace prints `[Prevent]` the Attack. That is the Attack action, not a sequence face or Technique. |
+| **Change an Action's damage, sequence role, or whether it ends the sequence** | A Modify of an action property | Moveset Modify only enables a Technique the secondary input does not match (`enabledTechniqueIds`). It does not rewrite the Technique. |
+| **A sixth distinct face on each die** | Magnus Dash / Power, Vega Feint / Launcher, Ryu Backstep / Sweep | `faceDeck` schema `maxItems` is 12 and `faceDeckMaxCards` is 12. Eighteen unique named faces do not validate. Each die repeats two of four names. |
+| **Pass initiative when a Finisher resolves** | A Finisher that hands offense over | `passesInitiative` is on the TypeScript face and technique types and is not in the JSON schema. A Finisher returns the sequence to Open and leaves the Aggressor in place. KO still passes initiative. |
+| **Assist that costs nothing without a special field** | Spec `030` normal Assist | Omitting `exceptionalAssistMeter` charges `assistMeterCost` (1) unless the Reserve is showing technique `assist`. These Fighters set the field to 0. There is no Assist face. |
 
 ## Catalogue reset (2026-08-29)
 
 Historical: the catalogue was wiped and reauthored as Mechanical + Luminar
 **Tempo**, then Arcane + Darkness **Control**. Those lists are gone; see the
-2026-09-28 reset.
+2026-10-03 reset.
 
 ---
 

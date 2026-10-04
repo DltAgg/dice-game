@@ -6,7 +6,6 @@ import {
 import { createPortal } from "react-dom";
 import {
   formatEffectRegion,
-  formatFaceKind,
   formatTypeLine,
   getCard,
   getFaceCard,
@@ -127,13 +126,11 @@ export function FaceChoiceContent({ faceCardId }: { faceCardId: FaceCardId }) {
     return <p className="text-sm font-medium text-stone-100">{faceCardId}</p>;
   }
 
-  const kindLabel = formatFaceKind(face.kind);
-
   return (
     <>
       <p className="text-sm font-medium text-stone-100">{face.name}</p>
       <p className="text-xs capitalize text-stone-500">
-        {kindLabel} · {face.symbol}
+        {face.name}
         {face.maxOverloads > 0 ? ` · +${String(face.maxOverloads)} overload` : ""}
       </p>
       {face.rulesText !== "" && (

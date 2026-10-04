@@ -5,19 +5,21 @@ import { catalogueFromModules } from "./catalogueLoader.js";
 import { lookupOverlayCard } from "./runtimeOverlay.js";
 
 /**
- * Live catalogue is the Tag Skirmish prototype (spec `028`): fighter,
- * archetype, team, and universal tactics. Header `playCost` remains unused
+ * Live catalogue is the first-playtest tag team (spec `030`): Vega, Magnus,
+ * and Ryu, plus Response and Modify cards. Header `playCost` remains unused
  * pile data.
  */
 
-export const PRESSURE: CardId = asCardId("card-pressure");
-export const COMMAND_THROW: CardId = asCardId("card-command-throw");
-export const KEEP_AWAY: CardId = asCardId("card-keep-away");
-export const CROSS_RUSH: CardId = asCardId("card-cross-rush");
-export const DRAGON_STRIKE: CardId = asCardId("card-dragon-strike");
-export const TECHNIQUE_DRILL: CardId = asCardId("card-technique-drill");
-export const FOCUS: CardId = asCardId("card-focus");
-export const GUARD_UP: CardId = asCardId("card-guard-up");
+export const BRACE: CardId = asCardId("card-brace");
+export const COUNTER: CardId = asCardId("card-counter");
+export const OPEN_PALM: CardId = asCardId("card-open-palm");
+export const REFORGE_GRIP: CardId = asCardId("card-reforge-grip");
+export const VEGA_DRILL: CardId = asCardId("card-vega-drill");
+export const RYU_FORM: CardId = asCardId("card-ryu-form");
+export const OPEN_MANUAL: CardId = asCardId("card-open-manual");
+export const SHIFT: CardId = asCardId("card-shift");
+export const CALL_OUT: CardId = asCardId("card-call-out");
+export const ANCHOR: CardId = asCardId("card-anchor");
 
 const cardModules = import.meta.glob("./cards/card-*.json", { eager: true, import: "default" });
 const loadedCards = catalogueFromModules<CardDefinition>(cardModules, cardOrder);

@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-technique-heavy",
   "name": "Heavy",
-  "kind": "natural",
-  "symbol": "mechanical",
   "technique": "heavy",
   "rulesText": "",
   "onRoll": [],

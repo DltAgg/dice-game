@@ -11,10 +11,9 @@ function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
     id: asCardId("card-example-afford"),
     name: "Example Afford",
     playCost: { mechanical: 2 },
-    type: "instant",
+    type: "modify",
     subtypes: [],
-    attribute: "mechanical",
-    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    forge: { faces: 1, target: "own-die" },
     rulesText: "Test.",
     ...overrides,
   };
@@ -45,9 +44,8 @@ describe("canAffordPlay / canAffordForge", () => {
 
   it("returns true for multi-attribute costs and Requires fixtures", () => {
     const card = exampleCard({
-      attribute: "arcane",
       playCost: { arcane: 1, any: 2 },
-      forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+      forge: { faces: 1, target: "own-die" },
     });
     const tooling = getCard(TEST_REQUIRES_GATE);
     if (tooling === undefined) throw new Error("requires-gate fixture");
@@ -65,7 +63,7 @@ describe("canAffordPlay / canAffordForge", () => {
     };
     const card = exampleCard({
       playCost: { mechanical: 2 },
-      forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
+      forge: { faces: 1, target: "own-die" },
     });
     expect(canAffordForge(state, P1, card)).toBe(true);
     expect(canAffordPlay(state, P1, card)).toBe(true);
@@ -77,12 +75,13 @@ describe("canAffordPlay / canAffordForge", () => {
 
 describe("ritualDurationOf", () => {
   const ritualBase: Partial<CardDefinition> = {
-    type: "ritual",
+    type: "modify",
+    ritual: { effects: [] },
   };
 
   it("returns null for non-rituals", () => {
-    expect(ritualDurationOf(exampleCard({ type: "instant" }))).toBeNull();
-    expect(ritualDurationOf(exampleCard({ type: "reaction", subtypes: [] }))).toBeNull();
+    expect(ritualDurationOf(exampleCard({ type: "modify" }))).toBeNull();
+    expect(ritualDurationOf(exampleCard({ type: "response", subtypes: [] }))).toBeNull();
   });
 
   it("maps continuous and reaction subtypes to stay/exhaust", () => {

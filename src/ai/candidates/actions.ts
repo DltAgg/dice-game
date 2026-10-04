@@ -20,7 +20,6 @@ import {
   preferredSlotsForForgeFaces,
   resolveFaceForForge,
   ritualsOf,
-  SHIELD,
   type CreatureId,
   type GameAction,
   type GameState,
@@ -81,21 +80,10 @@ function playCardIntents(
 
 function absorbIntents(state: GameState, playerId: PlayerId): readonly GameAction[] {
   const actions: GameAction[] = [];
-  const allies = livingCreaturesOf(state, playerId);
   for (const symbol of Object.values(state.symbols)) {
     if (symbol.ownerId !== playerId || !isUnabsorbedPoolSymbol(symbol)) continue;
     if (isAttributeSymbol(symbol.symbol)) {
       actions.push({ type: "ABSORB_SYMBOL", playerId, symbolId: symbol.id });
-      continue;
-    }
-    if (symbol.symbol !== SHIELD) continue;
-    for (const creature of allies) {
-      actions.push({
-        type: "ABSORB_SYMBOL",
-        playerId,
-        symbolId: symbol.id,
-        creatureId: creature.id,
-      });
     }
   }
   return actions;
@@ -126,23 +114,12 @@ function forgeIntents(state: GameState, playerId: PlayerId): readonly GameAction
   for (const card of handOf(state, playerId)) {
     const definition = getCard(card.cardId);
     if (definition === undefined || !canAffordForge(state, playerId, definition)) continue;
-    const faceCardId = resolveFaceForForge(
-      state,
-      playerId,
-      definition.forge.kind,
-      definition.forge.attribute,
-      definition,
-    );
+    const faceCardId = resolveFaceForForge(state, playerId, definition);
     if (faceCardId === null) continue;
     const ownerId =
       definition.forge.target === "opponent-die" ? opponentOf(state, playerId) : playerId;
     for (const die of diceOf(state, ownerId)) {
-      const slotIndexes = preferredSlotsForForgeFaces(
-        die,
-        definition.forge.attribute,
-        definition.forge.faces,
-        state.config,
-      );
+      const slotIndexes = preferredSlotsForForgeFaces(die, definition.forge.faces);
       if (slotIndexes === null) continue;
       actions.push({
         type: "FORGE_CARD",

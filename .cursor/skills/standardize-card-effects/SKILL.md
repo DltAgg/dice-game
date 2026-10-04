@@ -1,255 +1,100 @@
 ---
 name: standardize-card-effects
 description: >-
-  Standardize card/face print text into timing hooks and wire data-driven
-  effects or standing triggers. Use when normalizing On roll / On absorb lines,
-  simplifying catalogue rulesText, creating or extending triggers (onRoll,
-  onAbsorb, on-deal-damage, on-toxin-damage, on-roll-symbol, on-absorb gear),
-  authoring faces like Revelation / Instinct / Primordial Fury, or when the
-  user asks to standardize, normalize, or trigger-ify card text while creating
-  or editing cards.
+  Turn Fighter, face, Response, and Modify print into timing-prefixed keyword
+  English and existing effect data. Use when normalizing rules text, wiring
+  primary or secondary face effects, or trigger-ifying a clause while editing
+  catalogue JSON. Do not use to invent a card type, a pile cost, or a
+  defensive die face.
 ---
 
-# Standardize card texts & triggers
+# Standardize card texts
 
-Turn free-form print into **timing-prefixed keyword English** + **data effects**
-on the right hook. Use for **new cards** and for **refactoring** existing
-catalogue entries. Never invent silent approximations. New/edited `rulesText`
-follows [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
+Turn free-form print into **timing-prefixed keyword English** plus **data
+effects** on the field that already exists. Never invent silent
+approximations. New and edited `rulesText` follows
+[`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md): reuse `[Mark]`, `[Strip]`,
+and `[Modify]`. Do not mint a verb for Block, Dodge, or Counter.
 
-**Standardizing English is not making every card the same mechanical shape.**
-`On roll:` / `On absorb:` is grammar. Forge-1 + one opcode is not. Unique
-forge riders, dual-pip faces, and bridges still use these prefixes. Do not
-flatten a unique slot into Cogtooth (`On roll: [Generate 1 SameAttr]`).
+Standardizing English is not making every card the same shape. Slot
+uniqueness is [author-content](../author-content/SKILL.md) and
+[design.md](../author-content/design.md) **before** this step.
 
-Companion skills: [author-content](../author-content/SKILL.md) (catalogue shape),
-[develop-engine](../develop-engine/SKILL.md) (new `EffectDefinition` / hooks).
-Absorb / On absorb timing: `docs/RULEBOOK.md` §§5–7 (no attribute pile).
+Companion: [develop-engine](../develop-engine/SKILL.md) when a clause needs a
+new `EffectDefinition`. Do not grow the engine from this skill.
 
-## Gold-standard print shape
+## Voice
 
-### Voice (holder, not original owner)
+**you** / **your** is the holder. **opponent** is their opponent. Name both
+actors when two players must act. Never "Whenever…".
 
-Write every clause as if the player **holding this card on their field** is
-reading it. **you** / **your** = that holder. **opponent** / **opposing** /
-**enemy** = the holder’s opponent. If the card is handed, forged, or equipped
-onto the other side of the table, the new holder is now “you”; do not keep the
-sender’s perspective. When one player chooses a target and another must
-discard, strip, or pay, name both actors in the English — never leave “who
-selects / who acts” ambiguous.
+## Where the clause lives
 
-### Faces / overloads
-
-```text
-On roll: [Empower 1].
-On absorb: [Mark 1 Toxin].
-```
-
-### Standing triggers (equipment, creature passives, continuous rituals)
-
-Use the same **On …:** prefix as the hook name (readable English after the colon).
-Do **not** use “Whenever…”, “When you…”, or “When this creature…”.
-
-| Hook | Print prefix |
+| Print is about… | Field |
 |---|---|
-| `on-deal-damage` | `On deal damage:` |
-| `on-toxin-damage` | `On toxin damage:` |
-| `on-roll-symbol` | `On roll <Symbol>:` / `On opponent roll <Symbol>:` |
-| `on-absorb` | `On absorb:` / `On absorb <Symbol>:` / `On absorb Natural:` / `On absorb <Symbol>, once per turn:` |
-| `on-attack` | `On attack:` / `On basic attack:` / `On special attack:` / `On attack, another ally:` |
-| `on-take-damage` | `On take damage:` / `On take damage, once per turn: [Reduce N].` |
-| `on-discard` | `On discard:` |
-| `attack-damage-bonus` | `On basic attack:` / `On attack:` (+N damage) |
-| `on-turn-start` | `On start of turn:` / `On start of opponent's turn:` |
+| Simple Action on a named face | `primaryEffects` |
+| Secondary input of a Technique | `secondaryEffects` |
+| Response (block, dodge, counter, prevent, redirect) | card `type: "response"` and `effect.effects` |
+| Roll, die, moveset, target, or tag change | card `type: "modify"` and `modifySubject` |
+| Fighter passive that the engine already hooks | `standingAbilities` on the Fighter |
+| Assist | `assistEffects` on the Fighter |
 
-Gate lines stay above the timing line (`Can only equip…`, `Can only overload…`).
-Qualifiers use a comma before the colon (`On take damage, once per turn:`), never parentheses.
+`onRoll` / `onAbsorb` and equipment, overload, and ritual regions are
+leftover hosts. Do not move new print onto them. Leave `onAbsorb` empty on
+new faces. Do not describe On absorb as banking an attribute pile.
 
-## Hook map (where effects live)
+Timing prefixes that already exist stay prefixes: `On roll:`, `On attack:`,
+`On deal damage:`, `On take damage:`, `On start of turn:`. A prefix is
+eligibility in that window. It is not a new `TimingCondition`.
 
-| Print cue | Catalogue field | Fires when |
-|---|---|---|
-| `On roll:` | Face `onRoll[]` or Overload `onRoll[]` | Die shows that face after `ROLL_DICE` |
-| `On absorb:` | Face `onAbsorb[]` or Overload `onAbsorb[]` | Symbol from that face is **banked into the owner’s attribute pile** |
-| `On deal damage:` | `on-deal-damage` | Bearer deals **HP** damage |
-| `On toxin damage:` | `on-toxin-damage` | Toxin tick deals HP |
-| `On roll <Symbol>:` | `on-roll-symbol` + `symbol` | Matching roll (filter `rollingPlayer`) |
-| `On absorb <Symbol>:` | `on-absorb` (+ filters; use `ally` on gear when “you bank”) | Matching attribute bank |
-| `On attack:` / `On basic attack:` / … | `on-attack` | Attack declared |
-| `On take damage:` | `on-take-damage` (`[Reduce N]` / optional `effects`) | Incoming damage |
-| `On discard:` | `on-discard` | Hand discard |
-| `On change position:` | `on-change-position` | Ally moved via `setCreaturePosition` |
-| `On start of turn:` | `on-turn-start` + `whoseTurn` | Incoming player's turn begins (after toxin ticks) |
+## Map to effects that exist
 
-Shared hook implementation: `src/server/reducer/triggers.ts` · spec
-`docs/specs/010-trigger-hooks.md`.
-
-**Banned forever:** enemy push / forced move of opponent creatures. Do not
-author `type: "push"` or swap/reposition targeting enemies.
-
-## Workflow (new or existing card)
-
-Copy and track:
-
-```text
-Standardize Progress:
-- [ ] 1. Capture print authority
-- [ ] 2. Split into timing clauses
-- [ ] 3. Map each clause → existing effect / target
-- [ ] 4. Wire catalogue data OR defer honestly
-- [ ] 5. Grow vocabulary only if a concrete clause needs it
-- [ ] 6. Tests + DoD + DEFERRED_CATALOGUE update
-```
-
-### 1. Capture print authority
-
-Source of truth: Figma / `002`–`004` / user CSV / existing `rulesText`.
-Do not “improve” flavor by changing meaning. You **may** rewrite into the
-standard timing lines if meaning is preserved. You **may not** collapse a
-unique forge shape, dual-pip Generate-other, or bridge into a Forge-1 +
-one-opcode template. Slot uniqueness is decided in
-[author-content](../author-content/SKILL.md) / [design-craft.md](../author-content/design-craft.md)
-**before** this step.
-
-### 2. Split into timing clauses
-
-Rewrite `rulesText` (and face print) into discrete lines:
-
-- Face / overload: `On roll:` / `On absorb:`
-- Equipment / passives / continuous rituals: `On deal damage:` / `On absorb:` /
-  `On attack:` / … (same prefixes as hooks — never “Whenever…”)
-- Instant / ritual activate: one-shot `effect` / `ritual.effects` (not standing hooks)
-- Reaction: may use `On …:` for the window cue (e.g. `On prevent damage:`)
-
-If a clause needs a timing the engine lacks → keep print accurate, leave the
-structured array empty, row in `docs/DEFERRED_CATALOGUE.md`.
-
-### 3. Map to existing vocabulary
-
-Prefer members already in `src/server/model/effects.ts` and selectors already in
-`TargetSelector`. Examples:
+Prefer members already in `src/server/model/effects.ts`.
 
 | Print fragment | Prefer |
 |---|---|
-| `[Strike N]` / Deal N | `damage` + target |
+| Deal N / `[Strike N]` | `damage` + target |
 | `[Heal N]` | `heal` |
-| `[Discount N]` | `arm-forge-discount` / `play-cost-discount` |
-| `[Generate N X]` | `generate-symbol` |
-| `[Draw N]` / `[Discard N]` | `draw-cards` / `discard-cards` |
 | `[Empower N]` | `next-attack-bonus` |
-| `[Prevent]` | `grant-attack-prevent` on **`type: "reaction"`** only (Luminar; attack chain) |
-| `[Mark N Toxin]` | `apply-toxin` |
-| `[Mark N Toxin on attacks]` | `arm-attack-toxin` |
-| `[Mark N Shield]` | `grant-shield` |
-| `[Strip N Shield]` | `remove-shield` |
-| `[Swap]` with frontline ally | `swap-positions` + `choose-allied-frontline` |
-| `[Reposition]` | `reposition-creature` |
-| Auto-pick damaged ally | `{ kind: "most-damaged-ally" }` |
-| Player picks enemy | `{ kind: "choose-enemy" }` |
-| Each living ally | `{ kind: "ally-all" }` |
-| Each living enemy | `{ kind: "enemy-all" }` |
+| `[Mark N X]` / `[Strip N X]` | the opcode KEYWORDS already maps (`mark` / `strip` or the current token opcode) |
+| `[Draw N]` / `[Discard N]` | `draw-cards` / `discard-cards` |
+| Block, dodge, counter, prevent, redirect | a Response, using an effect the engine already resolves — not a new type |
+| Change the showing face | Modify `roll` |
+| Rewrite a slot for the match | Modify `die` |
 
-Conditional “if …” clauses often need **new** effect fields or hooks — do not
-stuff them into an unconditional effect.
+`[Prevent]` is an effect on a Response, not a card type and not a die face.
+Do not author `[Mark N Shield]` as a resource. Do not author `[Generate]` as
+pile fuel.
 
-### 4. Wire or defer
+If the clause needs a field the effect list does not have, keep the print
+accurate, leave the array empty, and add `docs/DEFERRED_CATALOGUE.md`. Then
+brief `engine-developer` if the user wants it built.
 
-**Fully modellable:** set `rulesText` to standardized English **and** fill
-`onRoll` / `onAbsorb` / equipment abilities / etc.
+## Workflow
 
-**Partial:** standardize `rulesText`; wire only complete clauses; leave other
-arrays empty or omit abilities; document gaps in `DEFERRED_CATALOGUE.md`.
-
-**Print-only (like many CSV synthetics today):** standardized `rulesText` +
-empty `onRoll` / `onAbsorb` via `namedSynthetic(...)`.
-
-### 5. Grow vocabulary (only when needed)
-
-If a concrete card needs a new effect or hook:
-
-1. Spec or extend the relevant `docs/specs/01N-*.md` (or OPEN_DESIGN if undecided)
-2. Add to `effects.ts` / ability union / `triggers.ts`
-3. Implement resolution + tests
-4. Then wire the card
-
-Never add unreachable stubs “for later.”
-
-### 6. Verify
+```text
+Standardize Progress:
+- [ ] 1. Capture print authority (do not "improve" the meaning)
+- [ ] 2. Name the layer (face / response / modify / fighter / assist)
+- [ ] 3. Map each clause → an existing effect or defer it
+- [ ] 4. Wire catalogue data OR defer honestly
+- [ ] 5. Tests + DoD + DEFERRED_CATALOGUE when print coverage changes
+```
 
 ```bash
 npm run typecheck && npm test && npm run lint
 ```
 
-Focused: `src/server/reducer/triggers.test.ts`, face/overload/equipment tests as
-touched. Update `002`/`004` tables when print changes.
-
-## Authoring templates
-
-### Face (standardized text; wire when ready)
-
-```ts
-namedSynthetic(
-  EXAMPLE_FACE,
-  "Example Face",
-  "wild",
-  "On roll: [Generate 1 Wild].\n" +
-    "On absorb: [Empower 1].",
-);
-// When wiring:
-// onRoll: [{ type: "generate-symbol", symbol: "wild", amount: 1 }],
-// onAbsorb: [{ type: "next-attack-bonus", amount: 1 }],
-```
-
-### Overload with roll + absorb
-
-```ts
-overload: {
-  faceSymbols: ["toxin"], // optional gate
-  onRoll: [/* … */],
-  onAbsorb: [{ type: "heal", amount: 1, target: { kind: "most-damaged-ally" } }],
-},
-```
-
-### Equipment standing trigger
-
-```ts
-equipment: {
-  mayTargetOpponent: false,
-  abilities: [
-    {
-      type: "on-deal-damage",
-      effects: [{ type: "apply-toxin", amount: 1, target: { kind: "declared-target" } }],
-    },
-  ],
-},
-```
-
-## Simplification heuristics
-
-1. **One timing per line** — never bury absorb inside a roll sentence.
-2. **Reuse hooks** — prefer `on-absorb` / `onRoll` over a new reducer branch.
-3. **Auto vs choose** — use `most-*-*` selectors when print does not ask the
-   player to pick; `ally-all` / `enemy-all` when print names each creature on
-   a side; otherwise `choose-ally` / `choose-enemy`.
-4. **Ritual Instant vs Reaction** — Instant subtype is retired (leftover GY
-   after activate). Reaction stays on the field and exhausts (once per turn);
-   it only changes *when* it can fire (`008`). Continuous stays / exhausts.
-5. **Same meaning, shorter text** — OK; new mechanics — not OK without design.
-
 ## Anti-patterns
 
-- Approximating (Barrier → shields) without OPEN_DESIGN
-- `[Prevent]` on faces, On absorb, instants, equipment, or standing passives —
-  reaction-exclusive; proactive Luminar uses `[Mark N Shield]` / `[Heal]`
-- Putting trigger logic in UI / networking
-- Wiring `onRoll` while absorb clause is silently dropped from `rulesText`
-- Growing `EffectDefinition` without a concrete card + tests
-- Print that still says “Whenever…” / “When you…” for standing triggers —
-  rewrite to `On …:` to match the hook
-- Treating “standardize” as “same card”: Forge-1 + one opcode, or every face
-  `On roll: [Generate 1 SameAttr]`. Timing prefixes are shared; slots are not.
+- Approximating an unwired clause (Barrier written as Shield)
+- A Guard, Block, Dodge, or Counter face
+- Instant, equipment, overload, or ritual as the type line
+- `[Spend]` / `[Requires]` as if the pile were live
+- Putting trigger logic in UI or networking
+- Dropping a clause from `rulesText` because it was not wired
+- "Whenever…" for a standing trigger
 
-## More detail
-
-- Concrete before/after examples: [examples.md](examples.md)
-- Hook reference & deferred cues: [reference.md](reference.md)
+[examples.md](examples.md) and [reference.md](reference.md) record leftover
+catalogue shapes (equipment, overload, synthetic faces). Do not copy them
+onto new content.

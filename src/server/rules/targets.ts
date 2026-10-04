@@ -1,9 +1,8 @@
 import { getCreatureDefinition } from "../content/creatures.js";
-import { isAttribute } from "../model/attributes.js";
+import { getFaceCard } from "../content/faces.js";
 import type { CreatureChoiceFilter, DieChoiceFilter, DieSlotChoiceFilter } from "../model/effects.js";
 import type { CreatureId, DieId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { getFaceCard } from "../content/faces.js";
 import { livingCreaturesOf, opponentOf } from "./creatures.js";
 import { isDieStunned } from "./dice.js";
 
@@ -105,13 +104,10 @@ export function legalDiceForFilter(
     return die !== undefined && die.rolledSlotIndex !== null && !isDieStunned(die);
   };
   const rolled = (dieId: DieId): boolean => state.dice[dieId]?.rolledSlotIndex !== null;
-  const hasSyntheticCorruption = (dieId: DieId): boolean => {
+  const hasCorruptionMarker = (dieId: DieId): boolean => {
     const die = state.dice[dieId];
     if (die === undefined) return false;
-    return die.slots.some((slot) => {
-      const face = getFaceCard(slot.faceCardId);
-      return face?.kind === "synthetic" && face.symbol === "corruption";
-    });
+    return die.slots.some((slot) => (slot.corruptionMarkers ?? 0) >= 1);
   };
 
   switch (filter) {
@@ -120,7 +116,7 @@ export function legalDiceForFilter(
     case "owned-rolled":
       return own.filter(rolled);
     case "any-synthetic-corruption":
-      return [...own, ...opp].filter(hasSyntheticCorruption);
+      return [...own, ...opp].filter(hasCorruptionMarker);
   }
 }
 
@@ -163,10 +159,11 @@ export function legalDieSlotsForFilter(
 
   switch (filter) {
     case "opposing-synthetic":
-      pushMatching(oppDice, (dieId, slotIndex) => faceAt(state, dieId, slotIndex)?.kind === "synthetic");
-      break;
     case "opposing-natural":
-      pushMatching(oppDice, (dieId, slotIndex) => faceAt(state, dieId, slotIndex)?.kind === "natural");
+      pushMatching(oppDice, (dieId, slotIndex) => {
+        const face = faceAt(state, dieId, slotIndex);
+        return face !== undefined;
+      });
       break;
     case "opposing-corrupted":
       pushMatching(oppDice, (dieId, slotIndex) => {
@@ -197,16 +194,14 @@ export function legalDieSlotsForFilter(
     }
     case "appeared-synthetic-this-roll":
       for (const entry of state.facesAppearedThisRoll ?? []) {
-        if (entry.kind === "synthetic") {
-          results.push({ dieId: entry.dieId, slotIndex: entry.slotIndex });
-        }
+        results.push({ dieId: entry.dieId, slotIndex: entry.slotIndex });
       }
       break;
     case "any-synthetic": {
       const allDice = Object.values(state.dice).map((die) => die.id);
       pushMatching(allDice, (dieId, slotIndex) => {
         const face = faceAt(state, dieId, slotIndex);
-        return face?.kind === "synthetic" && isAttribute(face.symbol);
+        return face !== undefined;
       });
       break;
     }

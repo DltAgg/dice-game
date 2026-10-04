@@ -1,5 +1,4 @@
 import {
-  formatFaceKind,
   getFaceCard,
   opponentOf,
   type DieId,
@@ -42,7 +41,6 @@ export function ForgeFacesPrompt({
     pending.target === "own-die"
       ? pending.controllerId
       : opponentOf(state, pending.controllerId);
-  const kindLabel = formatFaceKind(pending.kind);
   const where =
     pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
   const chosenFace = selectedFaceCardId !== undefined ? getFaceCard(selectedFaceCardId) : undefined;
@@ -52,9 +50,7 @@ export function ForgeFacesPrompt({
       <FacePickModal
         state={state}
         playerId={pending.controllerId}
-        kind={pending.kind}
-        attribute={pending.attribute}
-        subtitle={`Choose a ${kindLabel} ${pending.attribute} face from your face pool. You will install it on ${where}; the card stays yours.`}
+        subtitle={`Choose a face from your face pool. You will install it on ${where}; the card stays yours.`}
         onPick={onPickFace}
       />
     );
@@ -67,7 +63,6 @@ export function ForgeFacesPrompt({
       subtitle={`Install ${chosenFace?.name ?? selectedFaceCardId} from your pool (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}) onto ${where}. Choose which of their faces to replace.`}
       dieOwnerId={dieOwnerId}
       facesNeeded={pending.faces}
-      forgeAttribute={pending.attribute}
       pickMode={pending.faces === 1 ? "single-slot" : "die-then-slots"}
       selectedDieId={selectedDieId}
       selectedSlots={selectedSlots}

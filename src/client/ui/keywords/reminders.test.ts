@@ -184,9 +184,9 @@ describe("lookupKeywordReminders", () => {
 });
 
 describe("tacticPrintText", () => {
-  it("includes type, forge, and effect so [Forge] is found", () => {
+  it("includes type and effect, and omits the unused forge line", () => {
     const card = {
-      type: "instant",
+      type: "modify",
       subtypes: [],
       attribute: "martial",
       forge: { faces: 1, kind: "synthetic", attribute: "martial", target: "own-die" },
@@ -194,11 +194,8 @@ describe("tacticPrintText", () => {
     } as unknown as CardDefinition;
 
     const print = tacticPrintText(card);
-    expect(print).toContain("[Forge]");
+    expect(print).not.toContain("[Forge]");
     expect(print).toContain("[Strike 2]");
-    expect(lookupKeywordReminders(print).map((row) => row.token)).toEqual([
-      "[Forge]",
-      "[Strike 2]",
-    ]);
+    expect(lookupKeywordReminders(print).map((row) => row.token)).toEqual(["[Strike 2]"]);
   });
 });

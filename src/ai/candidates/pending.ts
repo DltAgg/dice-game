@@ -129,21 +129,11 @@ export function pendingCandidates(state: GameState, playerId: PlayerId): readonl
     case "forge-faces": {
       const ownerId =
         pending.target === "own-die" ? playerId : opponentOf(state, playerId);
-      const faceCardId = resolveFaceForForge(
-        state,
-        playerId,
-        pending.kind,
-        pending.attribute,
-      );
+      const faceCardId = resolveFaceForForge(state, playerId);
       if (faceCardId === null) return [];
       const actions: GameAction[] = [];
       for (const die of diceOf(state, ownerId)) {
-        const slotIndexes = preferredSlotsForForgeFaces(
-          die,
-          pending.attribute,
-          pending.faces,
-          state.config,
-        );
+        const slotIndexes = preferredSlotsForForgeFaces(die, pending.faces);
         if (slotIndexes === null) continue;
         actions.push({
           type: "RESOLVE_FORGE_FACES",
@@ -244,16 +234,16 @@ export function pendingCandidates(state: GameState, playerId: PlayerId): readonl
       const rituals = deck.flatMap((id) => {
         const card = state.cards[id];
         const definition = card === undefined ? undefined : getCard(card.cardId);
-        return definition?.type === "ritual" ? [{ id, attribute: definition.attribute }] : [];
+        return definition?.ritual !== undefined ? [id] : [];
       });
       const first = rituals[0];
-      const second = rituals.find((candidate) => candidate.attribute !== first?.attribute);
+      const second = rituals[1];
       if (first === undefined || second === undefined) return [];
       return [
         {
           type: "RESOLVE_DARK_PACT",
           playerId,
-          cardInstanceIds: [first.id, second.id],
+          cardInstanceIds: [first, second],
         },
       ];
     }

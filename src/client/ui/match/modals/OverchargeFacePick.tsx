@@ -1,5 +1,4 @@
 import {
-  attributeLabel,
   getCard,
   getFaceCard,
   legalOverchargeFaces,
@@ -43,15 +42,13 @@ export function OverchargeFacePick({
     uniqueInstalledFaces(state, playerId).map((entry) => [entry.faceCardId, entry.copies]),
   );
   const eligible = legalOverchargeFaces(state, playerId);
-  const attribute =
-    definition !== undefined ? attributeLabel(definition.forge.attribute) : "attribute";
 
   return (
     <BoardModal
       title="Overcharge a face card"
       subtitle={
         definition !== undefined
-          ? `${definition.name}: attaches to a shared face card. Every die showing it Generates +1 ${attribute} on roll.`
+          ? `${definition.name}: attaches to a shared face card. Every die showing it Generates the card's play-cost pip on roll.`
           : "Attaches to a shared face card. Every die showing it Generates +1 attribute on roll."
       }
       causedBy={
@@ -82,7 +79,7 @@ export function OverchargeFacePick({
                   )}
                 </p>
                 <p className="text-xs capitalize text-stone-500">
-                  {face?.kind} · {face?.symbol}
+                  {face?.name ?? faceCardId}
                   {copies > 1 ? ` · ×${String(copies)} die faces` : ""}
                 </p>
               </button>

@@ -7,11 +7,8 @@ import {
 import { createPortal } from "react-dom";
 import {
   formatEffectRegion,
-  formatForgeLine,
   formatTypeLine,
-  canAffordForge,
   canAffordPlay,
-  canOvercharge,
   canResolvePlayEffects,
   getCard,
   handOf,
@@ -50,8 +47,6 @@ export function HandStrip({
   reactionWindow,
   selected,
   onPlay,
-  onForge,
-  onOvercharge,
   onCancel,
   idleLabel,
 }: {
@@ -62,8 +57,6 @@ export function HandStrip({
   reactionWindow: boolean;
   selected: CardInstanceId | null;
   onPlay: (card: CardInstance) => void;
-  onForge: (card: CardInstance) => void;
-  onOvercharge: (card: CardInstance) => void;
   onCancel: () => void;
   idleLabel?: string;
 }) {
@@ -134,7 +127,7 @@ export function HandStrip({
       ? " · respond or pass"
       : !actionsPhase
         ? " · wait for actions"
-        : " · play, forge, or Overcharge";
+        : " · play";
 
   return (
     <section className="rounded-lg border border-stone-800/80 bg-black/30 p-3">
@@ -162,8 +155,6 @@ export function HandStrip({
             hasPlayableEffect(def) &&
             canAffordPlay(state, playerId, def) &&
             canResolvePlayEffects(state, playerId, def);
-          const canForge = actionsLive && canAffordForge(state, playerId, def);
-          const overchargeEnabled = canOvercharge(state, playerId, card.id);
           const canRespond = reactionsLive && isEnabledHandReaction(state, playerId, def);
 
           return (
@@ -195,22 +186,6 @@ export function HandStrip({
                       onClick={() => onPlay(card)}
                     >
                       Play
-                    </button>
-                    <button
-                      type="button"
-                      className={canForge ? btnHand : `${btnHand} opacity-40`}
-                      disabled={!canForge}
-                      onClick={() => onForge(card)}
-                    >
-                      Forge
-                    </button>
-                    <button
-                      type="button"
-                      className={overchargeEnabled ? btnHand : `${btnHand} opacity-40`}
-                      disabled={!overchargeEnabled}
-                      onClick={() => onOvercharge(card)}
-                    >
-                      Overcharge
                     </button>
                   </>
                 )}
@@ -252,9 +227,6 @@ export function HandStrip({
               <div className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 <p>
                   <KeywordRichText text={formatTypeLine(hoveredDef)} />
-                </p>
-                <p className="mt-0.5">
-                  <KeywordRichText text={formatForgeLine(hoveredDef.forge)} />
                 </p>
                 <div
                   className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"

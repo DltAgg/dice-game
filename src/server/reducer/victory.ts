@@ -11,7 +11,8 @@ export function setActiveFighter(
   creatureId: CreatureId,
 ): void {
   const player = draft.players[playerId];
-  if (player === undefined) return;
+  const next = draft.creatures[creatureId];
+  if (player === undefined || next === undefined || next.defeated) return;
   for (const id of player.creatureIds) {
     const creature = draft.creatures[id];
     if (creature === undefined || creature.defeated) continue;

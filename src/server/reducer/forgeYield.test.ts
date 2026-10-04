@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TEST_NATURAL_FORGE, testNaturalFaceId } from "../testing/fixtures/index.js";
+import { TEST_NATURAL_FORGE, TEST_SYNTHETIC_MECHANICAL_A } from "../testing/fixtures/index.js";
 import { symbolCountsOn } from "../rules/dice.js";
 import {
   expectOk,
@@ -27,7 +27,8 @@ describe("forge yield", () => {
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [5])),
     );
     const after = symbolCountsOn(forged.dice[dieId]!);
-    expect(forged.dice[dieId]?.slots[5]?.faceCardId).toBe(testNaturalFaceId("luminar"));
-    expect(after.luminar ?? 0).toBe((before.luminar ?? 0) + 1);
+    expect(forged.dice[dieId]?.slots[5]?.faceCardId).toBe(TEST_SYNTHETIC_MECHANICAL_A);
+    expect(after.luminar ?? 0).toBe(before.luminar ?? 0);
+    expect(after.mechanical ?? 0).toBe((before.mechanical ?? 0) + 1);
   });
 });

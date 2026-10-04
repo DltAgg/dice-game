@@ -3,6 +3,7 @@ import type { BattlefieldPosition } from "../model/creatures.js";
 import type { CardInstanceId, CreatureId, FaceCardId, PlayerId } from "../model/ids.js";
 import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
+import { pipSymbolsOf } from "../model/dice.js";
 import type { RNG } from "../rng/rng.js";
 import { emit, patchCreature, patchPlayer, type Draft } from "./draft.js";
 import { loseMatch } from "./matchEnd.js";
@@ -391,10 +392,10 @@ export function overloadFitsFace(
     .filter((candidate) => candidate?.attachedToFaceCardId === faceCardId).length;
   if (current >= face.maxOverloads) return false;
 
-  if (region.faceSymbols !== undefined && !region.faceSymbols.includes(face.symbol)) {
-    return false;
-  }
-  if (region.faceKinds !== undefined && !region.faceKinds.includes(face.kind)) {
+  if (
+    region.faceSymbols !== undefined &&
+    !region.faceSymbols.some((symbol) => pipSymbolsOf(face).includes(symbol))
+  ) {
     return false;
   }
   return true;

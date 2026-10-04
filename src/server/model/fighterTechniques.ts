@@ -7,9 +7,14 @@ import type { SequenceRole } from "./offensive.js";
  * Two-face Fighter move (spec `029`). Not a combo chain and not spec `028`
  * `Technique` (face category).
  */
+/**
+ * The other rolled face. A named face, any face of a type, or any face
+ * with that sequence role (starter, extender, finisher).
+ */
 export type FighterTechniqueSecondary =
   | { readonly faceId: FaceCardId }
-  | { readonly faceType: FaceType };
+  | { readonly faceType: FaceType }
+  | { readonly sequenceRole: SequenceRole };
 
 export interface FighterTechniqueDefinition {
   readonly id: string;
@@ -45,4 +50,10 @@ export function secondaryRequiresFaceType(
   secondary: FighterTechniqueSecondary,
 ): secondary is { readonly faceType: FaceType } {
   return "faceType" in secondary;
+}
+
+export function secondaryRequiresSequenceRole(
+  secondary: FighterTechniqueSecondary,
+): secondary is { readonly sequenceRole: SequenceRole } {
+  return "sequenceRole" in secondary;
 }

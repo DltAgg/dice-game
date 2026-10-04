@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-open-palm",
+  "name": "Open Palm",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "one-shot",
+  "modifySubject": "roll",
+  "exceptionalMeterCost": 2,
+  "rulesText": "Change which face that die is showing. Spend 2 Meter to play this outside a chain.",
+  "forge": { "faces": 1, "target": "own-die" }
+}

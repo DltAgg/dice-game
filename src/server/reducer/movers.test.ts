@@ -14,8 +14,7 @@ import {
 const REFORGE_TWO = testCard({
   id: "card-test-reforge-two",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  forge: { faces: 2, target: "own-die" },
   effect: {
     effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
   },

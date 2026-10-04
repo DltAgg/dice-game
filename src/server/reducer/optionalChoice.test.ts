@@ -20,8 +20,6 @@ const SHIELD_SLOT = 4;
 
 const CONVERT_STRIKE = testFace({
   id: "face-test-convert-strike",
-  kind: "synthetic",
-  symbol: "arcane",
   convertRoll: true,
   pips: { arcane: 2 },
   onRoll: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
@@ -30,10 +28,9 @@ const CONVERT_STRIKE = testFace({
 const REQUIRED_DISCARD = testCard({
   id: "card-test-required-discard",
   playCost: { darkness: 2 },
-  attribute: "darkness",
   effect: {
     effects: [
-      { type: "search-deck", amount: 2, filter: ["instant", "ritual"] },
+      { type: "search-deck", amount: 2, filter: ["modify"] },
       { type: "discard-cards", amount: 1 },
     ],
   },
@@ -42,7 +39,6 @@ const REQUIRED_DISCARD = testCard({
 const HAND_FILLER = testCard({
   id: "card-test-discard-filler",
   playCost: { arcane: 2 },
-  attribute: "arcane",
   effect: { effects: [{ type: "grant-shield", amount: 1, target: { kind: "choose-ally" } }] },
 });
 

@@ -1,4 +1,9 @@
-# Reference — hooks, effects, deferral
+# Reference — leftover hooks
+
+These tables describe hosts that already exist (equipment, overload, absorb).
+New content does not author those card kinds, does not bank an attribute
+pile, and does not put generic defense on a face. Map new print with
+[SKILL.md](SKILL.md).
 
 ## Standing hooks (`010`)
 
@@ -50,7 +55,10 @@ Ally **swap** / **reposition** are legal — prefer:
 Optional “may” → `optional: true` on the effect; the prompt includes **Decline**.
 Mandatory “choose a creature” targeting is not optional.
 
-## Ritual timing reminder
+## Ritual timing reminder (leftover — do not author)
+
+Older ritual subtypes. New cards are Response or Modify
+([SKILL.md](SKILL.md)). Do not add `type: "ritual"`.
 
 | Subtypes | After activate |
 |---|---|

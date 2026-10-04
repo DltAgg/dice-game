@@ -1,22 +1,21 @@
 import {
   getCard,
-  getCreatureDefinition,
   hasLegalReactionOffer,
   isEnabledRitualReaction,
-  isLivingReserve,
   isRitualSilenced,
   ritualsOf,
   type AttackId,
   type CardInstanceId,
   type CreatureId,
   type CreatureState,
+  type DieId,
   type GameState,
   type PlayerId,
 } from "@server";
+import { FaceActionBar } from "./FaceActionBar";
 import { FighterRow } from "./FighterRow";
 import { MeterStrip } from "./MeterStrip";
 import { RitualTile } from "./RitualTile";
-import { TagAssistBar } from "./TagAssistBar";
 import type { Intent } from "../intents/types";
 
 export function TagSkirmishSeatPanel({
@@ -34,6 +33,8 @@ export function TagSkirmishSeatPanel({
   onRitualActivate,
   onTag,
   onAssist,
+  onUseFace,
+  onUseTechnique,
 }: {
   state: GameState;
   playerId: PlayerId;
@@ -49,26 +50,19 @@ export function TagSkirmishSeatPanel({
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
   onTag: (reserveCreatureId: CreatureId) => void;
   onAssist: (reserveCreatureId: CreatureId) => void;
+  onUseFace?: (creatureId: CreatureId) => void;
+  onUseTechnique?: (
+    creatureId: CreatureId,
+    techniqueId: string,
+    secondaryDieId: DieId,
+  ) => void;
 }) {
-  const player = state.players[playerId];
   const isActive = state.activePlayerId === playerId;
   const pending = state.pendingDecision;
   const inReactionWindow =
     pending?.type === "reaction-priority" &&
     hasLegalReactionOffer(state, pending.priorityPlayerId);
   const rituals = ritualsOf(state, playerId);
-
-  const reserves =
-    player === undefined
-      ? []
-      : player.creatureIds
-          .filter((id) => isLivingReserve(state, player, id))
-          .map((id) => {
-            const creature = state.creatures[id];
-            const def =
-              creature !== undefined ? getCreatureDefinition(creature.definitionId) : undefined;
-            return { id, label: def?.name ?? "Reserve" };
-          });
 
   const ritualStrip =
     rituals.length > 0 ? (
@@ -110,6 +104,44 @@ export function TagSkirmishSeatPanel({
       </div>
     ) : null;
 
+  const fighterRow = (band: "active" | "reserve") => (
+    <FighterRow
+      state={state}
+      playerId={playerId}
+      band={band}
+      intent={intent}
+      canAct={canAct}
+      onCreatureClick={onCreatureClick}
+      onAttackChoose={onAttackChoose}
+      onCancelAttack={onCancelAttack}
+      onTag={onTag}
+      onAssist={onAssist}
+    />
+  );
+  const faceActions =
+    playerId === actingPlayerId && canAct && onUseFace !== undefined && onUseTechnique !== undefined ? (
+      <FaceActionBar
+        state={state}
+        playerId={playerId}
+        onUseFace={onUseFace}
+        onUseTechnique={onUseTechnique}
+      />
+    ) : null;
+  const fighters =
+    facing === "down" ? (
+      <>
+        {fighterRow("reserve")}
+        {fighterRow("active")}
+        {faceActions}
+      </>
+    ) : (
+      <>
+        {faceActions}
+        {fighterRow("active")}
+        {fighterRow("reserve")}
+      </>
+    );
+
   return (
     <section
       className={
@@ -127,22 +159,7 @@ export function TagSkirmishSeatPanel({
         <MeterStrip state={state} playerId={playerId} />
       </div>
       {facing === "down" ? ritualStrip : null}
-      <FighterRow
-        state={state}
-        playerId={playerId}
-        intent={intent}
-        onCreatureClick={onCreatureClick}
-        onAttackChoose={onAttackChoose}
-        onCancelAttack={onCancelAttack}
-      />
-      <TagAssistBar
-        state={state}
-        playerId={playerId}
-        reserves={reserves}
-        canAct={canAct}
-        onTag={onTag}
-        onAssist={onAssist}
-      />
+      <div className="flex flex-col gap-3">{fighters}</div>
       {facing === "up" ? ritualStrip : null}
     </section>
   );

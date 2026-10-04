@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { getFaceCard } from "../content/faces.js";
 import { DEFAULT_RULES_CONFIG } from "../model/config.js";
 import { FACE_SLOTS_PER_DIE } from "../model/dice.js";
-import { SHIELD } from "../model/symbols.js";
 import { hasSixPhysicalFaces, symbolCountsOn } from "../rules/dice.js";
 import { leftoverFacePool } from "../rules/loadout.js";
 import { faceCardLocationIsConsistent, knownFaceCardOwnerships, openingSlotFromFace } from "../rules/faces.js";
@@ -105,10 +104,7 @@ describe("match setup", () => {
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("die");
     const counts = symbolCountsOn(state.dice[dieId]!);
-    expect(counts.mechanical).toBe(2);
-    expect(counts.luminar).toBe(2);
-    expect(counts.martial).toBe(1);
-    expect(counts[SHIELD]).toBe(1);
+    expect(counts).toEqual({ mechanical: 2, luminar: 2, martial: 1 });
   });
 
   it("tracks face-card ownership consistently at setup", () => {

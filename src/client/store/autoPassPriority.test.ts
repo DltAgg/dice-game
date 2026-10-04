@@ -18,10 +18,9 @@ import { DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "@server/testing/tempoCatalogue.js
 
 const PREVENT_REACTION = testCard({
   id: asTestCardId("auto-pass-prevent"),
-  type: "reaction",
-  attribute: "luminar",
+  type: "response",
   playCost: { luminar: 1 },
-  forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
+  forge: { faces: 1, target: "own-die" },
   effect: {
     effects: [
       { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },

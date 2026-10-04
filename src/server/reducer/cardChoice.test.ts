@@ -27,16 +27,14 @@ import {
 const EQUIP = testCard({
   id: "card-test-choice-equip",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: { mayTargetOpponent: false, abilities: [] },
 });
 
 const OVERLOAD = testCard({
   id: "card-test-choice-overload",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
 });
 

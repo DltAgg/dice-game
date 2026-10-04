@@ -2,45 +2,73 @@
   "$schema": "../schema/creature.schema.json",
   "id": "creature-magnus",
   "name": "Magnus",
-  "life": 22,
-  "attributes": ["mechanical"],
+  "life": 18,
   "archetype": "grappler",
-  "passiveRulesText": "Grappler: high life, heavy throws.",
+  "passiveRulesText": "Grappler. Grabs and the heavy hit.",
   "assistName": "Wall",
-  "assistRulesText": "[Assist]: [Mark 2 Shield] on your Active Fighter.",
+  "assistRulesText": "Until end of turn, up to 4 damage that would hit another of your Fighters is dealt to Magnus instead.",
+  "exceptionalAssistMeter": 0,
   "assistEffects": [
     {
-      "type": "grant-shield",
-      "amount": 2,
-      "target": { "kind": "declared-target" }
+      "type": "arm-redirect-damage",
+      "amount": 4,
+      "target": { "kind": "source-creature" }
     }
   ],
-  "attacks": [
+  "baseDie": [
+    "face-natural-magnus-jab",
+    "face-natural-magnus-grab",
+    "face-natural-magnus-grab",
+    "face-natural-magnus-lariat",
+    "face-natural-magnus-lariat",
+    "face-natural-magnus-heavy"
+  ],
+  "techniques": [
     {
-      "id": "attack-magnus-guard",
-      "name": "Guard Stance",
-      "kind": "basic",
-      "range": false,
-      "requiredTechniques": ["guard"],
-      "rulesText": "Requires Guard. [Mark 1 Shield] on you.",
-      "effect": {
-        "type": "grant-shield",
-        "amount": 1,
-        "target": { "kind": "source-creature" }
-      }
+      "id": "technique-magnus-collar-tie",
+      "name": "Collar Tie",
+      "primaryFaceId": "face-natural-magnus-jab",
+      "secondary": { "faceId": "face-natural-vega-dash" },
+      "sequenceRole": "starter",
+      "rulesText": "Jab + Dash: [Strike 3], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 3,
+          "target": { "kind": "declared-target" }
+        }
+      ]
     },
     {
-      "id": "attack-magnus-grab",
-      "name": "Command Grab",
-      "kind": "special",
-      "range": false,
-      "requiredTechniques": ["heavy"],
-      "rulesText": "Requires Heavy. [Strike 4].",
-      "effect": {
-        "type": "damage",
-        "amount": 4,
-        "target": { "kind": "declared-target" }
-      }
+      "id": "technique-magnus-lariat-throw",
+      "name": "Lariat Throw",
+      "primaryFaceId": "face-natural-magnus-lariat",
+      "secondary": { "faceType": "movement" },
+      "sequenceRole": "extender",
+      "rulesText": "Lariat + Movement: [Strike 4], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 4,
+          "target": { "kind": "declared-target" }
+        }
+      ]
+    },
+    {
+      "id": "technique-magnus-power-bomb",
+      "name": "Power Bomb",
+      "primaryFaceId": "face-natural-magnus-grab",
+      "secondary": { "faceType": "attack" },
+      "sequenceRole": "finisher",
+      "rulesText": "Grab + Attack: [Strike 5], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 5,
+          "target": { "kind": "declared-target" }
+        }
+      ]
     }
-  ]
+  ],
+  "attacks": []
 }

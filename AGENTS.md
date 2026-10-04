@@ -6,12 +6,15 @@ verification live in [`TOOLS.md`](./TOOLS.md).
 
 ## What this project is
 
-A **dice + creature combat prototype** (customizable dice, tactics, forging,
-AST resolution, hotseat / online / AI). The repo is being cleaned after removing
-the old **attribute-pile fuel loop** and **legendary victory**; a future **3v3
-tag-fighter** design is **not** implemented here. Player-facing truth:
-[`docs/RULEBOOK.md`](./docs/RULEBOOK.md). Unsettled direction:
-[`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md).
+A **3v3 tag fighter**. Each player has three Fighters, one shared deck, one
+shared hand, one shared Meter pool, and one die per Fighter. One Fighter is
+Active; the others are Reserve. Cards are Response or Modify. Dice are named
+inputs, not a deckbuilding product. Confirmed content model:
+[`docs/specs/030-offensive-control.md`](./docs/specs/030-offensive-control.md).
+Player-facing truth for rules that are already shipped:
+[`docs/RULEBOOK.md`](./docs/RULEBOOK.md). Unsettled questions:
+[`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md) — pile-era sections there are
+historical and are not the authoring model.
 
 Architecture (non-negotiable):
 
@@ -50,12 +53,12 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (DoD).
 | Task | Start here |
 |---|---|
 | Rewrite, revamp, “implement the whole plan”, or work that spans layers | Skill: [slice-changes](.cursor/skills/slice-changes/SKILL.md) — then delegate |
-| New or updated tactic / ritual / face / creature cards | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **design a unique slot, then author** (see [design-craft.md](.cursor/skills/author-content/design-craft.md)); [MECHANIC_ARCHETYPES.md](docs/MECHANIC_ARCHETYPES.md) for pile-era feel archaeology only |
-| Standardize On roll / On absorb / standing triggers | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
+| New or updated Fighter, named face, Response, or Modify | Subagent: [card-designer](.cursor/agents/card-designer.md) + skill [author-content](.cursor/skills/author-content/SKILL.md) — **place it in an existing layer, then author** ([design.md](.cursor/skills/author-content/design.md)); refuse a request that needs a new card type, a defensive die face, or a per-fighter deck |
+| Standardize timing-prefixed print on faces, Responses, and Modifies | Skill: [standardize-card-effects](.cursor/skills/standardize-card-effects/SKILL.md) (used by card-designer) |
 | Implement / extend shared trigger hooks (`010`) | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [implement-hooks](.cursor/skills/implement-hooks/SKILL.md) |
 | New effect vocabulary, reducer, resolution, statuses, phases | Subagent: [engine-developer](.cursor/agents/engine-developer.md) + skill [develop-engine](.cursor/skills/develop-engine/SKILL.md) |
 | Match UI / lobby / decks | Subagent: [match-ui](.cursor/agents/match-ui.md) + skill [match-ui](.cursor/skills/match-ui/SKILL.md) — do not put rules there |
-| Builtin / constructed loadouts, card-has-no-home, attribute identity in builds | Subagent: [deck-designer](.cursor/agents/deck-designer.md) |
+| Builtin / constructed lists, “does this card have a home?” | Subagent: [deck-designer](.cursor/agents/deck-designer.md) — one shared deck; Fighter text is a play requirement, not a construction ban |
 | New or tuned agents, skills, rules, TOOLS.md, AGENTS.md routing | Subagent: [prompt-engineer](.cursor/agents/prompt-engineer.md) + skill [author-interactions](.cursor/skills/author-interactions/SKILL.md) |
 | After a playtest (notes ± metrics, “felt like the wrong deck”) | Subagent: [post-playtest](.cursor/agents/post-playtest.md) + skill [review-playtest](.cursor/skills/review-playtest/SKILL.md) — updates `docs/MECHANIC_ARCHETYPES.md`, briefs owners; does not author JSON or reducer |
 | Match metrics dump with **no** playtest narrative (playable/fun, pace, unpaid attacks, forge vs Overcharge) | Skill: [analyze-match-metrics](.cursor/skills/analyze-match-metrics/SKILL.md) + `src/client/metrics` (spec `014`). Copy agent prompt is instructions only; attach Download JSON. |
@@ -74,10 +77,10 @@ or go/no-go after that work exists. Policy:
 
 | Subagent | Use when |
 |---|---|
-| [card-designer](.cursor/agents/card-designer.md) | Set craft: occupy an empty slot, then author catalogue JSON; delegates new mechanics to engine-developer |
+| [card-designer](.cursor/agents/card-designer.md) | Place a request on an existing layer (named face, Fighter, Response, Modify), then author catalogue JSON; redirect architecture-breaking requests; delegates new mechanics to engine-developer |
 | [engine-developer](.cursor/agents/engine-developer.md) | `src/server` rules: hooks, triggers, `EffectDefinition`, reducer, resolution, statuses |
 | [match-ui](.cursor/agents/match-ui.md) | Lobby, MatchBoard, deck builder, catalogues, stores, decks persistence, PeerJS adapters |
-| [deck-designer](.cursor/agents/deck-designer.md) | Legal loadouts; constructed critique (orphans, attribute identity) |
+| [deck-designer](.cursor/agents/deck-designer.md) | One shared deck plus three Fighters; constructed critique (orphans, play-check vs ban) |
 | [post-playtest](.cursor/agents/post-playtest.md) | After a playtest: reconstruct, update `MECHANIC_ARCHETYPES.md`, brief owners |
 | [prompt-engineer](.cursor/agents/prompt-engineer.md) | Human-to-AI interactions: subagents, skills, rules, TOOLS.md, routing |
 
@@ -85,9 +88,9 @@ or go/no-go after that work exists. Policy:
 
 | Doc | Role |
 |---|---|
-| `docs/specs/002-card-layer.md` | Tactic grammar + catalogue tables |
-| `docs/specs/003-creature-cards.md` | Creature catalogue |
-| `docs/specs/004-face-cards.md` | Face catalogue |
+| `docs/specs/002-card-layer.md` | Historical tactic grammar. Not the current card kinds |
+| `docs/specs/003-creature-cards.md` | Fighter catalogue files (engine type creature) |
+| `docs/specs/004-face-cards.md` | Face catalogue files. Named inputs; not natural/synthetic kinds |
 | `docs/specs/005-local-match-ui.md` | Hotseat UI |
 | `docs/specs/006-deck-persistence.md` | Deck builder / loadouts |
 | `docs/specs/007-peerjs.md` | Online host authority |
@@ -100,6 +103,9 @@ or go/no-go after that work exists. Policy:
 | `docs/specs/021-overcharge.md` | Tactic `[Overcharge]` (hand-card spend). Not spec `013` `optional-overcharge`. |
 | `docs/specs/026-ai-playtest.md` | Headless two-AI local playtest (`src/ai`; public `@server` only) |
 | `docs/specs/027-local-vs-ai.md` | Lobby + store Play vs AI (`chooseAction` as a player adapter) |
+| `docs/specs/028-tag-fighter-prototype.md` | Earlier 3v3 prototype. Where it disagrees with spec `030`, follow `030` |
+| `docs/specs/029-fighter-combat-core.md` | Named faces, Simple Actions, ordered Techniques |
+| `docs/specs/030-offensive-control.md` | Current content model: Response, Modify, Meter, Tag, Assist, dice, deck |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
 | `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
 | `docs/OPEN_DESIGN.md` | Unresolved design decisions |
@@ -119,12 +125,12 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - `src/server` cannot import React, Zustand, PeerJS, nanoid, `@client/*`, or touch DOM / storage / network / clock / `Math.random`.
 - Headless playtest AI lives in `src/ai` (spec `026`). It imports the public `@server` barrel only. `src/server` must not import it. The client may import `@ai` for local vs-AI (lobby + spec `027`).
 - Effects are **data** (JSON AST / discriminated unions), never functions. New tokens are `[Mark]` / `[Strip]` arguments, not new opcodes.
-- Content ids: `card-*`, `creature-*`, `face-*`, `attack-*`, `ability-*` (kebab after prefix).
-- Attachment types (`equipment` / `overload`) must match their regions; rituals use main `type: "ritual"` with a `ritual` region and ritual subtypes.
+- Content ids: `card-*`, `creature-*` (print: Fighter), face ids matching the current `faceId` pattern, `attack-*`, `ability-*` (kebab after prefix). The face-id prefix is not a natural/synthetic kind.
+- Cards are `response` or `modify`. Equipment, overload, and ritual names in older JSON are leftover regions, not kinds to author. Tag is an operation. Assist stays on the Fighter.
 - Grow effect AST only when a concrete card needs it; one opcode handler class + tests in the same change. No unreachable stubs.
 - Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.
-- Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed/forged/equipped onto the other side).
-- Printed `playCost` / attack `requires` / `discards` may remain in catalogue JSON but are **not enforced** (no attribute pile). Do not author new cards as if pile fuel is live.
+- Print voice is the **holder**: `you` / `your` is the player who currently has the card on their field; `opponent` is that player’s opponent (including after the card is handed onto the other side).
+- No attribute pile, no natural/synthetic face kinds, no Shield resource, no per-fighter decks, and no deckbuilding dice. Do not author new cards as if those were live.
 - Gameplay rule changes update [`docs/RULEBOOK.md`](./docs/RULEBOOK.md) in the same change.
 - New/edited card print and new tokens/keywords follow [`docs/KEYWORDS.md`](./docs/KEYWORDS.md).
 - Model routing: Grok/Composer for research, scaffolding, and implementation. Opus/GPT (and similarly powerful models) only for orchestration and decisions after that work is handed off — never to write the feature or explore the repo as the primary researcher. [`.cursor/rules/model-routing.mdc`](.cursor/rules/model-routing.mdc).

@@ -7,13 +7,7 @@ import type {
 } from "@server";
 
 /** Main hand-deck kinds from `CardType`, plus Faces (separate catalogue). */
-export const CARD_TYPE_FILTERS = [
-  "instant",
-  "reaction",
-  "equipment",
-  "overload",
-  "ritual",
-] as const satisfies readonly CardType[];
+export const CARD_TYPE_FILTERS = ["modify", "response"] as const satisfies readonly CardType[];
 
 export type CatalogueFilter = "all" | CardType | "faces";
 
@@ -44,7 +38,6 @@ export function matchesCardQuery(card: CardDefinition, query: string): boolean {
     card.name,
     card.id,
     card.type,
-    card.attribute,
     ...card.subtypes,
     card.rulesText,
   ]
@@ -59,8 +52,6 @@ export function matchesFaceQuery(face: FaceCardDefinition, query: string): boole
   const haystack = [
     face.name,
     face.id,
-    face.kind,
-    face.symbol,
     face.rulesText,
   ]
     .join(" ")
@@ -71,5 +62,6 @@ export function matchesFaceQuery(face: FaceCardDefinition, query: string): boole
 export function catalogueSearchLabel(filter: CatalogueFilter): string {
   if (filter === "all") return "Search all cards…";
   if (filter === "faces") return "Search faces…";
-  return `Search ${filter}s…`;
+  if (filter === "modify") return "Search modifies…";
+  return "Search responses…";
 }

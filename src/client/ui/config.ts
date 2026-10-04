@@ -10,6 +10,15 @@ export const UI_CONFIG = {
    */
   showDeckBuilderCardArt: false,
   /**
+   * Opening-dice editor on the Decks tab. Set false to hide that section.
+   * Saved loadouts still keep their dice; only the editor is hidden.
+   */
+  showDeckBuilderOpeningDice: false,
+  /**
+   * Cost-curve chart on the Decks tab. Set false to hide that section.
+   */
+  showDeckBuilderCostCurve: false,
+  /**
    * Soft Web Audio cues: end-turn thunk + reaction-priority alert.
    * Set false to mute without a chrome toggle.
    */

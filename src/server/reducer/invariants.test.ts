@@ -63,11 +63,7 @@ describe("structural invariants across played matches", () => {
 
       for (const symbol of absorbed) {
         expect(engineIds.has(symbol.id)).toBe(false);
-        if (symbol.symbol === "shield") {
-          expect(symbol.absorbedByCreatureId).not.toBeNull();
-        } else {
-          expect(symbol.absorbedByCreatureId).toBeNull();
-        }
+        expect(symbol.absorbedByCreatureId).toBeNull();
       }
     }
   });

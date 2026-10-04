@@ -1,9 +1,11 @@
 import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
 import type { FaceCardDefinition } from "../model/dice.js";
-import type {
-  FighterTechniqueDefinition,
-  FighterTechniqueSecondary,
+import {
+  secondaryRequiresFaceId,
+  secondaryRequiresFaceType,
+  type FighterTechniqueDefinition,
+  type FighterTechniqueSecondary,
 } from "../model/fighterTechniques.js";
 import type { CreatureId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
@@ -24,8 +26,9 @@ export function dieIsFaceActionSpent(
 }
 
 /**
- * ASSUMED (spec `029`): any other rolled die owned by the acting player.
- * Single query so secondary-die policy can change without rewriting commands.
+ * Another rolled die owned by the same player. Never an opponent die.
+ * The primary die is excluded, so one rolled face cannot fill both inputs
+ * of the same Technique. Spec `030`.
  */
 export function secondaryDiceFor(
   state: Pick<GameState, "players" | "dice" | "config">,
@@ -61,8 +64,9 @@ export function secondaryMatches(
   face: FaceCardDefinition,
   secondary: FighterTechniqueSecondary,
 ): boolean {
-  if ("faceId" in secondary) return face.id === secondary.faceId;
-  return face.faceType === secondary.faceType;
+  if (secondaryRequiresFaceId(secondary)) return face.id === secondary.faceId;
+  if (secondaryRequiresFaceType(secondary)) return face.faceType === secondary.faceType;
+  return face.sequenceRole === secondary.sequenceRole;
 }
 
 export function canUseFace(

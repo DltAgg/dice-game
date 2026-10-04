@@ -3,6 +3,7 @@ import type {
   CardInstanceId,
   CreatureId,
   CreatureState,
+  DieId,
   GameState,
   PlayerId,
 } from "@server";
@@ -26,6 +27,8 @@ export function MatchSeatField({
   onRitualActivate,
   onTag,
   onAssist,
+  onUseFace,
+  onUseTechnique,
 }: {
   tagSkirmish: boolean;
   state: GameState;
@@ -42,6 +45,12 @@ export function MatchSeatField({
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
   onTag: (reserveCreatureId: CreatureId) => void;
   onAssist: (reserveCreatureId: CreatureId) => void;
+  onUseFace?: (creatureId: CreatureId) => void;
+  onUseTechnique?: (
+    creatureId: CreatureId,
+    techniqueId: string,
+    secondaryDieId: DieId,
+  ) => void;
 }) {
   const shared = {
     state,
@@ -58,7 +67,15 @@ export function MatchSeatField({
     onRitualActivate,
   };
   if (tagSkirmish) {
-    return <TagSkirmishSeatPanel {...shared} onTag={onTag} onAssist={onAssist} />;
+    return (
+      <TagSkirmishSeatPanel
+        {...shared}
+        onTag={onTag}
+        onAssist={onAssist}
+        {...(onUseFace !== undefined ? { onUseFace } : {})}
+        {...(onUseTechnique !== undefined ? { onUseTechnique } : {})}
+      />
+    );
   }
   return <Battlefield {...shared} />;
 }

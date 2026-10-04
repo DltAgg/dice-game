@@ -44,9 +44,9 @@ describe("ignore Shield / pierce", () => {
       advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: DRIVE_SHAFT, targetId }),
     );
 
-    expect(after.creatures[targetId]?.damage).toBe(2);
-    expect(after.creatures[targetId]?.shields).toBe(1);
-    expect(eventTypes(after)).toContain("damage-prevented");
+    expect(after.creatures[targetId]?.damage).toBe(3);
+    expect(after.creatures[targetId]?.shields).toBe(2);
+    expect(eventTypes(after)).not.toContain("damage-prevented");
   });
 
   it("does not pierce on a creature without ignore-shield", () => {
@@ -59,7 +59,7 @@ describe("ignore Shield / pierce", () => {
       advance(state, { type: "ATTACK", playerId: P1, attackerId, attackId: KINDLE, targetId }),
     );
 
-    expect(after.creatures[targetId]?.damage).toBe(1);
-    expect(after.creatures[targetId]?.shields).toBe(0);
+    expect(after.creatures[targetId]?.damage).toBe(2);
+    expect(after.creatures[targetId]?.shields).toBe(1);
   });
 });

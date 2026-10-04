@@ -4,8 +4,6 @@ import { testFace } from "../testing/fixtures/index.js";
 
 const FORGE_DISCOUNT_STANCE = testFace({
   id: "face-test-markers-forge-discount",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
   onRoll: [],
   onAbsorb: [],
@@ -14,8 +12,6 @@ const FORGE_DISCOUNT_STANCE = testFace({
 
 const DOUBLE_ON_ROLL = testFace({
   id: "face-test-markers-double",
-  kind: "synthetic",
-  symbol: "mechanical",
   onRoll: [
     {
       type: "conditional",
@@ -28,8 +24,6 @@ const DOUBLE_ON_ROLL = testFace({
 
 const CONVERT_REFORGE = testFace({
   id: "face-test-markers-convert-reforge",
-  kind: "synthetic",
-  symbol: "mechanical",
   convertRoll: true,
   onRoll: [{ type: "replace-synthetic-face", faces: 1, attribute: "mechanical" }],
   onAbsorb: [],

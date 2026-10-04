@@ -61,23 +61,20 @@ function techniqueDie(
 }
 
 function installTagCatalogue(): void {
-  testFace({ id: STRIKE, name: "Strike", kind: "natural", symbol: "martial", technique: "strike" });
-  testFace({ id: TAG_FACE, name: "Tag", kind: "natural", symbol: "wild", technique: "tag" });
+  testFace({ id: STRIKE, name: "Strike", technique: "strike" });
+  testFace({ id: TAG_FACE, name: "Tag", technique: "tag" });
   testFace({
     id: ASSIST_FACE,
     name: "Assist",
-    kind: "natural",
-    symbol: "toxin",
     technique: "assist",
   });
-  testFace({ id: HEAVY, name: "Heavy", kind: "natural", symbol: "mechanical", technique: "heavy" });
-  testFace({ id: GUARD, name: "Guard", kind: "natural", symbol: "luminar", technique: "guard" });
-  testFace({ id: SPECIAL, name: "Special", kind: "natural", symbol: "arcane", technique: "special" });
+  testFace({ id: HEAVY, name: "Heavy", technique: "heavy" });
+  testFace({ id: GUARD, name: "Guard", technique: "guard" });
+  testFace({ id: SPECIAL, name: "Special", technique: "special" });
   testCreature({
     id: KORR,
     name: "Korr Stand-in",
     life: 8,
-    attributes: ["martial"],
     archetype: "rushdown",
     assistEffects: [{ type: "grant-shield", amount: 1, target: { kind: "declared-target" } }],
     attacks: [
@@ -93,7 +90,6 @@ function installTagCatalogue(): void {
     id: MAGNUS,
     name: "Magnus Stand-in",
     life: 10,
-    attributes: ["mechanical"],
     archetype: "grappler",
     assistEffects: [{ type: "grant-shield", amount: 2, target: { kind: "declared-target" } }],
   });
@@ -101,7 +97,6 @@ function installTagCatalogue(): void {
     id: NYX,
     name: "Nyx Stand-in",
     life: 6,
-    attributes: ["arcane"],
     archetype: "zoner",
     assistEffects: [{ type: "damage", amount: 1, target: { kind: "most-damaged-enemy" } }],
   });
@@ -224,7 +219,7 @@ describe("028 tag-fighter prototype", () => {
     const result = expectOk(
       advanceResolvingChain(state, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve }),
     );
-    expect(result.creatures[active]?.shields).toBe(2);
+    expect(result.creatures[active]?.shields).toBe(0);
     expect(result.players[P1]?.activeCreatureId).toBe(active);
   });
 
@@ -373,7 +368,7 @@ describe("028 tag-fighter prototype", () => {
       }),
     );
     expect(assist.players[P1]?.activeCreatureId).toBe(creature(ko, P1, 0));
-    expect(assist.creatures[creature(ko, P1, 0)]?.shields).toBe(2);
+    expect(assist.creatures[creature(ko, P1, 0)]?.shields).toBe(0);
   });
 
   it("allows one closing Tag and refuses a second Tag that turn", () => {

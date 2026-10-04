@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-grappler-command-grab",
   "name": "Command Grab",
-  "kind": "natural",
-  "symbol": "martial",
   "faceType": "grab",
   "rulesText": "Primary: [Strike 1]. Secondary: +1 damage to the technique.",
   "onRoll": [],
@@ -12,11 +10,16 @@
     {
       "type": "damage",
       "amount": 1,
-      "target": { "kind": "declared-target" }
+      "target": {
+        "kind": "declared-target"
+      }
     }
   ],
   "secondaryEffects": [
-    { "type": "next-attack-bonus", "amount": 1 }
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
   ],
   "maxOverloads": 0,
   "forgeRestriction": null

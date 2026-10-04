@@ -1,47 +1,30 @@
-# CSV → tactic cards
+# CSV worksheets
 
-When the user supplies a CSV of tactics, columns are **exactly** this order:
+Spreadsheets are notes. There is no ingest. If the user supplies a sheet,
+confirm the columns before authoring. Old sheets that mean pile `playCost`,
+Instant/Ritual, or "Forge 1 Synthetic …" are the previous game. Translate
+each row into the current model or stop and ask.
 
-1. **Card text** — printed body (type line, forge, gates, rules; may be multiline)
-2. **Play cost** — pile tokens (`playCost` total or per-attribute map, e.g. `{ darkness: 3 }`)
-3. **Card name** — English display name
+## Classify each row
 
-Example:
+| The row is trying to… | Author as |
+|---|---|
+| React to an opponent's action (block, dodge, counter, prevent) | Response — [tactics.md](tactics.md) |
+| Change a roll, die, moveset, target, or Tag | Modify with that `modifySubject` |
+| Define a move on a die | Named face — [faces.md](faces.md) |
+| Define who a Fighter is | Fighter `baseDie`, Techniques, Assist — [creatures.md](creatures.md) |
+| Give a Fighter a personal deck | Do not. One shared deck. `fighterRestriction` if it is a play check |
 
-```csv
-Card text,Play cost,Card name
-"Draw 2 cards and discard 1. Forge 1 synthetic Darkness face on your die.",3,Eclipse
-```
-
-Author as `"playCost": { "darkness": 3 }` for the card’s attribute.
-
-If headers or order differ, **stop and confirm** before mass-authoring.
-
-“Forge 1 Synthetic Darkness” (or Toxin / Mechanical / Corruption / …) is
-**kind + attribute**: install a **named special** of that symbol from the
-pool. It is not a card titled Synthetic Darkness. The `Forge 1` in this
-example is **column-order illustration**, not a craft default
-([design-craft.md](design-craft.md)).
+Uniqueness still applies ([design-craft.md](design-craft.md)). Do not
+batch-author Forge-1 stickers or `[Spend] X, [Generate] Y`.
 
 ## Process
 
-1. List every row with proposed: main type, ritual subtypes if any, attribute, forge, playable region, deferred gaps.
-   Uniqueness + forge intent still apply ([design-craft.md](design-craft.md)).
-   Do not batch-author Forge 1 Natural of own attribute + one opcode.
-2. Get alignment (or proceed if the user said to implement the batch).
-3. Author each row into `src/server/content/cards/<card-id>.json` per [tactics.md](tactics.md).
-4. Update `docs/specs/002-card-layer.md` tables and `docs/DEFERRED_CATALOGUE.md`.
-5. Run DoD checks.
+1. List every row with layer, `type` or face name, and deferred gaps.
+2. Get alignment, unless the user already said to implement the batch.
+3. Author one JSON file per row.
+4. Update `docs/DEFERRED_CATALOGUE.md` for clauses the engine cannot model.
+5. Run DoD.
 
-## Classification cheat sheet
-
-| Text cues | Region |
-|---|---|
-| Instant / one-shot verbs (draw, deal, search…) | `type: "instant"` + `effect` |
-| Reaction window from hand | `type: "reaction"` + `effect` |
-| “Equip” / “whenever this creature…” standing | `type: "equipment"` + `equipment` |
-| “When this face is rolled” / face-only gate | `type: "overload"` + `overload` |
-| “Active when:” / stays on field | `type: "ritual"` + `ritual` region |
-| “None” / empty effect / forge-only | forge only |
-
-Do not build a permanent CSV importer unless the user asks for tooling.
+If a column is only a pile cost, drop it. Meter appears only when the row
+is an exceptional mode.

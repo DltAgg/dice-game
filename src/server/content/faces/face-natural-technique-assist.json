@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-technique-assist",
   "name": "Assist",
-  "kind": "natural",
-  "symbol": "toxin",
   "technique": "assist",
   "rulesText": "",
   "onRoll": [],

@@ -33,14 +33,13 @@ import { CRANK, DRIVE_SHAFT } from "../testing/tempoCatalogue.js";
 const HEAL_ON_LUMINAR = testCard({
   id: "card-test-trigger-heal-luminar",
   playCost: { luminar: 2, any: 1 },
-  attribute: "luminar",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
       {
         type: "on-absorb",
-        symbols: ["luminar", "shield"],
+        symbols: ["luminar"],
         absorberRelation: "ally",
         oncePerTurn: true,
         effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
@@ -52,8 +51,7 @@ const HEAL_ON_LUMINAR = testCard({
 const GENERATE_ON_MECHANICAL = testCard({
   id: "card-test-trigger-generate-mechanical",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
@@ -71,8 +69,7 @@ const GENERATE_ON_MECHANICAL = testCard({
 const FORGE_DISCOUNT_ON_ROLL = testCard({
   id: "card-test-trigger-forge-discount-roll",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
@@ -89,8 +86,7 @@ const FORGE_DISCOUNT_ON_ROLL = testCard({
 const GENERATE_OVERLOAD = testCard({
   id: "card-test-trigger-overload-generate",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: {
     faceSymbols: ["mechanical"],
     onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
@@ -100,11 +96,9 @@ const GENERATE_OVERLOAD = testCard({
 const DESYNTH_OVERLOAD = testCard({
   id: "card-test-trigger-overload-desynth",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: {
     faceSymbols: ["mechanical"],
-    faceKinds: ["synthetic"],
     onRoll: [{ type: "desynthesize", target: { kind: "choose-any-synthetic-slot" } }],
   },
 });
@@ -112,8 +106,7 @@ const DESYNTH_OVERLOAD = testCard({
 const REDUCE_GEAR = testCard({
   id: "card-test-trigger-reduce",
   playCost: { luminar: 2 },
-  attribute: "luminar",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [{ type: "on-take-damage", reduceBy: 1, oncePerTurn: true }],
@@ -123,8 +116,7 @@ const REDUCE_GEAR = testCard({
 const STANDING_RITUAL = testCard({
   id: "card-test-trigger-standing-ritual",
   playCost: { mechanical: 1, any: 1 },
-  attribute: "mechanical",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { mechanical: 1, any: 1 },
@@ -143,8 +135,7 @@ const STANDING_RITUAL = testCard({
 const EMPTY_STANDING_RITUAL = testCard({
   id: "card-test-trigger-empty-standing",
   playCost: { luminar: 1, any: 1 },
-  attribute: "luminar",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { luminar: 2, any: 1 },
@@ -160,43 +151,32 @@ const EMPTY_STANDING_RITUAL = testCard({
 
 const TWO_PIP = testFace({
   id: "face-test-trigger-two-pip",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
 });
 
 const FORGE_DISCOUNT_STANCE = testFace({
   id: "face-test-trigger-forge-discount-stance",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
   whileShowing: [{ type: "forge-discount", amount: 1 }],
 });
 
 const DUAL_PIP = testFace({
   id: "face-test-trigger-dual-pip",
-  kind: "synthetic",
-  symbol: "luminar",
   pips: { luminar: 1, mechanical: 1 },
 });
 
 const DOUBLE_LUMINAR = testFace({
   id: "face-test-trigger-double-luminar",
-  kind: "synthetic",
-  symbol: "luminar",
   pips: { luminar: 2 },
 });
 
 const DOUBLE_MECHANICAL = testFace({
   id: "face-test-trigger-double-mechanical",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
 });
 
 const FORGE_DISCOUNT_BODY = testCreature({
   id: "creature-test-trigger-forge-discount",
-  attributes: ["mechanical"],
   standingAbilities: [
     {
       type: "on-absorb",
@@ -210,7 +190,6 @@ const FORGE_DISCOUNT_BODY = testCreature({
 
 const SHIELD_ON_LUMINAR = testCreature({
   id: "creature-test-trigger-shield-luminar",
-  attributes: ["luminar"],
   standingAbilities: [
     {
       type: "on-absorb",
@@ -225,7 +204,6 @@ const SHIELD_ON_LUMINAR = testCreature({
 const EMPOWER_ON_MECHANICAL = testCreature({
   id: "creature-test-trigger-empower",
   life: 22,
-  attributes: ["mechanical", "luminar"],
   legendary: true,
   standingAbilities: [
     {
@@ -252,7 +230,6 @@ const HEAL_KINDLE = testAttack({
 });
 const HEALER = testCreature({
   id: "creature-test-trigger-healer",
-  attributes: ["luminar"],
   attacks: [HEAL_KINDLE],
 });
 
@@ -578,9 +555,9 @@ describe("creature standing triggers", () => {
         symbolId,
       }),
     );
+    expect(after.pendingDecision?.type).toBe("choose-creature");
     expect(
-      after.pendingDecision?.type === "choose-creature" ||
-        Object.values(after.creatures).some((creature) => (creature.shields ?? 0) >= 1),
+      Object.values(after.creatures).every((creature) => (creature.shields ?? 0) === 0),
     ).toBe(true);
   });
 

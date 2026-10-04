@@ -3,7 +3,6 @@ import type { CardDefinition } from "../../model/cards.js";
 import type { CreatureDefinition } from "../../model/creatures.js";
 import type { FaceCardDefinition, StartingDiceLayout } from "../../model/dice.js";
 import type { CardId, CreatureDefinitionId, FaceCardId } from "../../model/ids.js";
-import { SHIELD } from "../../model/symbols.js";
 import {
   asTestAttackId,
   asTestCardId,
@@ -75,9 +74,8 @@ function identityNatural(attribute: Attribute): FaceCardDefinition {
   return testFace({
     id: testNaturalFaceId(attribute),
     name: attribute,
-    kind: "natural",
-    symbol: attribute,
     rulesText: "",
+    pips: { [attribute]: 1 },
   });
 }
 
@@ -85,9 +83,8 @@ function namedSynthetic(id: FaceCardId, symbol: Attribute, name: string): FaceCa
   return testFace({
     id,
     name,
-    kind: "synthetic",
-    symbol,
-    rulesText: "",
+    rulesText: name,
+    pips: { [symbol]: 1 },
   });
 }
 
@@ -96,8 +93,7 @@ function fillerCard(id: CardId, index: number): CardDefinition {
     id,
     name: `Test Filler ${String(index)}`,
     playCost: { mechanical: 2 },
-    attribute: "mechanical",
-    type: "instant",
+    type: "modify",
     effect: { effects: [{ type: "draw-cards", amount: 1 }] },
   });
 }
@@ -107,7 +103,6 @@ function bodyA(): CreatureDefinition {
     id: TEST_BODY_A,
     name: "Test Body A",
     life: 14,
-    attributes: ["mechanical"],
     attacks: [
       testAttack({
         id: TEST_CRANK,
@@ -132,7 +127,6 @@ function bodyB(): CreatureDefinition {
     id: TEST_BODY_B,
     name: "Test Body B",
     life: 13,
-    attributes: ["luminar"],
     attacks: [
       testAttack({
         id: TEST_KINDLE,
@@ -157,7 +151,6 @@ function legend(): CreatureDefinition {
     id: TEST_LEGEND,
     name: "Test Legend",
     life: 12,
-    attributes: ["mechanical", "luminar"],
     legendary: true,
     attacks: [
       testAttack({
@@ -177,8 +170,6 @@ export function installDefaultTestCatalogue(): void {
   testFace({
     id: TEST_SHIELD_FACE_ID,
     name: "Shield",
-    kind: "untyped",
-    symbol: SHIELD,
     rulesText: "",
   });
   namedSynthetic(TEST_SYNTHETIC_MECHANICAL_A, "mechanical", "Synthetic Mechanical A");
@@ -205,8 +196,7 @@ export function installSharedBehaviorCards(): void {
     id: TEST_PLAYABLE,
     name: "Test Playable",
     playCost: { mechanical: 2 },
-    attribute: "mechanical",
-    type: "instant",
+    type: "modify",
     effect: {
       effects: [
         { type: "generate-symbol", symbol: "mechanical", amount: 2 },
@@ -218,9 +208,8 @@ export function installSharedBehaviorCards(): void {
     id: TEST_REACTION_PREVENT,
     name: "Test Reaction Prevent",
     playCost: { luminar: 1 },
-    attribute: "luminar",
-    type: "reaction",
-    forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
+    type: "response",
+    forge: { faces: 1, target: "own-die" },
     effect: {
       effects: [
         { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
@@ -231,18 +220,16 @@ export function installSharedBehaviorCards(): void {
     id: TEST_NATURAL_FORGE,
     name: "Test Natural Forge",
     playCost: { luminar: 2 },
-    attribute: "luminar",
-    type: "instant",
-    forge: { faces: 1, kind: "natural", attribute: "luminar", target: "own-die" },
+    type: "modify",
+    forge: { faces: 1, target: "own-die" },
     effect: { effects: [{ type: "draw-cards", amount: 1 }] },
   });
   testCard({
     id: TEST_REQUIRES_GATE,
     name: "Test Requires Gate",
     playCost: { mechanical: 2 },
-    attribute: "mechanical",
-    type: "instant",
-    forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    type: "modify",
+    forge: { faces: 2, target: "own-die" },
     effect: {
       requires: { mechanical: 2 },
       effects: [{ type: "draw-cards", amount: 1 }],
@@ -252,18 +239,16 @@ export function installSharedBehaviorCards(): void {
     id: TEST_OVERCHARGE_ARCANE,
     name: "Test Overcharge Arcane",
     playCost: { arcane: 2 },
-    attribute: "arcane",
-    type: "instant",
-    forge: { faces: 1, kind: "synthetic", attribute: "arcane", target: "own-die" },
+    type: "modify",
+    forge: { faces: 1, target: "own-die" },
     effect: { effects: [{ type: "draw-cards", amount: 1 }] },
   });
   testCard({
     id: TEST_OVERCHARGE_MECHANICAL,
     name: "Test Overcharge Mechanical",
     playCost: { mechanical: 2 },
-    attribute: "mechanical",
-    type: "instant",
-    forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+    type: "modify",
+    forge: { faces: 1, target: "own-die" },
     effect: { effects: [{ type: "draw-cards", amount: 1 }] },
   });
 }

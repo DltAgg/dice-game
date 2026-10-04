@@ -3,7 +3,6 @@ import {
   attackCostOf,
   basicAttackOf,
   formatAttackLine,
-  primaryAttribute,
   specialAttackOf,
   type CreatureDefinition,
   type SymbolRequirement,
@@ -70,16 +69,11 @@ function costIcons(requires: SymbolRequirement): readonly { attribute: Attribute
 }
 
 export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
-  const attribute = primaryAttribute(creature);
   const art = CREATURE_ART[creature.id];
   const basic = basicAttackOf(creature);
   const special = specialAttackOf(creature);
   const isLegendary = creature.legendary === true;
-  const typeLine = [
-    isLegendary ? "Legendary" : null,
-    attribute !== undefined ? attribute : null,
-    "Creature",
-  ]
+  const typeLine = [isLegendary ? "Legendary" : null, "Creature"]
     .filter((part): part is string => part !== null)
     .join(" · ");
 
@@ -115,14 +109,6 @@ export function CreatureCard({ creature, width = 280 }: CreatureCardProps) {
           <span className="font-[family-name:var(--font-card)] text-[length:clamp(0.85rem,5.8cqw,1.55rem)] font-normal leading-none whitespace-nowrap">
             {String(creature.life)} HP
           </span>
-          {attribute !== undefined ? (
-            <img
-              src={ATTRIBUTE_ICON[attribute]}
-              alt={attribute}
-              draggable={false}
-              className="size-[length:clamp(1.4rem,9cqw,2.35rem)] rounded-full object-cover"
-            />
-          ) : null}
         </div>
       </header>
 

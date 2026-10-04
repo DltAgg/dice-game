@@ -9,6 +9,7 @@ import {
   TEST_OVERCHARGE_ARCANE,
   TEST_OVERCHARGE_MECHANICAL,
   TEST_SHIELD_FACE_ID,
+  TEST_SYNTHETIC_MECHANICAL_A,
   testFace,
   testNaturalFaceId,
 } from "../testing/fixtures/index.js";
@@ -32,8 +33,6 @@ const SHIELD_SLOT = 4;
 
 const CONVERT_KEEPER = testFace({
   id: "face-test-convert-keeper",
-  kind: "synthetic",
-  symbol: "darkness",
   convertRoll: true,
   onRoll: [
     {
@@ -191,7 +190,7 @@ describe("tactic Overcharge", () => {
       ),
     );
     expect(forged.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toBeUndefined();
-    expect(forged.dice[dieId]?.slots[DARKNESS_SLOT]?.faceCardId).toBe(testNaturalFaceId("luminar"));
+    expect(forged.dice[dieId]?.slots[DARKNESS_SLOT]?.faceCardId).toBe(TEST_SYNTHETIC_MECHANICAL_A);
 
     const rolled = rollShowingSlot(forged, DARKNESS_SLOT);
     expect(rolled.players[P1]?.overchargeByFace[DARKNESS_NATURAL]).toBeUndefined();
@@ -247,16 +246,13 @@ describe("tactic Overcharge", () => {
     ).toBe(true);
   });
 
-  it("Shield / untyped face is illegal", () => {
+  it("a blank face can be Overcharged", () => {
     const ready = actionsReady([TEST_OVERCHARGE_ARCANE]);
-    expect(legalOverchargeFaces(ready, P1)).not.toContain(TEST_SHIELD_FACE_ID);
-    const result = advance(
-      ready,
-      overchargeAction(P1, handCardIdAt(ready, P1, 0), TEST_SHIELD_FACE_ID),
+    expect(legalOverchargeFaces(ready, P1)).toContain(TEST_SHIELD_FACE_ID);
+    const result = expectOk(
+      advance(ready, overchargeAction(P1, handCardIdAt(ready, P1, 0), TEST_SHIELD_FACE_ID)),
     );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe("INVALID_FACE");
-    expect(result.state).toBe(ready);
+    expect(result.players[P1]?.overchargeByFace[TEST_SHIELD_FACE_ID]).toEqual(["arcane"]);
   });
 
   it("suppress inherent still generates Overcharge pips", () => {

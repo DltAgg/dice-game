@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-technique-special",
   "name": "Special",
-  "kind": "natural",
-  "symbol": "arcane",
   "technique": "special",
   "rulesText": "",
   "onRoll": [],

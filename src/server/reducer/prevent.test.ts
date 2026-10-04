@@ -33,9 +33,8 @@ const CHARGE = KINDLE;
 const PREVENT_AND_DRAW = testCard({
   id: "card-test-prevent-and-draw",
   playCost: { luminar: 2 },
-  attribute: "luminar",
-  type: "reaction",
-  forge: { faces: 2, kind: "synthetic", attribute: "luminar", target: "own-die" },
+  type: "response",
+  forge: { faces: 2, target: "own-die" },
   effect: {
     effects: [
       { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
@@ -47,9 +46,8 @@ const PREVENT_AND_DRAW = testCard({
 const PREVENT_REFLECT = testCard({
   id: "card-test-prevent-reflect",
   playCost: { luminar: 3 },
-  attribute: "luminar",
-  type: "reaction",
-  forge: { faces: 1, kind: "synthetic", attribute: "luminar", target: "own-die" },
+  type: "response",
+  forge: { faces: 1, target: "own-die" },
   effect: { effects: [{ type: "prevent-attack-reflect" }] },
 });
 
@@ -348,12 +346,12 @@ describe("true prevent (009)", () => {
         }),
       ),
     );
-    expect(after.creatures[target]?.shields).toBe(0);
-    expect(after.creatures[target]?.damage).toBe(1);
+    expect(after.creatures[target]?.shields).toBe(1);
+    expect(after.creatures[target]?.damage).toBe(2);
     const events = after.log.map((entry) => entry.event);
     expect(
       events.some((event) => event.type === "damage-prevented" && event.source === "shield"),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("grant-attack-prevent whiffs when no attack is on the chain", () => {

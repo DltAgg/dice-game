@@ -26,14 +26,14 @@ describe("FORGE_CARD without pile spend", () => {
     expect(forged.dice[dieId]?.slots[5]?.faceCardId).toBeDefined();
   });
 
-  it("first synthetic forge this turn marks syntheticForgedThisTurn", () => {
+  it("a forge does not mark syntheticForgedThisTurn", () => {
     const ready = withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE]);
     const dieId = ready.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("expected a die");
     const forged = expectOk(
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
-    expect(forged.syntheticForgedThisTurn[P1]).toBe(true);
+    expect(forged.syntheticForgedThisTurn[P1]).toBeUndefined();
   });
 
   it("second synthetic forge still succeeds without pile payment", () => {
@@ -46,11 +46,11 @@ describe("FORGE_CARD without pile spend", () => {
     const second = expectOk(
       advance(first, forgeAction(first, P1, handCardIdAt(first, P1, 0), dieId, [5])),
     );
-    expect(second.syntheticForgedThisTurn[P1]).toBe(true);
+    expect(second.syntheticForgedThisTurn[P1]).toBeUndefined();
     expect(second.dice[dieId]?.slots[5]?.faceCardId).toBeDefined();
   });
 
-  it("END_TURN clears the waiver so the next turn’s first synthetic is allowed again", () => {
+  it("END_TURN leaves the flag unset and a later forge still succeeds", () => {
     const playable = getCard(TEST_PLAYABLE);
     if (playable === undefined) throw new Error("playable");
     let state = withHand(withPhase(newMatch(), "actions"), P1, [TEST_PLAYABLE, TEST_PLAYABLE]);
@@ -60,7 +60,7 @@ describe("FORGE_CARD without pile spend", () => {
     state = expectOk(
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), dieId, [4])),
     );
-    expect(state.syntheticForgedThisTurn[P1]).toBe(true);
+    expect(state.syntheticForgedThisTurn[P1]).toBeUndefined();
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
     expect(state.syntheticForgedThisTurn[P1]).toBeUndefined();
     state = expectOk(advance(state, { type: "END_TURN", playerId: P2 }));
@@ -69,6 +69,6 @@ describe("FORGE_CARD without pile spend", () => {
     state = expectOk(
       advance(state, forgeAction(state, P1, handCardIdAt(state, P1, 0), otherDieId, [4])),
     );
-    expect(state.syntheticForgedThisTurn[P1]).toBe(true);
+    expect(state.syntheticForgedThisTurn[P1]).toBeUndefined();
   });
 });

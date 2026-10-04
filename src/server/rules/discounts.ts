@@ -32,9 +32,6 @@ function discountMatches(ability: StandingTrigger, definition: CardDefinition): 
   ) {
     return false;
   }
-  if (ability.attributes !== undefined && !ability.attributes.includes(definition.attribute)) {
-    return false;
-  }
   return true;
 }
 

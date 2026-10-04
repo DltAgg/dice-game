@@ -12,7 +12,6 @@ import type {
 } from "./ids.js";
 import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
-import type { ForgeableFaceKind } from "./dice.js";
 import type { CreatureChoiceFilter } from "./effects.js";
 import type { BounceHost, BounceHostChoice, SilenceHost, SilenceHostChoice } from "./targeting.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
@@ -35,7 +34,8 @@ export type GameEvent =
       readonly type: "die-rolled";
       readonly dieId: DieId;
       readonly slotIndex: number;
-      readonly symbol: SymbolType;
+      /** First inherent pip, when the face yields any. */
+      readonly symbol?: SymbolType;
     }
   | {
       readonly type: "die-skipped";
@@ -365,7 +365,6 @@ export type GameEvent =
       readonly type: "forge-faces-started";
       readonly playerId: PlayerId;
       readonly faces: number;
-      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
     }

@@ -35,15 +35,16 @@ swings, not a Strike-3 closer).
 
 | If the leak is… | Owner | Do not |
 |---|---|---|
-| Printed attack/card/face in the wrong **window** (MA-01 refund, converter, 1-drop) | `card-designer` | Edit JSON here |
-| Spend/generate/attack fuel that JSON cannot express (missing opcode, wrong bank timing) | `engine-developer` | Grow the reducer here |
-| Right cards, wrong **list** (copy counts, squad, splash) | `deck-designer` | Edit `loadouts/` here |
+| Printed face, Response, or Modify in the wrong layer (Guard face, Tag type, pile cost) | `card-designer` | Edit JSON here. Do not ask them to restore the pile |
+| Missing opcode or hook the current model needs | `engine-developer` | Grow the reducer here |
+| Right cards, wrong **list** (copies, which three Fighters, a play-check treated as a ban) | `deck-designer` | Edit `loadouts/` here |
 | Players stall on UI (priority, pending, illegible board) + high think / reject rate | `match-ui` | Restyle MatchBoard here |
 | Bible-silent **rule** | Propose `OPEN` in `OPEN_DESIGN.md` only if asked | Mark `DECIDED` |
 
-Same keyword, different window: `[Generate]` On roll is often `HOME` (MA-02);
-`[Generate]` of the attribute an attack just `[Spend]` is Aggro-shaped (MA-01).
-Read [`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md)
+Historical rows only: `[Generate]` On roll versus `[Generate]` of an attribute
+an attack just `[Spend]` (MA-01, MA-02). Do not brief a new pile `[Spend]`.
+Read the era note in
+[`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md)
 before proposing a new id.
 
 ## Workflow
@@ -52,7 +53,7 @@ before proposing a new id.
 Playtest Progress:
 - [ ] 1. Intake: lists, notes, metrics yes/no
 - [ ] 2. Metrics pass if an export exists (analyze-match-metrics answer shape)
-- [ ] 3. Feel vs intended home (design.md archetypes)
+- [ ] 3. Feel vs the current layers (design.md), not the pile-era archetype table
 - [ ] 4. Mechanic × window → existing MA row or new id
 - [ ] 5. Grep live JSON (`generate-symbol` + `discards`, etc.)
 - [ ] 6. Classify owner (table above)

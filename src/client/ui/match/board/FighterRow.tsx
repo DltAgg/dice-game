@@ -1,5 +1,6 @@
 import {
   currentLife,
+  getCard,
   getCreatureDefinition,
   isActiveFighter,
   type AttackId,
@@ -9,6 +10,7 @@ import {
   type PlayerId,
 } from "@server";
 import { CreatureTile } from "./CreatureTile";
+import { ReserveTagAssist } from "./TagAssistBar";
 import { showingFaceForCreature } from "./showingFace";
 import type { Intent } from "../intents/types";
 
@@ -36,6 +38,31 @@ function FighterDieStrip({
   );
 }
 
+function AttachedCards({
+  state,
+  creature,
+}: {
+  state: GameState;
+  creature: CreatureState;
+}) {
+  const attached = creature.equipmentIds.flatMap((id) => {
+    const card = state.cards[id];
+    if (card === undefined) return [];
+    const name = getCard(card.cardId)?.name;
+    return name === undefined ? [] : [{ id, name }];
+  });
+  if (attached.length === 0) return null;
+  return (
+    <ul className="mt-1 space-y-0.5">
+      {attached.map((card) => (
+        <li key={card.id} className="text-[0.65rem] text-amber-200/80">
+          {card.name}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function DefeatedFighterCard({
   state,
   creature,
@@ -58,6 +85,7 @@ function DefeatedFighterCard({
       </p>
       <p className="mt-1 font-medium text-stone-400">{def.name}</p>
       <p className="text-xs text-stone-600">HP 0/{def.life}</p>
+      <AttachedCards state={state} creature={creature} />
       <FighterDieStrip state={state} creatureId={creature.id} />
     </div>
   );
@@ -66,28 +94,42 @@ function DefeatedFighterCard({
 export function FighterRow({
   state,
   playerId,
+  band,
   intent,
+  canAct,
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
+  onTag,
+  onAssist,
 }: {
   state: GameState;
   playerId: PlayerId;
+  /** Active sits toward the phase bar; reserves sit behind it. */
+  band: "active" | "reserve";
   intent: Intent;
+  canAct: boolean;
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
+  onTag: (reserveCreatureId: CreatureId) => void;
+  onAssist: (reserveCreatureId: CreatureId) => void;
 }) {
   const player = state.players[playerId];
   if (player === undefined) return null;
 
+  const creatureIds = player.creatureIds.filter(
+    (creatureId) => isActiveFighter(player, creatureId) === (band === "active"),
+  );
+  if (creatureIds.length === 0) return null;
+
   return (
     <div className="flex flex-wrap justify-center gap-3">
-      {player.creatureIds.map((creatureId) => {
+      {creatureIds.map((creatureId) => {
         const creature = state.creatures[creatureId];
         if (creature === undefined) return null;
 
-        const active = isActiveFighter(player, creatureId);
+        const active = band === "active";
         const role = active ? "Active" : "Reserve";
 
         if (creature.defeated) {
@@ -113,8 +155,8 @@ export function FighterRow({
                 onCreatureClick={onCreatureClick}
                 onAttackChoose={onAttackChoose}
                 onCancelAttack={onCancelAttack}
+                footer={dieStrip}
               />
-              {dieStrip}
             </div>
           );
         }
@@ -131,6 +173,16 @@ export function FighterRow({
               <p className="text-xs text-stone-500">
                 HP {life}/{def?.life ?? "—"}
               </p>
+              <AttachedCards state={state} creature={creature} />
+              <ReserveTagAssist
+                state={state}
+                playerId={playerId}
+                reserveId={creatureId}
+                label={def?.name ?? "Reserve"}
+                canAct={canAct}
+                onTag={onTag}
+                onAssist={onAssist}
+              />
               {dieStrip}
             </div>
           </div>

@@ -86,4 +86,50 @@ describe("FaceCardsInPlay while-showing / convert cues", () => {
     expect(html).toContain("Choose one");
     expect(html).not.toContain("On absorb");
   });
+
+  it("lists only the showing face", () => {
+    const hidden = testFace({ name: "Hidden Stance" });
+    const playerId = "p1" as PlayerId;
+    const dieId = "die-1" as DieId;
+    const state = {
+      status: "in-progress",
+      pendingDecision: null,
+      phase: "actions",
+      players: {
+        p1: {
+          dieIds: [dieId],
+          overload: [],
+          overchargeByFace: {},
+        },
+      },
+      dice: {
+        [dieId]: {
+          id: dieId,
+          ownerId: playerId,
+          rolledSlotIndex: 0,
+          slots: [
+            { index: 0, faceCardId: pierceFace.id, faceCardOwnerId: playerId },
+            { index: 1, faceCardId: hidden.id, faceCardOwnerId: playerId },
+          ],
+        },
+      },
+      cards: {},
+    } as unknown as GameState;
+
+    const html = renderToStaticMarkup(
+      createElement(FaceCardsInPlay, {
+        state,
+        playerId,
+        label: "P1 faces",
+        facing: "up",
+        actingPlayerId: playerId,
+        canAct: false,
+        onActivateFace: () => undefined,
+      }),
+    );
+    expect(html).toContain("Pierce Stance");
+    expect(html).not.toContain("Hidden Stance");
+    expect(html).toContain("showing");
+    expect(html).not.toContain("shared across dice");
+  });
 });

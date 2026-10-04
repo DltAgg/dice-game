@@ -26,9 +26,8 @@ import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tem
 const EQUIP_CREATURE = testCard({
   id: "card-test-equip-creature",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  type: "modify",
+  forge: { faces: 2, target: "own-die" },
   equipment: { mayTargetOpponent: false, abilities: [] },
 });
 

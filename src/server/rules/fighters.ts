@@ -14,6 +14,9 @@ export function dieForCreature(
 ): DieState | undefined {
   const creature = state.creatures[creatureId];
   if (creature === undefined) return undefined;
+  for (const die of Object.values(state.dice)) {
+    if (die.boundCreatureId === creatureId && die.ownerId === creature.ownerId) return die;
+  }
   const player = state.players[creature.ownerId];
   if (player === undefined) return undefined;
   const index = player.creatureIds.indexOf(creatureId);

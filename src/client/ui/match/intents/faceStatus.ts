@@ -167,8 +167,7 @@ export function activateFaceSpendCost(
   if (die === undefined) return spendBase;
   let corruptionFaces = 0;
   for (const slot of die.slots) {
-    const face = getFaceCard(slot.faceCardId);
-    if (face?.kind === "synthetic" && face.symbol === "corruption") {
+    if ((slot.corruptionMarkers ?? 0) >= 1) {
       corruptionFaces += 1;
     }
   }

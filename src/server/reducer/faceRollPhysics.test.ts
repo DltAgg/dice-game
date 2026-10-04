@@ -48,8 +48,6 @@ const MECHANICAL = testNaturalFaceId("mechanical");
 
 const TWO_PIP_MECHANICAL = testFace({
   id: "face-test-physics-two-pip",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
   whileShowing: [{ type: "forge-discount", amount: 1 }],
 });
@@ -57,16 +55,12 @@ const TWO_PIP_MECHANICAL = testFace({
 const DUAL_PIP_NATURAL = testFace({
   id: "face-test-physics-dual-natural",
   name: "Named Dual",
-  kind: "natural",
-  symbol: "mechanical",
   rulesText: "On roll: this face also produces 1 Luminar.",
   pips: { mechanical: 1, luminar: 1 },
 });
 
 const CONVERT_STRIKE = testFace({
   id: "face-test-physics-convert",
-  kind: "synthetic",
-  symbol: "arcane",
   convertRoll: true,
   pips: { arcane: 2 },
   onRoll: [{ type: "damage", amount: 2, target: { kind: "choose-enemy" } }],
@@ -74,16 +68,12 @@ const CONVERT_STRIKE = testFace({
 
 const PIERCE_STANCE = testFace({
   id: "face-test-physics-pierce",
-  kind: "synthetic",
-  symbol: "luminar",
   pips: { luminar: 2 },
   whileShowing: [{ type: "pierce", amount: 1 }],
 });
 
 const DOUBLE_GEOMETRY = testFace({
   id: "face-test-physics-double",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
   onRoll: [
     {
@@ -97,7 +87,6 @@ const DOUBLE_GEOMETRY = testFace({
 const STAMP = testCard({
   id: "card-test-physics-stamp",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
   effect: { effects: [{ type: "reapply-die-modifiers" }] },
 });
 
@@ -346,14 +335,14 @@ describe("While showing", () => {
 });
 
 describe("dice geometry", () => {
-  it("Double arms when the other die shows the same attribute", () => {
+  it("Double arms when the other die shows the same face", () => {
     let state = installFace(newMatch(), DOUBLE_GEOMETRY.id, 0, 0);
-    state = installFace(state, MECHANICAL, 1, 0);
+    state = installFace(state, DOUBLE_GEOMETRY.id, 1, 0);
     const after = rollShowingSlots(state, 0, 0);
     expect(after.resolveNextFaceEffectTwice[P1]).toBe(true);
   });
 
-  it("Double does not arm when the other die shows a different attribute", () => {
+  it("Double does not arm when the other die shows a different face", () => {
     let state = installFace(newMatch(), DOUBLE_GEOMETRY.id, 0, 0);
     state = installFace(state, MARTIAL, 1, 0);
     const after = rollShowingSlots(state, 0, 0);
@@ -372,13 +361,13 @@ describe("dice geometry", () => {
     const draft = createDraft(state);
     const ctx = { controllerId: P1, sourceCreatureId: null, sourceDieId: die0 };
     expect(
-      evaluateCondition(draft, ctx, { type: "this-die-attribute-count", atLeast: 3 }),
+      evaluateCondition(draft, ctx, { type: "this-die-attribute-count", atLeast: 1 }),
     ).toBe(true);
     expect(
-      evaluateCondition(draft, ctx, { type: "this-die-attribute-count", atLeast: 4 }),
+      evaluateCondition(draft, ctx, { type: "this-die-attribute-count", atLeast: 2 }),
     ).toBe(false);
-    expect(evaluateCondition(draft, ctx, { type: "both-showing-synthetic" })).toBe(true);
-    expect(evaluateCondition(draft, ctx, { type: "other-die-same-attribute" })).toBe(true);
+    expect(evaluateCondition(draft, ctx, { type: "both-showing-synthetic" })).toBe(false);
+    expect(evaluateCondition(draft, ctx, { type: "other-die-same-attribute" })).toBe(false);
 
     const off = withDie(state, die1, { rolledSlotIndex: SHIELD_SLOT });
     const offDraft = createDraft(off);

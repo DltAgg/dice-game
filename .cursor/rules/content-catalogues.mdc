@@ -1,5 +1,5 @@
 ---
-description: Conventions when editing tactic, creature, or face catalogues
+description: Conventions when editing Fighter, face, or card catalogues
 globs: src/server/content/**/*
 alwaysApply: false
 ---
@@ -8,48 +8,42 @@ alwaysApply: false
 
 Author definitions as JSON documents (one file per entity):
 
-- Tactics → `src/server/content/cards/<card-id>.json`
-- Creatures → `src/server/content/creatures/<creature-id>.json`
-- Faces → `src/server/content/faces/<face-id>.json`
-- Builtin loadouts → `src/server/content/loadouts/<archetype>.json`
+- Response / Modify → `src/server/content/cards/<card-id>.json`
+- Fighters (engine type creature) → `src/server/content/creatures/<creature-id>.json`
+- Named faces → `src/server/content/faces/<face-id>.json`
+- One shared deck per team → `src/server/content/loadouts/<id>.json`
 
-JSON documents must satisfy `src/server/content/schema/*.schema.json`
-(editor `$schema` plus `catalogue.schema.test.ts`). Those schemas spell out
-region fields (`ritual.activeWhen` / `spend` / `effects` /
-`standingAbilities`, `equipment.mayTargetOpponent` / `abilities`, overload
-`onRoll` / `onAbsorb`, attack `requires` / `discards`) and both AST `op`
-nodes and legacy `type` effects.
+JSON must satisfy `src/server/content/schema/*.schema.json`. Inspect the
+schema before adding a field. Content model:
+`.cursor/skills/author-content/design.md` and
+`docs/specs/030-offensive-control.md`.
 
-Id constants and loaders stay in `cards.ts` / `creatures.ts` / `faces.ts`.
-Effects use the AST (`op` nodes) or legacy `type` members compiled by `AstCompiler`.
+Id constants stay in `cards.ts` / `creatures.ts` / `faces.ts`.
+Effects are AST `op` nodes or legacy `type` members compiled by `AstCompiler`.
 
 Rules:
 
-- `rulesText` / print fields are player-facing authority for the UI and use
-  [`docs/KEYWORDS.md`](docs/KEYWORDS.md): `On roll: [Mark 1 Toxin].`
-  Prefer `[Mark N X]` / `[Strip N X]` over a new verb. Unique one-offs stay
-  spelled until a second card needs the same body.
-- Structured regions (`effect`, `equipment`, `overload`, `ritual`, attack `effect`, face `onRoll`) only when every clause is modelled.
-- Ids: `card-<kebab>`, `creature-<kebab>`, `face-natural|synthetic|untyped-<kebab>`, `attack-<creature>-<kebab>`.
-- `equipment` / `overload` are main `CardType` values and must match their regions (and vice versa).
-- Rituals use main `type: "ritual"` with ritual subtypes (`instant` / `continuous` / `reaction`) and must have a `ritual` region.
-- Update `docs/specs/002|003|004-*.md` and `docs/DEFERRED_CATALOGUE.md` when print coverage changes.
-- Dual-timing faces use `On roll:` / `On absorb:` print plus keyword clauses;
-  see `.cursor/skills/standardize-card-effects/` and `docs/KEYWORDS.md`.
-- Synthetic faces are **named specials only**. Never author blank generics
-  (`face-synthetic-martial`, `face-synthetic-corruption`, Forged Martial, …).
-- Follow `.cursor/skills/author-content/SKILL.md` for full workflows and templates.
-- Honor **attribute exclusive mechanics** in `.cursor/skills/author-content/design.md`.
-  Do not print another attribute’s signature verb (scry, mill, Luminar `[Prevent]`
-  on non-reactions, opponent-die, toxin markers, ally swap, own-die reconstruction,
-  `[Frenzy]`). `[Prevent]` / `grant-attack-prevent` is **reaction-only** (spec `009`).
-  No live attribute pile — printed `playCost` / `[Requires]` / `[Spend]` are catalogue leftovers; see `docs/RULEBOOK.md`.
-  Mechanic × archetype feel: `docs/MECHANIC_ARCHETYPES.md` (do not reprint
-  `RETARGETED` leaks such as attack-spend `[Generate]`).
-- **Live JSON** in `src/server/content/{cards,faces,creatures}/` is catalogue
-  truth. Spec `002` tables of missing cards are not a pattern. Do not clone
-  `forge.faces: 1` stickers or `[Spend] X, [Generate] Y` converter slots
-  (`.cursor/skills/author-content/design-craft.md`).
-- Print voice is the **holder**: `you` is the player whose field the card sits on; `opponent` is that player’s opponent (including after a hand-off / opponent-die forge / opponent equip).
-- Printed `playCost` totaling 1 pile token is exceptional and niche. Prefer 2+
-  of the card’s attribute; cheaper plays come from `[Discount]`, not 1-drops.
+- `type` is `response` or `modify`. Block, Dodge, Counter, prevent, and
+  redirect are effects. `modifySubject` is `roll`, `die`, `moveset`,
+  `target`, or `tag`. Do not author Instant, Reaction, Equipment, Overload,
+  or Ritual as the card kind. Leftover regions with those names are not a
+  pattern.
+- Faces are named inputs (name, type, primary, secondary). No generic Guard,
+  Block, Dodge, or Counter face. The `face-natural|synthetic|untyped-` id
+  prefix is a validator token, not a kind. No Shield resource. No
+  deckbuilding dice. `baseDie` on the Fighter is the die a match starts from.
+- `fighterRestriction` is a play check, not a deck ban. One deck and one hand
+  per player. Tag is an operation. Assist is Fighter-owned.
+- Lifecycle is `one-shot` or `persistent`. Meter is exceptional
+  (`exceptionalMeterCost`), not mana on every strong card.
+- `rulesText` uses [`docs/KEYWORDS.md`](docs/KEYWORDS.md). Prefer
+  `[Mark N X]` / `[Strip N X]` / `[Modify]`. Do not copy pile-era
+  `[Forge 1 Synthetic …]` or attribute exclusives onto new print.
+- Structured fields only when every clause is modelled. Gaps go to
+  `docs/DEFERRED_CATALOGUE.md`.
+- Schemas may still require `forge` or `attacks`. Satisfy them. Do not
+  design pile `[Spend]` / `[Requires]` or a legendary win around those fields.
+- Print voice is the holder: `you` / `opponent`.
+- Follow `.cursor/skills/author-content/SKILL.md`.
+- Live JSON is catalogue truth. `docs/MECHANIC_ARCHETYPES.md` pile-era rows
+  are not a pattern.

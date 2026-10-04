@@ -1,6 +1,6 @@
 import { getCard } from "../../content/cards.js";
 import { getFaceCard } from "../../content/faces.js";
-import type { DieSlot, FaceKind } from "../../model/dice.js";
+import { pipSymbolsOf, type DieSlot } from "../../model/dice.js";
 import { asSymbolInstanceId, type DieId, type FaceCardId, type PlayerId, type SymbolInstanceId } from "../../model/ids.js";
 import { isAttributeSymbol, type SymbolType } from "../../model/symbols.js";
 import { emit, nextInstanceId, type Draft } from "../draft.js";
@@ -15,11 +15,10 @@ export function appendFaceAppeared(
   dieId: DieId,
   slotIndex: number,
   faceCardId: FaceCardId,
-  kind: FaceKind,
 ): void {
   draft.facesAppearedThisRoll = [
     ...draft.facesAppearedThisRoll,
-    { dieId, slotIndex, faceCardId, kind },
+    { dieId, slotIndex, faceCardId },
   ];
 }
 
@@ -180,17 +179,12 @@ export function refireShownFaceRollEffects(
     return;
   }
   if (!silenced && face.convertRoll !== true) {
-    applyForgeYieldGenerate(draft, controllerId, slot, face.symbol);
+    for (const symbol of pipSymbolsOf(face)) {
+      applyForgeYieldGenerate(draft, controllerId, slot, symbol);
+    }
     applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
   }
-  fireShownFaceRollHooks(
-    draft,
-    controllerId,
-    dieId,
-    slotIndex,
-    slot.faceCardId,
-    face.symbol,
-  );
+  fireShownFaceRollHooks(draft, controllerId, dieId, slotIndex, slot.faceCardId);
 }
 
 /** On roll → overloads on that face → equipment on-roll-symbol (`ROLL_DICE` order).
@@ -201,7 +195,6 @@ export function fireShownFaceRollHooks(
   dieId: DieId,
   slotIndex: number,
   faceCardId: FaceCardId,
-  symbol: SymbolType,
   suppressInherent = false,
 ): void {
   const silenced = isSlotSilenced(draft, dieId, slotIndex);
@@ -211,7 +204,11 @@ export function fireShownFaceRollHooks(
   if (!silenced) {
     fireOverloadsForShownFace(draft, controllerId, faceCardId, dieId, slotIndex);
   }
-  fireEquipmentOnRollSymbol(draft, controllerId, symbol);
+  const face = getFaceCard(faceCardId);
+  if (face === undefined) return;
+  for (const symbol of pipSymbolsOf(face)) {
+    fireEquipmentOnRollSymbol(draft, controllerId, symbol);
+  }
 }
 
 /**

@@ -37,11 +37,9 @@ const ASSIST_FIGHTER = asTestCreatureId("beh-assist-fighter");
 const RESPONSE = testCard({
   id: "card-test-beh-response",
   name: "Response",
-  type: "reaction",
+  type: "response",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
-  behavior: "response",
   exceptionalMeterCost: 2,
   rulesText: "Respond.",
   effect: { effects: [{ type: "draw-cards", amount: 1 }] },
@@ -50,11 +48,9 @@ const RESPONSE = testCard({
 const RESPONSE_TWO = testCard({
   id: "card-test-beh-response-two",
   name: "Response Two",
-  type: "reaction",
+  type: "response",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
-  behavior: "response",
   rulesText: "Respond again.",
   effect: { effects: [{ type: "draw-cards", amount: 1 }] },
 });
@@ -62,11 +58,9 @@ const RESPONSE_TWO = testCard({
 const ROLL_MOD = testCard({
   id: "card-test-beh-roll",
   name: "Roll Modify",
-  type: "instant",
+  type: "modify",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
-  behavior: "modify",
   modifySubject: "roll",
   exceptionalMeterCost: 2,
   rulesText: "Change the roll.",
@@ -75,11 +69,9 @@ const ROLL_MOD = testCard({
 const DIE_MOD = testCard({
   id: "card-test-beh-die",
   name: "Die Modify",
-  type: "instant",
+  type: "modify",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
-  behavior: "modify",
   modifySubject: "die",
   rulesText: "Change the die.",
 });
@@ -87,11 +79,9 @@ const DIE_MOD = testCard({
 const MOVESET_MOD = testCard({
   id: "card-test-beh-moveset",
   name: "Moveset Modify",
-  type: "instant",
+  type: "modify",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
-  behavior: "modify",
   modifySubject: "moveset",
   rulesText: "Enable a technique.",
 });
@@ -99,11 +89,9 @@ const MOVESET_MOD = testCard({
 const TARGET_MOD = testCard({
   id: "card-test-beh-target",
   name: "Target Modify",
-  type: "instant",
+  type: "modify",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
-  behavior: "modify",
   modifySubject: "target",
   rulesText: "Redirect.",
 });
@@ -111,11 +99,9 @@ const TARGET_MOD = testCard({
 const TAG_MOD = testCard({
   id: "card-test-beh-tag",
   name: "Tag Modify",
-  type: "instant",
+  type: "modify",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
-  behavior: "modify",
   modifySubject: "tag",
   exceptionalMeterCost: 3,
   rulesText: "Tag outside the action.",
@@ -129,8 +115,6 @@ function install(): void {
   testFace({
     id: JAB,
     name: "Jab",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     sequenceRole: "starter",
     primaryEffects: [{ type: "damage", amount: 2, target: { kind: "declared-target" } }],
@@ -138,8 +122,6 @@ function install(): void {
   testFace({
     id: LARIAT,
     name: "Lariat",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     sequenceRole: "starter",
     primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
@@ -147,43 +129,32 @@ function install(): void {
   testFace({
     id: FINISH,
     name: "Finish",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
   });
   testFace({
     id: GRAB,
     name: "Grab",
-    kind: "natural",
-    symbol: "martial",
     faceType: "grab",
   });
   testFace({
     id: GUARD,
     name: "Guard",
-    kind: "natural",
-    symbol: "martial",
     faceType: "guard",
   });
   testFace({
     id: ASSIST_FACE,
     name: "Assist",
-    kind: "natural",
-    symbol: "martial",
     technique: "assist",
   });
   testFace({
     id: TAG_FACE,
     name: "Tag",
-    kind: "natural",
-    symbol: "martial",
     technique: "tag",
   });
   testCreature({
     id: FIGHTER,
     name: "Behavior Fighter",
     life: 20,
-    attributes: ["martial"],
     attacks: [],
     techniques: [
       {
@@ -199,7 +170,6 @@ function install(): void {
     id: ASSIST_FIGHTER,
     name: "Assist Fighter",
     life: 20,
-    attributes: ["martial"],
     attacks: [],
     exceptionalAssistMeter: 3,
     assistEffects: [{ type: "draw-cards", amount: 1 }],
@@ -451,6 +421,10 @@ describe("030 card behavior", () => {
     expect(matchingTechniques(resolved, P1, fighter).map((row) => row.techniqueId)).toContain(
       "technique-beh-lariat-grab",
     );
+    const attached = Object.values(resolved.cards).find((card) => card.cardId === MOVESET_MOD.id);
+    expect(attached?.zone).toBe("equipment");
+    expect(attached?.attachedToCreatureId).toBe(fighter);
+    expect(resolved.creatures[fighter]?.equipmentIds).toContain(attached?.id);
   });
 
   it("redirects an unresolved target and rejects a missing one", () => {

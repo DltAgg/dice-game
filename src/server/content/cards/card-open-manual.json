@@ -1,0 +1,11 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-open-manual",
+  "name": "Open Manual",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "persistent",
+  "modifySubject": "moveset",
+  "rulesText": "Enable one Technique. Stays on that Fighter.",
+  "forge": { "faces": 1, "target": "own-die" }
+}

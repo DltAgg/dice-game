@@ -1,0 +1,20 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-magnus-lariat",
+  "name": "Lariat",
+  "faceType": "attack",
+  "sequenceRole": "extender",
+  "rulesText": "Extender. Primary: [Strike 3]. Secondary: +1 damage to the Technique.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 3,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

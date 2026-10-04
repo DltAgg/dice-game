@@ -1,5 +1,4 @@
 import { getCard } from "../../content/cards.js";
-import { getCreatureDefinition } from "../../content/creatures.js";
 import type { CardDefinition } from "../../model/cards.js";
 import type { ChainLink } from "../../model/state.js";
 import type { GameError } from "../../model/errors.js";
@@ -74,12 +73,12 @@ export function playCard(
   });
   if (behaviorError !== null) return behaviorError;
 
-  // During a reaction window only hand reactions may respond.
-  // A Modify with `behavior` uses that same window.
+  // During a reaction window only a Response, a ritual reaction, or a
+  // Modify that names a subject may be added.
   if (
     inReactionWindow &&
     !isReactionCard(definition) &&
-    definition.behavior === undefined
+    definition.modifySubject === undefined
   ) {
     return "CARD_NOT_AVAILABLE";
   }
@@ -98,7 +97,7 @@ export function playCard(
   }
 
   const region = definition.effect;
-  if (region === undefined && definition.behavior === undefined) return "CARD_HAS_NO_EFFECT";
+  if (region === undefined && definition.modifySubject === undefined) return "CARD_HAS_NO_EFFECT";
   const effects = region?.effects ?? [];
 
   if (declaredTargetCreatureId !== null) {
@@ -171,12 +170,15 @@ export function playCard(
   }
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
+  // A moveset Modify stays in hand until it resolves onto the Fighter.
   // One-shot leaves the hand for the graveyard now. A named destination is
   // applied when the link resolves. Persistent stays in the in-play list.
-  if (lifecycleOf(definition) === "persistent") {
-    moveCard(draft, cardInstanceId, "ritual");
-  } else {
-    moveCard(draft, cardInstanceId, "graveyard");
+  if (definition.modifySubject !== "moveset") {
+    if (lifecycleOf(definition) === "persistent") {
+      moveCard(draft, cardInstanceId, "ritual");
+    } else {
+      moveCard(draft, cardInstanceId, "graveyard");
+    }
   }
 
   const baseLink = {
@@ -192,7 +194,7 @@ export function playCard(
   };
   pushChainLink(
     draft,
-    definition.behavior === "modify" && definition.modifySubject !== undefined
+    definition.type === "modify" && definition.modifySubject !== undefined
       ? {
           ...baseLink,
           modify: {
@@ -206,7 +208,8 @@ export function playCard(
       : baseLink,
   );
   const keepPriority =
-    definition.behavior !== undefined ||
+    definition.type === "response" ||
+    definition.modifySubject !== undefined ||
     draft.chainStack.some((link) => link.kind === "combat-action");
   openReactionWindow(draft, playerId, keepPriority ? "same" : "opponent");
   return null;
@@ -245,14 +248,6 @@ function equipCard(
     if (target.ownerId === playerId) return "INVALID_TARGET";
   } else if (target.ownerId !== playerId) {
     return "INVALID_TARGET";
-  }
-
-  if (region.creatureAttributes !== undefined) {
-    const creatureDefinition = getCreatureDefinition(target.definitionId);
-    const allowed = region.creatureAttributes.some((attribute) =>
-      creatureDefinition?.attributes.includes(attribute),
-    );
-    if (!allowed) return "INVALID_TARGET";
   }
 
   const headerCostError = payHeaderCost(draft, playerId, definition, true);

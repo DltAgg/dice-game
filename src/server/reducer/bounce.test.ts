@@ -28,7 +28,6 @@ import {
 const BOUNCE = testCard({
   id: "card-test-bounce",
   playCost: { arcane: 2 },
-  attribute: "arcane",
   effect: {
     effects: [
       {
@@ -43,8 +42,7 @@ const BOUNCE = testCard({
 const PLACE_RITUAL = testCard({
   id: "card-test-bounce-ritual",
   playCost: { darkness: 2 },
-  attribute: "darkness",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { darkness: 1 },
@@ -62,16 +60,14 @@ const PLACE_RITUAL = testCard({
 const EQUIP = testCard({
   id: "card-test-bounce-equip",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: { mayTargetOpponent: false, abilities: [] },
 });
 
 const OVERLOAD = testCard({
   id: "card-test-bounce-overload",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
 });
 

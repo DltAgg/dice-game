@@ -16,9 +16,9 @@ export interface CardPlayIntent {
 }
 
 /**
- * Legality for a card that sets `behavior`. Cards that omit it keep the
- * spec `008` play path. Timing is the reaction window; exceptional mode is
- * the Meter bypass of that window.
+ * Legality for a Response, or a Modify that names a subject. Other Modifies
+ * keep the actions-phase play path. Timing is the reaction window; exceptional
+ * mode is the Meter bypass of that window.
  */
 export function behaviorPlayError(
   state: GameState,
@@ -26,7 +26,9 @@ export function behaviorPlayError(
   definition: CardDefinition,
   intent: CardPlayIntent,
 ): GameError | null {
-  if (definition.behavior === undefined) return null;
+  const combatBehavior =
+    definition.type === "response" || definition.modifySubject !== undefined;
+  if (!combatBehavior) return null;
 
   const pending = state.pendingDecision;
   const inWindow =
@@ -40,7 +42,7 @@ export function behaviorPlayError(
     return "INVALID_PHASE";
   }
 
-  if (definition.behavior === "response") {
+  if (definition.type === "response") {
     const opponentObject = state.chainStack.some(
       (link) => link.controllerId !== playerId && !link.negated,
     );
@@ -49,6 +51,24 @@ export function behaviorPlayError(
   }
 
   return modifyContextError(state, playerId, definition, intent);
+}
+
+function dieMatchesFighter(
+  state: GameState,
+  definition: CardDefinition,
+  dieId: DieId,
+): boolean {
+  if (definition.fighterRestriction === undefined) return true;
+  const die = state.dice[dieId];
+  if (die === undefined) return false;
+  const bound = die.boundCreatureId === null ? undefined : state.creatures[die.boundCreatureId];
+  if (bound !== undefined) return bound.definitionId === definition.fighterRestriction;
+  const owner = state.players[die.ownerId];
+  if (owner === undefined) return false;
+  const index = owner.dieIds.indexOf(dieId);
+  const creatureId = index < 0 ? undefined : owner.creatureIds[index];
+  const creature = creatureId === undefined ? undefined : state.creatures[creatureId];
+  return creature?.definitionId === definition.fighterRestriction;
 }
 
 function modifyContextError(
@@ -75,11 +95,13 @@ function modifyContextError(
     if (die === undefined) return "UNKNOWN_ENTITY";
     if (intent.slotIndex < 0 || intent.slotIndex >= die.slots.length) return "INVALID_TARGET";
     if (subject === "roll" && die.rolledSlotIndex === null) return "INVALID_TARGET";
+    if (die.ownerId !== playerId) return "INVALID_TARGET";
     if (subject === "die") {
       if (intent.faceCardId === null || getFaceCard(intent.faceCardId) === undefined) {
         return "UNKNOWN_ENTITY";
       }
     }
+    if (!dieMatchesFighter(state, definition, intent.dieId)) return "INVALID_TARGET";
     return null;
   }
 
@@ -87,6 +109,12 @@ function modifyContextError(
     if (intent.targetCreatureId === null || intent.techniqueId === null) return "INVALID_TARGET";
     const creature = state.creatures[intent.targetCreatureId];
     if (creature === undefined || creature.defeated) return "INVALID_TARGET";
+    if (
+      definition.fighterRestriction !== undefined &&
+      creature.definitionId !== definition.fighterRestriction
+    ) {
+      return "INVALID_TARGET";
+    }
     const techniques = getCreatureDefinition(creature.definitionId)?.techniques ?? [];
     if (!techniques.some((technique) => technique.id === intent.techniqueId)) {
       return "INVALID_TARGET";

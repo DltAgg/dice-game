@@ -26,8 +26,7 @@ import {
 const CROSS_FORGE_CHOICE = testCard({
   id: "card-test-assembly-cross-choice",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  forge: { faces: 2, target: "own-die" },
   effect: {
     requires: { mechanical: 2 },
     effects: [
@@ -60,8 +59,7 @@ const CROSS_FORGE_CHOICE = testCard({
 const FORGE_DISCOUNT_RITUAL = testCard({
   id: "card-test-assembly-forge-discount-ritual",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { mechanical: 1 },
@@ -72,8 +70,7 @@ const FORGE_DISCOUNT_RITUAL = testCard({
 const STANDING_RITUAL = testCard({
   id: "card-test-assembly-standing-ritual",
   playCost: { mechanical: 1, any: 1 },
-  attribute: "mechanical",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { mechanical: 1, any: 1 },
@@ -92,7 +89,6 @@ const STANDING_RITUAL = testCard({
 const DOUBLE_NEXT = testCard({
   id: "card-test-assembly-double",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
   effect: {
     effects: [
       { type: "arm-resolve-next-face-effect-twice" },
@@ -104,8 +100,7 @@ const DOUBLE_NEXT = testCard({
 const REFORGE = testCard({
   id: "card-test-assembly-reforge",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  forge: { faces: 2, target: "own-die" },
   effect: {
     effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
   },
@@ -114,7 +109,6 @@ const REFORGE = testCard({
 const SILENCE = testCard({
   id: "card-test-assembly-silence",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
   effect: {
     effects: [
       {

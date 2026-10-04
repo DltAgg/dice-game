@@ -22,7 +22,6 @@ import { drainResolution, pushEffect } from "./resolution.js";
 const SILENCE_FACE = testCard({
   id: "card-test-silence-face",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
   effect: {
     effects: [
       {
@@ -37,8 +36,7 @@ const SILENCE_FACE = testCard({
 const CROSSCUT_SYNTHETIC = testCard({
   id: "card-test-crosscut-synthetic",
   playCost: { mechanical: 1, luminar: 1 },
-  attribute: "mechanical",
-  forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  forge: { faces: 1, target: "own-die" },
 });
 
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
@@ -81,10 +79,9 @@ describe("forge and play discounts", () => {
       id: asCardId("card-test-example-discount"),
       name: "Example",
       playCost: { mechanical: 1 },
-      type: "instant",
+      type: "modify",
       subtypes: [],
-      attribute: "mechanical",
-      forge: { faces: 1, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+      forge: { faces: 1, target: "own-die" },
       rulesText: "Test.",
     };
     const draft = createDraft(newMatch());

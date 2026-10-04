@@ -17,11 +17,10 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 
 | Request looks like | Do this |
 |---|---|
-| One card / print / JSON | `card-designer` + `author-content`. Design a unique slot first; compose existing opcodes. |
+| One Fighter, face, Response, or Modify | `card-designer` + `author-content`. Place it on an existing layer first. If the request is a Block face, a Tag card, a per-fighter deck, or pile fuel, the designer names the conflict and proposes the closest home. It does not author the break. |
 | New verb / hook / phase | `engine-developer` + `develop-engine` or `implement-hooks`. One handler class or one `fire*`. |
 | Lobby / board / decks UI | `match-ui`. Query engine; do not copy legality. |
-| Overcharge (spec `021`) | Rules already shipped (`engine-developer`). UI → `match-ui` (`canOvercharge` / `legalOverchargeFaces`; face-card picker like overload, not `DieSlotPickModal`). Not spec `013` `optional-overcharge`. |
-| Legal lists / identity | `deck-designer`. Edit `loadouts/*.json`. |
+| Legal lists / “does this card have a home?” | `deck-designer`. One shared deck. Edit `loadouts/*.json`. Fighter text is a play check, not a construction ban. |
 | Playtest debrief (notes ± metrics, wrong-archetype feel) | `post-playtest` + `review-playtest`. Update `docs/MECHANIC_ARCHETYPES.md`; brief owners; do not implement. |
 | Playtest “felt like the wrong archetype” (already debriefed) | `card-designer` (print) / `engine-developer` (physics) / `deck-designer` (list). |
 | New/rewrite agent, skill, rule, AGENTS.md routing | `prompt-engineer` + `author-interactions`. One artifact. |

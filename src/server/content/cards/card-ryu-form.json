@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-ryu-form",
+  "name": "Ryu Form",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "persistent",
+  "modifySubject": "moveset",
+  "fighterRestriction": "creature-ryu",
+  "rulesText": "Enable one of Ryu's Techniques. Stays on that Fighter.",
+  "forge": { "faces": 1, "target": "own-die" }
+}

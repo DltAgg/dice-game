@@ -2,9 +2,8 @@ import {
   useState,
 } from "react";
 import {
-  attributeLabel,
   getCard,
-  searchableInDeck,
+  ritualIdsInDeck,
   type CardInstanceId,
   type GameState,
   type PlayerId,
@@ -26,7 +25,7 @@ export function DarkPactModal({
   onConfirm: (cardInstanceIds: readonly [CardInstanceId, CardInstanceId]) => void;
 }) {
   const [pick, setPick] = useState<readonly CardInstanceId[]>([]);
-  const ritualIds = searchableInDeck(state, controllerId, ["ritual"]);
+  const ritualIds = ritualIdsInDeck(state, controllerId);
 
   const toggle = (id: CardInstanceId) => {
     setPick((prev) => {
@@ -36,12 +35,7 @@ export function DarkPactModal({
     });
   };
 
-  const attrs = pick.map((id) => {
-    const card = state.cards[id];
-    return card !== undefined ? getCard(card.cardId)?.attribute : undefined;
-  });
-  const different =
-    pick.length === 2 && attrs[0] !== undefined && attrs[1] !== undefined && attrs[0] !== attrs[1];
+  const different = pick.length === 2 && pick[0] !== pick[1];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -73,7 +67,7 @@ export function DarkPactModal({
                 >
                   <p className="text-sm font-medium text-stone-100">{def?.name ?? card?.cardId ?? id}</p>
                   <p className="text-xs capitalize text-stone-500">
-                    {def !== undefined ? attributeLabel(def.attribute) : ""}
+                    {def?.type ?? ""}
                   </p>
                 </button>
               </li>

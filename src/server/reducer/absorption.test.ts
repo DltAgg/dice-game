@@ -7,7 +7,6 @@ import {
   newMatch,
   P1,
   P2,
-  withDefeatedCreature,
   withPhase,
   withSymbols,
   advanceResolvingChain as advance,
@@ -48,10 +47,11 @@ describe("symbol absorb", () => {
     expect(absorbed.symbols[pip.id]?.status).toBe("absorbed");
   });
 
-  it("grants Shield immediately onto a creature", () => {
-    const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["shield"]);
+  it("does not grant shields when an attribute is absorbed", () => {
+    const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["martial"]);
     const pip = Object.values(state.symbols)[0]!;
     const creatureId = creatureIdAt(state, P1, 0);
+    const before = state.creatures[creatureId]?.shields ?? 0;
     const absorbed = expectOk(
       advance(state, {
         type: "ABSORB_SYMBOL",
@@ -60,28 +60,7 @@ describe("symbol absorb", () => {
         symbolId: pip.id,
       }),
     );
-    expect(absorbed.creatures[creatureId]?.shields).toBe(1);
-  });
-
-  it("refuses Shield absorb without a creature", () => {
-    const state = withSymbols(withPhase(newMatch(), "actions"), P1, ["shield"]);
-    const pip = Object.values(state.symbols)[0]!;
-    const result = advance(state, { type: "ABSORB_SYMBOL", playerId: P1, symbolId: pip.id });
-    expect(result.ok).toBe(false);
-  });
-
-  it("refuses Shield onto a defeated creature", () => {
-    let state = withSymbols(withPhase(newMatch(), "actions"), P1, ["shield"]);
-    const creatureId = creatureIdAt(state, P1, 0);
-    state = withDefeatedCreature(state, creatureId);
-    const pip = Object.values(state.symbols)[0]!;
-    const result = advance(state, {
-      type: "ABSORB_SYMBOL",
-      playerId: P1,
-      creatureId,
-      symbolId: pip.id,
-    });
-    expect(result.ok).toBe(false);
+    expect(absorbed.creatures[creatureId]?.shields).toBe(before);
   });
 
   it("clears unabsorbed symbols on END_TURN", () => {
@@ -112,7 +91,7 @@ describe("symbol absorb", () => {
 
   it("auto-absorbs rolled attributes without naming a creature", () => {
     const { state, symbols } = afterRoll();
-    const attributes = symbols.filter((s) => s.symbol !== "shield" && s.ownerId === P1);
+    const attributes = symbols.filter((s) => s.ownerId === P1);
     expect(attributes.length).toBeGreaterThan(0);
     for (const pip of attributes) {
       expect(pip.status).toBe("absorbed");

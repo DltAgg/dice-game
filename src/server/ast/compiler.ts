@@ -192,7 +192,6 @@ export class AstCompiler {
         return {
           op: "forge",
           faces: effect.faces,
-          kind: effect.kind,
           attribute: effect.attribute,
           forgeTarget: effect.target,
         };
@@ -264,7 +263,6 @@ export class AstCompiler {
         return {
           kind: "has-other-symbol",
           ...(when.symbol !== undefined ? { symbol: when.symbol } : {}),
-          ...(when.faceKind !== undefined ? { faceKind: when.faceKind } : {}),
         };
       case "this-die-attribute-count":
         return { kind: "this-die-attribute-count", atLeast: when.atLeast };
@@ -346,7 +344,6 @@ export class AstCompiler {
           when: {
             event: "on-absorb",
             ...(trigger.symbols !== undefined ? { symbols: trigger.symbols } : {}),
-            ...(trigger.faceKinds !== undefined ? { faceKinds: trigger.faceKinds } : {}),
             ...(trigger.absorberRelation !== undefined
               ? { absorberRelation: trigger.absorberRelation }
               : {}),

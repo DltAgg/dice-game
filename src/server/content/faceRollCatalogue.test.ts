@@ -18,8 +18,8 @@ function effectTypes(value: unknown, acc: string[] = []): string[] {
 
 describe("named face catalogue (spec 025)", () => {
   it("omitted pips is one pip of face.symbol", () => {
-    expect(inherentPipsOf({ symbol: "shield" })).toEqual({ shield: 1 });
-    expect(inherentPipsOf({ symbol: "arcane", pips: { arcane: 2 } })).toEqual({
+    expect(inherentPipsOf({})).toEqual({});
+    expect(inherentPipsOf({ pips: { arcane: 2 } })).toEqual({
       arcane: 2,
     });
   });
@@ -37,21 +37,22 @@ describe("named face catalogue (spec 025)", () => {
       if (face.technique !== undefined) continue;
       if (face.faceType !== undefined) continue;
       const yieldMap = inherentPipsOf(face);
-      expect(yieldMap[face.symbol], face.name).toBeGreaterThanOrEqual(1);
       expect(symbolTokenTotal(yieldMap), face.name).toBeGreaterThan(1);
     }
   });
 
   it("does not mill from Arcane or Darkness faces", () => {
     for (const face of SPECIAL_FACE_CARDS) {
-      if (face.symbol !== "arcane" && face.symbol !== "darkness") continue;
+      const pips = inherentPipsOf(face);
+      if ((pips.arcane ?? 0) === 0 && (pips.darkness ?? 0) === 0) continue;
       expect(effectTypes(face.onRoll), face.name).not.toContain("mill-cards");
     }
   });
 
   it("does not draw from Luminar or Mechanical faces", () => {
     for (const face of SPECIAL_FACE_CARDS) {
-      if (face.symbol !== "luminar" && face.symbol !== "mechanical") continue;
+      const pips = inherentPipsOf(face);
+      if ((pips.luminar ?? 0) === 0 && (pips.mechanical ?? 0) === 0) continue;
       expect(effectTypes(face.onRoll), face.name).not.toContain("draw-cards");
     }
   });

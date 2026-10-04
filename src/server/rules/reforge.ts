@@ -6,12 +6,7 @@ import type { GameError } from "../model/errors.js";
 import type { FaceCardId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import type { Draft } from "../reducer/draft.js";
-import { getFaceCard } from "../content/faces.js";
-import { forgeExceedsAttributeLimit } from "./cards.js";
-import {
-  matchingFacesInPool,
-  slotCannotBeReplacedByForge,
-} from "./faces.js";
+import { matchingFacesInPool, slotCannotBeReplacedByForge } from "./faces.js";
 
 type ChooseEffectModeEffect = Extract<EffectDefinition, { readonly type: "choose-effect-mode" }>;
 type ReplaceSyntheticFaceEffect = Extract<
@@ -38,42 +33,20 @@ export interface ReforgeSpec {
   readonly fromAttribute?: Attribute;
 }
 
-function combinations(values: readonly number[], n: number): readonly (readonly number[])[] {
-  const out: number[][] = [];
-  const walk = (start: number, acc: number[]): void => {
-    if (acc.length === n) {
-      out.push([...acc]);
-      return;
-    }
-    for (let i = start; i < values.length; i++) {
-      const next = values[i];
-      if (next === undefined) continue;
-      acc.push(next);
-      walk(i + 1, acc);
-      acc.pop();
-    }
-  };
-  walk(0, []);
-  return out;
-}
-
-/** Synthetic faces of the destination attribute still in the controller's pool. */
+/** Faces still in the controller's pool. Destination attribute is not a face filter. */
 export function eligiblePoolFacesForReforge(
   state: GameState | Draft,
   playerId: PlayerId,
-  attribute: Attribute,
+  _attribute: Attribute,
 ): readonly FaceCardId[] {
-  return matchingFacesInPool(state, playerId, "synthetic", attribute);
+  return matchingFacesInPool(state, playerId);
 }
 
 export function slotMatchesReforgeFilter(
   slot: DieSlot,
-  fromAttribute: Attribute | undefined,
+  _fromAttribute: Attribute | undefined,
 ): boolean {
-  if (slotCannotBeReplacedByForge(slot)) return false;
-  if (fromAttribute === undefined) return true;
-  const face = getFaceCard(slot.faceCardId);
-  return face !== undefined && face.symbol === fromAttribute;
+  return !slotCannotBeReplacedByForge(slot);
 }
 
 /**
@@ -99,11 +72,6 @@ export function legalSlotsForReplaceSyntheticFace(
       .filter((slot) => slotMatchesReforgeFilter(slot, spec.fromAttribute))
       .map((slot) => slot.index);
     if (candidates.length < spec.faces) continue;
-    const legalCombo = combinations(candidates, spec.faces).some(
-      (pick) =>
-        !forgeExceedsAttributeLimit(die, pick, spec.attribute, spec.faces, state.config),
-    );
-    if (!legalCombo) continue;
     for (const slotIndex of candidates) {
       results.push({ dieId, slotIndex });
     }
@@ -144,7 +112,7 @@ export function isLegalReforgeAssignment(
     if (slot === undefined || !slotMatchesReforgeFilter(slot, spec.fromAttribute)) return false;
   }
 
-  return !forgeExceedsAttributeLimit(die, slotIndexes, spec.attribute, spec.faces, state.config);
+  return true;
 }
 
 function reforgeSpec(effect: ReplaceSyntheticFaceEffect): ReforgeSpec {

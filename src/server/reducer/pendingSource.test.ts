@@ -11,8 +11,7 @@ import {
 const EQUIP_WITH_ABILITY = testCard({
   id: "card-test-equip-with-ability",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
@@ -29,7 +28,6 @@ const EQUIP_WITH_ABILITY = testCard({
 const CHOOSE_ALLY = testCard({
   id: "card-test-pending-choose-ally",
   playCost: { luminar: 2 },
-  attribute: "luminar",
   effect: {
     effects: [{ type: "grant-shield", amount: 2, target: { kind: "choose-ally" } }],
   },
@@ -37,9 +35,9 @@ const CHOOSE_ALLY = testCard({
 
 describe("pending sources", () => {
   it("instant effects come from instant tactics", () => {
-    expect(getCard(TEST_PLAYABLE)?.type).toBe("instant");
-    expect(getCard(TEST_NATURAL_FORGE)?.type).toBe("instant");
-    expect(getCard(CHOOSE_ALLY.id)?.type).toBe("instant");
+    expect(getCard(TEST_PLAYABLE)?.type).toBe("modify");
+    expect(getCard(TEST_NATURAL_FORGE)?.type).toBe("modify");
+    expect(getCard(CHOOSE_ALLY.id)?.type).toBe("modify");
   });
 
   it("equipment hosts standing abilities", () => {
@@ -47,6 +45,6 @@ describe("pending sources", () => {
   });
 
   it("a Luminar synthetic is registered for face lookups", () => {
-    expect(getFaceCard(TEST_SYNTHETIC_LUMINAR_A)?.symbol).toBe("luminar");
+    expect(getFaceCard(TEST_SYNTHETIC_LUMINAR_A)?.name).toBe("Synthetic Luminar A");
   });
 });

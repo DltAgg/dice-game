@@ -44,11 +44,9 @@ export function OverloadFacePickModal({
   const eligible = uniqueInstalledFaces(state, playerId).filter(({ faceCardId }) => {
     const face = getFaceCard(faceCardId);
     if (face === undefined) return false;
-    if (region.faceSymbols !== undefined && !region.faceSymbols.includes(face.symbol)) {
-      return false;
-    }
-    if (region.faceKinds !== undefined && !region.faceKinds.includes(face.kind)) {
-      return false;
+    if (region.faceSymbols !== undefined) {
+      const pips = face.pips ?? {};
+      if (!region.faceSymbols.some((symbol) => (pips[symbol] ?? 0) > 0)) return false;
     }
     return overloadsOnFace(state, playerId, faceCardId).length < face.maxOverloads;
   });
@@ -84,7 +82,7 @@ export function OverloadFacePickModal({
                   )}
                 </p>
                 <p className="text-xs capitalize text-stone-500">
-                  {face?.kind} · {face?.symbol}
+                  {face?.name ?? faceCardId}
                   {copies > 1 ? ` · ×${String(copies)} die faces` : ""}
                   {overloads > 0 ? ` · ${String(overloads)} overload` : ""}
                 </p>

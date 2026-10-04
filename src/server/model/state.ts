@@ -1,7 +1,7 @@
 import type { CardDuration, CardInstance, CardModifyIntent } from "./cards.js";
 import type { GameRulesConfig } from "./config.js";
 import type { CreatureState } from "./creatures.js";
-import type { DieState, FaceKind } from "./dice.js";
+import type { DieState } from "./dice.js";
 import type { Attribute } from "./attributes.js";
 import type { EffectDefinition } from "./effects.js";
 import type { LoggedEvent } from "./events.js";
@@ -247,7 +247,6 @@ export interface GameState {
     readonly dieId: DieId;
     readonly slotIndex: number;
     readonly faceCardId: FaceCardId;
-    readonly kind: FaceKind;
   }[];
   /**
    * Overcharge absorb: next face-sourced effect (`sourceDieId` set) resolves

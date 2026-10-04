@@ -84,7 +84,6 @@ export function ForgeSlotPick({
       }
       dieOwnerId={forgeTarget === "own-die" ? activeId : opponentOf(state, activeId)}
       facesNeeded={forgeFacesNeeded}
-      forgeAttribute={forgeDef?.forge.attribute}
       pickMode={forgeFacesNeeded === 1 ? "single-slot" : "die-then-slots"}
       selectedDieId={intent.dieId}
       selectedSlots={intent.slotIndexes ?? []}

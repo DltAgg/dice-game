@@ -1,6 +1,5 @@
 import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
-import type { FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { SymbolType } from "./symbols.js";
 import type { BounceHost, SilenceHost, TargetSelector } from "./targeting.js";
 
@@ -185,7 +184,6 @@ export type EffectDefinition =
   | {
       readonly type: "forge-faces";
       readonly faces: number;
-      readonly kind: ForgeableFaceKind;
       readonly attribute: Attribute;
       readonly target: "own-die" | "opponent-die";
     }
@@ -433,7 +431,6 @@ export type EffectCondition =
   | {
       readonly type: "has-other-symbol";
       readonly symbol?: SymbolType;
-      readonly faceKind?: FaceKind;
     }
   /** Another living ally is a `creatureIds` neighbor (±1). */
   | { readonly type: "has-adjacent-ally" }

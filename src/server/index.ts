@@ -43,7 +43,6 @@ export { ALL_CARDS, CARDS, getCard } from "./content/cards.js";
 export {
   attributeLabel,
   formatEffectRegion,
-  formatFaceKind,
   formatForgeLine,
   formatInspectEffectLines,
   formatPlayCostHeader,
@@ -64,18 +63,14 @@ export {
   formatAttackFuel,
   attackCostOf,
   formatAttackLine,
-  primaryAttribute,
   specialAttackOf,
 } from "./content/creatureText.js";
 export {
   ALL_FACE_CARDS,
   BASIC_FACE_CARDS,
-  DEFAULT_BASIC_LAYOUT,
   ENGINE_TEST_FACE_DECK,
   FACE_CARDS,
-  SHIELD_FACE_ID,
   SPECIAL_FACE_CARDS,
-  STARTING_DIE_SYMBOLS,
   TECHNIQUE_ASSIST,
   TECHNIQUE_GUARD,
   TECHNIQUE_HEAVY,
@@ -83,11 +78,8 @@ export {
   TECHNIQUE_SPECIAL,
   TECHNIQUE_STRIKE,
   TECHNIQUE_TAG,
-  faceIdFor,
-  faceIdForSymbol,
   getFaceCard,
   legacyStartingLayout,
-  naturalFaceId,
 } from "./content/faces.js";
 
 /**

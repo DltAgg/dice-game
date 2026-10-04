@@ -4,7 +4,7 @@ model: inherit
 description: >-
   Debriefs a Dice Skirmish playtest: reconstructs what happened from notes
   and metrics, updates docs/MECHANIC_ARCHETYPES.md, and briefs the right
-  specialist for print, fuel physics, lists, or UI. Use proactively after a
+  specialist for print, rules, lists, or UI. Use proactively after a
   playtest, when the user pastes a Metrics export plus how the match felt,
   or says a list played like the wrong archetype. Do not use to author
   cards (card-designer), change reduce()/hooks (engine-developer), edit
@@ -26,7 +26,9 @@ owning specialist — never engine + UI + catalogue in this thread.
 1. `AGENTS.md` and `TOOLS.md`
 2. `.cursor/skills/review-playtest/SKILL.md` — follow it; do not improvise
 3. `docs/MECHANIC_ARCHETYPES.md` — feel tracker (mechanic × **window** × archetype)
-4. `.cursor/skills/author-content/design.md` — pie + intended homes
+4. `.cursor/skills/author-content/design.md` — current layers (die, Fighter,
+   Response, Modify, Meter, Tag, Assist). Pile-era rows in
+   `docs/MECHANIC_ARCHETYPES.md` are archaeology, not a brief to restore them.
 5. `docs/RULEBOOK.md` — how play currently works
 6. `docs/KEYWORDS.md` — print vocabulary
 7. If a Metrics JSON/Markdown export is present:
@@ -47,8 +49,8 @@ Do not cite a spec, skill, or `src/` path that is not in the repo.
 - Reconstruct the session from **player notes** and, when present, **observer
   metrics**. Notes win on feel; metrics win on pace, stall, lethality, and
   play-vs-forge mix. Do not invent reducer behavior the numbers do not show.
-- Name **mechanic + window** (attack follow-up, On roll, absorb, play, ritual).
-  Never log “Generate = Aggro” without the window.
+- Name **mechanic + window** (Simple Action, Technique, Response, Modify,
+  Assist, Tag). Do not log a pile-era verb as the current identity.
 - Diff against `MECHANIC_ARCHETYPES.md`: reintroduced `RETARGETED` leak, new
   `LEAK` / `WATCH`, or evidence that a `HOME` row is wrong.
 - Grep live catalogue JSON for the proving print (creature attacks, tactics,
@@ -67,9 +69,10 @@ Do not cite a spec, skill, or `src/` path that is not in the repo.
 - Proposed rules questions go to `OPEN_DESIGN.md` as `OPEN` only if the user
   wants them logged — never mark `DECIDED` from a single session.
 - Unwired print stays in `DEFERRED_CATALOGUE.md`; do not fake it in a brief.
-- One concern per handoff brief (one creature attack, one opcode, one list).
-- `[Prevent]` stays Luminar reaction-only. Exclusive verbs stay on their
-  attribute (`design.md`). Printed 1-token `playCost` stays exceptional.
+- One concern per handoff brief (one face, one Response, one Modify, one list).
+- Do not brief authors to restore an attribute pile, natural/synthetic faces,
+  Shield as a resource, a per-fighter deck, or Instant/Equipment/Overload/Ritual
+  as card types. `[Prevent]` is an effect on a Response, not a card type.
 - Metrics are an observer (`src/client/metrics`). Never call `reduce()` from
   a debrief. Never import metrics into the engine.
 - Do not commit or push unless the user asks.
@@ -80,7 +83,7 @@ Do not cite a spec, skill, or `src/` path that is not in the repo.
 |---|---|
 | New or retargeted card / creature / face JSON | `card-designer` + `author-content` |
 | New AST, hook, reducer, resolution, statuses | `engine-developer` |
-| Builtin list / copies / squad / face deck | `deck-designer` |
+| Builtin list / copies / squad | `deck-designer` |
 | MatchBoard, Metrics tab chrome, friction UX | `match-ui` |
 | Metrics dump with **no** playtest notes or feel | skill `analyze-match-metrics` only |
 | New agent / skill / routing | `prompt-engineer` |

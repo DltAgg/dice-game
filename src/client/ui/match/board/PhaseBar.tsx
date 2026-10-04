@@ -12,13 +12,17 @@ export const PHASE_LABELS: Record<TurnPhase, string> = {
 export function PhaseBar({
   state,
   canAct,
+  canEndSequence,
   onGoToPhase,
   onEndTurn,
+  onEndSequence,
 }: {
   state: GameState;
   canAct: boolean;
+  canEndSequence: boolean;
   onGoToPhase: (phase: TurnPhase) => void;
   onEndTurn: () => void;
+  onEndSequence: () => void;
 }) {
   const currentIndex = TURN_PHASE_ORDER.indexOf(state.phase);
   const controlsLocked =
@@ -61,6 +65,30 @@ export function PhaseBar({
             </button>
           );
         })}
+        <span
+          className={
+            state.offensiveState === "combo"
+              ? "rounded border border-amber-600/70 bg-amber-950/50 px-2.5 py-1 text-xs font-medium text-amber-100"
+              : "rounded border border-stone-700 bg-stone-950/60 px-2.5 py-1 text-xs text-stone-400"
+          }
+        >
+          {state.offensiveState === "combo" ? "Combo" : "Open"}
+        </span>
+        {canEndSequence && (
+          <button
+            type="button"
+            disabled={controlsLocked}
+            title="Stop the offensive sequence and return to Open"
+            className={
+              controlsLocked
+                ? "rounded border border-stone-800 bg-stone-950/50 px-2.5 py-1 text-xs text-stone-600"
+                : "rounded border border-amber-700/60 bg-amber-950/40 px-2.5 py-1 text-xs font-medium text-amber-200 hover:border-amber-500 hover:text-amber-100"
+            }
+            onClick={onEndSequence}
+          >
+            End sequence
+          </button>
+        )}
         <button
           type="button"
           disabled={controlsLocked}

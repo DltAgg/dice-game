@@ -40,9 +40,8 @@ const FIGHTER = asTestCreatureId("seq-fighter");
 const REVERSAL = testCard({
   id: "card-test-reversal",
   name: "Reversal",
-  type: "reaction",
+  type: "response",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
   seizesOffense: true,
   rulesText: "Seize the offense.",
@@ -54,9 +53,8 @@ const REVERSAL = testCard({
 const ANSWER = testCard({
   id: "card-test-answer",
   name: "Answer",
-  type: "reaction",
+  type: "response",
   subtypes: [],
-  attribute: "martial",
   playCost: { martial: 2 },
   rulesText: "Respond.",
   effect: { effects: [{ type: "draw-cards", amount: 1 }] },
@@ -77,8 +75,6 @@ function install(): void {
   testFace({
     id: JAB,
     name: "Jab",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     sequenceRole: "starter",
     primaryEffects: [{ type: "damage", amount: 2, target: { kind: "declared-target" } }],
@@ -86,8 +82,6 @@ function install(): void {
   testFace({
     id: METER_JAB,
     name: "Meter Jab",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     sequenceRole: "starter",
     meterCost: 2,
@@ -97,8 +91,6 @@ function install(): void {
   testFace({
     id: LARIAT,
     name: "Lariat",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     sequenceRole: "extender",
     primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
@@ -107,8 +99,6 @@ function install(): void {
   testFace({
     id: FINISH,
     name: "Finisher",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     sequenceRole: "finisher",
     primaryEffects: [{ type: "damage", amount: 3, target: { kind: "declared-target" } }],
@@ -117,8 +107,6 @@ function install(): void {
   testFace({
     id: GRAB,
     name: "Command Grab",
-    kind: "natural",
-    symbol: "martial",
     faceType: "grab",
     primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
     secondaryEffects: [{ type: "next-attack-bonus", amount: 1 }],
@@ -126,8 +114,6 @@ function install(): void {
   testFace({
     id: GUARD,
     name: "Guard",
-    kind: "natural",
-    symbol: "martial",
     faceType: "guard",
     secondaryEffects: [
       { type: "grant-shield", amount: 1, target: { kind: "source-creature" } },
@@ -137,7 +123,6 @@ function install(): void {
     id: FIGHTER,
     name: "Sequence Fighter",
     life: 20,
-    attributes: ["martial"],
     attacks: [
       testAttack({
         id: asTestAttackId("seq-stub"),

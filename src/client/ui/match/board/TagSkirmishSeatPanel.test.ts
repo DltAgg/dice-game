@@ -20,15 +20,12 @@ function tagSkirmishBoard(): GameState {
   testFace({
     id: STRIKE_FACE,
     name: "Strike",
-    kind: "natural",
-    symbol: "martial",
     technique: "strike",
   });
   const fighterDef = testCreature({
     id: "creature-ui-fighter",
     name: "Korr",
     life: 8,
-    attributes: ["martial"],
     assistEffects: [{ type: "grant-shield", amount: 1, target: { kind: "declared-target" } }],
   });
 
@@ -153,7 +150,74 @@ describe("TagSkirmishSeatPanel", () => {
     expect(html).toContain("Strike");
     expect(html).toContain("strike");
     expect(html).toContain("KO");
-    expect(html).toContain("Tag Korr");
-    expect(html).toContain("Assist Korr");
+    expect(html).toContain(">Tag<");
+    expect(html).toContain(">Assist<");
+    const reserveAt = html.indexOf(">Reserve<");
+    const tagAt = html.indexOf(">Tag<", reserveAt);
+    const unrolledAt = html.indexOf("Unrolled", reserveAt);
+    expect(reserveAt).toBeGreaterThan(-1);
+    expect(tagAt).toBeGreaterThan(reserveAt);
+    expect(unrolledAt).toBeGreaterThan(tagAt);
+    expect(html.indexOf(">Active<")).toBeLessThan(html.indexOf(">Reserve<"));
+    expect(html).toMatch(/<button(?![^>]*disabled)[^>]*>Tag<\/button>/);
+    expect(html).toMatch(/<button(?![^>]*disabled)[^>]*>Assist<\/button>/);
+  });
+
+  it("disables Tag and Assist when Meter cannot pay them", () => {
+    const state = tagSkirmishBoard();
+    const player = state.players[P1];
+    if (player === undefined) throw new Error("player");
+    const broke = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: { ...player, meter: 0 },
+      },
+    };
+    const html = renderToStaticMarkup(
+      createElement(TagSkirmishSeatPanel, {
+        state: broke,
+        playerId: P1,
+        label: "Player 1",
+        facing: "up",
+        intent: { kind: "idle" },
+        absorbArmed: false,
+        actingPlayerId: P1,
+        canAct: true,
+        onCreatureClick: () => undefined,
+        onAttackChoose: () => undefined,
+        onCancelAttack: () => undefined,
+        onRitualActivate: () => undefined,
+        onTag: () => undefined,
+        onAssist: () => undefined,
+      }),
+    );
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Tag<\/button>/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Assist<\/button>/);
+  });
+
+  it("puts reserves above the active fighter when the seat faces down", () => {
+    const html = renderToStaticMarkup(
+      createElement(TagSkirmishSeatPanel, {
+        state: tagSkirmishBoard(),
+        playerId: P1,
+        label: "Player 2",
+        facing: "down",
+        intent: { kind: "idle" },
+        absorbArmed: false,
+        actingPlayerId: P1,
+        canAct: true,
+        onCreatureClick: () => undefined,
+        onAttackChoose: () => undefined,
+        onCancelAttack: () => undefined,
+        onRitualActivate: () => undefined,
+        onTag: () => undefined,
+        onAssist: () => undefined,
+      }),
+    );
+    expect(html.indexOf(">Reserve<")).toBeLessThan(html.indexOf(">Active<"));
+    const assistAt = html.indexOf(">Assist<");
+    expect(assistAt).toBeGreaterThan(html.indexOf(">Reserve<"));
+    expect(assistAt).toBeLessThan(html.indexOf(">Active<"));
   });
 });

@@ -1,4 +1,9 @@
-# Examples — standardize card texts & triggers
+# Examples — leftover catalogue shapes
+
+Do not copy these onto new Fighters, faces, or cards. New content uses
+Response, Modify, and named offensive faces
+([SKILL.md](SKILL.md), [design.md](../author-content/design.md)).
+The blocks below show how older print was split into timing lines.
 
 ## Face print: Revelation / Instinct / Primordial Fury
 

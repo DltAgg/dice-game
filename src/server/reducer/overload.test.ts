@@ -22,19 +22,16 @@ import {
 const MECHANICAL_OVERLOAD = testCard({
   id: "card-test-overload-mechanical",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
 });
 
 const MECHANICAL_OVERLOAD_B = testCard({
   id: "card-test-overload-mechanical-b",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: {
     faceSymbols: ["mechanical"],
-    faceKinds: ["synthetic"],
     onRoll: [{ type: "desynthesize", target: { kind: "choose-any-synthetic-slot" } }],
   },
 });
@@ -42,8 +39,7 @@ const MECHANICAL_OVERLOAD_B = testCard({
 const LUMINAR_OVERLOAD = testCard({
   id: "card-test-overload-luminar",
   playCost: { luminar: 3, any: 1 },
-  attribute: "luminar",
-  type: "overload",
+  type: "modify",
   overload: {
     faceSymbols: ["luminar"],
     onRoll: [
@@ -56,8 +52,7 @@ const LUMINAR_OVERLOAD = testCard({
 const GENERATE_OVERLOAD = testCard({
   id: "card-test-overload-generate",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: {
     faceSymbols: ["mechanical"],
     onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],

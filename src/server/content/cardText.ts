@@ -4,7 +4,6 @@ import type {
   ForgeRegion,
 } from "../model/cards.js";
 import type { Attribute } from "../model/attributes.js";
-import type { FaceKind } from "../model/dice.js";
 import { genericCount, requirementEntries, requirementTotal, type SymbolRequirement } from "../model/symbols.js";
 
 /**
@@ -24,11 +23,8 @@ const ATTRIBUTE_LABEL: Readonly<Record<Attribute, string>> = {
 };
 
 const TYPE_LABEL: Readonly<Record<CardDefinition["type"], string>> = {
-  instant: "Instant",
-  reaction: "Reaction",
-  equipment: "Equipment",
-  overload: "Overload",
-  ritual: "Ritual",
+  modify: "Modify",
+  response: "Response",
 };
 
 const SUBTYPE_LABEL: Readonly<Record<CardSubtype, string>> = {
@@ -38,17 +34,6 @@ const SUBTYPE_LABEL: Readonly<Record<CardSubtype, string>> = {
 };
 
 export const attributeLabel = (attribute: Attribute): string => ATTRIBUTE_LABEL[attribute];
-
-export function formatFaceKind(kind: FaceKind): string {
-  switch (kind) {
-    case "natural":
-      return "Natural";
-    case "synthetic":
-      return "Synthetic";
-    case "untyped":
-      return "Untyped";
-  }
-}
 
 /** Compact header glyph: total pile tokens in playCost, or empty when free. */
 export function formatPlayCostHeader(card: CardDefinition): string {
@@ -65,22 +50,17 @@ export function formatPlayCostLine(card: CardDefinition): string | null {
   return `[Spend: ${body}]`;
 }
 
-/** `[Instant / Arcane]`, `[Equipment / Martial]`, or `[Ritual / Instant / Arcane]` */
+/** `[Modify]`, `[Response]`, or `[Modify / Continuous]` */
 export function formatTypeLine(card: CardDefinition): string {
-  const parts = [
-    TYPE_LABEL[card.type],
-    ...card.subtypes.map((subtype) => SUBTYPE_LABEL[subtype]),
-    ATTRIBUTE_LABEL[card.attribute],
-  ];
+  const parts = [TYPE_LABEL[card.type], ...card.subtypes.map((subtype) => SUBTYPE_LABEL[subtype])];
   return `[${parts.join(" / ")}]`;
 }
 
-/** `[Forge] 1 face [Synthetic] [Arcane] on your die` */
+/** `[Forge] 1 face on your die` */
 export function formatForgeLine(forge: ForgeRegion): string {
-  const kind = formatFaceKind(forge.kind);
   const faces = forge.faces === 1 ? "1 face" : `${String(forge.faces)} faces`;
   const where = forge.target === "own-die" ? "on your die" : "on the opponent's die";
-  const line = `[Forge] ${faces} [${kind}] [${ATTRIBUTE_LABEL[forge.attribute]}] ${where}`;
+  const line = `[Forge] ${faces} ${where}`;
   if (forge.rulesText !== undefined && forge.rulesText.length > 0) {
     return `${line}. ${forge.rulesText}`;
   }
@@ -98,7 +78,7 @@ export function formatRequirementLine(card: CardDefinition): string | null {
 
   const body = formatRequirementBody(requires);
   if (body.length === 0) return null;
-  if (card.type === "ritual" || card.ritual !== undefined) return `[Active when: ${body}]`;
+  if (card.ritual !== undefined) return `[Active when: ${body}]`;
   return `[Requires: ${body}]`;
 }
 

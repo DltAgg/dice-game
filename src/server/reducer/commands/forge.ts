@@ -1,12 +1,10 @@
 import { getCard } from "../../content/cards.js";
-import { getFaceCard, SHIELD_FACE_ID } from "../../content/faces.js";
+import { getFaceCard } from "../../content/faces.js";
 import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, DieId, FaceCardId, PlayerId } from "../../model/ids.js";
-import { forgeExceedsAttributeLimit } from "../../rules/cards.js";
 import {
   countInstalledCopies,
   eligibleFacesForForge,
-  isLegalForgeKindForAttribute,
   overwrittenSlot,
   returnFaceToPoolIfOrphaned,
   slotCannotBeReplacedByForge,
@@ -14,7 +12,7 @@ import {
   withForgeLockResetOnInstall,
 } from "../../rules/faces.js";
 import { emit, patchDie, type Draft } from "../draft.js";
-import { payForgeCost, payPileSpend } from "../payments.js";
+import { payForgeCost } from "../payments.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { clearOverchargeOnFace, clearOverloadsOnFace, drawCards, moveCard } from "../zones.js";
 
@@ -33,34 +31,8 @@ export function activateFace(
   if (slot === undefined) return "INVALID_FACE";
   const face = getFaceCard(slot.faceCardId);
   if (face?.activated === undefined) return "CARD_HAS_NO_EFFECT";
-
-  let corruptionFaces = 0;
-  for (const candidate of die.slots) {
-    const definition = getFaceCard(candidate.faceCardId);
-    if (definition?.kind === "synthetic" && definition.symbol === "corruption") {
-      corruptionFaces += 1;
-    }
-  }
-
-  const cost =
-    face.activated.spendBase + face.activated.spendPerCorruptionOnDie * corruptionFaces;
-  const spendError = payPileSpend(draft, playerId, { corruption: cost });
-  if (spendError !== null) return spendError;
-
-  const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
-  const slots = die.slots.map((candidate) =>
-    candidate.index === slotIndex
-      ? overwrittenSlot(candidate, SHIELD_FACE_ID, playerId)
-      : candidate,
-  );
-  patchDie(draft, dieId, { slots });
-  returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
-  if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
-    clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
-    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
-  }
-
-  return null;
+  // The old payoff installed a Shield face. There is no Shield face.
+  return "CARD_HAS_NO_EFFECT";
 }
 
 /**
@@ -176,24 +148,10 @@ export function forgeCard(
     return "INVALID_FACE";
   }
 
-  if (forgeExceedsAttributeLimit(die, slotIndexes, forge.attribute, forge.faces, draft.config)) {
-    return "ATTRIBUTE_LIMIT_REACHED";
-  }
-
-  if (!isLegalForgeKindForAttribute(forge.kind, forge.attribute)) {
-    return "INVALID_TARGET";
-  }
-
   const forgeCostError = payForgeCost(draft, playerId, definition);
   if (forgeCostError !== null) return forgeCostError;
 
-  const eligible = eligibleFacesForForge(
-    draft,
-    playerId,
-    forge.kind,
-    forge.attribute,
-    definition,
-  );
+  const eligible = eligibleFacesForForge(draft, playerId, definition);
   if (!eligible.includes(faceCardId)) return "FACE_NOT_AVAILABLE";
 
   const installed = installFacesOnDie(
@@ -205,13 +163,6 @@ export function forgeCard(
     cardInstanceId,
   );
   if (installed !== null) return installed;
-
-  if (forge.kind === "synthetic") {
-    draft.syntheticForgedThisTurn = {
-      ...draft.syntheticForgedThisTurn,
-      [playerId]: true,
-    };
-  }
 
   // The card is consumed by being installed, so it goes to the graveyard rather
   // than staying available to be played for its effect as well.

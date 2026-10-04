@@ -62,8 +62,7 @@ export function CardCatalogue() {
               <p className="text-center text-[0.65rem] uppercase tracking-[0.14em] text-stone-500">
                 {creature.legendary === true ? <LegendaryBadge /> : null}
                 <span className={creature.legendary === true ? "mt-1 block normal-case tracking-normal text-stone-600" : undefined}>
-                  {creature.attributes.join(" · ")}
-                  {creature.legendary === true ? " · Legendary Creature" : " · Creature"}
+                  {creature.legendary === true ? "Legendary Creature" : "Creature"}
                 </span>
               </p>
             </li>

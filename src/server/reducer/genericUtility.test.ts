@@ -19,14 +19,12 @@ import {
 const STAMP = testCard({
   id: "card-test-utility-stamp",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
   effect: { effects: [{ type: "reapply-die-modifiers" }] },
 });
 
 const SILENCE = testCard({
   id: "card-test-utility-silence",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
   effect: {
     effects: [
       {
@@ -41,8 +39,7 @@ const SILENCE = testCard({
 const REFORGE = testCard({
   id: "card-test-utility-reforge",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  forge: { faces: 2, target: "own-die" },
   effect: {
     effects: [{ type: "replace-synthetic-face", faces: 2, attribute: "mechanical" }],
   },

@@ -30,9 +30,11 @@ Loadouts need **three** Fighters. Setup places by **squad index**: index 0
 opens **Active**. Tag-fighter matches use **one frontline (Active)** and two
 Reserve. Skirmish defaults still place two frontline then back.
 
-Native attacks that list a **technique** may only be declared by the **Active**
-Fighter, and only while that Fighter’s bound die is **showing** the required
-technique. They target the opponent’s Active Fighter.
+A Tag Fighter has no basic or special attack. The showing face on the Active
+Fighter is a hit by itself. A Technique pairs that face with one other face
+you rolled: a named face, any face of a type, or any face with a sequence
+role. The face and the Technique each say whether they are a starter, an
+extender, or a finisher. Both target the opponent’s Active Fighter.
 
 ---
 
@@ -44,7 +46,7 @@ Each player’s loadout is:
 |---|---|
 | Squad | Exactly **3** creatures |
 | Tactics deck | **40–50** cards, **≤3** copies of the same card id |
-| Face deck | **≤12** face cards, **≤3** sharing one attribute |
+| Face deck | **≤12** face cards |
 | Opening dice | **2** d6 (skirmish) or **3** d6 (Tag Skirmish: one die bound to each Fighter) |
 
 Tactics cards always have both a **play** region and a **forge** region. On
@@ -54,23 +56,17 @@ Overcharge, never two.
 
 **Opening dice**
 
-- Basics (identity Natural Martial / Wild / Arcane / Luminar / Toxin /
-  Mechanical / Corruption / Darkness, and untyped Shield) may sit on
-  opening slots **without** consuming the face deck. Shield faces are
-  optional; a die may open with none.
-- A named special on an opening slot (including a named natural such as
-  Dawnwright) **must** be in the face deck and starts **installed** (not
-  also in the leftover pool unless the list has another copy of that id).
+- Blank faces (empty rules, no technique, no face type, empty On roll)
+  may sit on opening slots **without** consuming the face deck.
+- A named face on an opening slot **must** be in the face deck and starts
+  **installed**. One face card backs every slot showing that id.
 - Leftover face-deck rows are the mid-game forge pool.
-- Copying an already-installed matching face (including an opening special)
-  remains legal.
+- Copying an already-installed face (including an opening face) remains legal.
 
 Opening-layout caps (prototype knobs, `ASSUMED` unless noted):
 
 | Knob | Default |
 |---|---|
-| Same attribute on one die | **4** (`DEFINED`) |
-| Named synthetics per player / per die | **2** / **2** |
 | Faces with On roll, convert Choose one, or While showing per die | **2** |
 
 Forbidden Heritage, Pestilent Plague, and Arcane Echo are refused on
@@ -91,10 +87,12 @@ Each player has:
   ignores this. Technique-gated native attacks always target the opponent’s
   **Active** Fighter.
 - **Engine area** for rituals.
-- **Dice:** two (skirmish) or **three** (Tag Skirmish). Each Fighter is bound
-  to die index `i` (`dieIds[i]` ↔ `creatureIds[i]`). Faces can be **techniques**
-  (Strike, Guard, Heavy, Special, Tag, Assist, Signature, …) — the die answers
-  what the Fighter can do right now, not a mana total.
+- **Dice:** one per Fighter. Tag Skirmish rolls all three, including a
+  KOed Fighter. The Fighter's base die is what the match starts from. A
+  card can rewrite the current faces for the rest of the match. Changing
+  the roll does not rewrite the die. The next match starts from the base
+  die again. A Technique's other face comes from another of your dice,
+  never the opponent's.
 - **Meter** (0–8): combat momentum. Spend on Tag-cancel, Assist (when the
   technique is not showing), and some cards. Gain Meter when your attack
   Strike actually removes HP.
@@ -144,9 +142,9 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    absorb** that die (inherent extra pips, showing pip, forge yield, Overcharge
    are forfeited). It is a real prompt — the die owner picks. The **other**
    die of that owner auto-absorbs normally.
-   **Shield** and locked/unusable pips stay in the turn pool. The non-active
+   Locked/unusable pips stay in the turn pool. The non-active
    player cannot absorb during the turn player’s actions, so **off-turn
-   Shield leftover has no absorb window** — it expires or is replaced like
+   leftovers have no absorb window** — they expire or are replaced like
    other leftovers. Their usable attributes still auto-absorb on roll.
    Effect-generated usable attributes also auto-absorb when created. Then the
    turn enters **actions** (still only the turn player’s window).
@@ -158,8 +156,8 @@ Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
    keep is **not spent** on the opponent’s shared roll (the face stays, and
    so does retain). It is spent on **your** next roll phase as the turn
    player.
-2. **Actions.** In any order you may: absorb Shield onto a creature, absorb
-   leftover usable attributes (if any), attack, play, forge, activate a
+2. **Actions.** In any order you may: absorb leftover usable attributes (if
+   any), attack, play, forge, activate a
    **ready** ritual, retain/release dice, or end the turn. Printed `[Spend]` /
    `[Requires]` on cards and attacks are **not enforced** (catalogue leftover).
 
@@ -168,7 +166,7 @@ to the roll phase). The **new** showing face fires On roll (and overloads on
 that face), then a usable attribute pip **auto-absorbs** (On absorb) unless
 that new face offers convert Choose one. The previous roll of that die is not
 undone: an already-absorbed pip stays absorbed, and an unabsorbed leftover
-(Shield, locked) is replaced by the new result rather than sitting beside it.
+(locked or unusable) is replaced by the new result rather than sitting beside it.
 `[Stamp]` is
 different: it re-fires the **current** showing face’s roll effects — On roll,
 overloads on that face, Overcharge pips, forge-yield extra Generate, and
@@ -177,16 +175,14 @@ pip (and without minting a second copy of inherent extra pips). Stamp on a
 convert face opens Choose one again (yield / Overcharge wait until you pick
 absorb).
 
-On-roll lines may be **conditional on dice geometry** (your other die’s
-showing attribute, how many faces of this attribute sit on this die, both
-showing faces synthetic). Those are ordinary On-roll conditions, not a new
-phase. Both of that owner’s dice are rolled before their On roll fires, so
-geometry can see both showing faces.
+On-roll lines may be **conditional on dice geometry** (your other die showing
+the same face, how many slots on this die show that face). Those are ordinary
+On-roll conditions, not a new phase. Both of that owner’s dice are rolled
+before their On roll fires, so geometry can see both showing faces.
 
 There is no dedicated absorb phase and no leftover-rolled flip. The turn
-pool mainly holds **Shield** (and locked/unusable pips) until absorbed or
-end of turn. Absorbed attributes are gone from the pool (On absorb only — no
-bank).
+pool holds locked/unusable pips until they expire at end of turn. Absorbed
+attributes are gone from the pool (On absorb only — no bank).
 
 Ready rituals may activate during **actions**, not during roll.
 
@@ -204,13 +200,16 @@ exists you must name one; if none exist, the effect whiffs.
 
 ## 6. Symbols and the turn pool
 
-Every face is attribute-typed except **Shield** (untyped). Attributes are
-Martial, Wild, Toxin, Arcane, Luminar, Mechanical, Corruption, Darkness.
+A face is not an attribute, not natural or synthetic, and not Shield.
+There is no Shield face and no Shield pip. Usable pips are the face’s
+printed pip bag, or pips an effect generates. Symbol names (Martial, Wild,
+Toxin, Arcane, Luminar, Mechanical, Corruption, Darkness) are pip labels,
+not face types.
 
-**Rolled and effect-generated usable attributes** auto-absorb (On absorb
-fires). There is **no** cross-turn attribute bank. Locked/unusable pips and
-**Shield** stay in the turn pool until you absorb them or they expire at end
-of turn. Convert **Choose one** faces absorb that die’s usable pips only if
+**Rolled and effect-generated usable pips** auto-absorb (On absorb fires).
+There is **no** cross-turn attribute bank. Locked/unusable pips stay in the
+turn pool until they expire at end of turn. Convert **Choose one** faces
+absorb that die’s usable pips only if
 you pick the absorb branch; the payoff branch forfeits that die’s roll pips
 (inherent extra pips, showing pip, forge yield, Overcharge). The other die is
 untouched.
@@ -220,8 +219,6 @@ may still appear on catalogue cards but are **not enforced** today.
 
 Unabsorbed turn-pool symbols expire at end of turn. There is no “store a
 symbol.” The only way to keep a **die result** across a roll is **retain**.
-
-Shield absorb still names a creature (below).
 
 ---
 
@@ -233,16 +230,10 @@ Shield absorb still names a creature (below).
 - Each **On absorb** hook (standing ability, face, or overload) fires **at
   most once per turn** per source, so generated pips cannot re-trigger the same
   absorb effect in a loop.
-- **Shield** pips grant **immediately** on absorb onto a living owned creature
-  (1 Shield prevents 1 damage, once). Shields stack and persist until spent.
-- Absorbing a Shield is **not** absorbing a Natural; `On absorb Natural`
-  does not fire.
 - Ritual **Active-when** pile gates in print are **not enforced**; rituals
   become ready per engine rules without pile unlock (see §10).
 - **`[Drain]`** deals damage to a chosen enemy creature and heals your
-  **most-damaged ally** for the HP actually lost (after Prevent/Shield).
-
-An unabsorbed Shield is wasted: Shield is not a spendable fuel token.
+  **most-damaged ally** for the HP actually lost (after attack prevention).
 
 ---
 
@@ -252,13 +243,8 @@ Printed header `[Spend: …]`, effect `[Requires: …]`, attack `discards`, and
 ritual Active-when / activate Spend are **not enforced** (catalogue leftovers).
 
 **Play** and **forge** are legal when the rest of the action is legal — no pile
-payment step.
-
-**Forge** still distinguishes natural vs synthetic face kinds for install rules
-(§11). **Your first synthetic `FORGE_CARD` each turn** remains free where the
-engine applies that waiver; it does not consume printed `playCost`. Ritual /
-effect `forge-faces` does not count toward that waiver — only player
-`FORGE_CARD`. The waiver clears on `END_TURN` with other per-turn bags.
+payment step. Forge does not distinguish face kinds, and there is no
+first-forge waiver.
 
 **Discounts** (`[Discount N]`) may still arm on-roll or while-showing discounts
 on `GameState` where implemented; they do not spend a pile.
@@ -273,11 +259,8 @@ During actions (or as a legal reaction — §15):
 
 | Kind | What happens |
 |---|---|
-| Instant | Resolves when legal (printed costs not enforced). |
-| Reaction | From hand, only while a reaction window is open and the response is legal. |
-| Equipment | Attaches to a creature; stays until destroyed or the host dies. Friendly vs opponent targeting is printed. |
-| Overload | Attaches to a **face card** (shared definition), not a physical die slot. Capacity is per face card. |
-| Ritual | Enters the engine area (see §10). |
+| Modify | Changes the current situation. Either player may play one while they have priority, when it is legal. A Modify may resolve an effect, attach equipment, overload a face, or place a ritual. |
+| Response | From hand, only against an opponent’s object while a reaction window is open. |
 
 Printed `[Spend]` / `[Requires]` on cards and attacks are not enforced. Forge
 does not check a card’s effect `[Requires]` (play vs forge is exclusive).
@@ -338,22 +321,20 @@ a legal whiff; if at least one eligible card exists you always pick.
 ## 11. Forging
 
 During actions, `FORGE_CARD` installs a face from your leftover pool **or**
-copies an already-installed matching face onto a legal slot. **Natural** forge
-regions install for free (and never consume the first-synthetic waiver).
-**Your first synthetic `FORGE_CARD` each turn is free** where the waiver
-applies; printed header `[Spend]` is not enforced. Forge does **not** open
-a reaction window.
+copies an already-installed face onto a legal slot. You name the face. There
+is no natural/synthetic split and no first-forge waiver. Printed header
+`[Spend]` is not enforced. Forge does **not** open a reaction window.
 
 You draw **one card per face installed** (own die or opponent’s). Empty
 deck still fails the draw quietly. This draw is a forge rule, not card text.
 
 **Own-die forge yield:** When you install a face onto **your own** die (via
 `FORGE_CARD` or a forge-faces effect), that slot gains **forge yield**. While
-that forged face is showing after your roll, you also generate one extra pip of
-its attribute (same auto-absorb path as effect Generate), **unless** you pick
-the convert payoff on that showing face (Choose one). Shield / untyped faces
-grant no yield. Opponent-die installs (Corruption harassment) do **not** gain
-yield. Overwriting or peeling a slot clears yield unless the new install
+that forged face is showing after your roll, you also generate one extra pip
+for each of that face’s printed pips (same auto-absorb path as effect
+Generate), **unless** you pick the convert payoff on that showing face
+(Choose one). A face with no printed pips grants no yield. Opponent-die installs do **not**
+gain yield. Overwriting or peeling a slot clears yield unless the new install
 re-sets it.
 
 **Forge bonus effects.** Some cards print extra keyword clauses on the forge
@@ -366,27 +347,19 @@ one use.
 Some faces **stay locked** on a slot for printed turns after install
 (forge-lock). That is not retain.
 
-**Desynthesis.** `[Desynthesize]` peels a **synthetic** attribute face on
-**any die** (yours or the opponent’s) back to that attribute’s **natural**
-identity face. It is not a forge (no forge-draw) and is **not** `[Reforge]`
-or `[Cross forge]` (overwrite slots on **your** die with synthetics from
-your pool). Stay / forge-lock does not block it. The natural belongs to the
-**die owner**; the displaced synthetic
-returns to its owner’s pool when the last copy leaves, and overloads /
-Overcharge on that orphaned face leave as they do on overwrite. An already
-generated pip on a showing slot stays; the next roll uses the natural.
+**Desynthesis.** There is no Shield face to peel to, so `[Desynthesize]`
+does not change the slot. It is not a forge and it is not `[Reforge]` or
+`[Cross forge]`.
 
-**Reforge / Cross forge.** `[Reforge N Attr]` on **one of your dice**: replace
-**any** N replaceable faces with N **synthetic** Attr faces from your pool
-(you name the slots and the pool faces). `[Cross forge N Y / Z]` is the same
-except those N slots must currently show **Y**, and the installs are synthetic
-**Z**. Neither is a forge (no forge-draw, no yield, no synthetic bank). Stay /
-cannot-replace slots are illegal. The §9.1 attribute cap still applies to the
-finished die. Displaced faces return to pool when orphaned; their overloads /
-Overcharge leave as on overwrite. Mechanical exclusive. You cannot play a
-Reforge / Cross forge (or a Choose one whose every mode is Reforge / Cross
-forge) when no legal assignment exists — the card stays in hand; it is not
-spent for a silent no-op.
+**Reforge / Cross forge.** `[Reforge N]` on **one of your dice**: replace
+any N replaceable faces with N faces from your pool (you name the slots and
+the pool faces). `[Cross forge]` is the same replacement; it does not require
+the slots to show a particular face. Neither is a forge (no forge-draw, no
+yield). Stay / cannot-replace slots are illegal. Displaced faces return to
+pool when orphaned; their overloads / Overcharge leave as on overwrite. You
+cannot play a Reforge / Cross forge (or a Choose one whose every mode is
+Reforge / Cross forge) when no legal assignment exists — the card stays in
+hand; it is not spent for a silent no-op.
 
 **Choose one.** Some cards (e.g. Tooling Order) and some faces (Sigil Flare,
 Mainspring, Pyre of Names) read "Choose one:" with two modes. You pick exactly
@@ -396,9 +369,9 @@ modes are **absorb this die's usable pips** or the printed payoff (do not
 absorb).
 
 **Overcharge.** Once per turn during actions, you may spend **any** card
-from hand to Overcharge one **attribute face card** installed on your dice
-(not Shield / untyped). That face card gains +1 of the spent card’s
-attribute. The next time **any** of your dice show that face after a roll
+from hand to Overcharge one face card installed on your dice.
+That face card gains +1 of the first pip symbol in the spent card’s
+`playCost`. The next time **any** of your dice show that face after a roll
 (including a retained keep or an actions-window reroll), **each** showing die
 also `[Generate]`s that pip — the same on-roll Generate path as forge yield /
 overload — **unless** you pick that showing face’s convert payoff (those Overcharge
@@ -410,10 +383,9 @@ does **not** open a reaction window.
 Pips sit on the **face card** until the last copy you own leaves the dice
 (overwrite or peel) — the same moment overloads detach. Overwriting one of
 two copies keeps the Overcharge on the remaining copy. Stay / cannot-replace
-does not block Overcharge (you are not replacing the face). Forge kind
-(natural vs synthetic) and forge target (your die vs opponent’s) do **not**
-gate Overcharge. Multiple Overcharges on the same face card stack across
-turns.
+does not block Overcharge (you are not replacing the face). Which die the
+face sits on does **not** gate Overcharge. Multiple Overcharges on the same
+face card stack across turns.
 
 ---
 
@@ -437,16 +409,17 @@ face) fires again.
 - You may attack on the same turn you absorb symbols.
 - Declaring an attack opens a reaction window (§15). Prevent may answer;
   negate may not.
-- Damage apply order: **`[Reduce]` → prevention → Shield → Life**.
-- `[Reduce N]` subtracts N from that incoming hit (minimum 0) before Prevent
-  and Shield. It applies to any damage that hits the creature, not only
+- Damage apply order: **`[Reduce]` → attack prevention → Life**.
+- `[Reduce N]` subtracts N from that incoming hit (minimum 0) before attack
+  prevention. It applies to any damage that hits the creature, not only
   attacks. It does not cancel the attack. **While showing** `[Reduce N]` uses
   the same math for the controller’s living creatures while that face is
   showing.
-- Pierce / ignore Shield skips that many Shields **without spending them**,
-  after prevention, before remaining Shields and HP. **While showing**
-  `[Pierce N]` applies to the controller’s attacks for as long as the face
-  is showing (every attack, not a one-shot arm).
+- There is no Shield. Nothing between attack prevention and Life stops the
+  remaining damage.
+- **While showing** `[Pierce N]` applies to the controller’s attacks for as
+  long as the face is showing (every attack, not a one-shot arm). It does not
+  add a barrier step.
 - **While showing** `[Empower N]` adds N to the controller’s attacks for as
   long as the face is showing (every attack, not next-attack-once).
 - Some attacks queue follow-up effects after the damage link.
@@ -480,12 +453,11 @@ face) fires again.
 - **Primary Effect:** resolve alone with **Use Face** — the Active Fighter
   uses the showing face on **their own** bound die. No second face needed.
 - **Fighter technique (two faces):** the Active Fighter’s own die shows the
-  technique’s **primary** named face, and **another** rolled die shows a face
-  matching the technique’s **secondary** requirement (a specific face **or** a
-  Type). Which die may be that secondary input is **not decided**. Resolve the
-  technique’s base effect, then that secondary face’s **Secondary Effect**. Primary and Secondary are ordered
-  roles — swapping which die shows which face does not fire the same
-  technique.
+  technique’s **primary** named face, and **another** of your rolled dice
+  shows a face matching the secondary: a named face, any face of a type, or
+  any face with a sequence role. Resolve the technique’s base effect, then
+  that secondary face’s **Secondary Effect**. Swapping which die shows which
+  face does not fire the same technique.
 - These actions happen in the **actions** phase (the Act). Using a face does
   not spend it. The same face may still be part of a Technique. Repeating the
   same Action in one sequence is the model under test (spec `030`). What is
@@ -505,11 +477,13 @@ During the Act there is an **Aggressor** and a **Defender**. Dice show named
 inputs. They are not action points. An Action you cannot legally continue
 with is not available. Declaring it does not end the sequence.
 
-Starter, Extender, and Finisher are properties of an Action or Technique.
-Passing Priority inside a chain only yields Priority. Separately, the
-Aggressor may stop the offensive sequence. A Finisher is the model under
-test for ending a combo and returning to Open. Another Action may also say
-that it ends the sequence. Tag does not always do either.
+Starter, Extender, and Finisher are properties of a lone face and of a
+Technique. A starter, once it resolves, moves the sequence from Open into
+Combo. In Combo, the next face or Technique is legal only when its own role
+is extender or finisher. Passing Priority inside a chain only yields
+Priority. Separately, the Aggressor may stop the offensive sequence and
+return it to Open. A Finisher also returns it to Open. Tag does not always
+do either.
 
 Immediately after the opening roll, you may reroll any number of your dice
 once, or keep them. Cards can change that roll or that reroll.
@@ -528,8 +502,10 @@ invalid by then, that effect does not happen.
 
 A modify can change the roll you just made, or it can permanently change a
 die. Changing the roll does not rewrite the die. There is no temporary die
-change. It can also change what one Fighter’s inputs allow, or redirect a
-target that is already part of the exchange.
+change. It can also change what one Fighter’s inputs allow. That moveset
+card stays attached to that Fighter for the rest of the match, so the
+change remains visible. It can also redirect a target that is already part
+of the exchange.
 
 Tag is not a card. A turn can offer a Tag Window at the beginning and one
 at the end. You can Tag only once in the turn. The normal Tag does not
@@ -557,8 +533,8 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 
 **Reduce** (incoming hit math — not Prevent):
 
-- `[Reduce N]` on `On take damage:` cuts N from that hit before Prevent and
-  Shield. Optional `, once per turn` is a print qualifier, not a second
+- `[Reduce N]` on `On take damage:` cuts N from that hit before attack
+  prevention. Optional `, once per turn` is a print qualifier, not a second
   keyword. Distinct from `[Prevent]` (cancel the next attack) and
   `[Discount]` (legacy cost reduction where armed).
 
@@ -568,14 +544,14 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
   while a living **attack** link is on the chain, and only onto **that attack’s
   target**. Grants with no attack on the chain whiff (no charge).
 - That charge cancels the next **attack** against the creature (the whole
-  instance, before Shield). Unused charges **expire at end of turn**
+  instance, before Life). Unused charges **expire at end of turn**
   (`preventExpiry: "end-of-turn"`) — they are not a lasting “arm next attack”
   you set up on your turn.
 - Toxin ticks, face `[Strike]`, and other effect damage do **not** consume
   attack-prevent.
 - Prevent reactions (Prismatic Barrier, Sidestep, Luminar Judgement) answer
   an attack on the chain. Proactive Luminar absorb / attack follow-ups use
-  `[Mark N Shield]` or `[Heal]` instead.
+  `[Heal]` instead.
 
 **Toxin:** counters on a creature (soft max **3** per creature; excess from
 `[Mark]` is discarded). At the **end** of **that creature’s owner’s** turn,
@@ -594,8 +570,8 @@ end.
   `ACTIVATE_RITUAL`, and a silenced continuous ritual’s standing abilities
   do not fire. Passive while-attached modifiers from silenced equipment or
   a silenced continuous ritual do not apply.
-- Rolled **pips still generate**. Attacks may still be **declared**; Strike,
-  Prevent, and Shield still happen. Extra attack effects and follow-ups from
+- Rolled **pips still generate**. Attacks may still be **declared**; Strike
+  and Prevent still happen. Extra attack effects and follow-ups from
   a silenced attacker are skipped.
 - Equipment and overloads are not named directly — they are silenced with
   their host creature or showing slot. Hand, deck, and unattached cards are

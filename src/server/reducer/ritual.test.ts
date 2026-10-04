@@ -11,8 +11,7 @@ import { createDraft } from "./draft.js";
 const CONTINUOUS_RITUAL = testCard({
   id: "card-test-continuous-ritual",
   playCost: { luminar: 3 },
-  attribute: "luminar",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { luminar: 3 },

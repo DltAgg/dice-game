@@ -18,7 +18,6 @@ const STAMP = testCard({
   id: "card-test-stamp",
   name: "Test Stamp",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
   effect: { effects: [{ type: "reapply-die-modifiers" }] },
 });
 

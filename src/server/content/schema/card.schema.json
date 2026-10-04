@@ -5,7 +5,7 @@
   "description": "One hand-card / ritual JSON document (src/server/content/cards/<card-id>.json). Every card has a forge region. Play uses at most one of effect, equipment, overload, or ritual — locked to type. Print (rulesText) is player-facing authority; structured regions are engine authority.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "name", "type", "subtypes", "attribute", "forge", "rulesText"],
+  "required": ["id", "name", "type", "subtypes", "forge", "rulesText"],
   "properties": {
     "$schema": { "type": "string" },
     "id": { "$ref": "defs.schema.json#/$defs/cardId" },
@@ -16,12 +16,11 @@
     },
     "type": { "$ref": "defs.schema.json#/$defs/cardType" },
     "subtypes": {
-      "description": "Ritual type-line modifiers only (continuous / reaction; instant is retired). Empty for instant, reaction, equipment, and overload.",
+      "description": "Modifiers after Modify or Response. A ritual region uses continuous or reaction. Instant subtype is retired.",
       "type": "array",
       "uniqueItems": true,
       "items": { "$ref": "defs.schema.json#/$defs/cardSubtype" }
     },
-    "attribute": { "$ref": "defs.schema.json#/$defs/attribute" },
     "forge": { "$ref": "defs.schema.json#/$defs/forgeRegion" },
     "forgeTags": {
       "description": "Tags that satisfy face forge restrictions (echo for Arcane Echo).",
@@ -66,12 +65,7 @@
     },
     "seizesOffense": {
       "type": "boolean",
-      "description": "Spec 030. Hand reaction that takes offensive control when it resolves against a waiting combat action. Does not cancel that action's damage."
-    },
-    "behavior": {
-      "type": "string",
-      "enum": ["response", "modify"],
-      "description": "Spec 030. Response or Modify. Omit to keep the spec 008 play path."
+      "description": "Spec 030. Response that takes offensive control when it resolves against a waiting combat action. Does not cancel that action's damage."
     },
     "modifySubject": {
       "type": "string",
@@ -86,7 +80,7 @@
     "lifecycle": {
       "type": "string",
       "enum": ["one-shot", "persistent"],
-      "description": "Spec 030. Omit to derive: equipment, overload, and continuous rituals stay in play. Other cards are one-shot."
+      "description": "Spec 030. Omit to derive: an equipment or overload region, or a continuous ritual region, stays in play. Other cards are one-shot."
     },
     "afterResolveZone": {
       "type": "string",
@@ -97,13 +91,11 @@
   "allOf": [
     {
       "if": {
-        "properties": { "type": { "const": "equipment" } },
-        "required": ["type"]
+        "properties": { "equipment": { "type": "object" } },
+        "required": ["equipment"]
       },
       "then": {
-        "required": ["equipment"],
         "properties": {
-          "equipment": { "$ref": "defs.schema.json#/$defs/equipmentRegion" },
           "effect": false,
           "overload": false,
           "ritual": false
@@ -112,13 +104,11 @@
     },
     {
       "if": {
-        "properties": { "type": { "const": "overload" } },
-        "required": ["type"]
+        "properties": { "overload": { "type": "object" } },
+        "required": ["overload"]
       },
       "then": {
-        "required": ["overload"],
         "properties": {
-          "overload": { "$ref": "defs.schema.json#/$defs/overloadRegion" },
           "effect": false,
           "equipment": false,
           "ritual": false
@@ -127,47 +117,14 @@
     },
     {
       "if": {
-        "properties": { "type": { "const": "ritual" } },
-        "required": ["type"]
+        "properties": { "ritual": { "type": "object" } },
+        "required": ["ritual"]
       },
       "then": {
-        "required": ["ritual"],
         "properties": {
-          "ritual": { "$ref": "defs.schema.json#/$defs/ritualRegion" },
           "effect": false,
           "equipment": false,
-          "overload": false,
-          "subtypes": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 1,
-            "items": { "$ref": "defs.schema.json#/$defs/cardSubtype" }
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": { "type": { "enum": ["instant", "reaction"] } },
-        "required": ["type"]
-      },
-      "then": {
-        "properties": {
-          "equipment": false,
-          "overload": false,
-          "ritual": false,
-          "subtypes": { "type": "array", "maxItems": 0 }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": { "type": { "enum": ["equipment", "overload"] } },
-        "required": ["type"]
-      },
-      "then": {
-        "properties": {
-          "subtypes": { "type": "array", "maxItems": 0 }
+          "overload": false
         }
       }
     }

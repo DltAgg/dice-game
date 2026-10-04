@@ -1,4 +1,5 @@
 import { getFaceCard } from "../../content/faces.js";
+import { pipSymbolsOf } from "../../model/dice.js";
 import type { DieId, PlayerId, SymbolInstanceId } from "../../model/ids.js";
 import { isSlotSilenced } from "../../rules/silence.js";
 import type { Draft } from "../draft.js";
@@ -37,7 +38,9 @@ export function applyConvertRollPips(
   const symbolIds = unabsorbedFromDie(draft, dieId);
   if (bank) {
     if (!isSlotSilenced(draft, dieId, slotIndex)) {
-      applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
+      for (const symbol of pipSymbolsOf(face)) {
+        applyForgeYieldGenerate(draft, playerId, slot, symbol);
+      }
       applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
     }
     const deferAbsorb = draft.pendingDecision !== null || draft.resolutionStack.length > 0;
@@ -63,5 +66,7 @@ export function fireConvertRollExtras(
   if (!bank) {
     fireOverloadsForShownFace(draft, playerId, slot.faceCardId, dieId, slotIndex);
   }
-  fireEquipmentOnRollSymbol(draft, playerId, face.symbol);
+  for (const symbol of pipSymbolsOf(face)) {
+    fireEquipmentOnRollSymbol(draft, playerId, symbol);
+  }
 }

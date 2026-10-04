@@ -11,11 +11,8 @@ import {
 } from "./deckCostStats";
 
 const TYPE_COLORS: Record<CardType, string> = {
-  instant: "#94a3b8",
-  reaction: "#7dd3fc",
-  equipment: "#c4a574",
-  overload: "#c084fc",
-  ritual: "#86efac",
+  modify: "#c4a574",
+  response: "#7dd3fc",
 };
 
 const CHART = {
@@ -60,7 +57,7 @@ function BucketDetail({ bucket }: { readonly bucket: DeckCostBucket }) {
           <li key={entry.id} className="flex flex-wrap items-baseline gap-x-2">
             <span className="font-medium text-stone-100">{entry.name}</span>
             <span className="text-stone-500">
-              ×{entry.copies} · {CARD_TYPE_LABELS[entry.type]} · {entry.attribute} · cost{" "}
+              ×{entry.copies} · {CARD_TYPE_LABELS[entry.type]} · cost{" "}
               {entry.cost}
             </span>
           </li>

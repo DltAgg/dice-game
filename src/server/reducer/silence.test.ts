@@ -41,7 +41,6 @@ import { CRANK } from "../testing/tempoCatalogue.js";
 const SILENCE = testCard({
   id: "card-test-silence",
   playCost: { arcane: 2 },
-  attribute: "arcane",
   effect: {
     effects: [
       {
@@ -56,8 +55,7 @@ const SILENCE = testCard({
 const EQUIP = testCard({
   id: "card-test-silence-equip",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
@@ -75,8 +73,7 @@ const EQUIP = testCard({
 const ACTIVATE_RITUAL = testCard({
   id: "card-test-silence-activate-ritual",
   playCost: { darkness: 2 },
-  attribute: "darkness",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { darkness: 1 },
@@ -94,8 +91,7 @@ const ACTIVATE_RITUAL = testCard({
 const STANDING_RITUAL = testCard({
   id: "card-test-silence-standing-ritual",
   playCost: { mechanical: 1, any: 1 },
-  attribute: "mechanical",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { mechanical: 1, any: 1 },
@@ -113,8 +109,6 @@ const STANDING_RITUAL = testCard({
 
 const DISCOUNT_FACE = testFace({
   id: "face-test-silence-discount",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
   onRoll: [{ type: "play-cost-discount", amount: 1 }],
 });
@@ -127,7 +121,6 @@ const FOLLOW_UP_ATTACK = testAttack({
 });
 const FOLLOW_UP_BODY = testCreature({
   id: "creature-test-silence-follow-up",
-  attributes: ["mechanical"],
   attacks: [FOLLOW_UP_ATTACK],
 });
 

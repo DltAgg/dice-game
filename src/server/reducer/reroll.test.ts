@@ -29,21 +29,16 @@ import { reduce } from "./reduce.js";
 const REROLL = testCard({
   id: "card-test-reroll",
   playCost: {},
-  attribute: "mechanical",
   effect: { effects: [{ type: "optional-reroll-die" }] },
 });
 
 const DUAL_PIP = testFace({
   id: "face-test-reroll-dual",
-  kind: "natural",
-  symbol: "mechanical",
   pips: { mechanical: 1, luminar: 1 },
 });
 
 const FORGE_DISCOUNT_STANCE = testFace({
   id: "face-test-reroll-forge-discount",
-  kind: "synthetic",
-  symbol: "mechanical",
   pips: { mechanical: 2 },
   whileShowing: [{ type: "forge-discount", amount: 1 }],
 });
@@ -112,7 +107,7 @@ function shieldShowingReady(landFace: FaceCardId, landSlot: number): GameState {
   state = installSlotFace(state, dieId, 0, TEST_SHIELD_FACE_ID);
   state = installSlotFace(state, dieId, landSlot, landFace);
   state = withDie(state, dieId, { rolledSlotIndex: 0 });
-  return withDieResult(state, dieId, "shield");
+  return withDieResult(state, dieId, "martial");
 }
 
 function playRerollOntoDie(state: GameState, dieId: DieId): GameState {
@@ -168,11 +163,7 @@ describe("[Reroll]", () => {
     );
 
     expect(whileShowingTotals(after, P1).forgeDiscount).toBeGreaterThanOrEqual(1);
-    expect(
-      Object.values(after.symbols).filter(
-        (symbol) => symbol.sourceDieId === dieId && symbol.symbol === "shield",
-      ),
-    ).toHaveLength(0);
+    expect(after.symbols[asSymbolInstanceId(`given-reroll-${dieId}-martial`)]).toBeUndefined();
   });
 
   it("changes the showing face instead of only re-firing Stamp", () => {

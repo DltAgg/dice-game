@@ -13,7 +13,7 @@ import {
 import type { CreatureState } from "../model/creatures.js";
 import { type DieId, type FaceCardId, type PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { isAttributeSymbol, SHIELD, type SymbolInstance } from "../model/symbols.js";
+import { isAttributeSymbol, type SymbolInstance } from "../model/symbols.js";
 import {
   handOf,
   canAffordForge,
@@ -219,13 +219,7 @@ function forgeCards(state: GameState, playerId: PlayerId, policy: AutoplayPolicy
     const plan = shieldSlotsFor(current, playerId, definition.forge.faces);
     if (plan === undefined) continue;
 
-    const faceCardId = resolveFaceForForge(
-      current,
-      playerId,
-      definition.forge.kind,
-      definition.forge.attribute,
-      definition,
-    );
+    const faceCardId = resolveFaceForForge(current, playerId, definition);
     if (faceCardId === null) continue;
 
     const result = advance(current, {
@@ -248,11 +242,11 @@ function shieldSlotsFor(
   faces: number,
 ): { readonly dieId: DieId; readonly slotIndexes: readonly number[] } | undefined {
   for (const die of diceOf(state, playerId)) {
-    const shields = die.slots
-      .filter((slot) => getFaceCard(slot.faceCardId)?.symbol === SHIELD)
+    const slots = die.slots
+      .filter((slot) => getFaceCard(slot.faceCardId) !== undefined)
       .map((slot) => slot.index);
-    if (shields.length >= faces) {
-      return { dieId: die.id, slotIndexes: shields.slice(0, faces) };
+    if (slots.length >= faces) {
+      return { dieId: die.id, slotIndexes: slots.slice(0, faces) };
     }
   }
   return undefined;
@@ -442,22 +436,12 @@ function resolvePending(state: GameState): GameState {
       pending.target === "own-die"
         ? pending.controllerId
         : opponentOf(state, pending.controllerId);
-    const faceCardId = resolveFaceForForge(
-      state,
-      pending.controllerId,
-      pending.kind,
-      pending.attribute,
-    );
+    const faceCardId = resolveFaceForForge(state, pending.controllerId);
     if (faceCardId === null) {
       throw new Error("autoplay: no face for forge-faces");
     }
     for (const die of diceOf(state, ownerId)) {
-      const slotIndexes = preferredSlotsForForgeFaces(
-        die,
-        pending.attribute,
-        pending.faces,
-        state.config,
-      );
+      const slotIndexes = preferredSlotsForForgeFaces(die, pending.faces);
       if (slotIndexes === null) continue;
       const result = advance(state, {
         type: "RESOLVE_FORGE_FACES",
@@ -636,17 +620,17 @@ function resolvePending(state: GameState): GameState {
     const tactics = deck.flatMap((id) => {
       const card = state.cards[id];
       const definition = card === undefined ? undefined : getCard(card.cardId);
-      return definition?.type === "ritual" ? [{ id, attribute: definition.attribute }] : [];
+      return definition?.ritual !== undefined ? [id] : [];
     });
     const first = tactics[0];
-    const second = tactics.find((candidate) => candidate.attribute !== first?.attribute);
+    const second = tactics[1];
     if (first === undefined || second === undefined) {
       throw new Error("autoplay: no dark-pact pair");
     }
     const result = advance(state, {
       type: "RESOLVE_DARK_PACT",
       playerId: pending.controllerId,
-      cardInstanceIds: [first.id, second.id],
+      cardInstanceIds: [first, second],
     });
     if (!result.ok) {
       throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_DARK_PACT`);

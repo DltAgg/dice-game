@@ -1,50 +1,13 @@
-import {
-  DUAL_KIND_ATTRIBUTES,
-  isAttribute,
-  type Attribute,
-} from "../model/attributes.js";
-import type { DieFaceLayout, FaceCardDefinition, ForgeableFaceKind, StartingDiceLayout } from "../model/dice.js";
+import type { DieFaceLayout, FaceCardDefinition, StartingDiceLayout } from "../model/dice.js";
 import { asFaceCardId, type FaceCardId } from "../model/ids.js";
-import { SHIELD, type SymbolType } from "../model/symbols.js";
 import faceOrder from "./faces/_order.json";
 import { catalogueFromModules } from "./catalogueLoader.js";
 import { lookupOverlayFace } from "./runtimeOverlay.js";
 
 /**
- * Face cards backing die faces (spec `004` / `028`).
- *
- * Basics are starting-die identity faces: natural faces for all eight
- * attributes, plus untyped Shield. Tag Skirmish named specials are the
- * technique faces (Strike, Guard, Heavy, …). Identity naturals omit
- * `technique`. Face `onAbsorb` stays empty.
+ * Face cards backing die faces (spec `004` / `028` / `030`).
+ * A face is a named card. It is not natural, synthetic, an attribute, or Shield.
  */
-
-export const naturalFaceId = (attribute: Attribute): FaceCardId =>
-  asFaceCardId(`face-natural-${attribute}`);
-
-/**
- * Starting-die identity only: naturals for every attribute. There is no
- * canonical `face-synthetic-<attr>` — forging names a special from the pool.
- */
-export const faceIdFor = (kind: ForgeableFaceKind, attribute: Attribute): FaceCardId => {
-  if (kind === "natural") {
-    return naturalFaceId(attribute);
-  }
-  throw new Error(
-    `there is no canonical synthetic face for "${attribute}"; name a special from the owner's pool`,
-  );
-};
-
-/** Shield is the one untyped starting face (bible §10 / starting dice). */
-export const SHIELD_FACE_ID: FaceCardId = asFaceCardId("face-untyped-shield");
-
-export const faceIdForSymbol = (symbol: SymbolType): FaceCardId => {
-  if (symbol === SHIELD) return SHIELD_FACE_ID;
-  if (isAttribute(symbol)) return naturalFaceId(symbol);
-  throw new Error(
-    `starting dice have no identity face for "${symbol}"; Shield and attribute naturals are the only basics`,
-  );
-};
 
 export const TECHNIQUE_STRIKE: FaceCardId = asFaceCardId("face-natural-technique-strike");
 export const TECHNIQUE_GUARD: FaceCardId = asFaceCardId("face-natural-technique-guard");
@@ -63,6 +26,19 @@ export const GRAPPLER_GUARD: FaceCardId = asFaceCardId("face-natural-grappler-gu
 export const GRAPPLER_MOVEMENT: FaceCardId = asFaceCardId("face-natural-grappler-movement");
 export const GRAPPLER_TAG: FaceCardId = asFaceCardId("face-natural-grappler-tag");
 
+export const MAGNUS_JAB: FaceCardId = asFaceCardId("face-natural-magnus-jab");
+export const MAGNUS_GRAB: FaceCardId = asFaceCardId("face-natural-magnus-grab");
+export const MAGNUS_LARIAT: FaceCardId = asFaceCardId("face-natural-magnus-lariat");
+export const MAGNUS_HEAVY: FaceCardId = asFaceCardId("face-natural-magnus-heavy");
+export const VEGA_JAB: FaceCardId = asFaceCardId("face-natural-vega-jab");
+export const VEGA_KICK: FaceCardId = asFaceCardId("face-natural-vega-kick");
+export const VEGA_DASH: FaceCardId = asFaceCardId("face-natural-vega-dash");
+export const VEGA_RUSH: FaceCardId = asFaceCardId("face-natural-vega-rush");
+export const RYU_JAB: FaceCardId = asFaceCardId("face-natural-ryu-jab");
+export const RYU_PROJECTILE: FaceCardId = asFaceCardId("face-natural-ryu-projectile");
+export const RYU_FOCUS: FaceCardId = asFaceCardId("face-natural-ryu-focus");
+export const RYU_CHARGE: FaceCardId = asFaceCardId("face-natural-ryu-charge");
+
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);
 
@@ -70,47 +46,22 @@ export const FACE_CARDS: Readonly<Record<string, FaceCardDefinition>> = loadedFa
 export const getFaceCard = (id: FaceCardId): FaceCardDefinition | undefined =>
   lookupOverlayFace(id) ?? FACE_CARDS[id];
 
-/** Catalogue order: starting naturals, untyped Shield, then named specials. */
+/** Catalogue order. */
 export const ALL_FACE_CARDS: readonly FaceCardDefinition[] = loadedFaces.list;
 
-/** Starting naturals for all eight attributes, plus untyped Shield. */
-export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
-  0,
-  DUAL_KIND_ATTRIBUTES.length + 1,
-);
+/** There is no blank Shield face. Every catalogue face is a named face. */
+export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = [];
 
-/**
- * Packable named specials: Tag Skirmish technique faces. Everything after
- * the opening basics.
- */
-export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS.slice(
-  DUAL_KIND_ATTRIBUTES.length + 1,
-);
-
-/**
- * Default six-symbol opening die for **engine tests** (`legacyStartingLayout`).
- * Live matches must pass per-loadout `startingDice` — do not fill this in
- * createMatch / persistence.
- */
-export const DEFAULT_BASIC_LAYOUT: readonly SymbolType[] = [
-  "martial",
-  "wild",
-  "arcane",
-  "luminar",
-  SHIELD,
-  SHIELD,
-];
-
-/** @deprecated Test alias for `DEFAULT_BASIC_LAYOUT`. */
-export const STARTING_DIE_SYMBOLS = DEFAULT_BASIC_LAYOUT;
+/** Named faces a deck can pack. */
+export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS;
 
 const basicDieLayout = (): DieFaceLayout => [
-  naturalFaceId("martial"),
-  naturalFaceId("wild"),
-  naturalFaceId("arcane"),
-  naturalFaceId("luminar"),
-  SHIELD_FACE_ID,
-  SHIELD_FACE_ID,
+  TECHNIQUE_STRIKE,
+  TECHNIQUE_GUARD,
+  TECHNIQUE_HEAVY,
+  TECHNIQUE_SPECIAL,
+  TECHNIQUE_TAG,
+  TECHNIQUE_ASSIST,
 ];
 
 /** Expands `DEFAULT_BASIC_LAYOUT` into two identical dice (engine tests only). */

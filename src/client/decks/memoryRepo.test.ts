@@ -31,7 +31,7 @@ import {
 } from "./prototype.js";
 import { validateSavedDeck } from "./validate.js";
 
-const TAG_SQUAD_IDS = ["creature-korr", "creature-magnus", "creature-nyx"] as const;
+const TAG_SQUAD_IDS = ["creature-vega", "creature-magnus", "creature-ryu"] as const;
 
 describe("memory DeckRepository", () => {
   it("lists the Tag Skirmish builtin loadout", () => {

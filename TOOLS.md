@@ -37,7 +37,7 @@ npm run typecheck && npm test && npm run lint
 | Face catalogue | `src/server/content/faces/*.json` (ids in `faces.ts`) |
 | Builtin loadouts | `src/server/content/loadouts/*.json` |
 | Effect AST | `src/server/ast/` (legacy union still in `src/server/model/effects.ts`) |
-| Card / forge / ritual types | `src/server/model/cards.ts` |
+| Card types (`response` / `modify`), lifecycle, modify subject | `src/server/model/cards.ts` |
 | Creature / attack types | `src/server/model/creatures.ts` |
 | Die / face types | `src/server/model/dice.ts` |
 | Reducer | `src/server/reducer/reduce.ts` |
@@ -92,7 +92,7 @@ Details: `docs/specs/007-peerjs.md`.
 
 | File | Purpose |
 |---|---|
-| `src/client/ui/config.ts` | Toggle deck-builder card art (`showDeckBuilderCardArt`) |
+| `src/client/ui/config.ts` | Deck-builder card art, opening dice, and cost curve (`showDeckBuilderCardArt`, `showDeckBuilderOpeningDice`, `showDeckBuilderCostCurve`) |
 
 ## Agent skills (project)
 
@@ -110,7 +110,7 @@ Details: `docs/specs/007-peerjs.md`.
 
 | Agent | Use when |
 |---|---|
-| `.cursor/agents/card-designer.md` | Design then author tactics / rituals / faces / creatures (unique slot first); new mechanics → engine-developer |
+| `.cursor/agents/card-designer.md` | Design then author Fighters, named faces, Responses, and Modifies; redirect a request that breaks that model; new mechanics → engine-developer |
 | `.cursor/agents/engine-developer.md` | Implementing rules in `src/server` (hooks, reducer, resolution, statuses) |
 | `.cursor/agents/match-ui.md` | Lobby / MatchBoard / deck builder / stores / PeerJS adapters |
 | `.cursor/agents/deck-designer.md` | Constructed loadouts; orphan / attribute-identity critique |

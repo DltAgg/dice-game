@@ -11,19 +11,15 @@ import {
 } from "./cardText.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
-  const attribute = overrides.attribute ?? "arcane";
   const { forge, ...rest } = overrides;
   return {
     id: asCardId("card-example"),
     name: "Example",
     playCost: { arcane: 1 },
-    type: "instant",
+    type: "modify",
     subtypes: [],
-    attribute,
     forge: forge ?? {
       faces: 1,
-      kind: "synthetic",
-      attribute,
       target: "own-die",
     },
     rulesText: "Do something.",
@@ -34,50 +30,43 @@ function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
 describe("English card printing", () => {
   it("prints the type line with subtypes and attribute", () => {
     const card = exampleCard({
-      type: "ritual",
+      type: "modify",
       subtypes: ["instant"],
-      attribute: "arcane",
     });
-    expect(formatTypeLine(card)).toBe("[Ritual / Instant / Arcane]");
+    expect(formatTypeLine(card)).toBe("[Modify / Instant]");
   });
 
   it("prints the forge region with kind, attribute and target", () => {
     const forge: ForgeRegion = {
       faces: 1,
-      kind: "synthetic",
-      attribute: "darkness",
       target: "own-die",
     };
-    expect(formatForgeLine(forge)).toBe("[Forge] 1 face [Synthetic] [Darkness] on your die");
+    expect(formatForgeLine(forge)).toBe("[Forge] 1 face on your die");
   });
 
   it("prints multi-face natural forges on the opponent's die", () => {
     expect(
       formatForgeLine({
         faces: 2,
-        kind: "natural",
-        attribute: "martial",
         target: "opponent-die",
       }),
-    ).toBe("[Forge] 2 faces [Natural] [Martial] on the opponent's die");
+    ).toBe("[Forge] 2 faces on the opponent's die");
   });
 
   it("appends forge.rulesText after the generated forge sentence", () => {
     expect(
       formatForgeLine({
         faces: 1,
-        kind: "natural",
-        attribute: "martial",
         target: "own-die",
         effects: [{ type: "next-attack-bonus", amount: 1 }],
         rulesText: "[Empower 1].",
       }),
-    ).toBe("[Forge] 1 face [Natural] [Martial] on your die. [Empower 1].");
+    ).toBe("[Forge] 1 face on your die. [Empower 1].");
   });
 
   it("prints Active when for ritual requirements", () => {
     const card = exampleCard({
-      type: "ritual",
+      type: "modify",
       subtypes: ["instant"],
       ritual: { activeWhen: { arcane: 2 }, effects: [] },
     });
@@ -86,18 +75,17 @@ describe("English card printing", () => {
 
   it("prints a single-token Active when without repeating the attribute", () => {
     const card = exampleCard({
-      type: "ritual",
+      type: "modify",
       subtypes: ["continuous"],
-      attribute: "mechanical",
       ritual: { activeWhen: { mechanical: 1 }, effects: [] },
     });
-    expect(formatTypeLine(card)).toBe("[Ritual / Continuous / Mechanical]");
+    expect(formatTypeLine(card)).toBe("[Modify / Continuous]");
     expect(formatRequirementLine(card)).toBe("[Active when: Mechanical]");
   });
 
   it("prints mixed-attribute Active when as Attr + Attr", () => {
     const card = exampleCard({
-      type: "ritual",
+      type: "modify",
       subtypes: ["instant"],
       ritual: { activeWhen: { arcane: 1, corruption: 1 }, effects: [] },
     });
@@ -106,11 +94,10 @@ describe("English card printing", () => {
 
   it("prints Requires for non-ritual pile gates", () => {
     const card = exampleCard({
-      type: "instant",
-      attribute: "mechanical",
+      type: "modify",
       effect: { requires: { mechanical: 2 }, effects: [] },
     });
-    expect(formatTypeLine(card)).toBe("[Instant / Mechanical]");
+    expect(formatTypeLine(card)).toBe("[Modify]");
     expect(formatRequirementLine(card)).toBe("[Requires: 2 x Mechanical]");
   });
 
@@ -120,7 +107,7 @@ describe("English card printing", () => {
 
   it("prints Active when above the effect body for rituals", () => {
     const card = exampleCard({
-      type: "ritual",
+      type: "modify",
       subtypes: ["instant"],
       rulesText: "Return cards from your graveyard to your hand.",
       ritual: { activeWhen: { darkness: 2 }, effects: [] },
@@ -134,7 +121,7 @@ describe("English card printing", () => {
 
   it("prints Spend below Active when when the ritual burns the pile", () => {
     const card = exampleCard({
-      type: "ritual",
+      type: "modify",
       subtypes: ["instant"],
       rulesText: "[Search 2] Instant or Ritual cards.",
       ritual: {
@@ -153,8 +140,7 @@ describe("English card printing", () => {
 
   it("inspect effect lines omit header play cost and gate already shown elsewhere", () => {
     const card = exampleCard({
-      type: "instant",
-      attribute: "mechanical",
+      type: "modify",
       rulesText: "[Strike 2].",
       effect: { requires: { mechanical: 2 }, effects: [] },
     });
@@ -190,7 +176,7 @@ describe("English card printing", () => {
     expect(
       formatRequirementLine(
         exampleCard({
-          type: "ritual",
+          type: "modify",
           subtypes: ["continuous"],
           ritual: { activeWhen: { arcane: 1, any: 2 }, effects: [] },
         }),
@@ -199,7 +185,7 @@ describe("English card printing", () => {
     expect(
       formatRequirementLine(
         exampleCard({
-          type: "instant",
+          type: "modify",
           effect: { requires: { any: 1 }, effects: [] },
         }),
       ),

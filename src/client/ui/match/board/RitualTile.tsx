@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 import {
   formatAttackCost,
   formatEffectRegion,
-  formatForgeLine,
   formatRequirementLine,
   formatTypeLine,
   getCard,
@@ -115,9 +114,6 @@ export function RitualTile({
               <div className="mt-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 <p>
                   <KeywordRichText text={formatTypeLine(def)} />
-                </p>
-                <p className="mt-1 text-stone-500">
-                  <KeywordRichText text={formatForgeLine(def.forge)} />
                 </p>
                 <div
                   className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"

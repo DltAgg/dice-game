@@ -1,9 +1,11 @@
 # Mechanic–archetype catalogue
 
-> **Era note:** This tracker reflects the **previous pile-fuel skirmish** set and
-> playtests from that era. The attribute pile and legendary win are gone; a future
-> tag-fighter design is not documented here. Use for historical feel / retarget
-> archaeology — do not treat it as canon for the next game.
+> **Era note:** Rows below are the **previous pile-fuel skirmish**. Do not
+> author new Fighters, faces, cards, or decks to match them. Current content
+> model: [`docs/specs/030-offensive-control.md`](./specs/030-offensive-control.md)
+> and `.cursor/skills/author-content/design.md` (one shared deck, Response and
+> Modify, named dice, no attribute pie). Use this file only as historical
+> feel archaeology.
 
 Living playtest tracker: **which mechanic, in which window, feels like which
 deck style.** Use it to keep Aggro, Control, Tempo, Combo, Burn, and Support
@@ -13,8 +15,8 @@ This is **not**:
 
 | Doc | Owns |
 |---|---|
-| [`KEYWORDS.md`](./KEYWORDS.md) | Print verbs and tokens |
-| [`.cursor/skills/author-content/design.md`](../.cursor/skills/author-content/design.md) | Attribute **exclusive** verbs (who may print Insight / Mill / Frenzy / …) |
+| [`KEYWORDS.md`](./KEYWORDS.md) | Print verbs and tokens. Current section only; leftover tables are not the pie |
+| [`.cursor/skills/author-content/design.md`](../.cursor/skills/author-content/design.md) | Current layers (die, Fighter, Response, Modify, Meter, Tag, Assist) |
 | [`OPEN_DESIGN.md`](./OPEN_DESIGN.md) | Unresolved **rules** questions |
 | [`RULEBOOK.md`](./RULEBOOK.md) | How the game currently plays |
 | Live JSON | Catalogue truth (what is printed) |
@@ -27,10 +29,10 @@ A shared opcode can still be the wrong **feel**. `[Generate]` on a face’s
 absorb, play region, ritual activate). Do not log “Generate = Aggro” without
 the window.
 
-## Archetypes (homes)
+## Archetypes (homes) — pile-era archaeology
 
-From spec `002` / `design.md`. Builtin lists today are Tempo and Control;
-the others still have identity even when their JSON loadout is empty.
+Not the current deck model. A team is three Fighters and one shared deck
+(spec `030`). The table is kept so old playtest rows stay readable.
 
 | Archetype | Attributes | Wins by (feel) |
 |---|---|---|

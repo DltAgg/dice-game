@@ -1,10 +1,10 @@
 import {
   useRef,
   useState,
+  type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
 import {
-  canAbsorbSymbol,
   currentLife,
   formatAttackFuel,
   formatAttackLine,
@@ -13,7 +13,6 @@ import {
   getCard,
   getCreatureDefinition,
   isCreatureSilenced,
-  SHIELD,
   type AttackId,
   type CreatureId,
   type CreatureState,
@@ -47,6 +46,7 @@ export function CreatureTile({
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
+  footer,
 }: {
   state: GameState;
   creature: CreatureState;
@@ -54,6 +54,8 @@ export function CreatureTile({
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
+  /** Extra content inside the fighter box, after attacks. */
+  footer?: ReactNode;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -70,19 +72,6 @@ export function CreatureTile({
   const silenced = isCreatureSilenced(state, creature.id);
   const life = currentLife(creature);
   const selectedAttacker = intent.kind === "attack" && intent.attackerId === creature.id;
-  const absorbSymbolId = intent.kind === "absorb" ? intent.symbolId : undefined;
-  const absorbPip =
-    absorbSymbolId !== undefined ? state.symbols[absorbSymbolId] : undefined;
-  const absorbHere =
-    absorbPip !== undefined &&
-    absorbPip.symbol === SHIELD &&
-    absorbSymbolId !== undefined &&
-    canAbsorbSymbol(state, creature.ownerId, absorbSymbolId, creature.id);
-  const absorbBlocked =
-    absorbPip !== undefined &&
-    absorbPip.symbol === SHIELD &&
-    !absorbHere &&
-    creature.ownerId === state.activePlayerId;
   const equipment = creature.equipmentIds.flatMap((id) => {
     const instance = state.cards[id];
     if (instance === undefined) return [];
@@ -98,11 +87,9 @@ export function CreatureTile({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={
-        selectedAttacker || absorbHere
+        selectedAttacker
           ? "relative w-52 rounded border-2 border-[var(--accent)] bg-stone-900 p-3 shadow-[0_0_12px_rgba(212,168,75,0.25)]"
-          : absorbBlocked
-            ? "relative w-52 rounded border border-stone-800 bg-stone-950 p-3 opacity-60"
-            : "relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
+          : "relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
       }
     >
       {pairPos !== null &&
@@ -118,7 +105,7 @@ export function CreatureTile({
                 {isLegendary && <LegendaryBadge />}
               </p>
               <p className="mt-1 text-xs text-stone-400">
-                HP {life}/{def.life} · Shield {creature.shields}
+                HP {life}/{def.life}
                 {creature.attackPreventCount > 0
                   ? ` · Prevent ${creature.attackPreventCount}`
                   : ""}
@@ -128,7 +115,7 @@ export function CreatureTile({
               </p>
               <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
                 {creature.position}
-                {isLegendary ? " · Legendary" : ""} · {def.attributes.join(", ")}
+                {isLegendary ? " · Legendary" : ""}
               </p>
               <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
                 {def.passiveRulesText !== "" && (
@@ -157,7 +144,7 @@ export function CreatureTile({
               role="tooltip"
             >
               <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
-                Equipment
+                Attached
               </p>
               {equipment.length === 0 ? (
                 <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
@@ -201,7 +188,7 @@ export function CreatureTile({
           )}
         </p>
         <p className="mt-1 text-xs text-stone-400">
-          HP {life}/{def.life} · Shield {creature.shields}
+          HP {life}/{def.life}
           {creature.attackPreventCount > 0
             ? ` · Prevent ${creature.attackPreventCount}`
             : ""}{" "}
@@ -209,15 +196,16 @@ export function CreatureTile({
         </p>
         <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
           {creature.position}
-          {isLegendary ? " · Legendary" : ""} · {def.attributes.join(", ")}
+          {isLegendary ? " · Legendary" : ""}
         </p>
         {equipment.length > 0 && (
-          <p className="mt-1 text-[0.65rem] text-amber-200/80">
-            +{equipment.length} equipment
-          </p>
-        )}
-        {absorbHere && (
-          <p className="mt-1 text-[0.65rem] font-medium text-[var(--accent)]">Absorb Shield here</p>
+          <ul className="mt-1 space-y-0.5">
+            {equipment.map(({ instanceId, def: equipDef }) => (
+              <li key={instanceId} className="text-[0.65rem] text-amber-200/80">
+                {equipDef.name}
+              </li>
+            ))}
+          </ul>
         )}
       </button>
 
@@ -254,6 +242,7 @@ export function CreatureTile({
           </button>
         </div>
       )}
+      {footer}
     </div>
   );
 }

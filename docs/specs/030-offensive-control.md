@@ -200,9 +200,11 @@ requirement, whether a Technique is available, or how an input is read. It
 does not replace the Fighter and it is not a global moveset.
 
 Still from spec `029`: a simple move is the showing face’s Primary effect.
-A Technique is an ordered pair — the Fighter’s primary face, plus a
-secondary face or face type — and the secondary face’s Secondary effect can
-change the result. Face types have no damage or legality of their own.
+A Technique is an ordered pair — the Fighter’s primary face, plus one other
+face matched by name, by face type, or by sequence role — and the secondary
+face’s Secondary effect can change the result. The face and the Technique
+each carry their own starter, extender, or finisher. A Fighter has no basic
+or special attack. Face types have no damage or legality of their own.
 
 ### Reroll
 
@@ -550,20 +552,102 @@ discard excess cards even if a number is present.
   named Fighter must be on the team and still living
   (`fighterRestriction`). “On the team even while KOed” is not a separate
   rule yet.
-- Dice customization, and how dice are assembled with the team and the
-  deck.
 
-## Deferred
+## Fighter dice
 
-Do not decide these here.
+Confirmed 2026-10-03, except where a line is marked as an initial
+playtest rule or deferred.
 
-### Dice customization
+### Fighter dice
 
-Initial dice, face counts, legal face pools, how dice relate to a deck,
-how new faces are acquired, and how a permanent face is gained outside a
-match. In a match, a die modification is permanent. That is the confirmed
-rule. It is not the rest of this system. The team-plus-one-deck structure
-is confirmed above. How the dice are built into that loadout is not.
+Each Fighter has one die. The Fighter defines that die. The player does
+not build it while constructing the deck.
+
+### Base die configuration
+
+`baseDie` on the Fighter is the configuration a match starts from.
+
+### Current die configuration
+
+The slots in play are the current die. At match start they are a copy
+of the base die.
+
+### In-match dice modification
+
+A card with Modify subject `die` rewrites a current slot. That write
+lasts for the rest of the match. There is no temporary die change.
+`fighterRestriction`, when set, limits the write to that Fighter's die.
+
+### Roll modification vs die modification
+
+A card with Modify subject `roll` changes which face is showing. It
+does not write the slots.
+
+### Moveset cards
+
+A Moveset card is a Modify subject `moveset`. A generic one omits a
+Fighter requirement and may apply to more than one Fighter. There is
+no separate Moveset engine. When it resolves, the card stays attached
+to that Fighter for the rest of the match, the same way equipment stays
+on a creature, so the modified moveset remains visible. A negated
+moveset card goes to the graveyard and does not attach.
+
+### Fighter-specific Moveset cards
+
+A Fighter-specific Moveset sets `fighterRestriction`. It may enable a
+technique on that Fighter and, when the card says so, rewrite that
+Fighter's current die. It does not modify another Fighter's die.
+
+### Rolling all three dice
+
+On the roll, every die on the team is rolled: Active, Reserve, and
+KOed.
+
+### KOed Fighter dice
+
+Initial playtest rule: a KOed Fighter cannot become Active and cannot
+Tag. Their die still rolls, and they can still Assist. No extra die,
+reroll, Meter, or card is granted for the KO. Three KOed Fighters
+still loses when `wipeVictory` is on.
+
+### Rolled face instances
+
+Each result stays on the die that rolled it. Two dice showing the same
+face are two inputs.
+
+### Primary vs secondary face usage
+
+A face used as the primary input is not the same use as that face as
+the secondary input. Primary and secondary effects stay on the face.
+
+### Simple Actions vs Techniques
+
+A simple Action uses the Active Fighter's own die. A Technique uses
+that die as the primary face and one other die owned by the same
+player as the secondary face. An opponent's die is not an input.
+
+### Input reuse
+
+One rolled face cannot fill both the primary and the secondary of the
+same Technique. A later, different Action in the same sequence may use
+that face again. Dice are not action points. The live tag preset does
+not spend a die when a face is used. The same Action id still cannot
+be declared twice in one sequence.
+
+### Match reset
+
+The next match builds each die from its base again. Nothing carries
+from one match to the next.
+
+### Deferred
+
+- The final face count and the final face pool. `facesPerDie` is the
+  playtest length. It is not a final size.
+- The Moveset card list and its numbers.
+- Building dice during deck construction.
+- Keeping die changes after the match, or gaining a face outside a
+  match.
+- A later limit on Assist from a KOed Fighter.
 
 ## Open
 
@@ -584,8 +668,6 @@ Do not implement these as if they were decided.
 - The timing condition on a particular Assist, beyond “that Fighter’s
   Assist says when.”
 - Who starts as Aggressor at the beginning of the match.
-- Which dice are inputs, and whether a Technique’s secondary face must be
-  one of yours.
 - Anything not listed under Decided or To test.
 
 ## Engine note
@@ -615,11 +697,23 @@ Aligned with this revision:
   versus persistent use the existing deck, hand, graveyard, and in-play
   lists. `deckSize` null still checks the previous range. `maxHandSize`
   is stored and does not discard.
+- Each die stores `baseSlots` and `boundCreatureId`. Current slots start
+  as a copy of the base. A die Modify writes slots only. A roll Modify
+  writes `rolledSlotIndex` only. `facesPerDie` is the playtest length
+  (default 6). The next `createMatch` builds from the base again.
+- `ROLL_DICE` walks every die on the team, including a KOed Fighter.
+  `secondaryDiceFor` returns other dice of the same player. The primary
+  die is excluded, so one result cannot fill both inputs.
+- `setActiveFighter` refuses a defeated Fighter. A die or moveset Modify
+  with `fighterRestriction` must match that Fighter.
+- The tag preset sets `consumeDiceOnFaceActions` off. Dice are inputs,
+  not action points.
 
 Still not this document:
 
-- `consumeDiceOnFaceActions` still spends a face for a Use Face that has
-  no sequence role.
+- `consumeDiceOnFaceActions` still spends a die when that flag is on.
+  The default preset leaves the flag on so older tests keep that
+  leftover. The tag preset turns it off.
 - `sequenceRole` is still the continuation check (open takes a starter;
   combo takes an extender or finisher). That table was not re-specified.
 - `seizesOffense` still takes offensive control by itself.
@@ -632,5 +726,6 @@ Still not this document:
   leaves them in place unless `passesInitiative` or a KO says otherwise.
 
 `src/server/reducer/offensiveControl.test.ts`,
-`src/server/reducer/tagFighter.test.ts`, and
-`src/server/reducer/cardBehavior.test.ts` lock this slice.
+`src/server/reducer/tagFighter.test.ts`,
+`src/server/reducer/cardBehavior.test.ts`, and
+`src/server/reducer/diceIdentity.test.ts` lock this slice.

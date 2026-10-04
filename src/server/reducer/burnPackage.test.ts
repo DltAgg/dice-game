@@ -22,14 +22,13 @@ import {
 const HEAL_ON_LUMINAR = testCard({
   id: "card-test-burn-heal-luminar",
   playCost: { luminar: 2, any: 1 },
-  attribute: "luminar",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
     abilities: [
       {
         type: "on-absorb",
-        symbols: ["luminar", "shield"],
+        symbols: ["luminar"],
         absorberRelation: "ally",
         oncePerTurn: true,
         effects: [{ type: "heal", amount: 1, target: { kind: "source-creature" } }],
@@ -41,8 +40,7 @@ const HEAL_ON_LUMINAR = testCard({
 const GENERATE_OVERLOAD = testCard({
   id: "card-test-burn-overload-generate",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: {
     faceSymbols: ["mechanical"],
     onRoll: [{ type: "generate-symbol", symbol: "mechanical", amount: 1 }],
@@ -52,8 +50,7 @@ const GENERATE_OVERLOAD = testCard({
 const STANDING_RITUAL = testCard({
   id: "card-test-burn-standing-ritual",
   playCost: { mechanical: 1, any: 1 },
-  attribute: "mechanical",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { mechanical: 1, any: 1 },

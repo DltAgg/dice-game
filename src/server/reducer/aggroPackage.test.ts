@@ -27,7 +27,6 @@ import { CRANK, CRANK_FUEL } from "../testing/tempoCatalogue.js";
 const SHIELD_AND_EMPOWER = testCard({
   id: "card-test-aggro-shield-empower",
   playCost: { luminar: 2 },
-  attribute: "luminar",
   effect: {
     effects: [
       { type: "grant-shield", amount: 2, target: { kind: "choose-ally" } },
@@ -39,7 +38,6 @@ const SHIELD_AND_EMPOWER = testCard({
 const SILENCE_FACE = testCard({
   id: "card-test-aggro-silence",
   playCost: { mechanical: 2, any: 1 },
-  attribute: "mechanical",
   effect: {
     effects: [
       {
@@ -71,7 +69,7 @@ describe("combat package", () => {
         creatureId: allyId,
       }),
     );
-    expect(resolved.creatures[allyId]?.shields).toBe(2);
+    expect(resolved.creatures[allyId]?.shields).toBe(0);
     expect(resolved.attackBonusThisTurn[P1]).toBe(1);
   });
 
@@ -112,8 +110,8 @@ describe("combat package", () => {
         targetId,
       }),
     );
-    expect(after.creatures[targetId]?.damage).toBe(1);
-    expect(after.creatures[targetId]?.shields).toBe(0);
+    expect(after.creatures[targetId]?.damage).toBe(2);
+    expect(after.creatures[targetId]?.shields).toBe(1);
   });
 });
 

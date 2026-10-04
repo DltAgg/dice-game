@@ -64,7 +64,6 @@ import { MindControlModal } from "./modals/MindControlModal";
 import { OptionalBonusAttackModal } from "./modals/OptionalBonusAttackModal";
 import { OptionalOverchargeModal } from "./modals/OptionalOverchargeModal";
 import { OptionalRerollModal } from "./modals/OptionalRerollModal";
-import { OverchargeFacePick } from "./modals/OverchargeFacePick";
 import { OverloadFacePickModal } from "./modals/OverloadFacePickModal";
 import { PeekDeckModal } from "./modals/PeekDeckModal";
 import { ChooseEffectModePrompt } from "./modals/ChooseEffectModePrompt";
@@ -388,12 +387,6 @@ export function MatchBoard() {
     tryDispatch({ type: "PASS_PRIORITY", playerId: actingId });
   };
 
-  const beginForgeOrOvercharge = (kind: "forge" | "overcharge", card: CardInstance) => {
-    if (!canAct) return;
-    if (card.ownerId !== activeId || finished || pending !== null || phase !== "actions") return;
-    setIntent({ kind, cardInstanceId: card.id });
-  };
-
   const confirmForgeFace = (faceCardId: FaceCardId) => {
     if (
       intent.kind !== "forge" ||
@@ -455,6 +448,31 @@ export function MatchBoard() {
 
   const onAssistReserve = (reserveCreatureId: CreatureId) => {
     tryDispatch({ type: "ASSIST", playerId: activeId, reserveCreatureId });
+  };
+
+  const canEndSequence =
+    canAct &&
+    state.phase === "actions" &&
+    state.pendingDecision === null &&
+    state.offensiveState === "combo" &&
+    state.aggressorPlayerId === actingId;
+
+  const onEndSequence = () => {
+    tryDispatch({ type: "END_SEQUENCE", playerId: actingId });
+  };
+
+  const onUseFace = (creatureId: CreatureId) => {
+    tryDispatch({ type: "USE_FACE", playerId: actingId, creatureId });
+  };
+
+  const onUseTechnique = (creatureId: CreatureId, techniqueId: string, secondaryDieId: DieId) => {
+    tryDispatch({
+      type: "USE_TECHNIQUE",
+      playerId: actingId,
+      creatureId,
+      techniqueId,
+      secondaryDieId,
+    });
   };
 
   const localDeckId = mode === "host" ? p1DeckId : mode === "client" ? p2DeckId : null;
@@ -1210,23 +1228,6 @@ export function MatchBoard() {
           onCancel={clearIntent}
         />
       )}
-      {intent.kind === "overcharge" && (
-        <OverchargeFacePick
-          state={state}
-          playerId={activeId}
-          cardInstanceId={intent.cardInstanceId}
-          onPick={(faceCardId) =>
-            tryDispatch({
-              type: "OVERCHARGE_CARD",
-              playerId: activeId,
-              cardInstanceId: intent.cardInstanceId,
-              faceCardId,
-            })
-          }
-          onCancel={clearIntent}
-        />
-      )}
-
       {overloadNeedsFace && intent.kind === "play" && (
         <OverloadFacePickModal
           state={state}
@@ -1250,8 +1251,6 @@ export function MatchBoard() {
         <FacePickModal
           state={state}
           playerId={activeId}
-          kind={forgeDef.forge.kind}
-          attribute={forgeDef.forge.attribute}
           forgingCard={forgeDef}
           sourceCard={forgeDef}
           subtitle={`${forgeDef.name} forges ${formatForgeLine(forgeDef.forge)}. Pick a face from your face pool (or an already-installed copy) to represent it.`}
@@ -1282,6 +1281,8 @@ export function MatchBoard() {
           }
           onTag={onTagReserve}
           onAssist={onAssistReserve}
+          onUseFace={onUseFace}
+          onUseTechnique={onUseTechnique}
         />
         <FaceCardsInPlay
           state={state}
@@ -1304,8 +1305,10 @@ export function MatchBoard() {
           <PhaseBar
             state={state}
             canAct={canAct}
+            canEndSequence={canEndSequence}
             onGoToPhase={goToPhase}
             onEndTurn={endTurn}
+            onEndSequence={onEndSequence}
           />
         </div>
 
@@ -1329,6 +1332,8 @@ export function MatchBoard() {
           }
           onTag={onTagReserve}
           onAssist={onAssistReserve}
+          onUseFace={onUseFace}
+          onUseTechnique={onUseTechnique}
         />
         <FaceCardsInPlay
           state={state}
@@ -1474,8 +1479,6 @@ export function MatchBoard() {
                 reactionWindow={reactionPriorityLive}
                 selected={selectedHandCardId(intent)}
                 onPlay={beginPlay}
-                onForge={(card) => beginForgeOrOvercharge("forge", card)}
-                onOvercharge={(card) => beginForgeOrOvercharge("overcharge", card)}
                 onCancel={clearIntent}
               />
             </div>

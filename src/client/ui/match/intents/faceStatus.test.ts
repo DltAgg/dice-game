@@ -14,32 +14,22 @@ import {
 
 const PIERCE_FACE = testFace({
   id: "face-test-status-pierce",
-  kind: "synthetic",
-  symbol: "luminar",
   whileShowing: [{ type: "pierce", amount: 1 }],
 });
 const EMPOWER_FACE = testFace({
   id: "face-test-status-empower",
-  kind: "synthetic",
-  symbol: "luminar",
   whileShowing: [{ type: "empower", amount: 1 }],
 });
 const PLAY_DISCOUNT_FACE = testFace({
   id: "face-test-status-play-discount",
-  kind: "synthetic",
-  symbol: "arcane",
   whileShowing: [{ type: "play-discount", amount: 1 }],
 });
 const FORGE_DISCOUNT_FACE = testFace({
   id: "face-test-status-forge-discount",
-  kind: "synthetic",
-  symbol: "mechanical",
   whileShowing: [{ type: "forge-discount", amount: 1 }],
 });
 const CONVERT_FACE = testFace({
   id: "face-test-status-convert",
-  kind: "synthetic",
-  symbol: "arcane",
   convertRoll: true,
 });
 

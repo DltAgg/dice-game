@@ -108,7 +108,7 @@ export function ReplaceSyntheticFacePrompt({
                     </p>
                     <p className="text-xs capitalize text-stone-500">
                       {labelForDie(slot.dieId)} · slot {String(slot.slotIndex + 1)}
-                      {face !== undefined ? ` · ${face.kind} · ${face.symbol}` : ""}
+                      {face !== undefined ? ` · ${face.name}` : ""}
                     </p>
                     {status !== null && (
                       <p className="mt-1 text-[0.65rem] text-rose-300/90">{status}</p>
@@ -132,8 +132,6 @@ export function ReplaceSyntheticFacePrompt({
     <FacePickModal
       state={state}
       playerId={pending.controllerId}
-      kind="synthetic"
-      attribute={pending.attribute}
       eligibleIds={remaining}
       subtitle={`Install synthetic ${destLabel} ${String(nextIndex)} of ${String(pending.faces)} from your pool onto ${labelForDie(dieId)} (no forge-draw).`}
       onPick={(faceCardId) => {

@@ -13,15 +13,11 @@ import {
 
 const DUAL_PIP = testFace({
   id: "face-test-bank-dual-pip",
-  kind: "synthetic",
-  symbol: "luminar",
   pips: { luminar: 1, mechanical: 1 },
 });
 
 const DOUBLE_LUMINAR = testFace({
   id: "face-test-bank-double-luminar",
-  kind: "synthetic",
-  symbol: "luminar",
   pips: { luminar: 2 },
 });
 
@@ -69,7 +65,6 @@ function absorbedAttributeCounts(state: GameState, playerId: typeof P1 = P1) {
   const counts: Record<string, number> = {};
   for (const symbol of Object.values(state.symbols)) {
     if (symbol.ownerId !== playerId || symbol.status !== "absorbed") continue;
-    if (symbol.symbol === "shield") continue;
     counts[symbol.symbol] = (counts[symbol.symbol] ?? 0) + 1;
   }
   return counts;

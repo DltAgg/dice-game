@@ -1,6 +1,4 @@
 import {
-  attributeLabel,
-  formatFaceKind,
   getCard,
   hasLegalReactionOffer,
   uniqueBounceHosts,
@@ -194,9 +192,8 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       return "Waiting for the opponent to choose a face from their pool to install on your die.";
     }
     const pending = state.pendingDecision;
-    const kind = formatFaceKind(pending.kind);
     const where = pending.target === "own-die" ? "one of your dice" : "one of the opponent's dice";
-    return `Choose a ${kind} ${pending.attribute} face from your face pool, then install it on ${where} (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}).`;
+    return `Choose a face from your face pool, then install it on ${where} (${String(pending.faces)} ${pending.faces === 1 ? "copy" : "copies"}).`;
   }
   if (state.pendingDecision?.type === "replace-synthetic-face") {
     if (!isPendingChooser) {
@@ -336,11 +333,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       }
       return "Forge: choose which face card from your pool represents the new face.";
     case "overcharge": {
-      const instance = state.cards[intent.cardInstanceId];
-      const def = instance !== undefined ? getCard(instance.cardId) : undefined;
-      const attribute =
-        def !== undefined ? attributeLabel(def.attribute) : "attribute";
-      return `Choose a face card to Overcharge (every die showing it Generates +1 ${attribute} on roll).`;
+      return "Choose a face card to Overcharge (every die showing it Generates the card's play-cost pip on roll).";
     }
     default:
       break;
@@ -350,6 +343,6 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
     case "roll":
       return "Both players’ dice roll automatically. Each seat banks their own attributes and fires their On roll / overloads. Convert Choose one is picked by the die owner. Rituals cannot activate during roll.";
     case "actions":
-      return "Bank attribute pips into your pile (one click), grant Shield onto a creature, spend, attack, play tactics, forge, Overcharge, and activate ready rituals. End turn from the phase bar when finished.";
+      return "Bank attribute pips into your pile (one click), grant Shield onto a creature, spend, attack, play tactics, and activate ready rituals. End turn from the phase bar when finished.";
   }
 }

@@ -1,4 +1,3 @@
-import type { Attribute } from "./attributes.js";
 import type { StandingTrigger } from "./cards.js";
 import type { EffectDefinition } from "./effects.js";
 import type { FighterTechniqueDefinition } from "./fighterTechniques.js";
@@ -7,6 +6,7 @@ import type {
   CardInstanceId,
   CreatureDefinitionId,
   CreatureId,
+  FaceCardId,
   PlayerId,
 } from "./ids.js";
 import type { SymbolRequirement } from "./symbols.js";
@@ -61,7 +61,6 @@ export interface CreatureDefinition {
   readonly id: CreatureDefinitionId;
   readonly name: string;
   readonly life: number;
-  readonly attributes: readonly Attribute[];
   /**
    * Catalogue flag from the previous commander-win design. Unused for
    * match termination (no automatic win condition until the 3v3 design).
@@ -98,6 +97,11 @@ export interface CreatureDefinition {
    * `requiredTechniques` (spec `028` toolkit gate).
    */
   readonly techniques?: readonly FighterTechniqueDefinition[];
+  /**
+   * This Fighter's base die (spec `030`). The match starts here. The player
+   * does not build this during deck construction. Length is `facesPerDie`.
+   */
+  readonly baseDie?: readonly FaceCardId[];
 }
 
 export interface CreatureState {

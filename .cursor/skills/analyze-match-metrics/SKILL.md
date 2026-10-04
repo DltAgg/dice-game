@@ -17,14 +17,15 @@ Read `docs/specs/014-match-metrics.md` if you need collector semantics.
 
 The export is an **observer**. It does not change `GameState`. Do not invent
 reducer behavior that is not in the numbers. Do not propose a second rules
-engine in the UI. Do not propose bringing **energy** back — fuel is the
-attribute pile only.
+engine in the UI. This skill does not define content. Do not brief authors to
+add attribute-pile fuel, an energy resource, or a face deck. Current content
+model: `docs/specs/030-offensive-control.md`.
 
 ## Goal
 
-Make the game **playable and fun** after the energy + attribute split became
-pile-only. Slow / unfun is the default complaint. Pace flags are how you
-describe the dump, not the product goal.
+Read the export for pace, stall, and lethality. Exports from the pile-fuel
+era still mention forge, Overcharge, and unpaid attacks. Describe those
+numbers. Do not turn them into a request for new pile-cost cards.
 
 ## Input
 

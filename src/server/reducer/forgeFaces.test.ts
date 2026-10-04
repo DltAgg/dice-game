@@ -20,8 +20,7 @@ import {
 const CROSS_FORGE_CHOICE = testCard({
   id: "card-test-cross-forge-choice",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  forge: { faces: 2, kind: "synthetic", attribute: "mechanical", target: "own-die" },
+  forge: { faces: 2, target: "own-die" },
   effect: {
     requires: { mechanical: 2 },
     effects: [
@@ -61,7 +60,7 @@ describe("forge face selection", () => {
       advance(ready, forgeAction(ready, P1, handCardIdAt(ready, P1, 0), dieId, [4])),
     );
     expect(forged.players[P1]?.facePool).not.toContain(TEST_SYNTHETIC_MECHANICAL_A);
-    expect(getFaceCard(TEST_SYNTHETIC_MECHANICAL_A)?.symbol).toBe("mechanical");
+    expect(getFaceCard(TEST_SYNTHETIC_MECHANICAL_A)?.name).toBe("Synthetic Mechanical A");
   });
 
   it("gated choose-effect-mode opens after play", () => {

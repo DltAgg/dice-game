@@ -12,6 +12,7 @@ import {
   type CardId,
   type CardInstanceId,
   type CreatureDefinitionId,
+  type CreatureId,
   type FaceCardId,
   type PlayerId,
 } from "../model/ids.js";
@@ -64,6 +65,7 @@ function buildDie(
   playerId: PlayerId,
   index: number,
   faces: readonly FaceCardId[],
+  boundCreatureId: CreatureId,
 ): DieState {
   return {
     id: dieInstanceId(playerId, index),
@@ -71,6 +73,8 @@ function buildDie(
     slots: faces.map((faceCardId, slotIndex) =>
       openingSlotFromFace(slotIndex, faceCardId, playerId),
     ),
+    baseSlots: [...faces],
+    boundCreatureId,
     stunMarkers: 0,
     retained: false,
     rolledSlotIndex: null,
@@ -195,9 +199,20 @@ export function createMatch(setup: MatchSetup): GameState {
     const squadCreatures = buildCreatures(playerSetup, config);
     for (const creature of squadCreatures) creatures[creature.id] = creature;
 
-    const playerDice = playerSetup.startingDice.map((faces, index) =>
-      buildDie(playerSetup.id, index, faces),
-    );
+    const playerDice = playerSetup.startingDice.map((faces, index) => {
+      const creature = squadCreatures[index];
+      if (creature === undefined) {
+        throw new Error(`createMatch: ${playerSetup.id} has no fighter for die ${String(index)}`);
+      }
+      const defined = getCreatureDefinition(creature.definitionId)?.baseDie;
+      const layout = defined ?? faces;
+      if (layout.length !== config.facesPerDie) {
+        throw new Error(
+          `createMatch: ${playerSetup.id} die ${String(index)} has ${String(layout.length)} faces, need ${String(config.facesPerDie)}`,
+        );
+      }
+      return buildDie(playerSetup.id, index, layout, creature.id);
+    });
     for (const die of playerDice) dice[die.id] = die;
 
     const { instances, hand } = buildCards(playerSetup.id, deck, config, setupRng);

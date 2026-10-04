@@ -2,21 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://dice-skirmish.local/schema/face.schema.json",
   "title": "FaceCardDefinition",
-  "description": "One face-card JSON document (src/server/content/faces/<face-id>.json). Several physical die slots may point at the same face (1:N). Overloads attach to the face card, not a slot. Synthetic faces are named specials only — never blank face-synthetic-<attr> generics.",
+  "description": "One face-card JSON document (src/server/content/faces/<face-id>.json). Several physical die slots may point at the same face (1:N). Overloads attach to the face card, not a slot. A face is not natural, synthetic, or an attribute.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "name", "kind", "symbol", "rulesText", "onRoll", "onAbsorb", "maxOverloads", "forgeRestriction"],
+  "required": ["id", "name", "rulesText", "onRoll", "onAbsorb", "maxOverloads", "forgeRestriction"],
   "properties": {
     "$schema": { "type": "string" },
     "id": { "$ref": "defs.schema.json#/$defs/faceId" },
     "name": { "type": "string", "minLength": 1 },
-    "kind": { "$ref": "defs.schema.json#/$defs/faceKind" },
-    "symbol": {
-      "description": "Attribute this face produces, or shield for the untyped starting face.",
-      "$ref": "defs.schema.json#/$defs/symbolType"
-    },
     "technique": {
-      "description": "Combat toolkit while showing (spec 028). Identity naturals omit this. Distinct from faceType (spec 029).",
+      "description": "Combat toolkit while showing (spec 028). Omit on blank faces. Distinct from faceType (spec 029).",
       "$ref": "defs.schema.json#/$defs/technique"
     },
     "faceType": {
@@ -63,7 +58,7 @@
     },
     "pips": {
       "$ref": "defs.schema.json#/$defs/symbolTokens",
-      "description": "Inherent yield when rolled, e.g. { \"mechanical\": 2 } or { \"luminar\": 1, \"mechanical\": 1 }. Omitted = one pip of symbol. Spec 025. Not a Generate opcode."
+      "description": "Inherent yield when rolled, e.g. { \"mechanical\": 2 } or { \"luminar\": 1, \"mechanical\": 1 }. Omitted = no pips. Spec 025. Not a Generate opcode."
     },
     "convertRoll": {
       "type": "boolean",
@@ -98,54 +93,6 @@
       "description": "Pestilent Plague: after this many counters on the physical slot, reset them and try to forge another copy onto an adjacent slot."
     }
   },
-  "allOf": [
-    {
-      "if": {
-        "properties": { "kind": { "const": "untyped" } },
-        "required": ["kind"]
-      },
-      "then": {
-        "properties": {
-          "symbol": { "const": "shield" },
-          "id": { "type": "string", "pattern": "^face-untyped-" },
-          "pips": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "shield": { "$ref": "defs.schema.json#/$defs/positiveAmount" }
-            }
-          },
-          "convertRoll": { "const": false }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": { "kind": { "const": "natural" } },
-        "required": ["kind"]
-      },
-      "then": {
-        "properties": {
-          "symbol": { "$ref": "defs.schema.json#/$defs/attribute" },
-          "id": { "type": "string", "pattern": "^face-natural-" },
-          "pips": { "$ref": "defs.schema.json#/$defs/attributeTokens" }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": { "kind": { "const": "synthetic" } },
-        "required": ["kind"]
-      },
-      "then": {
-        "properties": {
-          "symbol": { "$ref": "defs.schema.json#/$defs/attribute" },
-          "id": { "type": "string", "pattern": "^face-synthetic-" },
-          "pips": { "$ref": "defs.schema.json#/$defs/attributeTokens" }
-        }
-      }
-    }
-  ],
   "$defs": {
     "whileShowingModifier": {
       "title": "WhileShowingModifier",

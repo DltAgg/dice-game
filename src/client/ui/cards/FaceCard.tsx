@@ -1,14 +1,6 @@
-import type { Attribute, FaceCardDefinition, SymbolType } from "@server";
-import { formatFaceKind, SHIELD } from "@server";
+import type { FaceCardDefinition } from "@server";
+import { faceRulesLines } from "./faceRulesLines";
 import faceLayout from "./assets/faces/face-layout.jpg";
-import arcaneIcon from "./assets/faces/icons/arcane.png";
-import luminarIcon from "./assets/faces/icons/luminar.png";
-import wildIcon from "./assets/faces/icons/wild.png";
-import martialIcon from "./assets/faces/icons/martial.png";
-import toxinIcon from "./assets/faces/icons/toxin.png";
-import corruptionIcon from "./assets/faces/icons/corruption.png";
-import mechanicalIcon from "./assets/faces/icons/mechanical.png";
-import darknessIcon from "./assets/faces/icons/darkness.png";
 import shieldIcon from "./assets/faces/icons/shield.png";
 import arcaneEchoIcon from "./assets/faces/icons/arcane-echo.png";
 import rendingClawIcon from "./assets/faces/icons/rending-claw.png";
@@ -23,17 +15,6 @@ import pestilentPlagueIcon from "./assets/faces/icons/pestilent-plague.png";
  * Text treatment follows the printed Face cards: bold type line, body with
  * bracketed keywords bolded inline, overload in the black bottom bracket.
  */
-
-const ATTRIBUTE_ICON: Readonly<Record<Attribute, string>> = {
-  arcane: arcaneIcon,
-  luminar: luminarIcon,
-  wild: wildIcon,
-  martial: martialIcon,
-  toxin: toxinIcon,
-  corruption: corruptionIcon,
-  mechanical: mechanicalIcon,
-  darkness: darknessIcon,
-};
 
 const SPECIAL_ART: Readonly<Record<string, string>> = {
   "face-synthetic-arcane-echo": arcaneEchoIcon,
@@ -50,27 +31,11 @@ const BODY_CLASS =
 function medallionFor(face: FaceCardDefinition): string {
   const special = SPECIAL_ART[face.id];
   if (special !== undefined) return special;
-  if (face.symbol === SHIELD) return shieldIcon;
-  return ATTRIBUTE_ICON[face.symbol];
-}
-
-function attributeLabel(symbol: SymbolType): string {
-  if (symbol === SHIELD) return "Shield";
-  const labels: Record<Attribute, string> = {
-    arcane: "Arcane",
-    luminar: "Luminar",
-    wild: "Wild",
-    martial: "Martial",
-    toxin: "Toxin",
-    corruption: "Corruption",
-    mechanical: "Mechanical",
-    darkness: "Darkness",
-  };
-  return labels[symbol];
+  return shieldIcon;
 }
 
 function typeLine(face: FaceCardDefinition): string {
-  return `[Face / ${formatFaceKind(face.kind)} / ${attributeLabel(face.symbol)}]`;
+  return `[Face] ${face.name}`;
 }
 
 /** Split on `[…]` tokens so keywords print bold, matching the Figma treatment. */
@@ -96,15 +61,14 @@ export interface FaceCardProps {
 
 export function FaceCard({ face, width = 280 }: FaceCardProps) {
   const art = medallionFor(face);
-  const kindLabel = formatFaceKind(face.kind);
-  const lines = face.rulesText === "" ? [] : face.rulesText.split("\n");
+  const lines = faceRulesLines(face.rulesText);
   const overloadLabel = `+${String(face.maxOverloads)} Overload`;
 
   return (
     <article
       className="relative select-none text-black"
       style={{ width, aspectRatio: "717 / 1024", containerType: "inline-size" }}
-      aria-label={`${face.name}, ${kindLabel}`}
+      aria-label={face.name}
     >
       <img
         src={faceLayout}
@@ -127,8 +91,8 @@ export function FaceCard({ face, width = 280 }: FaceCardProps) {
 
       <div className="absolute inset-x-[10%] bottom-[8%] flex h-[29%] flex-col justify-start gap-[0.2em] overflow-hidden px-[2.5%] pt-[4%]">
         <p className={`${BODY_CLASS} font-bold`}>{typeLine(face)}</p>
-        {lines.map((line) => (
-          <RulesLine key={line} text={line} />
+        {lines.map((line, index) => (
+          <RulesLine key={`${line}:${String(index)}`} text={line} />
         ))}
       </div>
 

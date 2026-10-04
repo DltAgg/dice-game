@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-vega-drill",
+  "name": "Vega Drill",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "persistent",
+  "modifySubject": "moveset",
+  "fighterRestriction": "creature-vega",
+  "rulesText": "Enable one of Vega's Techniques. Stays on that Fighter.",
+  "forge": { "faces": 1, "target": "own-die" }
+}

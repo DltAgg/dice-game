@@ -2,7 +2,6 @@ import { getCard } from "../content/cards.js";
 import { getFaceCard } from "../content/faces.js";
 import type { CardInstanceId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { isAttributeSymbol } from "../model/symbols.js";
 import { diceOf } from "./dice.js";
 
 /** `PlayerState.spentOncePerTurnKeys` entry after a successful Overcharge. */
@@ -22,7 +21,7 @@ export function legalOverchargeFaces(
     for (const slot of die.slots) {
       if (seen.has(slot.faceCardId)) continue;
       const face = getFaceCard(slot.faceCardId);
-      if (face === undefined || !isAttributeSymbol(face.symbol)) continue;
+      if (face === undefined) continue;
       seen.add(slot.faceCardId);
       faces.push(slot.faceCardId);
     }

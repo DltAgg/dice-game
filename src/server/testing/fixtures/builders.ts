@@ -11,7 +11,6 @@ import {
   type CreatureDefinitionId,
   type FaceCardId,
 } from "../../model/ids.js";
-import type { Attribute } from "../../model/attributes.js";
 import {
   registerOverlayCard,
   registerOverlayCreature,
@@ -29,17 +28,12 @@ type WithStringId<T> = Omit<Partial<T>, "id"> & { readonly id?: string };
 
 export function testCard(overrides: WithStringId<CardDefinition> = {}): CardDefinition {
   const id = asCardId(overrides.id ?? `card-test-${nextSuffix()}`);
-  const attribute = overrides.attribute ?? "mechanical";
   return registerOverlayCard({
     name: "Test Card",
-    playCost: { [attribute]: 2 },
-    type: "instant",
+    type: "modify",
     subtypes: [],
-    attribute,
     forge: {
       faces: 1,
-      kind: "synthetic",
-      attribute,
       target: "own-die",
     },
     rulesText: "Test.",
@@ -50,12 +44,8 @@ export function testCard(overrides: WithStringId<CardDefinition> = {}): CardDefi
 
 export function testFace(overrides: WithStringId<FaceCardDefinition> = {}): FaceCardDefinition {
   const id = asFaceCardId(overrides.id ?? `face-test-${nextSuffix()}`);
-  const symbol = overrides.symbol ?? "mechanical";
-  const kind = overrides.kind ?? (symbol === "shield" ? "untyped" : "synthetic");
   return registerOverlayFace({
     name: "Test Face",
-    kind,
-    symbol,
     rulesText: "",
     onRoll: [],
     onAbsorb: [],
@@ -81,16 +71,13 @@ export function testAttack(overrides: WithStringId<AttackDefinition> = {}): Atta
 
 export function testCreature(overrides: WithStringId<CreatureDefinition> = {}): CreatureDefinition {
   const id = asCreatureDefinitionId(overrides.id ?? `creature-test-${nextSuffix()}`);
-  const attributes = overrides.attributes ?? (["mechanical"] as const);
   return registerOverlayCreature({
     name: "Test Creature",
     life: 10,
-    attributes: [...attributes],
     passiveRulesText: "",
     attacks: [
       testAttack({
         id: `${id}-basic`,
-        discards: { [attributes[0] ?? "mechanical"]: 1 },
       }),
     ],
     ...overrides,
@@ -98,8 +85,8 @@ export function testCreature(overrides: WithStringId<CreatureDefinition> = {}): 
   });
 }
 
-export const testNaturalFaceId = (attribute: Attribute): FaceCardId =>
-  asFaceCardId(`face-test-natural-${attribute}`);
+export const testNaturalFaceId = (name: string): FaceCardId =>
+  asFaceCardId(`face-test-natural-${name}`);
 
 export const asTestCardId = (slug: string): CardId => asCardId(`card-test-${slug}`);
 export const asTestCreatureId = (slug: string): CreatureDefinitionId =>

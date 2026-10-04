@@ -1,61 +1,52 @@
 <!--
-Agents: this file is print vocabulary for cards, hooks, tokens, and new
-mechanics (`.cursor/rules/keywords.mdc`). Player sections render on the Rules
-tab; HTML comments are stripped. Map print → AST opcodes (`mark`, `strip`, `modify`, …).
-New tokens are X arguments on `[Mark]` / `[Strip]`, not new opcodes.
-New/edited rulesText uses these keywords. Do not mass-rewrite old print unless
-asked. New tokens join X on Mark/Strip. Do not mint Dose/Envenom/Brand/Contaminate.
+Agents: this file is print vocabulary (`.cursor/rules/keywords.mdc`). Player
+sections render on the Rules tab; HTML comments are stripped.
+
+New content follows docs/specs/030-offensive-control.md and
+.cursor/skills/author-content/design.md. Reuse [Mark], [Strip], and [Modify].
+Do not mint a verb. Do not author from the sections marked leftover:
+attribute pile [Requires] / [Spend], natural/synthetic forge lines, Shield as
+a resource, Guard/Block/Dodge/Counter as die faces, or Instant / Equipment /
+Overload / Ritual as card types. Block, Dodge, and Counter are effects on a
+Response. Tag is an operation. Assist is Fighter-owned.
 -->
 
 ## Keywords
 
-### Catalogue leftovers (not enforced today)
+### Current print (new Fighters, faces, and cards)
 
-The engine **removed** the persistent attribute pile. These keywords may still
-appear on legacy print and in JSON (`playCost`, `effect.requires`, attack
-`discards`, ritual Active-when) but **do not gate play** until a future economy
-ships:
+Dice are named inputs: a name, a type, a primary effect, and a secondary
+effect. Attacks, grabs, movement, and other character offensive tools belong
+on faces. Generic Block, Dodge, Counter, and damage reduction do not.
 
-| Print | Was | Today |
-|---|---|---|
-| `[Requires: …]` | Hold tokens in pile | Not enforced |
-| `[Spend: …]` | Burn pile on play / attack / ritual activate | Not enforced |
-| `[Active when: …]` | One-time ritual unlock vs pile | Not enforced |
-| `[Resonance]` | Wildcard pile payment | Not enforced |
-| `[Discount N]` (pile sense) | Reduce header Spend | Only where engine still arms discounts — see rulebook |
+Cards are Response or Modify. Block, Dodge, Counter, prevent, and redirect
+are effects on a Response, not types. A Modify changes a roll, a die, a
+moveset, a target, or a Tag. Tag is an operation, not a face and not a card
+type. Assist is a Fighter ability, not a card.
 
-**Still live:** `[Mark]` / `[Strip]`, dice timing (`On roll`, `On absorb`, …),
-Shield absorb onto creatures, forge / Overcharge, combat keywords below.
+Meter is one shared pool for an exceptional break of the normal rules. It is
+not printed as mana on every strong card.
 
-### Tag, Assist, Meter, techniques (spec `028`)
+Reuse `[Mark N X]`, `[Strip N X]`, and `[Modify]`. Timing stays a prefix
+(`On roll:`, `On attack:`). Never “Whenever…”.
 
-These are **not** Mark tokens. Technique names are **face names** (the die’s
-combat toolkit). Engine type `Technique` = toolkit **category** (strike /
-guard / …), not a two-face Fighter move (see Face types below).
+### Leftover catalogue print (do not copy onto new content)
 
-| Print | Meaning |
+Older cards may still show pile gates, forge lines, Shield tokens, and
+attribute names. Those lines are not the current authoring model:
+
+| Print | Status |
 |---|---|
-| Strike / Guard / Heavy / Special / Tag / Assist / Signature / Combo / Dodge / Counter | Showing technique on a Fighter’s bound die. Native abilities and some cards require the matching showing face. |
-| `[Tag]` | Switch Active with a living Reserve. Free if Active shows Tag; else spend Meter (Tag-cancel). |
-| `[Assist]` | Fire a Reserve Fighter’s Assist. Free if that Reserve shows Assist; else spend Meter. |
-| Meter | Resource 0–cap. Spend for Tag-cancel, Assist, and cards with a Meter cost. Gained when an attack Strike removes HP. Not `[Generate]`. |
-
-### Face types, Primary / Secondary (spec `029`)
-
-Named die faces may carry a **Type** and separate **Primary** / **Secondary**
-effect lines. Types are labels only — they do not imply fixed damage.
-
-| Print | Meaning |
-|---|---|
-| Attack / Grab / Guard / Movement / Tag (face Type) | Classification of a named face. Extensible. No inherent damage. |
-| Primary / Primary Effect | Resolved alone when you **Use Face** (own die showing that face). |
-| Secondary / Secondary Effect | Applied when this face is the **secondary** of a two-face Fighter technique (may modify that technique’s result, e.g. +damage). |
-| Fighter technique | Named move: own die shows the **primary face**, another of your dice shows a matching secondary face or Type. |
+| `[Requires: …]` / `[Spend: …]` / `[Active when: …]` | Pile fuel. Not enforced. Do not put it on new cards. |
+| `[Forge 1 Synthetic …]` / natural vs synthetic | Not a face kind. In-match die writes are Modify subject `die`. |
+| `[Mark N Shield]` / `[Pierce]` | Shield is not a resource to design. |
+| Strike / Guard / Dodge / Counter as a showing face | Generic defense is a Response, not a die face. |
 
 ---
 
-Bracketed words on cards — the same grammar as `[Forge]` and `[Requires]`.
-Timing lines stay as prefixes. The keyword is the **clause after the colon**:
+Bracketed words on cards. Timing lines stay prefixes. The keyword is the
+**clause after the colon**. New cards do not start from `[Forge]` or
+`[Requires]`.
 
 ```text
 On roll: [Empower 1].
@@ -265,9 +256,10 @@ Wild's exclusive extra-attack verb is `[Frenzy]`.
 
 ---
 
-## Grammar and timing
+## Grammar and timing (leftover rows included)
 
-These are not effect replacements.
+Timing prefixes are still how a window is written. Rows that call Overload a
+card type, or that describe pile absorb, are leftover. Do not author them.
 
 | Print | Role |
 |---|---|
@@ -282,9 +274,11 @@ These are not effect replacements.
 
 ---
 
-## Attribute exclusives
+## Attribute exclusives (leftover — do not copy)
 
-The verb may be shared. The **argument** is exclusive.
+The table below maps the previous attribute pie. New Fighters, faces, and
+cards do not use it. Do not print another card's verb as a reason to revive
+pile colors.
 
 | Attribute | May print | Must not print |
 |---|---|---|
@@ -302,7 +296,10 @@ Mark/Strip of **Shield**, `[Drain]`, Absorb, Retain, Reroll.
 
 ---
 
-## Quick reference
+## Quick reference (leftover catalogue — do not copy)
+
+New print uses the "Current print" section above. The rows below record how
+older cards were worded.
 
 | If you mean… | Print |
 |---|---|

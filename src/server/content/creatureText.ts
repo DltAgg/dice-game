@@ -1,4 +1,3 @@
-import type { Attribute } from "../model/attributes.js";
 import type { AttackDefinition, CreatureDefinition } from "../model/creatures.js";
 import type { SymbolRequirement } from "../model/symbols.js";
 import { isNonEmptyRequirement } from "../rules/tokens.js";
@@ -45,6 +44,3 @@ export function specialAttackOf(creature: CreatureDefinition): AttackDefinition 
   return creature.attacks.find((attack) => attack.kind === "special");
 }
 
-export function primaryAttribute(creature: CreatureDefinition): Attribute | undefined {
-  return creature.attributes[0];
-}

@@ -1,9 +1,6 @@
 import {
-  attributeLabel,
   getFaceCard,
-  isAttribute,
   legalDieSlotsForFilter,
-  naturalFaceId,
   type DieId,
   type DieSlotChoiceFilter,
   type GameState,
@@ -67,13 +64,6 @@ export function ChooseDieSlotModal({
             const die = state.dice[dieId];
             const slot = die?.slots[slotIndex];
             const face = slot !== undefined ? getFaceCard(slot.faceCardId) : undefined;
-            const counterpartLabel =
-              face !== undefined &&
-              face.kind === "synthetic" &&
-              isAttribute(face.symbol) &&
-              getFaceCard(naturalFaceId(face.symbol)) !== undefined
-                ? ` · → Natural ${attributeLabel(face.symbol)}`
-                : "";
             const status = slot !== undefined ? slotStatusLine(slot, { state, dieId }) : null;
             return (
               <li key={`${dieId}:${String(slotIndex)}`}>
@@ -91,8 +81,7 @@ export function ChooseDieSlotModal({
                   </p>
                   <p className="text-xs capitalize text-stone-500">
                     {labelForDie(dieId)} · slot {String(slotIndex + 1)}
-                    {face !== undefined ? ` · ${face.kind} · ${face.symbol}` : ""}
-                    {counterpartLabel}
+                    {face !== undefined ? ` · ${face.name}` : ""}
                   </p>
                   {status !== null && (
                     <p className="mt-1 text-[0.65rem] text-rose-300/90">{status}</p>

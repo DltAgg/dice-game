@@ -9,7 +9,6 @@ import {
   TEST_SYNTHETIC_MECHANICAL_A,
   TEST_SYNTHETIC_MECHANICAL_B,
   TEST_SYNTHETIC_MECHANICAL_C,
-  testNaturalFaceId,
 } from "../testing/fixtures/index.js";
 import {
   forgeAction,
@@ -53,16 +52,14 @@ describe("face deck", () => {
     if (!result.ok) expect(result.reason).toMatch(/max 12/);
   });
 
-  it("refuses more than three face cards of one attribute", () => {
+  it("allows more than three copies of one face", () => {
     const tooMany = [
       TEST_SYNTHETIC_MECHANICAL_A,
       TEST_SYNTHETIC_MECHANICAL_B,
       TEST_SYNTHETIC_MECHANICAL_C,
       TEST_SYNTHETIC_MECHANICAL_A,
     ];
-    const result = validateFaceDeck(tooMany, DEFAULT_RULES_CONFIG);
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toMatch(/mechanical/);
+    expect(validateFaceDeck(tooMany, DEFAULT_RULES_CONFIG)).toEqual({ ok: true });
   });
 
   it("takes a face from the pool on first forge and leaves it out while installed", () => {
@@ -97,7 +94,7 @@ describe("face deck", () => {
     );
     expect(forged.ok).toBe(true);
     if (!forged.ok) return;
-    expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(testNaturalFaceId("luminar"));
+    expect(forged.state.dice[dieId]?.slots[5]?.faceCardId).toBe(TEST_SYNTHETIC_MECHANICAL_A);
   });
 
   it("installs a named synthetic from the pool via synthetic forge", () => {

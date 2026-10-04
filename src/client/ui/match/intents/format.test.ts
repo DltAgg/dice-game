@@ -3,26 +3,26 @@ import { testCard } from "@server/testing/fixtures/index.js";
 import { ritualStayLabel } from "./format.js";
 
 const continuousActivate = testCard({
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: { effects: [{ type: "draw-cards", amount: 1 }] },
 });
 const continuousStanding = testCard({
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: { effects: [] },
 });
 const reactionRitual = testCard({
-  type: "ritual",
+  type: "modify",
   subtypes: ["reaction"],
   ritual: { effects: [{ type: "draw-cards", amount: 1 }] },
 });
 const leftoverRitual = testCard({
-  type: "ritual",
+  type: "modify",
   subtypes: ["instant"],
   ritual: { effects: [{ type: "draw-cards", amount: 1 }] },
 });
-const nonRitual = testCard({ type: "instant" });
+const nonRitual = testCard({ type: "modify" });
 
 describe("ritualStayLabel", () => {
   it("labels activate-body continuous as once-per-turn stay", () => {

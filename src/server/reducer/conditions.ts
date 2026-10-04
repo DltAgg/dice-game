@@ -1,6 +1,4 @@
 import { getFaceCard } from "../content/faces.js";
-import { isSyntheticOnlyAttribute } from "../model/attributes.js";
-import type { FaceKind } from "../model/dice.js";
 import type { EffectCondition } from "../model/effects.js";
 import type { ConditionExpr } from "../ast/nodes.js";
 import type { DieId, PlayerId } from "../model/ids.js";
@@ -19,16 +17,6 @@ function poolSymbols(draft: Draft, playerId: PlayerId) {
     (symbol) =>
       symbol.ownerId === playerId && (symbol.status === "rolled" || symbol.status === "available"),
   );
-}
-
-export function faceKindOfSymbol(draft: Draft, sourceDieId: DieId | null): FaceKind | null {
-  if (sourceDieId === null) return null;
-  const die = draft.dice[sourceDieId];
-  const slot = die?.rolledSlotIndex;
-  if (die === undefined || slot === null || slot === undefined) return null;
-  const faceCardId = die.slots[slot]?.faceCardId;
-  if (faceCardId === undefined) return null;
-  return getFaceCard(faceCardId)?.kind ?? null;
 }
 
 function showingFaceOf(draft: Draft, dieId: DieId) {
@@ -59,7 +47,7 @@ function evaluateGeometry(draft: Draft, ctx: ConditionContext, when: EffectCondi
       if (other === undefined) return false;
       const otherFace = showingFaceOf(draft, other.id);
       if (otherFace === undefined) return false;
-      return otherFace.symbol === thisFace.symbol;
+      return otherFace.id === thisFace.id;
     }
     case "this-die-attribute-count": {
       if (ctx.sourceDieId === null) return false;
@@ -68,16 +56,12 @@ function evaluateGeometry(draft: Draft, ctx: ConditionContext, when: EffectCondi
       if (thisFace === undefined || die === undefined) return false;
       let count = 0;
       for (const slot of die.slots) {
-        const face = getFaceCard(slot.faceCardId);
-        if (face?.symbol === thisFace.symbol) count += 1;
+        if (slot.faceCardId === thisFace.id) count += 1;
       }
       return count >= when.atLeast;
     }
-    case "both-showing-synthetic": {
-      const dice = diceOf(draft, ctx.controllerId);
-      if (dice.length < 2) return false;
-      return dice.every((die) => showingFaceOf(draft, die.id)?.kind === "synthetic");
-    }
+    case "both-showing-synthetic":
+      return false;
     default:
       return false;
   }
@@ -110,18 +94,6 @@ function evaluateAtom(draft: Draft, ctx: ConditionContext, when: EffectCondition
           return false;
         }
         if (when.symbol !== undefined && symbol.symbol !== when.symbol) return false;
-        if (when.faceKind !== undefined) {
-          const kind = faceKindOfSymbol(draft, symbol.sourceDieId);
-          if (kind === when.faceKind) return true;
-          if (
-            kind === null &&
-            when.faceKind === "synthetic" &&
-            isSyntheticOnlyAttribute(symbol.symbol)
-          ) {
-            return true;
-          }
-          return false;
-        }
         return true;
       });
     }
@@ -160,7 +132,6 @@ function asEffectCondition(when: ConditionExpr): EffectCondition | null {
       return {
         type: "has-other-symbol",
         ...(when.symbol !== undefined ? { symbol: when.symbol } : {}),
-        ...(when.faceKind !== undefined ? { faceKind: when.faceKind } : {}),
       };
     case "this-die-attribute-count":
       return { type: "this-die-attribute-count", atLeast: when.atLeast };

@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
 import {
-  attributeLabel,
-  formatForgeLine,
   formatInspectEffectLines,
   formatPlayCostLine,
   formatRequirementLine,
@@ -12,6 +10,7 @@ import {
 } from "@server";
 import { UI_CONFIG } from "@client/ui/config";
 import { FaceCard } from "@client/ui/cards/FaceCard";
+import { faceRulesLines } from "@client/ui/cards/faceRulesLines";
 import { TacticCard } from "@client/ui/cards/TacticCard";
 import { KeywordRemindersSection, KeywordRichText } from "@client/ui/keywords/KeywordReminders";
 import { facePrintText, tacticPrintText } from "@client/ui/keywords/reminders";
@@ -80,21 +79,8 @@ function TacticDossier({ card }: { card: CardDefinition }) {
         <Dt>Subtypes</Dt>
         <Dd className="capitalize">{card.subtypes.join(", ") || "—"}</Dd>
 
-        <Dt>Attribute</Dt>
-        <Dd>{attributeLabel(card.attribute)}</Dd>
-
         <Dt>Type line</Dt>
         <Dd>{formatTypeLine(card)}</Dd>
-
-        <Dt>Forge</Dt>
-        <Dd>{formatForgeLine(card.forge)}</Dd>
-
-        {card.forgeTags !== undefined && card.forgeTags.length > 0 && (
-          <>
-            <Dt>Forge tags</Dt>
-            <Dd>{card.forgeTags.join(", ")}</Dd>
-          </>
-        )}
 
         <Dt>Play region</Dt>
         <Dd>{playRegion}</Dd>
@@ -146,17 +132,8 @@ function FaceDossier({ face }: { face: FaceCardDefinition }) {
       </header>
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
-        <Dt>Kind</Dt>
-        <Dd className="capitalize">{face.kind}</Dd>
-
-        <Dt>Symbol</Dt>
-        <Dd className="capitalize">{face.symbol}</Dd>
-
         <Dt>Max overloads</Dt>
         <Dd>{face.maxOverloads}</Dd>
-
-        <Dt>Forge restriction</Dt>
-        <Dd>{face.forgeRestriction ?? "None"}</Dd>
 
         <Dt>On roll</Dt>
         <Dd>
@@ -179,7 +156,7 @@ function FaceDossier({ face }: { face: FaceCardDefinition }) {
         </h4>
         <div className="space-y-1 rounded border border-stone-800/80 bg-black/30 px-3 py-2 text-sm leading-relaxed text-stone-200">
           {face.rulesText.length > 0 ? (
-            face.rulesText.split("\n").map((line, index) => (
+            faceRulesLines(face.rulesText).map((line, index) => (
               <p key={`${face.id}:${String(index)}`}>
                 <KeywordRichText text={line} />
               </p>
@@ -200,7 +177,7 @@ function playRegionLabel(card: CardDefinition): string {
   if (card.overload !== undefined) return "Overload";
   if (card.ritual !== undefined) return "Ritual";
   if (card.effect !== undefined) return "Effect (instant / one-shot)";
-  return "Forge only";
+  return "None";
 }
 
 function Dt({ children }: { children: string }) {

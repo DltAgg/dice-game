@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-grappler-movement",
   "name": "Movement",
-  "kind": "natural",
-  "symbol": "martial",
   "faceType": "movement",
   "rulesText": "Primary: no modelled effect yet. Secondary: none.",
   "onRoll": [],

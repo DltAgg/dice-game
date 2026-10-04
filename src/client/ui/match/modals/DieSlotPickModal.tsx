@@ -1,9 +1,7 @@
 import {
   diceOf,
-  forgeExceedsAttributeLimit,
   getFaceCard,
   slotCannotBeReplacedByForge,
-  type Attribute,
   type DieId,
   type DieSlot,
   type DieState,
@@ -32,7 +30,6 @@ export function DieSlotPickModal({
   subtitle,
   dieOwnerId,
   facesNeeded,
-  forgeAttribute,
   pickMode = "die-then-slots",
   selectedDieId,
   selectedSlots,
@@ -50,7 +47,6 @@ export function DieSlotPickModal({
   subtitle: string;
   dieOwnerId: PlayerId;
   facesNeeded: number;
-  forgeAttribute?: Attribute | undefined;
   pickMode?: "single-slot" | "die-then-slots" | undefined;
   selectedDieId: DieId | undefined;
   selectedSlots: readonly number[];
@@ -72,12 +68,6 @@ export function DieSlotPickModal({
     if (slotBlocked !== undefined) return slotBlocked(die, slot);
     if (slotCannotBeReplacedByForge(slot)) {
       return slotStatusLine(slot, { state, dieId: die.id }) ?? "Cannot replace";
-    }
-    if (
-      forgeAttribute !== undefined &&
-      forgeExceedsAttributeLimit(die, [slot.index], forgeAttribute, 1, state.config)
-    ) {
-      return "Would exceed attribute cap";
     }
     return null;
   };
@@ -111,7 +101,7 @@ export function DieSlotPickModal({
           {face !== undefined ? <FaceInspectHover face={face} placement="below" /> : "?"}
         </p>
         <p className="mt-1 text-[0.65rem] capitalize text-stone-500">
-          Slot {slot.index + 1} · {face?.kind ?? "?"} · {face?.symbol ?? "—"}
+          Slot {slot.index + 1} · {face?.name ?? "—"}
         </p>
         {blocked !== null && (
           <p className="mt-1 text-[0.65rem] text-rose-300/90">{blocked}</p>

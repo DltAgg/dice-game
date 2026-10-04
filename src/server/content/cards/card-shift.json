@@ -1,0 +1,11 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-shift",
+  "name": "Shift",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "one-shot",
+  "modifySubject": "target",
+  "rulesText": "Redirect that hit onto the Fighter you choose.",
+  "forge": { "faces": 1, "target": "own-die" }
+}

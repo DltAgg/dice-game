@@ -111,6 +111,20 @@ When you **add or rename** a subagent, update all of:
 A new skill used by an existing agent is enough to mention in that agent’s
 Read first list. Do not add a fifth always-on rule for it.
 
+## Content terminology
+
+When you tune card-designer, deck-designer, author-content,
+standardize-card-effects, or the content rules, use one model
+(`docs/specs/030-offensive-control.md`):
+
+Die, Fighter, Response, Modify, Meter, Tag, Assist.
+
+Do not put back attribute-pile fuel, Instant/Reaction/Equipment/Overload/Ritual
+as card types, natural/synthetic faces, Shield as a resource, per-fighter
+decks, or deckbuilding dice. Do not create a second authoring skill for the
+same job. A user-asked terminology alignment across that existing set is one
+concern.
+
 ## Anti-patterns
 
 - Implementing `src/server` or `src/client` from this skill

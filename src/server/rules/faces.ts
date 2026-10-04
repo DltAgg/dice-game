@@ -1,12 +1,9 @@
 import { getFaceCard } from "../content/faces.js";
-import { attributeAllowsNaturalFaces, isAttribute } from "../model/attributes.js";
-import type { DieSlot, DieState, FaceKind, ForgeableFaceKind } from "../model/dice.js";
+import type { DieSlot, DieState } from "../model/dice.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { isAttributeSymbol, type SymbolType } from "../model/symbols.js";
 import type { Draft } from "../reducer/draft.js";
-import { forgeExceedsAttributeLimit } from "./cards.js";
 import { opponentOf } from "./creatures.js";
 
 /**
@@ -73,11 +70,8 @@ export const knownFaceCardOwnerships = (
 };
 
 /**
- * Face deck legality (bible §12): at most `faceDeckMaxCards` total, at most
- * `faceDeckMaxPerAttribute` sharing one attribute. Shield is not an attribute
- * and does not count toward the per-attribute cap. Unknown ids are refused.
- * Natural faces are legal for every attribute (dual-kind policy). Unknown
- * catalogue ids are still refused.
+ * Face deck legality: at most `faceDeckMaxCards` total. Unknown catalogue ids
+ * are refused. A face is not an attribute, so there is no per-attribute cap.
  */
 export function validateFaceDeck(
   faceDeck: readonly FaceCardId[],
@@ -90,60 +84,24 @@ export function validateFaceDeck(
     };
   }
 
-  const byAttribute = new Map<SymbolType, number>();
   for (const id of faceDeck) {
     const definition = getFaceCard(id);
     if (definition === undefined) {
       return { ok: false, reason: `unknown face card "${id}"` };
-    }
-    if (
-      definition.kind === "natural" &&
-      isAttributeSymbol(definition.symbol) &&
-      !attributeAllowsNaturalFaces(definition.symbol)
-    ) {
-      return {
-        ok: false,
-        reason: `natural faces are not allowed for attribute "${definition.symbol}"`,
-      };
-    }
-    if (!isAttributeSymbol(definition.symbol)) continue;
-    byAttribute.set(definition.symbol, (byAttribute.get(definition.symbol) ?? 0) + 1);
-  }
-
-  for (const [attribute, count] of byAttribute) {
-    if (count > config.faceDeckMaxPerAttribute) {
-      return {
-        ok: false,
-        reason: `face deck has ${String(count)} ${attribute} cards, max ${String(config.faceDeckMaxPerAttribute)}`,
-      };
     }
   }
 
   return { ok: true };
 }
 
-/** Whether a forge region's kind is legal for the named attribute. Untyped is never forgeable. */
-export function isLegalForgeKindForAttribute(kind: FaceKind, attribute: SymbolType): boolean {
-  if (!isAttribute(attribute)) return false;
-  if (kind === "untyped") return false;
-  if (kind === "synthetic") return true;
-  return attributeAllowsNaturalFaces(attribute);
-}
-
-/** Pool entries matching a forge region's kind and attribute. */
+/** Pool faces the player can still install. */
 export function matchingFacesInPool(
   state: GameState | Draft,
   playerId: PlayerId,
-  kind: ForgeableFaceKind,
-  attribute: SymbolType,
 ): readonly FaceCardId[] {
-  if (!isLegalForgeKindForAttribute(kind, attribute)) return [];
   const player = state.players[playerId];
   if (player === undefined) return [];
-  return player.facePool.filter((id) => {
-    const face = getFaceCard(id);
-    return face !== undefined && face.kind === kind && face.symbol === attribute;
-  });
+  return player.facePool.filter((id) => getFaceCard(id) !== undefined);
 }
 
 /**
@@ -153,16 +111,11 @@ export function matchingFacesInPool(
 export function eligibleFacesForForge(
   state: GameState | Draft,
   playerId: PlayerId,
-  kind: ForgeableFaceKind,
-  attribute: SymbolType,
   forgingCard?: { readonly forgeTags?: readonly string[] },
 ): readonly FaceCardId[] {
-  if (!isLegalForgeKindForAttribute(kind, attribute)) return [];
-
   const score = (faceCardId: FaceCardId): number => {
     const face = getFaceCard(faceCardId);
     if (face === undefined) return -1;
-    if (face.kind !== kind || face.symbol !== attribute) return -1;
     if (face.forgeRestriction === "echo-cards") {
       return forgingCard?.forgeTags?.includes("echo") === true ? 2 : -1;
     }
@@ -178,7 +131,7 @@ export function eligibleFacesForForge(
     out.push(id);
   };
 
-  for (const id of matchingFacesInPool(state, playerId, kind, attribute)) consider(id);
+  for (const id of matchingFacesInPool(state, playerId)) consider(id);
 
   for (const die of Object.values(state.dice)) {
     for (const slot of die.slots) {
@@ -204,11 +157,9 @@ export function eligibleFacesForForge(
 export function resolveFaceForForge(
   state: GameState | Draft,
   playerId: PlayerId,
-  kind: ForgeableFaceKind,
-  attribute: SymbolType,
   forgingCard?: { readonly forgeTags?: readonly string[] },
 ): FaceCardId | null {
-  const eligible = eligibleFacesForForge(state, playerId, kind, attribute, forgingCard);
+  const eligible = eligibleFacesForForge(state, playerId, forgingCard);
   if (eligible.length === 0) return null;
 
   const score = (faceCardId: FaceCardId): number => {
@@ -338,32 +289,22 @@ export function openingSlotFromFace(
 }
 
 /**
- * Slot indexes that keep a forge-from-effect inside the §9.1 cap, preferring
- * to overwrite existing faces of the incoming attribute. Slots that cannot be
- * replaced by forging are skipped.
+ * Slot indexes a forge can replace. Slots that cannot be replaced by forging
+ * are skipped.
  */
 export function preferredSlotsForForgeFaces(
   die: DieState,
-  attribute: SymbolType,
   faces: number,
-  config: GameRulesConfig,
 ): readonly number[] | null {
   if (faces <= 0 || die.slots.length < faces) return null;
 
-  const matching: number[] = [];
-  const others: number[] = [];
+  const pick: number[] = [];
   for (const slot of die.slots) {
     if (slotCannotBeReplacedByForge(slot)) continue;
-    const face = getFaceCard(slot.faceCardId);
-    if (face?.symbol === attribute) matching.push(slot.index);
-    else others.push(slot.index);
+    pick.push(slot.index);
+    if (pick.length === faces) return pick;
   }
-
-  const pick = [...matching.slice(0, faces)];
-  if (pick.length < faces) pick.push(...others.slice(0, faces - pick.length));
-  if (pick.length !== faces) return null;
-  if (forgeExceedsAttributeLimit(die, pick, attribute, faces, config)) return null;
-  return pick;
+  return null;
 }
 
 /** Whether the controller can name a legal die, slots, and face for this effect. */
@@ -371,18 +312,16 @@ export function hasLegalForgeFacesChoice(
   state: GameState | Draft,
   controllerId: PlayerId,
   faces: number,
-  kind: ForgeableFaceKind,
-  attribute: SymbolType,
   target: "own-die" | "opponent-die",
 ): boolean {
-  if (eligibleFacesForForge(state, controllerId, kind, attribute).length === 0) return false;
+  if (eligibleFacesForForge(state, controllerId).length === 0) return false;
   const ownerId = target === "own-die" ? controllerId : opponentOf(state, controllerId);
   const player = state.players[ownerId];
   if (player === undefined) return false;
   for (const dieId of player.dieIds) {
     const die = state.dice[dieId];
     if (die === undefined) continue;
-    if (preferredSlotsForForgeFaces(die, attribute, faces, state.config) !== null) return true;
+    if (preferredSlotsForForgeFaces(die, faces) !== null) return true;
   }
   return false;
 }

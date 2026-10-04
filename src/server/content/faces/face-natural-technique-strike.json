@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-technique-strike",
   "name": "Strike",
-  "kind": "natural",
-  "symbol": "martial",
   "technique": "strike",
   "rulesText": "",
   "onRoll": [],

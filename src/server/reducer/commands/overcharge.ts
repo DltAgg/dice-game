@@ -1,19 +1,28 @@
 import { getCard } from "../../content/cards.js";
 import { getFaceCard } from "../../content/faces.js";
+import type { CardDefinition } from "../../model/cards.js";
 import type { GameError } from "../../model/errors.js";
 import type { CardInstanceId, FaceCardId, PlayerId } from "../../model/ids.js";
-import { isAttributeSymbol } from "../../model/symbols.js";
+import type { Attribute } from "../../model/attributes.js";
+import { isAttributeSymbol, requirementEntries } from "../../model/symbols.js";
 import { diceOf } from "../../rules/dice.js";
 import { OVERCHARGE_ONCE_PER_TURN_KEY } from "../../rules/overcharge.js";
 import { emit, patchPlayer, type Draft } from "../draft.js";
 import { isPlayerSpent, markPlayerSpent } from "../triggerSpent.js";
 import { moveCard } from "../zones.js";
 
+/** First attribute symbol in header `playCost`. Cards no longer carry an attribute. */
+function overchargeAttribute(definition: CardDefinition): Attribute | null {
+  for (const [symbol, amount] of requirementEntries(definition.playCost ?? {})) {
+    if (amount > 0 && isAttributeSymbol(symbol)) return symbol;
+  }
+  return null;
+}
+
 /**
- * Spend any hand card to Overcharge one attribute face card on the actor's
- * dice (spec `021`). No pile cost, draw, yield, or reaction window. Pips are
- * player-scoped and shared across copies. The pip is the spent card's
- * attribute.
+ * Spend any hand card to Overcharge one face card on the actor's dice
+ * (spec `021`). Shield is not a target. The generated pip is the first
+ * attribute symbol in the card's `playCost`.
  */
 export function overchargeCard(
   draft: Draft,
@@ -35,7 +44,9 @@ export function overchargeCard(
   }
 
   const face = getFaceCard(faceCardId);
-  if (face === undefined || !isAttributeSymbol(face.symbol)) return "INVALID_FACE";
+  if (face === undefined) return "INVALID_FACE";
+  const attribute = overchargeAttribute(definition);
+  if (attribute === null) return "INVALID_FACE";
 
   const onOwnDie = diceOf(draft, playerId).some((die) =>
     die.slots.some((slot) => slot.faceCardId === faceCardId),
@@ -44,7 +55,6 @@ export function overchargeCard(
 
   const player = draft.players[playerId];
   if (player === undefined) return "UNKNOWN_ENTITY";
-  const attribute = definition.attribute;
   patchPlayer(draft, playerId, {
     overchargeByFace: {
       ...player.overchargeByFace,

@@ -1,7 +1,6 @@
 import {
   formatAttackLine,
   formatEffectRegion,
-  formatFaceKind,
   formatTypeLine,
   getCard,
   getCreatureDefinition,
@@ -207,7 +206,7 @@ export function DecisionSourcePanel({
       {resolvedCard === undefined && resolvedFace !== undefined && (
         <>
           <p className="mt-0.5 text-xs capitalize text-stone-500">
-            {formatFaceKind(resolvedFace.kind)} · {resolvedFace.symbol}
+            {resolvedFace.name}
           </p>
           {resolvedFace.rulesText !== "" && (
             <p className="mt-2 border-t border-amber-900/40 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">

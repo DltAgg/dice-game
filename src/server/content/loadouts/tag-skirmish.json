@@ -2,42 +2,57 @@
   "$schema": "../schema/loadout.schema.json",
   "id": "deck-tag-skirmish",
   "name": "Tag Skirmish",
-  "squad": ["creature-korr", "creature-magnus", "creature-nyx"],
+  "squad": ["creature-vega", "creature-magnus", "creature-ryu"],
   "deckCounts": [
-    { "cardId": "card-pressure", "copies": 2 },
-    { "cardId": "card-command-throw", "copies": 2 },
-    { "cardId": "card-keep-away", "copies": 2 },
-    { "cardId": "card-cross-rush", "copies": 2 },
-    { "cardId": "card-dragon-strike", "copies": 2 },
-    { "cardId": "card-technique-drill", "copies": 2 },
-    { "cardId": "card-focus", "copies": 2 },
-    { "cardId": "card-guard-up", "copies": 2 }
+    { "cardId": "card-brace", "copies": 2 },
+    { "cardId": "card-counter", "copies": 2 },
+    { "cardId": "card-open-palm", "copies": 2 },
+    { "cardId": "card-reforge-grip", "copies": 2 },
+    { "cardId": "card-vega-drill", "copies": 2 },
+    { "cardId": "card-ryu-form", "copies": 2 },
+    { "cardId": "card-open-manual", "copies": 2 },
+    { "cardId": "card-shift", "copies": 2 },
+    { "cardId": "card-call-out", "copies": 2 },
+    { "cardId": "card-anchor", "copies": 2 }
   ],
-  "faceDeck": [],
+  "faceDeck": [
+    "face-natural-magnus-jab",
+    "face-natural-magnus-grab",
+    "face-natural-magnus-lariat",
+    "face-natural-magnus-heavy",
+    "face-natural-vega-jab",
+    "face-natural-vega-kick",
+    "face-natural-vega-dash",
+    "face-natural-vega-rush",
+    "face-natural-ryu-jab",
+    "face-natural-ryu-projectile",
+    "face-natural-ryu-focus",
+    "face-natural-ryu-charge"
+  ],
   "startingDice": [
     [
-      "face-natural-technique-strike",
-      "face-natural-technique-strike",
-      "face-natural-technique-heavy",
-      "face-natural-technique-guard",
-      "face-natural-technique-tag",
-      "face-natural-technique-signature"
+      "face-natural-vega-jab",
+      "face-natural-vega-jab",
+      "face-natural-vega-kick",
+      "face-natural-vega-dash",
+      "face-natural-vega-dash",
+      "face-natural-vega-rush"
     ],
     [
-      "face-natural-technique-guard",
-      "face-natural-technique-guard",
-      "face-natural-technique-heavy",
-      "face-natural-technique-strike",
-      "face-natural-technique-tag",
-      "face-natural-technique-assist"
+      "face-natural-magnus-jab",
+      "face-natural-magnus-grab",
+      "face-natural-magnus-grab",
+      "face-natural-magnus-lariat",
+      "face-natural-magnus-lariat",
+      "face-natural-magnus-heavy"
     ],
     [
-      "face-natural-technique-special",
-      "face-natural-technique-special",
-      "face-natural-technique-strike",
-      "face-natural-technique-guard",
-      "face-natural-technique-tag",
-      "face-natural-technique-assist"
+      "face-natural-ryu-jab",
+      "face-natural-ryu-projectile",
+      "face-natural-ryu-projectile",
+      "face-natural-ryu-focus",
+      "face-natural-ryu-focus",
+      "face-natural-ryu-charge"
     ]
   ]
 }

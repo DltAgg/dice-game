@@ -1,6 +1,6 @@
 import { getCard } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { getFaceCard, SHIELD_FACE_ID } from "../content/faces.js";
+import { getFaceCard } from "../content/faces.js";
 import type {
   CreatureChoiceFilter,
   DieChoiceFilter,
@@ -21,13 +21,9 @@ import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { isAttributeSymbol } from "../model/symbols.js";
 import { isSyntheticOnlyAttribute } from "../model/attributes.js";
-import { evaluateCondition, faceKindOfSymbol } from "./conditions.js";
+import { evaluateCondition } from "./conditions.js";
 import { whileShowingTotals } from "../rules/whileShowing.js";
-import {
-  forgeExceedsAttributeLimit,
-  replayableGraveyardTactics,
-  searchableInGraveyard,
-} from "../rules/cards.js";
+import { replayableGraveyardTactics, searchableInGraveyard } from "../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
 import {
   countInstalledCopies,
@@ -783,8 +779,6 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
           draft,
           pending.controllerId,
           effect.faces,
-          effect.kind,
-          effect.attribute,
           effect.target,
         )
       ) {
@@ -794,7 +788,6 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
         type: "forge-faces",
         controllerId: pending.controllerId,
         faces: effect.faces,
-        kind: effect.kind,
         attribute: effect.attribute,
         target: effect.target,
         ...effectChoiceSource(draft, pending),
@@ -803,7 +796,6 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
         type: "forge-faces-started",
         playerId: pending.controllerId,
         faces: effect.faces,
-        kind: effect.kind,
         attribute: effect.attribute,
         target: effect.target,
       });
@@ -1028,14 +1020,12 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
     }
     case "dark-pact": {
       const deck = draft.players[pending.controllerId]?.deck ?? [];
-      const rituals = deck.flatMap((id) => {
+      const rituals = deck.filter((id) => {
         const card = draft.cards[id];
-        if (card === undefined) return [];
-        const definition = getCard(card.cardId);
-        return definition?.type === "ritual" ? [definition.attribute] : [];
+        if (card === undefined) return false;
+        return getCard(card.cardId)?.ritual !== undefined;
       });
-      const attributes = new Set(rituals);
-      if (rituals.length < 2 || attributes.size < 2) return false;
+      if (rituals.length < 2) return false;
       draft.pendingDecision = {
         type: "dark-pact",
         controllerId: pending.controllerId,
@@ -1154,12 +1144,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
     }
     case "arm-wildcard-from-synthetic-pool": {
       const eligible = poolSymbols(draft, pending.controllerId)
-        .filter((symbol) => {
-          if (symbol.usable === false) return false;
-          const kind = faceKindOfSymbol(draft, symbol.sourceDieId);
-          if (kind === "synthetic") return true;
-          return isSyntheticOnlyAttribute(symbol.symbol);
-        })
+        .filter((symbol) => symbol.usable !== false && isSyntheticOnlyAttribute(symbol.symbol))
         .map((symbol) => symbol.id);
       if (eligible.length === 0) return false;
       draft.pendingDecision = {
@@ -1459,12 +1444,6 @@ function applyPestilenceCounter(draft: Draft, pending: PendingEffect): void {
     if (current === undefined) return;
     const target = current.slots[index];
     if (target === undefined || slotCannotBeReplacedByForge(target)) continue;
-    if (
-      spreading !== undefined &&
-      forgeExceedsAttributeLimit(current, [index], spreading.symbol, 1, draft.config)
-    ) {
-      continue;
-    }
     if (!alreadyInstalled && !takeFaceFromPool(draft, ownerId, spreadingId)) {
       return;
     }
@@ -1495,31 +1474,12 @@ function applyPestilenceCounter(draft: Draft, pending: PendingEffect): void {
   }
 }
 
+/** There is no Shield face to leave behind, so this does not remove faces. */
 export function consumeSyntheticCorruptionOnDie(
-  draft: Draft,
-  dieId: DieId,
+  _draft: Draft,
+  _dieId: DieId,
 ): number {
-  const die = draft.dice[dieId];
-  if (die === undefined) return 0;
-  let consumed = 0;
-  const displaced: Array<{ faceCardId: typeof die.slots[0]["faceCardId"]; ownerId: PlayerId }> = [];
-  const slots = die.slots.map((slot) => {
-    const face = getFaceCard(slot.faceCardId);
-    if (face?.kind !== "synthetic" || face.symbol !== "corruption") return slot;
-    consumed += 1;
-    displaced.push({ faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId });
-    return overwrittenSlot(slot, SHIELD_FACE_ID, die.ownerId);
-  });
-  if (consumed === 0) return 0;
-  patchDie(draft, dieId, { slots });
-  for (const old of displaced) {
-    returnFaceToPoolIfOrphaned(draft, old.faceCardId, old.ownerId);
-    if (countInstalledCopies(draft, old.faceCardId, old.ownerId) === 0) {
-      clearOverloadsOnFace(draft, old.faceCardId, old.ownerId);
-      clearOverchargeOnFace(draft, old.faceCardId, old.ownerId);
-    }
-  }
-  return consumed;
+  return 0;
 }
 
 function applyPreventAttackReflect(draft: Draft, controllerId: PlayerId): void {
@@ -1599,29 +1559,22 @@ export function createSymbol(
   return id;
 }
 
-/** Each shield stops 1 damage and is spent doing so; they persist until used. */
-export function grantShield(draft: Draft, creatureId: CreatureId, amount: number): void {
-  const creature = draft.creatures[creatureId];
-  if (creature === undefined || creature.defeated || amount <= 0) return;
-
-  patchCreature(draft, creatureId, { shields: creature.shields + amount });
-  emit(draft, { type: "shield-gained", creatureId, amount });
+/** There is no Shield counter. The call does not change the creature. */
+export function grantShield(
+  _draft: Draft,
+  _creatureId: CreatureId,
+  _amount: number,
+): void {
+  return;
 }
 
-/** Strips Shield counters without dealing damage (Rending Claw). */
-export function removeShield(draft: Draft, creatureId: CreatureId, amount: number): void {
-  const creature = draft.creatures[creatureId];
-  if (creature === undefined || creature.defeated || amount <= 0) return;
-
-  const removed = Math.min(creature.shields, amount);
-  if (removed <= 0) return;
-  patchCreature(draft, creatureId, { shields: creature.shields - removed });
-  emit(draft, {
-    type: "shield-removed",
-    creatureId,
-    amount: removed,
-    shieldsRemaining: creature.shields - removed,
-  });
+/** There is no Shield counter to strip. */
+export function removeShield(
+  _draft: Draft,
+  _creatureId: CreatureId,
+  _amount: number,
+): void {
+  return;
 }
 
 export function applyToxin(draft: Draft, creatureId: CreatureId, amount: number): void {
@@ -1696,34 +1649,14 @@ export function setSuppressInherentNextRoll(
   patchDie(draft, dieId, { slots });
 }
 
-/** Strip a face to natural Shield; return displaced face to its owner's pool. */
+/** There is no Shield face to install, so the slot stays. */
 export function stripFaceToShield(
-  draft: Draft,
-  dieId: DieId,
-  slotIndex: number,
-  shieldOwnerId: PlayerId,
+  _draft: Draft,
+  _dieId: DieId,
+  _slotIndex: number,
+  _shieldOwnerId: PlayerId,
 ): void {
-  const die = draft.dice[dieId];
-  if (die === undefined) return;
-  const slot = die.slots[slotIndex];
-  if (slot === undefined) return;
-  const displaced = { faceCardId: slot.faceCardId, ownerId: slot.faceCardOwnerId };
-  const slots = die.slots.map((candidate) =>
-    candidate.index === slotIndex
-      ? {
-          ...overwrittenSlot(candidate, SHIELD_FACE_ID, shieldOwnerId),
-          corruptionMarkers: 0,
-          suppressInherentNextRoll: false,
-          resourceLockedThisTurn: false,
-        }
-      : candidate,
-  );
-  patchDie(draft, dieId, { slots });
-  returnFaceToPoolIfOrphaned(draft, displaced.faceCardId, displaced.ownerId);
-  if (countInstalledCopies(draft, displaced.faceCardId, displaced.ownerId) === 0) {
-    clearOverloadsOnFace(draft, displaced.faceCardId, displaced.ownerId);
-    clearOverchargeOnFace(draft, displaced.faceCardId, displaced.ownerId);
-  }
+  return;
 }
 
 export function clearResourceLocks(draft: Draft): void {
@@ -1856,24 +1789,7 @@ export function dealDamage(
   const refreshed = draft.creatures[creatureId];
   if (refreshed === undefined || refreshed.defeated) return 0;
 
-  const ignore = options?.ignoreShield ?? 0;
-  const effectiveShields = Math.max(0, refreshed.shields - ignore);
-  const fromShield = Math.min(effectiveShields, remaining);
-  if (fromShield > 0) {
-    patchCreature(draft, creatureId, { shields: refreshed.shields - fromShield });
-    remaining -= fromShield;
-    emit(draft, {
-      type: "damage-prevented",
-      creatureId,
-      amount: fromShield,
-      shieldsRemaining: refreshed.shields - fromShield,
-      source: "shield",
-    });
-  }
-
-  if (remaining <= 0) return 0;
-
-  const afterShield = draft.creatures[creatureId];
+  const afterShield = refreshed;
   if (afterShield === undefined || afterShield.defeated) return 0;
 
   const damage = afterShield.damage + remaining;

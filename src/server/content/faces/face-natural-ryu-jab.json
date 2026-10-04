@@ -1,0 +1,20 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-ryu-jab",
+  "name": "Jab",
+  "faceType": "attack",
+  "sequenceRole": "starter",
+  "rulesText": "Starter. Primary: [Strike 1]. Secondary: +1 damage to the Technique.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

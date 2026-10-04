@@ -50,8 +50,6 @@ function installGrapplerCatalogue(): void {
   testFace({
     id: LARIAT,
     name: "Lariat",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     primaryEffects: [{ type: "damage", amount: 2, target: { kind: "declared-target" } }],
     secondaryEffects: [{ type: "next-attack-bonus", amount: 1 }],
@@ -59,8 +57,6 @@ function installGrapplerCatalogue(): void {
   testFace({
     id: JAB,
     name: "Jab",
-    kind: "natural",
-    symbol: "martial",
     faceType: "attack",
     primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
     secondaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
@@ -68,8 +64,6 @@ function installGrapplerCatalogue(): void {
   testFace({
     id: COMMAND_GRAB,
     name: "Command Grab",
-    kind: "natural",
-    symbol: "martial",
     faceType: "grab",
     primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
     secondaryEffects: [{ type: "next-attack-bonus", amount: 1 }],
@@ -77,8 +71,6 @@ function installGrapplerCatalogue(): void {
   testFace({
     id: GUARD,
     name: "Guard",
-    kind: "natural",
-    symbol: "martial",
     faceType: "guard",
     primaryEffects: [
       { type: "grant-shield", amount: 1, target: { kind: "source-creature" } },
@@ -90,8 +82,6 @@ function installGrapplerCatalogue(): void {
   testFace({
     id: MOVEMENT,
     name: "Movement",
-    kind: "natural",
-    symbol: "martial",
     faceType: "movement",
     primaryEffects: [],
     secondaryEffects: [],
@@ -99,8 +89,6 @@ function installGrapplerCatalogue(): void {
   testFace({
     id: TAG,
     name: "Tag",
-    kind: "natural",
-    symbol: "martial",
     faceType: "tag",
     primaryEffects: [],
     secondaryEffects: [],
@@ -109,7 +97,6 @@ function installGrapplerCatalogue(): void {
     id: GRAPPLER,
     name: "Grappler",
     life: 16,
-    attributes: ["martial"],
     attacks: [
       testAttack({
         id: asTestAttackId("grappler-stub"),
@@ -291,7 +278,7 @@ describe("029 fighter combat core", () => {
       }),
     );
     expect(damageOf(result, P2)).toBe(beforeDmg + 2);
-    expect(shieldsOf(result, P1)).toBe(beforeShield + 1);
+    expect(shieldsOf(result, P1)).toBe(beforeShield);
   });
 
   it("specific-face secondary requirement (Jab + Command Grab id)", () => {
@@ -442,8 +429,6 @@ describe("029 fighter combat core", () => {
     testFace({
       id: strikerFace,
       name: "Slash",
-      kind: "natural",
-      symbol: "wild",
       faceType: "attack",
       primaryEffects: [{ type: "damage", amount: 3, target: { kind: "declared-target" } }],
       secondaryEffects: [],
@@ -451,8 +436,6 @@ describe("029 fighter combat core", () => {
     testFace({
       id: boostFace,
       name: "Boost",
-      kind: "natural",
-      symbol: "wild",
       faceType: "grab",
       primaryEffects: [],
       secondaryEffects: [{ type: "next-attack-bonus", amount: 2 }],
@@ -461,8 +444,6 @@ describe("029 fighter combat core", () => {
       testFace({
         id,
         name: "Filler",
-        kind: "natural",
-        symbol: "wild",
         faceType: "movement",
         primaryEffects: [],
         secondaryEffects: [],
@@ -472,7 +453,6 @@ describe("029 fighter combat core", () => {
       id: striker,
       name: "Striker",
       life: 12,
-      attributes: ["wild"],
       attacks: [
         testAttack({
           id: asTestAttackId("fixture-striker-stub"),

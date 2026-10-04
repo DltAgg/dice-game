@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-grappler-lariat",
   "name": "Lariat",
-  "kind": "natural",
-  "symbol": "martial",
   "faceType": "attack",
   "rulesText": "Primary: [Strike 2]. Secondary: +1 damage to the technique.",
   "onRoll": [],
@@ -12,11 +10,16 @@
     {
       "type": "damage",
       "amount": 2,
-      "target": { "kind": "declared-target" }
+      "target": {
+        "kind": "declared-target"
+      }
     }
   ],
   "secondaryEffects": [
-    { "type": "next-attack-bonus", "amount": 1 }
+    {
+      "type": "next-attack-bonus",
+      "amount": 1
+    }
   ],
   "maxOverloads": 0,
   "forgeRestriction": null

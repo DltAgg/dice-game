@@ -27,8 +27,7 @@ import { CRANK, CRANK_FUEL, DRIVE_SHAFT, DRIVE_SHAFT_FUEL } from "../testing/tem
 const PREVENT_AND_DRAW = testCard({
   id: "card-test-control-prevent-draw",
   playCost: { luminar: 2 },
-  attribute: "luminar",
-  type: "reaction",
+  type: "response",
   effect: {
     effects: [
       { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
@@ -40,8 +39,7 @@ const PREVENT_AND_DRAW = testCard({
 const PREVENT_REFLECT = testCard({
   id: "card-test-control-prevent-reflect",
   playCost: { luminar: 3 },
-  attribute: "luminar",
-  type: "reaction",
+  type: "response",
   effect: { effects: [{ type: "prevent-attack-reflect" }] },
 });
 

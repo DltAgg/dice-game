@@ -1,5 +1,3 @@
-import type { Attribute } from "./attributes.js";
-import type { FaceKind, ForgeableFaceKind } from "./dice.js";
 import type { EffectDefinition } from "./effects.js";
 import type {
   CardId,
@@ -31,21 +29,14 @@ import type { SymbolRequirement, SymbolType } from "./symbols.js";
  */
 
 /**
- * Main kinds that sit in the hand deck. Creatures and faces are separate
- * catalogues. Instant / Reaction / Equipment / Overload are first-class types
- * (the former umbrella "tactic" main type is gone). Ritual keeps subtypes on
- * the type line (`[Ritual / Instant / …]`, `[Ritual / Continuous / …]`, …).
+ * The only two hand-card kinds (spec `030`). Equipment, overload, and ritual
+ * are board regions on the card, not types.
  */
-export type CardType =
-  | "instant"
-  | "reaction"
-  | "equipment"
-  | "overload"
-  | "ritual";
+export type CardType = "modify" | "response";
 
 /**
- * Type-line modifiers after the main kind. Only Rituals use these in print;
- * Instant / Reaction / Equipment / Overload are main `CardType` values.
+ * Type-line modifiers after the main kind. A ritual region still uses these
+ * (`continuous` stays, `reaction` can answer from the field).
  */
 export type CardSubtype =
   /** Retired ritual subtype. Leftover copies still leave for GY after activation. */
@@ -75,16 +66,11 @@ export type RitualOrientation = "preparing" | "ready" | "exhausted";
 export type ForgeTarget = "own-die" | "opponent-die";
 
 /**
- * The forge region. Bible §13: forging replaces the face card backing a
- * physical slot, so the count, kind and attribute together say what goes in.
- *
- * Natural and synthetic forges are legal for every attribute. Synthetics are
- * always named specials from the pool — see `attributeAllowsNaturalFaces`.
+ * The forge region. Forging replaces the face card backing a physical slot.
+ * The player names the face. There is no face kind and no attribute.
  */
 export interface ForgeRegion {
   readonly faces: number;
-  readonly kind: ForgeableFaceKind;
-  readonly attribute: Attribute;
   readonly target: ForgeTarget;
   /**
    * Optional one-shot effects that fire only on `FORGE_CARD` after a successful
@@ -153,7 +139,6 @@ export type StandingTrigger =
       readonly oncePerTurn?: boolean;
       readonly cardTypes?: readonly CardType[];
       readonly subtypes?: readonly CardSubtype[];
-      readonly attributes?: readonly Attribute[];
     }
   /** Attacker ignores this many Shield on the attack target (War Minotaur). */
   | {
@@ -200,13 +185,12 @@ export type StandingTrigger =
     }
   /**
    * When a pip is banked into the owner's pile or Shield is granted on absorb.
-   * Default absorber is the host (`self`). Optional `symbols` / `faceKinds`
-   * filters; omit to fire on any absorb. `oncePerTurn` spends a host key.
+   * Default absorber is the host (`self`). Optional `symbols` filter; omit
+   * to fire on any absorb. `oncePerTurn` spends a host key.
    */
   | {
       readonly type: "on-absorb";
       readonly symbols?: readonly SymbolType[];
-      readonly faceKinds?: readonly FaceKind[];
       readonly absorberRelation?: CreatureRelation;
       readonly oncePerTurn?: boolean;
       readonly effects: readonly EffectDefinition[];
@@ -258,11 +242,6 @@ export type EquipmentAbility = StandingTrigger;
 export interface EquipmentRegion {
   /** Black Plague can sit on an opposing creature; most equipment cannot. */
   readonly mayTargetOpponent: boolean;
-  /**
-   * When set, the host creature must share at least one of these attributes
-   * ("Martial creatures only").
-   */
-  readonly creatureAttributes?: readonly Attribute[];
   readonly abilities: readonly EquipmentAbility[];
 }
 
@@ -273,8 +252,6 @@ export interface EquipmentRegion {
 export interface OverloadRegion {
   /** When set, only faces producing these symbols may host the overload. */
   readonly faceSymbols?: readonly SymbolType[];
-  /** When set, only faces of these kinds may host the overload. */
-  readonly faceKinds?: readonly FaceKind[];
   /** Fired when any die face showing this face card is rolled. */
   readonly onRoll: readonly EffectDefinition[];
   /**
@@ -324,12 +301,6 @@ export interface CardDefinition {
   readonly playCost?: SymbolRequirement;
   readonly type: CardType;
   readonly subtypes: readonly CardSubtype[];
-  /**
-   * The card's own attribute. Current catalogue cards forge this same
-   * attribute (`forge.attribute`). The two fields stay separate so a future
-   * splash forge is still representable.
-   */
-  readonly attribute: Attribute;
   readonly forge: ForgeRegion;
   /**
    * Tags that satisfy face forge restrictions (e.g. `"echo"` for Arcane Echo).
@@ -350,11 +321,11 @@ export interface CardDefinition {
    * when the card's only playable region is equipment / overload / ritual / forge.
    */
   readonly effect?: EffectRegion;
-  /** Present on playable Equipment (`type: "equipment"`). */
+  /** Present when playing this card attaches it to a creature. */
   readonly equipment?: EquipmentRegion;
-  /** Present on playable Overloads (`type: "overload"`). */
+  /** Present when playing this card attaches it to a face card. */
   readonly overload?: OverloadRegion;
-  /** Present on playable Rituals (`type: "ritual"`). */
+  /** Present when playing this card places it in the ritual zone. */
   readonly ritual?: RitualRegion;
   /**
    * Spec `028`. Legal to play only if this definition is in your squad and
@@ -376,13 +347,9 @@ export interface CardDefinition {
    */
   readonly seizesOffense?: boolean;
   /**
-   * Spec `030`. `response` reacts only to an opponent’s Chain object.
-   * `modify` changes a roll, die, moveset, target, or tag. Omit on cards
-   * that are not using this combat behavior. Timing stays the reaction
-   * window and `type: "reaction"` — this is not a second timing system.
+   * What a Modify rewrites. Omit when the Modify is an effect, attachment,
+   * or ritual rather than a die, roll, moveset, target, or tag change.
    */
-  readonly behavior?: CardBehavior;
-  /** Required when `behavior` is `"modify"`. */
   readonly modifySubject?: ModifySubject;
   /**
    * Spent only for exceptional mode. Normal mode does not spend it.
@@ -403,9 +370,6 @@ export interface CardDefinition {
 
 /** Spec `030`. One-shot discards after resolution. Persistent stays in play. */
 export type CardLifecycle = "one-shot" | "persistent";
-
-/** Spec `030`. The only two card behaviors. */
-export type CardBehavior = "response" | "modify";
 
 /**
  * What a Modify acts on. Not a separate card type.

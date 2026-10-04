@@ -30,7 +30,6 @@ const HEAL_AFTER_STRIKE = testAttack({
 });
 const HEALER = testCreature({
   id: "creature-test-healer",
-  attributes: ["luminar"],
   attacks: [HEAL_AFTER_STRIKE],
 });
 
@@ -193,8 +192,8 @@ describe("attacking", () => {
         targetId,
       }),
     );
-    expect(after.creatures[targetId]?.shields).toBe(0);
-    expect(after.creatures[targetId]?.damage).toBe(1);
+    expect(after.creatures[targetId]?.shields).toBe(1);
+    expect(after.creatures[targetId]?.damage).toBe(2);
   });
 
   it("can absorb an attack outright, leaving the creature untouched", () => {

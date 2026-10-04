@@ -2,21 +2,11 @@ import { isAttribute, type Attribute } from "./attributes.js";
 import type { CreatureId, DieId, PlayerId, SymbolInstanceId } from "./ids.js";
 
 /**
- * Shield is the one face that is not attribute-typed. Absorbing it protects the
- * creature instead of fuelling its attacks, and because costs are written in
- * attributes only, no card or attack can ever ask for it.
+ * A symbol a die or an effect can produce. There is no Shield symbol.
  */
-export const SHIELD = "shield";
-export type ShieldSymbol = typeof SHIELD;
+export type SymbolType = Attribute;
 
-/**
- * What a die face can produce. Every face is attribute-typed except Shield, so
- * a symbol is an attribute or a shield and nothing else. Bible §17's "Star" is
- * legacy naming with no mechanical weight.
- */
-export type SymbolType = Attribute | ShieldSymbol;
-
-export const isAttributeSymbol = (symbol: SymbolType): symbol is Attribute => symbol !== SHIELD;
+export const isAttributeSymbol = (symbol: SymbolType): symbol is Attribute => isAttribute(symbol);
 
 /**
  * The five states SPDD §16 requires the engine to tell apart. Collapsing these
@@ -80,14 +70,11 @@ export type SymbolRequirement = Readonly<Partial<Record<Attribute | AnyCostPip, 
 export type AttributeTokens = Readonly<Partial<Record<Attribute, number>>>;
 
 /**
- * Rolled-face yield (spec `025`). Same bag shape as `AttributeTokens`, plus
- * Shield for the untyped starting face. Omitted face `pips` means one pip of
- * `face.symbol`.
+ * Rolled-face yield. Omitted face `pips` produces nothing.
  */
 export type SymbolTokens = Readonly<Partial<Record<SymbolType, number>>>;
 
-export const isSymbolType = (value: string): value is SymbolType =>
-  isAttribute(value) || value === SHIELD;
+export const isSymbolType = (value: string): value is SymbolType => isAttribute(value);
 
 /** Named symbol counts (`0` / omitted keys dropped). */
 export const symbolTokenEntries = (

@@ -2,8 +2,6 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-grappler-tag",
   "name": "Tag",
-  "kind": "natural",
-  "symbol": "martial",
   "faceType": "tag",
   "rulesText": "Primary: no modelled effect yet. Secondary: none.",
   "onRoll": [],

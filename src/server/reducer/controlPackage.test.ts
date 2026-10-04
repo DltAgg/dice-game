@@ -30,7 +30,6 @@ import {
 const DESTROY_EQUIPMENT = testCard({
   id: "card-test-control-destroy-equipment",
   playCost: { arcane: 4 },
-  attribute: "arcane",
   effect: {
     effects: [{ type: "destroy-equipment", target: { kind: "choose-opponent-equipment" } }],
   },
@@ -39,11 +38,9 @@ const DESTROY_EQUIPMENT = testCard({
 const ATTR_GATED_EQUIP = testCard({
   id: "card-test-control-attr-equip",
   playCost: { darkness: 3 },
-  attribute: "darkness",
-  type: "equipment",
+  type: "modify",
   equipment: {
     mayTargetOpponent: false,
-    creatureAttributes: ["arcane", "darkness"],
     abilities: [],
   },
 });
@@ -51,8 +48,7 @@ const ATTR_GATED_EQUIP = testCard({
 const SHIELD_RITUAL = testCard({
   id: "card-test-control-shield-ritual",
   playCost: { arcane: 3 },
-  attribute: "arcane",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { arcane: 1, any: 1 },
@@ -63,7 +59,6 @@ const SHIELD_RITUAL = testCard({
 const DESTROY_RITUAL = testCard({
   id: "card-test-control-destroy-ritual",
   playCost: { arcane: 3 },
-  attribute: "arcane",
   effect: {
     effects: [{ type: "destroy-ritual", target: { kind: "choose-opponent-ritual" } }],
   },
@@ -72,8 +67,7 @@ const DESTROY_RITUAL = testCard({
 const PLACE_RITUAL = testCard({
   id: "card-test-control-place-ritual",
   playCost: { arcane: 2 },
-  attribute: "arcane",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     effects: [{ type: "peek-deck-optional-bottom" }],
@@ -83,16 +77,14 @@ const PLACE_RITUAL = testCard({
 const NEGATE_RITUAL = testCard({
   id: "card-test-control-negate-ritual",
   playCost: { arcane: 2 },
-  attribute: "arcane",
-  type: "reaction",
+  type: "response",
   effect: { effects: [{ type: "negate-ritual" }] },
 });
 
 const DRAIN_RITUAL = testCard({
   id: "card-test-control-drain-ritual",
   playCost: { darkness: 2 },
-  attribute: "darkness",
-  type: "ritual",
+  type: "modify",
   subtypes: ["continuous"],
   ritual: {
     spend: { darkness: 1 },
@@ -110,7 +102,6 @@ const DRAIN_RITUAL = testCard({
 const DAMAGE_ALL = testCard({
   id: "card-test-control-damage-all",
   playCost: { darkness: 3, any: 3 },
-  attribute: "darkness",
   effect: {
     effects: [{ type: "damage", amount: 3, target: { kind: "enemy-all" } }],
   },
@@ -119,7 +110,6 @@ const DAMAGE_ALL = testCard({
 const DAMAGE_CHOOSE = testCard({
   id: "card-test-control-damage-choose",
   playCost: { darkness: 3 },
-  attribute: "darkness",
   effect: {
     requires: { darkness: 1 },
     effects: [{ type: "damage", amount: 3, target: { kind: "choose-enemy" } }],
@@ -129,7 +119,6 @@ const DAMAGE_CHOOSE = testCard({
 const REPLAY = testCard({
   id: "card-test-control-replay",
   playCost: { darkness: 3 },
-  attribute: "darkness",
   effect: { effects: [{ type: "replay-graveyard-tactic" }] },
 });
 
@@ -147,18 +136,15 @@ const LEY_SURGE = testAttack({
 
 const SHADE = testCreature({
   id: "creature-test-control-shade",
-  attributes: ["darkness"],
   attacks: [GRAVE_REACH],
 });
 const ADEPT = testCreature({
   id: "creature-test-control-adept",
-  attributes: ["arcane"],
   attacks: [LEY_SURGE],
 });
 const ORACLE = testCreature({
   id: "creature-test-control-oracle",
   life: 20,
-  attributes: ["arcane", "darkness"],
   legendary: true,
 });
 
@@ -419,7 +405,7 @@ describe("Darkness Control package", () => {
     expect(replayableGraveyardTactics(played, P1, source)).not.toContain(echo?.id);
   });
 
-  it("attribute-gated equipment only equips Arcane or Darkness creatures", () => {
+  it("equipment equips without an attribute gate", () => {
     const tempoHost = newMatch();
     const ready = withPile(
       withHand(withPhase(tempoHost, "actions"), P1, [ATTR_GATED_EQUIP.id]),
@@ -432,8 +418,7 @@ describe("Darkness Control package", () => {
       cardInstanceId: handCardIdAt(ready, P1, 0),
       declaredTargetCreatureId: creatureIdAt(ready, P1, 0),
     });
-    expect(refused.ok).toBe(false);
-    if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");
+    expect(refused.ok).toBe(true);
 
     const controlReady = readyToPlay([ATTR_GATED_EQUIP.id]);
     const accepted = advance(controlReady, {

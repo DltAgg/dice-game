@@ -92,7 +92,7 @@ Do **not** implement it. Do **not** fake domain knowledge in a prompt.
 | New/changed card print or catalogue JSON | `card-designer` |
 | New AST, hooks, reducer, resolution, statuses | `engine-developer` |
 | Match UI / lobby / stores / PeerJS adapters | `match-ui` |
-| Legal loadouts, orphans, attribute identity | `deck-designer` |
+| Legal loadouts, orphans, play-check vs construction ban | `deck-designer` |
 | Playtest debrief / feel catalogue | `post-playtest` |
 | Spans two of the above | skill `slice-changes`, then delegate |
 
@@ -122,7 +122,7 @@ filename (`prompt-engineer.md`, `author-interactions/SKILL.md`).
 | Catalogue identity / print / JSON | `card-designer` |
 | `src/server` rules, hooks, AST | `engine-developer` |
 | Play surface, stores, PeerJS | `match-ui` |
-| Builtin lists / constructed critique | `deck-designer` |
+| Builtin lists / constructed critique (one shared deck) | `deck-designer` |
 | Playtest debrief / `MECHANIC_ARCHETYPES.md` | `post-playtest` |
 
 You may tell those specialists what to **read** (skills, rules, specs that

@@ -1,66 +1,76 @@
-# Creature cards
+# Fighters
 
-File: `src/server/content/creatures/<creature-id>.json` (add the id constant in `creatures.ts`)  
-Spec: `docs/specs/003-creature-cards.md`
-Craft: [design-craft.md](design-craft.md) — uniqueness still applies
+File: `src/server/content/creatures/<creature-id>.json` (id constant in
+`creatures.ts`)
+Types: `src/server/model/creatures.ts`, `fighterTechniques.ts`
+Schema: `src/server/content/schema/creature.schema.json`
 
-**Do not reprint** Strike 2 + `[Generate 1]` of the creature’s own attribute
-on every body (`docs/MECHANIC_ARCHETYPES.md` MA-01 — that shape **feels Aggro**
-even on Control). Audit live `src/server/content/creatures/` first. Dual-attribute
-`requires` on a special (Riftscribe Adept Ley Surge: Arcane+Darkness) is closer
-to a bridge than `[Spend] X, [Generate] Y`. Creatures still obey exclusive
-verbs in [design.md](design.md).
+Print says **Fighter**. The JSON type stays a creature definition. Do not
+rename the file layout.
+
+## Identity
+
+| Piece | Field | Notes |
+|---|---|---|
+| HP | `life` | Damage is state, not a second max |
+| Base die | `baseDie` | Face ids. Length is `facesPerDie`. The match copies this onto the current die. The player does not build it in the deck |
+| Simple Actions | on each face's `primaryEffects` | Own die only. Not a pile-cost attack |
+| Techniques | `techniques` | `FighterTechniqueDefinition`. Primary face on this Fighter's die. Secondary is `faceId` or `faceType` on **another of your dice**. Ordered, not a set |
+| Assist | `assistName`, `assistRulesText`, `assistEffects` | Fighter-owned. Not a card. May be offensive, defensive, utility, or meter-enhanced. Uses the chain |
+| Exceptional Assist | `exceptionalAssistMeter` | Omit to use the shared Assist meter knob. Not a cost for merely having an Assist |
+| Passive | `passiveRulesText`, optional `standingAbilities` | Optional. Data-driven hooks only when the engine already models the clause |
+
+A KOed Fighter cannot become Active and cannot Tag. They still roll, and
+they can still Assist, until a later rule says otherwise. Do not author a
+bonus die, reroll, or card for the KO.
+
+`archetype` is a label a card's `archetypeRestriction` can match. It does
+not ban deck construction.
+
+## Schema leftovers
+
+The creature schema still requires `attacks` (at least one) and may still
+describe pile costs and a legendary win. Do not design that array as the
+Fighter. If validation still requires it, keep the smallest legal attack
+with no `[Requires]` / `[Spend]`, and put the real moves on faces and
+`techniques`. Do not set `legendary`.
+
+`requiredTechniques` on an attack is the old toolkit gate (`strike`,
+`guard`, …). New moves use `FighterTechniqueDefinition`, not that gate, and
+do not require a Guard face.
 
 ## Shape
 
-```ts
-export const EXAMPLE: CreatureDefinitionId =
-  asCreatureDefinitionId("creature-example");
-
+```json
 {
-  id: EXAMPLE,
-  name: "Example Beast",
-  life: 10,
-  attributes: ["martial"],
-  passiveRulesText: "Ignore 1 [Shield] on the target.", // "" if none
-  attacks: [
+  "id": "creature-magnus",
+  "name": "Magnus",
+  "life": 20,
+  "passiveRulesText": "",
+  "assistName": "Clinch",
+  "assistRulesText": "",
+  "attacks": [
     {
-      id: asAttackId("attack-example-strike"),
-      name: "Strike",
-      kind: "basic", // or "special"
-      requires: { martial: 1 },
-      // discards?: { martial: 1 },
-      range: false,
-      rulesText: "Deal 3 damage.",
-      effect: {
-        type: "damage",
-        amount: 3,
-        target: { kind: "declared-target" },
-      },
-    },
-  ],
+      "id": "attack-magnus-placeholder",
+      "name": "Placeholder",
+      "kind": "basic",
+      "range": false,
+      "rulesText": ""
+    }
+  ]
 }
 ```
 
-## Rules of thumb
+That attack exists because the schema requires one. It is not the moveset.
+Put real moves on faces and `techniques`. Fill `baseDie` with face ids this
+change adds or that already exist. Fill `techniques` only when both inputs
+exist.
 
-- Attacks use the **owner’s attribute pile** (`requires` = gate, `discards` = Spend).
-  Same-turn banking can enable an attack that needs that attribute.
-- Always keep full English in `rulesText` / `passiveRulesText`. Passives and
-  attack text use holder voice: **you** is this creature’s controller;
-  **opponent** is their opponent.
-- Attribute identity: [design.md](design.md). Aggro/midrange creatures convert
-  the engine into board pressure. Control creatures may keep weak attacks;
-  lethality for those lists lives on cards / rituals / faces (bible §27). They
-  should not steal Toxin/Corruption’s continuous-burn job. Vary attack fuel
-  (gate vs spend, dual-requires as a true bridge) — do not clone the last
-  creature’s Strike + Generate-same.
-- Omit `effect` on an attack when only a subset is modellable — document the gap
-  in `docs/DEFERRED_CATALOGUE.md` (passives, pierce, multi-target riders, etc.).
-- Squad size for matches comes from setup / loadout (typically 3 creatures), not
-  from stuffing every catalogue entry into the prototype squad.
+## Do not author
 
-## Population in `creatures.ts`
-
-**Figma catalogue** — Slow-game-test creatures (print-first), including builtin
-Aggro and Control squads.
+- ATK/DEF or any other generic stat block
+- A personal deck, hand, or die-construction list
+- An Assist card
+- A Tag face "so they can tag"
+- Shield as a starting resource
+- The same Technique copied onto every Fighter with the name changed

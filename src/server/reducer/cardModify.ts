@@ -1,6 +1,7 @@
 import type { ChainLink } from "../model/state.js";
 import { patchCreature, patchDie, type Draft } from "./draft.js";
 import { performTagSwitch } from "./commands/tag.js";
+import { attachEquipment, moveCard } from "./zones.js";
 
 /** Apply a Modify when its Chain link conducts. Roll writes the result only. */
 export function applyCardModify(draft: Draft, link: ChainLink): void {
@@ -26,14 +27,27 @@ export function applyCardModify(draft: Draft, link: ChainLink): void {
   }
 
   if (modify.subject === "moveset") {
-    if (link.declaredTargetCreatureId === null || modify.techniqueId === null) return;
-    const creature = draft.creatures[link.declaredTargetCreatureId];
-    if (creature === undefined) return;
+    const cardInstanceId = link.cardInstanceId;
+    const creatureId = link.declaredTargetCreatureId;
+    if (creatureId === null || modify.techniqueId === null) {
+      if (cardInstanceId !== null) moveCard(draft, cardInstanceId, "graveyard");
+      return;
+    }
+    const creature = draft.creatures[creatureId];
+    if (creature === undefined) {
+      if (cardInstanceId !== null) moveCard(draft, cardInstanceId, "graveyard");
+      return;
+    }
     const ids = creature.enabledTechniqueIds ?? [];
-    if (ids.includes(modify.techniqueId)) return;
-    patchCreature(draft, creature.id, {
-      enabledTechniqueIds: [...ids, modify.techniqueId],
-    });
+    if (!ids.includes(modify.techniqueId)) {
+      patchCreature(draft, creature.id, {
+        enabledTechniqueIds: [...ids, modify.techniqueId],
+      });
+    }
+    if (cardInstanceId !== null) {
+      moveCard(draft, cardInstanceId, "equipment");
+      attachEquipment(draft, cardInstanceId, creature.id);
+    }
     return;
   }
 

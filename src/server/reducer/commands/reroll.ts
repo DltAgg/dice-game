@@ -1,5 +1,5 @@
 import { getFaceCard } from "../../content/faces.js";
-import { FACE_SLOTS_PER_DIE } from "../../model/dice.js";
+import { FACE_SLOTS_PER_DIE, pipSymbolsOf } from "../../model/dice.js";
 import type { GameError } from "../../model/errors.js";
 import type { PlayerId } from "../../model/ids.js";
 import type { RNG } from "../../rng/rng.js";
@@ -53,9 +53,15 @@ export function resolveOptionalReroll(
   const slot = draft.dice[dieId]?.slots[slotIndex];
   const face = slot === undefined ? undefined : getFaceCard(slot.faceCardId);
   if (face !== undefined && slot !== undefined) {
-    emit(draft, { type: "die-rolled", dieId, slotIndex, symbol: face.symbol });
+    const rolledSymbol = pipSymbolsOf(face)[0];
+    emit(draft, {
+      type: "die-rolled",
+      dieId,
+      slotIndex,
+      ...(rolledSymbol !== undefined ? { symbol: rolledSymbol } : {}),
+    });
     const symbolIds = replaceShowingFacePips(draft, playerId, dieId, slotIndex, face);
-    appendFaceAppeared(draft, dieId, slotIndex, slot.faceCardId, face.kind);
+    appendFaceAppeared(draft, dieId, slotIndex, slot.faceCardId);
     const silenced = isSlotSilenced(draft, dieId, slotIndex);
     const converting = isConvertingShownFace(face, silenced);
     if (converting) {
@@ -63,17 +69,12 @@ export function resolveOptionalReroll(
       drainResolution(draft);
     } else {
       if (!skipRollYieldAndOvercharge(face, silenced)) {
-        applyForgeYieldGenerate(draft, playerId, slot, face.symbol);
+        for (const symbol of pipSymbolsOf(face)) {
+          applyForgeYieldGenerate(draft, playerId, slot, symbol);
+        }
         applyOverchargeGenerate(draft, die.ownerId, slot.faceCardId);
       }
-      fireShownFaceRollHooks(
-        draft,
-        playerId,
-        dieId,
-        slotIndex,
-        slot.faceCardId,
-        face.symbol,
-      );
+      fireShownFaceRollHooks(draft, playerId, dieId, slotIndex, slot.faceCardId);
       drainResolution(draft);
       const deferAbsorb =
         draft.pendingDecision !== null || draft.resolutionStack.length > 0;
@@ -86,7 +87,6 @@ export function resolveOptionalReroll(
             ownerId: die.ownerId,
             slotIndex,
             faceCardId: slot.faceCardId,
-            symbol: face.symbol,
             suppressInherent: false,
             symbolIds,
             converting: false,

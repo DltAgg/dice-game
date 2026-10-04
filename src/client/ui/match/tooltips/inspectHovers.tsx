@@ -6,11 +6,11 @@ import {
 import { createPortal } from "react-dom";
 import {
   formatEffectRegion,
-  formatForgeLine,
   formatTypeLine,
   getCard,
   getFaceCard,
 } from "@server";
+import { faceRulesLines } from "@client/ui/cards/faceRulesLines";
 import { KeywordRemindersTooltip, KeywordRichText } from "@client/ui/keywords/KeywordReminders";
 import { facePrintText, tacticPrintText } from "@client/ui/keywords/reminders";
 import {
@@ -138,9 +138,6 @@ export function TacticInspectHover({
         <p>
           <KeywordRichText text={formatTypeLine(def)} />
         </p>
-        <p className="mt-1 text-stone-500">
-          <KeywordRichText text={formatForgeLine(def.forge)} />
-        </p>
         <div
           className="my-2 -mx-3 h-px bg-gradient-to-r from-transparent via-[#b4a79c]/70 to-transparent"
           role="separator"
@@ -171,12 +168,16 @@ export function FaceInspectHover({
     >
       <p className="text-sm font-medium text-stone-100">{face.name}</p>
       <p className="mt-1 text-xs capitalize text-stone-400">
-        {face.kind} · {face.symbol}
+        {face.name}
       </p>
       {face.rulesText !== "" && (
-        <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-          <KeywordRichText text={face.rulesText} />
-        </p>
+        <div className="mt-2 space-y-0.5 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+          {faceRulesLines(face.rulesText).map((line, index) => (
+            <p key={`${line}:${String(index)}`}>
+              <KeywordRichText text={line} />
+            </p>
+          ))}
+        </div>
       )}
     </NameInspectHover>
   );

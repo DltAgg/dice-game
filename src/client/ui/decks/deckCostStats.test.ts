@@ -8,26 +8,23 @@ import {
 
 const cost1Instant = testCard({
   playCost: { luminar: 1 },
-  attribute: "luminar",
-  type: "instant",
+  type: "modify",
 });
 const cost1Reaction = testCard({
   playCost: { luminar: 1 },
-  attribute: "luminar",
-  type: "reaction",
+  type: "response",
 });
 const cost2Instant = testCard({
   playCost: { mechanical: 2 },
-  type: "instant",
+  type: "modify",
 });
 const cost2Reaction = testCard({
   playCost: { luminar: 2 },
-  attribute: "luminar",
-  type: "reaction",
+  type: "response",
 });
 const cost2Equipment = testCard({
   playCost: { mechanical: 2 },
-  type: "equipment",
+  type: "modify",
   equipment: { mayTargetOpponent: false, abilities: [] },
 });
 
@@ -50,20 +47,17 @@ describe("summarizeDeckCosts", () => {
     const oneCost = summary.buckets.find((row) => row.bucket === 1);
     expect(oneCost?.total).toBe(4);
     expect(oneCost?.costWeight).toBe(4);
-    expect(oneCost?.byType.instant).toBe(2);
-    expect(oneCost?.byType.reaction).toBe(2);
-    expect(oneCost && formatTypeMix(oneCost.byType)).toBe("2 Instant / 2 Reaction");
+    expect(oneCost?.byType.modify).toBe(2);
+    expect(oneCost?.byType.response).toBe(2);
+    expect(oneCost && formatTypeMix(oneCost.byType)).toBe("2 Modify / 2 Response");
     expect(oneCost && formatBucketWeight(oneCost)).toBe("4×1=4");
 
     const twoCost = summary.buckets.find((row) => row.bucket === 2);
     expect(twoCost?.total).toBe(4);
     expect(twoCost?.costWeight).toBe(8);
-    expect(twoCost?.byType.instant).toBe(2);
-    expect(twoCost?.byType.reaction).toBe(1);
-    expect(twoCost?.byType.equipment).toBe(1);
-    expect(twoCost && formatTypeMix(twoCost.byType)).toBe(
-      "2 Instant / 1 Reaction / 1 Equipment",
-    );
+    expect(twoCost?.byType.modify).toBe(3);
+    expect(twoCost?.byType.response).toBe(1);
+    expect(twoCost && formatTypeMix(twoCost.byType)).toBe("3 Modify / 1 Response");
     expect(twoCost && formatBucketWeight(twoCost)).toBe("4×2=8");
   });
 

@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 import {
   diceOf,
   formatEffectRegion,
-  formatFaceKind,
   formatTypeLine,
   getCard,
   getFaceCard,
@@ -17,6 +16,7 @@ import {
   type GameState,
   type PlayerId,
 } from "@server";
+import { faceRulesLines } from "@client/ui/cards/faceRulesLines";
 import { KeywordRemindersTooltip } from "@client/ui/keywords/KeywordReminders";
 import { facePrintText } from "@client/ui/keywords/reminders";
 import {
@@ -138,7 +138,6 @@ export function FaceCardTile({
 
   const face = getFaceCard(entry.faceCardId);
   const activated = face?.activated;
-  const kindLabel = face === undefined ? "?" : formatFaceKind(face.kind);
   const stayBits = stayStatusForFace(state, playerId, entry.faceCardId);
   const overchargeBits = overchargeStatusForFace(state, playerId, entry.faceCardId);
   const showingSlots = showingSlotsForFace(state, playerId, entry.faceCardId);
@@ -149,10 +148,11 @@ export function FaceCardTile({
       ? whileShowingStatusLine(whileShowingTotals(state, playerId))
       : null;
   const tooltip = [
-    kindLabel,
-    face?.symbol ?? "",
+    face?.name ?? "Face",
     entry.copies > 1 ? `Installed on ${String(entry.copies)} faces` : "Installed on dice",
-    face?.rulesText !== undefined && face.rulesText !== "" ? face.rulesText : null,
+    face?.rulesText !== undefined && face.rulesText !== ""
+      ? faceRulesLines(face.rulesText).join("\n")
+      : null,
     convertBits,
     whileShowingBits,
     stayBits,
@@ -247,7 +247,7 @@ export function FaceCardTile({
         {face?.name ?? "?"}
       </p>
       <p className="mt-1 text-xs capitalize text-stone-500">
-        {kindLabel} · {face?.symbol ?? "—"}
+        {face?.name ?? "—"}
         {entry.copies > 1 ? ` · ×${String(entry.copies)}` : ""}
       </p>
       {entry.showing && (
@@ -299,7 +299,7 @@ export function FaceCardTile({
   );
 }
 
-/** Shared face cards installed on this player's dice (one tile per unique face). */
+/** Faces currently showing on this player's dice. */
 export function FaceCardsInPlay({
   state,
   playerId,
@@ -318,7 +318,7 @@ export function FaceCardsInPlay({
   onActivateFace: (dieId: DieId, slotIndex: number) => void;
 }) {
   const dice = diceOf(state, playerId);
-  const faces = uniqueInstalledFaces(state, playerId);
+  const faces = uniqueInstalledFaces(state, playerId).filter((entry) => entry.showing);
   const hasRolled = dice.some((die) => die.rolledSlotIndex !== null);
   const canActivateShowing =
     canAct &&
@@ -344,7 +344,7 @@ export function FaceCardsInPlay({
         ))}
       </div>
       {faces.length === 0 && (
-        <p className="text-sm text-stone-600">No faces installed</p>
+        <p className="text-sm text-stone-600">No face showing</p>
       )}
     </div>
   );
@@ -353,7 +353,7 @@ export function FaceCardsInPlay({
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-stone-800 bg-black/25 p-3">
       <h2 className="mb-2 shrink-0 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-stone-500">
         {label}
-        {hasRolled ? " · showing after roll" : " · shared across dice"}
+        {" · showing"}
       </h2>
       <div className="flex min-h-0 flex-1 flex-col gap-2">{facesPane}</div>
     </section>

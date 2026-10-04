@@ -176,7 +176,7 @@ describe("hand, deck, and lifecycle", () => {
     expect(ritualsOf(stayed, P1).some((card) => card.cardId === STAY.id)).toBe(true);
     expect(graveyardOf(stayed, P1).some((card) => card.cardId === STAY.id)).toBe(false);
     const shielded = stayed.players[P1]?.activeCreatureId;
-    expect(shielded === undefined ? 0 : stayed.creatures[shielded]?.shields).toBe(1);
+    expect(shielded === undefined ? 0 : stayed.creatures[shielded]?.shields).toBe(0);
   });
 
   it("sends a one-shot to the zone that card names", () => {

@@ -5,7 +5,7 @@
   "description": "One creature JSON document (src/server/content/creatures/<creature-id>.json). Creatures have no ATK/DEF — an attack is a pile cost plus an effect. Every legal squad has exactly one legendary.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "name", "life", "attributes", "passiveRulesText", "attacks"],
+  "required": ["id", "name", "life", "passiveRulesText", "attacks"],
   "properties": {
     "$schema": { "type": "string" },
     "id": { "$ref": "defs.schema.json#/$defs/creatureId" },
@@ -14,14 +14,6 @@
       "type": "integer",
       "minimum": 1,
       "description": "Max life. Damage lives on CreatureState so the definition never desyncs."
-    },
-    "attributes": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 2,
-      "uniqueItems": true,
-      "items": { "$ref": "defs.schema.json#/$defs/attribute" },
-      "description": "One attribute, or two for dual-colour legendaries / bridges."
     },
     "legendary": {
       "type": "boolean",
@@ -37,9 +29,9 @@
       "items": { "$ref": "defs.schema.json#/$defs/standingTrigger" }
     },
     "attacks": {
-      "description": "Printed attacks. Typically one basic and one special. Each has kind, optional requires / discards, range, rulesText, optional effect and followUpEffects.",
+      "description": "Leftover native attacks. Tag Fighters leave this empty and hit with a face or a Technique.",
       "type": "array",
-      "minItems": 1,
+      "minItems": 0,
       "items": { "$ref": "defs.schema.json#/$defs/attackDefinition" }
     },
     "archetype": {
@@ -62,6 +54,11 @@
       "description": "Two-face Fighter moves (spec 029). Distinct from attack requiredTechniques.",
       "type": "array",
       "items": { "$ref": "defs.schema.json#/$defs/fighterTechniqueDefinition" }
+    },
+    "baseDie": {
+      "description": "Spec 030. This Fighter's base die. The match starts from these faces. Not built during deck construction. Length is facesPerDie.",
+      "type": "array",
+      "items": { "$ref": "defs.schema.json#/$defs/faceId" }
     }
   }
 }

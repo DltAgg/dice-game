@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema/creature.schema.json",
+  "id": "creature-ryu",
+  "name": "Ryu",
+  "life": 12,
+  "archetype": "zoner",
+  "passiveRulesText": "Zoner. The projectile confirms. Charge spends Meter.",
+  "assistName": "Seal",
+  "assistRulesText": "Negate the chain object under this Assist.",
+  "exceptionalAssistMeter": 0,
+  "assistEffects": [
+    {
+      "type": "negate-card",
+      "cardTypes": "any"
+    }
+  ],
+  "baseDie": [
+    "face-natural-ryu-jab",
+    "face-natural-ryu-projectile",
+    "face-natural-ryu-projectile",
+    "face-natural-ryu-focus",
+    "face-natural-ryu-focus",
+    "face-natural-ryu-charge"
+  ],
+  "techniques": [
+    {
+      "id": "technique-ryu-check-fire",
+      "name": "Check Fire",
+      "primaryFaceId": "face-natural-ryu-jab",
+      "secondary": { "sequenceRole": "extender" },
+      "sequenceRole": "starter",
+      "rulesText": "Jab + Extender: [Strike 2], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 2,
+          "target": { "kind": "declared-target" }
+        }
+      ]
+    },
+    {
+      "id": "technique-ryu-focused-shot",
+      "name": "Focused Shot",
+      "primaryFaceId": "face-natural-ryu-projectile",
+      "secondary": { "faceType": "attack" },
+      "sequenceRole": "extender",
+      "rulesText": "Projectile + Attack: [Strike 3], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 3,
+          "target": { "kind": "declared-target" }
+        }
+      ]
+    },
+    {
+      "id": "technique-ryu-charged-shot",
+      "name": "Charged Shot",
+      "primaryFaceId": "face-natural-ryu-projectile",
+      "secondary": { "faceType": "movement" },
+      "sequenceRole": "finisher",
+      "rulesText": "Projectile + Movement: [Strike 4], then that face's Secondary.",
+      "effects": [
+        {
+          "type": "damage",
+          "amount": 4,
+          "target": { "kind": "declared-target" }
+        }
+      ]
+    }
+  ],
+  "attacks": []
+}

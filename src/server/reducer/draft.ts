@@ -2,7 +2,7 @@ import type { RngState } from "../rng/rng.js";
 import type { CardInstance } from "../model/cards.js";
 import type { GameRulesConfig } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
-import type { DieState, FaceKind } from "../model/dice.js";
+import type { DieState } from "../model/dice.js";
 import type { GameEvent, LoggedEvent } from "../model/events.js";
 import type {
   CreatureId,
@@ -60,7 +60,6 @@ export interface Draft {
     dieId: DieId;
     slotIndex: number;
     faceCardId: FaceCardId;
-    kind: FaceKind;
   }>;
   resolveNextFaceEffectTwice: Record<string, boolean>;
   rollBankQueue: SymbolInstanceId[];

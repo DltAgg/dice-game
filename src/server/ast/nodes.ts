@@ -1,6 +1,5 @@
 import type { Attribute } from "../model/attributes.js";
 import type { CardType } from "../model/cards.js";
-import type { FaceKind, ForgeableFaceKind } from "../model/dice.js";
 import type { BounceHost, SilenceHost, TargetSelector } from "../model/targeting.js";
 import type { SymbolType } from "../model/symbols.js";
 
@@ -33,7 +32,7 @@ export type ConditionExpr =
   | { readonly kind: "source-position"; readonly position: "frontline" | "back" }
   | { readonly kind: "any-enemy-has-toxin" }
   | { readonly kind: "any-ally-attacked-this-turn" }
-  | { readonly kind: "has-other-symbol"; readonly symbol?: SymbolType; readonly faceKind?: FaceKind }
+  | { readonly kind: "has-other-symbol"; readonly symbol?: SymbolType }
   | { readonly kind: "has-adjacent-ally" }
   | { readonly kind: "controller-has-frontline" }
   | { readonly kind: "source-is-frontline" }
@@ -129,7 +128,6 @@ export type EffectNode = {
   readonly cardTypes?: readonly CardType[] | "any";
   readonly scope?: "card" | "ritual";
   readonly faces?: number;
-  readonly kind?: ForgeableFaceKind;
   readonly attribute?: Attribute;
   readonly fromAttribute?: Attribute;
   readonly forgeTarget?: "own-die" | "opponent-die";
@@ -158,7 +156,6 @@ export interface TriggerNode {
     readonly event: TriggerEvent;
     readonly symbol?: SymbolType;
     readonly symbols?: readonly SymbolType[];
-    readonly faceKinds?: readonly FaceKind[];
     readonly attackKinds?: readonly ("basic" | "special")[];
     readonly rollingPlayer?: "controller" | "opponent" | "any";
     readonly whoseTurn?: "controller" | "opponent" | "any";

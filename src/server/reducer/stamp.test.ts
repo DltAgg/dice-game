@@ -24,15 +24,13 @@ const SHIELD_SLOT = 4;
 const STAMP = testCard({
   id: "card-test-stamp-die",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
   effect: { effects: [{ type: "reapply-die-modifiers" }] },
 });
 
 const DISCOUNT_OVERLOAD = testCard({
   id: "card-test-stamp-overload",
   playCost: { mechanical: 2 },
-  attribute: "mechanical",
-  type: "overload",
+  type: "modify",
   overload: { faceSymbols: ["mechanical"], onRoll: [{ type: "play-cost-discount", amount: 1 }] },
 });
 

@@ -61,8 +61,7 @@ export function ChooseCreatureModal({
                     {def?.legendary === true ? <LegendaryBadge /> : null}
                   </p>
                   <p className="text-xs text-stone-500">
-                    HP {currentLife(creature)}/{def?.life ?? "?"} · Shield {creature.shields} ·
-                    damage {creature.damage}
+                    HP {currentLife(creature)}/{def?.life ?? "?"} · damage {creature.damage}
                   </p>
                 </button>
               </li>

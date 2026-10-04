@@ -1,5 +1,5 @@
 import { getFaceCard } from "../../content/faces.js";
-import { FACE_SLOTS_PER_DIE, type DieState } from "../../model/dice.js";
+import { pipSymbolsOf, type DieState } from "../../model/dice.js";
 import type { GameError } from "../../model/errors.js";
 import { type DieId, type PlayerId } from "../../model/ids.js";
 import type { RNG } from "../../rng/rng.js";
@@ -32,7 +32,8 @@ import { enterPhase } from "./turn.js";
  * generation carries no decision, so it happens here and shows up as its own
  * events rather than as a phase the player has to click through.
  *
- * Both players' dice are rolled (pips created, showing slots known) before
+ * Both players' dice are rolled, including Reserve and KOed Fighters (pips
+ * created, showing slots known) before
  * On roll fires so dice-geometry conditions can see both of **that owner's**
  * faces (spec `025`). The active player issues the single `ROLL_DICE`.
  */
@@ -79,7 +80,6 @@ export function publishShownFaceRolls(
       entry.dieId,
       entry.slotIndex,
       entry.faceCardId,
-      entry.symbol,
       entry.suppressInherent,
     );
   }
@@ -126,7 +126,8 @@ export function rollOneDie(
       emit(draft, { type: "die-released", dieId: die.id, playerId: ownerId });
     }
   } else {
-    slotIndex = rng.integer(0, FACE_SLOTS_PER_DIE - 1);
+    const faceCount = Math.min(draft.config.facesPerDie, die.slots.length);
+    slotIndex = rng.integer(0, Math.max(0, faceCount - 1));
     patchDie(draft, die.id, { rolledSlotIndex: slotIndex });
   }
 
@@ -149,8 +150,14 @@ export function rollOneDie(
     patchDie(draft, die.id, { slots: clearedSlots });
   }
 
+  const rolledSymbol = pipSymbolsOf(face)[0];
   if (!keptByRetain) {
-    emit(draft, { type: "die-rolled", dieId: die.id, slotIndex, symbol: face.symbol });
+    emit(draft, {
+      type: "die-rolled",
+      dieId: die.id,
+      slotIndex,
+      ...(rolledSymbol !== undefined ? { symbol: rolledSymbol } : {}),
+    });
   }
 
   const symbolIds = createShowingFacePips(draft, ownerId, die.id, slotIndex, face);
@@ -161,16 +168,17 @@ export function rollOneDie(
     ownerId,
     slotIndex,
     faceCardId: slot.faceCardId,
-    symbol: face.symbol,
     suppressInherent,
     symbolIds,
     converting,
   };
-  appendFaceAppeared(draft, die.id, slotIndex, slot.faceCardId, face.kind);
+  appendFaceAppeared(draft, die.id, slotIndex, slot.faceCardId);
 
   const showingSlot = draft.dice[die.id]?.slots[slotIndex] ?? slot;
   if (!skipRollYieldAndOvercharge(face, silenced)) {
-    applyForgeYieldGenerate(draft, ownerId, showingSlot, face.symbol);
+    for (const symbol of pipSymbolsOf(face)) {
+      applyForgeYieldGenerate(draft, ownerId, showingSlot, symbol);
+    }
     applyOverchargeGenerate(draft, ownerId, showingSlot.faceCardId);
   }
 
