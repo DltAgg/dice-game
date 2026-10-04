@@ -3,7 +3,9 @@
   "id": "face-natural-grappler-command-grab",
   "name": "Command Grab",
   "faceType": "grab",
-  "rulesText": "Primary: [Strike 1]. Secondary: +1 damage to the technique.",
+  "hitStrength": "medium",
+  "hitType": "punch",
+  "rulesText": "Medium punch. Primary: [Strike 1]. Secondary: +1 damage to the technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

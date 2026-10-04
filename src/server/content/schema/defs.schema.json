@@ -1294,9 +1294,21 @@
       "type": "string",
       "enum": ["starter", "extender", "finisher"]
     },
+    "hitStrength": {
+      "title": "HitStrength",
+      "description": "Strength of a hit or Technique. Paired with hitType.",
+      "type": "string",
+      "enum": ["light", "medium", "heavy"]
+    },
+    "hitType": {
+      "title": "HitType",
+      "description": "Kick or punch. Paired with hitStrength. Not faceType.",
+      "type": "string",
+      "enum": ["kick", "punch"]
+    },
     "fighterTechniqueSecondary": {
       "title": "FighterTechniqueSecondary",
-      "description": "Secondary requirement: a named face, any face of a type, or any face with a sequence role.",
+      "description": "Secondary requirement: a named face, a face type, a sequence role, or a strike class such as a light kick.",
       "oneOf": [
         {
           "type": "object",
@@ -1321,6 +1333,31 @@
           "properties": {
             "sequenceRole": { "$ref": "#/$defs/sequenceRole" }
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hitStrength", "hitType"],
+          "properties": {
+            "hitStrength": { "$ref": "#/$defs/hitStrength" },
+            "hitType": { "$ref": "#/$defs/hitType" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hitStrength"],
+          "properties": {
+            "hitStrength": { "$ref": "#/$defs/hitStrength" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hitType"],
+          "properties": {
+            "hitType": { "$ref": "#/$defs/hitType" }
+          }
         }
       ]
     },
@@ -1329,7 +1366,7 @@
       "description": "Two-face Fighter move (spec 029). Not a combo system.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "primaryFaceId", "secondary", "effects"],
+      "required": ["id", "name", "primaryFaceId", "hitStrength", "hitType", "secondary", "effects"],
       "properties": {
         "id": {
           "type": "string",
@@ -1338,6 +1375,8 @@
         },
         "name": { "type": "string", "minLength": 1 },
         "primaryFaceId": { "$ref": "#/$defs/faceId" },
+        "hitStrength": { "$ref": "#/$defs/hitStrength" },
+        "hitType": { "$ref": "#/$defs/hitType" },
         "secondary": { "$ref": "#/$defs/fighterTechniqueSecondary" },
         "effects": { "$ref": "#/$defs/effectList" },
         "sequenceRole": { "$ref": "#/$defs/sequenceRole" },

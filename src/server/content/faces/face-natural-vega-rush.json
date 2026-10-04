@@ -4,7 +4,9 @@
   "name": "Rush",
   "faceType": "movement",
   "sequenceRole": "finisher",
-  "rulesText": "Finisher. Primary: [Strike 4]. Secondary: +2 damage to the Technique.",
+  "hitStrength": "heavy",
+  "hitType": "kick",
+  "rulesText": "Finisher. Heavy kick. Primary: [Strike 4]. Secondary: +2 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

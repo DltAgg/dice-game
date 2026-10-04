@@ -3,7 +3,7 @@ import type { AttackDefinition } from "../model/creatures.js";
 import { asAttackId } from "../model/ids.js";
 import { secondaryMatches } from "../rules/faceActions.js";
 import { ALL_CREATURES, GRAPPLER, MAGNUS, RYU, VEGA } from "./creatures.js";
-import { getFaceCard } from "./faces.js";
+import { ALL_FACE_CARDS, getFaceCard } from "./faces.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine } from "./creatureText.js";
 
 const TAG_SQUAD = [VEGA, MAGNUS, RYU] as const;
@@ -34,7 +34,8 @@ describe("creature catalogue", () => {
     });
     const collar = ALL_CREATURES.find((entry) => entry.id === MAGNUS);
     expect(collar?.techniques?.find((technique) => technique.id === "technique-magnus-collar-tie")?.secondary).toEqual({
-      faceId: "face-natural-vega-dash",
+      hitStrength: "light",
+      hitType: "kick",
     });
     const check = ALL_CREATURES.find((entry) => entry.id === RYU);
     expect(check?.techniques?.find((technique) => technique.id === "technique-ryu-check-fire")?.secondary).toEqual({
@@ -48,6 +49,23 @@ describe("creature catalogue", () => {
     const projectile = projectileId === undefined ? undefined : getFaceCard(projectileId);
     expect(projectile?.faceType).toBe("projectile");
     expect(projectile === undefined ? false : secondaryMatches(projectile, { faceType: "projectile" })).toBe(true);
+    const kickId = ALL_CREATURES.find((entry) => entry.id === VEGA)?.baseDie?.[2];
+    const kick = kickId === undefined ? undefined : getFaceCard(kickId);
+    expect(kick?.hitStrength).toBe("light");
+    expect(kick?.hitType).toBe("kick");
+    expect(kick === undefined ? false : secondaryMatches(kick, { hitStrength: "light", hitType: "kick" })).toBe(true);
+    expect(kick === undefined ? false : secondaryMatches(kick, { hitType: "punch" })).toBe(false);
+    for (const face of ALL_FACE_CARDS) {
+      if ((face.primaryEffects?.length ?? 0) === 0) continue;
+      expect(face.hitStrength, face.id).toBeDefined();
+      expect(face.hitType, face.id).toBeDefined();
+    }
+    for (const creature of ALL_CREATURES) {
+      for (const technique of creature.techniques ?? []) {
+        expect(technique.hitStrength, technique.id).toBeDefined();
+        expect(technique.hitType, technique.id).toBeDefined();
+      }
+    }
   });
 
   it("keeps a native attack on the proving Grappler", () => {

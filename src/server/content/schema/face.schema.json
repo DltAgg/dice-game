@@ -18,6 +18,14 @@
       "description": "Named-action type (spec 029). No inherent damage. Omit on legacy faces.",
       "$ref": "defs.schema.json#/$defs/faceType"
     },
+    "hitStrength": {
+      "description": "Strength of this hit. Required together with hitType when the face can be used as a hit.",
+      "$ref": "defs.schema.json#/$defs/hitStrength"
+    },
+    "hitType": {
+      "description": "Kick or punch. Required together with hitStrength when the face can be used as a hit.",
+      "$ref": "defs.schema.json#/$defs/hitType"
+    },
     "primaryEffects": {
       "description": "Resolved alone via USE_FACE (spec 029). Empty / omit = not usable as a simple action.",
       "type": "array",

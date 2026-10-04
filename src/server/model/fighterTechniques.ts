@@ -1,6 +1,7 @@
 import type { FaceCardId } from "./ids.js";
 import type { EffectDefinition } from "./effects.js";
 import type { FaceType } from "./faceTypes.js";
+import type { HitStrength, HitType } from "./hitClass.js";
 import type { SequenceRole } from "./offensive.js";
 
 /**
@@ -8,19 +9,27 @@ import type { SequenceRole } from "./offensive.js";
  * `Technique` (face category).
  */
 /**
- * The other rolled face. A named face, any face of a type, or any face
- * with that sequence role (starter, extender, finisher).
+ * The other rolled face. A named face, any face of a type, any face with
+ * that sequence role, or a strike class such as a light kick.
+ * Strength and kick/punch may be required together or one at a time.
  */
 export type FighterTechniqueSecondary =
   | { readonly faceId: FaceCardId }
   | { readonly faceType: FaceType }
-  | { readonly sequenceRole: SequenceRole };
+  | { readonly sequenceRole: SequenceRole }
+  | { readonly hitStrength: HitStrength; readonly hitType: HitType }
+  | { readonly hitStrength: HitStrength }
+  | { readonly hitType: HitType };
 
 export interface FighterTechniqueDefinition {
   readonly id: string;
   readonly name: string;
   /** Showing face on the Fighter's own bound die that unlocks this move. */
   readonly primaryFaceId: FaceCardId;
+  /** Strength of this Technique. Paired with `hitType`. */
+  readonly hitStrength: HitStrength;
+  /** Kick or punch. Paired with `hitStrength`. */
+  readonly hitType: HitType;
   readonly secondary: FighterTechniqueSecondary;
   readonly effects: readonly EffectDefinition[];
   /**
@@ -56,4 +65,13 @@ export function secondaryRequiresSequenceRole(
   secondary: FighterTechniqueSecondary,
 ): secondary is { readonly sequenceRole: SequenceRole } {
   return "sequenceRole" in secondary;
+}
+
+export function secondaryRequiresHitClass(
+  secondary: FighterTechniqueSecondary,
+): secondary is
+  | { readonly hitStrength: HitStrength; readonly hitType: HitType }
+  | { readonly hitStrength: HitStrength }
+  | { readonly hitType: HitType } {
+  return "hitStrength" in secondary || "hitType" in secondary;
 }

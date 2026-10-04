@@ -6,6 +6,7 @@ import type {
 } from "./ids.js";
 import type { EffectDefinition } from "./effects.js";
 import type { FaceType } from "./faceTypes.js";
+import type { HitStrength, HitType } from "./hitClass.js";
 import type { SequenceRole } from "./offensive.js";
 import type { SymbolTokens, SymbolType } from "./symbols.js";
 import type { Technique } from "./techniques.js";
@@ -67,6 +68,13 @@ export interface FaceCardDefinition {
    * Omit on legacy / toolkit-only faces — those cannot `USE_FACE`.
    */
   readonly faceType?: FaceType;
+  /**
+   * Strength of this hit. Required on a face that can be used as a hit.
+   * Together with `hitType` it is the strike class (light kick, heavy punch).
+   */
+  readonly hitStrength?: HitStrength;
+  /** Kick or punch. Required on a face that can be used as a hit. */
+  readonly hitType?: HitType;
   /**
    * Resolved alone via `USE_FACE` (spec `029`). Empty / omit = not usable
    * as a simple action.

@@ -16,8 +16,11 @@ Response. Tag is an operation. Assist is Fighter-owned.
 ### Current print (new Fighters, faces, and cards)
 
 Dice are named inputs: a name, a type, a primary effect, and a secondary
-effect. Attacks, grabs, movement, and other character offensive tools belong
-on faces. Generic Block, Dodge, Counter, and damage reduction do not.
+effect. A hit and a Technique also have a strength (light, medium, or heavy)
+and a strike (kick or punch). A Technique may require that pair on the other
+face, such as a light kick. Attacks, grabs, movement, and other character
+offensive tools belong on faces. Generic Block, Dodge, Counter, and damage
+reduction do not.
 
 Cards are Response or Modify. Block, Dodge, Counter, prevent, and redirect
 are effects on a Response, not types. A Modify changes a roll, a die, a

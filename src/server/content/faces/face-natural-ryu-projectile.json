@@ -4,7 +4,9 @@
   "name": "Projectile",
   "faceType": "projectile",
   "sequenceRole": "starter",
-  "rulesText": "Starter. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
+  "hitStrength": "medium",
+  "hitType": "punch",
+  "rulesText": "Starter. Medium punch. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

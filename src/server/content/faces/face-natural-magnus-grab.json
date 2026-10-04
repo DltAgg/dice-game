@@ -4,7 +4,9 @@
   "name": "Grab",
   "faceType": "grab",
   "sequenceRole": "starter",
-  "rulesText": "Starter. Primary: [Strike 3]. Secondary: +2 damage to the Technique.",
+  "hitStrength": "medium",
+  "hitType": "punch",
+  "rulesText": "Starter. Medium punch. Primary: [Strike 3]. Secondary: +2 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

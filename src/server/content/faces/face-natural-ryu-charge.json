@@ -5,7 +5,9 @@
   "faceType": "attack",
   "sequenceRole": "finisher",
   "meterCost": 1,
-  "rulesText": "Finisher. Spend 1 Meter. Primary: [Strike 4]. Secondary: +1 damage to the Technique.",
+  "hitStrength": "heavy",
+  "hitType": "punch",
+  "rulesText": "Finisher. Heavy punch. Spend 1 Meter. Primary: [Strike 4]. Secondary: +1 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

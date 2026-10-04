@@ -3,7 +3,9 @@
   "id": "face-natural-grappler-lariat",
   "name": "Lariat",
   "faceType": "attack",
-  "rulesText": "Primary: [Strike 2]. Secondary: +1 damage to the technique.",
+  "hitStrength": "heavy",
+  "hitType": "punch",
+  "rulesText": "Heavy punch. Primary: [Strike 2]. Secondary: +1 damage to the technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

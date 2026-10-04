@@ -1,5 +1,6 @@
 import {
   dieForCreature,
+  formatHitClass,
   getCreatureDefinition,
   legalFaceActions,
   matchingTechniques,
@@ -7,6 +8,8 @@ import {
   type CreatureId,
   type DieId,
   type GameState,
+  type HitStrength,
+  type HitType,
   type PlayerId,
 } from "@server";
 import { btnHand, btnHandPrimary } from "../styles";
@@ -16,6 +19,14 @@ function roleLabel(role: string | undefined): string {
   if (role === "extender") return "Extender";
   if (role === "finisher") return "Finisher";
   return "";
+}
+
+function classLabel(hit: {
+  readonly hitStrength?: HitStrength;
+  readonly hitType?: HitType;
+}): string {
+  if (hit.hitStrength === undefined || hit.hitType === undefined) return "";
+  return formatHitClass({ hitStrength: hit.hitStrength, hitType: hit.hitType });
 }
 
 /**
@@ -48,15 +59,17 @@ export function FaceActionBar({
     <div className="flex flex-wrap gap-2">
       {faceHit && face !== undefined && (
         <button type="button" className={btnHandPrimary} onClick={() => onUseFace(activeId)}>
-          {face.name}
-          {roleLabel(face.sequenceRole) !== "" ? ` · ${roleLabel(face.sequenceRole)}` : ""}
+          {[face.name, classLabel(face), roleLabel(face.sequenceRole)]
+            .filter((part) => part !== "")
+            .join(" · ")}
         </button>
       )}
       {matches.map((match) => {
         const technique = definition?.techniques?.find((entry) => entry.id === match.techniqueId);
         const secondary = showingFaceCard(state, match.secondaryDieId);
         const role = roleLabel(technique?.sequenceRole);
-        const label = [technique?.name ?? "Technique", secondary?.name, role]
+        const strike = technique === undefined ? "" : classLabel(technique);
+        const label = [technique?.name ?? "Technique", secondary?.name, strike, role]
           .filter((part) => part !== undefined && part !== "")
           .join(" · ");
         return (

@@ -12,5 +12,6 @@ export * from "./state.js";
 export * from "./symbols.js";
 export * from "./techniques.js";
 export * from "./faceTypes.js";
+export * from "./hitClass.js";
 export * from "./fighterTechniques.js";
 export * from "./offensive.js";

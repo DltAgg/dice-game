@@ -4,7 +4,9 @@
   "name": "Kick",
   "faceType": "attack",
   "sequenceRole": "extender",
-  "rulesText": "Extender. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
+  "hitStrength": "light",
+  "hitType": "kick",
+  "rulesText": "Extender. Light kick. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

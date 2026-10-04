@@ -38,6 +38,8 @@ const TECHNIQUE = {
   id: "technique-id-lariat",
   name: "Lariat Grab",
   primaryFaceId: LARIAT.id,
+  hitStrength: "heavy" as const,
+  hitType: "punch" as const,
   secondary: { faceType: "attack" as const },
   effects: [{ type: "damage" as const, amount: 1, target: { kind: "declared-target" as const } }],
 };

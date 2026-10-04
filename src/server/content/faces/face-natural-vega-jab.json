@@ -4,7 +4,9 @@
   "name": "Jab",
   "faceType": "attack",
   "sequenceRole": "starter",
-  "rulesText": "Starter. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
+  "hitStrength": "light",
+  "hitType": "punch",
+  "rulesText": "Starter. Light punch. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

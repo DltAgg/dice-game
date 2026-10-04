@@ -201,10 +201,13 @@ does not replace the Fighter and it is not a global moveset.
 
 Still from spec `029`: a simple move is the showing face’s Primary effect.
 A Technique is an ordered pair — the Fighter’s primary face, plus one other
-face matched by name, by face type, or by sequence role — and the secondary
-face’s Secondary effect can change the result. The face and the Technique
-each carry their own starter, extender, or finisher. A Fighter has no basic
-or special attack. Face types have no damage or legality of their own.
+face matched by name, by face type, by sequence role, or by strike class
+(a strength and kick or punch, such as a light kick) — and the secondary
+face’s Secondary effect can change the result. Every hit and every Technique
+has both a strength (light, medium, or heavy) and a strike (kick or punch).
+The face and the Technique each carry their own starter, extender, or
+finisher. A Fighter has no basic or special attack. Face types have no
+damage or legality of their own.
 
 ### Reroll
 

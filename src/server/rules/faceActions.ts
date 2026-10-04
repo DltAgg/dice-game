@@ -4,6 +4,8 @@ import type { FaceCardDefinition } from "../model/dice.js";
 import {
   secondaryRequiresFaceId,
   secondaryRequiresFaceType,
+  secondaryRequiresHitClass,
+  secondaryRequiresSequenceRole,
   type FighterTechniqueDefinition,
   type FighterTechniqueSecondary,
 } from "../model/fighterTechniques.js";
@@ -66,7 +68,11 @@ export function secondaryMatches(
 ): boolean {
   if (secondaryRequiresFaceId(secondary)) return face.id === secondary.faceId;
   if (secondaryRequiresFaceType(secondary)) return face.faceType === secondary.faceType;
-  return face.sequenceRole === secondary.sequenceRole;
+  if (secondaryRequiresSequenceRole(secondary)) return face.sequenceRole === secondary.sequenceRole;
+  if (!secondaryRequiresHitClass(secondary)) return false;
+  const strengthOk = !("hitStrength" in secondary) || face.hitStrength === secondary.hitStrength;
+  const strikeOk = !("hitType" in secondary) || face.hitType === secondary.hitType;
+  return strengthOk && strikeOk;
 }
 
 export function canUseFace(

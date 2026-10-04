@@ -4,7 +4,9 @@
   "name": "Dash",
   "faceType": "movement",
   "sequenceRole": "extender",
-  "rulesText": "Extender. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
+  "hitStrength": "medium",
+  "hitType": "kick",
+  "rulesText": "Extender. Medium kick. Primary: [Strike 2]. Secondary: +1 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

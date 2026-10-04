@@ -15,7 +15,7 @@ rename the file layout.
 | HP | `life` | Damage is state, not a second max |
 | Base die | `baseDie` | Face ids. Length is `facesPerDie`. The match copies this onto the current die. The player does not build it in the deck |
 | Simple Actions | on each face's `primaryEffects` | Own die only. Not a pile-cost attack |
-| Techniques | `techniques` | `FighterTechniqueDefinition`. Primary face on this Fighter's die. Secondary is `faceId` or `faceType` on **another of your dice**. Ordered, not a set |
+| Techniques | `techniques` | `FighterTechniqueDefinition`. Primary face on this Fighter's die. Secondary is a named face, a face type, a sequence role, or a strike class (`hitStrength` and/or `hitType`, such as a light kick) on **another of your dice**. The Technique itself has both `hitStrength` and `hitType`. Ordered, not a set |
 | Assist | `assistName`, `assistRulesText`, `assistEffects` | Fighter-owned. Not a card. May be offensive, defensive, utility, or meter-enhanced. Uses the chain |
 | Exceptional Assist | `exceptionalAssistMeter` | Omit to use the shared Assist meter knob. Not a cost for merely having an Assist |
 | Passive | `passiveRulesText`, optional `standingAbilities` | Optional. Data-driven hooks only when the engine already models the clause |

@@ -14,6 +14,8 @@ and not a deckbuilding part.
 |---|---|
 | `name` | The move the player reads (Jab, Lariat) |
 | `faceType` | Label only. No inherent damage. Use `attack`, `grab`, `movement`, or another offensive tool the enum already allows |
+| `hitStrength` | `light`, `medium`, or `heavy`. Required on a face that can be used as a hit, together with `hitType` |
+| `hitType` | `kick` or `punch`. Required on a hit, together with `hitStrength` |
 | `primaryEffects` | Simple Action: resolved from the Fighter's own die |
 | `secondaryEffects` | Applied when this face is the secondary input of a Technique |
 | `sequenceRole` | `starter` / `extender` / `finisher` when this Simple Action joins the offensive sequence. Omit when it resolves immediately |

@@ -3,7 +3,9 @@
   "id": "face-natural-grappler-jab",
   "name": "Jab",
   "faceType": "attack",
-  "rulesText": "Primary: [Strike 1]. Secondary: [Strike 1] to the technique target.",
+  "hitStrength": "light",
+  "hitType": "punch",
+  "rulesText": "Light punch. Primary: [Strike 1]. Secondary: [Strike 1] to the technique target.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

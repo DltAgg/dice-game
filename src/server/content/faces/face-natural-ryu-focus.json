@@ -4,7 +4,9 @@
   "name": "Focus",
   "faceType": "attack",
   "sequenceRole": "extender",
-  "rulesText": "Extender. Primary: [Strike 1]. Secondary: +2 damage to the Technique.",
+  "hitStrength": "light",
+  "hitType": "punch",
+  "rulesText": "Extender. Light punch. Primary: [Strike 1]. Secondary: +2 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

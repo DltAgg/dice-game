@@ -4,7 +4,9 @@
   "name": "Heavy",
   "faceType": "attack",
   "sequenceRole": "finisher",
-  "rulesText": "Finisher. Primary: [Strike 5]. Secondary: +2 damage to the Technique.",
+  "hitStrength": "heavy",
+  "hitType": "punch",
+  "rulesText": "Finisher. Heavy punch. Primary: [Strike 5]. Secondary: +2 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

@@ -32,9 +32,11 @@ Reserve. Skirmish defaults still place two frontline then back.
 
 A Tag Fighter has no basic or special attack. The showing face on the Active
 Fighter is a hit by itself. A Technique pairs that face with one other face
-you rolled: a named face, any face of a type, or any face with a sequence
-role. The face and the Technique each say whether they are a starter, an
-extender, or a finisher. Both target the opponent’s Active Fighter.
+you rolled: a named face, any face of a type, any face with a sequence role,
+or a strike class such as a light kick. Every hit and every Technique has a
+strength (light, medium, or heavy) and a strike (kick or punch). The face
+and the Technique each say whether they are a starter, an extender, or a
+finisher. Both target the opponent’s Active Fighter.
 
 ---
 
@@ -454,8 +456,10 @@ face) fires again.
   uses the showing face on **their own** bound die. No second face needed.
 - **Fighter technique (two faces):** the Active Fighter’s own die shows the
   technique’s **primary** named face, and **another** of your rolled dice
-  shows a face matching the secondary: a named face, any face of a type, or
-  any face with a sequence role. Resolve the technique’s base effect, then
+  shows a face matching the secondary: a named face, any face of a type, any
+  face with a sequence role, or a strike class such as a light kick. Every
+  hit and every Technique has a strength (light, medium, or heavy) and a
+  strike (kick or punch). Resolve the technique’s base effect, then
   that secondary face’s **Secondary Effect**. Swapping which die shows which
   face does not fire the same technique.
 - These actions happen in the **actions** phase (the Act). Using a face does

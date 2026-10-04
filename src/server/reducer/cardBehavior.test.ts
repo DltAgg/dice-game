@@ -161,6 +161,8 @@ function install(): void {
         id: "technique-beh-lariat-grab",
         name: "Lariat Grab",
         primaryFaceId: LARIAT,
+        hitStrength: "heavy",
+        hitType: "punch",
         secondary: { faceType: "grab" },
         effects: [{ type: "damage", amount: 3, target: { kind: "declared-target" } }],
       },

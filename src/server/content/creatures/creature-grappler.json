@@ -25,6 +25,8 @@
       "id": "technique-grappler-power-lariat",
       "name": "Power Lariat",
       "primaryFaceId": "face-natural-grappler-lariat",
+      "hitStrength": "heavy",
+      "hitType": "punch",
       "secondary": {
         "faceType": "grab"
       },
@@ -43,6 +45,8 @@
       "id": "technique-grappler-lariat-guard",
       "name": "Lariat Guard",
       "primaryFaceId": "face-natural-grappler-lariat",
+      "hitStrength": "medium",
+      "hitType": "punch",
       "secondary": {
         "faceType": "guard"
       },
@@ -61,6 +65,8 @@
       "id": "technique-grappler-jab-command",
       "name": "Jab Command",
       "primaryFaceId": "face-natural-grappler-jab",
+      "hitStrength": "light",
+      "hitType": "punch",
       "secondary": {
         "faceId": "face-natural-grappler-command-grab"
       },

@@ -4,7 +4,9 @@
   "name": "Lariat",
   "faceType": "attack",
   "sequenceRole": "extender",
-  "rulesText": "Extender. Primary: [Strike 3]. Secondary: +1 damage to the Technique.",
+  "hitStrength": "heavy",
+  "hitType": "punch",
+  "rulesText": "Extender. Heavy punch. Primary: [Strike 3]. Secondary: +1 damage to the Technique.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
