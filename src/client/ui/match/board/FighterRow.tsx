@@ -135,9 +135,22 @@ export function FighterRow({
         const role = active ? "Active" : "Reserve";
 
         if (creature.defeated) {
+          const knockedDef = getCreatureDefinition(creature.definitionId);
           return (
             <div key={creatureId} className="flex flex-col items-center">
               <DefeatedFighterCard state={state} creature={creature} />
+              {band === "reserve" ? (
+                <ReserveTagAssist
+                  state={state}
+                  playerId={playerId}
+                  reserveId={creatureId}
+                  label={knockedDef?.name ?? "Reserve"}
+                  canAct={canAct}
+                  mayTag={mayTag}
+                  onTag={onTag}
+                  onAssist={onAssist}
+                />
+              ) : null}
             </div>
           );
         }
