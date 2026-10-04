@@ -2,7 +2,7 @@ import type { PlayerId } from "./ids.js";
 
 /**
  * Offensive sequence for sequence-role face actions and Fighter techniques
- * (spec `030`). Not a turn phase. Not spec `028` `comboCount`.
+ * (spec `030`). Not a turn phase. `comboCount` counts successful links.
  */
 export const SEQUENCE_ROLES = ["starter", "extender", "finisher"] as const;
 

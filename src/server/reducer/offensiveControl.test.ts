@@ -60,6 +60,16 @@ const ANSWER = testCard({
   effect: { effects: [{ type: "draw-cards", amount: 1 }] },
 });
 
+const NEGATE = testCard({
+  id: "card-test-negate-link",
+  name: "Negate Link",
+  type: "response",
+  subtypes: [],
+  playCost: { martial: 2 },
+  rulesText: "Negate that action.",
+  effect: { effects: [{ type: "negate-card", cardTypes: "any" }] },
+});
+
 const CONFIG = {
   ...DEFAULT_RULES_CONFIG,
   deckMinCards: 0,
@@ -239,6 +249,14 @@ function useFace(state: GameState, playerId: typeof P1 | typeof P2) {
   });
 }
 
+function comboCounts(state: GameState, playerId: typeof P1 | typeof P2): readonly number[] {
+  return state.log.flatMap((entry) =>
+    entry.event.type === "combo-changed" && entry.event.playerId === playerId
+      ? [entry.event.comboCount]
+      : [],
+  );
+}
+
 function resolvedKinds(state: GameState): readonly string[] {
   return state.log.flatMap((entry) =>
     entry.event.type === "chain-link-resolved" ? [entry.event.kind] : [],
@@ -326,6 +344,7 @@ describe("030 offensive control", () => {
     expect(combo.phase).toBe("actions");
     expect(combo.offensiveState).toBe("combo");
     expect(combo.aggressorPlayerId).toBe(P1);
+    expect(combo.players[P1]?.comboCount).toBe(1);
     expect(damageOf(combo, P2)).toBe(2);
     expect(combo.players[P1]?.spentOncePerTurnKeys.some((key) => key.startsWith("face-action:"))).toBe(
       false,
@@ -337,21 +356,31 @@ describe("030 offensive control", () => {
     expect(legalFaceActions(combo, P1)).toEqual([]);
   });
 
-  it("extends combo, then a finisher ends it", () => {
+  it("extends combo, then a finisher ends the turn", () => {
     let state = readyMixed(false);
     state = resolveOpenChain(expectOk(useFace(state, P1)));
     state = show(state, P1, 0, 1);
     const extended = resolveOpenChain(expectOk(useFace(state, P1)));
     expect(extended.offensiveState).toBe("combo");
+    expect(extended.activePlayerId).toBe(P1);
+    expect(extended.players[P1]?.comboCount).toBe(2);
     expect(damageOf(extended, P2)).toBe(3);
 
     const showingFinisher = show(extended, P1, 0, 2);
     const afterFinish = resolveOpenChain(expectOk(useFace(showingFinisher, P1)));
+    expect(afterFinish.activePlayerId).toBe(P2);
+    expect(afterFinish.phase).toBe("roll");
     expect(afterFinish.offensiveState).toBe("open");
-    expect(afterFinish.aggressorPlayerId).toBe(P1);
-    expect(afterFinish.phase).toBe("actions");
-    const again = useFace(show(afterFinish, P1, 0, 0), P1);
-    expect(again.ok).toBe(true);
+    expect(afterFinish.aggressorPlayerId).toBe(P2);
+    expect(afterFinish.turn).toBe(extended.turn + 1);
+    expect(afterFinish.players[P1]?.comboCount).toBe(0);
+    expect(comboCounts(afterFinish, P1)).toEqual([1, 2, 3, 0]);
+    const again = advance(afterFinish, {
+      type: "USE_FACE",
+      playerId: P1,
+      creatureId: activeId(afterFinish, P1),
+    });
+    expect(again.ok).toBe(false);
   });
 
   it("refuses an extender while the sequence is open", () => {
@@ -556,13 +585,94 @@ describe("030 offensive control", () => {
     expect(resolved.creatures[target]?.damage).toBe(20);
   });
 
-  it("ends the sequence without passing initiative or yielding Priority", () => {
+  it("ends the sequence by passing the turn, not by yielding Priority", () => {
     const opened = resolveOpenChain(expectOk(useFace(readyMixed(false), P1)));
     expect(opened.offensiveState).toBe("combo");
+    expect(opened.players[P1]?.comboCount).toBe(1);
     const ended = expectOk(advance(opened, { type: "END_SEQUENCE", playerId: P1 }));
+    expect(ended.activePlayerId).toBe(P2);
+    expect(ended.phase).toBe("roll");
     expect(ended.offensiveState).toBe("open");
-    expect(ended.aggressorPlayerId).toBe(P1);
+    expect(ended.aggressorPlayerId).toBe(P2);
+    expect(ended.turn).toBe(opened.turn + 1);
     expect(ended.pendingDecision).toBeNull();
     expect(ended.chainStack).toHaveLength(0);
+    const continued = advance(ended, {
+      type: "USE_FACE",
+      playerId: P1,
+      creatureId: activeId(ended, P1),
+    });
+    expect(continued.ok).toBe(false);
+  });
+
+  it("does not count or continue a negated link", () => {
+    const opened = withHand(readyMixed(false), P2, [NEGATE.id]);
+    const declared = expectOk(useFace(opened, P1));
+    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
+    const answered = expectOk(
+      advance(yielded, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(yielded, P2, 0),
+      }),
+    );
+    const resolved = resolveOpenChain(answered);
+    expect(damageOf(resolved, P2)).toBe(0);
+    expect(resolved.players[P1]?.comboCount).toBe(0);
+    expect(comboCounts(resolved, P1)).toEqual([]);
+    expect(resolved.offensiveState).toBe("open");
+    expect(resolved.activePlayerId).toBe(P1);
+    expect(resolved.phase).toBe("actions");
+  });
+
+  it("refuses a finisher after Tag this turn and leaves the sequence", () => {
+    let state = readyMixed(false);
+    state = resolveOpenChain(expectOk(useFace(state, P1)));
+    state = show(state, P1, 0, 2);
+    const player = state.players[P1];
+    if (player === undefined) throw new Error("player");
+    const tagged = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: {
+          ...player,
+          spentOncePerTurnKeys: [...player.spentOncePerTurnKeys, "tag-this-turn"],
+        },
+      },
+    };
+    expect(legalFaceActions(tagged, P1)).toEqual([]);
+    const denied = useFace(tagged, P1);
+    expect(denied.ok).toBe(false);
+    if (!denied.ok) {
+      expect(denied.error).toBe("INVALID_TARGET");
+      expect(denied.state.offensiveState).toBe("combo");
+      expect(denied.state.activePlayerId).toBe(P1);
+      expect(denied.state.phase).toBe("actions");
+    }
+  });
+
+  it("passes the turn once when a finisher KOs", () => {
+    let state = readyMixed(false);
+    state = resolveOpenChain(expectOk(useFace(state, P1)));
+    const turn = state.turn;
+    const target = activeId(state, P2);
+    const victim = state.creatures[target];
+    if (victim === undefined) throw new Error("victim");
+    state = show(state, P1, 0, 2);
+    state = {
+      ...state,
+      creatures: {
+        ...state.creatures,
+        [target]: { ...victim, damage: 17 },
+      },
+    };
+    const after = resolveOpenChain(expectOk(useFace(state, P1)));
+    expect(after.creatures[target]?.defeated).toBe(true);
+    expect(after.players[P2]?.activeCreatureId).toBe(target);
+    expect(after.activePlayerId).toBe(P2);
+    expect(after.turn).toBe(turn + 1);
+    expect(after.phase).toBe("roll");
+    expect(after.aggressorPlayerId).toBe(P2);
   });
 });

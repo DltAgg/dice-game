@@ -88,8 +88,30 @@ it. Declaring an illegal Action is not how a sequence ends.
 
 ### Sequence roles
 
-Starter, Extender, and Finisher are properties of an Action or Technique.
-They are not card types and not separate combat systems.
+Starter, Extender, and Finisher are roles of an Action or Technique.
+They are not card types, not turn phases, and not separate combat systems.
+The turn stays `roll` then `actions`.
+
+A starter is legal only when no sequence is in progress (`open`). When it
+resolves successfully, it initiates the sequence (`combo`).
+
+An extender is legal only after a successful starter or another successful
+extender. It extends the sequence.
+
+A finisher is legal only after a successful starter or extender. When it
+resolves successfully, it finishes the sequence and ends the turn: the
+opposing player becomes the active player, the same turn pass as ending
+the turn. Play does not stay in Open for that player to keep acting.
+
+You cannot Tag and also play a finisher in the same turn. If
+`tag-this-turn` is already on `spentOncePerTurnKeys`, declaring a finisher
+is illegal.
+
+An illegal role is not offered. Declaring it does not end the sequence.
+
+Each successful starter, extender, and finisher increases that player's
+`comboCount` by 1. A negated link does not. Combo count is not the sequence
+and not Meter.
 
 ### Ending a sequence
 
@@ -98,12 +120,13 @@ They are not card types and not separate combat systems.
 During a Chain, Pass yields Priority to the opponent. It does not end the
 offensive sequence and it is not a Chain object.
 
-During the Act, the Aggressor may explicitly stop the offensive sequence.
-That choice is the sequence end. It is not a Priority Pass.
+During the Act, the Aggressor may explicitly stop the offensive sequence
+(`END_SEQUENCE`). That choice ends the turn. It is not a Priority Pass, and
+it does not leave the Aggressor in Open to continue.
 
-An Action or Technique may itself say that it ends the sequence. That is a
-property of that Action or Technique. A Finisher is one such Action. It is
-not the only one.
+A Finisher finishes the sequence and ends the turn the same way. Another
+Action may still say that it ends the sequence without being a Finisher.
+That property does not by itself pass the turn.
 
 A sequence does not end because the player attempted an Action the sequence
 does not allow.
@@ -413,25 +436,9 @@ There is no card initiative track beside the offensive sequence.
 
 ## To test
 
-These are the current intended models. They are not frozen implementation
-rules. Do not treat a later playtest change to either one as a reversal of
-the rest of this spec.
-
-### Finisher returns to Open
-
-A Finisher is the current model for ending a sequence by playing it.
-
-```text
-Aggressor
-→ uses a Finisher
-→ the Finisher resolves
-→ the offensive sequence ends
-→ the game returns to Open
-```
-
-The intended sense is: the combo is finished, and play is back in Open.
-Other Actions may also end the sequence by saying so. Who is Aggressor
-after that return to Open is not specified here.
+This is the current intended model. It is not a frozen implementation
+rule. Do not treat a later playtest change to it as a reversal of the
+rest of this spec.
 
 ### No repeated Action in one sequence
 
@@ -658,10 +665,9 @@ Do not implement these as if they were decided.
 
 - What moves Neutral into Open, and what maintains a sequence besides the
   legal-Action check.
-- Who is Aggressor after a voluntary sequence end, and after a Finisher
-  returns play to Open.
-- How a Chain result maps onto the offensive state, beyond the KO rule,
-  the sequence-end property, and the Finisher model under test.
+- How a Chain result maps onto the offensive state, beyond the KO rule
+  and a non-finisher sequence-end property. A Finisher and `END_SEQUENCE`
+  end the turn.
 - The exact effects inside Response and inside each Modify category, and
   the scope/duration set.
 - Which cards spend exceptional Meter, and the amount of any Meter grant.
@@ -683,9 +689,16 @@ Aligned with this revision:
   (`face:<id>` or `technique:<id>`) cannot be declared again until the
   sequence returns to Open. A face used as a simple Action can still be
   the primary input of a different Technique.
-- A finisher, or `endsSequence`, returns the sequence to Open. Initiative
-  moves only when that Action sets `passesInitiative`, or on KO.
-  `END_SEQUENCE` returns to Open and leaves the Aggressor where they are.
+- `open` accepts a starter. `combo` accepts an extender or a finisher.
+  A finisher is illegal when `tag-this-turn` is already spent.
+- A successful starter, extender, or finisher increases `comboCount` by 1.
+  A negated link does not. A finisher then ends the turn (`endTurn`): the
+  opposing player becomes active, and the new window is Open for them.
+  `END_SEQUENCE` does the same turn pass. It is not a Priority Pass.
+  A non-finisher `endsSequence` still returns to Open and passes initiative
+  only when that Action sets `passesInitiative`. KO still uses that return
+  and does not itself pass the turn. The finisher's turn pass runs after
+  the KO return, once, and is skipped when the match is already finished.
 - One `REROLL_DICE` is legal in the actions phase before any other Act,
   of any number of your dice. A later Act closes it.
 - `TAG` and `ASSIST` are Chain objects on the existing combat-action
@@ -717,16 +730,12 @@ Still not this document:
 - `consumeDiceOnFaceActions` still spends a die when that flag is on.
   The default preset leaves the flag on so older tests keep that
   leftover. The tag preset turns it off.
-- `sequenceRole` is still the continuation check (open takes a starter;
-  combo takes an extender or finisher). That table was not re-specified.
 - `seizesOffense` still takes offensive control by itself.
 - Spec `008` tactic windows still give the opponent Priority first. A
   combat-action chain, and a card that sets `behavior`, gives Priority to
   the player who just acted.
 - Tag windows are the actions phase: opening before any Act, closing
   after. The spec leaves the exact seat inside `roll` / `actions` open.
-- Who is Aggressor after a voluntary end or a Finisher is open. The build
-  leaves them in place unless `passesInitiative` or a KO says otherwise.
 
 `src/server/reducer/offensiveControl.test.ts`,
 `src/server/reducer/tagFighter.test.ts`,

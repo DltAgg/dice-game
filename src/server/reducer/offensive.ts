@@ -5,11 +5,12 @@ import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { SequenceRole } from "../model/offensive.js";
 import type { ChainLink } from "../model/state.js";
 import { canSpendMeter } from "../rules/meter.js";
-import { sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
+import { finisherBlockedByTag, sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
 import { opponentOf } from "../rules/creatures.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "./chain.js";
+import { endTurn } from "./commands/turn.js";
 import { emit, type Draft } from "./draft.js";
-import { grantSequenceHitMeter, spendMeter } from "./meter.js";
+import { grantSequenceHitMeter, setComboCount, spendMeter } from "./meter.js";
 import { drainResolution, pushEffect } from "./resolution.js";
 
 export { sequenceActionUsed };
@@ -23,6 +24,7 @@ export function sequenceDeclarationError(
   if (draft.phase !== "actions") return "INVALID_PHASE";
   if (draft.aggressorPlayerId !== playerId) return "INVALID_TARGET";
   if (!sequenceRoleFits(draft.offensiveState, role)) return "INVALID_TARGET";
+  if (finisherBlockedByTag(draft, playerId, role)) return "INVALID_TARGET";
   if (!canSpendMeter(draft, playerId, meterCost)) return "INSUFFICIENT_METER";
   return null;
 }
@@ -165,8 +167,16 @@ function settleOffense(
     return;
   }
   if (negated) return;
-  const ends = role === "finisher" || link.endsSequence === true;
-  if (ends) {
+  const actor = draft.players[actorId];
+  if (actor !== undefined) setComboCount(draft, actorId, actor.comboCount + 1);
+  // A finisher finishes the sequence by the same turn pass as `endTurn`.
+  // Do not also `returnToOpen`: KO already used that, and a second pass
+  // would hand the turn back. A finished match stays on the KO result.
+  if (role === "finisher") {
+    passTurnAfterSequence(draft, actorId);
+    return;
+  }
+  if (link.endsSequence === true) {
     returnToOpen(draft, link.passesInitiative === true ? opponentOf(draft, actorId) : null);
     return;
   }
@@ -181,7 +191,11 @@ function settleOffense(
   });
 }
 
-/** Return the sequence to Open. Pass initiative only when `nextAggressor` is set. */
+/**
+ * Return the sequence to Open. Pass initiative only when `nextAggressor` is
+ * set. KO and a non-finisher `endsSequence` use this. A finisher and
+ * `END_SEQUENCE` pass the turn instead, so this must not call `endTurn`.
+ */
 export function returnToOpen(draft: Draft, nextAggressor: PlayerId | null): void {
   draft.offensiveState = "open";
   draft.usedSequenceActionIds = [];
@@ -193,11 +207,21 @@ export function returnToOpen(draft: Draft, nextAggressor: PlayerId | null): void
   });
 }
 
-/** Aggressor stops the sequence. Not a Priority Pass. Does not move initiative. */
+/**
+ * Aggressor stops the sequence. Not a Priority Pass. Ends the turn the same
+ * way as `endTurn`: the opposing player becomes the active player.
+ */
 export function endOffensiveSequence(draft: Draft, playerId: PlayerId): GameError | null {
   if (draft.phase !== "actions") return "INVALID_PHASE";
   if (draft.pendingDecision !== null) return "PENDING_DECISION";
   if (draft.aggressorPlayerId !== playerId) return "NOT_ACTIVE_PLAYER";
-  returnToOpen(draft, null);
+  passTurnAfterSequence(draft, playerId);
   return null;
+}
+
+function passTurnAfterSequence(draft: Draft, actorId: PlayerId): void {
+  if (draft.status === "finished") return;
+  draft.usedSequenceActionIds = [];
+  draft.pendingOffenseSettle = null;
+  endTurn(draft, actorId);
 }

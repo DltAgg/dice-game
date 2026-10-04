@@ -1112,17 +1112,17 @@ extend those.
 - Modify targets include the current roll, a permanent die-slot write, one Fighter’s moveset, an existing interaction’s target, and Tag.
 - Tag Windows may include the beginning and the end of the turn. At most one Tag per turn. Tag and Assist use the Chain. Normal Assist does not cost Meter.
 - One Meter pool for all three Fighters. It persists across turns and across a Tag. Gain it when you deal damage, when you take damage, or from an effect that says so. No Combo Meter. No card-mana curve.
+- A starter is legal only with no sequence in progress. An extender is legal only after a successful starter or extender. A finisher is legal only after a successful starter or extender, and a resolved finisher ends the turn. `END_SEQUENCE` ends the turn. It is not a Priority Pass. Combo count rises by 1 for each successful starter, extender, and finisher. A finisher is illegal after Tag on that turn (`tag-this-turn`).
 - At 0 HP a Fighter is KOed: no Tag, Assist still allowed, the sequence ends, initiative passes. Three KOed Fighters loses the game.
 - Defense is cards, not a rolled face.
 
 ### To test
 
-- A Finisher ends the sequence and returns play to Open.
 - The same Action cannot be used twice in one sequence. The face may still be part of a Technique. A later `Once Per Sequence` mark on specific Actions is not the rule yet.
 
 ### Open / deferred
 
-- Who is Aggressor after a voluntary sequence end, and after a Finisher returns play to Open. What moves Neutral into Open.
+- What moves Neutral into Open.
 - Exact Modify effects and scope. Where the Tag Windows sit inside `roll` / `actions`. A given Assist’s timing.
 - Hand, draw, discard, and card lifecycle. Deckbuilding and which cards belong to which Fighter. Dice customization and how a deck, the Fighters, and the dice are assembled. In-match die writes stay permanent.
 - Meter amounts. Who starts as Aggressor. Which dice are inputs.

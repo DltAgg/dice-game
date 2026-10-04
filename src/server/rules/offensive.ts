@@ -7,13 +7,31 @@ import { canSpendMeter } from "./meter.js";
 export const TURN_REROLL_KEY = "turn-reroll";
 
 /**
- * `open` accepts a starter. `combo` accepts an extender or a finisher.
- * `finished` accepts nothing.
+ * Once-per-turn key written by Tag. Declaring a finisher is illegal while
+ * it is set. The Tag command owns the write; this check only reads the key.
+ */
+export const TAG_THIS_TURN_KEY = "tag-this-turn";
+
+/**
+ * No sequence (`open`) accepts a starter. A sequence in progress (`combo`)
+ * accepts an extender or a finisher. `finished` accepts nothing.
  */
 export function sequenceRoleFits(state: OffensiveStateName, role: SequenceRole): boolean {
   if (state === "open") return role === "starter";
   if (state === "combo") return role === "extender" || role === "finisher";
   return false;
+}
+
+/** A finisher cannot be declared on a turn that already Tagged. */
+export function finisherBlockedByTag(
+  state: Pick<GameState, "players">,
+  playerId: PlayerId,
+  role: SequenceRole,
+): boolean {
+  if (role !== "finisher") return false;
+  const player = state.players[playerId];
+  if (player === undefined) return false;
+  return player.spentOncePerTurnKeys.includes(TAG_THIS_TURN_KEY);
 }
 
 /**

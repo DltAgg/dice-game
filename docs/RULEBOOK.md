@@ -485,13 +485,24 @@ During the Act there is an **Aggressor** and a **Defender**. Dice show named
 inputs. They are not action points. An Action you cannot legally continue
 with is not available. Declaring it does not end the sequence.
 
-Starter, Extender, and Finisher are properties of a lone face and of a
-Technique. A starter, once it resolves, moves the sequence from Open into
-Combo. In Combo, the next face or Technique is legal only when its own role
-is extender or finisher. Passing Priority inside a chain only yields
-Priority. Separately, the Aggressor may stop the offensive sequence and
-return it to Open. A Finisher also returns it to Open. Tag does not always
-do either.
+Starter, Extender, and Finisher are roles of a lone face and of a
+Technique. They are not turn phases. The turn is still roll, then actions.
+
+A starter is legal only when no sequence is in progress. When it resolves,
+it starts the sequence. An extender is legal only after a successful starter
+or extender, and it extends the sequence. A finisher is legal only after a
+successful starter or extender. When it resolves, it finishes the sequence
+and ends the turn: the opposing player becomes the active player. You cannot
+Tag and also play a finisher in the same turn. An action the sequence does
+not allow is not offered, and attempting it does not end the sequence.
+
+Each successful starter, extender, and finisher raises your combo count by
+one. A negated link does not. Combo count is not a phase and not Meter.
+
+Passing Priority inside a chain only yields Priority. Separately, the
+Aggressor may stop the sequence. That stop ends the turn. It is not a
+Priority Pass, and it does not leave you in Open to keep acting. Tag does
+not always end the sequence or end the turn.
 
 Immediately after the opening roll, you may reroll any number of your dice
 once, or keep them. Cards can change that roll or that reroll.

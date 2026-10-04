@@ -269,7 +269,7 @@ export interface GameState {
    * turn owner; a seizing reaction can move it. Not `activePlayerId`.
    */
   readonly aggressorPlayerId: PlayerId;
-  /** `open` or `combo`. A finisher returns to `open` (spec `030`). */
+  /** `open` when no sequence is in progress; `combo` while one is. Not a turn phase. */
   readonly offensiveState: OffensiveStateName;
   /** Action ids already used in this offensive sequence. Cleared on return to `open`. */
   readonly usedSequenceActionIds: readonly string[];

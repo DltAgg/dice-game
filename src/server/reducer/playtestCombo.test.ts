@@ -86,11 +86,15 @@ describe("playtest hits and techniques", () => {
       expectOk(advance(open, { type: "USE_FACE", playerId: P1, creatureId: vega })),
     );
     expect(combo.offensiveState).toBe("combo");
+    expect(combo.players[P1]?.comboCount).toBe(1);
     expect(legalFaceActions(combo, P1)).toEqual([]);
 
     const stopped = expectOk(advance(combo, { type: "END_SEQUENCE", playerId: P1 }));
+    expect(stopped.activePlayerId).toBe(P2);
+    expect(stopped.phase).toBe("roll");
     expect(stopped.offensiveState).toBe("open");
-    expect(legalFaceActions(stopped, P1)).toEqual([vega]);
+    expect(stopped.aggressorPlayerId).toBe(P2);
+    expect(legalFaceActions(stopped, P1)).toEqual([]);
   });
 
   it("enters Combo from a starter Technique, then accepts an extender Technique", () => {
@@ -115,6 +119,7 @@ describe("playtest hits and techniques", () => {
       ),
     );
     expect(combo.offensiveState).toBe("combo");
+    expect(combo.players[P1]?.comboCount).toBe(1);
     expect(legalFaceActions(combo, P1)).toEqual([]);
 
     const continued = show(withActive(combo, ryu), ryu, PROJECTILE);
@@ -134,5 +139,7 @@ describe("playtest hits and techniques", () => {
       ),
     );
     expect(extended.offensiveState).toBe("combo");
+    expect(extended.activePlayerId).toBe(P1);
+    expect(extended.players[P1]?.comboCount).toBe(2);
   });
 });
