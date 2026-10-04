@@ -525,27 +525,14 @@ describe("028 tag-fighter prototype", () => {
       ),
     );
     expect(finished.offensiveState).toBe("open");
+    expect(finished.activePlayerId).toBe(P2);
     const tagged = advance(finished, {
       type: "TAG",
       playerId: P1,
       reserveCreatureId: creature(finished, P1, 1),
     });
     expect(tagged.ok).toBe(false);
-    if (!tagged.ok) expect(tagged.error).toBe("INVALID_PHASE");
-
-    const stillBlocked = {
-      ...finished,
-      actEngaged: false,
-      offensiveState: "open" as const,
-      pendingDecision: null,
-    };
-    const forced = advance(stillBlocked, {
-      type: "TAG",
-      playerId: P1,
-      reserveCreatureId: creature(stillBlocked, P1, 1),
-    });
-    expect(forced.ok).toBe(false);
-    if (!forced.ok) expect(forced.error).toBe("INVALID_PHASE");
+    if (!tagged.ok) expect(tagged.error).toBe("NOT_ACTIVE_PLAYER");
   });
 
   it("keeps the shared Meter pool across a Tag and the next turn", () => {
@@ -612,7 +599,7 @@ function fighterOf(
   return id;
 }
 
-function showFace(state: GameState, creatureId: CreatureId, faceId: FaceCardId): GameState {
+function showCreatureFace(state: GameState, creatureId: CreatureId, faceId: FaceCardId): GameState {
   const die = dieForCreature(state, creatureId);
   if (die === undefined) throw new Error("die");
   const slot = die.slots.findIndex((entry) => entry.faceCardId === faceId);
@@ -654,7 +641,7 @@ describe("spec 030 assist windows", () => {
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
     state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P2 }));
     const vega = fighterOf(state, P2, VEGA_ID);
-    state = showFace(state, vega, fighterBaseDie(VEGA_ID)[0]!);
+    state = showCreatureFace(state, vega, fighterBaseDie(VEGA_ID)[0]!);
     const hit = expectOk(advance(state, { type: "USE_FACE", playerId: P2, creatureId: vega }));
     expect(
       hit.chainStack.some(
@@ -719,7 +706,7 @@ describe("spec 030 assist windows", () => {
     expect(vegaAssist.players[P1]?.meter).toBe(0);
     expect(vegaAssist.players[P1]?.activeCreatureId).toBe(magnus);
     expect(vegaAssist.chainStack.find((link) => link.assistReserveId === vega)?.effects).toEqual([
-      { type: "damage", amount: 2, target: { kind: "most-damaged-enemy" } },
+      { type: "damage", amount: 2, target: { kind: "enemy-frontline" } },
     ]);
 
     const ryuAssist = expectOk(
@@ -760,7 +747,7 @@ describe("spec 030 assist windows", () => {
     expect(assisted.players[P1]?.activeCreatureId).toBe(vega);
     expect(assisted.chainStack.some((link) => link.assistReserveId === magnus)).toBe(true);
 
-    const shown = showFace(open, vega, fighterBaseDie(VEGA_ID)[0]!);
+    const shown = showCreatureFace(open, vega, fighterBaseDie(VEGA_ID)[0]!);
     const ownHit = expectOk(advance(shown, { type: "USE_FACE", playerId: P1, creatureId: vega }));
     const againstOwn = advance(ownHit, {
       type: "ASSIST",

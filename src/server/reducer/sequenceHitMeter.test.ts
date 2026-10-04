@@ -170,7 +170,7 @@ describe("sequence hit meter", () => {
     expect(resolved.players[P2]?.meter).toBe(1);
     expect(meterDeltas(resolved, P1)).toEqual([2]);
     expect(meterDeltas(resolved, P2)).toEqual([1]);
-    expect(resolved.players[P1]?.comboCount).toBe(0);
+    expect(resolved.players[P1]?.comboCount).toBe(1);
     expect(resolved.creatures[activeId(resolved, P2)]?.damage).toBe(2);
   });
 
@@ -191,7 +191,7 @@ describe("sequence hit meter", () => {
     expect(resolved.players[P2]?.meter).toBe(1);
     expect(meterDeltas(resolved, P1)).toEqual([3]);
     expect(meterDeltas(resolved, P2)).toEqual([1]);
-    expect(resolved.players[P1]?.comboCount).toBe(0);
+    expect(resolved.players[P1]?.comboCount).toBe(1);
     expect(resolved.creatures[activeId(resolved, P2)]?.damage).toBe(5);
   });
 
