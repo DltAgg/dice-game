@@ -1,6 +1,5 @@
 import {
-  assistKey,
-  getCreatureDefinition,
+  assistDeclarationError,
   isLivingReserve,
   showingTechnique,
   tagWindow,
@@ -53,20 +52,21 @@ export function canDeclareAssist(
   playerId: PlayerId,
   reserveCreatureId: CreatureId,
 ): boolean {
-  if (!tagAssistPhaseOk(state)) return false;
-  if (state.activePlayerId !== playerId) return false;
-  const player = state.players[playerId];
-  if (player === undefined) return false;
-  if (!isLivingReserve(state, player, reserveCreatureId)) return false;
+  return assistDeclarationError(state, playerId, reserveCreatureId) === null;
+}
 
-  const creature = state.creatures[reserveCreatureId];
-  if (creature === undefined) return false;
-  const definition = getCreatureDefinition(creature.definitionId);
-  const effects = definition?.assistEffects ?? [];
-  if (effects.length === 0) return false;
-  if (player.spentOncePerTurnKeys.includes(assistKey(reserveCreatureId))) return false;
-
-  const showingAssist = showingTechnique(state, reserveCreatureId) === "assist";
-  if (showingAssist) return true;
-  return player.meter >= state.config.assistMeterCost;
+/**
+ * Tag stays on the turn-player `canAct` gate. Assist also opens for the
+ * defender who holds reaction priority, when `canAct` is still false.
+ */
+export function assistControlEnabled(
+  state: GameState,
+  playerId: PlayerId,
+  reserveCreatureId: CreatureId,
+  canAct: boolean,
+): boolean {
+  if (!canDeclareAssist(state, playerId, reserveCreatureId)) return false;
+  if (canAct) return true;
+  const pending = state.pendingDecision;
+  return pending?.type === "reaction-priority" && pending.priorityPlayerId === playerId;
 }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { getCreatureDefinition } from "../content/creatures.js";
 import { TAG_FIGHTER_RULES } from "../model/config.js";
-import type { DieFaceLayout } from "../model/dice.js";
+import type { DieFaceLayout, DieState } from "../model/dice.js";
 import {
+  asCreatureDefinitionId,
   asFaceCardId,
   type CreatureId,
   type CreatureDefinitionId,
@@ -9,7 +11,9 @@ import {
   type FaceCardId,
 } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { showingTechnique } from "../rules/fighters.js";
+import { dieForCreature, showingTechnique } from "../rules/fighters.js";
+import { hasLegalReactionOffer } from "../rules/reactions.js";
+import { createMatch } from "../setup/createMatch.js";
 import { advance } from "./reduce.js";
 import {
   asTestAttackId,
@@ -249,6 +253,18 @@ describe("028 tag-fighter prototype", () => {
     expect(declared.state.players[P1]?.activeCreatureId).not.toBe(reserve);
   });
 
+  it("assists for free when the reserve is not showing Assist and has no exceptional cost", () => {
+    let state = tagMatch();
+    state = show(state, P1, 1, 0);
+    const reserve = creature(state, P1, 1);
+    expect(showingTechnique(state, reserve)).not.toBe("assist");
+    const result = expectOk(
+      advance(state, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve }),
+    );
+    expect(result.players[P1]?.meter).toBe(0);
+    expect(result.players[P1]?.activeCreatureId).toBe(creature(state, P1, 0));
+  });
+
   it("runs ASSIST from a Reserve showing assist", () => {
     let state = tagMatch();
     state = show(state, P1, 1, 5);
@@ -266,7 +282,7 @@ describe("028 tag-fighter prototype", () => {
     state = show(state, P1, 1, 5);
     const reserve = creature(state, P1, 1);
     state = expectOk(
-      advance(state, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve }),
+      advanceResolvingChain(state, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve }),
     );
     const again = advance(state, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve });
     expect(again.ok).toBe(false);
@@ -547,5 +563,211 @@ describe("028 tag-fighter prototype", () => {
     const ended = expectOk(advance(tagged, { type: "END_TURN", playerId: P1 }));
     expect(ended.players[P1]?.meter).toBe(3);
     expect(ended.players[P2]?.meter).toBe(0);
+  });
+});
+
+const VEGA_ID = asCreatureDefinitionId("creature-vega");
+const MAGNUS_ID = asCreatureDefinitionId("creature-magnus");
+const RYU_ID = asCreatureDefinitionId("creature-ryu");
+
+function fighterBaseDie(id: CreatureDefinitionId): DieFaceLayout {
+  const die = getCreatureDefinition(id)?.baseDie;
+  if (die === undefined || die.length !== 6) throw new Error(String(id));
+  return [die[0]!, die[1]!, die[2]!, die[3]!, die[4]!, die[5]!];
+}
+
+function liveAssistMatch(): GameState {
+  const squad = [VEGA_ID, MAGNUS_ID, RYU_ID] as const;
+  const startingDice = squad.map((id) => fighterBaseDie(id));
+  const faceDeck = [...new Set(startingDice.flat())];
+  const seat = { squad, deck: [] as const, faceDeck, startingDice };
+  return createMatch({
+    matchId: "match-assist-windows",
+    seed: 3,
+    config: { ...TAG_FIGHTER_RULES, deckMinCards: 0, deckOutEnabled: false },
+    players: [
+      { id: P1, ...seat },
+      { id: P2, ...seat },
+    ],
+  });
+}
+
+function p1Actions(): GameState {
+  const rolled = expectOk(advance(liveAssistMatch(), { type: "ROLL_DICE", playerId: P1 }));
+  if (rolled.phase !== "actions" || rolled.pendingDecision !== null) {
+    throw new Error(`expected an open actions window, phase ${rolled.phase}`);
+  }
+  return rolled;
+}
+
+function fighterOf(
+  state: GameState,
+  playerId: typeof P1 | typeof P2,
+  definitionId: CreatureDefinitionId,
+): CreatureId {
+  const id = state.players[playerId]?.creatureIds.find(
+    (creatureId) => state.creatures[creatureId]?.definitionId === definitionId,
+  );
+  if (id === undefined) throw new Error(String(definitionId));
+  return id;
+}
+
+function showFace(state: GameState, creatureId: CreatureId, faceId: FaceCardId): GameState {
+  const die = dieForCreature(state, creatureId);
+  if (die === undefined) throw new Error("die");
+  const slot = die.slots.findIndex((entry) => entry.faceCardId === faceId);
+  if (slot < 0) throw new Error(faceId);
+  const next: DieState = { ...die, rolledSlotIndex: slot };
+  return { ...state, dice: { ...state.dice, [die.id]: next } };
+}
+
+function withActiveFighter(
+  state: GameState,
+  playerId: typeof P1 | typeof P2,
+  creatureId: CreatureId,
+): GameState {
+  const player = state.players[playerId];
+  if (player === undefined) throw new Error("player");
+  return {
+    ...state,
+    players: { ...state.players, [playerId]: { ...player, activeCreatureId: creatureId } },
+  };
+}
+
+function withSeatMeter(
+  state: GameState,
+  playerId: typeof P1 | typeof P2,
+  meter: number,
+): GameState {
+  const player = state.players[playerId];
+  if (player === undefined) throw new Error("player");
+  return { ...state, players: { ...state.players, [playerId]: { ...player, meter } } };
+}
+
+describe("spec 030 assist windows", () => {
+  it("queues Magnus Wall against an opponent hit at 0 Meter with no Assist face", () => {
+    for (const id of [VEGA_ID, MAGNUS_ID, RYU_ID]) {
+      expect(getCreatureDefinition(id)?.exceptionalAssistMeter).toBe(0);
+    }
+
+    let state = p1Actions();
+    state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
+    state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P2 }));
+    const vega = fighterOf(state, P2, VEGA_ID);
+    state = showFace(state, vega, fighterBaseDie(VEGA_ID)[0]!);
+    const hit = expectOk(advance(state, { type: "USE_FACE", playerId: P2, creatureId: vega }));
+    expect(
+      hit.chainStack.some(
+        (link) =>
+          link.kind === "combat-action" &&
+          link.sequenceRole === "starter" &&
+          link.controllerId === P2,
+      ),
+    ).toBe(true);
+    state = expectOk(advance(hit, { type: "PASS_PRIORITY", playerId: P2 }));
+    expect(state.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P1,
+    });
+    state = withSeatMeter(state, P1, 0);
+    expect(hasLegalReactionOffer(state, P1)).toBe(true);
+
+    const magnus = fighterOf(state, P1, MAGNUS_ID);
+    expect(showingTechnique(state, magnus)).not.toBe("assist");
+    const active = state.players[P1]?.activeCreatureId;
+    const combo = state.players[P1]?.comboCount;
+    const offense = state.offensiveState;
+
+    const assisted = expectOk(
+      advance(state, { type: "ASSIST", playerId: P1, reserveCreatureId: magnus }),
+    );
+    expect(assisted.chainStack.find((link) => link.assistReserveId === magnus)?.effects).toEqual([
+      {
+        type: "arm-redirect-damage",
+        amount: 4,
+        target: { kind: "source-creature" },
+      },
+    ]);
+    expect(assisted.players[P1]?.meter).toBe(0);
+    expect(assisted.players[P1]?.activeCreatureId).toBe(active);
+    expect(assisted.players[P1]?.comboCount).toBe(combo);
+    expect(assisted.offensiveState).toBe(offense);
+    expect(assisted.creatures[magnus]?.redirectDamageThisTurn).toBe(0);
+    expect(assisted.pendingDecision).toMatchObject({
+      type: "reaction-priority",
+      priorityPlayerId: P1,
+    });
+    expect(
+      assisted.chainStack.some((link) => link.controllerId === P2 && link.sequenceRole === "starter"),
+    ).toBe(true);
+  });
+
+  it("lets Vega and Ryu Assist on your turn with no chain and 0 Meter", () => {
+    let open = p1Actions();
+    const magnus = fighterOf(open, P1, MAGNUS_ID);
+    const vega = fighterOf(open, P1, VEGA_ID);
+    const ryu = fighterOf(open, P1, RYU_ID);
+    open = withSeatMeter(withActiveFighter(open, P1, magnus), P1, 0);
+    expect(open.pendingDecision).toBeNull();
+    expect(open.chainStack).toHaveLength(0);
+    expect(showingTechnique(open, vega)).not.toBe("assist");
+    expect(showingTechnique(open, ryu)).not.toBe("assist");
+
+    const vegaAssist = expectOk(
+      advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: vega }),
+    );
+    expect(vegaAssist.players[P1]?.meter).toBe(0);
+    expect(vegaAssist.players[P1]?.activeCreatureId).toBe(magnus);
+    expect(vegaAssist.chainStack.find((link) => link.assistReserveId === vega)?.effects).toEqual([
+      { type: "damage", amount: 2, target: { kind: "most-damaged-enemy" } },
+    ]);
+
+    const ryuAssist = expectOk(
+      advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu }),
+    );
+    expect(ryuAssist.players[P1]?.meter).toBe(0);
+    expect(ryuAssist.chainStack.find((link) => link.assistReserveId === ryu)?.effects).toEqual([
+      { type: "negate-card", cardTypes: "any" },
+    ]);
+
+    const blocked = advance(withActiveFighter(open, P1, vega), {
+      type: "ASSIST",
+      playerId: P1,
+      reserveCreatureId: vega,
+    });
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) expect(blocked.error).toBe("INVALID_TARGET");
+  });
+
+  it("lets a KOed Reserve Assist and refuses Assist against your own hit", () => {
+    const open = p1Actions();
+    const magnus = fighterOf(open, P1, MAGNUS_ID);
+    const vega = fighterOf(open, P1, VEGA_ID);
+    const knocked = {
+      ...open,
+      creatures: {
+        ...open.creatures,
+        [magnus]: { ...open.creatures[magnus]!, defeated: true, damage: 99 },
+      },
+    };
+    const assisted = expectOk(
+      advance(withSeatMeter(knocked, P1, 0), {
+        type: "ASSIST",
+        playerId: P1,
+        reserveCreatureId: magnus,
+      }),
+    );
+    expect(assisted.players[P1]?.activeCreatureId).toBe(vega);
+    expect(assisted.chainStack.some((link) => link.assistReserveId === magnus)).toBe(true);
+
+    const shown = showFace(open, vega, fighterBaseDie(VEGA_ID)[0]!);
+    const ownHit = expectOk(advance(shown, { type: "USE_FACE", playerId: P1, creatureId: vega }));
+    const againstOwn = advance(ownHit, {
+      type: "ASSIST",
+      playerId: P1,
+      reserveCreatureId: magnus,
+    });
+    expect(againstOwn.ok).toBe(false);
+    if (!againstOwn.ok) expect(againstOwn.error).toBe("INVALID_PHASE");
   });
 });

@@ -9,6 +9,7 @@ import {
 } from "../reducer/chain.js";
 import type { Draft } from "../reducer/draft.js";
 import { canAffordPlay, handOf, isReactionCard, ritualsOf } from "./cards.js";
+import { assistDeclarationError } from "./fighters.js";
 
 /** Top of the reaction chain (LILO), or `undefined` when empty. */
 export function topChainLinkOf(state: GameState): ChainLink | undefined {
@@ -144,8 +145,8 @@ export function isEnabledRitualReaction(
 }
 
 /**
- * Whether the priority seat has any Respond / ritual-activate offer the board
- * would enable. Query only — does not pass, spend, or mutate.
+ * Whether the priority seat has a Respond, ritual-activate, or Assist the
+ * board would enable. Query only — does not pass, spend, or mutate.
  */
 export function hasLegalReactionOffer(state: GameState, playerId: PlayerId): boolean {
   for (const card of handOf(state, playerId)) {
@@ -159,6 +160,12 @@ export function hasLegalReactionOffer(state: GameState, playerId: PlayerId): boo
     const definition = getCard(card.cardId);
     if (definition !== undefined && isEnabledRitualReaction(state, playerId, definition)) {
       return true;
+    }
+  }
+  const player = state.players[playerId];
+  if (player !== undefined) {
+    for (const creatureId of player.creatureIds) {
+      if (assistDeclarationError(state, playerId, creatureId) === null) return true;
     }
   }
   return false;

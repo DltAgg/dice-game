@@ -1,6 +1,6 @@
 import type { CreatureId, GameState, PlayerId } from "@server";
 import { btnHand } from "../styles";
-import { canDeclareAssist, canDeclareTag } from "./tagAssistLegality";
+import { assistControlEnabled, canDeclareTag } from "./tagAssistLegality";
 
 /** Tag / Assist for one living reserve, shown on that fighter’s card. */
 export function ReserveTagAssist({
@@ -24,7 +24,7 @@ export function ReserveTagAssist({
   onAssist: (reserveCreatureId: CreatureId) => void;
 }) {
   const tagOk = mayTag && canDeclareTag(state, playerId, reserveId);
-  const assistOk = canAct && canDeclareAssist(state, playerId, reserveId);
+  const assistOk = assistControlEnabled(state, playerId, reserveId, canAct);
 
   return (
     <div className="mt-2 flex flex-wrap gap-1">

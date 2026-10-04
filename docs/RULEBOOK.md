@@ -446,18 +446,20 @@ face) fires again.
   also play a Finisher.
   Tag is a Chain object, so it can be Responded to or Modified. A KOed
   Fighter cannot Tag, and a KO does not switch Active for you.
-- **[Assist]:** a Reserve, including a KOed Reserve, fires its Assist on the
-  Chain. Free if **that** Reserve’s die shows Assist; otherwise spend Meter
-  (**1**, or that Fighter’s exceptional cost). Once per named Reserve per turn.
-  Assist does not change the Active Fighter.
+- **[Assist]:** only a Reserve fires its Assist, including a Reserve at 0 HP.
+  The Active Fighter stays Active. You may Assist on your own turn during the
+  actions phase when no Chain is open. You may also Assist when you have
+  priority and an opponent’s hit or technique is on the Chain. Once per named
+  Reserve per turn. Any showing face is legal. Meter is spent when that
+  Fighter’s exceptional Assist cost is greater than 0.
 - **Meter:** cap **8**, one pool for the team. It stays across turns and Tags.
   A sequence hit that conducts grants 2 (light), 3 (medium), or 4 (heavy)
   to the player who declared the hit, and 1 to the player who owns the
   Fighter the hit was declared against. Kick and punch do not change the
   amount. A negated hit grants nothing. That hit does not also grant 1
   Meter per HP lost. Cards may also print a Meter spend.
-- **Combo:** +1 when Active successfully declares an attack; 0 on Tag,
-  KO-promote, and end of turn.
+- **Combo:** +1 for each successful starter, extender, and finisher. A
+  negated link does not count. Resets on Tag, KO-promote, and end of turn.
 - In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
   face change). No temporary face replacement.
 
@@ -539,10 +541,13 @@ of the exchange.
 
 Tag is not a card. A turn can offer an opening Tag window and a closing
 one. You can Tag only once in the turn, and only in one of those windows.
-Tag does not spend Meter. Assist is printed on the Fighter, uses the same chain, and
-does not spend Meter unless that Assist is exceptional. One Meter pool is
-shared by all three Fighters. It stays when you Tag and when the turn
-changes. A sequence hit that conducts grants Meter from its strength, as
+Tag does not spend Meter. Assist is printed on the Fighter and uses the same
+chain. Declaring it opens priority for you. On your turn during the actions
+phase you may Assist when no Chain is open. You may also Assist when you have
+priority and an opponent’s hit or technique is on the Chain. Meter is spent
+when that Fighter’s exceptional Assist cost is greater than 0. One Meter
+pool is shared by all three Fighters. It stays when you Tag and when the
+turn changes. A sequence hit that conducts grants Meter from its strength, as
 in the Meter rule above. A negated hit grants nothing.
 
 At 0 HP a Fighter is KOed. They cannot Tag. They can still Assist. The

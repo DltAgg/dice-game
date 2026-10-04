@@ -2,7 +2,7 @@ import { getCreatureDefinition } from "../../content/creatures.js";
 import type { GameError } from "../../model/errors.js";
 import type { CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
-import { assistKey, showingTechnique } from "../../rules/fighters.js";
+import { assistDeclarationError, assistKey } from "../../rules/fighters.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
 import { spendMeter } from "../meter.js";
@@ -14,25 +14,19 @@ export function assist(
   playerId: PlayerId,
   reserveCreatureId: CreatureId,
 ): GameError | null {
-  if (draft.phase !== "actions") return "INVALID_PHASE";
+  const declared = assistDeclarationError(draft, playerId, reserveCreatureId);
+  if (declared !== null) return declared;
+
   const player = draft.players[playerId];
   if (player === undefined) return "UNKNOWN_ENTITY";
-  if (player.activeCreatureId === reserveCreatureId) return "INVALID_TARGET";
-  if (!player.creatureIds.includes(reserveCreatureId)) return "INVALID_TARGET";
-
   const creature = draft.creatures[reserveCreatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
   const definition = getCreatureDefinition(creature.definitionId);
   const effects = definition?.assistEffects ?? [];
-  if (effects.length === 0) return "CARD_HAS_NO_EFFECT";
+  if (definition === undefined || effects.length === 0) return "CARD_HAS_NO_EFFECT";
 
-  if (player.spentOncePerTurnKeys.includes(assistKey(reserveCreatureId))) {
-    return "ALREADY_USED";
-  }
-
-  const showingAssist = showingTechnique(draft, reserveCreatureId) === "assist";
-  if (!showingAssist) {
-    const cost = definition?.exceptionalAssistMeter ?? draft.config.assistMeterCost;
+  const cost = definition.exceptionalAssistMeter ?? 0;
+  if (cost > 0) {
     const paid = spendMeter(draft, playerId, cost);
     if (paid !== null) return paid;
   }

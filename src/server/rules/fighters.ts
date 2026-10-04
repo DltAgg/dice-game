@@ -3,6 +3,7 @@ import { getFaceCard } from "../content/faces.js";
 import type { CardDefinition } from "../model/cards.js";
 import type { AttackDefinition, CreatureState } from "../model/creatures.js";
 import type { DieState } from "../model/dice.js";
+import type { GameError } from "../model/errors.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { GameState, PlayerState } from "../model/state.js";
 import type { Technique } from "../model/techniques.js";
@@ -68,6 +69,64 @@ export function techniquesFuelAttack(
 
 export function assistKey(creatureId: CreatureId): string {
   return `assist:${creatureId}`;
+}
+
+/**
+ * Own turn in the actions phase, or priority against an opponent’s hit or
+ * technique. A KOed Reserve may Assist. The Active Fighter may not. Meter is
+ * required only when `exceptionalAssistMeter` is greater than 0. Spec `030`.
+ */
+export function assistDeclarationError(
+  state: Pick<
+    GameState,
+    | "status"
+    | "phase"
+    | "pendingDecision"
+    | "activePlayerId"
+    | "chainStack"
+    | "players"
+    | "creatures"
+  >,
+  playerId: PlayerId,
+  reserveCreatureId: CreatureId,
+): GameError | null {
+  if (state.status === "finished") return "GAME_FINISHED";
+
+  const pending = state.pendingDecision;
+  if (pending?.type === "reaction-priority") {
+    if (pending.priorityPlayerId !== playerId) return "NOT_PRIORITY_PLAYER";
+    const opposed = state.chainStack.some(
+      (link) =>
+        link.kind === "combat-action" &&
+        link.sequenceRole !== undefined &&
+        link.controllerId !== playerId,
+    );
+    if (!opposed) return "INVALID_PHASE";
+  } else if (pending !== null) {
+    return "PENDING_DECISION";
+  } else if (state.phase !== "actions") {
+    return "INVALID_PHASE";
+  } else if (state.activePlayerId !== playerId) {
+    return "NOT_ACTIVE_PLAYER";
+  }
+
+  const player = state.players[playerId];
+  if (player === undefined) return "UNKNOWN_ENTITY";
+  if (player.activeCreatureId === reserveCreatureId) return "INVALID_TARGET";
+  if (!player.creatureIds.includes(reserveCreatureId)) return "INVALID_TARGET";
+
+  const creature = state.creatures[reserveCreatureId];
+  if (creature === undefined) return "UNKNOWN_ENTITY";
+  const definition = getCreatureDefinition(creature.definitionId);
+  const effects = definition?.assistEffects ?? [];
+  if (definition === undefined || effects.length === 0) return "CARD_HAS_NO_EFFECT";
+  if (player.spentOncePerTurnKeys.includes(assistKey(reserveCreatureId))) {
+    return "ALREADY_USED";
+  }
+
+  const cost = definition.exceptionalAssistMeter ?? 0;
+  if (cost > 0 && player.meter < cost) return "INSUFFICIENT_METER";
+  return null;
 }
 
 export function cardRestrictionError(

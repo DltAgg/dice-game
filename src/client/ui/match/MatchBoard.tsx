@@ -447,7 +447,8 @@ export function MatchBoard() {
   };
 
   const onAssistReserve = (reserveCreatureId: CreatureId) => {
-    tryDispatch({ type: "ASSIST", playerId: activeId, reserveCreatureId });
+    if (isSpectator) return;
+    tryDispatch({ type: "ASSIST", playerId: actingId, reserveCreatureId });
   };
 
   const canEndSequence =

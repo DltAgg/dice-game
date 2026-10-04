@@ -514,7 +514,7 @@ describe("030 card behavior", () => {
     expect(resolved.players[P1]?.activeCreatureId).toBe(creatureAt(carded, P1, 1));
   });
 
-  it("keeps normal Assist free and charges the Fighter's exceptional Assist", () => {
+  it("charges exceptional Assist Meter and does not waive it for an Assist face", () => {
     install();
     const base = show(matchWith(ASSIST_SQUAD), P1, 0, 0);
     const reserve = creatureAt(base, P1, 1);
@@ -543,10 +543,13 @@ describe("030 card behavior", () => {
         },
       },
     };
-    const free = resolveOpenChain(
-      expectOk(advance(showing, { type: "ASSIST", playerId: P1, reserveCreatureId: reserve })),
-    );
-    expect(free.players[P1]?.meter).toBe(0);
+    const stillCharged = advance(showing, {
+      type: "ASSIST",
+      playerId: P1,
+      reserveCreatureId: reserve,
+    });
+    expect(stillCharged.ok).toBe(false);
+    if (!stillCharged.ok) expect(stillCharged.error).toBe("INSUFFICIENT_METER");
   });
 
   it("spends Meter only for the exceptional mode", () => {

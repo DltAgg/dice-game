@@ -311,18 +311,25 @@ switch still resets that player's combo count.
 
 ### Assist
 
-Assist belongs to the Fighter, not to the card system. A Reserve Fighter’s
-Assist affects the current situation and that Fighter stays in Reserve.
+Assist belongs to the Fighter, not to the card system. Only a Reserve
+Fighter’s Assist affects the current situation, and that Fighter stays in
+Reserve. The Active Fighter stays Active.
+
+A player may Assist on their own turn during the actions phase even when
+no Chain is open. A player may also Assist when they have priority against
+an opponent’s hit or technique: a combat-action sequence link that opponent
+controls is on the Chain, and the reaction window gives this player
+priority. Magnus Wall, Vega Cross, and Ryu Seal use these same windows.
 
 Normal Assist does not cost Meter. It uses the same Chain as other
 operations: it can be added, Responded to, Modified, and resolved last-in,
-first-out. It is legal when its own timing and conditions are legal. Those
-conditions are part of that Fighter’s Assist. They may be open whenever the
-player has Priority, or they may be narrower. Do not add an Assist
-resolution system, and do not hard-code a list of enhanced Assists.
+first-out. Declaring it opens priority for the player who declared it.
+Do not add an Assist resolution system, and do not hard-code a list of
+enhanced Assists.
 
-Meter is not the cost of having an Assist. Meter is for an exceptional
-Assist or for breaking a restriction. A KOed Fighter can still Assist.
+Meter is not the cost of having an Assist. Spend Meter only when that
+Fighter’s exceptional Assist cost is greater than 0. Any showing face is
+legal. A KOed Fighter can still Assist. Once per Reserve per turn.
 
 ### Meter
 
@@ -682,8 +689,9 @@ Do not implement these as if they were decided.
   the scope/duration set.
 - Which cards spend exceptional Meter, and the amount of any Meter grant.
   The sources above are decided. The numbers are data.
-- The timing condition on a particular Assist, beyond “that Fighter’s
-  Assist says when.”
+- The timing condition on a particular Assist, beyond the shared windows:
+  your own actions phase with no Chain, or priority against an opponent’s
+  hit or technique.
 - Who starts as Aggressor at the beginning of the match.
 - Anything not listed under Decided or To test.
 
@@ -716,11 +724,16 @@ Aligned with this revision:
   Opening Tag does not end the turn. Closing Tag switches on conduct,
   then passes the turn. A Finisher already resolved this turn makes Tag
   illegal. There is no in-chain Tag-cancel spend. A KOed Active cannot Tag.
-- `ASSIST` stays a Chain object. A KOed Reserve can Assist.
+- `ASSIST` is a Chain object. A KOed Reserve can Assist. Assist is legal
+  on your turn in the actions phase with no Chain open, and when you have
+  priority against an opponent’s hit or technique. Meter is spent only
+  when that Fighter’s `exceptionalAssistMeter` is greater than 0.
   KO does not switch the Active Fighter. It ends the sequence and passes
   initiative. Three KOed Fighters still loses when `wipeVictory` is on.
-- Attack Strike damage grants the existing per-HP amount to the dealer
-  and to the player who was hit. No second rate was added.
+- A sequence hit grants Meter from `hitStrength`: light 2, medium 3, or
+  heavy 4 to the player who declared it, and 1 to the owner of the Fighter
+  it was declared against. A negated hit grants nothing. That hit does not
+  also grant Meter per HP lost.
 - Opening hands, the per-turn draw, the copy cap, deck-out, and one-shot
   versus persistent use the existing deck, hand, graveyard, and in-play
   lists. `deckSize` null still checks the previous range. `maxHandSize`
