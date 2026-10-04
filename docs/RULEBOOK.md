@@ -95,9 +95,10 @@ Each player has:
   the roll does not rewrite the die. The next match starts from the base
   die again. A Technique's other face comes from another of your dice,
   never the opponent's.
-- **Meter** (0–8): combat momentum. Spend on Tag-cancel, Assist (when the
-  technique is not showing), and some cards. Gain Meter when your attack
-  Strike actually removes HP.
+- **Meter** (0–8): combat momentum. A sequence hit that conducts grants
+  2, 3, or 4 to the player who declared it (light, medium, or heavy) and
+  1 to the player who owns the Fighter it was declared against. A negated
+  hit grants nothing.
 - **Combo:** increments when your Active Fighter successfully declares an
   attack; resets on Tag, KO-promote, and end of turn.
 - One hand, one tactics deck (top-first), one graveyard, plus equipment,
@@ -440,8 +441,11 @@ face) fires again.
   (**1**, or that Fighter’s exceptional cost). Once per named Reserve per turn.
   Assist does not change the Active Fighter.
 - **Meter:** cap **8**, one pool for the team. It stays across turns and Tags.
-  On an attack Strike, the dealer and the Fighter who was hit each gain 1 per
-  HP actually lost. Cards may also print a Meter spend.
+  A sequence hit that conducts grants 2 (light), 3 (medium), or 4 (heavy)
+  to the player who declared the hit, and 1 to the player who owns the
+  Fighter the hit was declared against. Kick and punch do not change the
+  amount. A negated hit grants nothing. That hit does not also grant 1
+  Meter per HP lost. Cards may also print a Meter spend.
 - **Combo:** +1 when Active successfully declares an attack; 0 on Tag,
   KO-promote, and end of turn.
 - In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
@@ -516,8 +520,8 @@ at the end. You can Tag only once in the turn. The normal Tag does not
 spend Meter. Assist is printed on the Fighter, uses the same chain, and
 does not spend Meter unless that Assist is exceptional. One Meter pool is
 shared by all three Fighters. It stays when you Tag and when the turn
-changes. You can gain it by dealing damage, by taking damage, or from an
-effect that says so.
+changes. A sequence hit that conducts grants Meter from its strength, as
+in the Meter rule above. A negated hit grants nothing.
 
 At 0 HP a Fighter is KOed. They cannot Tag. They can still Assist. The
 sequence ends and the opponent takes initiative. When all three of your

@@ -76,6 +76,7 @@ export function useFace(
       sequenceRole: role,
       meterCost: face.meterCost ?? 0,
       meterGain: face.meterGain ?? 0,
+      ...(face.hitStrength !== undefined ? { hitStrength: face.hitStrength } : {}),
       sequenceActionId: `face:${face.id}`,
       endsSequence: face.endsSequence === true,
       passesInitiative: face.passesInitiative === true,

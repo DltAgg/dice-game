@@ -12,7 +12,7 @@
     {
       "type": "damage",
       "amount": 2,
-      "target": { "kind": "most-damaged-enemy" }
+      "target": { "kind": "enemy-frontline" }
     }
   ],
   "baseDie": [

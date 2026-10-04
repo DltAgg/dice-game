@@ -1,5 +1,6 @@
 import type { EffectDefinition } from "../model/effects.js";
 import type { GameError } from "../model/errors.js";
+import type { HitStrength } from "../model/hitClass.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { SequenceRole } from "../model/offensive.js";
 import type { ChainLink } from "../model/state.js";
@@ -8,7 +9,7 @@ import { sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
 import { opponentOf } from "../rules/creatures.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "./chain.js";
 import { emit, type Draft } from "./draft.js";
-import { grantMeter, spendMeter } from "./meter.js";
+import { grantSequenceHitMeter, spendMeter } from "./meter.js";
 import { drainResolution, pushEffect } from "./resolution.js";
 
 export { sequenceActionUsed };
@@ -47,6 +48,7 @@ export function openCombatAction(
     readonly sequenceRole: SequenceRole;
     readonly meterCost: number;
     readonly meterGain: number;
+    readonly hitStrength?: HitStrength;
     readonly sequenceActionId: string;
     readonly endsSequence?: boolean;
     readonly passesInitiative?: boolean;
@@ -66,6 +68,7 @@ export function openCombatAction(
     sequenceRole: args.sequenceRole,
     meterCost: args.meterCost,
     meterGain: args.meterGain,
+    ...(args.hitStrength !== undefined ? { hitStrength: args.hitStrength } : {}),
     sequenceActionId: args.sequenceActionId,
     endsSequence: args.sequenceRole === "finisher" || args.endsSequence === true,
     passesInitiative: args.passesInitiative === true,
@@ -93,7 +96,7 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
     const spent = spendMeter(draft, link.controllerId, link.meterCost ?? 0);
     blocked = spent !== null;
     if (!blocked) {
-      grantMeter(draft, link.controllerId, link.meterGain ?? 0);
+      grantSequenceHitMeter(draft, link);
       for (const effect of [...link.effects].reverse()) {
         pushEffect(
           draft,

@@ -133,6 +133,7 @@ export function useTechnique(
       sequenceRole: role,
       meterCost: technique.meterCost ?? 0,
       meterGain: technique.meterGain ?? 0,
+      hitStrength: technique.hitStrength,
       sequenceActionId,
       endsSequence: technique.endsSequence === true,
       passesInitiative: technique.passesInitiative === true,
