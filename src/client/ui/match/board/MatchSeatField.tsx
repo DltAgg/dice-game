@@ -21,6 +21,7 @@ export function MatchSeatField({
   absorbArmed,
   actingPlayerId,
   canAct,
+  mayTag = true,
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
@@ -39,6 +40,7 @@ export function MatchSeatField({
   absorbArmed: boolean;
   actingPlayerId: PlayerId;
   canAct: boolean;
+  mayTag?: boolean;
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
@@ -72,6 +74,7 @@ export function MatchSeatField({
         {...shared}
         onTag={onTag}
         onAssist={onAssist}
+        mayTag={mayTag}
         {...(onUseFace !== undefined ? { onUseFace } : {})}
         {...(onUseTechnique !== undefined ? { onUseTechnique } : {})}
       />

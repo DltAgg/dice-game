@@ -6,6 +6,7 @@ import {
   type CreatureId,
   type CreatureDefinitionId,
   type DieId,
+  type FaceCardId,
 } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { showingTechnique } from "../rules/fighters.js";
@@ -147,6 +148,25 @@ function show(
   };
 }
 
+function showFace(state: GameState, playerId: typeof P1 | typeof P2, faceId: FaceCardId): GameState {
+  const dieId = state.players[playerId]?.dieIds[0];
+  if (dieId === undefined) throw new Error("missing die");
+  const die = state.dice[dieId];
+  if (die === undefined) throw new Error("missing die");
+  return {
+    ...state,
+    phase: "actions",
+    dice: {
+      ...state.dice,
+      [dieId]: {
+        ...die,
+        rolledSlotIndex: 0,
+        slots: die.slots.map((slot, index) => (index === 0 ? { ...slot, faceCardId: faceId } : slot)),
+      },
+    },
+  };
+}
+
 function creature(state: GameState, playerId: typeof P1 | typeof P2, index: number): CreatureId {
   const id = state.players[playerId]?.creatureIds[index];
   if (id === undefined) throw new Error("missing fighter");
@@ -186,9 +206,29 @@ describe("028 tag-fighter prototype", () => {
     );
     expect(result.players[P1]?.activeCreatureId).toBe(reserve);
     expect(result.players[P1]?.meter).toBe(0);
+    expect(result.activePlayerId).toBe(P1);
+    expect(result.phase).toBe("actions");
+    expect(result.players[P1]?.spentOncePerTurnKeys).toContain("tag-this-turn");
   });
 
-  it("spends Tag-cancel meter when Tag is added to an open chain", () => {
+  it("keeps the opening window open across the one reroll", () => {
+    let state = show(tagMatch(), P1, 0, 0);
+    state = { ...state, rerollAvailable: true };
+    const dieId = state.players[P1]?.dieIds[0];
+    if (dieId === undefined) throw new Error("missing die");
+    const rerolled = expectOk(
+      advance(state, { type: "REROLL_DICE", playerId: P1, dieIds: [dieId] }),
+    );
+    expect(rerolled.actEngaged).toBe(false);
+    const reserve = creature(rerolled, P1, 1);
+    const tagged = expectOk(
+      advanceResolvingChain(rerolled, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
+    );
+    expect(tagged.players[P1]?.activeCreatureId).toBe(reserve);
+    expect(tagged.activePlayerId).toBe(P1);
+  });
+
+  it("refuses Tag on an open chain and does not spend Meter", () => {
     let state = tagMatch();
     state = show(state, P1, 0, 0);
     const p1 = state.players[P1]!;
@@ -202,13 +242,11 @@ describe("028 tag-fighter prototype", () => {
       players: { ...state.players, [P1]: { ...p1, meter: 2 } },
     };
     const reserve = creature(state, P1, 1);
-    const declared = expectOk(
-      advance(state, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
-    );
-    expect(declared.players[P1]?.meter).toBe(0);
-    expect(declared.chainStack.some((link) => link.tagReserveId === reserve)).toBe(true);
-    const result = resolveOpenChain(declared);
-    expect(result.players[P1]?.activeCreatureId).toBe(reserve);
+    const declared = advance(state, { type: "TAG", playerId: P1, reserveCreatureId: reserve });
+    expect(declared.ok).toBe(false);
+    if (!declared.ok) expect(declared.error).toBe("INVALID_PHASE");
+    expect(declared.state.players[P1]?.meter).toBe(2);
+    expect(declared.state.players[P1]?.activeCreatureId).not.toBe(reserve);
   });
 
   it("runs ASSIST from a Reserve showing assist", () => {
@@ -371,7 +409,7 @@ describe("028 tag-fighter prototype", () => {
     expect(assist.creatures[creature(ko, P1, 0)]?.shields).toBe(0);
   });
 
-  it("allows one closing Tag and refuses a second Tag that turn", () => {
+  it("does not treat the rest of the actions phase as the closing window", () => {
     let state = tagMatch();
     state = show(state, P1, 0, 0);
     const acted = expectOk(
@@ -384,19 +422,114 @@ describe("028 tag-fighter prototype", () => {
       }),
     );
     expect(acted.actEngaged).toBe(true);
-    const reserve = creature(acted, P1, 1);
-    const tagged = expectOk(
-      advanceResolvingChain(acted, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
-    );
-    expect(tagged.players[P1]?.activeCreatureId).toBe(reserve);
-    expect(tagged.chainStack).toHaveLength(0);
-    const again = advance(tagged, {
+    expect(acted.offensiveState).toBe("open");
+    const tooSoon = advance(acted, {
       type: "TAG",
       playerId: P1,
-      reserveCreatureId: creature(tagged, P1, 2),
+      reserveCreatureId: creature(acted, P1, 1),
+    });
+    expect(tooSoon.ok).toBe(false);
+    if (!tooSoon.ok) expect(tooSoon.error).toBe("INVALID_PHASE");
+  });
+
+  it("tags in the closing window after the chain conducts and then passes the turn", () => {
+    const starter = asTestFaceId("tag-window-starter");
+    testFace({
+      id: starter,
+      name: "Window Starter",
+      sequenceRole: "starter",
+      primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
+    });
+    const state = showFace(tagMatch(), P1, starter);
+    const declaredFace = expectOk(
+      advance(state, {
+        type: "USE_FACE",
+        playerId: P1,
+        creatureId: creature(state, P1, 0),
+      }),
+    );
+    const combo = resolveOpenChain(declaredFace);
+    expect(combo.offensiveState).toBe("combo");
+    expect(combo.actEngaged).toBe(true);
+    const reserve = creature(combo, P1, 1);
+    const declared = expectOk(
+      advance(combo, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
+    );
+    expect(declared.pendingDecision?.type).toBe("reaction-priority");
+    expect(declared.activePlayerId).toBe(P1);
+    expect(declared.players[P1]?.activeCreatureId).not.toBe(reserve);
+    expect(declared.players[P1]?.spentOncePerTurnKeys).toContain("tag-this-turn");
+    const again = advance(declared, {
+      type: "TAG",
+      playerId: P1,
+      reserveCreatureId: creature(declared, P1, 2),
     });
     expect(again.ok).toBe(false);
     if (!again.ok) expect(again.error).toBe("ALREADY_USED");
+    const tagged = resolveOpenChain(declared);
+    expect(tagged.players[P1]?.activeCreatureId).toBe(reserve);
+    expect(tagged.activePlayerId).toBe(P2);
+    expect(tagged.phase).toBe("roll");
+    expect(tagged.players[P1]?.meter).toBe(combo.players[P1]?.meter);
+  });
+
+  it("refuses Tag after a finisher resolved this turn", () => {
+    const starter = asTestFaceId("tag-window-starter-2");
+    const finisher = asTestFaceId("tag-window-finisher");
+    testFace({
+      id: starter,
+      name: "Window Starter",
+      sequenceRole: "starter",
+      primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
+    });
+    testFace({
+      id: finisher,
+      name: "Window Finisher",
+      sequenceRole: "finisher",
+      primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
+    });
+    let state = showFace(tagMatch(), P1, starter);
+    state = resolveOpenChain(
+      expectOk(
+        advance(state, {
+          type: "USE_FACE",
+          playerId: P1,
+          creatureId: creature(state, P1, 0),
+        }),
+      ),
+    );
+    state = showFace(state, P1, finisher);
+    const finished = resolveOpenChain(
+      expectOk(
+        advance(state, {
+          type: "USE_FACE",
+          playerId: P1,
+          creatureId: creature(state, P1, 0),
+        }),
+      ),
+    );
+    expect(finished.offensiveState).toBe("open");
+    const tagged = advance(finished, {
+      type: "TAG",
+      playerId: P1,
+      reserveCreatureId: creature(finished, P1, 1),
+    });
+    expect(tagged.ok).toBe(false);
+    if (!tagged.ok) expect(tagged.error).toBe("INVALID_PHASE");
+
+    const stillBlocked = {
+      ...finished,
+      actEngaged: false,
+      offensiveState: "open" as const,
+      pendingDecision: null,
+    };
+    const forced = advance(stillBlocked, {
+      type: "TAG",
+      playerId: P1,
+      reserveCreatureId: creature(stillBlocked, P1, 1),
+    });
+    expect(forced.ok).toBe(false);
+    if (!forced.ok) expect(forced.error).toBe("INVALID_PHASE");
   });
 
   it("keeps the shared Meter pool across a Tag and the next turn", () => {

@@ -30,7 +30,7 @@ import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@client/decks";
 import { actingPlayerIdOf, localSeatCanAct, localSeatIsPendingChooser, seatedAction } from "./seatGate";
 import { AttackArrowOverlay } from "./board/AttackArrowOverlay";
 import { MatchSeatField } from "./board/MatchSeatField";
-import { isTagSkirmishMatch } from "./board/tagAssistLegality";
+import { isTagSkirmishMatch, seatMayPressTag } from "./board/tagAssistLegality";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
 import { FaceCardsInPlay } from "./board/FaceCardsInPlay";
 import { HandStrip } from "./board/HandStrip";
@@ -1276,6 +1276,7 @@ export function MatchBoard() {
           onCancelAttack={clearIntent}
           actingPlayerId={actingId}
           canAct={canAct}
+          mayTag={seatMayPressTag(isOnline, localPlayerId, MATCH_P2)}
           onRitualActivate={(id) =>
             tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
           }
@@ -1327,6 +1328,7 @@ export function MatchBoard() {
           onCancelAttack={clearIntent}
           actingPlayerId={actingId}
           canAct={canAct}
+          mayTag={seatMayPressTag(isOnline, localPlayerId, MATCH_P1)}
           onRitualActivate={(id) =>
             tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
           }

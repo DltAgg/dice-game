@@ -97,6 +97,7 @@ export function FighterRow({
   band,
   intent,
   canAct,
+  mayTag = true,
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
@@ -109,6 +110,7 @@ export function FighterRow({
   band: "active" | "reserve";
   intent: Intent;
   canAct: boolean;
+  mayTag?: boolean;
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
@@ -180,6 +182,7 @@ export function FighterRow({
                 reserveId={creatureId}
                 label={def?.name ?? "Reserve"}
                 canAct={canAct}
+                mayTag={mayTag}
                 onTag={onTag}
                 onAssist={onAssist}
               />

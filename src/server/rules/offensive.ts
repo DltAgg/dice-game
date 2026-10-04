@@ -1,7 +1,13 @@
+import { getCreatureDefinition } from "../content/creatures.js";
+import { getFaceCard } from "../content/faces.js";
 import type { PlayerId } from "../model/ids.js";
+import type { GameEvent } from "../model/events.js";
 import type { OffensiveStateName, SequenceRole } from "../model/offensive.js";
 import type { GameState } from "../model/state.js";
 import { canSpendMeter } from "./meter.js";
+
+/** Once-per-turn key set when Tag is declared. Combo reads this name. */
+export const TAG_TURN_KEY = "tag-this-turn";
 
 /** Once-per-turn key for the opening reroll (spec `030`). */
 export const TURN_REROLL_KEY = "turn-reroll";
@@ -55,19 +61,67 @@ export function sequenceActionUsed(state: GameState, actionId: string): boolean 
 }
 
 /**
- * Opening window: actions phase before the Act is engaged.
- * Closing window: the rest of the actions phase.
- * Placement inside the turn is the existing `actions` phase (spec `030` open
- * on a finer boundary). A chain in progress is not either window.
+ * Opening: your turn, no Chain, before any face, technique, assist, card,
+ * attack, or sequence end. The opening roll and the one reroll leave
+ * `actEngaged` false, so they do not close it.
+ * Closing: you are stopping a sequence you could still continue (`combo`,
+ * and you are the Aggressor). Not the rest of the actions phase.
+ * A Chain, a second Tag, or a Finisher already resolved this turn closes both.
  */
 export function tagWindow(
   state: GameState,
   playerId: PlayerId,
 ): "opening" | "closing" | null {
+  if (state.status === "finished") return null;
   if (state.phase !== "actions") return null;
   if (state.pendingDecision !== null) return null;
+  if ((state.chainStack?.length ?? 0) > 0) return null;
   if (state.activePlayerId !== playerId) return null;
-  return state.actEngaged ? "closing" : "opening";
+  const player = state.players[playerId];
+  if (player === undefined) return null;
+  if (player.spentOncePerTurnKeys.includes(TAG_TURN_KEY)) return null;
+  if (resolvedFinisherThisTurn(state, playerId)) return null;
+  if (state.actEngaged !== true) return "opening";
+  if (state.offensiveState === "combo" && state.aggressorPlayerId === playerId) {
+    return "closing";
+  }
+  return null;
+}
+
+function resolvedFinisherThisTurn(state: GameState, playerId: PlayerId): boolean {
+  const log = state.log;
+  if (!Array.isArray(log)) return false;
+  let start = 0;
+  for (let i = 0; i < log.length; i++) {
+    if (log[i]?.event.type === "turn-started") start = i;
+  }
+  let declared = false;
+  for (let i = start; i < log.length; i++) {
+    const event = log[i]?.event;
+    if (event === undefined) continue;
+    if (isFinisherDeclaration(state, playerId, event)) declared = true;
+    if (declared && event.type === "offensive-state-changed" && event.offensiveState === "open") {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isFinisherDeclaration(state: GameState, playerId: PlayerId, event: GameEvent): boolean {
+  if (event.type === "face-used" && event.playerId === playerId) {
+    return getFaceCard(event.faceCardId)?.sequenceRole === "finisher";
+  }
+  if (event.type === "technique-used" && event.playerId === playerId) {
+    const creature = state.creatures[event.creatureId];
+    if (creature === undefined) return false;
+    const techniques = getCreatureDefinition(creature.definitionId)?.techniques;
+    return (
+      techniques?.some(
+        (technique) => technique.id === event.techniqueId && technique.sequenceRole === "finisher",
+      ) ?? false
+    );
+  }
+  return false;
 }
 
 export function sequenceMeterAffordable(

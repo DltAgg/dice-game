@@ -9,6 +9,7 @@ export function ReserveTagAssist({
   reserveId,
   label,
   canAct,
+  mayTag = true,
   onTag,
   onAssist,
 }: {
@@ -17,10 +18,12 @@ export function ReserveTagAssist({
   reserveId: CreatureId;
   label: string;
   canAct: boolean;
+  /** Row seat may press Tag. Independent of the shared `canAct` gate. */
+  mayTag?: boolean;
   onTag: (reserveCreatureId: CreatureId) => void;
   onAssist: (reserveCreatureId: CreatureId) => void;
 }) {
-  const tagOk = canAct && canDeclareTag(state, playerId, reserveId);
+  const tagOk = mayTag && canDeclareTag(state, playerId, reserveId);
   const assistOk = canAct && canDeclareAssist(state, playerId, reserveId);
 
   return (

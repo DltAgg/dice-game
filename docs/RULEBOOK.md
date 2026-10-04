@@ -95,12 +95,12 @@ Each player has:
   the roll does not rewrite the die. The next match starts from the base
   die again. A Technique's other face comes from another of your dice,
   never the opponent's.
-- **Meter** (0–8): combat momentum. A sequence hit that conducts grants
-  2, 3, or 4 to the player who declared it (light, medium, or heavy) and
-  1 to the player who owns the Fighter it was declared against. A negated
-  hit grants nothing.
-- **Combo:** increments when your Active Fighter successfully declares an
-  attack; resets on Tag, KO-promote, and end of turn.
+- **Meter** (0–8): combat momentum. Tag does not spend it. A sequence hit
+  that conducts grants 2, 3, or 4 to the player who declared it (light,
+  medium, or heavy) and 1 to the player who owns the Fighter it was
+  declared against. A negated hit grants nothing.
+- **Combo:** +1 for each successful starter, extender, and finisher. A
+  negated link does not count. Resets on Tag, KO-promote, and end of turn.
 - One hand, one tactics deck (top-first), one graveyard, plus equipment,
   overloads, and rituals. The three Fighters share that hand and deck.
 
@@ -432,9 +432,19 @@ face) fires again.
 - Native attacks with `requiredTechniques` need the **Active** Fighter’s bound
   die to show that technique. They hit the opponent’s Active only. Each
   Fighter may attack **twice** per turn in this preset (`attacksPerCreaturePerCombat: 2`).
-- **[Tag]:** switch Active with a living Reserve, once per turn. Free in the
-  opening or closing window of the actions phase. Adding Tag to a Chain that
-  is already open spends **2 Meter**. The switch waits for that Chain. A KOed
+- **[Tag]:** switch Active with a living Reserve, once per turn. Free. It
+  does not ask for a Tag face and it does not spend Meter. Two windows, and
+  only one of them:
+  **Opening** — it is your turn, no Chain is open, and you have not yet
+  declared a face, technique, assist, card, attack, or sequence end. The
+  opening roll and the one reroll do not close it. The switch does not end
+  the turn.
+  **Closing** — no Chain is open, and you are stopping a sequence you could
+  still continue. The switch happens when that Chain conducts, and the
+  conduct then ends the turn (the opponent becomes the active player). A
+  Finisher already resolved this turn makes Tag illegal. You cannot Tag and
+  also play a Finisher.
+  Tag is a Chain object, so it can be Responded to or Modified. A KOed
   Fighter cannot Tag, and a KO does not switch Active for you.
 - **[Assist]:** a Reserve, including a KOed Reserve, fires its Assist on the
   Chain. Free if **that** Reserve’s die shows Assist; otherwise spend Meter
@@ -501,8 +511,9 @@ one. A negated link does not. Combo count is not a phase and not Meter.
 
 Passing Priority inside a chain only yields Priority. Separately, the
 Aggressor may stop the sequence. That stop ends the turn. It is not a
-Priority Pass, and it does not leave you in Open to keep acting. Tag does
-not always end the sequence or end the turn.
+Priority Pass, and it does not leave you in Open to keep acting. An opening
+Tag does not end the sequence or the turn. A closing Tag passes the turn
+after the Chain conducts.
 
 Immediately after the opening roll, you may reroll any number of your dice
 once, or keep them. Cards can change that roll or that reroll.
@@ -526,9 +537,9 @@ card stays attached to that Fighter for the rest of the match, so the
 change remains visible. It can also redirect a target that is already part
 of the exchange.
 
-Tag is not a card. A turn can offer a Tag Window at the beginning and one
-at the end. You can Tag only once in the turn. The normal Tag does not
-spend Meter. Assist is printed on the Fighter, uses the same chain, and
+Tag is not a card. A turn can offer an opening Tag window and a closing
+one. You can Tag only once in the turn, and only in one of those windows.
+Tag does not spend Meter. Assist is printed on the Fighter, uses the same chain, and
 does not spend Meter unless that Assist is exceptional. One Meter pool is
 shared by all three Fighters. It stays when you Tag and when the turn
 changes. A sequence hit that conducts grants Meter from its strength, as

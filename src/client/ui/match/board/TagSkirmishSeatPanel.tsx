@@ -27,6 +27,7 @@ export function TagSkirmishSeatPanel({
   absorbArmed,
   actingPlayerId,
   canAct,
+  mayTag = true,
   onCreatureClick,
   onAttackChoose,
   onCancelAttack,
@@ -44,6 +45,7 @@ export function TagSkirmishSeatPanel({
   absorbArmed: boolean;
   actingPlayerId: PlayerId;
   canAct: boolean;
+  mayTag?: boolean;
   onCreatureClick: (creature: CreatureState) => void;
   onAttackChoose: (attackerId: CreatureId, attackId: AttackId) => void;
   onCancelAttack: () => void;
@@ -111,6 +113,7 @@ export function TagSkirmishSeatPanel({
       band={band}
       intent={intent}
       canAct={canAct}
+      mayTag={mayTag}
       onCreatureClick={onCreatureClick}
       onAttackChoose={onAttackChoose}
       onCancelAttack={onCancelAttack}

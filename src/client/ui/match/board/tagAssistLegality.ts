@@ -3,6 +3,7 @@ import {
   getCreatureDefinition,
   isLivingReserve,
   showingTechnique,
+  tagWindow,
   type CreatureId,
   type GameState,
   type PlayerId,
@@ -20,19 +21,31 @@ function tagAssistPhaseOk(state: GameState): boolean {
   );
 }
 
+/**
+ * Hotseat may press either row. A bound seat may press only its own row.
+ * This is not `localSeatCanAct`: Tag stays available when that gate is
+ * tracking a different actor.
+ */
+export function seatMayPressTag(
+  isOnline: boolean,
+  localPlayerId: PlayerId | null,
+  rowPlayerId: PlayerId,
+): boolean {
+  if (localPlayerId === null) return !isOnline;
+  return localPlayerId === rowPlayerId;
+}
+
 export function canDeclareTag(
   state: GameState,
   playerId: PlayerId,
   reserveCreatureId: CreatureId,
 ): boolean {
-  if (!tagAssistPhaseOk(state)) return false;
-  if (state.activePlayerId !== playerId) return false;
+  if (tagWindow(state, playerId) === null) return false;
   const player = state.players[playerId];
   if (player === undefined) return false;
-  if (!isLivingReserve(state, player, reserveCreatureId)) return false;
-  const showingTag = showingTechnique(state, player.activeCreatureId) === "tag";
-  if (showingTag) return true;
-  return player.meter >= state.config.tagCancelMeterCost;
+  const active = state.creatures[player.activeCreatureId];
+  if (active === undefined || active.defeated) return false;
+  return isLivingReserve(state, player, reserveCreatureId);
 }
 
 export function canDeclareAssist(

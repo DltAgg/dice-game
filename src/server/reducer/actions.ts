@@ -48,9 +48,9 @@ export type GameAction =
       readonly targetId: CreatureId;
     }
   /**
-   * Spec `030`. Tag Active with a living Reserve. Free in the opening or
-   * closing Tag Window, once per turn. Adding Tag to an open Chain spends
-   * `tagCancelMeterCost`. The switch resolves with the Chain.
+   * Spec `030`. Tag Active with a living Reserve. Free, once per turn
+   * (`tag-this-turn`), in the opening window or the closing window.
+   * The switch resolves with the Chain. A closing Tag then ends the turn.
    */
   | {
       readonly type: "TAG";

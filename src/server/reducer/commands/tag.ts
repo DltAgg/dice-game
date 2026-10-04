@@ -1,17 +1,15 @@
 import type { GameError } from "../../model/errors.js";
 import type { CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
+import { opponentOf } from "../../rules/creatures.js";
 import { isLivingReserve } from "../../rules/fighters.js";
-import { tagWindow } from "../../rules/offensive.js";
+import { TAG_TURN_KEY, tagWindow } from "../../rules/offensive.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
-import { spendMeter, setComboCount } from "../meter.js";
-import { returnToOpen } from "../offensive.js";
-import { opponentOf } from "../../rules/creatures.js";
+import { setComboCount } from "../meter.js";
 import { markPlayerSpent } from "../triggerSpent.js";
 import { setActiveFighter } from "../victory.js";
-
-const TAG_TURN_KEY = "tag-this-turn";
+import { endTurn } from "./turn.js";
 
 export function tag(
   draft: Draft,
@@ -26,13 +24,8 @@ export function tag(
   if (!isLivingReserve(draft, player, reserveCreatureId)) return "INVALID_TARGET";
   if (player.spentOncePerTurnKeys.includes(TAG_TURN_KEY)) return "ALREADY_USED";
 
-  const inChain = draft.pendingDecision?.type === "reaction-priority";
   const tagMoment = tagWindow(draft, playerId);
-  if (!inChain && tagMoment === null) return "INVALID_PHASE";
-  if (inChain && tagMoment === null) {
-    const paid = spendMeter(draft, playerId, draft.config.tagCancelMeterCost);
-    if (paid !== null) return paid;
-  }
+  if (tagMoment === null) return "INVALID_PHASE";
 
   markPlayerSpent(draft, playerId, TAG_TURN_KEY);
 
@@ -48,6 +41,7 @@ export function tag(
     ...base,
     kind: "combat-action",
     tagReserveId: reserveCreatureId,
+    endsSequence: tagMoment === "closing",
   });
   openReactionWindow(draft, playerId, "same");
   return null;
@@ -82,8 +76,10 @@ export function conductTag(draft: Draft, link: ChainLink): void {
   const switched = performTagSwitch(draft, link.controllerId, link.tagReserveId);
   if (switched !== null) return;
   if (link.endsSequence === true) {
-    returnToOpen(draft, link.passesInitiative === true ? opponentOf(draft, link.controllerId) : null);
-  } else if (link.passesInitiative === true) {
+    endTurn(draft, link.controllerId);
+    return;
+  }
+  if (link.passesInitiative === true) {
     draft.aggressorPlayerId = opponentOf(draft, link.controllerId);
   }
 }

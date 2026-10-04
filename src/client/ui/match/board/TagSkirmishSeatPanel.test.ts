@@ -163,7 +163,7 @@ describe("TagSkirmishSeatPanel", () => {
     expect(html).toMatch(/<button(?![^>]*disabled)[^>]*>Assist<\/button>/);
   });
 
-  it("disables Tag and Assist when Meter cannot pay them", () => {
+  it("leaves opening Tag free when Meter is empty and still disables Assist", () => {
     const state = tagSkirmishBoard();
     const player = state.players[P1];
     if (player === undefined) throw new Error("player");
@@ -192,7 +192,7 @@ describe("TagSkirmishSeatPanel", () => {
         onAssist: () => undefined,
       }),
     );
-    expect(html).toMatch(/<button[^>]*disabled[^>]*>Tag<\/button>/);
+    expect(html).toMatch(/<button(?![^>]*disabled)[^>]*>Tag<\/button>/);
     expect(html).toMatch(/<button[^>]*disabled[^>]*>Assist<\/button>/);
   });
 

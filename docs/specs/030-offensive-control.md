@@ -281,23 +281,33 @@ permanent.
 Tag is a normal operation, not a card. A card does not exist so that the
 normal Tag can happen. A `Modify` or `Response` may still affect a Tag.
 
-A turn may contain more than one Tag Window, including one at the beginning
-of the turn and one at the end. Those windows use the existing turn. They
-are not new phases.
+Tag is free. It does not require a Tag face and it does not spend Meter.
+There is no in-chain Tag cancel.
 
-A player may Tag at most once per turn. A Tag in the opening window means
-no Tag in the closing window. Skipping the opening window leaves the
-closing window available.
+A turn offers two windows. They use the existing turn. They are not new
+phases. A player may Tag in at most one of them. The once-per-turn key is
+`tag-this-turn`.
 
-The normal Tag in a Tag Window does not inherently cost Meter. An
-exceptional Tag may.
+Opening window: it is your turn, no Chain is open, you have not tagged
+yet, and you have not yet declared a face, technique, assist, card,
+attack, or sequence end. The opening roll and the one reroll do not close
+this window. Tag switches the Active Fighter with a living Reserve and
+does not end the turn.
 
-A Tag can be a Chain object. It can be Responded to and Modified. Its
-effect says whether the sequence ends, whether initiative passes, and
-whether the Tag is offensive or defensive. A defensive Tag that retargets
-an incoming interaction is one such effect, not a rule for every Tag.
+Closing window: you have not tagged yet, no Chain is open, and you are
+stopping instead of continuing. That is the sequence in `combo` while you
+are the Aggressor. Tag switches Active when the link conducts. After that
+conduct, the turn passes: the opponent becomes the active player, the
+same pass as end of turn. You cannot Tag and also play a Finisher in the
+same turn. If this player already resolved a Finisher this turn, Tag is
+illegal.
 
-A KOed Fighter cannot Tag.
+Tag is a Chain object. It can be Responded to and Modified. The switch
+happens when the link conducts, not when it is declared. The closing
+window's turn pass happens after that conduct.
+
+A KOed Fighter cannot Tag. Tag does not change combo rules. A successful
+switch still resets that player's combo count.
 
 ### Assist
 
@@ -672,8 +682,6 @@ Do not implement these as if they were decided.
   the scope/duration set.
 - Which cards spend exceptional Meter, and the amount of any Meter grant.
   The sources above are decided. The numbers are data.
-- Where, inside the existing `roll` / `actions` turn, the beginning and
-  end Tag Windows sit. Not a new phase.
 - The timing condition on a particular Assist, beyond “that Fighter’s
   Assist says when.”
 - Who starts as Aggressor at the beginning of the match.
@@ -701,10 +709,14 @@ Aligned with this revision:
   the KO return, once, and is skipped when the match is already finished.
 - One `REROLL_DICE` is legal in the actions phase before any other Act,
   of any number of your dice. A later Act closes it.
-- `TAG` and `ASSIST` are Chain objects on the existing combat-action
-  link. One Tag per turn. A Tag in the opening or closing actions window
-  is free. Adding Tag to a Chain that is already open spends the existing
-  tag-cancel cost. A KOed Active cannot Tag. A KOed Reserve can Assist.
+- `TAG` is a Chain object on the existing combat-action link. One Tag
+  per turn (`tag-this-turn`). Free in the opening window (`actEngaged`
+  still false; the roll and the one reroll do not set it) or the closing
+  window (sequence is `combo`, you are the Aggressor, no Chain is open).
+  Opening Tag does not end the turn. Closing Tag switches on conduct,
+  then passes the turn. A Finisher already resolved this turn makes Tag
+  illegal. There is no in-chain Tag-cancel spend. A KOed Active cannot Tag.
+- `ASSIST` stays a Chain object. A KOed Reserve can Assist.
   KO does not switch the Active Fighter. It ends the sequence and passes
   initiative. Three KOed Fighters still loses when `wipeVictory` is on.
 - Attack Strike damage grants the existing per-HP amount to the dealer
@@ -734,8 +746,10 @@ Still not this document:
 - Spec `008` tactic windows still give the opponent Priority first. A
   combat-action chain, and a card that sets `behavior`, gives Priority to
   the player who just acted.
-- Tag windows are the actions phase: opening before any Act, closing
-  after. The spec leaves the exact seat inside `roll` / `actions` open.
+- Tag windows sit in `actions`. `roll` is neither window. Opening is
+  before the Act and does not end the turn. Closing is the combo stop,
+  not the rest of the phase, and that Tag passes the turn after the Chain
+  conducts. A Finisher and a voluntary sequence end also pass the turn.
 
 `src/server/reducer/offensiveControl.test.ts`,
 `src/server/reducer/tagFighter.test.ts`,
