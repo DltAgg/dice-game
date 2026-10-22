@@ -1,6 +1,6 @@
 import type { GameError } from "../../model/errors.js";
 import type { CreatureId, PlayerId } from "../../model/ids.js";
-import { dieForCreature, isActiveFighter } from "../../rules/fighters.js";
+import { dieForCreature } from "../../rules/fighters.js";
 import {
   canUseFace,
   defaultFaceActionTarget,
@@ -21,7 +21,7 @@ export function useFace(
   if (draft.phase !== "actions") return "INVALID_PHASE";
   const player = draft.players[playerId];
   if (player === undefined) return "UNKNOWN_ENTITY";
-  if (!isActiveFighter(player, creatureId)) return "INVALID_TARGET";
+  if (!player.creatureIds.includes(creatureId)) return "INVALID_TARGET";
   const creature = draft.creatures[creatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
   if (creature.defeated) return "CREATURE_DEFEATED";

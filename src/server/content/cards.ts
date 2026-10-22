@@ -6,8 +6,8 @@ import { lookupOverlayCard } from "./runtimeOverlay.js";
 
 /**
  * Live catalogue is the first-playtest tag team (spec `030`): Vega, Magnus,
- * and Ryu, plus Response and Modify cards. Header `playCost` remains unused
- * pile data.
+ * and Ryu, plus Response and Modify cards. The play cost a player sees is
+ * Meter (`meterPlayCost`). Header `playCost` remains unused pile data.
  */
 
 export const BRACE: CardId = asCardId("card-brace");

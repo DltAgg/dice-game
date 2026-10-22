@@ -4,7 +4,7 @@ import {
 } from "react";
 import {
   getCard,
-  playCostTotal,
+  meterPlayCost,
   searchableInDeck,
   searchableInGraveyard,
   type CardInstanceId,
@@ -87,8 +87,8 @@ export function SearchPanel({
       const da = defsById.get(a);
       const db = defsById.get(b);
       if (sort === "cost") {
-        const ca = da !== undefined ? playCostTotal(da) : 99;
-        const cb = db !== undefined ? playCostTotal(db) : 99;
+        const ca = da !== undefined ? meterPlayCost(da) : 99;
+        const cb = db !== undefined ? meterPlayCost(db) : 99;
         return ca - cb;
       }
       if (sort === "type") {

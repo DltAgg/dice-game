@@ -14,6 +14,7 @@ import {
   handOf,
   hasPlayableEffect,
   isEnabledHandReaction,
+  legalModifyPlays,
   type CardInstance,
   type CardInstanceId,
   type GameState,
@@ -22,7 +23,7 @@ import {
 import { KeywordRemindersTooltip, KeywordRichText } from "@client/ui/keywords/KeywordReminders";
 import { tacticPrintText } from "@client/ui/keywords/reminders";
 import {
-  formatPlayCostCompact,
+  formatCostDetail,
   formatPlayCostHover,
 } from "../intents/format";
 import {
@@ -150,11 +151,14 @@ export function HandStrip({
           const def = getCard(card.cardId);
           if (def === undefined) return null;
           const isSelected = selected === card.id;
+          const modifyOffers =
+            def.modifySubject !== undefined ? legalModifyPlays(state, playerId, def) : [];
           const canPlay =
-            actionsLive &&
             hasPlayableEffect(def) &&
             canAffordPlay(state, playerId, def) &&
-            canResolvePlayEffects(state, playerId, def);
+            (def.modifySubject !== undefined
+              ? modifyOffers.length > 0
+              : actionsLive && canResolvePlayEffects(state, playerId, def));
           const canRespond = reactionsLive && isEnabledHandReaction(state, playerId, def);
 
           return (
@@ -174,10 +178,10 @@ export function HandStrip({
             >
               <p className="truncate text-sm font-medium text-stone-100">{def.name}</p>
               <p className="mt-1 text-xs text-stone-500">
-                {formatPlayCostCompact(def)} · {def.subtypes.join("/")}
+                {formatCostDetail(def, def.subtypes.join("/"))}
               </p>
               <div className="mt-3 flex flex-nowrap gap-1.5">
-                {actionsLive && (
+                {(actionsLive || modifyOffers.length > 0) && (
                   <>
                     <button
                       type="button"

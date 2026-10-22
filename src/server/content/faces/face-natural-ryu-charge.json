@@ -7,7 +7,7 @@
   "meterCost": 1,
   "hitStrength": "heavy",
   "hitType": "punch",
-  "rulesText": "Finisher. Heavy punch. Spend 1 Meter. Primary: [Strike 4]. Secondary: +1 damage to the Technique.",
+  "rulesText": "Finisher. Heavy punch. Spend 1 Meter. Primary: [Strike 4]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

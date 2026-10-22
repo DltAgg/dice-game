@@ -5,7 +5,7 @@
   "faceType": "grab",
   "hitStrength": "medium",
   "hitType": "punch",
-  "rulesText": "Medium punch. Primary: [Strike 1]. Secondary: +1 damage to the technique.",
+  "rulesText": "Medium punch. Primary: [Strike 1]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

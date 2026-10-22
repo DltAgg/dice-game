@@ -30,8 +30,8 @@ function classLabel(hit: {
 }
 
 /**
- * Hits available to the acting Active Fighter: the showing face alone, and
- * Techniques that pair it with another of this player's rolled faces.
+ * A showing face is a simple hit any of your Fighters can take. A Technique
+ * pairs the Active Fighter's face with another of this player's rolled faces.
  */
 export function FaceActionBar({
   state,
@@ -49,21 +49,35 @@ export function FaceActionBar({
   const activeId = player.activeCreatureId;
   const creature = state.creatures[activeId];
   const definition = creature === undefined ? undefined : getCreatureDefinition(creature.definitionId);
-  const die = dieForCreature(state, activeId);
-  const face = die === undefined ? undefined : showingFaceCard(state, die.id);
-  const faceHit = face !== undefined && legalFaceActions(state, playerId).includes(activeId);
+  const hits = legalFaceActions(state, playerId);
   const matches = matchingTechniques(state, playerId, activeId);
-  if (!faceHit && matches.length === 0) return null;
+  if (hits.length === 0 && matches.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2">
-      {faceHit && face !== undefined && (
-        <button type="button" className={btnHandPrimary} onClick={() => onUseFace(activeId)}>
-          {[face.name, classLabel(face), roleLabel(face.sequenceRole)]
-            .filter((part) => part !== "")
-            .join(" · ")}
-        </button>
-      )}
+      {hits.map((creatureId) => {
+        const die = dieForCreature(state, creatureId);
+        const face = die === undefined ? undefined : showingFaceCard(state, die.id);
+        if (face === undefined) return null;
+        const fighter = state.creatures[creatureId];
+        const name =
+          fighter === undefined
+            ? "Fighter"
+            : (getCreatureDefinition(fighter.definitionId)?.name ?? "Fighter");
+        const label = [name, face.name, classLabel(face), roleLabel(face.sequenceRole)]
+          .filter((part) => part !== "")
+          .join(" · ");
+        return (
+          <button
+            key={creatureId}
+            type="button"
+            className={btnHandPrimary}
+            onClick={() => onUseFace(creatureId)}
+          >
+            {label}
+          </button>
+        );
+      })}
       {matches.map((match) => {
         const technique = definition?.techniques?.find((entry) => entry.id === match.techniqueId);
         const secondary = showingFaceCard(state, match.secondaryDieId);

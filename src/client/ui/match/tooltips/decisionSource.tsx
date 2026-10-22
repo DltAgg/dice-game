@@ -13,7 +13,7 @@ import {
 } from "@server";
 import { KeywordRichText } from "@client/ui/keywords/KeywordReminders";
 import {
-  formatPlayCostCompact,
+  formatCostDetail,
 } from "../intents/format";
 import {
   FaceInspectHover,
@@ -190,7 +190,7 @@ export function DecisionSourcePanel({
       {resolvedCard !== undefined && (
         <>
           <p className="mt-0.5 text-xs text-stone-500">
-            {formatPlayCostCompact(resolvedCard)} · {formatTypeLine(resolvedCard)}
+            {formatCostDetail(resolvedCard, formatTypeLine(resolvedCard))}
           </p>
           {formatEffectRegion(resolvedCard).length > 0 && (
             <div className="mt-2 space-y-1 border-t border-amber-900/40 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">

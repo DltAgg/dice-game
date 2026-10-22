@@ -4,7 +4,7 @@ import type { CardDefinition } from "../model/cards.js";
 import { asCardId } from "../model/ids.js";
 import { TEST_REQUIRES_GATE } from "../testing/fixtures/index.js";
 import { newMatch, P1 } from "../testing/scenario.js";
-import { canAffordForge, canAffordPlay, isReactionCard, ritualDurationOf } from "./cards.js";
+import { canAffordForge, canAffordPlay, isReactionCard, meterPlayCost, ritualDurationOf } from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
   return {
@@ -70,6 +70,31 @@ describe("canAffordPlay / canAffordForge", () => {
     expect(
       canAffordForge({ ...state, syntheticForgedThisTurn: { [P1]: true } }, P1, exampleCard()),
     ).toBe(true);
+  });
+});
+
+describe("meterPlayCost", () => {
+  it("ignores a leftover pile playCost", () => {
+    expect(meterPlayCost(exampleCard({ playCost: { mechanical: 2 } }))).toBe(0);
+  });
+
+  it("counts Meter spent on every play", () => {
+    expect(meterPlayCost(exampleCard({ meterCost: 1, playCost: { arcane: 4 } }))).toBe(1);
+  });
+
+  it("counts exceptional Meter when a Tag Modify can only be played that way", () => {
+    const callOut = getCard(asCardId("card-call-out"));
+    if (callOut === undefined) throw new Error("call out");
+    expect(meterPlayCost(callOut)).toBe(2);
+    expect(callOut.rulesText).toBe("Tag to a living Reserve Fighter.");
+  });
+
+  it("leaves outside-chain Meter off the play cost when the card can be played free", () => {
+    const palm = getCard(asCardId("card-open-palm"));
+    if (palm === undefined) throw new Error("open palm");
+    expect(palm.exceptionalMeterCost).toBe(2);
+    expect(meterPlayCost(palm)).toBe(0);
+    expect(palm.rulesText).toContain("Spend 2 Meter to play this outside a chain");
   });
 });
 

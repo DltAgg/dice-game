@@ -32,7 +32,7 @@
       "hitType": "punch",
       "secondary": { "hitStrength": "light", "hitType": "kick" },
       "sequenceRole": "starter",
-      "rulesText": "Jab + light kick: [Strike 3], then that face's Secondary.",
+      "rulesText": "Jab + light kick: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -49,7 +49,7 @@
       "hitType": "punch",
       "secondary": { "faceType": "movement" },
       "sequenceRole": "extender",
-      "rulesText": "Lariat + Movement: [Strike 4], then that face's Secondary.",
+      "rulesText": "Lariat + Movement: [Strike 4].",
       "effects": [
         {
           "type": "damage",
@@ -66,7 +66,7 @@
       "hitType": "punch",
       "secondary": { "faceType": "attack" },
       "sequenceRole": "finisher",
-      "rulesText": "Grab + Attack: [Strike 5], then that face's Secondary.",
+      "rulesText": "Grab + Attack: [Strike 5].",
       "effects": [
         {
           "type": "damage",

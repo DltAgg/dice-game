@@ -89,15 +89,16 @@ export const findCardInstance = (
 ): CardInstance | undefined => state.cards[id];
 
 /**
- * A card is playable from hand when it has a resolvable effect region or a
- * board attachment region (equipment, overload, ritual). Cards that only forge
- * stay forge-only.
+ * A card is playable from hand when it has a resolvable effect region, a
+ * board attachment region (equipment, overload, ritual), or a Modify subject.
+ * Cards that only forge stay forge-only.
  */
 export const hasPlayableEffect = (definition: CardDefinition): boolean =>
   definition.effect !== undefined ||
   definition.equipment !== undefined ||
   definition.overload !== undefined ||
-  definition.ritual !== undefined;
+  definition.ritual !== undefined ||
+  definition.modifySubject !== undefined;
 
 /** True when the card does not place a ritual region. */
 export const isNonRitualCard = (definition: CardDefinition): boolean =>
@@ -110,9 +111,25 @@ export const isNonRitualCard = (definition: CardDefinition): boolean =>
 export const isReactionCard = (definition: CardDefinition): boolean =>
   definition.type === "response" || definition.subtypes.includes("reaction");
 
-/** Total pile tokens in the header play/forge cost, if any. */
+/** Total pile tokens in the leftover header `playCost`, if any. */
 export const playCostTotal = (definition: CardDefinition): number =>
   definition.playCost === undefined ? 0 : requirementTotal(definition.playCost);
+
+/**
+ * Meter the player must spend to play this card. That number is the play
+ * cost shown on the card. 0 means the play is free, so the card shows no
+ * Meter cost.
+ *
+ * `meterCost` is spent on every play. `exceptionalMeterCost` counts only
+ * when every legal play spends it: a Tag Modify is exceptional-only. A
+ * card that can also be played in a chain for free keeps that Meter on
+ * the exceptional mode. It is not this number.
+ */
+export function meterPlayCost(definition: CardDefinition): number {
+  const always = definition.meterCost ?? 0;
+  if (definition.modifySubject !== "tag") return always;
+  return always + (definition.exceptionalMeterCost ?? 0);
+}
 
 /**
  * Whether the player can meet the `[Requires]` gate and pay discounted header

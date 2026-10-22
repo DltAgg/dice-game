@@ -29,7 +29,7 @@ export function TacticCard({ card, width = 280 }: TacticCardProps) {
     <article
       className="relative select-none text-black"
       style={{ width, aspectRatio: "1050 / 1498", containerType: "inline-size" }}
-      aria-label={`${card.name}, cost ${costLabel}`}
+      aria-label={`${card.name}, cost ${costLabel.length > 0 ? `${costLabel} Meter` : "none"}`}
     >
       <img
         src={tacticsLayout}

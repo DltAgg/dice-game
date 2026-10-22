@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import {
   formatInspectEffectLines,
-  formatPlayCostLine,
+  formatMeterPlayCost,
   formatRequirementLine,
   formatSpendLine,
   formatTypeLine,
@@ -71,7 +71,7 @@ function TacticDossier({ card }: { card: CardDefinition }) {
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
         <Dt>Play cost</Dt>
-        <Dd>{formatPlayCostLine(card) ?? "—"}</Dd>
+        <Dd>{formatMeterPlayCost(card) ?? "—"}</Dd>
 
         <Dt>Type</Dt>
         <Dd className="capitalize">{card.type}</Dd>

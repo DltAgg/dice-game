@@ -31,7 +31,7 @@
       "hitType": "punch",
       "secondary": { "sequenceRole": "extender" },
       "sequenceRole": "starter",
-      "rulesText": "Jab + Extender: [Strike 2], then that face's Secondary.",
+      "rulesText": "Jab + Extender: [Strike 2].",
       "effects": [
         {
           "type": "damage",
@@ -48,7 +48,7 @@
       "hitType": "punch",
       "secondary": { "faceType": "attack" },
       "sequenceRole": "extender",
-      "rulesText": "Projectile + Attack: [Strike 3], then that face's Secondary.",
+      "rulesText": "Projectile + Attack: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -65,7 +65,7 @@
       "hitType": "punch",
       "secondary": { "faceType": "movement" },
       "sequenceRole": "finisher",
-      "rulesText": "Projectile + Movement: [Strike 4], then that face's Secondary.",
+      "rulesText": "Projectile + Movement: [Strike 4].",
       "effects": [
         {
           "type": "damage",

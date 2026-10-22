@@ -10,6 +10,7 @@ import {
   type PlayerId,
 } from "@server";
 import { CreatureTile } from "./CreatureTile";
+import { FighterInspectHover } from "./FighterInspectTooltip";
 import { ReserveTagAssist } from "./TagAssistBar";
 import { showingFaceForCreature } from "./showingFace";
 import type { Intent } from "../intents/types";
@@ -183,7 +184,11 @@ export function FighterRow({
             <span className="mb-1 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-stone-500">
               {role}
             </span>
-            <div className="w-52 rounded border border-dashed border-stone-700 bg-stone-950/60 p-3">
+            <FighterInspectHover
+              state={state}
+              creature={creature}
+              className="w-52 rounded border border-dashed border-stone-700 bg-stone-950/60 p-3"
+            >
               <p className="font-medium text-stone-300">{def?.name ?? "Fighter"}</p>
               <p className="text-xs text-stone-500">
                 HP {life}/{def?.life ?? "—"}
@@ -200,7 +205,7 @@ export function FighterRow({
                 onAssist={onAssist}
               />
               {dieStrip}
-            </div>
+            </FighterInspectHover>
           </div>
         );
       })}

@@ -287,6 +287,11 @@ export interface GameState {
    * that choice and the chain are idle.
    */
   readonly pendingOffenseSettle: PendingOffenseSettle | null;
+  /**
+   * A resolved, non-negated link asked to end the sequence. Applied once the
+   * chain is idle. Ending the sequence passes the turn.
+   */
+  readonly endSequenceAfterChain: boolean;
   readonly winner: PlayerId | null;
   readonly log: readonly LoggedEvent[];
 

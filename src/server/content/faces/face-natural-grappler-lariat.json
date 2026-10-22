@@ -5,7 +5,7 @@
   "faceType": "attack",
   "hitStrength": "heavy",
   "hitType": "punch",
-  "rulesText": "Heavy punch. Primary: [Strike 2]. Secondary: +1 damage to the technique.",
+  "rulesText": "Heavy punch. Primary: [Strike 2]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

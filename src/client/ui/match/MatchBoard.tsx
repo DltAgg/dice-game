@@ -8,6 +8,7 @@ import {
   getCreatureDefinition,
   hasPlayableEffect,
   isAttributeSymbol,
+  legalModifyPlays,
   isEnabledHandReaction,
   isUnabsorbedPoolSymbol,
   hasLegalReactionOffer,
@@ -34,6 +35,7 @@ import { isTagSkirmishMatch, seatMayPressTag } from "./board/tagAssistLegality";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
 import { FaceCardsInPlay } from "./board/FaceCardsInPlay";
 import { HandStrip } from "./board/HandStrip";
+import { ModifyPlayBar } from "./board/ModifyPlayBar";
 import { MatchNotReady } from "./board/MatchNotReady";
 import { PhaseBar } from "./board/PhaseBar";
 import { SpectatorSeatDock } from "./board/SpectatorSeatDock";
@@ -124,6 +126,10 @@ export function MatchBoard() {
     hasLegalReactionOffer(state, pending.priorityPlayerId);
   /** Bottom dock shows this seat's hand/pool — local seat online, priority/active in hotseat. Spectators see both. */
   const dockPlayerId = localPlayerId !== null ? localPlayerId : actingId;
+  const modifyPlay = intent.kind === "play" ? state.cards[intent.cardInstanceId] : undefined;
+  const modifyDef = modifyPlay !== undefined ? getCard(modifyPlay.cardId) : undefined;
+  const modifyChoices =
+    modifyDef?.modifySubject !== undefined ? legalModifyPlays(state, actingId, modifyDef) : [];
 
   const canStartNewMatch = useMemo(() => {
     const p1 = decks.find((deck) => deck.id === p1DeckId);
@@ -347,6 +353,10 @@ export function MatchBoard() {
       if (card.ownerId !== actingId) return;
       if (localPlayerId !== null && localPlayerId !== pending.priorityPlayerId) return;
       const def = getCard(card.cardId);
+      if (def?.modifySubject !== undefined && legalModifyPlays(state, actingId, def).length > 0) {
+        setIntent({ kind: "play", cardInstanceId: card.id });
+        return;
+      }
       if (def === undefined || !isEnabledHandReaction(state, actingId, def)) return;
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
       return;
@@ -354,7 +364,13 @@ export function MatchBoard() {
 
     if (card.ownerId !== activeId || pending !== null || phase !== "actions") return;
     const def = getCard(card.cardId);
-    if (def === undefined || !hasPlayableEffect(def) || !canResolvePlayEffects(state, activeId, def)) return;
+    if (def === undefined || !hasPlayableEffect(def)) return;
+    if (def.modifySubject !== undefined) {
+      if (legalModifyPlays(state, activeId, def).length === 0) return;
+      setIntent({ kind: "play", cardInstanceId: card.id });
+      return;
+    }
+    if (!canResolvePlayEffects(state, activeId, def)) return;
 
     if (def.ritual !== undefined) {
       tryDispatch({ type: "PLAY_CARD", playerId: activeId, cardInstanceId: card.id });
@@ -1467,6 +1483,30 @@ export function MatchBoard() {
                 Pass priority
               </button>
             </div>
+          )}
+
+          {modifyDef?.modifySubject !== undefined && modifyChoices.length > 0 && (
+            <ModifyPlayBar
+              cardName={modifyDef.name}
+              choices={modifyChoices}
+              onChoose={(choice) => {
+                if (intent.kind !== "play") return;
+                tryDispatch({
+                  type: "PLAY_CARD",
+                  playerId: actingId,
+                  cardInstanceId: intent.cardInstanceId,
+                  mode: choice.mode,
+                  ...(choice.dieId !== null ? { dieId: choice.dieId } : {}),
+                  ...(choice.slotIndex !== null ? { slotIndex: choice.slotIndex } : {}),
+                  ...(choice.faceCardId !== null ? { declaredFaceCardId: choice.faceCardId } : {}),
+                  ...(choice.techniqueId !== null ? { techniqueId: choice.techniqueId } : {}),
+                  ...(choice.targetCreatureId !== null
+                    ? { declaredTargetCreatureId: choice.targetCreatureId }
+                    : {}),
+                });
+              }}
+              onCancel={clearIntent}
+            />
           )}
 
           <div

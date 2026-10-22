@@ -30,7 +30,7 @@
       "secondary": {
         "faceType": "grab"
       },
-      "rulesText": "Lariat + Grab-type: [Strike 3], then secondary face Secondary Effect.",
+      "rulesText": "Lariat + Grab-type: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -70,7 +70,7 @@
       "secondary": {
         "faceId": "face-natural-grappler-command-grab"
       },
-      "rulesText": "Jab + specific Command Grab face: [Strike 2], then that face Secondary.",
+      "rulesText": "Jab + specific Command Grab face: [Strike 2].",
       "effects": [
         {
           "type": "damage",

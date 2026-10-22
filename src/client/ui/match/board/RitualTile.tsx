@@ -16,7 +16,7 @@ import {
 import { KeywordRemindersTooltip, KeywordRichText } from "@client/ui/keywords/KeywordReminders";
 import { tacticPrintText } from "@client/ui/keywords/reminders";
 import {
-  formatPlayCostCompact,
+  formatCostDetail,
   formatPlayCostHover,
   ritualStayLabel,
 } from "../intents/format";
@@ -154,7 +154,7 @@ export function RitualTile({
           )}
         </p>
         <p className="mt-0.5 text-[0.65rem] capitalize text-stone-500">
-          {formatPlayCostCompact(def)} · {def.subtypes.join("/") || "ritual"}
+          {formatCostDetail(def, def.subtypes.join("/") || "ritual")}
         </p>
         <p
           className={

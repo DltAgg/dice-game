@@ -80,14 +80,18 @@ describe("playtest hits and techniques", () => {
     const vega = fighter(open, VEGA);
     open = show(open, vega, JAB);
     expect(open.offensiveState).toBe("open");
-    expect(legalFaceActions(open, P1)).toEqual([vega]);
+    expect(legalFaceActions(open, P1)).toEqual([
+      vega,
+      open.players[P1]!.creatureIds[1]!,
+    ]);
 
     const combo = resolveOpenChain(
       expectOk(advance(open, { type: "USE_FACE", playerId: P1, creatureId: vega })),
     );
     expect(combo.offensiveState).toBe("combo");
     expect(combo.players[P1]?.comboCount).toBe(1);
-    expect(legalFaceActions(combo, P1)).toEqual([]);
+    expect(legalFaceActions(combo, P1)).toEqual([combo.players[P1]!.creatureIds[2]!]);
+    expect(legalFaceActions(combo, P1)).not.toContain(vega);
 
     const stopped = expectOk(advance(combo, { type: "END_SEQUENCE", playerId: P1 }));
     expect(stopped.activePlayerId).toBe(P2);
@@ -95,6 +99,30 @@ describe("playtest hits and techniques", () => {
     expect(stopped.offensiveState).toBe("open");
     expect(stopped.aggressorPlayerId).toBe(P2);
     expect(legalFaceActions(stopped, P1)).toEqual([]);
+  });
+
+  it("lets a Reserve hit with a showing face and keeps Techniques on the Active Fighter", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const ryu = fighter(state, RYU);
+    expect(state.players[P1]?.activeCreatureId).toBe(vega);
+    const ryuJab = asFaceCardId("face-natural-ryu-jab");
+    state = show(state, ryu, ryuJab);
+    expect(legalFaceActions(state, P1)).toContain(ryu);
+    expect(matchingTechniques(state, P1, ryu)).toEqual([]);
+
+    const hit = expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: ryu }));
+    expect(hit.chainStack.at(-1)?.sourceCreatureId).toBe(ryu);
+
+    const technique = advance(state, {
+      type: "USE_TECHNIQUE",
+      playerId: P1,
+      creatureId: ryu,
+      techniqueId: "technique-ryu-check-fire",
+      secondaryDieId: dieForCreature(state, vega)!.id,
+    });
+    expect(technique.ok).toBe(false);
+    if (!technique.ok) expect(technique.error).toBe("INVALID_TARGET");
   });
 
   it("enters Combo from a starter Technique, then accepts an extender Technique", () => {

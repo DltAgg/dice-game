@@ -293,10 +293,8 @@ export interface CardDefinition {
   readonly id: CardId;
   readonly name: string;
   /**
-   * Header play/forge cost — burned from the attribute pile when playing or
-   * forging. May include `any` generic pips. Instants print this as
-   * `[Spend: …]` above the effect body; equipment / overload / ritual place
-   * share the same pile gate.
+   * Leftover pile header. Not the cost a player pays to play the card.
+   * The play cost is Meter (`meterPlayCost`).
    */
   readonly playCost?: SymbolRequirement;
   readonly type: CardType;
@@ -337,8 +335,7 @@ export interface CardDefinition {
    */
   readonly archetypeRestriction?: string;
   /**
-   * Spec `028`. Meter burned on play (in addition to leftover `playCost`
-   * data, which is not enforced). Omit = 0.
+   * Meter spent on every play. Part of the play cost. Omit = 0.
    */
   readonly meterCost?: number;
   /**
@@ -347,13 +344,20 @@ export interface CardDefinition {
    */
   readonly seizesOffense?: boolean;
   /**
+   * Spec `030`. When this chain link resolves and was not negated, the
+   * sequence ends. Ending the sequence passes the turn.
+   */
+  readonly endsSequence?: boolean;
+  /**
    * What a Modify rewrites. Omit when the Modify is an effect, attachment,
    * or ritual rather than a die, roll, moveset, target, or tag change.
    */
   readonly modifySubject?: ModifySubject;
   /**
    * Spent only for exceptional mode. Normal mode does not spend it.
-   * Not a generic card cost. Spec `030`.
+   * When every legal play is that mode (a Tag Modify), this is the
+   * card's play cost. A card that can also be played for free keeps
+   * this as a mode cost. Spec `030`.
    */
   readonly exceptionalMeterCost?: number;
   /**

@@ -5,7 +5,7 @@
   "faceType": "attack",
   "hitStrength": "light",
   "hitType": "punch",
-  "rulesText": "Light punch. Primary: [Strike 1]. Secondary: [Strike 1] to the technique target.",
+  "rulesText": "Light punch. Primary: [Strike 1]. Secondary: [Strike 1].",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

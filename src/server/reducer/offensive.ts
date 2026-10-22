@@ -34,6 +34,7 @@ export function beginOffensiveWindow(draft: Draft, aggressorId: PlayerId): void 
   draft.offensiveState = "open";
   draft.offenseSeizedBy = null;
   draft.pendingOffenseSettle = null;
+  draft.endSequenceAfterChain = false;
 }
 
 /**

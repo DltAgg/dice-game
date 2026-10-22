@@ -16,7 +16,11 @@ Response. Tag is an operation. Assist is Fighter-owned.
 ### Current print (new Fighters, faces, and cards)
 
 Dice are named inputs: a name, a type, a primary effect, and a secondary
-effect. A hit and a Technique also have a strength (light, medium, or heavy)
+effect. Primary applies when that face is the named first face of the Active
+Fighter’s Technique, and when that face is a simple hit on its own. Secondary
+applies when that face is the other face that fulfills the Technique, such as
+a light kick or a light punch. Do not print that timing on each Technique or
+each face. A hit and a Technique also have a strength (light, medium, or heavy)
 and a strike (kick or punch). A Technique may require that pair on the other
 face, such as a light kick. Attacks, grabs, movement, and other character
 offensive tools belong on faces. Generic Block, Dodge, Counter, and damage
@@ -27,8 +31,11 @@ are effects on a Response, not types. A Modify changes a roll, a die, a
 moveset, a target, or a Tag. Tag is an operation, not a face and not a card
 type. Assist is a Fighter ability, not a card.
 
-Meter is one shared pool for an exceptional break of the normal rules. It is
-not printed as mana on every strong card.
+Meter is one shared pool for an exceptional break of the normal rules. A
+card’s play cost, when it has one, is the Meter you spend to play that card.
+Do not also write “Spend N Meter” for that same cost. A free card shows no
+play cost. Meter for a mode that is not the only way to play the card stays
+in the rules text. Meter is not printed as mana on every strong card.
 
 Reuse `[Mark N X]`, `[Strip N X]`, and `[Modify]`. Timing stays a prefix
 (`On roll:`, `On attack:`). Never “Whenever…”.

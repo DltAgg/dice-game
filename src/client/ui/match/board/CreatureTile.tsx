@@ -1,15 +1,7 @@
-import {
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import { createPortal } from "react-dom";
+import { type ReactNode } from "react";
 import {
   currentLife,
   formatAttackFuel,
-  formatAttackLine,
-  formatEffectRegion,
-  formatTypeLine,
   getCard,
   getCreatureDefinition,
   isCreatureSilenced,
@@ -18,26 +10,11 @@ import {
   type CreatureState,
   type GameState,
 } from "@server";
-import {
-  attackIsArmed,
-} from "../intents/attack";
-import {
-  formatPlayCostCompact,
-} from "../intents/format";
-import {
-  type Intent,
-} from "../intents/types";
-import {
-  btnClass,
-  btnPrimary,
-} from "../styles";
+import { attackIsArmed } from "../intents/attack";
+import { type Intent } from "../intents/types";
+import { btnClass, btnPrimary } from "../styles";
 import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
-import {
-  CREATURE_TOOLTIP_GAP_PX,
-  CREATURE_TOOLTIP_WIDTH_PX,
-  fixedTooltipPairStyle,
-  useAnchoredTooltipPair,
-} from "../tooltips/anchoredTooltip";
+import { FighterInspectHover } from "./FighterInspectTooltip";
 
 export function CreatureTile({
   state,
@@ -57,15 +34,6 @@ export function CreatureTile({
   /** Extra content inside the fighter box, after attacks. */
   footer?: ReactNode;
 }) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState(false);
-  const pairPos = useAnchoredTooltipPair(
-    hovered,
-    rootRef,
-    CREATURE_TOOLTIP_WIDTH_PX,
-    CREATURE_TOOLTIP_GAP_PX,
-  );
-
   const def = getCreatureDefinition(creature.definitionId);
   if (def === undefined) return null;
   const isLegendary = def.legendary === true;
@@ -79,104 +47,16 @@ export function CreatureTile({
     if (cardDef === undefined) return [];
     return [{ instanceId: id, def: cardDef }];
   });
-
   return (
-    <div
-      ref={rootRef}
-      data-creature-id={creature.id}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <FighterInspectHover
+      state={state}
+      creature={creature}
       className={
         selectedAttacker
           ? "relative w-52 rounded border-2 border-[var(--accent)] bg-stone-900 p-3 shadow-[0_0_12px_rgba(212,168,75,0.25)]"
           : "relative w-52 rounded border border-stone-700 bg-stone-950 p-3"
       }
     >
-      {pairPos !== null &&
-        createPortal(
-          <>
-            <div
-              className="pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-stone-600 bg-stone-950 p-3 text-left shadow-xl"
-              style={fixedTooltipPairStyle(pairPos, "primary")}
-              role="tooltip"
-            >
-              <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-stone-100">
-                <span>{def.name}</span>
-                {isLegendary && <LegendaryBadge />}
-              </p>
-              <p className="mt-1 text-xs text-stone-400">
-                HP {life}/{def.life}
-                {creature.attackPreventCount > 0
-                  ? ` · Prevent ${creature.attackPreventCount}`
-                  : ""}
-                {creature.nextAttackBonus > 0 ? ` · Next ATK +${creature.nextAttackBonus}` : ""} ·
-                Toxin {creature.toxinMarkers}
-                {silenced ? " · Silenced" : ""}
-              </p>
-              <p className="mt-0.5 text-[0.65rem] uppercase tracking-wide text-stone-500">
-                {creature.position}
-                {isLegendary ? " · Legendary" : ""}
-              </p>
-              <div className="mt-2 space-y-2 border-t border-stone-800 pt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-                {def.passiveRulesText !== "" && (
-                  <p>
-                    <span className="text-stone-500">Passive:</span> {def.passiveRulesText}
-                  </p>
-                )}
-                {def.attacks.map((attack) => (
-                  <p key={attack.id}>
-                    <span className="text-stone-500">
-                      {attack.kind === "basic" ? "Basic" : "Special"}:
-                    </span>{" "}
-                    {formatAttackLine(attack)}
-                    {attack.range ? " (Range)" : ""}
-                    {" · "}
-                    <span className="text-[var(--accent)]">
-                      {formatAttackFuel(attack) || "—"}
-                    </span>
-                  </p>
-                ))}
-              </div>
-            </div>
-            <div
-              className="pointer-events-none fixed z-[70] w-64 overflow-y-auto rounded border border-amber-700/50 bg-stone-950 p-3 text-left shadow-xl"
-              style={fixedTooltipPairStyle(pairPos, "secondary")}
-              role="tooltip"
-            >
-              <p className="text-xs font-semibold uppercase tracking-wider text-amber-200/80">
-                Attached
-              </p>
-              {equipment.length === 0 ? (
-                <p className="mt-2 text-[0.7rem] text-stone-500">None attached</p>
-              ) : (
-                <ul className="mt-2 space-y-2">
-                  {equipment.map(({ instanceId, def: equipDef }) => (
-                    <li
-                      key={instanceId}
-                      className="border-t border-stone-800 pt-2 first:border-0 first:pt-0"
-                    >
-                      <p className="text-sm font-medium text-stone-100">{equipDef.name}</p>
-                      <p className="mt-0.5 text-[0.65rem] text-stone-500">
-                        {formatPlayCostCompact(equipDef)} · {formatTypeLine(equipDef)}
-                      </p>
-                      <pre className="mt-1 whitespace-pre-wrap font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
-                        {formatEffectRegion(equipDef).join("\n")}
-                      </pre>
-                      {(equipDef.equipment?.abilities.length ?? 0) > 0 && (
-                        <p className="mt-1 text-[0.65rem] text-stone-500">
-                          Standing: {String(equipDef.equipment?.abilities.length)} abilit
-                          {(equipDef.equipment?.abilities.length ?? 0) === 1 ? "y" : "ies"}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </>,
-          document.body,
-        )}
-
       <button type="button" className="w-full text-left" onClick={() => onCreatureClick(creature)}>
         <p className="flex flex-wrap items-center gap-2 font-medium text-stone-100">
           <span>{def.name}</span>
@@ -243,6 +123,6 @@ export function CreatureTile({
         </div>
       )}
       {footer}
-    </div>
+    </FighterInspectHover>
   );
 }

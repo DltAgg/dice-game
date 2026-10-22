@@ -70,6 +70,17 @@ const NEGATE = testCard({
   effect: { effects: [{ type: "negate-card", cardTypes: "any" }] },
 });
 
+const COUNTER = testCard({
+  id: "card-test-counter-sequence",
+  name: "Counter",
+  type: "response",
+  subtypes: [],
+  playCost: { martial: 2 },
+  endsSequence: true,
+  rulesText: "Counter that chain object. This ends the sequence.",
+  effect: { effects: [{ type: "negate-card", cardTypes: "any" }] },
+});
+
 const CONFIG = {
   ...DEFAULT_RULES_CONFIG,
   deckMinCards: 0,
@@ -335,7 +346,10 @@ describe("030 offensive control", () => {
 
   it("establishes combo from a starter and refuses another starter on the same face", () => {
     const opened = readyMixed(false);
-    expect(legalFaceActions(opened, P1)).toEqual([activeId(opened, P1)]);
+    expect(legalFaceActions(opened, P1)).toEqual([
+      activeId(opened, P1),
+      opened.players[P1]!.creatureIds[1]!,
+    ]);
     const declared = expectOk(useFace(opened, P1));
     expect(declared.pendingDecision?.type).toBe("reaction-priority");
     expect(damageOf(declared, P2)).toBe(0);
@@ -623,6 +637,28 @@ describe("030 offensive control", () => {
     expect(resolved.offensiveState).toBe("open");
     expect(resolved.activePlayerId).toBe(P1);
     expect(resolved.phase).toBe("actions");
+  });
+
+  it("ends the sequence and the turn when Counter resolves", () => {
+    const opened = withHand(readyMixed(false), P2, [COUNTER.id]);
+    const declared = expectOk(useFace(opened, P1));
+    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
+    const answered = expectOk(
+      advance(yielded, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(yielded, P2, 0),
+      }),
+    );
+    const resolved = resolveOpenChain(answered);
+    expect(damageOf(resolved, P2)).toBe(0);
+    expect(resolved.players[P1]?.comboCount).toBe(0);
+    expect(resolved.activePlayerId).toBe(P2);
+    expect(resolved.phase).toBe("roll");
+    expect(resolved.offensiveState).toBe("open");
+    expect(resolved.aggressorPlayerId).toBe(P2);
+    expect(resolved.turn).toBe(opened.turn + 1);
+    expect(resolved.endSequenceAfterChain).toBe(false);
   });
 
   it("refuses a finisher after Tag this turn and leaves the sequence", () => {

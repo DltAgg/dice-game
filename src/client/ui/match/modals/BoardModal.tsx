@@ -12,7 +12,7 @@ import {
   type FaceCardId,
 } from "@server";
 import {
-  formatPlayCostCompact,
+  formatCostDetail,
 } from "../intents/format";
 
 export function BoardModal({
@@ -108,7 +108,7 @@ export function TacticChoiceContent({
     <>
       <p className="text-sm font-medium text-stone-100">{def.name}</p>
       <p className="text-xs text-stone-500">
-        {formatPlayCostCompact(def)} · {def.subtypes.join("/")}
+        {formatCostDetail(def, def.subtypes.join("/"))}
       </p>
       <p className="mt-1 text-[0.7rem] text-stone-400">{formatTypeLine(def)}</p>
       {formatEffectRegion(def).length > 0 && (

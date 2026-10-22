@@ -5,7 +5,7 @@ import {
   type GameState,
 } from "@server";
 import {
-  formatPlayCostCompact,
+  formatCostDetail,
 } from "../intents/format";
 import {
   btnClass,
@@ -78,7 +78,7 @@ export function DiscardModal({
                   </p>
                   <p className="text-xs text-stone-500">
                     {def !== undefined
-                      ? `${formatPlayCostCompact(def)} · ${def.subtypes.join("/")}`
+                      ? formatCostDetail(def, def.subtypes.join("/"))
                       : ""}
                   </p>
                 </button>

@@ -191,6 +191,7 @@ export function playCard(
       declaredTargetCreatureId,
     }),
     seizesOffense: definition.seizesOffense === true,
+    endsSequence: definition.endsSequence === true,
   };
   pushChainLink(
     draft,

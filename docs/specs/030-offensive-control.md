@@ -223,10 +223,13 @@ requirement, whether a Technique is available, or how an input is read. It
 does not replace the Fighter and it is not a global moveset.
 
 Still from spec `029`: a simple move is the showing face’s Primary effect.
-A Technique is an ordered pair — the Fighter’s primary face, plus one other
-face matched by name, by face type, by sequence role, or by strike class
-(a strength and kick or punch, such as a light kick) — and the secondary
-face’s Secondary effect can change the result. Every hit and every Technique
+A Technique is an ordered pair — the Fighter’s primary face, the one
+requested by name, plus one other face matched by name, by face type, by
+sequence role, or by strike class (a strength and kick or punch, such as a
+light kick). The named face is that face’s Primary use. The other face’s
+Secondary effect applies because it fulfilled the requirement. That timing
+is a rule of Techniques, so it is not printed on each Technique or each
+face. The Technique still prints its own effect. Every hit and every Technique
 has both a strength (light, medium, or heavy) and a strike (kick or punch).
 The face and the Technique each carry their own starter, extender, or
 finisher. A Fighter has no basic or special attack. Face types have no
@@ -417,9 +420,10 @@ own Action. They can Response an opponent’s Response. A Response does not
 inherently take offensive control. Control changes only when the effect
 says the sequence ends or initiative passes.
 
-Counter (a Response that interrupts) and Reversal (a Response whose result
-is that the Defender becomes Aggressor) are that same behavior with
-different results.
+Counter (a Response that interrupts) ends the sequence when it resolves,
+and ending the sequence passes the turn. A negated Counter does not.
+Reversal (a Response whose result is that the Defender becomes Aggressor)
+is that same behavior with a different result.
 
 **Modify.** Changes the current situation. Either player may play one
 while they have Priority, when its timing, target, and context are legal.
@@ -612,8 +616,10 @@ does not write the slots.
 
 ### Moveset cards
 
-A Moveset card is a Modify subject `moveset`. A generic one omits a
-Fighter requirement and may apply to more than one Fighter. There is
+A Moveset card is a Modify subject `moveset`. The Technique it enables is
+one of the Active Fighter’s. A generic one omits a Fighter requirement.
+A Fighter-specific card still requires that Fighter, and that Fighter
+must be the Active Fighter. There is
 no separate Moveset engine. When it resolves, the card stays attached
 to that Fighter for the rest of the match, the same way equipment stays
 on a creature, so the modified moveset remains visible. A negated
@@ -649,9 +655,9 @@ the secondary input. Primary and secondary effects stay on the face.
 
 ### Simple Actions vs Techniques
 
-A simple Action uses the Active Fighter's own die. A Technique uses
-that die as the primary face and one other die owned by the same
-player as the secondary face. An opponent's die is not an input.
+A simple Action uses any of your Fighters' own dice. A Technique uses
+the Active Fighter's die as the primary face and one other die owned by
+the same player as the secondary face. An opponent's die is not an input.
 
 ### Input reuse
 

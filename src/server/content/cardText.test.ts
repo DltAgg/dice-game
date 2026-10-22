@@ -4,6 +4,8 @@ import { asCardId } from "../model/ids.js";
 import {
   formatEffectRegion,
   formatInspectEffectLines,
+  formatMeterPlayCost,
+  formatPlayCostHeader,
   formatPlayCostLine,
   formatForgeLine,
   formatRequirementLine,
@@ -150,6 +152,13 @@ describe("English card printing", () => {
       "[Requires: 2 x Mechanical]",
       "[Strike 2].",
     ]);
+  });
+
+  it("prints Meter in the play-cost corner and omits a free card", () => {
+    expect(formatPlayCostHeader(exampleCard({ meterCost: 2, playCost: { arcane: 4 } }))).toBe("2");
+    expect(formatMeterPlayCost(exampleCard({ meterCost: 2 }))).toBe("2 Meter");
+    expect(formatPlayCostHeader(exampleCard({ playCost: { arcane: 3 } }))).toBe("");
+    expect(formatMeterPlayCost(exampleCard({ playCost: { arcane: 3 } }))).toBeNull();
   });
 
   it("prints a fixed play cost line", () => {

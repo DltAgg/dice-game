@@ -4,7 +4,8 @@ import type {
   ForgeRegion,
 } from "../model/cards.js";
 import type { Attribute } from "../model/attributes.js";
-import { genericCount, requirementEntries, requirementTotal, type SymbolRequirement } from "../model/symbols.js";
+import { meterPlayCost } from "../rules/cards.js";
+import { genericCount, requirementEntries, type SymbolRequirement } from "../model/symbols.js";
 
 /**
  * English printing of the Figma tactic-card grammar. The layouts are Portuguese;
@@ -35,11 +36,19 @@ const SUBTYPE_LABEL: Readonly<Record<CardSubtype, string>> = {
 
 export const attributeLabel = (attribute: Attribute): string => ATTRIBUTE_LABEL[attribute];
 
-/** Compact header glyph: total pile tokens in playCost, or empty when free. */
+/**
+ * Play cost as Meter, or null when the card is free. This is the cost
+ * shown on the card and in the hand. It is not the leftover pile `playCost`.
+ */
+export function formatMeterPlayCost(card: CardDefinition): string | null {
+  const meter = meterPlayCost(card);
+  return meter > 0 ? `${String(meter)} Meter` : null;
+}
+
+/** Corner glyph: the Meter play cost, or empty when the card is free. */
 export function formatPlayCostHeader(card: CardDefinition): string {
-  if (card.playCost === undefined) return "";
-  const total = requirementTotal(card.playCost);
-  return total > 0 ? String(total) : "";
+  const meter = meterPlayCost(card);
+  return meter > 0 ? String(meter) : "";
 }
 
 /** Header play/forge pile cost as `[Spend: …]`. */

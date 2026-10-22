@@ -47,8 +47,12 @@ generic card. A moveset card for one Fighter sets it and uses
 `modifySubject: "moveset"`.
 
 `exceptionalMeterCost` is the optional exceptional mode. Omit it when the
-normal mode is the whole card. Do not set `meterCost` as generic mana, and
-do not set `seizesOffense`.
+normal mode is the whole card. When that mode is the only way to play
+(a Tag Modify), it is the card’s play cost: the card shows that Meter, and
+`rulesText` does not repeat “Spend N Meter”. When the card can also be
+played in a chain for free, leave the outside-chain Meter sentence in
+`rulesText`. Do not set `meterCost` as generic mana, and do not set
+`seizesOffense`.
 
 `lifecycle` omitted is derived by the engine (equipment, overload, and
 continuous rituals stay; everything else is one-shot). Set it explicitly on

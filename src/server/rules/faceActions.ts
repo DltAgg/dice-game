@@ -84,7 +84,7 @@ export function canUseFace(
   if (state.status === "finished") return false;
   const player = state.players[playerId];
   if (player === undefined) return false;
-  if (!isActiveFighter(player, creatureId)) return false;
+  if (!player.creatureIds.includes(creatureId)) return false;
   const creature = state.creatures[creatureId];
   if (creature === undefined || creature.defeated) return false;
   const die = dieForCreature(state, creatureId);
@@ -106,8 +106,7 @@ export function legalFaceActions(
 ): readonly CreatureId[] {
   const player = state.players[playerId];
   if (player === undefined) return [];
-  const activeId = player.activeCreatureId;
-  return canUseFace(state, playerId, activeId) ? [activeId] : [];
+  return player.creatureIds.filter((creatureId) => canUseFace(state, playerId, creatureId));
 }
 
 export interface MatchingTechnique {

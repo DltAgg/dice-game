@@ -13,6 +13,7 @@ export type { MatchSetup, PlayerSetup } from "./setup/createMatch.js";
 
 export * from "./rules/absorb.js";
 export * from "./rules/cards.js";
+export * from "./rules/cardBehavior.js";
 export * from "./rules/creatures.js";
 export * from "./rules/dice.js";
 export * from "./rules/faces.js";
@@ -45,6 +46,7 @@ export {
   formatEffectRegion,
   formatForgeLine,
   formatInspectEffectLines,
+  formatMeterPlayCost,
   formatPlayCostHeader,
   formatPlayCostLine,
   formatRequirementBody,

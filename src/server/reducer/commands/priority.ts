@@ -18,6 +18,7 @@ import { relocateResolvedOneShot } from "./playCard.js";
 import { finishRitualActivation } from "./ritual.js";
 import { conductAssist } from "./assist.js";
 import { conductTag } from "./tag.js";
+import { endTurn } from "./turn.js";
 import { conductCombatAction, flushPendingOffenseSettle, noteOffenseSeize } from "../offensive.js";
 import { applyCardModify } from "../cardModify.js";
 
@@ -71,12 +72,22 @@ function drainChain(draft: Draft): GameError | null {
 
     const link = draft.chainStack.pop();
     if (link === undefined) break;
+    // Combat-action finishers already pass the turn when they settle.
+    if (!link.negated && link.endsSequence === true && link.kind !== "combat-action") {
+      draft.endSequenceAfterChain = true;
+    }
 
     conductLink(draft, link);
     if (draft.pendingDecision !== null) return null;
   }
 
   flushPendingOffenseSettle(draft);
+  if (draft.pendingDecision !== null) return null;
+  if (!draft.endSequenceAfterChain) return null;
+  draft.endSequenceAfterChain = false;
+  // A finisher in this same chain already passed the turn.
+  if (draft.status === "finished" || draft.phase !== "actions") return null;
+  endTurn(draft, draft.activePlayerId);
   return null;
 }
 

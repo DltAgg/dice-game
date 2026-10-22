@@ -11,7 +11,7 @@
     "id": { "$ref": "defs.schema.json#/$defs/cardId" },
     "name": { "type": "string", "minLength": 1 },
     "playCost": {
-      "description": "Header [Spend: …] burned from the attribute pile when playing or forging (synthetic forge burns; natural forge does not). 1-token totals are exceptional — prefer 2+ of the card's attribute.",
+      "description": "Leftover pile header. Not the Meter a player spends to play the card. The play cost is meterCost plus exceptionalMeterCost when every legal play spends that exceptional cost.",
       "$ref": "defs.schema.json#/$defs/symbolRequirement"
     },
     "type": { "$ref": "defs.schema.json#/$defs/cardType" },
@@ -61,11 +61,15 @@
     "meterCost": {
       "type": "integer",
       "minimum": 1,
-      "description": "Spec 028. Meter burned on play."
+      "description": "Meter spent on every play. Part of the card's play cost. Omit when the play is free."
     },
     "seizesOffense": {
       "type": "boolean",
       "description": "Spec 030. Response that takes offensive control when it resolves against a waiting combat action. Does not cancel that action's damage."
+    },
+    "endsSequence": {
+      "type": "boolean",
+      "description": "Spec 030. When this link resolves and was not negated, the sequence ends and the turn passes."
     },
     "modifySubject": {
       "type": "string",
@@ -75,7 +79,7 @@
     "exceptionalMeterCost": {
       "type": "integer",
       "minimum": 1,
-      "description": "Spec 030. Meter for exceptional mode only. Normal mode does not spend this."
+      "description": "Spec 030. Meter for exceptional mode only. Normal mode does not spend this. On a Tag Modify this is the play cost, so rules text does not repeat the spend. On a card that can also be played in a chain for free, leave the outside-chain Meter in rules text."
     },
     "lifecycle": {
       "type": "string",

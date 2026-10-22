@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardSubtype, CardType } from "../model/cards.js";
-import { playCostTotal } from "../rules/cards.js";
+import { meterPlayCost, playCostTotal } from "../rules/cards.js";
 import { ALL_CARDS } from "./cards.js";
 
 /**
@@ -45,6 +45,12 @@ describe("card type ↔ region consistency", () => {
         `${card.name} is type ritual but still has Instant subtype`,
       ).toBe(false);
     }
+  });
+
+  it.each(ALL_CARDS)("$name: rules text does not repeat its Meter play cost", (card) => {
+    if (meterPlayCost(card) <= 0) return;
+    expect(card.rulesText).not.toMatch(/spend\s+\d+\s+meter/i);
+    expect(card.rulesText).not.toMatch(/costs?\s+\d+\s+meter/i);
   });
 
   it.each(ALL_CARDS)("$name: header forge faces follow the playCost curve", (card) => {

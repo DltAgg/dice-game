@@ -8,6 +8,7 @@ import {
   linkMatchesNegateCard,
 } from "../reducer/chain.js";
 import type { Draft } from "../reducer/draft.js";
+import { legalModifyPlays } from "./cardBehavior.js";
 import { canAffordPlay, handOf, isReactionCard, ritualsOf } from "./cards.js";
 import { assistDeclarationError } from "./fighters.js";
 
@@ -145,15 +146,15 @@ export function isEnabledRitualReaction(
 }
 
 /**
- * Whether the priority seat has a Respond, ritual-activate, or Assist the
- * board would enable. Query only — does not pass, spend, or mutate.
+ * Whether the priority seat has a Respond, a legal Modify, a ritual-activate,
+ * or an Assist the board would enable. Query only — does not pass, spend, or mutate.
  */
 export function hasLegalReactionOffer(state: GameState, playerId: PlayerId): boolean {
   for (const card of handOf(state, playerId)) {
     const definition = getCard(card.cardId);
-    if (definition !== undefined && isEnabledHandReaction(state, playerId, definition)) {
-      return true;
-    }
+    if (definition === undefined) continue;
+    if (isEnabledHandReaction(state, playerId, definition)) return true;
+    if (legalModifyPlays(state, playerId, definition).length > 0) return true;
   }
   for (const card of ritualsOf(state, playerId)) {
     if (card.ritualOrientation !== "ready") continue;

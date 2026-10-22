@@ -30,11 +30,12 @@ Loadouts need **three** Fighters. Setup places by **squad index**: index 0
 opens **Active**. Tag-fighter matches use **one frontline (Active)** and two
 Reserve. Skirmish defaults still place two frontline then back.
 
-A Tag Fighter has no basic or special attack. The showing face on the Active
-Fighter is a hit by itself. A Technique pairs that face with one other face
-you rolled: a named face, any face of a type, any face with a sequence role,
-or a strike class such as a light kick. Every hit and every Technique has a
-strength (light, medium, or heavy) and a strike (kick or punch). The face
+A Tag Fighter has no basic or special attack. The showing face on any of
+your Fighters is a hit by itself. A Technique is the Active Fighter only:
+that Fighter’s die shows the primary face, and another of your rolled dice
+shows the secondary — a named face, any face of a type, any face with a
+sequence role, or a strike class such as a light kick. Every hit and every
+Technique has a strength (light, medium, or heavy) and a strike (kick or punch). The face
 and the Technique each say whether they are a starter, an extender, or a
 finisher. Both target the opponent’s Active Fighter.
 
@@ -262,8 +263,10 @@ During actions (or as a legal reaction — §15):
 
 | Kind | What happens |
 |---|---|
-| Modify | Changes the current situation. Either player may play one while they have priority, when it is legal. A Modify may resolve an effect, attach equipment, overload a face, or place a ritual. |
+| Modify | Changes the current situation. Either player may play one while they have priority, when it is legal. A Modify with no outside-chain Meter cost may also be played on your turn in the actions phase when its subject can be chosen. Playing one outside a chain spends that Meter. When that is the only way to play the card, the Meter is its play cost. A redirect needs a hit. A Modify may resolve an effect, attach equipment, overload a face, place a ritual, or change a hit, roll, die, moveset, or Tag. |
 | Response | From hand, only against an opponent’s object while a reaction window is open. |
+
+A card’s **play cost** is the Meter you spend to play it. That number is shown on the card. Rules text does not repeat the same spend. A card with no play cost is free. A Modify you can also play in a chain for free does not put its outside-chain Meter on that number. That spend stays in the rules text, and you pay it only for the outside-chain play.
 
 Printed `[Spend]` / `[Requires]` on cards and attacks are not enforced. Forge
 does not check a card’s effect `[Requires]` (play vs forge is exclusive).
@@ -457,7 +460,9 @@ face) fires again.
   to the player who declared the hit, and 1 to the player who owns the
   Fighter the hit was declared against. Kick and punch do not change the
   amount. A negated hit grants nothing. That hit does not also grant 1
-  Meter per HP lost. Cards may also print a Meter spend.
+  Meter per HP lost. A card’s play cost is Meter spent to play it. A Meter
+  spend that is not that play cost still applies, including an outside-chain
+  play and a face that spends Meter.
 - **Combo:** +1 for each successful starter, extender, and finisher. A
   negated link does not count. Resets on Tag, KO-promote, and end of turn.
 - In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
@@ -468,16 +473,23 @@ face) fires again.
 - Some faces are **named actions** with a **Type** (Attack, Grab, Guard,
   Movement, Tag, …). Types have **no** fixed damage of their own — the face’s
   printed effects do.
-- **Primary Effect:** resolve alone with **Use Face** — the Active Fighter
-  uses the showing face on **their own** bound die. No second face needed.
-- **Fighter technique (two faces):** the Active Fighter’s own die shows the
-  technique’s **primary** named face, and **another** of your rolled dice
-  shows a face matching the secondary: a named face, any face of a type, any
-  face with a sequence role, or a strike class such as a light kick. Every
-  hit and every Technique has a strength (light, medium, or heavy) and a
-  strike (kick or punch). Resolve the technique’s base effect, then
-  that secondary face’s **Secondary Effect**. Swapping which die shows which
-  face does not fire the same technique.
+- A face prints a **Primary** effect and a **Secondary** effect. When each
+  one applies is a rule of hits and Techniques. It is not printed again on
+  the face or on the Technique.
+- **Primary** is the effect of the face the Active Fighter’s Technique
+  requests by name, the first face. A simple hit resolves that Primary on
+  its own: any of your Fighters uses the showing face on their own die. No
+  second face is needed.
+- **Secondary** applies when that face is the other face of that Technique,
+  the face that fulfills the requirement, such as a light kick, a light
+  punch, or a Projectile.
+- **Fighter technique:** only the Active Fighter. That Fighter’s die shows
+  the named first face, and another of your rolled dice shows the face that
+  meets the secondary requirement. The Technique prints its own effect, such
+  as `[Strike 3]`. That effect resolves, and the second face’s Secondary
+  effect applies with it. Every hit and every Technique has a strength
+  (light, medium, or heavy) and a strike (kick or punch). Swapping which die
+  shows which face does not fire the same technique.
 - These actions happen in the **actions** phase (the Act). Using a face does
   not spend it. The same face may still be part of a Technique. Repeating the
   same Action in one sequence is the model under test (spec `030`). What is
@@ -522,7 +534,9 @@ once, or keep them. Cards can change that roll or that reroll.
 
 A response does not require a Guard face. Cards respond or modify. A
 response does not by itself take the offense. Counter, Reversal, Modifier,
-and Situation are names for a result, not card types.
+and Situation are names for a result, not card types. Counter ends the
+sequence when it resolves. Ending the sequence ends the turn: the opposing
+player becomes the active player. A negated Counter does not.
 
 Declaring an action opens Priority for the player who declared it. While you
 have Priority you may add a legal response or modify, if it has a valid
@@ -534,9 +548,9 @@ invalid by then, that effect does not happen.
 
 A modify can change the roll you just made, or it can permanently change a
 die. Changing the roll does not rewrite the die. There is no temporary die
-change. It can also change what one Fighter’s inputs allow. That moveset
-card stays attached to that Fighter for the rest of the match, so the
-change remains visible. It can also redirect a target that is already part
+change. It can also change what the Active Fighter’s inputs allow. The Technique
+you choose is one of that Fighter’s. That moveset card stays attached to
+that Fighter for the rest of the match, so the change remains visible. It can also redirect a target that is already part
 of the exchange.
 
 Tag is not a card. A turn can offer an opening Tag window and a closing

@@ -4,11 +4,11 @@ import { faceRulesLines } from "./faceRulesLines.js";
 describe("faceRulesLines", () => {
   it("puts Primary and Secondary on their own lines", () => {
     expect(
-      faceRulesLines("Starter. Primary: [Strike 2]. Secondary: +1 damage to the Technique."),
+      faceRulesLines("Starter. Primary: [Strike 2]. Secondary: +1 damage."),
     ).toEqual([
       "Starter.",
       "Primary: [Strike 2].",
-      "Secondary: +1 damage to the Technique.",
+      "Secondary: +1 damage.",
     ]);
   });
 

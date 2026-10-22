@@ -5,7 +5,8 @@
   "type": "response",
   "subtypes": [],
   "lifecycle": "one-shot",
-  "rulesText": "Counter that chain object.",
+  "rulesText": "Counter that chain object. This ends the sequence.",
+  "endsSequence": true,
   "forge": { "faces": 1, "target": "own-die" },
   "effect": {
     "effects": [{ "type": "negate-card", "cardTypes": "any" }]

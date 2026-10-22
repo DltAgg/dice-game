@@ -429,6 +429,33 @@ describe("030 card behavior", () => {
     expect(resolved.creatures[fighter]?.equipmentIds).toContain(attached?.id);
   });
 
+  it("plays an unpriced moveset modify on your turn with no chain", () => {
+    const shown = show(matchWith(), P1, 0, 0);
+    const fighter = creatureAt(shown, P1, 0);
+    const opened = withHand(shown, P1, [MOVESET_MOD.id]);
+    const played = expectOk(
+      advance(opened, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(opened, P1, 0),
+        declaredTargetCreatureId: fighter,
+        techniqueId: "technique-beh-lariat-grab",
+      }),
+    );
+    const resolved = resolveOpenChain(played);
+    expect(resolved.creatures[fighter]?.enabledTechniqueIds).toContain("technique-beh-lariat-grab");
+    const reserve = creatureAt(opened, P1, 1);
+    const onReserve = advance(opened, {
+      type: "PLAY_CARD",
+      playerId: P1,
+      cardInstanceId: handCardIdAt(opened, P1, 0),
+      declaredTargetCreatureId: reserve,
+      techniqueId: "technique-beh-lariat-grab",
+    });
+    expect(onReserve.ok).toBe(false);
+    if (!onReserve.ok) expect(onReserve.error).toBe("INVALID_TARGET");
+  });
+
   it("redirects an unresolved target and rejects a missing one", () => {
     const opened = withHand(declare(ready()), P1, [TARGET_MOD.id]);
     const reserve = creatureAt(opened, P2, 1);
