@@ -119,6 +119,8 @@ export function pendingSourceOf(
         cardInstanceId: null,
         faceCardId: faceIdFromDieSlot(state, pending.dieId, pending.slotIndex),
       };
+    case "replace-ko-active":
+      return null;
     default:
       return null;
   }

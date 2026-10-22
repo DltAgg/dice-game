@@ -58,6 +58,16 @@ export type GameAction =
       readonly reserveCreatureId: CreatureId;
     }
   /**
+   * Spec `030`. After your Active Fighter is KOed, name the living Reserve
+   * that becomes Active. Mandatory while `replace-ko-active` is pending.
+   * Does not spend the once-per-turn Tag or Meter, and is not a Chain object.
+   */
+  | {
+      readonly type: "RESOLVE_REPLACE_KO_ACTIVE";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+    }
+  /**
    * Spec `030`. A Reserve Fighter's Assist, including a KOed Reserve.
    * Free when that die shows assist; otherwise the Fighter's exceptional
    * Meter, or `assistMeterCost`. Resolves on the Chain.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asPlayerId, type GameState } from "@server";
+import { asCreatureId, asPlayerId, type GameState } from "@server";
 import { hintFor } from "./hintFor";
 
 const P1 = asPlayerId("p1");
@@ -139,6 +139,24 @@ describe("hintFor choose-bounce-card", () => {
       false,
     );
     expect(hint).toBe("Waiting for the opponent to choose a card to Bounce.");
+  });
+});
+
+describe("hintFor replace-ko-active", () => {
+  const pending = {
+    type: "replace-ko-active" as const,
+    controllerId: P1,
+    defeatedCreatureId: asCreatureId("creature-ko"),
+  };
+
+  it("tells the owner to choose a living Reserve", () => {
+    const hint = hintFor({ kind: "idle" }, pendingState(pending), true);
+    expect(hint).toBe("Choose a living Reserve to replace the KOed Active Fighter.");
+  });
+
+  it("tells the other seat they are waiting", () => {
+    const hint = hintFor({ kind: "idle" }, pendingState(pending), false);
+    expect(hint).toBe("Waiting for a living Reserve to replace the KOed Active Fighter.");
   });
 });
 

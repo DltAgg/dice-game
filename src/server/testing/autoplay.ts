@@ -741,6 +741,27 @@ function resolvePending(state: GameState): GameState {
     return resolvePending(result.state);
   }
 
+  if (pending.type === "replace-ko-active") {
+    const owner = state.players[pending.controllerId];
+    const choice = owner?.creatureIds.find((id) => {
+      if (id === pending.defeatedCreatureId) return false;
+      const creature = state.creatures[id];
+      return creature !== undefined && !creature.defeated;
+    });
+    if (choice === undefined) {
+      throw new Error("autoplay: no reserve for replace-ko-active");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_REPLACE_KO_ACTIVE",
+      playerId: pending.controllerId,
+      creatureId: choice,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_REPLACE_KO_ACTIVE`);
+    }
+    return resolvePending(result.state);
+  }
+
   if (pending.type === "choose-die-slot") {
     const legal = legalDieSlotsForFilter(state, pending.controllerId, pending.filter, {
       ...(pending.contextDieId !== undefined ? { contextDieId: pending.contextDieId } : {}),

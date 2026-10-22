@@ -332,6 +332,17 @@ export function pendingCandidates(state: GameState, playerId: PlayerId): readonl
         playerId,
         choice,
       }));
+    case "replace-ko-active": {
+      const owner = state.players[playerId];
+      const choice = owner?.creatureIds.find((id) => {
+        if (id === pending.defeatedCreatureId) return false;
+        const creature = state.creatures[id];
+        return creature !== undefined && !creature.defeated;
+      });
+      return choice === undefined
+        ? []
+        : [{ type: "RESOLVE_REPLACE_KO_ACTIVE", playerId, creatureId: choice }];
+    }
     default: {
       const _never: never = pending;
       return _never;

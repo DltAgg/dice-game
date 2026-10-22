@@ -101,7 +101,7 @@ Each player has:
   medium, or heavy) and 1 to the player who owns the Fighter it was
   declared against. A negated hit grants nothing.
 - **Combo:** +1 for each successful starter, extender, and finisher. A
-  negated link does not count. Resets on Tag, KO-promote, and end of turn.
+  negated link does not count. Resets on Tag, KO, and end of turn.
 - One hand, one tactics deck (top-first), one graveyard, plus equipment,
   overloads, and rituals. The three Fighters share that hand and deck.
 
@@ -448,7 +448,7 @@ face) fires again.
   Finisher already resolved this turn makes Tag illegal. You cannot Tag and
   also play a Finisher.
   Tag is a Chain object, so it can be Responded to or Modified. A KOed
-  Fighter cannot Tag, and a KO does not switch Active for you.
+  Fighter cannot Tag.
 - **[Assist]:** only a Reserve fires its Assist, including a Reserve at 0 HP.
   The Active Fighter stays Active. You may Assist on your own turn during the
   actions phase when no Chain is open. You may also Assist when you have
@@ -464,7 +464,7 @@ face) fires again.
   spend that is not that play cost still applies, including an outside-chain
   play and a face that spends Meter.
 - **Combo:** +1 for each successful starter, extender, and finisher. A
-  negated link does not count. Resets on Tag, KO-promote, and end of turn.
+  negated link does not count. Resets on Tag, KO, and end of turn.
 - In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
   face change). No temporary face replacement.
 
@@ -565,8 +565,10 @@ turn changes. A sequence hit that conducts grants Meter from its strength, as
 in the Meter rule above. A negated hit grants nothing.
 
 At 0 HP a Fighter is KOed. They cannot Tag. They can still Assist. The
-sequence ends and the opponent takes initiative. When all three of your
-Fighters are KOed, you lose.
+sequence ends and the opponent takes initiative. If your Active Fighter was
+the one KOed and you have a living Reserve, you must choose one to become
+Active before play continues. That choice does not spend your once-per-turn
+Tag or Meter. When all three of your Fighters are KOed, you lose.
 
 Hand size, draw, deckbuilding, and how dice are customized are **not
 decided** ([`OPEN_DESIGN.md`](./OPEN_DESIGN.md)). There is no Resolve phase

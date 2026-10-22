@@ -122,7 +122,7 @@ function tagSkirmishBoard(): GameState {
 }
 
 describe("TagSkirmishSeatPanel", () => {
-  it("shows meter, combo, active/reserve, die technique, and KO", () => {
+  it("shows meter, combo, active/reserve, die technique, and a grayed KO reserve", () => {
     const html = renderToStaticMarkup(
       createElement(TagSkirmishSeatPanel, {
         state: tagSkirmishBoard(),
@@ -149,9 +149,15 @@ describe("TagSkirmishSeatPanel", () => {
     expect(html).toContain("Reserve");
     expect(html).toContain("Strike");
     expect(html).toContain("strike");
-    expect(html).toContain("KO");
+    expect(html).toContain("HP 0/8");
+    expect(html).toContain("opacity-55");
+    expect(html).toContain("pointer-events-none");
+    expect(html).toContain("KO · Reserve");
+    expect(html).toContain("text-red-400/80");
     expect(html).toContain(">Tag<");
     expect(html).toContain(">Assist<");
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Tag<\/button>/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>Assist<\/button>/);
     const reserveAt = html.indexOf(">Reserve<");
     const tagAt = html.indexOf(">Tag<", reserveAt);
     const unrolledAt = html.indexOf("Unrolled", reserveAt);

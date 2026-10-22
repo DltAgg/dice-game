@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asPlayerId, type GameState, type PlayerId } from "@server";
+import { asCreatureId, asPlayerId, type GameState, type PlayerId } from "@server";
 import {
   actingPlayerIdOf,
   localSeatCanAct,
@@ -161,6 +161,31 @@ describe("seatGate — choose-silence-host uses controllerId", () => {
     expect(pendingChooserId(silencePending)).toBe(P1);
     expect(localSeatIsPendingChooser(true, P1, silencePending)).toBe(true);
     expect(localSeatIsPendingChooser(true, P2, silencePending)).toBe(false);
+  });
+});
+
+describe("seatGate — replace-ko-active uses the KOed owner's controllerId", () => {
+  const koPending = stateOf({
+    activePlayerId: P1,
+    pending: {
+      type: "replace-ko-active",
+      controllerId: P2,
+      defeatedCreatureId: asCreatureId("creature-ko"),
+    },
+  });
+
+  it("offers the Reserve picker to the owner, not the turn player", () => {
+    expect(pendingChooserId(koPending)).toBe(P2);
+    expect(actingPlayerIdOf(koPending)).toBe(P2);
+    expect(localSeatCanAct(true, P2, koPending)).toBe(true);
+    expect(localSeatIsPendingChooser(true, P2, koPending)).toBe(true);
+    expect(localSeatCanAct(true, P1, koPending)).toBe(false);
+    expect(localSeatIsPendingChooser(true, P1, koPending)).toBe(false);
+  });
+
+  it("hotseat still shows the picker when no seat is bound", () => {
+    expect(localSeatIsPendingChooser(false, null, koPending)).toBe(true);
+    expect(localSeatCanAct(false, null, koPending)).toBe(true);
   });
 });
 

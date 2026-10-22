@@ -21,17 +21,42 @@ export function setActiveFighter(
   patchPlayer(draft, playerId, { activeCreatureId: creatureId });
 }
 
+function hasLivingReserve(draft: Draft, ownerId: PlayerId, defeatedId: CreatureId): boolean {
+  const player = draft.players[ownerId];
+  if (player === undefined) return false;
+  return player.creatureIds.some((id) => {
+    if (id === defeatedId) return false;
+    const creature = draft.creatures[id];
+    return creature !== undefined && !creature.defeated;
+  });
+}
+
 /**
- * KO (spec `030`). The Fighter stays where they are. The sequence returns to
- * Open and initiative passes to the opponent. No automatic Tag.
+ * KO (spec `030`). The sequence returns to Open and initiative passes to the
+ * opponent. The turn does not end here. When the defeated Fighter is Active
+ * and a living Reserve remains, the owner must choose who becomes Active.
+ * A choice already waiting is left alone — there is no second decision queue.
  */
 export function promoteOnKo(draft: Draft, defeatedId: CreatureId): void {
   const defeated = draft.creatures[defeatedId];
   if (defeated === undefined) return;
-  const player = draft.players[defeated.ownerId];
+  const ownerId = defeated.ownerId;
+  const player = draft.players[ownerId];
   if (player === undefined) return;
-  setComboCount(draft, player.id, 0);
-  returnToOpen(draft, opponentOf(draft, defeated.ownerId));
+  setComboCount(draft, ownerId, 0);
+  returnToOpen(draft, opponentOf(draft, ownerId));
+  if (draft.status === "finished") return;
+  const owner = draft.players[ownerId];
+  if (owner === undefined || owner.activeCreatureId !== defeatedId) return;
+  // Do not clobber a choice that is already open. No pause-and-resume queue
+  // exists for a second pending, so the replacement prompt is skipped.
+  if (draft.pendingDecision !== null) return;
+  if (!hasLivingReserve(draft, ownerId, defeatedId)) return;
+  draft.pendingDecision = {
+    type: "replace-ko-active",
+    controllerId: ownerId,
+    defeatedCreatureId: defeatedId,
+  };
 }
 
 /**

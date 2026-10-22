@@ -8,11 +8,9 @@ import {
   type CardInstanceId,
   type CreatureId,
   type CreatureState,
-  type DieId,
   type GameState,
   type PlayerId,
 } from "@server";
-import { FaceActionBar } from "./FaceActionBar";
 import { FighterRow } from "./FighterRow";
 import { MeterStrip } from "./MeterStrip";
 import { RitualTile } from "./RitualTile";
@@ -34,8 +32,6 @@ export function TagSkirmishSeatPanel({
   onRitualActivate,
   onTag,
   onAssist,
-  onUseFace,
-  onUseTechnique,
 }: {
   state: GameState;
   playerId: PlayerId;
@@ -52,12 +48,6 @@ export function TagSkirmishSeatPanel({
   onRitualActivate: (cardInstanceId: CardInstanceId) => void;
   onTag: (reserveCreatureId: CreatureId) => void;
   onAssist: (reserveCreatureId: CreatureId) => void;
-  onUseFace?: (creatureId: CreatureId) => void;
-  onUseTechnique?: (
-    creatureId: CreatureId,
-    techniqueId: string,
-    secondaryDieId: DieId,
-  ) => void;
 }) {
   const isActive = state.activePlayerId === playerId;
   const pending = state.pendingDecision;
@@ -121,25 +111,14 @@ export function TagSkirmishSeatPanel({
       onAssist={onAssist}
     />
   );
-  const faceActions =
-    playerId === actingPlayerId && canAct && onUseFace !== undefined && onUseTechnique !== undefined ? (
-      <FaceActionBar
-        state={state}
-        playerId={playerId}
-        onUseFace={onUseFace}
-        onUseTechnique={onUseTechnique}
-      />
-    ) : null;
   const fighters =
     facing === "down" ? (
       <>
         {fighterRow("reserve")}
         {fighterRow("active")}
-        {faceActions}
       </>
     ) : (
       <>
-        {faceActions}
         {fighterRow("active")}
         {fighterRow("reserve")}
       </>

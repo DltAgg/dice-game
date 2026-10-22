@@ -269,4 +269,14 @@ export type PendingDecision =
        * applying it after the choice does not re-open this decision. Spec `023`.
        */
       readonly deferred: PendingEffect;
+    }
+  /**
+   * Spec `030`. The Active Fighter was just KOed and a living Reserve remains.
+   * Only `controllerId` may answer, with `RESOLVE_REPLACE_KO_ACTIVE`. Mandatory:
+   * no pass, no cancel. Not the once-per-turn Tag, and not a Chain object.
+   */
+  | {
+      readonly type: "replace-ko-active";
+      readonly controllerId: PlayerId;
+      readonly defeatedCreatureId: CreatureId;
     };

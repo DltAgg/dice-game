@@ -703,9 +703,29 @@ describe("030 offensive control", () => {
         [target]: { ...victim, damage: 17 },
       },
     };
-    const after = resolveOpenChain(expectOk(useFace(state, P1)));
-    expect(after.creatures[target]?.defeated).toBe(true);
-    expect(after.players[P2]?.activeCreatureId).toBe(target);
+    const paused = resolveOpenChain(expectOk(useFace(state, P1)));
+    expect(paused.creatures[target]?.defeated).toBe(true);
+    expect(paused.players[P2]?.activeCreatureId).toBe(target);
+    expect(paused.pendingDecision).toMatchObject({
+      type: "replace-ko-active",
+      controllerId: P2,
+      defeatedCreatureId: target,
+    });
+    expect(paused.offensiveState).toBe("open");
+    expect(paused.aggressorPlayerId).toBe(P1);
+    expect(paused.activePlayerId).toBe(P1);
+    expect(paused.turn).toBe(turn);
+    const reserve = paused.players[P2]?.creatureIds.find((id) => id !== target);
+    if (reserve === undefined) throw new Error("reserve");
+    const after = expectOk(
+      advance(paused, {
+        type: "RESOLVE_REPLACE_KO_ACTIVE",
+        playerId: P2,
+        creatureId: reserve,
+      }),
+    );
+    expect(after.players[P2]?.activeCreatureId).toBe(reserve);
+    expect(after.pendingDecision).toBeNull();
     expect(after.activePlayerId).toBe(P2);
     expect(after.turn).toBe(turn + 1);
     expect(after.phase).toBe("roll");

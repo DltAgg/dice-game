@@ -30,14 +30,12 @@ import { useDeckStore } from "@client/store/deckStore";
 import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@client/decks";
 import { actingPlayerIdOf, localSeatCanAct, localSeatIsPendingChooser, seatedAction } from "./seatGate";
 import { AttackArrowOverlay } from "./board/AttackArrowOverlay";
-import { MatchSeatField } from "./board/MatchSeatField";
-import { isTagSkirmishMatch, seatMayPressTag } from "./board/tagAssistLegality";
+import { MatchTable } from "./board/MatchTable";
+import { isTagSkirmishMatch } from "./board/tagAssistLegality";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
-import { FaceCardsInPlay } from "./board/FaceCardsInPlay";
 import { HandStrip } from "./board/HandStrip";
 import { ModifyPlayBar } from "./board/ModifyPlayBar";
 import { MatchNotReady } from "./board/MatchNotReady";
-import { PhaseBar } from "./board/PhaseBar";
 import { SpectatorSeatDock } from "./board/SpectatorSeatDock";
 import { SymbolPool } from "./board/SymbolPool";
 import { ZoneDocks } from "./board/ZoneDocks";
@@ -69,6 +67,7 @@ import { OptionalRerollModal } from "./modals/OptionalRerollModal";
 import { OverloadFacePickModal } from "./modals/OverloadFacePickModal";
 import { PeekDeckModal } from "./modals/PeekDeckModal";
 import { ChooseEffectModePrompt } from "./modals/ChooseEffectModePrompt";
+import { ReplaceKoActivePrompt } from "./modals/ReplaceKoActivePrompt";
 import { ReplaceSyntheticFacePrompt } from "./modals/ReplaceSyntheticFacePrompt";
 import { ReplayGraveyardModal } from "./modals/ReplayGraveyardModal";
 import { SearchPanel } from "./modals/SearchPanel";
@@ -1230,6 +1229,17 @@ export function MatchBoard() {
         <WaitingBanner>Opponent may declare a bonus basic attack.</WaitingBanner>
       )}
 
+      {pending?.type === "replace-ko-active" && (
+        <ReplaceKoActivePrompt
+          state={state}
+          pending={pending}
+          isChooser={isPendingChooser}
+          onPick={(creatureId) =>
+            tryDispatch({ type: "RESOLVE_REPLACE_KO_ACTIVE", playerId: pending.controllerId, creatureId })
+          }
+        />
+      )}
+
       {reactionPriorityLive && !isPendingChooser && (
         <WaitingBanner>
           {`${pending.priorityPlayerId} holds reaction priority — they may respond or Pass.`}
@@ -1276,101 +1286,31 @@ export function MatchBoard() {
         />
       )}
 
-      {/* Field (≥70%) + faces (≤30%). Phase bar spans full width between seats. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,30%)] items-stretch gap-x-3 gap-y-4">
-        <MatchSeatField
-          tagSkirmish={tagSkirmish}
-          state={state}
-          playerId={MATCH_P2}
-          label="Player 2"
-          facing="down"
-          intent={intent}
-          absorbArmed={intent.kind === "absorb"}
-          onCreatureClick={onCreatureClick}
-          onAttackChoose={(attackerId, attackId) =>
-            setIntent({ kind: "attack", attackerId, attackId })
-          }
-          onCancelAttack={clearIntent}
-          actingPlayerId={actingId}
-          canAct={canAct}
-          mayTag={seatMayPressTag(isOnline, localPlayerId, MATCH_P2)}
-          onRitualActivate={(id) =>
-            tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
-          }
-          onTag={onTagReserve}
-          onAssist={onAssistReserve}
-          onUseFace={onUseFace}
-          onUseTechnique={onUseTechnique}
-        />
-        <FaceCardsInPlay
-          state={state}
-          playerId={MATCH_P2}
-          label="P2 face cards"
-          facing="down"
-          actingPlayerId={actingId}
-          canAct={canAct}
-          onActivateFace={(dieId, slotIndex) =>
-            tryDispatch({
-              type: "ACTIVATE_FACE",
-              playerId: actingId,
-              dieId,
-              slotIndex,
-            })
-          }
-        />
-
-        <div className="col-span-2 min-w-0">
-          <PhaseBar
-            state={state}
-            canAct={canAct}
-            canEndSequence={canEndSequence}
-            onGoToPhase={goToPhase}
-            onEndTurn={endTurn}
-            onEndSequence={onEndSequence}
-          />
-        </div>
-
-        <MatchSeatField
-          tagSkirmish={tagSkirmish}
-          state={state}
-          playerId={MATCH_P1}
-          label="Player 1"
-          facing="up"
-          intent={intent}
-          absorbArmed={intent.kind === "absorb"}
-          onCreatureClick={onCreatureClick}
-          onAttackChoose={(attackerId, attackId) =>
-            setIntent({ kind: "attack", attackerId, attackId })
-          }
-          onCancelAttack={clearIntent}
-          actingPlayerId={actingId}
-          canAct={canAct}
-          mayTag={seatMayPressTag(isOnline, localPlayerId, MATCH_P1)}
-          onRitualActivate={(id) =>
-            tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
-          }
-          onTag={onTagReserve}
-          onAssist={onAssistReserve}
-          onUseFace={onUseFace}
-          onUseTechnique={onUseTechnique}
-        />
-        <FaceCardsInPlay
-          state={state}
-          playerId={MATCH_P1}
-          label="P1 face cards"
-          facing="up"
-          actingPlayerId={actingId}
-          canAct={canAct}
-          onActivateFace={(dieId, slotIndex) =>
-            tryDispatch({
-              type: "ACTIVATE_FACE",
-              playerId: actingId,
-              dieId,
-              slotIndex,
-            })
-          }
-        />
-      </div>
+      <MatchTable
+        tagSkirmish={tagSkirmish}
+        state={state}
+        intent={intent}
+        actingId={actingId}
+        canAct={canAct}
+        canEndSequence={canEndSequence}
+        isOnline={isOnline}
+        localPlayerId={localPlayerId}
+        onCreatureClick={onCreatureClick}
+        onAttackChoose={(attackerId, attackId) =>
+          setIntent({ kind: "attack", attackerId, attackId })
+        }
+        onCancelAttack={clearIntent}
+        onRitualActivate={(id) =>
+          tryDispatch({ type: "ACTIVATE_RITUAL", playerId: actingId, cardInstanceId: id })
+        }
+        onTag={onTagReserve}
+        onAssist={onAssistReserve}
+        onUseFace={onUseFace}
+        onUseTechnique={onUseTechnique}
+        onGoToPhase={goToPhase}
+        onEndTurn={endTurn}
+        onEndSequence={onEndSequence}
+      />
       <div className="fixed inset-x-0 bottom-0 z-30 overflow-visible border-t border-stone-800/80 bg-[var(--felt-deep)]/95 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] backdrop-blur">
         <div className="mx-auto flex max-w-5xl flex-col gap-2 overflow-visible px-4 py-2 sm:px-6">
           <button

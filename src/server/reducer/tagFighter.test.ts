@@ -21,13 +21,17 @@ import {
   asTestFaceId,
   TEST_FACE_DECK,
   testAttack,
+  testCard,
   testCreature,
   testFace,
 } from "../testing/fixtures/index.js";
 import {
   advanceResolvingChain,
+  eventTypes,
   expectOk,
+  handCardIdAt,
   newMatch,
+  withHand,
   P1,
   P2,
   resolveOpenChain,
@@ -369,11 +373,13 @@ describe("028 tag-fighter prototype", () => {
     );
     expect(result.players[P1]?.meter).toBeGreaterThan(0);
     expect(result.players[P2]?.meter).toBeGreaterThan(0);
+    expect(result.players[P2]?.activeCreatureId).toBe(active);
+    expect(result.pendingDecision).toBeNull();
     expect(result.status).toBe("finished");
     expect(result.winner).toBe(P1);
   });
 
-  it("keeps a KOed Fighter Active, blocks their Tag, and still allows Assist", () => {
+  it("prompts to replace a KOed Active, refuses Tag until then, and still allows a KOed Reserve to Assist", () => {
     let state = tagMatch();
     state = show(state, P1, 0, 0);
     const victim = creature(state, P2, 0);
@@ -395,23 +401,43 @@ describe("028 tag-fighter prototype", () => {
     );
     expect(ko.creatures[victim]?.defeated).toBe(true);
     expect(ko.players[P2]?.activeCreatureId).toBe(victim);
+    expect(ko.pendingDecision).toMatchObject({
+      type: "replace-ko-active",
+      controllerId: P2,
+      defeatedCreatureId: victim,
+    });
     expect(ko.aggressorPlayerId).toBe(P1);
     expect(ko.offensiveState).toBe("open");
-    const p2Turn = { ...ko, activePlayerId: P2, phase: "actions" as const };
-    const tagged = advance(p2Turn, {
+    expect(ko.activePlayerId).toBe(P1);
+    const tagged = advance(ko, {
       type: "TAG",
       playerId: P2,
-      reserveCreatureId: creature(p2Turn, P2, 1),
+      reserveCreatureId: creature(ko, P2, 1),
     });
     expect(tagged.ok).toBe(false);
-    if (!tagged.ok) expect(tagged.error).toBe("CREATURE_DEFEATED");
+    if (!tagged.ok) {
+      expect(tagged.error).toBe("PENDING_DECISION");
+      expect(tagged.state).toBe(ko);
+    }
+    const incoming = creature(ko, P2, 1);
+    const replaced = expectOk(
+      advance(ko, {
+        type: "RESOLVE_REPLACE_KO_ACTIVE",
+        playerId: P2,
+        creatureId: incoming,
+      }),
+    );
+    expect(replaced.players[P2]?.activeCreatureId).toBe(incoming);
+    expect(replaced.creatures[incoming]?.position).toBe("frontline");
+    expect(replaced.pendingDecision).toBeNull();
+    expect(replaced.players[P2]?.spentOncePerTurnKeys).not.toContain("tag-this-turn");
 
-    const reserve = creature(ko, P1, 1);
+    const reserve = creature(replaced, P1, 1);
     const knockedReserve = {
-      ...ko,
+      ...replaced,
       creatures: {
-        ...ko.creatures,
-        [reserve]: { ...ko.creatures[reserve]!, defeated: true, damage: 99 },
+        ...replaced.creatures,
+        [reserve]: { ...replaced.creatures[reserve]!, defeated: true, damage: 99 },
       },
     };
     const assist = expectOk(
@@ -421,8 +447,154 @@ describe("028 tag-fighter prototype", () => {
         reserveCreatureId: reserve,
       }),
     );
-    expect(assist.players[P1]?.activeCreatureId).toBe(creature(ko, P1, 0));
-    expect(assist.creatures[creature(ko, P1, 0)]?.shields).toBe(0);
+    expect(assist.players[P1]?.activeCreatureId).toBe(creature(replaced, P1, 0));
+    expect(assist.creatures[creature(replaced, P1, 0)]?.shields).toBe(0);
+  });
+
+  it("rejects replacing a KOed Active with that Fighter or an opponent's Fighter", () => {
+    let state = tagMatch();
+    state = show(state, P1, 0, 0);
+    const victim = creature(state, P2, 0);
+    state = {
+      ...state,
+      creatures: {
+        ...state.creatures,
+        [victim]: { ...state.creatures[victim]!, damage: 7 },
+      },
+    };
+    const ko = expectOk(
+      advanceResolvingChain(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creature(state, P1, 0),
+        attackId: JAB,
+        targetId: victim,
+      }),
+    );
+    const turn = ko.turn;
+    const self = advance(ko, {
+      type: "RESOLVE_REPLACE_KO_ACTIVE",
+      playerId: P2,
+      creatureId: victim,
+    });
+    expect(self.ok).toBe(false);
+    if (!self.ok) {
+      expect(self.error).toBe("CREATURE_DEFEATED");
+      expect(self.state).toBe(ko);
+    }
+    const opponentFighter = creature(ko, P1, 1);
+    const stolen = advance(ko, {
+      type: "RESOLVE_REPLACE_KO_ACTIVE",
+      playerId: P2,
+      creatureId: opponentFighter,
+    });
+    expect(stolen.ok).toBe(false);
+    if (!stolen.ok) {
+      expect(stolen.error).toBe("INVALID_TARGET");
+      expect(stolen.state).toBe(ko);
+    }
+    const notTheOwner = advance(ko, {
+      type: "RESOLVE_REPLACE_KO_ACTIVE",
+      playerId: P1,
+      creatureId: creature(ko, P2, 1),
+    });
+    expect(notTheOwner.ok).toBe(false);
+    if (!notTheOwner.ok) {
+      expect(notTheOwner.error).toBe("PENDING_DECISION");
+      expect(notTheOwner.state).toBe(ko);
+    }
+
+    const incoming = creature(ko, P2, 2);
+    const replaced = expectOk(
+      advance(ko, {
+        type: "RESOLVE_REPLACE_KO_ACTIVE",
+        playerId: P2,
+        creatureId: incoming,
+      }),
+    );
+    expect(replaced.players[P2]?.activeCreatureId).toBe(incoming);
+    expect(replaced.creatures[incoming]?.position).toBe("frontline");
+    expect(replaced.creatures[victim]?.defeated).toBe(true);
+    expect(replaced.pendingDecision).toBeNull();
+    expect(replaced.players[P2]?.meter).toBe(ko.players[P2]?.meter);
+    expect(replaced.players[P2]?.spentOncePerTurnKeys).not.toContain("tag-this-turn");
+    expect(replaced.activePlayerId).toBe(P1);
+    expect(replaced.phase).toBe("actions");
+    expect(replaced.turn).toBe(turn);
+    expect(replaced.offensiveState).toBe("open");
+    expect(replaced.aggressorPlayerId).toBe(P1);
+    expect(eventTypes(replaced)).toContain("tag-switched");
+  });
+
+  it("still prompts when only one Reserve is alive", () => {
+    let state = tagMatch();
+    state = show(state, P1, 0, 0);
+    const victim = creature(state, P2, 0);
+    const benched = creature(state, P2, 2);
+    state = {
+      ...state,
+      creatures: {
+        ...state.creatures,
+        [victim]: { ...state.creatures[victim]!, damage: 7 },
+        [benched]: { ...state.creatures[benched]!, defeated: true, damage: 99 },
+      },
+    };
+    const ko = expectOk(
+      advanceResolvingChain(state, {
+        type: "ATTACK",
+        playerId: P1,
+        attackerId: creature(state, P1, 0),
+        attackId: JAB,
+        targetId: victim,
+      }),
+    );
+    const only = creature(ko, P2, 1);
+    expect(ko.creatures[victim]?.defeated).toBe(true);
+    expect(ko.players[P2]?.activeCreatureId).toBe(victim);
+    expect(ko.pendingDecision).toMatchObject({
+      type: "replace-ko-active",
+      controllerId: P2,
+      defeatedCreatureId: victim,
+    });
+    const replaced = expectOk(
+      advance(ko, {
+        type: "RESOLVE_REPLACE_KO_ACTIVE",
+        playerId: P2,
+        creatureId: only,
+      }),
+    );
+    expect(replaced.players[P2]?.activeCreatureId).toBe(only);
+    expect(replaced.pendingDecision).toBeNull();
+  });
+
+  it("does not prompt when a Reserve is KOed", () => {
+    const benchHit = testCard({
+      id: "card-test-ko-reserve",
+      name: "Bench Hit",
+      type: "modify",
+      rulesText: "Damage a Fighter.",
+      effect: { effects: [{ type: "damage", amount: 99, target: { kind: "declared-target" } }] },
+    });
+    let state = show(tagMatch(), P1, 0, 0);
+    const reserve = creature(state, P2, 1);
+    const active = creature(state, P2, 0);
+    state = withHand(state, P1, [benchHit.id]);
+    const ko = resolveOpenChain(
+      expectOk(
+        advance(state, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(state, P1, 0),
+          declaredTargetCreatureId: reserve,
+        }),
+      ),
+    );
+    expect(ko.creatures[reserve]?.defeated).toBe(true);
+    expect(ko.players[P2]?.activeCreatureId).toBe(active);
+    expect(ko.pendingDecision).toBeNull();
+    expect(ko.offensiveState).toBe("open");
+    expect(ko.aggressorPlayerId).toBe(P1);
+    expect(ko.status).toBe("in-progress");
   });
 
   it("does not treat the rest of the actions phase as the closing window", () => {

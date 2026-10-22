@@ -135,23 +135,10 @@ export function FighterRow({
         const active = band === "active";
         const role = active ? "Active" : "Reserve";
 
-        if (creature.defeated) {
-          const knockedDef = getCreatureDefinition(creature.definitionId);
+        if (creature.defeated && active) {
           return (
             <div key={creatureId} className="flex flex-col items-center">
               <DefeatedFighterCard state={state} creature={creature} />
-              {band === "reserve" ? (
-                <ReserveTagAssist
-                  state={state}
-                  playerId={playerId}
-                  reserveId={creatureId}
-                  label={knockedDef?.name ?? "Reserve"}
-                  canAct={canAct}
-                  mayTag={mayTag}
-                  onTag={onTag}
-                  onAssist={onAssist}
-                />
-              ) : null}
             </div>
           );
         }
@@ -179,33 +166,51 @@ export function FighterRow({
 
         const def = getCreatureDefinition(creature.definitionId);
         const life = currentLife(creature);
+        const knockedOut = creature.defeated;
+        const cardClass = knockedOut
+          ? "w-52 rounded border border-dashed border-stone-700 bg-stone-950/60 p-3 opacity-55 pointer-events-none"
+          : "w-52 rounded border border-dashed border-stone-700 bg-stone-950/60 p-3";
+        const card = (
+          <>
+            <p className="font-medium text-stone-300">{def?.name ?? "Fighter"}</p>
+            <p className="text-xs text-stone-500">
+              HP {life}/{def?.life ?? "—"}
+            </p>
+            <AttachedCards state={state} creature={creature} />
+            <ReserveTagAssist
+              state={state}
+              playerId={playerId}
+              reserveId={creatureId}
+              label={def?.name ?? "Reserve"}
+              canAct={canAct}
+              mayTag={mayTag}
+              locked={knockedOut}
+              onTag={onTag}
+              onAssist={onAssist}
+            />
+            {dieStrip}
+          </>
+        );
         return (
           <div key={creatureId} className="flex flex-col items-center">
-            <span className="mb-1 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-stone-500">
-              {role}
-            </span>
-            <FighterInspectHover
-              state={state}
-              creature={creature}
-              className="w-52 rounded border border-dashed border-stone-700 bg-stone-950/60 p-3"
+            <span
+              className={
+                knockedOut
+                  ? "mb-1 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-red-400/80"
+                  : "mb-1 text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-stone-500"
+              }
             >
-              <p className="font-medium text-stone-300">{def?.name ?? "Fighter"}</p>
-              <p className="text-xs text-stone-500">
-                HP {life}/{def?.life ?? "—"}
-              </p>
-              <AttachedCards state={state} creature={creature} />
-              <ReserveTagAssist
-                state={state}
-                playerId={playerId}
-                reserveId={creatureId}
-                label={def?.name ?? "Reserve"}
-                canAct={canAct}
-                mayTag={mayTag}
-                onTag={onTag}
-                onAssist={onAssist}
-              />
-              {dieStrip}
-            </FighterInspectHover>
+              {knockedOut ? `KO · ${role}` : role}
+            </span>
+            {knockedOut ? (
+              <div className={cardClass} aria-disabled="true">
+                {card}
+              </div>
+            ) : (
+              <FighterInspectHover state={state} creature={creature} className={cardClass}>
+                {card}
+              </FighterInspectHover>
+            )}
           </div>
         );
       })}

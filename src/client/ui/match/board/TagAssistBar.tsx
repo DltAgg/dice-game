@@ -2,7 +2,7 @@ import type { CreatureId, GameState, PlayerId } from "@server";
 import { btnHand } from "../styles";
 import { assistControlEnabled, canDeclareTag } from "./tagAssistLegality";
 
-/** Tag / Assist for one living reserve, shown on that fighter’s card. */
+/** Tag / Assist on a Reserve card. `locked` keeps both controls disabled. */
 export function ReserveTagAssist({
   state,
   playerId,
@@ -10,6 +10,7 @@ export function ReserveTagAssist({
   label,
   canAct,
   mayTag = true,
+  locked = false,
   onTag,
   onAssist,
 }: {
@@ -20,11 +21,13 @@ export function ReserveTagAssist({
   canAct: boolean;
   /** Row seat may press Tag. Independent of the shared `canAct` gate. */
   mayTag?: boolean;
+  /** KOed Reserve: same buttons, neither can be pressed. */
+  locked?: boolean;
   onTag: (reserveCreatureId: CreatureId) => void;
   onAssist: (reserveCreatureId: CreatureId) => void;
 }) {
-  const tagOk = mayTag && canDeclareTag(state, playerId, reserveId);
-  const assistOk = assistControlEnabled(state, playerId, reserveId, canAct);
+  const tagOk = !locked && mayTag && canDeclareTag(state, playerId, reserveId);
+  const assistOk = !locked && assistControlEnabled(state, playerId, reserveId, canAct);
 
   return (
     <div className="mt-2 flex flex-wrap gap-1">

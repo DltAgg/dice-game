@@ -47,9 +47,9 @@
       "primaryFaceId": "face-natural-vega-kick",
       "hitStrength": "medium",
       "hitType": "kick",
-      "secondary": { "faceType": "attack" },
+      "secondary": { "hitStrength": "light", "hitType": "kick" },
       "sequenceRole": "extender",
-      "rulesText": "Kick + Attack: [Strike 3].",
+      "rulesText": "Kick + light kick: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -64,9 +64,9 @@
       "primaryFaceId": "face-natural-vega-kick",
       "hitStrength": "heavy",
       "hitType": "kick",
-      "secondary": { "faceType": "attack" },
+      "secondary": { "hitStrength": "heavy", "hitType": "punch" },
       "sequenceRole": "finisher",
-      "rulesText": "Kick + Attack: [Strike 4].",
+      "rulesText": "Kick + heavy punch: [Strike 4].",
       "effects": [
         {
           "type": "damage",

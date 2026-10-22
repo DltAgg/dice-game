@@ -292,6 +292,11 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       ? "Instinct: Decline, or declare this creature's basic attack (pick a legal target)."
       : "Waiting for the opponent to decide on a bonus basic attack.";
   }
+  if (state.pendingDecision?.type === "replace-ko-active") {
+    return isPendingChooser
+      ? "Choose a living Reserve to replace the KOed Active Fighter."
+      : "Waiting for a living Reserve to replace the KOed Active Fighter.";
+  }
   if (state.pendingDecision?.type === "reaction-priority") {
     const who = state.pendingDecision.priorityPlayerId;
     if (!hasLegalReactionOffer(state, who)) {

@@ -360,14 +360,21 @@ At 0 HP a Fighter is KOed.
 - That Fighter cannot Tag.
 - That Fighter can still Assist.
 - The KO ends the current offensive sequence.
-- Initiative passes to the opposing player.
-- The Fighter stays on the team.
+- Initiative passes to the opposing player. The KO does not end the turn.
+- The Fighter stays on the team, defeated.
 
-The player replaces a KOed Active Fighter by Tagging, under the Tag rules
-above. Do not add a separate forced-Tag action.
+If that Fighter was Active and the owner has a living Reserve, the owner
+must choose one living Reserve to become Active before play continues.
+The choice is mandatory. They cannot pass, cancel, or leave the KOed
+Fighter Active. One living Reserve is still a choice. The choice does not
+spend the once-per-turn Tag, does not spend Meter, and is not a Chain
+object.
 
-Each player has three Fighters. When all three are KOed, that player loses
-and the game ends.
+A Reserve being KOed does not open that choice. The sequence still ends
+and initiative still passes.
+
+If the owner has no living Reserve, there is no choice. When all three
+Fighters are KOed, that player loses and the game ends.
 
 ### Defense
 
@@ -734,8 +741,14 @@ Aligned with this revision:
   on your turn in the actions phase with no Chain open, and when you have
   priority against an opponent’s hit or technique. Meter is spent only
   when that Fighter’s `exceptionalAssistMeter` is greater than 0.
-  KO does not switch the Active Fighter. It ends the sequence and passes
-  initiative. Three KOed Fighters still loses when `wipeVictory` is on.
+- When the Active Fighter is KOed and a living Reserve remains,
+  `promoteOnKo` opens `replace-ko-active`. The owner answers with
+  `RESOLVE_REPLACE_KO_ACTIVE` (`creatureId` of a living Reserve). That
+  switch calls `setActiveFighter`, does not spend `tag-this-turn` or
+  Meter, and is not a Chain object. A Reserve KO does not open it. No
+  living Reserve does not open it. Three KOed Fighters still lose when
+  `wipeVictory` is on. Initiative still passes via `returnToOpen`; the
+  KO does not itself end the turn.
 - A sequence hit grants Meter from `hitStrength`: light 2, medium 3, or
   heavy 4 to the player who declared it, and 1 to the owner of the Fighter
   it was declared against. A negated hit grants nothing. That hit does not

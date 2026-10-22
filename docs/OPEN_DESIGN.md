@@ -1035,7 +1035,7 @@ treat these numbers as bible.
 | `frontlineSlots` | **1** (when positions are synced) | Player-facing: 1 Active + 2 Reserve. Authority is `activeCreatureId`. |
 | Setup Active | `creatureIds[0]` | Index 0 opens Active. |
 | Attack target | Opponent Active only | Reserve is not a legal attack target. Range does not hit the bench in this prototype. |
-| KO-promote | Lowest-index living Reserve | No meter cost; resets combo. If none, wipe. |
+| KO-promote | Lowest-index living Reserve | No meter cost; resets combo. If none, wipe. Historical spec `028` auto-pick — spec `030` prompts the owner to choose a living Reserve instead. |
 | Simultaneous wipe | Active player loses | Both squads fully `defeated` in one check. |
 | TAG / ASSIST chain | No reaction window | Like `FORGE_CARD`, until a proving card needs one. |
 | ASSIST once-per-reserve | `assist:<creatureId>` | Cleared `END_TURN`. |
