@@ -1,7 +1,6 @@
 import {
   assistDeclarationError,
   isLivingReserve,
-  showingTechnique,
   tagInLocked,
   tagWindow,
   type CreatureId,
@@ -13,13 +12,13 @@ export function isTagSkirmishMatch(state: Pick<GameState, "config">): boolean {
   return state.config.dicePerPlayer >= 3;
 }
 
-function tagAssistPhaseOk(state: GameState): boolean {
-  return (
-    state.status === "in-progress" &&
-    state.phase === "actions" &&
-    state.pendingDecision === null
-  );
-}
+// function tagAssistPhaseOk(state: GameState): boolean {
+//   return (
+//     state.status === "in-progress" &&
+//     state.phase === "actions" &&
+//     state.pendingDecision === null
+//   );
+// }
 
 /**
  * Hotseat may press either row. A bound seat may press only its own row.
