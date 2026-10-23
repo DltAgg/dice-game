@@ -121,8 +121,8 @@ Each player has:
   is reshuffled, and an empty deck does not deal damage. A card draws only
   when its own effect says so. Playing a card does not draw by itself.
 - A played one-shot goes to the graveyard unless that card names another
-  destination. Equipment, overloads, continuous rituals, and other
-  persistent cards stay in play.
+  destination. A card that stays is attached to a Fighter or a face. That
+  attachment is what the card does while it is there.
 - Dice are built from that seat’s `startingDice`. Each seat’s leftover face
   pool is independent.
 
@@ -548,10 +548,21 @@ invalid by then, that effect does not happen.
 
 A modify can change the roll you just made, or it can permanently change a
 die. Changing the roll does not rewrite the die. There is no temporary die
-change. It can also change what the Active Fighter’s inputs allow. The Technique
-you choose is one of that Fighter’s. That moveset card stays attached to
-that Fighter for the rest of the match, so the change remains visible. It can also redirect a target that is already part
-of the exchange.
+change. A moveset modify adds a new Technique to one of your living Fighters.
+That Fighter can be Active or Reserve. Every printed Technique is
+already usable when its faces are showing. The added
+Technique is used the same way: the Active Fighter's showing face is the
+named first face, and another of your faces matches the other requirement.
+`[Replace]` writes a named face onto a slot of that Fighter's die for the
+rest of the match. `[Tag out]` makes the opponent's Active Fighter leave.
+They choose a living Reserve to become Active. That Fighter is not KOed,
+and it does not spend their Tag. If they have no living Reserve, the Tag
+out does not happen. When the effect also says that Fighter cannot Tag
+in until the end of its next turn, it cannot be Tagged in during its
+controller's next turn. The lock ends when that turn ends. Assist and a
+KO replacement can still bring that Fighter in. The moveset card stays attached to that Fighter for
+the rest of the match, so the added Technique remains visible. A modify can
+also redirect a target that is already part of the exchange.
 
 Tag is not a card. A turn can offer an opening Tag window and a closing
 one. You can Tag only once in the turn, and only in one of those windows.

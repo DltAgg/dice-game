@@ -15,8 +15,6 @@ import {
   livingCreaturesOf,
   type GameState,
 } from "@server";
-import { CardCatalogue } from "@client/ui/cards/CardCatalogue";
-
 /**
  * Smoke page for the engine and the tactic-card layout. The match board is a
  * later milestone; this page proves the reducer runs in the browser and that
@@ -113,8 +111,6 @@ export function EngineStatus() {
           <Row label="Log entries" value={String(state.log.length)} />
         </div>
       </section>
-
-      <CardCatalogue />
     </main>
   );
 }

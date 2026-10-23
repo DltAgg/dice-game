@@ -71,16 +71,16 @@ export function useTechnique(
   if (primaryFace === undefined) return "INVALID_TARGET";
 
   const definition = getCreatureDefinition(creature.definitionId);
-  const technique = findTechnique(definition?.techniques, techniqueId);
+  const technique = findTechnique(
+    [...(definition?.techniques ?? []), ...(creature.addedTechniques ?? [])],
+    techniqueId,
+  );
   if (technique === undefined) return "CARD_NOT_AVAILABLE";
   if (primaryFace.id !== technique.primaryFaceId) return "ATTACK_NOT_FUELLED";
 
   const secondaryFace = showingFaceCard(draft, secondaryDieId);
   if (secondaryFace === undefined) return "INVALID_TARGET";
-  const relaxed = (creature.enabledTechniqueIds ?? []).includes(technique.id);
-  if (!secondaryMatches(secondaryFace, technique.secondary) && !relaxed) {
-    return "ATTACK_NOT_FUELLED";
-  }
+  if (!secondaryMatches(secondaryFace, technique.secondary)) return "ATTACK_NOT_FUELLED";
 
   const baseEffects = technique.effects;
   if (baseEffects.length === 0 && (secondaryFace.secondaryEffects?.length ?? 0) === 0) {

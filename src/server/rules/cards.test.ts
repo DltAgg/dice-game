@@ -98,6 +98,14 @@ describe("meterPlayCost", () => {
   });
 });
 
+describe("Vega Drill", () => {
+  it("prevents the tagged-out Fighter from Tagging in", () => {
+    const drill = getCard(asCardId("card-vega-drill"));
+    const tagOut = drill?.addedTechnique?.effects.find((effect) => effect.type === "tag-out");
+    expect(tagOut).toMatchObject({ preventTagIn: true });
+  });
+});
+
 describe("ritualDurationOf", () => {
   const ritualBase: Partial<CardDefinition> = {
     type: "modify",

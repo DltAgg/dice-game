@@ -76,6 +76,14 @@
       "enum": ["roll", "die", "moveset", "target", "tag"],
       "description": "Spec 030. What a Modify acts on. Not a separate card type."
     },
+    "addedTechnique": {
+      "description": "Spec 030. Technique a Moveset card adds to the Active Fighter. Printed Techniques stay usable without the card.",
+      "$ref": "defs.schema.json#/$defs/fighterTechniqueDefinition"
+    },
+    "replaceFaceId": {
+      "description": "Spec 030. [Replace] writes this face onto the chosen slot of that Fighter's die.",
+      "$ref": "defs.schema.json#/$defs/faceId"
+    },
     "exceptionalMeterCost": {
       "type": "integer",
       "minimum": 1,

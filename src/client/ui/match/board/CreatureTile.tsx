@@ -5,6 +5,7 @@ import {
   getCard,
   getCreatureDefinition,
   isCreatureSilenced,
+  tagInLocked,
   type AttackId,
   type CreatureId,
   type CreatureState,
@@ -14,6 +15,7 @@ import { attackIsArmed } from "../intents/attack";
 import { type Intent } from "../intents/types";
 import { btnClass, btnPrimary } from "../styles";
 import { LegendaryBadge } from "@client/ui/cards/LegendaryBadge";
+import { FighterNameRow, fighterStatuses } from "./FighterStatusBadge";
 import { FighterInspectHover } from "./FighterInspectTooltip";
 
 export function CreatureTile({
@@ -58,15 +60,14 @@ export function CreatureTile({
       }
     >
       <button type="button" className="w-full text-left" onClick={() => onCreatureClick(creature)}>
-        <p className="flex flex-wrap items-center gap-2 font-medium text-stone-100">
-          <span>{def.name}</span>
-          {isLegendary && <LegendaryBadge />}
-          {silenced && (
-            <span className="inline-block rounded border border-violet-400/40 bg-violet-950/50 px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-violet-200">
-              Silenced
-            </span>
-          )}
-        </p>
+        <FighterNameRow
+          name={def.name}
+          afterName={isLegendary ? <LegendaryBadge /> : undefined}
+          statuses={fighterStatuses({
+            cannotTagIn: tagInLocked(state, creature.id),
+            silenced,
+          })}
+        />
         <p className="mt-1 text-xs text-stone-400">
           HP {life}/{def.life}
           {creature.attackPreventCount > 0
@@ -89,17 +90,18 @@ export function CreatureTile({
         )}
       </button>
 
-      <ul className="mt-2 space-y-1 border-t border-stone-800 pt-2">
-        {def.attacks.map((attack) => (
-          <li key={attack.id} className="text-[0.7rem] leading-snug text-stone-300">
-            <span className="text-stone-500">{attack.kind === "basic" ? "B" : "S"}:</span>{" "}
-            {attack.name}{" "}
-            <span className="text-[var(--accent)]">
-              {formatAttackFuel(attack) || "—"}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {def.attacks?.length > 0 && (
+        <ul className="mt-2 space-y-1 border-t border-stone-800 pt-2">
+          {def.attacks.map((attack) => (
+            <li key={attack.id} className="text-[0.7rem] leading-snug text-stone-300">
+              <span className="text-stone-500">{attack.kind === "basic" ? "B" : "S"}:</span>{" "}
+              {attack.name}{" "}
+              <span className="text-[var(--accent)]">
+                {formatAttackFuel(attack) || "—"}
+              </span>
+            </li>
+          ))}
+        </ul>)}
 
       {selectedAttacker && intent.attackId === undefined && (
         <div className="mt-2 flex flex-col gap-1">

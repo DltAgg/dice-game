@@ -218,9 +218,15 @@ form. Two Fighters can give the same faces different combo paths.
 Rolled inputs → Fighter moveset → legal Action → Chain → resolution
 ```
 
-A Moveset `Modify` changes that reading for one Fighter: a Technique
-requirement, whether a Technique is available, or how an input is read. It
-does not replace the Fighter and it is not a global moveset.
+A Moveset `Modify` adds a Technique to one Fighter. Printed Techniques stay
+usable when their faces match. The added Technique uses the same primary
+and secondary match. It does not replace the Fighter and it is not a
+global moveset. `[Replace]` writes a named face onto that Fighter's die.
+`[Tag out]` makes the opponent's Active Fighter leave for a living Reserve
+they choose. That Fighter is not KOed, and their Tag is not spent. When
+the effect also prevents `[Tag in]`, that Fighter cannot be Tagged in
+until the end of its controller's next turn. Assist and a KO replacement
+are not that Tag.
 
 Still from spec `029`: a simple move is the showing face’s Primary effect.
 A Technique is an ordered pair — the Fighter’s primary face, the one
@@ -544,10 +550,9 @@ Fighter-specific cards are the same card.
   persistent field card. It leaves the hand. Its normal destination is
   the discard pile (the graveyard). `afterResolveZone` on that card is
   the only override, and it applies when the card resolves.
-- Persistent cards stay in play. Equipment, overload, and continuous
-  rituals already do. A card marked `lifecycle: "persistent"` that is
-  not one of those stays in the existing in-play list. Persistent is not
-  a new effect engine.
+- A card that stays attaches to a Fighter or a face. The attachment is
+  the card's effect while it is there. It does not sit in the ritual
+  row with nothing to do. Persistent is not a new effect engine.
 - Discard is that destination, not a separate system. A card does not go
   to discard unless its lifecycle or its own effect sends it there.
 - A Block does not draw a card unless that card’s effect says so. Card
@@ -623,20 +628,22 @@ does not write the slots.
 
 ### Moveset cards
 
-A Moveset card is a Modify subject `moveset`. The Technique it enables is
-one of the Active Fighter’s. A generic one omits a Fighter requirement.
-A Fighter-specific card still requires that Fighter, and that Fighter
-must be the Active Fighter. There is
+A Moveset card is a Modify subject `moveset`. It adds the Technique printed
+on the card to one of your living Fighters, Active or Reserve. It does not
+enable a Technique that Fighter already has. A generic one omits a Fighter
+requirement. A Fighter-specific card still requires that Fighter. That
+Fighter does not have to be Active. There is
 no separate Moveset engine. When it resolves, the card stays attached
 to that Fighter for the rest of the match, the same way equipment stays
-on a creature, so the modified moveset remains visible. A negated
+on a creature, so the added Technique remains visible. A negated
 moveset card goes to the graveyard and does not attach.
 
 ### Fighter-specific Moveset cards
 
-A Fighter-specific Moveset sets `fighterRestriction`. It may enable a
-technique on that Fighter and, when the card says so, rewrite that
-Fighter's current die. It does not modify another Fighter's die.
+A Fighter-specific Moveset sets `fighterRestriction`. It adds that card's
+Technique to that Fighter and, when the card says `[Replace]`, writes the
+named face onto that Fighter's current die. It does not modify another
+Fighter's die.
 
 ### Rolling all three dice
 
@@ -737,6 +744,10 @@ Aligned with this revision:
   Opening Tag does not end the turn. Closing Tag switches on conduct,
   then passes the turn. A Finisher already resolved this turn makes Tag
   illegal. There is no in-chain Tag-cancel spend. A KOed Active cannot Tag.
+  `[Tag out]` with `preventTagIn` stamps `tagInLockedUntilTurn` as
+  `turn + 2` on the Fighter who leaves. `TAG` of that Fighter is illegal
+  while `turn` is below that value, which is their controller's next turn.
+  The lock ends when that turn ends. Assist and `replace-ko-active` ignore it.
 - `ASSIST` is a Chain object. A KOed Reserve can Assist. Assist is legal
   on your turn in the actions phase with no Chain open, and when you have
   priority against an opponent’s hit or technique. Meter is spent only

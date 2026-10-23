@@ -1,3 +1,4 @@
+import { getCard } from "../content/cards.js";
 import type { ChainLink } from "../model/state.js";
 import { patchCreature, patchDie, type Draft } from "./draft.js";
 import { performTagSwitch } from "./commands/tag.js";
@@ -29,20 +30,33 @@ export function applyCardModify(draft: Draft, link: ChainLink): void {
   if (modify.subject === "moveset") {
     const cardInstanceId = link.cardInstanceId;
     const creatureId = link.declaredTargetCreatureId;
-    if (creatureId === null || modify.techniqueId === null) {
+    const instance = cardInstanceId === null ? undefined : draft.cards[cardInstanceId];
+    const definition = instance === undefined ? undefined : getCard(instance.cardId);
+    const added = definition?.addedTechnique;
+    const creature = creatureId === null ? undefined : draft.creatures[creatureId];
+    if (added === undefined || creature === undefined) {
       if (cardInstanceId !== null) moveCard(draft, cardInstanceId, "graveyard");
       return;
     }
-    const creature = draft.creatures[creatureId];
-    if (creature === undefined) {
-      if (cardInstanceId !== null) moveCard(draft, cardInstanceId, "graveyard");
-      return;
+    const existing = creature.addedTechniques ?? [];
+    if (!existing.some((technique) => technique.id === added.id)) {
+      patchCreature(draft, creature.id, { addedTechniques: [...existing, added] });
     }
-    const ids = creature.enabledTechniqueIds ?? [];
-    if (!ids.includes(modify.techniqueId)) {
-      patchCreature(draft, creature.id, {
-        enabledTechniqueIds: [...ids, modify.techniqueId],
-      });
+    const replaceFaceId = definition?.replaceFaceId;
+    if (
+      replaceFaceId !== undefined &&
+      modify.dieId !== null &&
+      modify.slotIndex !== null &&
+      modify.faceCardId === replaceFaceId
+    ) {
+      const die = draft.dice[modify.dieId];
+      if (die !== undefined && modify.slotIndex >= 0 && modify.slotIndex < die.slots.length) {
+        const slotIndex = modify.slotIndex;
+        const slots = die.slots.map((slot, index) =>
+          index === slotIndex ? { ...slot, faceCardId: replaceFaceId } : slot,
+        );
+        patchDie(draft, modify.dieId, { slots });
+      }
     }
     if (cardInstanceId !== null) {
       moveCard(draft, cardInstanceId, "equipment");

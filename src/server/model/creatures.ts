@@ -166,8 +166,21 @@ export interface CreatureState {
    */
   readonly silenceExpiresOnTurn?: number;
   /**
-   * Techniques this Fighter may use even when the secondary input does not
-   * match. A Moveset Modify appends ids. Spec `030`.
+   * Leftover. No longer read. A Moveset card adds a Technique on
+   * `addedTechniques` instead of relaxing a printed one.
    */
   readonly enabledTechniqueIds?: readonly string[];
+  /**
+   * Techniques added by a Moveset card. Used like a printed Technique:
+   * the Active Fighter's showing face is the primary, and another face
+   * must match the secondary. Spec `030`.
+   */
+  readonly addedTechniques?: readonly FighterTechniqueDefinition[];
+  /**
+   * `[Tag out]` with `preventTagIn`. This Fighter cannot be Tagged in
+   * while `GameState.turn` is below this value. Stamped as `turn + 2`
+   * when they leave, so the lock covers their controller's next turn
+   * and ends when that turn ends. Assist and a KO replacement ignore it.
+   */
+  readonly tagInLockedUntilTurn?: number;
 }

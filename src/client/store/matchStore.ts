@@ -35,7 +35,7 @@ import {
 
 export { MATCH_P1, MATCH_P2 };
 
-export type MatchView = "lobby" | "match" | "catalogue" | "decks" | "rules" | "metrics";
+export type MatchView = "lobby" | "match" | "decks" | "rules" | "metrics";
 export type MatchMode = "local" | "host" | "client";
 
 export interface StartVsAiOptions {

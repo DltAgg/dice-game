@@ -76,6 +76,16 @@ const DIE_MOD = testCard({
   rulesText: "Change the die.",
 });
 
+const ADDED = {
+  id: "technique-beh-added",
+  name: "Added",
+  primaryFaceId: LARIAT,
+  hitStrength: "heavy" as const,
+  hitType: "punch" as const,
+  secondary: { faceId: GUARD },
+  effects: [{ type: "damage" as const, amount: 1, target: { kind: "declared-target" as const } }],
+};
+
 const MOVESET_MOD = testCard({
   id: "card-test-beh-moveset",
   name: "Moveset Modify",
@@ -83,7 +93,68 @@ const MOVESET_MOD = testCard({
   subtypes: [],
   playCost: { martial: 2 },
   modifySubject: "moveset",
-  rulesText: "Enable a technique.",
+  rulesText: "Add a technique.",
+  addedTechnique: ADDED,
+});
+
+const TAG_OUT_MOD = testCard({
+  id: "card-test-beh-tag-out",
+  name: "Tag Out Modify",
+  type: "modify",
+  subtypes: [],
+  playCost: { martial: 2 },
+  modifySubject: "moveset",
+  rulesText: "Add a tag out.",
+  addedTechnique: {
+    id: "technique-beh-tag-out",
+    name: "Tag Out",
+    primaryFaceId: JAB,
+    hitStrength: "heavy",
+    hitType: "punch",
+    secondary: { faceId: LARIAT },
+    effects: [{ type: "tag-out", target: { kind: "enemy-frontline" } }],
+  },
+});
+
+const LOCK_TAG_OUT = testCard({
+  id: "card-test-beh-tag-out-lock",
+  name: "Tag Out Lock",
+  type: "modify",
+  subtypes: [],
+  playCost: { martial: 2 },
+  modifySubject: "moveset",
+  rulesText: "Add a tag out that locks Tag in.",
+  addedTechnique: {
+    id: "technique-beh-tag-out-lock",
+    name: "Tag Out Lock",
+    primaryFaceId: JAB,
+    hitStrength: "heavy",
+    hitType: "punch",
+    secondary: { faceId: LARIAT },
+    effects: [
+      { type: "tag-out", target: { kind: "enemy-frontline" }, preventTagIn: true },
+    ],
+  },
+});
+
+const REPLACE_MOD = testCard({
+  id: "card-test-beh-replace",
+  name: "Replace Modify",
+  type: "modify",
+  subtypes: [],
+  playCost: { martial: 2 },
+  modifySubject: "moveset",
+  replaceFaceId: GUARD,
+  rulesText: "Replace to Guard.",
+  addedTechnique: {
+    id: "technique-beh-replaced",
+    name: "Replaced",
+    primaryFaceId: GUARD,
+    hitStrength: "medium",
+    hitType: "punch",
+    secondary: { faceId: JAB },
+    effects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
+  },
 });
 
 const TARGET_MOD = testCard({
@@ -396,33 +467,23 @@ describe("030 card behavior", () => {
     expect(ended.dice[dieId]?.slots[2]?.faceCardId).toBe(GUARD);
   });
 
-  it("enables a technique the secondary input does not match, and rejects an unknown one", () => {
+  it("adds a technique that matches its faces, and leaves a printed one unmatched", () => {
     const shown = show(show(matchWith(), P1, 0, 1), P1, 1, 4);
     const fighter = creatureAt(shown, P1, 0);
     expect(matchingTechniques(shown, P1, fighter)).toEqual([]);
     const opened = withHand(declare(shown), P1, [MOVESET_MOD.id]);
-    const rejected = advance(opened, {
-      type: "PLAY_CARD",
-      playerId: P1,
-      cardInstanceId: handCardIdAt(opened, P1, 0),
-      declaredTargetCreatureId: fighter,
-      techniqueId: "technique-missing",
-    });
-    expect(rejected.ok).toBe(false);
-    if (!rejected.ok) expect(rejected.error).toBe("INVALID_TARGET");
     const played = expectOk(
       advance(opened, {
         type: "PLAY_CARD",
         playerId: P1,
         cardInstanceId: handCardIdAt(opened, P1, 0),
         declaredTargetCreatureId: fighter,
-        techniqueId: "technique-beh-lariat-grab",
       }),
     );
     const resolved = resolveOpenChain(played);
-    expect(matchingTechniques(resolved, P1, fighter).map((row) => row.techniqueId)).toContain(
-      "technique-beh-lariat-grab",
-    );
+    const matches = matchingTechniques(resolved, P1, fighter).map((row) => row.techniqueId);
+    expect(matches).toContain(ADDED.id);
+    expect(matches).not.toContain("technique-beh-lariat-grab");
     const attached = Object.values(resolved.cards).find((card) => card.cardId === MOVESET_MOD.id);
     expect(attached?.zone).toBe("equipment");
     expect(attached?.attachedToCreatureId).toBe(fighter);
@@ -439,21 +500,168 @@ describe("030 card behavior", () => {
         playerId: P1,
         cardInstanceId: handCardIdAt(opened, P1, 0),
         declaredTargetCreatureId: fighter,
-        techniqueId: "technique-beh-lariat-grab",
       }),
     );
     const resolved = resolveOpenChain(played);
-    expect(resolved.creatures[fighter]?.enabledTechniqueIds).toContain("technique-beh-lariat-grab");
+    expect(resolved.creatures[fighter]?.addedTechniques?.map((technique) => technique.id)).toContain(
+      ADDED.id,
+    );
     const reserve = creatureAt(opened, P1, 1);
-    const onReserve = advance(opened, {
+    const onReserve = resolveOpenChain(
+      expectOk(
+        advance(opened, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(opened, P1, 0),
+          declaredTargetCreatureId: reserve,
+        }),
+      ),
+    );
+    expect(onReserve.creatures[reserve]?.addedTechniques?.map((technique) => technique.id)).toContain(
+      ADDED.id,
+    );
+    const knockedOut = {
+      ...opened,
+      creatures: {
+        ...opened.creatures,
+        [reserve]: { ...opened.creatures[reserve]!, defeated: true },
+      },
+    };
+    const onDefeated = advance(knockedOut, {
       type: "PLAY_CARD",
       playerId: P1,
-      cardInstanceId: handCardIdAt(opened, P1, 0),
+      cardInstanceId: handCardIdAt(knockedOut, P1, 0),
       declaredTargetCreatureId: reserve,
-      techniqueId: "technique-beh-lariat-grab",
     });
-    expect(onReserve.ok).toBe(false);
-    if (!onReserve.ok) expect(onReserve.error).toBe("INVALID_TARGET");
+    expect(onDefeated.ok).toBe(false);
+    if (!onDefeated.ok) expect(onDefeated.error).toBe("INVALID_TARGET");
+  });
+
+  it("tags out the opponent's Active Fighter into a living Reserve", () => {
+    const shown = show(show(matchWith(), P1, 0, 0), P1, 1, 1);
+    const fighter = creatureAt(shown, P1, 0);
+    const opened = withHand(shown, P1, [TAG_OUT_MOD.id]);
+    const played = resolveOpenChain(
+      expectOk(
+        advance(opened, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(opened, P1, 0),
+          declaredTargetCreatureId: fighter,
+        }),
+      ),
+    );
+    const used = expectOk(
+      advance(played, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: fighter,
+        techniqueId: "technique-beh-tag-out",
+        secondaryDieId: dieIdAt(played, P1, 1),
+      }),
+    );
+    expect(used.pendingDecision?.type).toBe("tag-out-active");
+    const outgoing = creatureAt(used, P2, 0);
+    const incoming = creatureAt(used, P2, 1);
+    const switched = expectOk(
+      advance(used, { type: "RESOLVE_TAG_OUT", playerId: P2, creatureId: incoming }),
+    );
+    expect(switched.players[P2]?.activeCreatureId).toBe(incoming);
+    expect(switched.creatures[outgoing]?.defeated).toBe(false);
+    expect(switched.creatures[outgoing]?.tagInLockedUntilTurn).toBeUndefined();
+    expect(switched.players[P2]?.spentOncePerTurnKeys ?? []).not.toContain("tag-this-turn");
+  });
+
+  it("stops the tagged-out Fighter from Tagging in until the end of its next turn", () => {
+    const shown = show(show(matchWith(), P1, 0, 0), P1, 1, 1);
+    const fighter = creatureAt(shown, P1, 0);
+    const opened = withHand(shown, P1, [LOCK_TAG_OUT.id]);
+    const played = resolveOpenChain(
+      expectOk(
+        advance(opened, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(opened, P1, 0),
+          declaredTargetCreatureId: fighter,
+        }),
+      ),
+    );
+    const used = expectOk(
+      advance(played, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: fighter,
+        techniqueId: "technique-beh-tag-out-lock",
+        secondaryDieId: dieIdAt(played, P1, 1),
+      }),
+    );
+    const outgoing = creatureAt(used, P2, 0);
+    const incoming = creatureAt(used, P2, 1);
+    const other = creatureAt(used, P2, 2);
+    const switched = expectOk(
+      advance(used, { type: "RESOLVE_TAG_OUT", playerId: P2, creatureId: incoming }),
+    );
+    expect(switched.creatures[outgoing]?.tagInLockedUntilTurn).toBe(switched.turn + 2);
+    expect(switched.players[P2]?.activeCreatureId).toBe(incoming);
+
+    const victimTurn = expectOk(
+      advance(
+        expectOk(advance(switched, { type: "END_TURN", playerId: P1 })),
+        { type: "ROLL_DICE", playerId: P2 },
+      ),
+    );
+    expect(victimTurn.turn).toBeLessThan(victimTurn.creatures[outgoing]?.tagInLockedUntilTurn ?? 0);
+    const blocked = advance(victimTurn, {
+      type: "TAG",
+      playerId: P2,
+      reserveCreatureId: outgoing,
+    });
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) expect(blocked.error).toBe("INVALID_TARGET");
+
+    const otherIn = resolveOpenChain(
+      expectOk(advance(victimTurn, { type: "TAG", playerId: P2, reserveCreatureId: other })),
+    );
+    expect(otherIn.players[P2]?.activeCreatureId).toBe(other);
+
+    const afterVictim = expectOk(advance(otherIn, { type: "END_TURN", playerId: P2 }));
+    expect(afterVictim.creatures[outgoing]?.tagInLockedUntilTurn).toBe(afterVictim.turn);
+    const nextVictim = expectOk(
+      advance(
+        expectOk(advance(afterVictim, { type: "END_TURN", playerId: P1 })),
+        { type: "ROLL_DICE", playerId: P2 },
+      ),
+    );
+    const freed = resolveOpenChain(
+      expectOk(
+        advance(nextVictim, { type: "TAG", playerId: P2, reserveCreatureId: outgoing }),
+      ),
+    );
+    expect(freed.players[P2]?.activeCreatureId).toBe(outgoing);
+  });
+
+  it("writes the named face when a moveset card replaces a slot", () => {
+    const shown = show(matchWith(), P1, 0, 0);
+    const fighter = creatureAt(shown, P1, 0);
+    const dieId = dieIdAt(shown, P1, 0);
+    const opened = withHand(shown, P1, [REPLACE_MOD.id]);
+    const resolved = resolveOpenChain(
+      expectOk(
+        advance(opened, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(opened, P1, 0),
+          declaredTargetCreatureId: fighter,
+          dieId,
+          slotIndex: 2,
+          declaredFaceCardId: GUARD,
+        }),
+      ),
+    );
+    expect(resolved.dice[dieId]?.slots[2]?.faceCardId).toBe(GUARD);
+    expect(resolved.creatures[fighter]?.addedTechniques?.map((technique) => technique.id)).toContain(
+      "technique-beh-replaced",
+    );
   });
 
   it("redirects an unresolved target and rejects a missing one", () => {

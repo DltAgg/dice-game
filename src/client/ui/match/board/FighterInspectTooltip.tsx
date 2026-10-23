@@ -154,10 +154,10 @@ function FighterInspectPair({
               <span className="text-[var(--accent)]">{formatAttackFuel(attack) || "—"}</span>
             </p>
           ))}
-          {(def.techniques?.length ?? 0) > 0 && (
+          {(def.techniques?.length ?? 0) + (creature.addedTechniques?.length ?? 0) > 0 && (
             <div className="space-y-2">
               <p className="text-stone-500">Techniques</p>
-              {def.techniques?.map((technique) => {
+              {[...(def.techniques ?? []), ...(creature.addedTechniques ?? [])].map((technique) => {
                 const summary = [hitClassLabel(technique), techniqueRole(technique.sequenceRole)]
                   .filter((part) => part !== "")
                   .join(" · ");

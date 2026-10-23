@@ -1,4 +1,4 @@
-import type { CreatureId, GameState, PlayerId } from "@server";
+import { tagInLocked, type CreatureId, type GameState, type PlayerId } from "@server";
 import { btnHand } from "../styles";
 import { assistControlEnabled, canDeclareTag } from "./tagAssistLegality";
 
@@ -28,6 +28,11 @@ export function ReserveTagAssist({
 }) {
   const tagOk = !locked && mayTag && canDeclareTag(state, playerId, reserveId);
   const assistOk = !locked && assistControlEnabled(state, playerId, reserveId, canAct);
+  const tagTitle = tagOk
+    ? `Tag in ${label}`
+    : !locked && tagInLocked(state, reserveId)
+      ? "Cannot Tag in until the end of its next turn"
+      : "Tag not available";
 
   return (
     <div className="mt-2 flex flex-wrap gap-1">
@@ -35,7 +40,7 @@ export function ReserveTagAssist({
         type="button"
         className={tagOk ? btnHand : `${btnHand} opacity-40`}
         disabled={!tagOk}
-        title={tagOk ? `Tag in ${label}` : "Tag not available"}
+        title={tagTitle}
         onClick={() => onTag(reserveId)}
       >
         Tag

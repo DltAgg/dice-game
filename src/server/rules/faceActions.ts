@@ -132,7 +132,10 @@ export function matchingTechniques(
   if (primaryFace === undefined) return [];
 
   const definition = getCreatureDefinition(creature.definitionId);
-  const techniques = definition?.techniques ?? [];
+  const techniques = [
+    ...(definition?.techniques ?? []),
+    ...(creature.addedTechniques ?? []),
+  ];
   if (techniques.length === 0) return [];
 
   const secondaries = secondaryDiceFor(state, playerId, primaryDie.id);
@@ -145,12 +148,10 @@ export function matchingTechniques(
       if (finisherBlockedByTag(state, playerId, technique.sequenceRole)) continue;
       if (!sequenceMeterAffordable(state, playerId, technique.meterCost)) continue;
     }
-    const relaxed = new Set(creature.enabledTechniqueIds ?? []);
     for (const secondaryDieId of secondaries) {
       const secondaryFace = showingFaceCard(state, secondaryDieId);
       if (secondaryFace === undefined) continue;
-      const secondaryOk = secondaryMatches(secondaryFace, technique.secondary);
-      if (!secondaryOk && !relaxed.has(technique.id)) continue;
+      if (!secondaryMatches(secondaryFace, technique.secondary)) continue;
       out.push({ techniqueId: technique.id, secondaryDieId });
     }
   }

@@ -4,7 +4,7 @@ import type { CardDefinition } from "../model/cards.js";
 import type { GameError } from "../model/errors.js";
 import type { CreatureId, DieId, FaceCardId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { isActiveFighter, isLivingReserve } from "./fighters.js";
+import { dieForCreature, isLivingReserve } from "./fighters.js";
 
 export interface CardPlayIntent {
   readonly mode: "normal" | "exceptional";
@@ -127,22 +127,31 @@ function modifyContextError(
   }
 
   if (subject === "moveset") {
-    if (intent.targetCreatureId === null || intent.techniqueId === null) return "INVALID_TARGET";
+    if (definition.addedTechnique === undefined) return "CARD_HAS_NO_EFFECT";
+    if (intent.targetCreatureId === null) return "INVALID_TARGET";
     const owner = state.players[playerId];
-    if (owner === undefined || !isActiveFighter(owner, intent.targetCreatureId)) {
+    const creature = state.creatures[intent.targetCreatureId];
+    if (
+      owner === undefined ||
+      creature === undefined ||
+      creature.defeated ||
+      !owner.creatureIds.includes(intent.targetCreatureId)
+    ) {
       return "INVALID_TARGET";
     }
-    const creature = state.creatures[intent.targetCreatureId];
-    if (creature === undefined || creature.defeated) return "INVALID_TARGET";
     if (
       definition.fighterRestriction !== undefined &&
       creature.definitionId !== definition.fighterRestriction
     ) {
       return "INVALID_TARGET";
     }
-    const techniques = getCreatureDefinition(creature.definitionId)?.techniques ?? [];
-    if (!techniques.some((technique) => technique.id === intent.techniqueId)) {
-      return "INVALID_TARGET";
+    const replaceFaceId = definition.replaceFaceId;
+    if (replaceFaceId !== undefined) {
+      if (intent.dieId === null || intent.slotIndex === null) return "INVALID_TARGET";
+      if (intent.faceCardId !== replaceFaceId) return "INVALID_TARGET";
+      const die = dieForCreature(state, intent.targetCreatureId);
+      if (die === undefined || die.id !== intent.dieId) return "INVALID_TARGET";
+      if (intent.slotIndex < 0 || intent.slotIndex >= die.slots.length) return "INVALID_TARGET";
     }
     return null;
   }
@@ -283,18 +292,40 @@ export function legalModifyPlays(
   }
 
   if (subject === "moveset") {
-    const creatureId = player.activeCreatureId;
-    const creature = state.creatures[creatureId];
-    if (creature !== undefined && !creature.defeated) {
-      const techniques = getCreatureDefinition(creature.definitionId)?.techniques ?? [];
-      for (const technique of techniques) {
-        accept({
-          ...blankIntent(mode),
-          label: `${fighterName(state, playerId, creatureId)} · ${technique.name}`,
-          targetCreatureId: creatureId,
-          techniqueId: technique.id,
-        });
+    const added = definition.addedTechnique;
+    if (added === undefined) return choices;
+    for (const creatureId of player.creatureIds) {
+      const creature = state.creatures[creatureId];
+      if (creature === undefined || creature.defeated) continue;
+      if (
+        definition.fighterRestriction !== undefined &&
+        creature.definitionId !== definition.fighterRestriction
+      ) {
+        continue;
       }
+      const who = fighterName(state, playerId, creatureId);
+      const replaceFaceId = definition.replaceFaceId;
+      if (replaceFaceId !== undefined) {
+        const die = dieForCreature(state, creatureId);
+        if (die === undefined) continue;
+        const face = getFaceCard(replaceFaceId)?.name ?? "face";
+        die.slots.forEach((_slot, slotIndex) => {
+          accept({
+            ...blankIntent(mode),
+            label: `${who} slot ${String(slotIndex + 1)} → ${face}`,
+            targetCreatureId: creatureId,
+            dieId: die.id,
+            slotIndex,
+            faceCardId: replaceFaceId,
+          });
+        });
+        continue;
+      }
+      accept({
+        ...blankIntent(mode),
+        label: `${who} · ${added.name}`,
+        targetCreatureId: creatureId,
+      });
     }
     return choices;
   }

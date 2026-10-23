@@ -422,6 +422,19 @@ export type EffectDefinition =
       readonly type: "mill-cards";
       readonly amount: number;
       readonly player: "controller" | "opponent";
+    }
+  /**
+   * `[Tag out]`. The opponent's Active Fighter leaves. They choose a living
+   * Reserve to become Active. The Fighter who left is not KOed, and their
+   * once-per-turn Tag is not spent. No living Reserve: nothing happens.
+   * If that Active Fighter was already KOed by this same hit, nothing happens.
+   * `preventTagIn` stops that Fighter from being Tagged in until the end of
+   * its controller's next turn.
+   */
+  | {
+      readonly type: "tag-out";
+      readonly target: TargetSelector;
+      readonly preventTagIn?: boolean;
     };
 
 export type EffectCondition =

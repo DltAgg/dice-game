@@ -6,7 +6,9 @@ import {
   expectOk,
   handCardIdAt,
   newMatch,
+  newMatchWithDecks,
   P1,
+  P2,
   withPile,
   withHand,
   withPhase,
@@ -67,6 +69,23 @@ const REDUCE_ON_HIT = testCard({
   },
 });
 
+const ANCHOR_DRAW = testCard({
+  id: "card-test-equip-anchor",
+  name: "Anchor",
+  type: "modify",
+  lifecycle: "persistent",
+  rulesText: "Attach to one of your Fighters. At the start of your turn: [Draw 1].",
+  equipment: {
+    mayTargetOpponent: false,
+    abilities: [
+      {
+        type: "on-turn-start",
+        effects: [{ type: "draw-cards", amount: 1 }],
+      },
+    ],
+  },
+});
+
 const actionsReady = (cards: Parameters<typeof withHand>[2]) =>
   withPile(withHand(withPhase(newMatch(), "actions"), P1, cards), P1, 10);
 
@@ -82,6 +101,27 @@ describe("equipment", () => {
       }),
     );
     expect(equipmentOf(after, P1)).toHaveLength(1);
+  });
+
+  it("attaches to a fighter and draws at the start of your turn", () => {
+    const base = withHand(withPhase(newMatchWithDecks(), "actions"), P1, [ANCHOR_DRAW.id]);
+    const bearerId = creatureIdAt(base, P1, 0);
+    const attached = expectOk(
+      advance(base, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(base, P1, 0),
+        declaredTargetCreatureId: bearerId,
+      }),
+    );
+    const card = Object.values(attached.cards).find((entry) => entry.cardId === ANCHOR_DRAW.id);
+    expect(card?.zone).toBe("equipment");
+    expect(card?.attachedToCreatureId).toBe(bearerId);
+    expect(attached.players[P1]?.ritual ?? []).not.toContain(card?.id);
+    const before = attached.players[P1]?.hand.length ?? 0;
+    const opponentTurn = expectOk(advance(attached, { type: "END_TURN", playerId: P1 }));
+    const yourTurn = expectOk(advance(opponentTurn, { type: "END_TURN", playerId: P2 }));
+    expect(yourTurn.players[P1]?.hand.length).toBe(before + 2);
   });
 
   it("heals on Luminar absorb", () => {

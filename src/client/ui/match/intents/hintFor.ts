@@ -297,6 +297,11 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
       ? "Choose a living Reserve to replace the KOed Active Fighter."
       : "Waiting for a living Reserve to replace the KOed Active Fighter.";
   }
+  if (state.pendingDecision?.type === "tag-out-active") {
+    return isPendingChooser
+      ? "Tag out the Active Fighter. Choose a living Reserve to become Active."
+      : "Waiting for a living Reserve to replace the tagged-out Active Fighter.";
+  }
   if (state.pendingDecision?.type === "reaction-priority") {
     const who = state.pendingDecision.priorityPlayerId;
     if (!hasLegalReactionOffer(state, who)) {

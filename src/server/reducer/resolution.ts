@@ -75,6 +75,7 @@ import { AstExecutor } from "../ast/executor.js";
 import { AstValidator } from "../ast/validator.js";
 import { createGenericRegistry } from "../ast/opcodes/generic.js";
 import { refireShownFaceRollEffects } from "./commands/shownFace.js";
+import { beginTagOut } from "./commands/tagOut.js";
 
 /**
  * Effect resolution (SPDD §17). Effects are drained from an explicit stack
@@ -469,6 +470,13 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
   if (opcodePause !== null) return opcodePause;
 
   switch (effect.type) {
+    case "tag-out":
+      return beginTagOut(
+        draft,
+        pending.controllerId,
+        pending.declaredTargetCreatureId,
+        effect.preventTagIn === true,
+      );
     case "damage": {
       applyToTargets(draft, pending, effect.target, (targetId) => {
         const dealt = dealDamage(draft, targetId, effect.amount, {

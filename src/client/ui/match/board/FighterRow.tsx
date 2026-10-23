@@ -3,6 +3,8 @@ import {
   getCard,
   getCreatureDefinition,
   isActiveFighter,
+  isCreatureSilenced,
+  tagInLocked,
   type AttackId,
   type CreatureId,
   type CreatureState,
@@ -10,6 +12,7 @@ import {
   type PlayerId,
 } from "@server";
 import { CreatureTile } from "./CreatureTile";
+import { FighterNameRow, fighterStatuses } from "./FighterStatusBadge";
 import { FighterInspectHover } from "./FighterInspectTooltip";
 import { ReserveTagAssist } from "./TagAssistBar";
 import { showingFaceForCreature } from "./showingFace";
@@ -167,12 +170,20 @@ export function FighterRow({
         const def = getCreatureDefinition(creature.definitionId);
         const life = currentLife(creature);
         const knockedOut = creature.defeated;
+        const cannotTagIn = !knockedOut && tagInLocked(state, creatureId);
         const cardClass = knockedOut
           ? "w-52 rounded border border-dashed border-stone-700 bg-stone-950/60 p-3 opacity-55 pointer-events-none"
           : "w-52 rounded border border-dashed border-stone-700 bg-stone-950/60 p-3";
         const card = (
           <>
-            <p className="font-medium text-stone-300">{def?.name ?? "Fighter"}</p>
+            <FighterNameRow
+              name={def?.name ?? "Fighter"}
+              nameClassName="text-stone-300"
+              statuses={fighterStatuses({
+                cannotTagIn,
+                silenced: isCreatureSilenced(state, creatureId),
+              })}
+            />
             <p className="text-xs text-stone-500">
               HP {life}/{def?.life ?? "—"}
             </p>

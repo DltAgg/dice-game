@@ -3,7 +3,7 @@ import type { CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { isLivingReserve } from "../../rules/fighters.js";
-import { TAG_TURN_KEY, tagWindow } from "../../rules/offensive.js";
+import { TAG_TURN_KEY, tagInLocked, tagWindow } from "../../rules/offensive.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
 import { setComboCount } from "../meter.js";
@@ -22,6 +22,7 @@ export function tag(
   if (active === undefined) return "UNKNOWN_ENTITY";
   if (active.defeated) return "CREATURE_DEFEATED";
   if (!isLivingReserve(draft, player, reserveCreatureId)) return "INVALID_TARGET";
+  if (tagInLocked(draft, reserveCreatureId)) return "INVALID_TARGET";
   if (player.spentOncePerTurnKeys.includes(TAG_TURN_KEY)) return "ALREADY_USED";
 
   const tagMoment = tagWindow(draft, playerId);
@@ -56,6 +57,7 @@ export function performTagSwitch(
   const player = draft.players[playerId];
   if (player === undefined) return "UNKNOWN_ENTITY";
   if (!isLivingReserve(draft, player, reserveCreatureId)) return "INVALID_TARGET";
+  if (tagInLocked(draft, reserveCreatureId)) return "INVALID_TARGET";
 
   const fromCreatureId = player.activeCreatureId;
   setActiveFighter(draft, playerId, reserveCreatureId);

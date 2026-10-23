@@ -1,6 +1,6 @@
 import { getCreatureDefinition } from "../content/creatures.js";
 import { getFaceCard } from "../content/faces.js";
-import type { PlayerId } from "../model/ids.js";
+import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { GameEvent } from "../model/events.js";
 import type { OffensiveStateName, SequenceRole } from "../model/offensive.js";
 import type { GameState } from "../model/state.js";
@@ -58,6 +58,24 @@ export function canRerollDice(state: GameState, playerId: PlayerId): boolean {
 export function sequenceActionUsed(state: GameState, actionId: string): boolean {
   if (state.usedSequenceActionIds.includes(actionId)) return true;
   return state.chainStack.some((link) => link.sequenceActionId === actionId);
+}
+
+/**
+ * Turn number when a `[Tag out]` Tag-in lock ends. Applied on the
+ * opponent's turn: the controller's next turn is `turn + 1`, and the
+ * lock lasts through that turn (`turn < turn + 2`).
+ */
+export function tagInLockUntilTurn(turn: number): number {
+  return turn + 2;
+}
+
+/** True while this Fighter cannot be Tagged in. */
+export function tagInLocked(
+  state: Pick<GameState, "turn" | "creatures">,
+  creatureId: CreatureId,
+): boolean {
+  const until = state.creatures[creatureId]?.tagInLockedUntilTurn;
+  return until !== undefined && state.turn < until;
 }
 
 /**

@@ -69,12 +69,22 @@ const OWN_DIE = testCard({
   exceptionalMeterCost: 1,
   effect: { effects: [] },
 });
+const ADDED = {
+  id: "technique-id-added",
+  name: "Added",
+  primaryFaceId: LARIAT.id,
+  hitStrength: "heavy" as const,
+  hitType: "punch" as const,
+  secondary: { faceType: "attack" as const },
+  effects: [{ type: "damage" as const, amount: 1, target: { kind: "declared-target" as const } }],
+};
 const OWN_MOVE = testCard({
   id: "card-test-id-magnus-move",
   type: "modify",
   modifySubject: "moveset",
   fighterRestriction: MAGNUS.id,
   exceptionalMeterCost: 1,
+  addedTechnique: ADDED,
   effect: { effects: [] },
 });
 const ANY_MOVE = testCard({
@@ -82,6 +92,7 @@ const ANY_MOVE = testCard({
   type: "modify",
   modifySubject: "moveset",
   exceptionalMeterCost: 1,
+  addedTechnique: ADDED,
   effect: { effects: [] },
 });
 
@@ -187,7 +198,7 @@ describe("fighter dice", () => {
     expect(again.dice[fresh ?? ""]?.slots.map((slot) => slot.faceCardId)).toEqual([...LARIAT_DIE]);
   });
 
-  it("lets a generic moveset card touch either fighter and keeps a specific one on its fighter", () => {
+  it("adds a generic moveset technique to the active fighter and keeps a specific card on its fighter", () => {
     const funded = opened();
     const withMeter = {
       ...funded,
@@ -203,9 +214,31 @@ describe("fighter dice", () => {
       cardInstanceId: handCardIdAt(specific, P1, 0),
       mode: "exceptional",
       declaredTargetCreatureId: vega,
-      techniqueId: TECHNIQUE.id,
     });
     expect(denied.ok).toBe(false);
+
+    const magnusInReserve = {
+      ...withMeter,
+      players: {
+        ...withMeter.players,
+        [P1]: { ...withMeter.players[P1]!, activeCreatureId: vega },
+      },
+    };
+    const reserveHand = withHand(withPhase(magnusInReserve, "actions"), P1, [OWN_MOVE.id]);
+    const specificOnReserve = resolveOpenChain(
+      expectOk(
+        advance(reserveHand, {
+          type: "PLAY_CARD",
+          playerId: P1,
+          cardInstanceId: handCardIdAt(reserveHand, P1, 0),
+          mode: "exceptional",
+          declaredTargetCreatureId: magnus,
+        }),
+      ),
+    );
+    expect(
+      specificOnReserve.creatures[magnus]?.addedTechniques?.map((technique) => technique.id),
+    ).toContain(ADDED.id);
 
     const generic = withHand(withPhase(withMeter, "actions"), P1, [ANY_MOVE.id]);
     const applied = resolveOpenChain(
@@ -215,16 +248,17 @@ describe("fighter dice", () => {
           playerId: P1,
           cardInstanceId: handCardIdAt(generic, P1, 0),
           mode: "exceptional",
-          declaredTargetCreatureId: vega,
-          techniqueId: TECHNIQUE.id,
+          declaredTargetCreatureId: magnus,
         }),
       ),
     );
-    expect(applied.creatures[vega]?.enabledTechniqueIds).toContain(TECHNIQUE.id);
-    expect(applied.creatures[magnus]?.enabledTechniqueIds ?? []).not.toContain(TECHNIQUE.id);
+    expect(applied.creatures[magnus]?.addedTechniques?.map((technique) => technique.id)).toContain(
+      ADDED.id,
+    );
+    expect(applied.creatures[vega]?.addedTechniques ?? []).toEqual([]);
     const attached = Object.values(applied.cards).find((card) => card.cardId === ANY_MOVE.id);
     expect(attached?.zone).toBe("equipment");
-    expect(attached?.attachedToCreatureId).toBe(vega);
+    expect(attached?.attachedToCreatureId).toBe(magnus);
   });
 
   it("rolls every fighter die, including a KOed fighter, as separate results", () => {

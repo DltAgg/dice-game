@@ -2,6 +2,7 @@ import {
   assistDeclarationError,
   isLivingReserve,
   showingTechnique,
+  tagInLocked,
   tagWindow,
   type CreatureId,
   type GameState,
@@ -44,6 +45,7 @@ export function canDeclareTag(
   if (player === undefined) return false;
   const active = state.creatures[player.activeCreatureId];
   if (active === undefined || active.defeated) return false;
+  if (tagInLocked(state, reserveCreatureId)) return false;
   return isLivingReserve(state, player, reserveCreatureId);
 }
 

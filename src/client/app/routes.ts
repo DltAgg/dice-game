@@ -5,7 +5,6 @@ export const APP_PATHS = {
   lobby: "/play",
   match: "/match",
   decks: "/decks",
-  catalogue: "/catalogue",
   rules: "/rules",
   metrics: "/metrics",
 } as const satisfies { readonly [V in MatchView]: `/${string}` };
@@ -14,7 +13,6 @@ export const APP_NAV = [
   { to: APP_PATHS.lobby, label: "Play" },
   { to: APP_PATHS.match, label: "Match" },
   { to: APP_PATHS.decks, label: "Decks" },
-  { to: APP_PATHS.catalogue, label: "Catalogue" },
   { to: APP_PATHS.rules, label: "Rules" },
   { to: APP_PATHS.metrics, label: "Metrics" },
 ] as const;
@@ -40,8 +38,6 @@ export function viewFromPath(pathname: string): MatchView {
       return "match";
     case APP_PATHS.decks:
       return "decks";
-    case APP_PATHS.catalogue:
-      return "catalogue";
     case APP_PATHS.rules:
       return "rules";
     case APP_PATHS.metrics:

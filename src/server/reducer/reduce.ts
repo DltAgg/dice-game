@@ -8,6 +8,7 @@ import { assist } from "./commands/assist.js";
 import { attack } from "./commands/attack.js";
 import { forgeCard, activateFace } from "./commands/forge.js";
 import { resolveReplaceKoActive } from "./commands/replaceKoActive.js";
+import { resolveTagOut } from "./commands/tagOut.js";
 import { tag } from "./commands/tag.js";
 import { overchargeCard } from "./commands/overcharge.js";
 import { playCard } from "./commands/playCard.js";
@@ -182,6 +183,8 @@ function isMatchingPendingResolve(pending: ChoicePending, action: GameAction): b
       return action.type === "RESOLVE_CHOOSE_BOUNCE_CARD";
     case "replace-ko-active":
       return action.type === "RESOLVE_REPLACE_KO_ACTIVE";
+    case "tag-out-active":
+      return action.type === "RESOLVE_TAG_OUT";
   }
 }
 
@@ -199,6 +202,8 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
       return tag(draft, action.playerId, action.reserveCreatureId);
     case "RESOLVE_REPLACE_KO_ACTIVE":
       return resolveReplaceKoActive(draft, action.playerId, action.creatureId);
+    case "RESOLVE_TAG_OUT":
+      return resolveTagOut(draft, action.playerId, action.creatureId);
     case "ASSIST":
       return assist(draft, action.playerId, action.reserveCreatureId);
     case "END_SEQUENCE":

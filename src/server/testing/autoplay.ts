@@ -741,6 +741,27 @@ function resolvePending(state: GameState): GameState {
     return resolvePending(result.state);
   }
 
+  if (pending.type === "tag-out-active") {
+    const owner = state.players[pending.controllerId];
+    const choice = owner?.creatureIds.find((id) => {
+      if (id === pending.fromCreatureId) return false;
+      const creature = state.creatures[id];
+      return creature !== undefined && !creature.defeated;
+    });
+    if (choice === undefined) {
+      throw new Error("autoplay: no reserve for tag-out-active");
+    }
+    const result = advance(state, {
+      type: "RESOLVE_TAG_OUT",
+      playerId: pending.controllerId,
+      creatureId: choice,
+    });
+    if (!result.ok) {
+      throw new Error(`autoplay: unexpected ${result.error} on RESOLVE_TAG_OUT`);
+    }
+    return resolvePending(result.state);
+  }
+
   if (pending.type === "replace-ko-active") {
     const owner = state.players[pending.controllerId];
     const choice = owner?.creatureIds.find((id) => {

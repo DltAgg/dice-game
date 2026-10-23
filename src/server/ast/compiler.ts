@@ -1,4 +1,5 @@
 import type { EffectCondition, EffectDefinition } from "../model/effects.js";
+import { SkipToLegacy } from "./opcodes/generic.js";
 import type { StandingTrigger } from "../model/cards.js";
 import {
   literal,
@@ -250,6 +251,8 @@ export class AstCompiler {
         };
       case "choose-effect-mode":
         return { op: "choose-effect-mode" };
+      case "tag-out":
+        throw new SkipToLegacy();
       default:
         return { op: effect.type };
     }

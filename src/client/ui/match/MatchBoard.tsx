@@ -34,13 +34,14 @@ import { MatchTable } from "./board/MatchTable";
 import { isTagSkirmishMatch } from "./board/tagAssistLegality";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
 import { HandStrip } from "./board/HandStrip";
-import { ModifyPlayBar } from "./board/ModifyPlayBar";
+import { ModifyPlayPrompt } from "./board/ModifyPlayPrompt";
 import { MatchNotReady } from "./board/MatchNotReady";
 import { SpectatorSeatDock } from "./board/SpectatorSeatDock";
 import { SymbolPool } from "./board/SymbolPool";
 import { ZoneDocks } from "./board/ZoneDocks";
 import { collectAttackArrows, creatureHasArmedAttack } from "./intents/attack";
 import { hintFor } from "./intents/hintFor";
+import { immediateMovesetChoice, playActionFromModifyChoice } from "./intents/modifyPlay";
 import { selectedHandCardId, type Intent } from "./intents/types";
 import { ChooseAttributeTokensModal } from "./modals/ChooseAttributeTokensModal";
 import { ChooseCreatureModal } from "./modals/ChooseCreatureModal";
@@ -68,6 +69,7 @@ import { OverloadFacePickModal } from "./modals/OverloadFacePickModal";
 import { PeekDeckModal } from "./modals/PeekDeckModal";
 import { ChooseEffectModePrompt } from "./modals/ChooseEffectModePrompt";
 import { ReplaceKoActivePrompt } from "./modals/ReplaceKoActivePrompt";
+import { TagOutPrompt } from "./modals/TagOutPrompt";
 import { ReplaceSyntheticFacePrompt } from "./modals/ReplaceSyntheticFacePrompt";
 import { ReplayGraveyardModal } from "./modals/ReplayGraveyardModal";
 import { SearchPanel } from "./modals/SearchPanel";
@@ -343,6 +345,20 @@ export function MatchBoard() {
     }
   };
 
+  const offerModify = (playerId: typeof actingId, card: CardInstance): boolean => {
+    const def = getCard(card.cardId);
+    if (def?.modifySubject === undefined) return false;
+    const plays = legalModifyPlays(state, playerId, def);
+    if (plays.length === 0) return false;
+    const immediate = immediateMovesetChoice(def, plays);
+    if (immediate !== null) {
+      tryDispatch(playActionFromModifyChoice(playerId, card.id, immediate));
+    } else {
+      setIntent({ kind: "play", cardInstanceId: card.id });
+    }
+    return true;
+  };
+
   const beginPlay = (card: CardInstance) => {
     if (!canAct) return;
     if (finished) return;
@@ -351,11 +367,8 @@ export function MatchBoard() {
     if (pending?.type === "reaction-priority") {
       if (card.ownerId !== actingId) return;
       if (localPlayerId !== null && localPlayerId !== pending.priorityPlayerId) return;
+      if (offerModify(actingId, card)) return;
       const def = getCard(card.cardId);
-      if (def?.modifySubject !== undefined && legalModifyPlays(state, actingId, def).length > 0) {
-        setIntent({ kind: "play", cardInstanceId: card.id });
-        return;
-      }
       if (def === undefined || !isEnabledHandReaction(state, actingId, def)) return;
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
       return;
@@ -365,8 +378,7 @@ export function MatchBoard() {
     const def = getCard(card.cardId);
     if (def === undefined || !hasPlayableEffect(def)) return;
     if (def.modifySubject !== undefined) {
-      if (legalModifyPlays(state, activeId, def).length === 0) return;
-      setIntent({ kind: "play", cardInstanceId: card.id });
+      offerModify(activeId, card);
       return;
     }
     if (!canResolvePlayEffects(state, activeId, def)) return;
@@ -1239,6 +1251,16 @@ export function MatchBoard() {
           }
         />
       )}
+      {pending?.type === "tag-out-active" && (
+        <TagOutPrompt
+          state={state}
+          pending={pending}
+          isChooser={isPendingChooser}
+          onPick={(creatureId) =>
+            tryDispatch({ type: "RESOLVE_TAG_OUT", playerId: pending.controllerId, creatureId })
+          }
+        />
+      )}
 
       {reactionPriorityLive && !isPendingChooser && (
         <WaitingBanner>
@@ -1426,24 +1448,14 @@ export function MatchBoard() {
           )}
 
           {modifyDef?.modifySubject !== undefined && modifyChoices.length > 0 && (
-            <ModifyPlayBar
+            <ModifyPlayPrompt
+              key={intent.kind === "play" ? intent.cardInstanceId : "modify"}
+              state={state}
               cardName={modifyDef.name}
               choices={modifyChoices}
               onChoose={(choice) => {
                 if (intent.kind !== "play") return;
-                tryDispatch({
-                  type: "PLAY_CARD",
-                  playerId: actingId,
-                  cardInstanceId: intent.cardInstanceId,
-                  mode: choice.mode,
-                  ...(choice.dieId !== null ? { dieId: choice.dieId } : {}),
-                  ...(choice.slotIndex !== null ? { slotIndex: choice.slotIndex } : {}),
-                  ...(choice.faceCardId !== null ? { declaredFaceCardId: choice.faceCardId } : {}),
-                  ...(choice.techniqueId !== null ? { techniqueId: choice.techniqueId } : {}),
-                  ...(choice.targetCreatureId !== null
-                    ? { declaredTargetCreatureId: choice.targetCreatureId }
-                    : {}),
-                });
+                tryDispatch(playActionFromModifyChoice(actingId, intent.cardInstanceId, choice));
               }}
               onCancel={clearIntent}
             />

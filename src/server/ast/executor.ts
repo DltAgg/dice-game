@@ -36,7 +36,13 @@ export class AstExecutor {
   }
 
   apply(draft: Draft, pending: PendingEffect): boolean {
-    const node = this.compile(pending);
+    let node: EffectNode;
+    try {
+      node = this.compile(pending);
+    } catch (error) {
+      if (error instanceof SkipToLegacy) return this.legacyApply(draft, pending);
+      throw error;
+    }
     const issues = this.validator.validate(node);
     if (issues.length > 0) {
       throw new Error(`invalid effect AST at ${issues[0]!.path}: ${issues[0]!.message}`);
@@ -45,7 +51,13 @@ export class AstExecutor {
   }
 
   tryOpcode(draft: Draft, pending: PendingEffect): boolean | null {
-    const node = this.compile(pending);
+    let node: EffectNode;
+    try {
+      node = this.compile(pending);
+    } catch (error) {
+      if (error instanceof SkipToLegacy) return null;
+      throw error;
+    }
     const handler = this.registry?.get(node.op);
     if (handler === undefined) return null;
     try {

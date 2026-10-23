@@ -24,7 +24,8 @@ These clauses were not wired. The printed cards do not claim them.
 |---|---|---|
 | **Dodge** (the attack misses, and is not `[Prevent]` and not a reflected hit) | A Response distinct from Brace and Counter | No miss opcode. `[Prevent]` (`grant-attack-prevent`) only arms a link of kind `attack`. Face and Technique hits are `combat-action` and are not `fromAttack`, so that prevent does not stop them. `negate-card` is Counter. `modifySubject: "target"` is Shift. |
 | **Block a face or Technique** | Brace | Brace prints `[Prevent]` the Attack. That is the Attack action, not a sequence face or Technique. |
-| **Change an Action's damage, sequence role, or whether it ends the sequence** | A Modify of an action property | Moveset Modify only enables a Technique the secondary input does not match (`enabledTechniqueIds`). It does not rewrite the Technique. |
+| **Change an Action's damage, sequence role, or whether it ends the sequence** | A Modify of an action property | A Moveset card adds a new Technique. It does not rewrite a printed one. |
+| **Open Manual** | The Technique the card adds | Print says the Technique is not printed yet. The card cannot be played until that Technique is authored. |
 | **A sixth distinct face on each die** | Magnus Dash / Power, Vega Feint / Launcher, Ryu Backstep / Sweep | `faceDeck` schema `maxItems` is 12 and `faceDeckMaxCards` is 12. Eighteen unique named faces do not validate. Each die repeats two of four names. |
 | **Assist that costs nothing without a special field** | Spec `030` normal Assist | Omitting `exceptionalAssistMeter` charges `assistMeterCost` (1) unless the Reserve is showing technique `assist`. These Fighters set the field to 0. There is no Assist face. |
 

@@ -1,0 +1,11 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-ryu-form",
+  "name": "Form",
+  "faceType": "attack",
+  "rulesText": "Form.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

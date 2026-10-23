@@ -166,7 +166,10 @@ export function ShowingFaceTray({
       {interactive && staged.kind === "technique" && (
         <div className="mt-2 flex flex-col gap-1">
           {staged.matches.map((match) => {
-            const technique = activeDef?.techniques?.find((entry) => entry.id === match.techniqueId);
+            const added = state.creatures[staged.creatureId]?.addedTechniques;
+            const technique =
+              activeDef?.techniques?.find((entry) => entry.id === match.techniqueId) ??
+              added?.find((entry) => entry.id === match.techniqueId);
             return (
               <button
                 key={`${match.techniqueId}:${match.secondaryDieId}`}

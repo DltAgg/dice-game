@@ -6,6 +6,6 @@
   "subtypes": [],
   "lifecycle": "persistent",
   "modifySubject": "moveset",
-  "rulesText": "Enable one Technique. Stays on that Fighter.",
+  "rulesText": "Adds a Technique to the Active Fighter. That Technique is not printed yet.",
   "forge": { "faces": 1, "target": "own-die" }
 }

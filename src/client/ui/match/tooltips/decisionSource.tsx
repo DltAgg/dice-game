@@ -120,6 +120,7 @@ export function pendingSourceOf(
         faceCardId: faceIdFromDieSlot(state, pending.dieId, pending.slotIndex),
       };
     case "replace-ko-active":
+    case "tag-out-active":
       return null;
     default:
       return null;

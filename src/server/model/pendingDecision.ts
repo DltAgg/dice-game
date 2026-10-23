@@ -279,4 +279,17 @@ export type PendingDecision =
       readonly type: "replace-ko-active";
       readonly controllerId: PlayerId;
       readonly defeatedCreatureId: CreatureId;
+    }
+  /**
+   * Spec `030`. `[Tag out]` made this player's Active Fighter leave.
+   * Only `controllerId` may answer, with `RESOLVE_TAG_OUT`. Mandatory.
+   * Not the once-per-turn Tag, and not a Chain object. The Fighter who
+   * left stays on the team.
+   */
+  | {
+      readonly type: "tag-out-active";
+      readonly controllerId: PlayerId;
+      readonly fromCreatureId: CreatureId;
+      /** The Fighter who leaves cannot Tag in until the end of its next turn. */
+      readonly preventTagIn?: boolean;
     };

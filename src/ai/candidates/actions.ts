@@ -20,6 +20,7 @@ import {
   preferredSlotsForForgeFaces,
   resolveFaceForForge,
   ritualsOf,
+  tagInLocked,
   type CreatureId,
   type GameAction,
   type GameState,
@@ -241,7 +242,9 @@ function tagAssistIntents(state: GameState, playerId: PlayerId): readonly GameAc
     if (creatureId === player.activeCreatureId) continue;
     const creature = state.creatures[creatureId];
     if (creature === undefined || creature.defeated) continue;
-    actions.push({ type: "TAG", playerId, reserveCreatureId: creatureId });
+    if (!tagInLocked(state, creatureId)) {
+      actions.push({ type: "TAG", playerId, reserveCreatureId: creatureId });
+    }
     actions.push({ type: "ASSIST", playerId, reserveCreatureId: creatureId });
   }
   return actions;

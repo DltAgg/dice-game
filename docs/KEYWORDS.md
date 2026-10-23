@@ -37,6 +37,15 @@ Do not also write “Spend N Meter” for that same cost. A free card shows no
 play cost. Meter for a mode that is not the only way to play the card stays
 in the rules text. Meter is not printed as mana on every strong card.
 
+`[Replace]` to a named face writes that face onto a slot of that Fighter's
+die for the rest of the match. `[Tag out]` makes the opponent's Active
+Fighter leave. They choose a living Reserve to become Active. The Fighter
+who leaves is not KOed, and their Tag is not spent. No living Reserve:
+nothing happens. When that line also says the Fighter cannot `[Tag in]`
+until the end of its next turn, that Fighter cannot be Tagged in during
+its controller's next turn. The lock ends when that turn ends. Assist
+and a KO replacement are not `[Tag in]`.
+
 Reuse `[Mark N X]`, `[Strip N X]`, and `[Modify]`. Timing stays a prefix
 (`On roll:`, `On attack:`). Never “Whenever…”.
 

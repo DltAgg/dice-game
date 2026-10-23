@@ -1,4 +1,5 @@
 import type { EffectDefinition } from "./effects.js";
+import type { FighterTechniqueDefinition } from "./fighterTechniques.js";
 import type {
   CardId,
   CardInstanceId,
@@ -353,6 +354,17 @@ export interface CardDefinition {
    * or ritual rather than a die, roll, moveset, target, or tag change.
    */
   readonly modifySubject?: ModifySubject;
+  /**
+   * Spec `030`. The Technique a Moveset card adds to one of your living
+   * Fighters, Active or Reserve. Printed Techniques stay usable without
+   * this card. The Technique is still used only while that Fighter is Active.
+   */
+  readonly addedTechnique?: FighterTechniqueDefinition;
+  /**
+   * Spec `030`. `[Replace]` writes this face onto the chosen slot of that
+   * Fighter's die for the rest of the match.
+   */
+  readonly replaceFaceId?: FaceCardId;
   /**
    * Spent only for exceptional mode. Normal mode does not spend it.
    * When every legal play is that mode (a Tag Modify), this is the

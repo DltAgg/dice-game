@@ -246,8 +246,24 @@
         { "$ref": "#/$defs/armResolveNextFaceEffectTwice" },
         { "$ref": "#/$defs/optionalBonusBasicAttack" },
         { "$ref": "#/$defs/grantExtraAttack" },
-        { "$ref": "#/$defs/millCards" }
+        { "$ref": "#/$defs/millCards" },
+        { "$ref": "#/$defs/tagOut" }
       ]
+    },
+    "tagOut": {
+      "title": "tag-out",
+      "description": "[Tag out]. The opponent's Active Fighter leaves. They choose a living Reserve. No KO. No Tag spend. No living Reserve: nothing happens. preventTagIn: that Fighter cannot Tag in until the end of its controller's next turn.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target"],
+      "properties": {
+        "type": { "const": "tag-out" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" },
+        "preventTagIn": {
+          "type": "boolean",
+          "description": "The Fighter who leaves cannot Tag in until the end of its controller's next turn."
+        }
+      }
     },
     "damage": {
       "title": "damage",

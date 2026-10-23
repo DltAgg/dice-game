@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect } from "react";
 import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { CardCatalogue } from "@client/ui/cards/CardCatalogue";
 import { DeckBuilder } from "@client/ui/decks/DeckBuilder";
 import { Lobby } from "@client/ui/match/Lobby";
 import { MatchBoard } from "@client/ui/match/MatchBoard";
@@ -31,14 +30,6 @@ export function App() {
         <Route path="/play" element={<Lobby />} />
         <Route path="/match" element={<MatchBoard />} />
         <Route path="/decks" element={<DeckBuilder />} />
-        <Route
-          path="/catalogue"
-          element={
-            <main className="mx-auto max-w-6xl px-6 py-10">
-              <CardCatalogue />
-            </main>
-          }
-        />
         <Route path="/rules" element={<RulebookPage />} />
         <Route path="/metrics" element={<MetricsDashboard />} />
         <Route path="*" element={<Navigate to="/play" replace />} />

@@ -68,6 +68,15 @@ export type GameAction =
       readonly creatureId: CreatureId;
     }
   /**
+   * Spec `030`. After `[Tag out]`, the owner names the living Reserve that
+   * becomes Active. Does not spend the once-per-turn Tag or Meter.
+   */
+  | {
+      readonly type: "RESOLVE_TAG_OUT";
+      readonly playerId: PlayerId;
+      readonly creatureId: CreatureId;
+    }
+  /**
    * Spec `030`. A Reserve Fighter's Assist, including a KOed Reserve.
    * Free when that die shows assist; otherwise the Fighter's exceptional
    * Meter, or `assistMeterCost`. Resolves on the Chain.

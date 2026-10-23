@@ -7,6 +7,28 @@
   "lifecycle": "persistent",
   "modifySubject": "moveset",
   "fighterRestriction": "creature-vega",
-  "rulesText": "Enable one of Vega's Techniques. Stays on that Fighter.",
+  "rulesText": "Stays on Fighter.\n[Moveset Drill].\nDrill · Heavy Punch · Finisher\nDash + Heavy punch: [Strike 2]. [Tag out] the opponent's Active Fighter and it cannot [Tag in] until the end of its next turn.",
+  "addedTechnique": {
+    "id": "technique-vega-drill",
+    "name": "Drill",
+    "primaryFaceId": "face-natural-vega-dash",
+    "hitStrength": "heavy",
+    "hitType": "punch",
+    "sequenceRole": "finisher",
+    "secondary": { "hitStrength": "heavy", "hitType": "punch" },
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 2,
+        "target": { "kind": "declared-target" }
+      },
+      {
+        "type": "tag-out",
+        "target": { "kind": "enemy-frontline" },
+        "preventTagIn": true
+      }
+    ],
+    "rulesText": "Heavy punch. Finisher. Dash + Heavy punch: [Strike 2]. [Tag out] the opponent's Active Fighter and it cannot [Tag in] until the end of its next turn."
+  },
   "forge": { "faces": 1, "target": "own-die" }
 }

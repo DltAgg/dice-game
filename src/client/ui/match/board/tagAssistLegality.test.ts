@@ -68,6 +68,18 @@ describe("tagAssistLegality", () => {
     expect(canDeclareTag(baseState(), P1, RESERVE)).toBe(true);
   });
 
+  it("refuses Tag in on a locked Reserve and still allows Assist", () => {
+    const state = assistState({ turn: 2 });
+    const creatures = {
+      ...state.creatures,
+      [RESERVE]: { ...state.creatures[RESERVE]!, tagInLockedUntilTurn: 4 },
+    } as GameState["creatures"];
+    const locked = { ...state, creatures };
+    expect(canDeclareTag(locked, P1, RESERVE)).toBe(false);
+    expect(canDeclareAssist(locked, P1, RESERVE)).toBe(true);
+    expect(canDeclareTag({ ...locked, turn: 4 }, P1, RESERVE)).toBe(true);
+  });
+
   it("allows a closing Tag while the sequence can still continue", () => {
     const state = baseState({
       actEngaged: true,
