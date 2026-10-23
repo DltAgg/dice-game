@@ -41,13 +41,13 @@ describe("search policy", () => {
       const actor = actingPlayerId(state);
       if (actor === null) break;
       const legal = legalActions(state, actor);
-      const hasAttack = legal.some((action) => action.type === "ATTACK");
+      const hasAttack = legal.some((action) => action.type === "USE_FACE" || action.type === "ATTACK");
       const hasEnd = legal.some((action) => action.type === "END_TURN");
       if (hasAttack && hasEnd && state.pendingDecision === null) {
-        const attack = legal.filter((action) => action.type === "ATTACK");
+        const attack = legal.filter((action) => action.type === "USE_FACE" || action.type === "ATTACK");
         const end = legal.filter((action) => action.type === "END_TURN");
         const chosen = chooseAction(state, [...attack, ...end], rng, { strength: "fast" });
-        expect(chosen?.type).toBe("ATTACK");
+        expect(chosen?.type === "ATTACK" || chosen?.type === "USE_FACE").toBe(true);
         return;
       }
       const chosen = chooseAction(state, legal, rng, { strength: "fast" });

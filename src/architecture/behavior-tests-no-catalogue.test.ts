@@ -16,6 +16,9 @@ const ALLOWED = new Set([
   "src/server/rules/loadout.test.ts",
   "src/client/decks/memoryRepo.test.ts",
   "src/client/networking/hostLoadout.test.ts",
+  // Integration coverage of the shipped tag-skirmish faces and techniques.
+  "src/client/ui/match/board/showingFaceDrop.test.ts",
+  "src/server/reducer/playtestCombo.test.ts",
 ]);
 
 const LOOKUP_ONLY = /^(?:getCard|getFaceCard|getCreatureDefinition)$/;

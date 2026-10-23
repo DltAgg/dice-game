@@ -228,9 +228,19 @@ export function turnCandidates(state: GameState, playerId: PlayerId): readonly G
     ...overchargeIntents(state, playerId),
     ...ritualActivateIntents(state, playerId),
     ...faceActivateIntents(state, playerId),
+    ...faceUseIntents(state, playerId),
     ...tagAssistIntents(state, playerId),
     { type: "END_TURN", playerId },
   ];
+}
+
+function faceUseIntents(state: GameState, playerId: PlayerId): readonly GameAction[] {
+  if (state.phase !== "actions") return [];
+  return livingCreaturesOf(state, playerId).map((creature) => ({
+    type: "USE_FACE" as const,
+    playerId,
+    creatureId: creature.id,
+  }));
 }
 
 function tagAssistIntents(state: GameState, playerId: PlayerId): readonly GameAction[] {

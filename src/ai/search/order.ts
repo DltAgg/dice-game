@@ -17,6 +17,8 @@ export function priorScore(state: GameState, action: GameAction): number {
     case "ROLL_DICE":
       return 1000;
     case "ATTACK":
+    case "USE_FACE":
+    case "USE_TECHNIQUE":
       return 800;
     case "ABSORB_SYMBOL":
       return 700;
