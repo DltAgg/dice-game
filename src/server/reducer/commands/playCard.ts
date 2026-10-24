@@ -14,6 +14,7 @@ import { behaviorPlayError } from "../../rules/cardBehavior.js";
 import { cardRestrictionError } from "../../rules/fighters.js";
 import { playEffectsRefusal } from "../../rules/reforge.js";
 import {
+  chainAttackTargetId,
   buildEffectLink,
   buildEquipLink,
   buildOverloadLink,
@@ -132,10 +133,9 @@ export function playCard(
         effect.type === "grant-attack-prevent" || effect.type === "prevent-attack-reflect",
     )
   ) {
-    const top = topChainLink(draft);
-    if (top === undefined || top.kind !== "attack") return "INVALID_CHAIN_TARGET";
-    if (top.attackTargetId === null) return "INVALID_CHAIN_TARGET";
-    const attackTarget = draft.creatures[top.attackTargetId];
+    const attackTargetId = chainAttackTargetId(draft.chainStack);
+    if (attackTargetId === null) return "INVALID_CHAIN_TARGET";
+    const attackTarget = draft.creatures[attackTargetId];
     if (attackTarget === undefined || attackTarget.ownerId !== playerId) {
       return "INVALID_TARGET";
     }

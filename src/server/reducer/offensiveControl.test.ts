@@ -60,25 +60,28 @@ const ANSWER = testCard({
   effect: { effects: [{ type: "draw-cards", amount: 1 }] },
 });
 
-const NEGATE = testCard({
-  id: "card-test-negate-link",
-  name: "Negate Link",
-  type: "response",
-  subtypes: [],
-  playCost: { martial: 2 },
-  rulesText: "Negate that action.",
-  effect: { effects: [{ type: "negate-card", cardTypes: "any" }] },
-});
-
 const COUNTER = testCard({
   id: "card-test-counter-sequence",
   name: "Counter",
   type: "response",
   subtypes: [],
   playCost: { martial: 2 },
-  endsSequence: true,
-  rulesText: "Counter that chain object. This ends the sequence.",
+  rulesText: "Negate that card.",
   effect: { effects: [{ type: "negate-card", cardTypes: "any" }] },
+});
+
+const PARRY = testCard({
+  id: "card-test-parry",
+  name: "Parry",
+  type: "response",
+  subtypes: [],
+  playCost: { martial: 2 },
+  rulesText: "Prevent that attack. This ends the sequence.",
+  effect: {
+    effects: [
+      { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+    ],
+  },
 });
 
 const CONFIG = {
@@ -619,8 +622,20 @@ describe("030 offensive control", () => {
     expect(continued.ok).toBe(false);
   });
 
-  it("does not count or continue a negated link", () => {
-    const opened = withHand(readyMixed(false), P2, [NEGATE.id]);
+  it("does not let Counter answer a hit", () => {
+    const opened = withHand(readyMixed(false), P2, [COUNTER.id]);
+    const declared = expectOk(useFace(opened, P1));
+    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
+    const answered = advance(yielded, {
+      type: "PLAY_CARD",
+      playerId: P2,
+      cardInstanceId: handCardIdAt(yielded, P2, 0),
+    });
+    expect(answered.ok).toBe(false);
+  });
+
+  it("does not count or continue a parried hit, and passes the turn", () => {
+    const opened = withHand(readyMixed(false), P2, [PARRY.id]);
     const declared = expectOk(useFace(opened, P1));
     const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
     const answered = expectOk(
@@ -634,29 +649,8 @@ describe("030 offensive control", () => {
     expect(damageOf(resolved, P2)).toBe(0);
     expect(resolved.players[P1]?.comboCount).toBe(0);
     expect(comboCounts(resolved, P1)).toEqual([]);
-    expect(resolved.offensiveState).toBe("open");
-    expect(resolved.activePlayerId).toBe(P1);
-    expect(resolved.phase).toBe("actions");
-  });
-
-  it("ends the sequence and the turn when Counter resolves", () => {
-    const opened = withHand(readyMixed(false), P2, [COUNTER.id]);
-    const declared = expectOk(useFace(opened, P1));
-    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
-    const answered = expectOk(
-      advance(yielded, {
-        type: "PLAY_CARD",
-        playerId: P2,
-        cardInstanceId: handCardIdAt(yielded, P2, 0),
-      }),
-    );
-    const resolved = resolveOpenChain(answered);
-    expect(damageOf(resolved, P2)).toBe(0);
-    expect(resolved.players[P1]?.comboCount).toBe(0);
     expect(resolved.activePlayerId).toBe(P2);
     expect(resolved.phase).toBe("roll");
-    expect(resolved.offensiveState).toBe("open");
-    expect(resolved.aggressorPlayerId).toBe(P2);
     expect(resolved.turn).toBe(opened.turn + 1);
     expect(resolved.endSequenceAfterChain).toBe(false);
   });

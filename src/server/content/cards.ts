@@ -12,6 +12,7 @@ import { lookupOverlayCard } from "./runtimeOverlay.js";
 
 export const BRACE: CardId = asCardId("card-brace");
 export const COUNTER: CardId = asCardId("card-counter");
+export const PARRY: CardId = asCardId("card-parry");
 export const OPEN_PALM: CardId = asCardId("card-open-palm");
 export const REFORGE_GRIP: CardId = asCardId("card-reforge-grip");
 export const VEGA_DRILL: CardId = asCardId("card-vega-drill");

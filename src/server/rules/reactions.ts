@@ -4,6 +4,7 @@ import type { EffectDefinition } from "../model/effects.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { ChainLink, GameState } from "../model/state.js";
 import {
+  chainAttackTargetId,
   isRitualNegatableLinkKind,
   linkMatchesNegateCard,
 } from "../reducer/chain.js";
@@ -74,11 +75,9 @@ export function preventEffectsLegalAgainstChain(
       effect.type === "grant-attack-prevent" || effect.type === "prevent-attack-reflect",
   );
   if (needsTopAttackPrevent) {
-    const top = topChainLinkOf(state);
-    if (top === undefined || top.kind !== "attack" || top.attackTargetId === null) {
-      return false;
-    }
-    const attackTarget = state.creatures[top.attackTargetId];
+    const attackTargetId = chainAttackTargetId(state.chainStack);
+    if (attackTargetId === null) return false;
+    const attackTarget = state.creatures[attackTargetId];
     if (attackTarget === undefined || attackTarget.ownerId !== playerId) {
       return false;
     }

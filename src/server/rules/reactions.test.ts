@@ -95,6 +95,7 @@ describe("reaction chain-target gates (UI queries)", () => {
     expect(isLegalHandReaction(stateWithTop(link("tactic-effect")), silence)).toBe(true);
     expect(isLegalHandReaction(stateWithTop(link("ritual-place")), silence)).toBe(true);
     expect(isLegalHandReaction(stateWithTop(link("attack")), silence)).toBe(false);
+    expect(isLegalHandReaction(stateWithTop(link("combat-action")), silence)).toBe(false);
   });
 
   it("refuses negate-ritual when top is not a ritual link", () => {
