@@ -35,7 +35,11 @@ const NEGATE = testCard({
   type: "response",
   subtypes: [],
   rulesText: "Negate that hit.",
-  effect: { effects: [{ type: "negate-card", cardTypes: "any" }] },
+  effect: {
+    effects: [
+      { type: "grant-attack-prevent", amount: 1, target: { kind: "chain-attack-target" } },
+    ],
+  },
 });
 
 const CONFIG = {
@@ -195,7 +199,7 @@ describe("sequence hit meter", () => {
     expect(resolved.creatures[activeId(resolved, P2)]?.damage).toBe(5);
   });
 
-  it("grants nothing when the hit is negated", () => {
+  it("grants nothing when the hit is parried", () => {
     const state = withHand(opened(LIGHT_DIE), P2, [NEGATE.id]);
     const declared = expectOk(
       advance(state, {

@@ -433,8 +433,9 @@ own Action. They can Response an opponent’s Response. A Response does not
 inherently take offensive control. Control changes only when the effect
 says the sequence ends or initiative passes.
 
-Counter (a Response that interrupts) ends the sequence when it resolves,
-and ending the sequence passes the turn. A negated Counter does not.
+Counter negates a card on the chain. It does not answer a hit and it does
+not end the turn. Parry prevents that hit (no damage, no combo) and ending
+that sequence passes the turn. A negated Parry does not.
 Reversal (a Response whose result is that the Defender becomes Aggressor)
 is that same behavior with a different result.
 

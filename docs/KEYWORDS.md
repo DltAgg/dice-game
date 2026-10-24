@@ -26,8 +26,9 @@ face, such as a light kick. Attacks, grabs, movement, and other character
 offensive tools belong on faces. Generic Block, Dodge, Counter, and damage
 reduction do not.
 
-Cards are Response or Modify. Block, Dodge, Counter, prevent, and redirect
-are effects on a Response, not types. A Modify changes a roll, a die, a
+Cards are Response or Modify. Block, Dodge, Counter, Parry, prevent, and
+redirect are effects on a Response, not types. Counter negates a card. Parry
+prevents a hit and ends the sequence. A Modify changes a roll, a die, a
 moveset, a target, or a Tag. Tag is an operation, not a face and not a card
 type. Assist is a Fighter ability, not a card.
 

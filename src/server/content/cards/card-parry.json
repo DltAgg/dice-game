@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-parry",
+  "name": "Parry",
+  "type": "response",
+  "subtypes": [],
+  "lifecycle": "one-shot",
+  "rulesText": "Prevent that attack. This ends the sequence.",
+  "forge": { "faces": 1, "target": "own-die" },
+  "effect": {
+    "effects": [
+      {
+        "type": "grant-attack-prevent",
+        "amount": 1,
+        "target": { "kind": "chain-attack-target" }
+      }
+    ]
+  }
+}

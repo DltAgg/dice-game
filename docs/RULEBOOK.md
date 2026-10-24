@@ -533,10 +533,12 @@ Immediately after the opening roll, you may reroll any number of your dice
 once, or keep them. Cards can change that roll or that reroll.
 
 A response does not require a Guard face. Cards respond or modify. A
-response does not by itself take the offense. Counter, Reversal, Modifier,
-and Situation are names for a result, not card types. Counter ends the
-sequence when it resolves. Ending the sequence ends the turn: the opposing
-player becomes the active player. A negated Counter does not.
+response does not by itself take the offense. Counter, Parry, Reversal,
+Modifier, and Situation are names for a result, not card types. Counter
+negates a card on the chain. It does not answer a hit, and it does not end
+the turn. Parry prevents that hit: the hit deals no damage and does not
+continue the sequence. Preventing the hit ends the sequence and the turn.
+The opposing player becomes the active player.
 
 Declaring an action opens Priority for the player who declared it. While you
 have Priority you may add a legal response or modify, if it has a valid
@@ -603,8 +605,10 @@ frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
 **Prevention** (reaction to an attack declaration — not a proactive buffer):
 
 - `[Prevent]` is **reaction-exclusive**. It grants `attackPreventCount` only
-  while a living **attack** link is on the chain, and only onto **that attack’s
-  target**. Grants with no attack on the chain whiff (no charge).
+  while a living **hit or attack** is on the chain, and only onto **that
+  hit’s target**. Grants with no hit on the chain whiff (no charge).
+- A prevented hit deals no damage and does not continue the combo. Resolving
+  the prevent ends the sequence and the turn.
 - That charge cancels the next **attack** against the creature (the whole
   instance, before Life). Unused charges **expire at end of turn**
   (`preventExpiry: "end-of-turn"`) — they are not a lasting “arm next attack”
@@ -667,9 +671,9 @@ Legal responders: hand `reaction` cards, and ready ritual-reactions.
 
 | Response | Legal against |
 |---|---|
-| Negate (top card link) | Tactic effect, ritual place/activate, equip, overload — **not** attacks |
+| Negate (top card link) | Tactic effect, ritual place/activate, equip, overload — **not** hits or attacks. Does not end the turn. |
 | Negate ritual | Ritual place or activate only |
-| Prevent | Attack declaration (reaction only) |
+| Prevent | A hit or attack on the chain (reaction only). Ends the sequence and the turn. |
 
 Once a link is conducting, it runs to completion. A negated card link keeps
 its costs paid and skips the body.

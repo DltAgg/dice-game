@@ -45,7 +45,7 @@ import {
   choiceFilterForSelector,
   livingCreaturesForMultiSelector,
 } from "../rules/targets.js";
-import { isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
+import { chainAttackTargetId, isRitualNegatableLinkKind, linkMatchesNegateCard } from "./chain.js";
 import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
@@ -268,15 +268,8 @@ function resolveTarget(
     case "ally-all":
     case "enemy-all":
       return null;
-    case "chain-attack-target": {
-      for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
-        const link = draft.chainStack[i];
-        if (link?.kind === "attack" && link.attackTargetId !== null) {
-          return link.attackTargetId;
-        }
-      }
-      return null;
-    }
+    case "chain-attack-target":
+      return chainAttackTargetId(draft.chainStack);
   }
 }
 
@@ -759,8 +752,9 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
     case "desynthesize":
       return applyDesynthesize(draft, pending, effect);
     case "grant-attack-prevent": {
-      // Reaction-exclusive: only while a living attack is on the chain, and
-      // only onto that attack's target (Barrier / Sidestep). Proactive grants whiff.
+      // Reaction-exclusive: only while a living hit or attack is on the chain,
+      // and only onto that hit's target. Proactive grants whiff. The hit is
+      // prevented (no damage, no combo) and the sequence ends.
       const attackTargetId = resolveTarget(draft, pending, { kind: "chain-attack-target" });
       if (attackTargetId === null) return false;
       const creature = draft.creatures[attackTargetId];
@@ -768,6 +762,15 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       patchCreature(draft, attackTargetId, {
         attackPreventCount: creature.attackPreventCount + effect.amount,
       });
+      for (let i = draft.chainStack.length - 1; i >= 0; i -= 1) {
+        const link = draft.chainStack[i];
+        if (link?.kind === "combat-action" && !link.negated) {
+          link.negated = true;
+          emit(draft, { type: "chain-link-negated", linkId: link.id });
+          break;
+        }
+      }
+      draft.endSequenceAfterChain = true;
       return false;
     }
     case "prevent-attack-reflect": {

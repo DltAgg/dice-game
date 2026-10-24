@@ -13,8 +13,27 @@ import { getCard } from "../content/cards.js";
 import { opponentOf } from "../rules/creatures.js";
 import { emit, nextInstanceId, type Draft } from "./draft.js";
 
-/** Card-sourced chain kinds may be negated; attacks use prevent (`009`). */
-export const isNegatableLinkKind = (kind: ChainLinkKind): boolean => kind !== "attack";
+/**
+ * Card-sourced chain kinds may be negated. Hits (`combat-action`) and attacks
+ * are prevented, not negated (`009`).
+ */
+export const isNegatableLinkKind = (kind: ChainLinkKind): boolean =>
+  kind !== "attack" && kind !== "combat-action";
+
+/** Creature a waiting hit or attack would damage, nearest first. */
+export function chainAttackTargetId(
+  stack: readonly ChainLink[],
+): CreatureId | null {
+  for (let i = stack.length - 1; i >= 0; i -= 1) {
+    const link = stack[i];
+    if (link === undefined) continue;
+    if (link.kind === "attack" && link.attackTargetId !== null) return link.attackTargetId;
+    if (link.kind === "combat-action" && link.declaredTargetCreatureId !== null) {
+      return link.declaredTargetCreatureId;
+    }
+  }
+  return null;
+}
 
 /**
  * Whether `negate-card` may target this link: not attack, not already negated,
