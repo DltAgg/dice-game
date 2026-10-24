@@ -23,7 +23,7 @@ import type {
   PendingOffenseSettle,
   SequenceRole,
 } from "./offensive.js";
-import type { HitStrength } from "./hitClass.js";
+import type { HitStrength, HitType } from "./hitClass.js";
 import type { RngState } from "../rng/rng.js";
 
 export type { PendingDecision };
@@ -72,9 +72,11 @@ export interface ChainLink {
   readonly meterGain?: number;
   /**
    * Strength of a sequence hit. Conduct grants Meter from this, not from
-   * `meterPerDamageDealt`. Kick and punch are not stored here.
+   * `meterPerDamageDealt`. Kick and punch do not change that grant.
    */
   readonly hitStrength?: HitStrength;
+  /** Kick or punch on a sequence hit. Paired with `hitStrength`. */
+  readonly hitType?: HitType;
   /** Hand reaction that takes offensive control if it resolves (spec `030`). */
   readonly seizesOffense?: boolean;
   /** Spec `030`. Present on a Modify link. Applied when that link conducts. */

@@ -183,6 +183,7 @@
       "description": "type-discriminated union the engine interprets today. Prefer AST op nodes for newly edited cards.",
       "oneOf": [
         { "$ref": "#/$defs/damage" },
+        { "$ref": "#/$defs/assistHit" },
         { "$ref": "#/$defs/heal" },
         { "$ref": "#/$defs/grantShield" },
         { "$ref": "#/$defs/generateSymbol" },
@@ -274,6 +275,21 @@
       "properties": {
         "type": { "const": "damage" },
         "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "assistHit": {
+      "title": "assist-hit",
+      "description": "Assist that is a sequence hit. [Strike N] is amount. hitStrength, hitType, and sequenceRole use the same gates as a face or Technique hit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "hitStrength", "hitType", "sequenceRole", "target"],
+      "properties": {
+        "type": { "const": "assist-hit" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
+        "hitStrength": { "$ref": "defs.schema.json#/$defs/hitStrength" },
+        "hitType": { "$ref": "defs.schema.json#/$defs/hitType" },
+        "sequenceRole": { "$ref": "defs.schema.json#/$defs/sequenceRole" },
         "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
       }
     },

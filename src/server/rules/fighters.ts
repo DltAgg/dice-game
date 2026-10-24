@@ -3,11 +3,28 @@ import { getFaceCard } from "../content/faces.js";
 import type { CardDefinition } from "../model/cards.js";
 import type { AttackDefinition, CreatureState } from "../model/creatures.js";
 import type { DieState } from "../model/dice.js";
+import type { EffectDefinition } from "../model/effects.js";
 import type { GameError } from "../model/errors.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { GameState, PlayerState } from "../model/state.js";
 import type { Technique } from "../model/techniques.js";
 import { opponentOf } from "./creatures.js";
+import { finisherBlockedByTag, sequenceRoleFits } from "./offensive.js";
+
+export type AssistHitEffect = Extract<EffectDefinition, { readonly type: "assist-hit" }>;
+
+/** The one sequence hit on an Assist, when that Assist is a hit. */
+export function assistHitEffect(
+  effects: readonly EffectDefinition[],
+): AssistHitEffect | "many" | null {
+  let found: AssistHitEffect | null = null;
+  for (const effect of effects) {
+    if (effect.type !== "assist-hit") continue;
+    if (found !== null) return "many";
+    found = effect;
+  }
+  return found;
+}
 
 export function dieForCreature(
   state: Pick<GameState, "players" | "dice" | "creatures">,
@@ -75,6 +92,9 @@ export function assistKey(creatureId: CreatureId): string {
  * Own turn in the actions phase, or priority against an opponent’s hit or
  * technique. A KOed Reserve may Assist. The Active Fighter may not. Meter is
  * required only when `exceptionalAssistMeter` is greater than 0. Spec `030`.
+ *
+ * An Assist whose effect is a hit uses that hit’s sequence role. An extender
+ * is legal only in combo, while you are the Aggressor, with no Chain open.
  */
 export function assistDeclarationError(
   state: Pick<
@@ -83,17 +103,41 @@ export function assistDeclarationError(
     | "phase"
     | "pendingDecision"
     | "activePlayerId"
+    | "aggressorPlayerId"
+    | "offensiveState"
     | "chainStack"
     | "players"
     | "creatures"
+    | "playerOrder"
   >,
   playerId: PlayerId,
   reserveCreatureId: CreatureId,
 ): GameError | null {
   if (state.status === "finished") return "GAME_FINISHED";
 
+  const player = state.players[playerId];
+  if (player === undefined) return "UNKNOWN_ENTITY";
+  if (player.activeCreatureId === reserveCreatureId) return "INVALID_TARGET";
+  if (!player.creatureIds.includes(reserveCreatureId)) return "INVALID_TARGET";
+
+  const creature = state.creatures[reserveCreatureId];
+  if (creature === undefined) return "UNKNOWN_ENTITY";
+  const definition = getCreatureDefinition(creature.definitionId);
+  const effects = definition?.assistEffects ?? [];
+  if (definition === undefined || effects.length === 0) return "CARD_HAS_NO_EFFECT";
+  const hit = assistHitEffect(effects);
+  if (hit === "many") return "INVALID_TARGET";
+
   const pending = state.pendingDecision;
-  if (pending?.type === "reaction-priority") {
+  if (hit !== null) {
+    if (pending !== null) return "INVALID_PHASE";
+    if (state.phase !== "actions") return "INVALID_PHASE";
+    if (state.activePlayerId !== playerId) return "NOT_ACTIVE_PLAYER";
+    if (state.aggressorPlayerId !== playerId) return "INVALID_TARGET";
+    if (!sequenceRoleFits(state.offensiveState, hit.sequenceRole)) return "INVALID_TARGET";
+    if (finisherBlockedByTag(state, playerId, hit.sequenceRole)) return "INVALID_TARGET";
+    if (opponentActiveId(state, playerId) === null) return "INVALID_TARGET";
+  } else if (pending?.type === "reaction-priority") {
     if (pending.priorityPlayerId !== playerId) return "NOT_PRIORITY_PLAYER";
     const opposed = state.chainStack.some(
       (link) =>
@@ -110,16 +154,6 @@ export function assistDeclarationError(
     return "NOT_ACTIVE_PLAYER";
   }
 
-  const player = state.players[playerId];
-  if (player === undefined) return "UNKNOWN_ENTITY";
-  if (player.activeCreatureId === reserveCreatureId) return "INVALID_TARGET";
-  if (!player.creatureIds.includes(reserveCreatureId)) return "INVALID_TARGET";
-
-  const creature = state.creatures[reserveCreatureId];
-  if (creature === undefined) return "UNKNOWN_ENTITY";
-  const definition = getCreatureDefinition(creature.definitionId);
-  const effects = definition?.assistEffects ?? [];
-  if (definition === undefined || effects.length === 0) return "CARD_HAS_NO_EFFECT";
   if (player.spentOncePerTurnKeys.includes(assistKey(reserveCreatureId))) {
     return "ALREADY_USED";
   }

@@ -117,6 +117,23 @@ describe("AstValidator", () => {
     expect(issues.some((issue) => issue.message.includes("token"))).toBe(true);
   });
 
+  it("maps an assist hit onto strike damage", () => {
+    const node = compiler.compileLegacy({
+      type: "assist-hit",
+      amount: 2,
+      hitStrength: "light",
+      hitType: "punch",
+      sequenceRole: "extender",
+      target: { kind: "declared-target" },
+    });
+    expect(node).toEqual({
+      op: "damage",
+      amount: literal(2),
+      target: { kind: "declared-target" },
+    });
+    expect(validator.validate(node)).toEqual([]);
+  });
+
   it("accepts compiled legacy damage", () => {
     const node = compiler.compileLegacy({
       type: "damage",

@@ -2,10 +2,11 @@ import { getCreatureDefinition } from "../../content/creatures.js";
 import type { GameError } from "../../model/errors.js";
 import type { CreatureId, PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
-import { assistDeclarationError, assistKey } from "../../rules/fighters.js";
+import { assistDeclarationError, assistHitEffect, assistKey, opponentActiveId } from "../../rules/fighters.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
 import { spendMeter } from "../meter.js";
+import { openCombatAction } from "../offensive.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { markPlayerSpent } from "../triggerSpent.js";
 
@@ -24,6 +25,8 @@ export function assist(
   const definition = getCreatureDefinition(creature.definitionId);
   const effects = definition?.assistEffects ?? [];
   if (definition === undefined || effects.length === 0) return "CARD_HAS_NO_EFFECT";
+  const hit = assistHitEffect(effects);
+  if (hit === "many") return "INVALID_TARGET";
 
   const cost = definition.exceptionalAssistMeter ?? 0;
   if (cost > 0) {
@@ -33,6 +36,24 @@ export function assist(
 
   markPlayerSpent(draft, playerId, assistKey(reserveCreatureId));
   emit(draft, { type: "assist-declared", playerId, reserveCreatureId });
+
+  if (hit !== null) {
+    const targetId = opponentActiveId(draft, playerId);
+    openCombatAction(draft, {
+      playerId,
+      sourceCreatureId: reserveCreatureId,
+      declaredTargetCreatureId: targetId,
+      effects,
+      sequenceRole: hit.sequenceRole,
+      meterCost: 0,
+      meterGain: 0,
+      hitStrength: hit.hitStrength,
+      hitType: hit.hitType,
+      assistReserveId: reserveCreatureId,
+      sequenceActionId: assistKey(reserveCreatureId),
+    });
+    return null;
+  }
 
   const base = buildEffectLink({
     kind: "tactic-effect",

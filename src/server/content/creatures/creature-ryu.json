@@ -6,12 +6,16 @@
   "archetype": "zoner",
   "passiveRulesText": "Zoner. The projectile confirms. Charge spends Meter.",
   "assistName": "Seal",
-  "assistRulesText": "Negate the chain object under this Assist.",
+  "assistRulesText": "Hit · Medium Punch · Finisher: [Strike 3].",
   "exceptionalAssistMeter": 0,
   "assistEffects": [
     {
-      "type": "negate-card",
-      "cardTypes": "any"
+      "type": "assist-hit",
+      "amount": 3,
+      "hitStrength": "medium",
+      "hitType": "punch",
+      "sequenceRole": "finisher",
+      "target": { "kind": "declared-target" }
     }
   ],
   "baseDie": [

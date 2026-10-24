@@ -455,6 +455,14 @@ face) fires again.
   priority and an opponent’s hit or technique is on the Chain. Once per named
   Reserve per turn. Any showing face is legal. Meter is spent when that
   Fighter’s exceptional Assist cost is greater than 0.
+  An Assist that is a hit has a strength, a strike (kick or punch), and a
+  sequence role. Declare it on your turn when no Chain is open, while you
+  are the Aggressor, and only when that role is legal: a starter in an open
+  sequence, an extender or a finisher in combo. It strikes the opponent’s
+  Active Fighter. A successful one raises combo and grants Meter from its
+  strength, the same as any other hit. A finisher ends the turn. That
+  reaction window is for an Assist that answers an opponent’s hit. A hit
+  Assist uses the sequence window instead.
 - **Meter:** cap **8**, one pool for the team. It stays across turns and Tags.
   A sequence hit that conducts grants 2 (light), 3 (medium), or 4 (heavy)
   to the player who declared the hit, and 1 to the player who owns the
@@ -572,9 +580,12 @@ Tag does not spend Meter. Assist is printed on the Fighter and uses the same
 chain. Declaring it opens priority for you. On your turn during the actions
 phase you may Assist when no Chain is open. You may also Assist when you have
 priority and an opponent’s hit or technique is on the Chain. Meter is spent
-when that Fighter’s exceptional Assist cost is greater than 0. One Meter
-pool is shared by all three Fighters. It stays when you Tag and when the
-turn changes. A sequence hit that conducts grants Meter from its strength, as
+when that Fighter’s exceptional Assist cost is greater than 0. An Assist that
+is a hit follows the sequence role printed on it. You declare that hit on
+your turn when no Chain is open, while you are the Aggressor, and only when
+that role is legal. It strikes the opponent’s Active Fighter. Combo and Meter
+follow the hit. A finisher ends the turn. One Meter pool is shared by all
+three Fighters. It stays when you Tag and when the turn changes. A sequence hit that conducts grants Meter from its strength, as
 in the Meter rule above. A negated hit grants nothing.
 
 At 0 HP a Fighter is KOed. They cannot Tag. They can still Assist. The

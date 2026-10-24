@@ -105,7 +105,7 @@ function conductLink(draft: Draft, link: ChainLink): void {
       conductTag(draft, link);
       return;
     }
-    if (link.assistReserveId !== undefined) {
+    if (link.assistReserveId !== undefined && link.sequenceRole === undefined) {
       conductAssist(draft, link);
       return;
     }

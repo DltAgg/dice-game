@@ -470,7 +470,8 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
         pending.declaredTargetCreatureId,
         effect.preventTagIn === true,
       );
-    case "damage": {
+    case "damage":
+    case "assist-hit": {
       applyToTargets(draft, pending, effect.target, (targetId) => {
         const dealt = dealDamage(draft, targetId, effect.amount, {
           ignoreShield: pending.ignoreShield,

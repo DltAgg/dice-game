@@ -861,7 +861,58 @@ describe("spec 030 assist windows", () => {
     ).toBe(true);
   });
 
-  it("lets Vega and Ryu Assist on your turn with no chain and 0 Meter", () => {
+  it("plays Vega Cross as an extender light punch only in combo", () => {
+    let state = p1Actions();
+    const vega = fighterOf(state, P1, VEGA_ID);
+    const magnus = fighterOf(state, P1, MAGNUS_ID);
+    const defender = state.players[P2]?.activeCreatureId;
+    if (defender === null || defender === undefined) throw new Error("defender");
+    state = showCreatureFace(state, vega, fighterBaseDie(VEGA_ID)[0]!);
+    state = resolveOpenChain(
+      expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: vega })),
+    );
+    expect(state.offensiveState).toBe("combo");
+    expect(state.players[P1]?.comboCount).toBe(1);
+    expect(state.creatures[defender]?.damage).toBe(2);
+    expect(state.players[P1]?.meter).toBe(2);
+    expect(state.players[P2]?.meter).toBe(1);
+
+    const parked = withActiveFighter(state, P1, magnus);
+    const declared = expectOk(
+      advance(parked, { type: "ASSIST", playerId: P1, reserveCreatureId: vega }),
+    );
+    const link = declared.chainStack.find((entry) => entry.assistReserveId === vega);
+    expect(link).toMatchObject({
+      kind: "combat-action",
+      sequenceRole: "extender",
+      hitStrength: "light",
+      hitType: "punch",
+      declaredTargetCreatureId: defender,
+      effects: [
+        {
+          type: "assist-hit",
+          amount: 2,
+          hitStrength: "light",
+          hitType: "punch",
+          sequenceRole: "extender",
+          target: { kind: "declared-target" },
+        },
+      ],
+    });
+    expect(declared.players[P1]?.activeCreatureId).toBe(magnus);
+    expect(declared.creatures[defender]?.damage).toBe(2);
+
+    const resolved = resolveOpenChain(declared);
+    expect(resolved.offensiveState).toBe("combo");
+    expect(resolved.players[P1]?.comboCount).toBe(2);
+    expect(resolved.creatures[defender]?.damage).toBe(4);
+    expect(resolved.players[P1]?.meter).toBe(4);
+    expect(resolved.players[P2]?.meter).toBe(2);
+    expect(resolved.players[P1]?.activeCreatureId).toBe(magnus);
+    expect(resolved.chainStack).toHaveLength(0);
+  });
+
+  it("refuses Vega's extender and Ryu's finisher while the sequence is open", () => {
     let open = p1Actions();
     const magnus = fighterOf(open, P1, MAGNUS_ID);
     const vega = fighterOf(open, P1, VEGA_ID);
@@ -872,22 +923,15 @@ describe("spec 030 assist windows", () => {
     expect(showingTechnique(open, vega)).not.toBe("assist");
     expect(showingTechnique(open, ryu)).not.toBe("assist");
 
-    const vegaAssist = expectOk(
-      advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: vega }),
-    );
-    expect(vegaAssist.players[P1]?.meter).toBe(0);
-    expect(vegaAssist.players[P1]?.activeCreatureId).toBe(magnus);
-    expect(vegaAssist.chainStack.find((link) => link.assistReserveId === vega)?.effects).toEqual([
-      { type: "damage", amount: 2, target: { kind: "enemy-frontline" } },
-    ]);
+    const vegaAssist = advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: vega });
+    expect(vegaAssist.ok).toBe(false);
+    if (!vegaAssist.ok) expect(vegaAssist.error).toBe("INVALID_TARGET");
+    expect(open.offensiveState).toBe("open");
 
-    const ryuAssist = expectOk(
-      advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu }),
-    );
-    expect(ryuAssist.players[P1]?.meter).toBe(0);
-    expect(ryuAssist.chainStack.find((link) => link.assistReserveId === ryu)?.effects).toEqual([
-      { type: "negate-card", cardTypes: "any" },
-    ]);
+    const ryuAssist = advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu });
+    expect(ryuAssist.ok).toBe(false);
+    if (!ryuAssist.ok) expect(ryuAssist.error).toBe("INVALID_TARGET");
+    expect(open.players[P1]?.meter).toBe(0);
 
     const blocked = advance(withActiveFighter(open, P1, vega), {
       type: "ASSIST",

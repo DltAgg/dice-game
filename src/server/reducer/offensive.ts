@@ -1,6 +1,6 @@
 import type { EffectDefinition } from "../model/effects.js";
 import type { GameError } from "../model/errors.js";
-import type { HitStrength } from "../model/hitClass.js";
+import type { HitStrength, HitType } from "../model/hitClass.js";
 import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { SequenceRole } from "../model/offensive.js";
 import type { ChainLink } from "../model/state.js";
@@ -52,6 +52,8 @@ export function openCombatAction(
     readonly meterCost: number;
     readonly meterGain: number;
     readonly hitStrength?: HitStrength;
+    readonly hitType?: HitType;
+    readonly assistReserveId?: CreatureId;
     readonly sequenceActionId: string;
     readonly endsSequence?: boolean;
     readonly passesInitiative?: boolean;
@@ -72,6 +74,8 @@ export function openCombatAction(
     meterCost: args.meterCost,
     meterGain: args.meterGain,
     ...(args.hitStrength !== undefined ? { hitStrength: args.hitStrength } : {}),
+    ...(args.hitType !== undefined ? { hitType: args.hitType } : {}),
+    ...(args.assistReserveId !== undefined ? { assistReserveId: args.assistReserveId } : {}),
     sequenceActionId: args.sequenceActionId,
     endsSequence: args.sequenceRole === "finisher" || args.endsSequence === true,
     passesInitiative: args.passesInitiative === true,

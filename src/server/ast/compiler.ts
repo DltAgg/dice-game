@@ -23,6 +23,7 @@ export class AstCompiler {
     const amount = (value: number): ValueExpr => literal(value);
     switch (effect.type) {
       case "damage":
+      case "assist-hit":
         return { op: "damage", amount: amount(effect.amount), target: effect.target };
       case "heal":
         return { op: "heal", amount: amount(effect.amount), target: effect.target };

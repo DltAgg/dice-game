@@ -3,9 +3,20 @@
   "id": "face-natural-ryu-form",
   "name": "Form",
   "faceType": "attack",
-  "rulesText": "Form.",
+  "sequenceRole": "starter",
+  "hitStrength": "light",
+  "hitType": "punch",
+  "rulesText": "Starter. Light punch. Primary: [Strike 1]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 2 }],
   "maxOverloads": 0,
   "forgeRestriction": null
 }

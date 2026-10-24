@@ -6,13 +6,16 @@
   "archetype": "rushdown",
   "passiveRulesText": "Rushdown. The sequence keeps going.",
   "assistName": "Cross",
-  "assistRulesText": "[Strike 2] the most damaged enemy.",
+  "assistRulesText": "Hit · Light Punch · Extender: [Strike 2].",
   "exceptionalAssistMeter": 0,
   "assistEffects": [
     {
-      "type": "damage",
+      "type": "assist-hit",
       "amount": 2,
-      "target": { "kind": "enemy-frontline" }
+      "hitStrength": "light",
+      "hitType": "punch",
+      "sequenceRole": "extender",
+      "target": { "kind": "declared-target" }
     }
   ],
   "baseDie": [

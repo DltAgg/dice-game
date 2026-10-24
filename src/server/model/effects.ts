@@ -1,5 +1,7 @@
 import type { Attribute } from "./attributes.js";
 import type { CardType } from "./cards.js";
+import type { HitStrength, HitType } from "./hitClass.js";
+import type { SequenceRole } from "./offensive.js";
 import type { SymbolType } from "./symbols.js";
 import type { BounceHost, SilenceHost, TargetSelector } from "./targeting.js";
 
@@ -33,6 +35,19 @@ export { NATURAL_CONVERT_SYMBOLS } from "./targeting.js";
  */
 export type EffectDefinition =
   | { readonly type: "damage"; readonly amount: number; readonly target: TargetSelector }
+  /**
+   * Assist that is a sequence hit. `[Strike N]` is `amount`. Strength, strike
+   * (kick or punch), and sequence role use the same gates as a face or
+   * Technique hit. `damage` cannot carry those fields.
+   */
+  | {
+      readonly type: "assist-hit";
+      readonly amount: number;
+      readonly hitStrength: HitStrength;
+      readonly hitType: HitType;
+      readonly sequenceRole: SequenceRole;
+      readonly target: TargetSelector;
+    }
   | { readonly type: "heal"; readonly amount: number; readonly target: TargetSelector }
   | { readonly type: "grant-shield"; readonly amount: number; readonly target: TargetSelector }
   | { readonly type: "generate-symbol"; readonly symbol: SymbolType; readonly amount: number }
