@@ -280,6 +280,56 @@ Recorded from the user. These are not suggestions.
 
 **Q38.** An attached draw that is not part of a Technique or an Assist is also acceptable when it has a restriction or a condition. Examples: draw 2 and discard 1; pay X Meter to draw that many cards. “And so on” keeps the list open. This spec does not set X and does not treat 2 and 1 as the only legal amounts.
 
+**Q45.** Counter and Parry are separate, and this file treats that split as already in place. Counter negates the previous chain card. Parry negates an attack and leaves you offensive. This spec does not name a new engine effect for the split.
+
+**Q46.** Only Parry ends the sequence. Counter does not. Parry is `grant-attack-prevent` with `endsSequence`. Counter is `negate-card`.
+
+**Q47.** Parry hands the turn to the other player because it ends the sequence. Counter does not end the sequence, so it does not hand the turn.
+
+**Q48.** The difference between ending a sequence and ending a turn is not decided. Until it is, whenever a sequence ends, the turn is handed to the opponent.
+
+**Q11.** Answered from the server and written in `docs/GAME_STATE.md` under Chain. A face action, a Technique, a hit Assist, Tag, a Response, and a Modify enter the Chain and open a reaction window. The player who added the object keeps priority. Two passes in a row resolve the Chain from the top down, with no new window between objects. During the window the priority player may pass, play a Response, play a Modify that names a subject, or declare an Assist that is not a hit. Card Meter is spent when the card is played. A sequence hit’s Meter is spent when the hit resolves and is not negated.
+
+**Q23.** Answered for the number. Light, medium, and heavy do not have an HP value. They set the Meter grant (2, 3, and 4). The damage is the printed `[Strike N]`. Open Manual’s Technique is not printed. This spec does not invent it.
+
+**Q4.** Answered from the server comparison already recorded. Absorption, rituals, overloads, and the turn pool are omitted. The current play is the Fighter, Response, Modify, Meter, Tag, Assist, and named-die text in `docs/GAME_STATE.md`. `attacksPerCreaturePerCombat` caps the old attack action. It does not cap a sequence hit. The same face id and the same Technique id cannot be declared again while that id is on the Chain or in `usedSequenceActionIds`.
+
+**Q5.** Answered. Neither a persistent attribute pile nor a turn pool is current play. `[Requires]`, `[Spend]`, ritual Active-when, Resonance, `[Generate]`, `[Discount]`, and absorbing pips are not current play. End-of-turn symbol deletion is omitted (Q40).
+
+**Q6.** Answered. Shield is absent (Q43).
+
+**Q7.** Answered. Card types are `modify` and `response`. A moveset Modify attaches in the equipment zone. The unused equipment play path, Overload, and Ritual are not current play. Replace writes a face onto a die for the rest of the match (Q29).
+
+**Q8.** Answered. Each player brings 3 dice. The face deck is not current play (Q42). The opening hand is 5. Copying an already-installed face is the old forge-pool rule and is not current play.
+
+**Q9.** Answered. A player whose every Fighter is defeated loses. If both are in that state, the active player loses. Defeating a legendary Fighter does not by itself end the match. Drawing from an empty deck loses.
+
+**Q10.** Answered. The shared deck has 10 to 24 cards, at most 3 copies, an opening hand of 5, and a draw of 1. There is no maximum hand size. Drawing from an empty deck loses. Milling an empty or short deck does not.
+
+**Q12.** Answered. Meter gain and spend are the Meter section of `docs/GAME_STATE.md`. A Tag switch does not spend Meter. An Assist spends `exceptionalAssistMeter` only when that number is greater than 0. No face in the current squad is a tag face or an assist face. A successful hit that does not end the sequence adds 1 to combo.
+
+**Q19.** Answered. The board is one Active Fighter on `frontline` and two Reserve Fighters on `back` (`frontlineSlots` is 1). The Board section of `docs/GAME_STATE.md` records the KO replacement. Range and Reposition are not used by the current list.
+
+**Q20.** Answered. A face hit and a Technique are the hits a Parry or a Block answers. Counter refuses a hit. Block lowers damage and does not cancel the hit. Dodge is not a current effect. `[Strike]`’s default target is the opponent’s Active Fighter.
+
+**Q21.** Answered. After the opening roll, the active player may reroll one or more of their own dice once. There is no second reroll. The opening roll does not absorb symbols.
+
+**Q22.** Answered. Entering `actions` makes the active player the Aggressor and sets the state to `open`. The engine states that are set are `open` and `combo`. There is no Neutral state. Tag’s opening and closing windows are the Tag section of `docs/GAME_STATE.md`.
+
+**Q13.** Answered. The damage order is the Damage section of `docs/GAME_STATE.md`. Reduce is Block (Q30). Empower, Pierce, Desynthesize, Convert, forge yield, forge bank, the first synthetic forge, and Overcharge’s pip source are not current play. No card in the current list uses them.
+
+**Q14.** Answered. Attribute-exclusive verbs are leftover print. They are not current print and are not used on a new card.
+
+**Q15.** Answered. The operators current play uses are the keyword table in `docs/GAME_STATE.md`. An operator that only describes the old game is not used on a new card. The glossary may still be rewritten. Dodge is named in `docs/KEYWORDS.md` and is not a current effect, so that rewrite does not keep it as current print.
+
+**Q16.** Answered. No bible file is in the repository. Citations to it are leftover. They are not a player rule and are not filled in.
+
+**Q17.** Answered. Dodge is not current play. Block is current: Brace is `[Block 2]`. Changing a printed Action’s damage, role, or sequence end is not current play. A Moveset adds a Technique. Open Manual’s Technique is not printed. A sixth distinct face is not a current rule. An Assist with `exceptionalAssistMeter` omitted spends 0. The config value `assistMeterCost` of 1 is not what `assist.ts` spends.
+
+**Q18.** Answered. `docs/AGENT_PROMPT.md` is the old opening-dice task. `docs/MECHANIC_ARCHETYPES.md` records the previous pile-fuel skirmish. Neither is a source for the current game. Under Q3, text that only describes that old game is removed when the game documents are cleaned. This answer does not delete those files and does not crown spec 030.
+
+**Q24.** Answered. The recorded first-player win rate is an old observation. It is not a rule. `docs/GAME_STATE.md` does not state a win rate. Turn 1 is the first player in the setup list.
+
 ## Suggestions for Q1
 
 Discarded. The user rejected choosing among existing documents. The decision is in **Decisions**. The three options are kept here so the rejection is visible.
@@ -296,7 +346,7 @@ Offered earlier, then discarded:
 
 ## Open questions
 
-Numbered for the register. No recommended answer. Q1, Q2, Q3, Q25, Q26, and Q27–Q38 are answered above. The rest of the server is not copied into `docs/GAME_STATE.md` until each part is read and, where inconclusive, asked.
+Numbered for the register. No recommended answer. Q1–Q48 are answered above. Q48 is a working assumption, not a closed distinction. Q23’s Open Manual Technique is still not printed. The numbered questions in this list are answered. The discrepancy rows D1–D60 are not each closed by a separate edit of the old documents. That cleanup follows Q2 and Q3 and uses `docs/GAME_STATE.md` as the source.
 
 Q1. Answered. See **Decisions**. Suggestions A, B, and C are discarded.
 
@@ -332,47 +382,67 @@ Q37. Answered. An attached draw is acceptable when it is part of a Technique or 
 
 Q38. Answered. Discarding cards, a Meter cost, or a specific action can make an attached draw legal when that draw is not part of a Technique and not part of an Assist. Examples: draw 2 and discard 1; pay X Meter to draw that many cards. The list stays open. X is not set.
 
-Q4. What is the relationship between the live text that teaches absorption, forging, rituals, overloads, and a turn pool, and the live text that teaches Fighters, Response, Modify, Meter, Tag, Assist, and named dice? How many attacks a Fighter or creature gets, and whether the same Action may be repeated in one sequence, are part of this question.
+Q39. Answered. The current preset is `TAG_FIGHTER_RULES`. Drawing from an empty deck is a loss.
 
-Q5. Is there a persistent attribute pile, a turn pool, both, or neither? Are `[Requires]`, `[Spend]`, ritual Active-when, Resonance, `[Generate]`, and `[Discount]` enforced, and do usable pips auto-absorb, bank, or expire?
+Q40. Answered. End-of-turn symbol deletion is leftover that still runs. `docs/GAME_STATE.md` omits it.
 
-Q6. Is Shield a face, a token, a step in the damage order, or absent?
+Q41. Answered. The per-HP Meter grant is leftover from an older Meter implementation. `docs/GAME_STATE.md` omits it.
 
-Q7. Which objects are cards or zones: Response, Modify, a tactic with a play region and a forge region, equipment, overload, ritual? Which operation writes a face onto a die for the rest of the match?
+Q42. Answered. The face deck is not current play. It is the future physical representation of a face after Replace. Ryu Form writes Form onto Ryu’s die and has no separate face card today. In the physical game that card comes from the face deck. The online game does not need it.
 
-Q8. How many dice does each player bring, is there a face deck, what do the opening caps count, and is copying an already-installed face settled?
+Q43. Answered. Shield is leftover. `docs/GAME_STATE.md` omits it.
 
-Q9. How does a match end, including a check in which both sides are fully defeated? The live candidates in the corpus are three Fighters KOed and legendary defeat.
+Q44. Answered. Brace is `[Block 2]` and its effect is `reduce-damage`. Block is `reduce` and `reduce-damage`: it lowers damage and does not cancel the hit. Attack prevention was described as counter or parry, distinct from Block. Q45 and Q46 record Counter and Parry.
 
-Q10. What are the settled deck size, copy limit, opening hand, cards drawn each turn, hand limit, and result of drawing or milling an empty deck?
+Q45. Answered. Counter and Parry are separate, and the source file treats that split as already in place. Counter negates the previous chain card. Parry negates an attack and leaves you offensive. The spec does not name a new engine effect for the split.
 
-Q11. Which priority and chain procedure is in force, which objects open a window (including Tag and Assist), and which costs are paid when a link is built?
+Q46. Answered. Only Parry ends the sequence. Counter does not. Parry is `grant-attack-prevent` with `endsSequence`. Counter is `negate-card`.
 
-Q12. How is Meter gained and spent, including Tag, a die showing `tag` or `assist`, an exceptional Assist cost, a printed card cost, and Combo’s increment?
+Q47. Answered. Parry hands the turn to the other player because it ends the sequence. Counter does not end the sequence, so it does not hand the turn.
 
-Q13. What do `[Empower]`, `[Pierce]`, `[Reduce]`, the damage order, `[Desynthesize]`, forge yield, any immediate forge bank, the first synthetic forge of the turn, Overcharge’s pip source, and `[Convert N]` mean?
+Q48. Answered as a working assumption. The difference between ending a sequence and ending a turn is not decided. Until it is, whenever a sequence ends, the turn is handed to the opponent.
 
-Q14. Are attribute-exclusive verbs current print, leftover print, or something else?
+Q4. Answered. See **Decisions**.
 
-Q15. Partly answered. New keywords and edited card text may use the whole of `docs/KEYWORDS.md`, and the entire file may be rewritten for the new game’s card text. Still open: which operators that rewrite keeps, and whether an operator that today only describes the old version may be used on a new card before the rewrite. The file as it stands still splits “Current print” from labeled leftover sections and from unlabeled operator tables.
+Q5. Answered. See **Decisions**.
 
-Q16. The corpus cites a bible and bible section numbers, and no bible file was found. Is that source missing, is the citation leftover, or is the text somewhere this spec was told not to treat as authority?
+Q6. Answered. Shield is absent (Q43).
 
-Q17. Which deferred-catalogue gaps are still questions about play (Dodge, Block, changing an Action, Open Manual’s Technique, a sixth face, Assist with no special field)?
+Q7. Answered. See **Decisions**.
 
-Q18. What should `docs/MECHANIC_ARCHETYPES.md` and `docs/AGENT_PROMPT.md` be, given the era note, the “print it there” rows, and the prompt’s “today” baseline?
+Q8. Answered. See **Decisions**.
 
-Q19. Which board is current (one Active and two Reserve, two frontline and one back, or both), and how do Range, Reposition, and the KO replacement choice work on that board?
+Q9. Answered. See **Decisions**.
 
-Q20. Do face hits and Techniques count as the attacks that `[Prevent]`, negate, Counter, Dodge, and Block answer, and what is `[Strike]`’s default target?
+Q10. Answered. See **Decisions**.
 
-Q21. Are the post-opening reroll of any number of dice and the actions-phase `[Reroll]` of one die both part of play, and does the opening roll absorb pips?
+Q11. Answered. See **Decisions**. The procedure is the Chain section of `docs/GAME_STATE.md`.
 
-Q22. Who starts as Aggressor, what do Neutral and Open mean, and where do the Tag windows sit inside roll and actions?
+Q12. Answered. See **Decisions**.
 
-Q23. The corpus states strength and strike and does not state HP for a light, medium, or heavy hit. What, if anything, is that number, and what is the unpublished Open Manual Technique?
+Q13. Answered. See **Decisions**.
 
-Q24. Is the recorded first-player win-rate observation still an open question?
+Q14. Answered. See **Decisions**.
+
+Q15. Answered. See **Decisions**. The glossary file may still be rewritten. Dodge is not current print.
+
+Q16. Answered. See **Decisions**.
+
+Q17. Answered. See **Decisions**.
+
+Q18. Answered. See **Decisions**.
+
+Q19. Answered. See **Decisions**. The board is the Board section of `docs/GAME_STATE.md`.
+
+Q20. Answered. See **Decisions**.
+
+Q21. Answered. See **Decisions**.
+
+Q22. Answered. See **Decisions**.
+
+Q23. Answered for the number. See **Decisions**. Light, medium, and heavy have no HP value. Open Manual’s Technique is not printed.
+
+Q24. Answered. See **Decisions**. The observation is not a rule.
 
 ## Acceptance criteria
 

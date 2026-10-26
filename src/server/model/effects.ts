@@ -183,6 +183,15 @@ export type EffectDefinition =
       readonly target: TargetSelector;
     }
   /**
+   * `[Block N]`. The next hit on the attack’s target deals N less (minimum 0).
+   * Does not cancel the attack. Reaction to an attack declaration.
+   */
+  | {
+      readonly type: "reduce-damage";
+      readonly amount: number;
+      readonly target: TargetSelector;
+    }
+  /**
    * Cancel damage on the waiting attack chain link and deal that amount to the
    * attacker (Luminar Judgement). Spec `009`.
    */

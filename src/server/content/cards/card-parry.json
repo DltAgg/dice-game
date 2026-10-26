@@ -5,8 +5,9 @@
   "type": "response",
   "subtypes": [],
   "lifecycle": "one-shot",
-  "rulesText": "Prevent that attack. This ends the sequence.",
+  "rulesText": "[Parry].",
   "forge": { "faces": 1, "target": "own-die" },
+  "endsSequence": true,
   "effect": {
     "effects": [
       {

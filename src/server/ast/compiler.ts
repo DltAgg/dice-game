@@ -156,6 +156,8 @@ export class AstCompiler {
         };
       case "arm-blade-rain":
         return { op: "modify", stat: "blade-rain", duration: { kind: "end-of-turn" } };
+      case "reduce-damage":
+        throw new SkipToLegacy();
       case "grant-attack-prevent":
         return {
           op: "modify",

@@ -100,7 +100,7 @@ shared; the argument follows attribute exclusives.
 |---|---|---|
 | **Grammar** | Nouns the table already uses. Never synonym them. | `[Forge]`, `[Overcharge]`, Absorb, Retain, `[Requires]`, `[Spend]` |
 | **Operators** | A few verbs that take a type. New tokens reuse these. | `[Mark N X]`, `[Strip N X]`, `[Generate N X]`, `[Negate X]`, `[Destroy X]`, `[Bounce X]` |
-| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Reduce N]`, `[Prevent]`, `[Silence]`, `[Convert N]`, `[Desynthesize]` |
+| **Physics** | Combat and turn math that is not “put a counter.” | `[Empower N]`, `[Pierce N]`, `[Block N]`, `[Prevent]`, `[Silence]`, `[Convert N]`, `[Desynthesize]` |
 
 ---
 
@@ -164,7 +164,7 @@ transfer. Do not mint Detonate / Rend as keywords.
 | `[Generate N Toxin]` | A **pool symbol** for this turn. Expires at end of turn. |
 | Absorb Toxin | Resolves attribute absorb (On absorb); no pile. Grammar, not an effect keyword. |
 | `[Prevent]` | Reaction to an attack declaration. Grants attack-prevent on the attack’s target (before Shield). Luminar exclusive. Not a token you Mark. Unused charges expire at end of turn. |
-| `[Reduce N]` | Incoming hit math. That hit deals N less (minimum 0) before `[Prevent]` and Shield. Not a token. Distinct from `[Prevent]` (cancel the attack) and `[Discount]` (pile costs). |
+| `[Block N]` | Incoming hit math. That hit deals N less (minimum 0) before `[Prevent]` and Shield. Not a token. Distinct from `[Prevent]` (cancel the attack) and `[Discount]` (pile costs). |
 | `[Silence]` | Physics. Chosen opposing host cannot fire or activate its effects until the start of your next turn. Not a Mark token. Distinct from `[Negate]`. |
 | `[Desynthesize]` | Physics. Replace a synthetic attribute face on any die with that attribute’s natural. Not a Mark token. Distinct from `[Reforge]` / `[Cross forge]`. |
 | `[Empower N]` | Extra damage on an attack. Not a token. Next-attack Instant arms `nextAttackBonus` (consume-once). **While showing** `[Empower N]` is every attack while the face is showing. |
@@ -233,7 +233,7 @@ These are not tokens.
 | `[Empower N]` | The next attack this turn deals +N. Name the creature if it is not yours. |
 | `[Frenzy]` / `[Frenzy N]` | That creature may declare N extra attacks this turn (default 1). Wild exclusive. Does not clear attacks already used. |
 | `[Pierce N]` | Ignore N Shield after Prevent |
-| `[Reduce N]` | That incoming hit deals N less (minimum 0), before `[Prevent]` and Shield. Any damage to the creature, not only attacks. Does not cancel the attack. Standing `On take damage:` (optional `, once per turn`) is the usual window. |
+| `[Block N]` | That incoming hit deals N less (minimum 0), before `[Prevent]` and Shield. Any damage to the creature, not only attacks. Does not cancel the attack. A Response such as Brace arms it on the attack’s target. Standing `On take damage:` (optional `, once per turn`) is the same math. |
 | `[Prevent]` | Prevent the next attack against the creature under attack (before Shield). Luminar **reaction** exclusive — not a proactive arm. Unused charges expire at end of turn. |
 | `[Silence]` | The chosen opposing creature, field ritual, or die slot cannot activate or fire its effects until the start of **your** next turn. Not a token. Distinct from `[Negate]` / the reaction card Arcane Silence. |
 | `[Desynthesize]` | Replace a synthetic attribute face on **any die** with that attribute’s natural identity. Not a forge. Not `[Reforge]`. Overloads on the orphaned face leave. Stay / forge-lock does not block it. |
@@ -256,7 +256,7 @@ These are not tokens.
 Engine: damage | heal (`choose-enemy` / `enemy-all` / `ally-all` / …) |
 draw-cards | discard-cards | next-attack-bonus |
 grant-next-attack-bonus | ignore-shield / arm-ignore-shield |
-on-take-damage.reduceBy (`[Reduce N]`, before prevent/Shield) | grant-attack-prevent |
+on-take-damage.reduceBy / reduce-damage (`[Block N]`, before prevent) | grant-attack-prevent |
 convert-symbols | play-cost-discount / arm-forge-discount | look-top-deck /
 peek-deck-optional-bottom | search-deck | search-graveyard | dark-pact |
 reposition-creature | swap-positions | replace-synthetic-face (`[Reforge N Attr]` / `[Cross forge N Y / Z]`) |

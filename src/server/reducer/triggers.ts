@@ -661,7 +661,8 @@ export function clearTurnTriggerState(draft: Draft): void {
       creature.spentOncePerTurnTriggers.length === 0 &&
       creature.nextAttackBonus === 0 &&
       creature.redirectDamageThisTurn === 0 &&
-      creature.nextIncomingDamageBonus === 0
+      creature.nextIncomingDamageBonus === 0 &&
+      (creature.nextIncomingDamageReduce ?? 0) === 0
     ) {
       continue;
     }
@@ -670,6 +671,7 @@ export function clearTurnTriggerState(draft: Draft): void {
       nextAttackBonus: 0,
       redirectDamageThisTurn: 0,
       nextIncomingDamageBonus: 0,
+      nextIncomingDamageReduce: 0,
     });
   }
   for (const player of Object.values(draft.players)) {

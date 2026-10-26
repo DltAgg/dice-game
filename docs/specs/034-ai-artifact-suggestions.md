@@ -54,6 +54,8 @@ deckbuilding dice, or a new card type are out of bounds here.
 
 None of `031`–`033` is treated as implemented by this file.
 
+The user will return to this file only after specs 031, 032, and 033 are finished. Nothing here is accepted, rejected, or deferred by that sequencing.
+
 The user has since decided that new keywords and edited card text may use the whole of `docs/KEYWORDS.md`, and that the entire file may be rewritten for the new game’s card text. S1 and S2 still propose a Current-versus-leftover parse. That parse is not an approved contract. Those two suggestions stay proposals until the user accepts or rejects them against that decision.
 
 ---

@@ -752,6 +752,16 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       return applyBounce(draft, pending, effect);
     case "desynthesize":
       return applyDesynthesize(draft, pending, effect);
+    case "reduce-damage": {
+      const attackTargetId = resolveTarget(draft, pending, { kind: "chain-attack-target" });
+      if (attackTargetId === null) return false;
+      const blocked = draft.creatures[attackTargetId];
+      if (blocked === undefined || blocked.defeated) return false;
+      patchCreature(draft, attackTargetId, {
+        nextIncomingDamageReduce: (blocked.nextIncomingDamageReduce ?? 0) + effect.amount,
+      });
+      return false;
+    }
     case "grant-attack-prevent": {
       // Reaction-exclusive: only while a living hit or attack is on the chain,
       // and only onto that hit's target. Proactive grants whiff. The hit is
@@ -1768,6 +1778,11 @@ export function dealDamage(
   if (afterRedirect.nextIncomingDamageBonus > 0) {
     incoming += afterRedirect.nextIncomingDamageBonus;
     patchCreature(draft, creatureId, { nextIncomingDamageBonus: 0 });
+  }
+  const block = draft.creatures[creatureId]?.nextIncomingDamageReduce ?? 0;
+  if (block > 0) {
+    incoming = Math.max(0, incoming - block);
+    patchCreature(draft, creatureId, { nextIncomingDamageReduce: 0 });
   }
 
   incoming = Math.max(

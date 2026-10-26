@@ -5,14 +5,16 @@
   "type": "response",
   "subtypes": [],
   "lifecycle": "one-shot",
-  "rulesText": "Prevent that attack. This ends the sequence.",
+  "rulesText": "[Block 2].",
   "forge": { "faces": 1, "target": "own-die" },
   "effect": {
     "effects": [
       {
-        "type": "grant-attack-prevent",
-        "amount": 1,
-        "target": { "kind": "chain-attack-target" }
+        "type": "reduce-damage",
+        "amount": 2,
+        "target": {
+          "kind": "chain-attack-target"
+        }
       }
     ]
   }

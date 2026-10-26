@@ -206,6 +206,7 @@
         { "$ref": "#/$defs/desynthesize" },
         { "$ref": "#/$defs/destroyOverload" },
         { "$ref": "#/$defs/grantAttackPrevent" },
+        { "$ref": "#/$defs/reduceDamage" },
         { "$ref": "#/$defs/preventAttackReflect" },
         { "$ref": "#/$defs/armPreventDraw" },
         { "$ref": "#/$defs/forgeFaces" },
@@ -538,6 +539,18 @@
       "required": ["type", "target"],
       "properties": {
         "type": { "const": "destroy-overload" },
+        "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
+      }
+    },
+    "reduceDamage": {
+      "title": "reduce-damage",
+      "description": "[Block N] — reaction to an attack. The next hit on that attack's target deals N less (minimum 0). Does not cancel the attack.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount", "target"],
+      "properties": {
+        "type": { "const": "reduce-damage" },
+        "amount": { "$ref": "defs.schema.json#/$defs/amount" },
         "target": { "$ref": "defs.schema.json#/$defs/targetSelector" }
       }
     },

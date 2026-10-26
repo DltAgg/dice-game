@@ -157,6 +157,11 @@ export interface CreatureState {
    */
   readonly nextIncomingDamageBonus: number;
   /**
+   * `[Block N]` armed by a Response. The next hit deals this much less
+   * (minimum 0), then the charge is spent. Cleared at end of turn if unused.
+   */
+  readonly nextIncomingDamageReduce?: number;
+  /**
    * Adaptive Toxin: remaining markers this creature may still receive until its
    * owner's next turn starts. `null` / omitted = uncapped. Spec `013`.
    */

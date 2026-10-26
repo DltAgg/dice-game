@@ -5,7 +5,7 @@
   "type": "response",
   "subtypes": [],
   "lifecycle": "one-shot",
-  "rulesText": "Negate that card.",
+  "rulesText": "[Counter].",
   "forge": { "faces": 1, "target": "own-die" },
   "effect": {
     "effects": [{ "type": "negate-card", "cardTypes": "any" }]

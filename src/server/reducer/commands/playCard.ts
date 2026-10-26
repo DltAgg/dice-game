@@ -130,7 +130,9 @@ export function playCard(
   if (
     effects.some(
       (effect) =>
-        effect.type === "grant-attack-prevent" || effect.type === "prevent-attack-reflect",
+        effect.type === "grant-attack-prevent" ||
+        effect.type === "prevent-attack-reflect" ||
+        effect.type === "reduce-damage",
     )
   ) {
     const attackTargetId = chainAttackTargetId(draft.chainStack);

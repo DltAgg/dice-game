@@ -260,14 +260,20 @@ proposal is to remove the job, not to rewrite it. If they are kept, they are
 not authoring sources; that constraint is spec 033’s once the archive
 question below is answered.
 
+## Decisions
+
+**Historical specs leave the tree.** After a disposition is accepted, a spec
+that is historical is removed from `docs/specs`. It is not kept as a labeled
+archive. The same applies to the proposed-delete rows and to any other spec
+a later decision calls historical. Leaving the file in the tree would let it
+be used as a source. This decision does not, by itself, accept the inventory
+table or delete any file.
+
 ## Open questions
 
 These are the questions this inventory cannot answer. No recommended answer.
 
-1. After a disposition is accepted, should historical specs stay in
-   `docs/specs` as labeled archives, or leave the tree? This applies to the
-   proposed-delete rows and to any other spec a later decision calls
-   historical. This spec does not choose.
+1. Answered. Historical specs leave the tree. See **Decisions**.
 2. Which game document is canon is spec 031. Blocked rows in this inventory
    wait on that answer. This spec does not re-ask how forging, rituals,
    overloads, absorb, Shield, or the tag-fighter card kinds actually play.
