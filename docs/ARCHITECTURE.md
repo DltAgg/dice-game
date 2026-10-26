@@ -108,8 +108,6 @@ host can check the sender against the claim.
 
 ## Turn phases
 
-Playtest (2026-08-17, `OPEN_DESIGN.md` DECIDED): `TURN_PHASE_ORDER` is
-`roll` → `actions`. `ROLL_DICE` enters `actions`. There is no dedicated
-absorb phase. Absorb, `[Requires]` spend, attack, play, forge, and ready-ritual
-activate share `actions`. `END_TURN` is an action, not a phase. `ADVANCE_PHASE`
-from roll goes to actions; the last phase is left only via `END_TURN`.
+`TURN_PHASE_ORDER` is `roll` → `actions`. `ROLL_DICE` enters `actions`.
+`END_TURN` is an action, not a phase. How that turn plays is
+[`RULEBOOK.md`](./RULEBOOK.md). The source is [`GAME_STATE.md`](./GAME_STATE.md).

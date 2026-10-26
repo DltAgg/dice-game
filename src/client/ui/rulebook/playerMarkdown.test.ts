@@ -26,7 +26,8 @@ describe("player rulebook markdown", () => {
     const player = playerRulesMarkdown(rulebookSource, keywordsSource);
     expect(player).toContain("## Keywords");
     expect(player).toContain("[Mark N X]");
-    expect(player).toContain("[Empower N]");
+    expect(player).toContain("[Block N]");
+    expect(player).not.toContain("[Empower N]");
     expect(player).not.toContain("apply-toxin");
     expect(player).not.toContain("Dose/Envenom");
     expect(player).not.toContain(".cursor/rules/keywords.mdc");

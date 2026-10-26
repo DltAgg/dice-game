@@ -1,8 +1,8 @@
 # 031 — Docs canon cleanup
 
-Status: **DRAFT requirements**. Dispositions are not decided. Design and task breakdown are out of scope.
+Status: **DRAFT requirements**. Q1–Q48 are answered in **Decisions**. Q48 is a working assumption. The discrepancy rows quote the documents as they were before the cleanup below. Design and task breakdown are out of scope.
 
-This spec records discrepancies, gaps, and cleanup requirements among the written game documents. It answers none of them.
+This spec records discrepancies, gaps, and cleanup requirements among the written game documents. The numbered questions are answered. The register is the record of what those documents said when the questions were asked.
 
 ## Intent
 
@@ -18,7 +18,7 @@ This is item 1 of 4. Later items depend on a user answer to which written descri
 - Spec 033 rewrites agents, skills, and rules, including any enforcement that card text uses the keyword glossary.
 - Spec 034 is new AI suggestions.
 
-None of those can treat a game document as the winner until the blocking questions below are answered or explicitly deferred. This spec does not start that work.
+None of those treat a game document as the winner. The source is `docs/GAME_STATE.md`. It does not replace `docs/RULEBOOK.md`. Spec 030 is not that source.
 
 ## Authority and non-authority
 
@@ -48,7 +48,7 @@ The following are not authority for what the game is. A game document may cite t
 - `docs/specs/*`, including `028`, `029`, and `030`
 - Source code
 
-A filename search of this repository found no file whose name contains “bible”. `docs/OPEN_DESIGN.md` and `docs/AGENT_PROMPT.md` still cite “the bible” and bible section numbers. That absence is registered. It is not filled in.
+A filename search of this repository found no file whose name contains “bible”. Citations to it were leftover (Q16). They are not filled in. `docs/OPEN_DESIGN.md` and `docs/AGENT_PROMPT.md` no longer carry those citations.
 
 ## In scope / Out of scope
 
@@ -84,6 +84,23 @@ These are normative for a later design and tasks pass. This spec does not contai
 8. Where this spec records agreement, a later pass keeps that agreement visible. Agreement is not a finding that a spec, an agent file, or source code is wrong.
 9. A citation from a game document to a spec, agent, skill, or rule file stays a coupling risk. It is not evidence that the cited file wins a row.
 10. A section that already labels itself superseded, leftover, historical, archaeology, or no longer in play is cited with that label. It is not a contradiction with itself. It is a discrepancy when another live section still states that topic as current, or when the label and a live section disagree.
+
+## Cleanup status
+
+Q2 and Q3 are applied. Text that only described the old game is removed from the game documents. `docs/GAME_STATE.md` is the source. Spec 030 is not crowned.
+
+| Document | What this pass did |
+|---|---|
+| `docs/RULEBOOK.md` | Rewritten from `docs/GAME_STATE.md`. |
+| `docs/KEYWORDS.md` | Rewritten. The whole file is current print, plus `[Mark]` / `[Strip]` / `[Modify]` for a new token. Dodge is not current print. |
+| `docs/OPEN_DESIGN.md` | Replaced with the unsettled questions only. |
+| `README.md` | The status table and the design-questions paragraph match that source. The specialists table is unchanged. |
+| `docs/ARCHITECTURE.md` | The turn-phase paragraph no longer describes absorb, forge, or ritual as play. The rest of the file is the software layout. |
+| `docs/DEFERRED_CATALOGUE.md` | Keeps Dodge, changing a printed Action, Open Manual, and the sixth face. Pile, tactic, and win-rate rows are removed. |
+| `docs/AGENT_PROMPT.md` | The file stays. The old task text is removed. It is not a source (Q18). |
+| `docs/MECHANIC_ARCHETYPES.md` | The file stays. The pile-fuel tracker is removed. It is not a source (Q18). A new tracker is not written here. |
+
+Rows D1–D60 still quote the documents from before this pass. Their questions are answered in **Decisions**. This section does not close a row by editing its quote.
 
 ## Discrepancy register
 
@@ -230,11 +247,11 @@ Each item is a question. None of them proposes a rule.
 
 ## Cleanup requirements
 
-“Clean” is a property of the corpus after a later pass. This section does not name the description that survives.
+“Clean” is the corpus after Q2 and Q3. The current description is `docs/RULEBOOK.md`, sourced from `docs/GAME_STATE.md`.
 
 - A reader can follow one current description of a match from setup through victory without meeting a second unlabeled description of setup, turns, costs, combat, or victory.
-- Every section that is not that current description is visibly labeled. The labels already used in the corpus (superseded, leftover, historical, archaeology, no longer in play, deferred, assumed, open, decided) are candidates only. Q3 chooses the label. This spec does not.
-- A section that stays is not removed on the way to that label. Silent deletion is a failed cleanup.
+- Q3 removes leftover text. Labeling it and leaving it does not satisfy Q3. The earlier “label and leave” and “do not delete” lines in this section are not the decision.
+- `docs/AGENT_PROMPT.md` and `docs/MECHANIC_ARCHETYPES.md` stay as files. Their old text is removed. Neither is a source (Q18).
 - A section that is already labeled keeps that fact visible. The label is not treated as permission to ignore a second live section that still states the topic as current. Those pairs stay in the register until the user answers them.
 - Repeated passages that agree (D50, D51) are either one passage or are explicitly marked as a restatement. They are not deleted on the grounds that they agree.
 - Cross-references that name a heading are checked against that heading’s text. A reference that names the wrong heading is listed. It is corrected only after the user answers the related question. “Legendary commander victory” pointing at rulebook §1–§3 is one such reference (D5).
@@ -464,8 +481,7 @@ For a future design and tasks pass. Empty of implementation steps.
 
 - No design.
 - No task list.
-- No file edits besides this spec.
-- Q2 and Q3 are recorded as answered. Q1 and Q4–Q26 are not resolved here.
-- No chosen winner among suggestions A, B, and C.
+- Q1–Q48 are recorded in **Decisions**. Q48 is a working assumption. Open Manual’s Technique is not printed.
+- Suggestions A, B, and C are discarded. Spec 030 is not the source.
 - No inventory of agents, skills, or rules (spec 032’s job begins at inventory; spec 033 rewrites them).
 - No new AI workflow (spec 034).

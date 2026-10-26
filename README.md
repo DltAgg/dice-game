@@ -2,9 +2,9 @@
 
 A local and online **3v3 tag fighter**. Each player fields three Fighters, one
 die per Fighter, and one shared deck of Response and Modify cards. One Fighter
-is Active; the others are Reserve. Meter is one shared pool. Confirmed content
-model: [`docs/specs/030-offensive-control.md`](./docs/specs/030-offensive-control.md).
-Shipped play: [`docs/RULEBOOK.md`](./docs/RULEBOOK.md).
+is Active; the others are Reserve. Meter is one shared pool. How a match plays:
+[`docs/RULEBOOK.md`](./docs/RULEBOOK.md). The source for that text:
+[`docs/GAME_STATE.md`](./docs/GAME_STATE.md).
 
 **Not the current model:** attribute-pile fuel, natural/synthetic faces, Shield
 as a resource, per-fighter decks, deckbuilding dice, or Instant / Reaction /
@@ -15,10 +15,10 @@ those fields. Do not author new content from them.
 
 | Layer | State |
 |---|---|
-| Game engine | Dice, symbols, absorb / On absorb, shields, combat, cards (play/forge), face deck, phases, chain |
-| Content | Fighters, named faces, Response and Modify cards. Older JSON may still carry pile-era fields |
+| Game engine | Three dice, roll then actions, Meter, sequence, Chain. `TAG_FIGHTER_RULES` |
+| Content | Fighters, named faces, Response and Modify cards. Older JSON may still carry unused fields |
 | UI | **M3** hotseat + **M4** deck builder + catalogues |
-| Persistence | **M4** — `DeckRepository` over localStorage; tactics 40–50 / ≤3 copies |
+| Persistence | **M4** — `DeckRepository` over localStorage; shared deck 10–24 cards, at most 3 copies |
 | Networking | **M5** — PeerJS host authority (room seats, spectators, host-observe) |
 
 Unfinished catalogue effects are parked in
@@ -53,10 +53,10 @@ the DOM, storage, the clock or `Math.random`.
 ## Design questions
 
 How the game **currently plays** is [`docs/RULEBOOK.md`](./docs/RULEBOOK.md)
-(kept current whenever a rules change affects play). Print keywords are
-[`docs/KEYWORDS.md`](./docs/KEYWORDS.md) (shown on the Rules tab). Open and
-deferred rules live in [`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md). Anything
-marked `ASSUMED` is reachable from `GameRulesConfig` or content data.
+(kept current whenever a rules change affects play). The source for that text
+is [`docs/GAME_STATE.md`](./docs/GAME_STATE.md). Print keywords are
+[`docs/KEYWORDS.md`](./docs/KEYWORDS.md) (shown on the Rules tab). Unsettled
+questions live in [`docs/OPEN_DESIGN.md`](./docs/OPEN_DESIGN.md).
 
 Feature specifications live in [`docs/specs/`](./docs/specs).
 

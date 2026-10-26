@@ -3,729 +3,129 @@
 How the game **plays today**. Open this in the app under **Rules**.
 
 <!--
-Agents: this file is the player-facing how-it-plays. Update it in the same
-change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
-It is not the design bible and not a card catalogue. Individual cards stay
-in specs 002 / 003 / 004. Unsettled questions stay in OPEN_DESIGN.md.
-Unmodelled print stays in DEFERRED_CATALOGUE.md. Numeric knobs live in
-src/server/model/config.ts (DEFAULT_RULES_CONFIG).
+Agents: player-facing how-it-plays. Update it in the same change as any
+rules edit that changes play (`.cursor/rules/rulebook.mdc`).
+The source for this text is `docs/GAME_STATE.md`. Unsettled questions stay
+in `docs/OPEN_DESIGN.md`. Unmodelled print stays in `docs/DEFERRED_CATALOGUE.md`.
 -->
 
 ---
 
 ## 1. Object of the game
 
-Two players each control a permanent team of **three Fighters** (the engine
-still calls them creatures). **1 Active**, **2 Reserve**. Fighters persist
-for the whole match.
+Two players each have three Fighters. One is **Active**. Two are **Reserve**. Fighters stay for the whole match.
 
-**Win:** the first player whose three Fighters are all defeated loses. The
-opponent wins. If both squads wipe in the same check, the player whose turn
-it is loses. There is no deck-out loss and no reshuffle.
+You lose when every one of your Fighters is defeated. The other player wins. If both players are in that state on the same check, the player whose turn it is loses. Defeating a Fighter marked legendary does not by itself end the match.
 
-The **Tag Skirmish** loadout is the live prototype: technique dice, Meter,
-Tag, Assist, and combo. It is the only builtin list.
-
-Loadouts need **three** Fighters. Setup places by **squad index**: index 0
-opens **Active**. Tag-fighter matches use **one frontline (Active)** and two
-Reserve. Skirmish defaults still place two frontline then back.
-
-A Tag Fighter has no basic or special attack. The showing face on any of
-your Fighters is a hit by itself. A Technique is the Active Fighter only:
-that Fighter’s die shows the primary face, and another of your rolled dice
-shows the secondary — a named face, any face of a type, any face with a
-sequence role, or a strike class such as a light kick. Every hit and every
-Technique has a strength (light, medium, or heavy) and a strike (kick or punch). The face
-and the Technique each say whether they are a starter, an extender, or a
-finisher. Both target the opponent’s Active Fighter.
-
----
+Drawing a card when your deck is empty loses. There is no reshuffle. Milling cards does not lose the match by itself.
 
 ## 2. What you bring
 
-Each player’s loadout is:
+Each player brings three Fighters, one die for each Fighter, and one shared deck of 10 to 24 cards. A deck has at most 3 copies of one card. The opening hand is 5. There is no maximum hand size.
 
-| Piece | Rule |
-|---|---|
-| Squad | Exactly **3** creatures |
-| Tactics deck | **40–50** cards, **≤3** copies of the same card id |
-| Face deck | **≤12** face cards |
-| Opening dice | **2** d6 (skirmish) or **3** d6 (Tag Skirmish: one die bound to each Fighter) |
+Cards are **Response** or **Modify**. Tag is an operation, not a card type. Assist is on the Fighter, not a card.
 
-Tactics cards always have both a **play** region and a **forge** region. On
-each use you pick one: play **or** forge, never both. Any hand card may
-instead be spent to **Overcharge** (see §11) — still one use: play, forge, or
-Overcharge, never two.
-
-**Opening dice**
-
-- Blank faces (empty rules, no technique, no face type, empty On roll)
-  may sit on opening slots **without** consuming the face deck.
-- A named face on an opening slot **must** be in the face deck and starts
-  **installed**. One face card backs every slot showing that id.
-- Leftover face-deck rows are the mid-game forge pool.
-- Copying an already-installed face (including an opening face) remains legal.
-
-Opening-layout caps (prototype knobs, `ASSUMED` unless noted):
-
-| Knob | Default |
-|---|---|
-| Faces with On roll, convert Choose one, or While showing per die | **2** |
-
-Forbidden Heritage, Pestilent Plague, and Arcane Echo are refused on
-`startingDice` (they may still sit in the face deck for mid-game).
-
-There is **no mulligan**. Each player is dealt **5** (`openingHandSize`).
-That number is a playtest knob, not a final balance decision.
-
----
+The face deck is not used in the online game. It is the future physical card for a face after Replace. Replace writes that face onto the die for the rest of the match.
 
 ## 3. The table
 
-Each player has:
+The first Fighter in the squad starts Active, in front. The other two start in Reserve, behind. When the Active Fighter changes, the new Active Fighter moves to the front and every other living Fighter moves behind.
 
-- **Frontline** and **Reserve**. In Tag Skirmish, **Active** is the only
-  frontline Fighter; the other two are Reserve. A non-Range attack may hit a
-  back-row creature only if that player has **no living frontline**. Range
-  ignores this. Technique-gated native attacks always target the opponent’s
-  **Active** Fighter.
-- **Engine area** for rituals.
-- **Dice:** one per Fighter. Tag Skirmish rolls all three, including a
-  KOed Fighter. The Fighter's base die is what the match starts from. A
-  card can rewrite the current faces for the rest of the match. Changing
-  the roll does not rewrite the die. The next match starts from the base
-  die again. A Technique's other face comes from another of your dice,
-  never the opponent's.
-- **Meter** (0–8): combat momentum. Tag does not spend it. A sequence hit
-  that conducts grants 2, 3, or 4 to the player who declared it (light,
-  medium, or heavy) and 1 to the player who owns the Fighter it was
-  declared against. A negated hit grants nothing.
-- **Combo:** +1 for each successful starter, extender, and finisher. A
-  negated link does not count. Resets on Tag, KO, and end of turn.
-- One hand, one tactics deck (top-first), one graveyard, plus equipment,
-  overloads, and rituals. The three Fighters share that hand and deck.
+A hit targets the opponent’s Active Fighter. It does not choose a Fighter who is behind.
 
----
+When your Active Fighter is defeated and a living Reserve remains, you choose who becomes Active. The defeated Fighter stays defeated. That choice spends no Tag and no Meter. If a decision is already waiting, the choice is skipped. If no living Reserve remains, there is no choice. Defeating a Reserve does not open that choice.
 
 ## 4. Match start
 
-- First player in `playerOrder` takes turn 1, phase **roll**.
-- Opening hand is 5 for both players. At the start of every turn, including
-  the first, the player whose turn it is draws **1** (`cardsDrawnPerTurn`).
-  There is no extra first-player draw and no skipped first draw.
-- There is no hand limit, and the game does not discard down to one.
-- A deck may include at most **3** copies of a card (`deckMaxCopiesPerCard`).
-  The fixed deck size is not chosen yet (`deckSize` null). Until it is, a
-  list still has to sit in the previous size range.
-- Drawing from an empty deck loses the match when deck-out is on. Nothing
-  is reshuffled, and an empty deck does not deal damage. A card draws only
-  when its own effect says so. Playing a card does not draw by itself.
-- A played one-shot goes to the graveyard unless that card names another
-  destination. A card that stays is attached to a Fighter or a face. That
-  attachment is what the card does while it is there.
-- Dice are built from that seat’s `startingDice`. Each seat’s leftover face
-  pool is independent.
+The match starts on turn 1, in the roll. The first player in the setup list takes that turn. Both players are dealt their opening hand. There is no extra draw before the first roll.
 
----
+Each player has a Meter pool. It starts at 0. The cap is 8. It is not cleared when the turn ends or when you Tag.
 
 ## 5. Turn structure
 
-Two phases: **Roll → Actions**. End Turn is an **action**, not a phase.
-
-1. **Roll.** Both players’ dice are rolled on **every** roll phase. The turn
-   player issues the single `ROLL_DICE`; the opponent does not click Roll.
-   Each seat randomizes their non-retained dice, **auto-absorbs** their own
-   usable attribute pips (**On absorb** fires), and resolves **their** On roll /
-   overloads / convert Choose one (including on the opponent’s turn). Geometry
-   still sees both of **that owner’s** showing faces before their On roll.
-   Named specials may produce **more than one pip** from the showing face
-   itself (inherent extra pips — not a `[Generate]` line). Absorbed attributes
-   leave the turn pool; there is **no** persistent attribute pile. Some faces
-   print **Choose one** on roll (Sigil Flare, Mainspring, Pyre of Names):
-   **absorb this die's usable pips**, or take the printed payoff and **do not
-   absorb** that die (inherent extra pips, showing pip, forge yield, Overcharge
-   are forfeited). It is a real prompt — the die owner picks. The **other**
-   die of that owner auto-absorbs normally.
-   Locked/unusable pips stay in the turn pool. The non-active
-   player cannot absorb during the turn player’s actions, so **off-turn
-   leftovers have no absorb window** — they expire or are replaced like
-   other leftovers. Their usable attributes still auto-absorb on roll.
-   Effect-generated usable attributes also auto-absorb when created. Then the
-   turn enters **actions** (still only the turn player’s window).
-   **While showing** is a continuous stance while that face is the showing
-   face (including retain). Both sides’ showing faces refresh every roll phase,
-   so defensive Reduce on the opponent uses **their new** showing face from
-   this shared roll. It is not a second On-roll trigger.
-   **Retain:** a retained die is never randomized while marked retained. The
-   keep is **not spent** on the opponent’s shared roll (the face stays, and
-   so does retain). It is spent on **your** next roll phase as the turn
-   player.
-2. **Actions.** In any order you may: absorb leftover usable attributes (if
-   any), attack, play, forge, activate a
-   **ready** ritual, retain/release dice, or end the turn. Printed `[Spend]` /
-   `[Requires]` on cards and attacks are **not enforced** (catalogue leftover).
-
-`[Reroll]` rolls **that one die** again during **actions** (you do not return
-to the roll phase). The **new** showing face fires On roll (and overloads on
-that face), then a usable attribute pip **auto-absorbs** (On absorb) unless
-that new face offers convert Choose one. The previous roll of that die is not
-undone: an already-absorbed pip stays absorbed, and an unabsorbed leftover
-(locked or unusable) is replaced by the new result rather than sitting beside it.
-`[Stamp]` is
-different: it re-fires the **current** showing face’s roll effects — On roll,
-overloads on that face, Overcharge pips, forge-yield extra Generate, and
-equipment on-roll-symbol — without changing the face or creating a new rolled
-pip (and without minting a second copy of inherent extra pips). Stamp on a
-convert face opens Choose one again (yield / Overcharge wait until you pick
-absorb).
-
-On-roll lines may be **conditional on dice geometry** (your other die showing
-the same face, how many slots on this die show that face). Those are ordinary
-On-roll conditions, not a new phase. Both of that owner’s dice are rolled
-before their On roll fires, so geometry can see both showing faces.
-
-There is no dedicated absorb phase and no leftover-rolled flip. The turn
-pool holds locked/unusable pips until they expire at end of turn. Absorbed
-attributes are gone from the pool (On absorb only — no bank).
-
-Ready rituals may activate during **actions**, not during roll.
-
-If a `pendingDecision` is open (search, discard, choose creature, reaction
-window, …), other match actions wait until it is answered. Those choices are
-part of conducting an effect — they do **not** open a new reaction window.
-
-Print that says you **may** (optional discard, optional reroll, optional
-reposition / swap) includes **Decline**. Declining skips that effect and any
-“if you do” rider. Naming a target for a **mandatory** effect (“choose an
-enemy”, “an allied creature you choose”) is not optional: if a legal target
-exists you must name one; if none exist, the effect whiffs.
-
----
-
-## 6. Symbols and the turn pool
-
-A face is not an attribute, not natural or synthetic, and not Shield.
-There is no Shield face and no Shield pip. Usable pips are the face’s
-printed pip bag, or pips an effect generates. Symbol names (Martial, Wild,
-Toxin, Arcane, Luminar, Mechanical, Corruption, Darkness) are pip labels,
-not face types.
-
-**Rolled and effect-generated usable pips** auto-absorb (On absorb fires).
-There is **no** cross-turn attribute bank. Locked/unusable pips stay in the
-turn pool until they expire at end of turn. Convert **Choose one** faces
-absorb that die’s usable pips only if
-you pick the absorb branch; the payoff branch forfeits that die’s roll pips
-(inherent extra pips, showing pip, forge yield, Overcharge). The other die is
-untouched.
-
-Printed `[Requires: …]`, `[Spend: …]`, `[Active when: …]`, and **Any** costs
-may still appear on catalogue cards but are **not enforced** today.
-
-Unabsorbed turn-pool symbols expire at end of turn. There is no “store a
-symbol.” The only way to keep a **die result** across a roll is **retain**.
-
----
-
-## 7. Absorption payoff
-
-- **Attribute** pips from a **roll** or **effect** are marked **absorbed**
-  automatically when eligible (usable pips only; **On absorb** fires). They do
-  not enter a persistent pile.
-- Each **On absorb** hook (standing ability, face, or overload) fires **at
-  most once per turn** per source, so generated pips cannot re-trigger the same
-  absorb effect in a loop.
-- Ritual **Active-when** pile gates in print are **not enforced**; rituals
-  become ready per engine rules without pile unlock (see §10).
-- **`[Drain]`** deals damage to a chosen enemy creature and heals your
-  **most-damaged ally** for the HP actually lost (after attack prevention).
+A turn has two phases: **roll**, then **actions**. Ending the turn is an action, not a third phase.
 
----
+On your roll, you roll both players’ dice, including Reserve and defeated Fighters. The turn then enters actions. The roll does not absorb symbols.
 
-## 8. Playing and forging costs
+During actions, before another action closes it, you may reroll once. The reroll names one or more of your own dice. It does not roll the opponent’s dice. There is no second reroll. Tag and passing priority do not close the reroll. A pending decision does. Any other action closes it.
 
-Printed header `[Spend: …]`, effect `[Requires: …]`, attack `discards`, and
-ritual Active-when / activate Spend are **not enforced** (catalogue leftovers).
+When you end the turn, the opponent becomes the active player, the turn number goes up by 1, that player draws 1, victory is checked, and the phase becomes roll.
 
-**Play** and **forge** are legal when the rest of the action is legal — no pile
-payment step. Forge does not distinguish face kinds, and there is no
-first-forge waiver.
+## 6. Meter
 
-**Discounts** (`[Discount N]`) may still arm on-roll or while-showing discounts
-on `GameState` where implemented; they do not spend a pile.
+A sequence hit that resolves, is not negated, and whose target is not already defeated spends that hit’s Meter cost first. If the spend fails, the hit does not grant Meter and does not apply its effects. If it succeeds, you gain the hit’s printed Meter gain, and also 2, 3, or 4 when the hit is light, medium, or heavy. The owner of the Fighter you hit gains 1. This is not Meter per damage.
 
-Turn end is voluntary (`END_TURN`) or from effects that say so.
+Light, medium, and heavy do not set the damage. The damage is the printed `[Strike N]`.
 
----
+Playing a card spends its Meter cost when you play it. An exceptional mode also spends its extra Meter. An Assist spends Meter only when that Assist prints a cost greater than 0. A Tag switch does not spend Meter.
 
-## 9. Playing cards
+No card in the current list has an ordinary Meter cost. Open Palm spends 2 Meter to play it outside a Chain. Call Out spends 2 Meter. Both are that exceptional cost.
 
-During actions (or as a legal reaction — §15):
+## 7. The sequence
 
-| Kind | What happens |
-|---|---|
-| Modify | Changes the current situation. Either player may play one while they have priority, when it is legal. A Modify with no outside-chain Meter cost may also be played on your turn in the actions phase when its subject can be chosen. Playing one outside a chain spends that Meter. When that is the only way to play the card, the Meter is its play cost. A redirect needs a hit. A Modify may resolve an effect, attach equipment, overload a face, place a ritual, or change a hit, roll, die, moveset, or Tag. |
-| Response | From hand, only against an opponent’s object while a reaction window is open. |
+The sequence is not a phase. It is **open** or in **combo**.
 
-A card’s **play cost** is the Meter you spend to play it. That number is shown on the card. Rules text does not repeat the same spend. A card with no play cost is free. A Modify you can also play in a chain for free does not put its outside-chain Meter on that number. That spend stays in the rules text, and you pay it only for the outside-chain play.
+Entering actions makes you the Aggressor and opens the sequence. Only the Aggressor declares hits. From open, the only legal role is starter. From combo, the legal roles are extender and finisher. A finisher is illegal on a turn that already declared Tag.
 
-Printed `[Spend]` / `[Requires]` on cards and attacks are not enforced. Forge
-does not check a card’s effect `[Requires]` (play vs forge is exclusive).
+A face action uses the showing face of one of your living Fighters, Active or Reserve. A Technique is only the Active Fighter. Its primary face is that Fighter’s showing face. Its secondary is a different one of your rolled dice, and that face must match the Technique. Both target the opponent’s Active Fighter.
 
-Discard-from-hand effects **draw first**, then the player **names** which
-cards to discard. The engine never auto-discards the front of the hand.
-Optional `you may [Discard N]` lets you name fewer cards, including none.
+A die is not spent by a face action or a Technique. The same face and the same Technique cannot be declared again while that action is on the Chain or already used in this sequence.
 
-**Mill** puts cards from the **top of a tactics deck** into that deck’s
-owner’s graveyard. It is not discard-from-hand. An empty or short deck
-mills what remains (including nothing). There is no deck-out loss.
-
-Empty deck: draws quietly do nothing. No loss, no reshuffle.
-
----
-
-## 10. Rituals
-
-Played onto the engine area, not resolved from hand like an Instant.
-
-| Orientation | Meaning |
-|---|---|
-| Preparing | Ritual not yet ready (legacy Active-when in print — **not** pile-gated today) |
-| Ready | Standing abilities on; may activate if print has an activate body |
-| Exhausted | Used this turn (once-per-turn rituals) |
-
-Rituals become **ready** on place when the engine has no Active-when gate to
-enforce. Printed Active-when / activate Spend are catalogue leftovers.
-
-At the start of your turn, exhausted rituals come off exhausted and return to
-**ready**.
-
-**Continuous** and **Reaction** rituals stay on the field. Activating (if they
-have an activate body) exhausts them until the owner's next turn.
-**Ritual / Instant** is retired from play; a leftover instant-subtype ritual
-still leaves for the graveyard after one activation.
-
-Reaction rituals may still respond in a reaction window from the field while
-**ready**. Standing triggers fire while **ready** and do not spend Active-when
-/ Spend.
-
-Destroying an opposing field ritual, attached equipment, or attached overload
-is not negate. Negate answers chain links; destroy answers a card already on
-the field. When an effect names `[Destroy Ritual]`, `[Destroy Equipment]`, or
-`[Destroy Overload]` your opponent controls, you pick one opposing card of that
-kind (always a prompt if at least one exists, including exactly one). An empty
-opposing field is a legal whiff.
-
-**Bounce** answers the same opposing field cards — ritual, equipment, or
-overload — but the chosen card **returns to its owner’s hand** instead of the
-graveyard. Detach first (equipment off the creature, overload off the face,
-ritual off the field). Preparing, ready, and exhausted rituals are all legal.
-Bounce is not discard and does not negate a chain link. An empty legal set is
-a legal whiff; if at least one eligible card exists you always pick.
-
----
-
-## 11. Forging
-
-During actions, `FORGE_CARD` installs a face from your leftover pool **or**
-copies an already-installed face onto a legal slot. You name the face. There
-is no natural/synthetic split and no first-forge waiver. Printed header
-`[Spend]` is not enforced. Forge does **not** open a reaction window.
-
-You draw **one card per face installed** (own die or opponent’s). Empty
-deck still fails the draw quietly. This draw is a forge rule, not card text.
-
-**Own-die forge yield:** When you install a face onto **your own** die (via
-`FORGE_CARD` or a forge-faces effect), that slot gains **forge yield**. While
-that forged face is showing after your roll, you also generate one extra pip
-for each of that face’s printed pips (same auto-absorb path as effect
-Generate), **unless** you pick the convert payoff on that showing face
-(Choose one). A face with no printed pips grants no yield. Opponent-die installs do **not**
-gain yield. Overwriting or peeling a slot clears yield unless the new install
-re-sets it.
-
-**Forge bonus effects.** Some cards print extra keyword clauses on the forge
-line (for example `[Forge] … [Empower 1].`). Those resolve **immediately after
-a successful `FORGE_CARD`**, still **without** a reaction window. They do
-**not** run if you play the card for its effect region (or attach /
-Overcharge). Play vs forge vs Overcharge remains exclusive — you still choose
-one use.
-
-Some faces **stay locked** on a slot for printed turns after install
-(forge-lock). That is not retain.
-
-**Desynthesis.** There is no Shield face to peel to, so `[Desynthesize]`
-does not change the slot. It is not a forge and it is not `[Reforge]` or
-`[Cross forge]`.
-
-**Reforge / Cross forge.** `[Reforge N]` on **one of your dice**: replace
-any N replaceable faces with N faces from your pool (you name the slots and
-the pool faces). `[Cross forge]` is the same replacement; it does not require
-the slots to show a particular face. Neither is a forge (no forge-draw, no
-yield). Stay / cannot-replace slots are illegal. Displaced faces return to
-pool when orphaned; their overloads / Overcharge leave as on overwrite. You
-cannot play a Reforge / Cross forge (or a Choose one whose every mode is
-Reforge / Cross forge) when no legal assignment exists — the card stays in
-hand; it is not spent for a silent no-op.
-
-**Choose one.** Some cards (e.g. Tooling Order) and some faces (Sigil Flare,
-Mainspring, Pyre of Names) read "Choose one:" with two modes. You pick exactly
-one; the other is ignored. If only one mode can legally resolve, it is chosen
-automatically. If none can, the Choose one does nothing. On convert faces the
-modes are **absorb this die's usable pips** or the printed payoff (do not
-absorb).
-
-**Overcharge.** Once per turn during actions, you may spend **any** card
-from hand to Overcharge one face card installed on your dice.
-That face card gains +1 of the first pip symbol in the spent card’s
-`playCost`. The next time **any** of your dice show that face after a roll
-(including a retained keep or an actions-window reroll), **each** showing die
-also `[Generate]`s that pip — the same on-roll Generate path as forge yield /
-overload — **unless** you pick that showing face’s convert payoff (those Overcharge
-pips are forfeited with the rest of that die’s roll). One spend covers every
-copy you have showing. Overcharge does
-does **not** draw, does **not** set forge yield, and
-does **not** open a reaction window.
-
-Pips sit on the **face card** until the last copy you own leaves the dice
-(overwrite or peel) — the same moment overloads detach. Overwriting one of
-two copies keeps the Overcharge on the remaining copy. Stay / cannot-replace
-does not block Overcharge (you are not replacing the face). Which die the
-face sits on does **not** gate Overcharge. Multiple Overcharges on the same
-face card stack across turns.
-
----
-
-## 12. Overloads
-
-Overloads attach to the face **card**. When the last installed copy of that
-face leaves the dice, its overloads detach to the graveyard.
-
-`On roll` overloads fire during `ROLL_DICE` once per die that shows that
-face card. They do not wait for engine resolution and do not care whether
-the symbol is later absorbed. A later re-roll (including a retained showing
-face) fires again.
-
----
-
-## 13. Combat
-
-- Each living creature may attack **once per turn** during actions, unless an
-  effect grants extra attacks (`[Frenzy]` — Wild exclusive).
-- Printed attack `[Requires]` / `[Spend]` / `discards` are **not enforced**.
-- You may attack on the same turn you absorb symbols.
-- Declaring an attack opens a reaction window (§15). Prevent may answer;
-  negate may not.
-- Damage apply order: **`[Reduce]` → attack prevention → Life**.
-- `[Reduce N]` subtracts N from that incoming hit (minimum 0) before attack
-  prevention. It applies to any damage that hits the creature, not only
-  attacks. It does not cancel the attack. **While showing** `[Reduce N]` uses
-  the same math for the controller’s living creatures while that face is
-  showing.
-- There is no Shield. Nothing between attack prevention and Life stops the
-  remaining damage.
-- **While showing** `[Pierce N]` applies to the controller’s attacks for as
-  long as the face is showing (every attack, not a one-shot arm). It does not
-  add a barrier step.
-- **While showing** `[Empower N]` adds N to the controller’s attacks for as
-  long as the face is showing (every attack, not next-attack-once).
-- Some attacks queue follow-up effects after the damage link.
-
-**Tag Skirmish (spec `028`)**
-
-- Native attacks with `requiredTechniques` need the **Active** Fighter’s bound
-  die to show that technique. They hit the opponent’s Active only. Each
-  Fighter may attack **twice** per turn in this preset (`attacksPerCreaturePerCombat: 2`).
-- **[Tag]:** switch Active with a living Reserve, once per turn. Free. It
-  does not ask for a Tag face and it does not spend Meter. Two windows, and
-  only one of them:
-  **Opening** — it is your turn, no Chain is open, and you have not yet
-  declared a face, technique, assist, card, attack, or sequence end. The
-  opening roll and the one reroll do not close it. The switch does not end
-  the turn.
-  **Closing** — no Chain is open, and you are stopping a sequence you could
-  still continue. The switch happens when that Chain conducts, and the
-  conduct then ends the turn (the opponent becomes the active player). A
-  Finisher already resolved this turn makes Tag illegal. You cannot Tag and
-  also play a Finisher.
-  Tag is a Chain object, so it can be Responded to or Modified. A KOed
-  Fighter cannot Tag.
-- **[Assist]:** only a Reserve fires its Assist, including a Reserve at 0 HP.
-  The Active Fighter stays Active. You may Assist on your own turn during the
-  actions phase when no Chain is open. You may also Assist when you have
-  priority and an opponent’s hit or technique is on the Chain. Once per named
-  Reserve per turn. Any showing face is legal. Meter is spent when that
-  Fighter’s exceptional Assist cost is greater than 0.
-  An Assist that is a hit has a strength, a strike (kick or punch), and a
-  sequence role. Declare it on your turn when no Chain is open, while you
-  are the Aggressor, and only when that role is legal: a starter in an open
-  sequence, an extender or a finisher in combo. It strikes the opponent’s
-  Active Fighter. A successful one raises combo and grants Meter from its
-  strength, the same as any other hit. A finisher ends the turn. That
-  reaction window is for an Assist that answers an opponent’s hit. A hit
-  Assist uses the sequence window instead.
-- **Meter:** cap **8**, one pool for the team. It stays across turns and Tags.
-  A sequence hit that conducts grants 2 (light), 3 (medium), or 4 (heavy)
-  to the player who declared the hit, and 1 to the player who owns the
-  Fighter the hit was declared against. Kick and punch do not change the
-  amount. A negated hit grants nothing. That hit does not also grant 1
-  Meter per HP lost. A card’s play cost is Meter spent to play it. A Meter
-  spend that is not that play cost still applies, including an outside-chain
-  play and a face that spends Meter.
-- **Combo:** +1 for each successful starter, extender, and finisher. A
-  negated link does not count. Resets on Tag, KO, and end of turn.
-- In-match **dice evolution** is still `[Forge]` onto the bound die (persistent
-  face change). No temporary face replacement.
-
-**Named faces and Fighter techniques (spec `029`, ASSUMED knobs)**
-
-- Some faces are **named actions** with a **Type** (Attack, Grab, Guard,
-  Movement, Tag, …). Types have **no** fixed damage of their own — the face’s
-  printed effects do.
-- A face prints a **Primary** effect and a **Secondary** effect. When each
-  one applies is a rule of hits and Techniques. It is not printed again on
-  the face or on the Technique.
-- **Primary** is the effect of the face the Active Fighter’s Technique
-  requests by name, the first face. A simple hit resolves that Primary on
-  its own: any of your Fighters uses the showing face on their own die. No
-  second face is needed.
-- **Secondary** applies when that face is the other face of that Technique,
-  the face that fulfills the requirement, such as a light kick, a light
-  punch, or a Projectile.
-- **Fighter technique:** only the Active Fighter. That Fighter’s die shows
-  the named first face, and another of your rolled dice shows the face that
-  meets the secondary requirement. The Technique prints its own effect, such
-  as `[Strike 3]`. That effect resolves, and the second face’s Secondary
-  effect applies with it. Every hit and every Technique has a strength
-  (light, medium, or heavy) and a strike (kick or punch). Swapping which die
-  shows which face does not fire the same technique.
-- These actions happen in the **actions** phase (the Act). Using a face does
-  not spend it. The same face may still be part of a Technique. Repeating the
-  same Action in one sequence is the model under test (spec `030`). What is
-  legal depends on the offensive sequence and that Fighter’s actions, not on
-  a count of dice.
-- The current build still marks a used face `face-action:<dieId>` when
-  `consumeDiceOnFaceActions` is on. That spend is leftover engine behavior,
-  not the rule (spec `030`, revised 2026-10-02).
-- Legacy faces without a Type / Primary Effect cannot Use Face.
-
-**Offensive control (spec `030`, revised 2026-10-03)**
-
-This is how combat plays. Tag, Assist, Meter, and KO follow the same rules
-as the Tag Skirmish lines above.
-
-During the Act there is an **Aggressor** and a **Defender**. Dice show named
-inputs. They are not action points. An Action you cannot legally continue
-with is not available. Declaring it does not end the sequence.
-
-Starter, Extender, and Finisher are roles of a lone face and of a
-Technique. They are not turn phases. The turn is still roll, then actions.
-
-A starter is legal only when no sequence is in progress. When it resolves,
-it starts the sequence. An extender is legal only after a successful starter
-or extender, and it extends the sequence. A finisher is legal only after a
-successful starter or extender. When it resolves, it finishes the sequence
-and ends the turn: the opposing player becomes the active player. You cannot
-Tag and also play a finisher in the same turn. An action the sequence does
-not allow is not offered, and attempting it does not end the sequence.
-
-Each successful starter, extender, and finisher raises your combo count by
-one. A negated link does not. Combo count is not a phase and not Meter.
-
-Passing Priority inside a chain only yields Priority. Separately, the
-Aggressor may stop the sequence. That stop ends the turn. It is not a
-Priority Pass, and it does not leave you in Open to keep acting. An opening
-Tag does not end the sequence or the turn. A closing Tag passes the turn
-after the Chain conducts.
-
-Immediately after the opening roll, you may reroll any number of your dice
-once, or keep them. Cards can change that roll or that reroll.
-
-A response does not require a Guard face. Cards respond or modify. A
-response does not by itself take the offense. Counter, Parry, Reversal,
-Modifier, and Situation are names for a result, not card types. Counter
-negates a card on the chain. It does not answer a hit, and it does not end
-the turn. Parry prevents that hit: the hit deals no damage and does not
-continue the sequence. Preventing the hit ends the sequence and the turn.
-The opposing player becomes the active player.
-
-Declaring an action opens Priority for the player who declared it. While you
-have Priority you may add a legal response or modify, if it has a valid
-target, or you may pass. A pass is not a Chain entry. Adding a response or
-modify does not yield Priority. You may respond only to an opponent’s
-object. Either player may modify while they have Priority. After two passes
-in a row, the chain resolves last in, first out. If a target has become
-invalid by then, that effect does not happen.
-
-A modify can change the roll you just made, or it can permanently change a
-die. Changing the roll does not rewrite the die. There is no temporary die
-change. A moveset modify adds a new Technique to one of your living Fighters.
-That Fighter can be Active or Reserve. Every printed Technique is
-already usable when its faces are showing. The added
-Technique is used the same way: the Active Fighter's showing face is the
-named first face, and another of your faces matches the other requirement.
-`[Replace]` writes a named face onto a slot of that Fighter's die for the
-rest of the match. `[Tag out]` makes the opponent's Active Fighter leave.
-They choose a living Reserve to become Active. That Fighter is not KOed,
-and it does not spend their Tag. If they have no living Reserve, the Tag
-out does not happen. When the effect also says that Fighter cannot Tag
-in until the end of its next turn, it cannot be Tagged in during its
-controller's next turn. The lock ends when that turn ends. Assist and a
-KO replacement can still bring that Fighter in. The moveset card stays attached to that Fighter for
-the rest of the match, so the added Technique remains visible. A modify can
-also redirect a target that is already part of the exchange.
-
-Tag is not a card. A turn can offer an opening Tag window and a closing
-one. You can Tag only once in the turn, and only in one of those windows.
-Tag does not spend Meter. Assist is printed on the Fighter and uses the same
-chain. Declaring it opens priority for you. On your turn during the actions
-phase you may Assist when no Chain is open. You may also Assist when you have
-priority and an opponent’s hit or technique is on the Chain. Meter is spent
-when that Fighter’s exceptional Assist cost is greater than 0. An Assist that
-is a hit follows the sequence role printed on it. You declare that hit on
-your turn when no Chain is open, while you are the Aggressor, and only when
-that role is legal. It strikes the opponent’s Active Fighter. Combo and Meter
-follow the hit. A finisher ends the turn. One Meter pool is shared by all
-three Fighters. It stays when you Tag and when the turn changes. A sequence hit that conducts grants Meter from its strength, as
-in the Meter rule above. A negated hit grants nothing.
-
-At 0 HP a Fighter is KOed. They cannot Tag. They can still Assist. The
-sequence ends and the opponent takes initiative. If your Active Fighter was
-the one KOed and you have a living Reserve, you must choose one to become
-Active before play continues. That choice does not spend your once-per-turn
-Tag or Meter. When all three of your Fighters are KOed, you lose.
-
-Hand size, draw, deckbuilding, and how dice are customized are **not
-decided** ([`OPEN_DESIGN.md`](./OPEN_DESIGN.md)). There is no Resolve phase
-and no Meter phase.
-
-Enemy creature movement (push) is **not** in the game. Ally reposition is
-Martial’s exclusive (`[Reposition]` / `[Swap]`): frontline ↔ back (swap if the
-frontline is full). Wild’s exclusive is `[Frenzy]` (extra attacks this turn).
-
----
-
-## 14. Damage extras
-
-**Reduce** (incoming hit math — not Prevent):
-
-- `[Reduce N]` on `On take damage:` cuts N from that hit before attack
-  prevention. Optional `, once per turn` is a print qualifier, not a second
-  keyword. Distinct from `[Prevent]` (cancel the next attack) and
-  `[Discount]` (legacy cost reduction where armed).
-
-**Prevention** (reaction to an attack declaration — not a proactive buffer):
-
-- `[Prevent]` is **reaction-exclusive**. It grants `attackPreventCount` only
-  while a living **hit or attack** is on the chain, and only onto **that
-  hit’s target**. Grants with no hit on the chain whiff (no charge).
-- A prevented hit deals no damage and does not continue the combo. Resolving
-  the prevent ends the sequence and the turn.
-- That charge cancels the next **attack** against the creature (the whole
-  instance, before Life). Unused charges **expire at end of turn**
-  (`preventExpiry: "end-of-turn"`) — they are not a lasting “arm next attack”
-  you set up on your turn.
-- Toxin ticks, face `[Strike]`, and other effect damage do **not** consume
-  attack-prevent.
-- Prevent reactions (Prismatic Barrier, Sidestep, Luminar Judgement) answer
-  an attack on the chain. Proactive Luminar absorb / attack follow-ups use
-  `[Heal]` instead.
-
-**Toxin:** counters on a creature (soft max **3** per creature; excess from
-`[Mark]` is discarded). At the **end** of **that creature’s owner’s** turn,
-it takes damage equal to its markers, then **all** markers are cleared.
-Markers applied during the owner’s own turn detonate at that same turn’s
-end.
-
-**Silence:** `[Silence]` names an opposing **creature**, **field ritual**, or
-**die slot** (the card lists which). Until the **start of your next turn**
-(the rest of this turn plus the opponent’s intervening turn):
-
-- That host cannot **activate** or **fire its effects**, including inherited
-  ones: a silenced creature’s standing abilities and attached equipment; a
-  silenced showing slot’s face On roll / On absorb, attached overloads, and
-  Overcharge / forge-yield extra pips; a silenced ritual cannot
-  `ACTIVATE_RITUAL`, and a silenced continuous ritual’s standing abilities
-  do not fire. Passive while-attached modifiers from silenced equipment or
-  a silenced continuous ritual do not apply.
-- Rolled **pips still generate**. Attacks may still be **declared**; Strike
-  and Prevent still happen. Extra attack effects and follow-ups from
-  a silenced attacker are skipped.
-- Equipment and overloads are not named directly — they are silenced with
-  their host creature or showing slot. Hand, deck, and unattached cards are
-  not silenced.
-
-**Stun** is implemented on dice but **deferred**: nothing applies it.
-
----
-
-## 15. Reaction chain
-
-Yu-Gi-Oh–style stack: last-in, first-out. Costs are paid when the link is
-built; the body runs only after **both** seats `PASS_PRIORITY` in a row.
-
-The turn player starts. After a link is added, priority passes to the
-opponent. Seats alternate. A seat may add another legal reaction after the
-opponent passes.
-
-A window opens **after costs, before the body** for:
-
-- Playing a tactic for its effect
-- Placing a ritual
-- Activating a ready ritual
-- Attaching equipment
-- Attaching an overload
-- Declaring an attack
-
-**Forge does not open a window.**
-
-Legal responders: hand `reaction` cards, and ready ritual-reactions.
-
-| Response | Legal against |
-|---|---|
-| Negate (top card link) | Tactic effect, ritual place/activate, equip, overload — **not** hits or attacks. Does not end the turn. |
-| Negate ritual | Ritual place or activate only |
-| Prevent | A hit or attack on the chain (reaction only). Ends the sequence and the turn. |
-
-Once a link is conducting, it runs to completion. A negated card link keeps
-its costs paid and skips the body.
-
----
-
-## 16. Retain
-
-Per die you own, you may mark it retained (or release it) with `RETAIN_DIE`,
-in any phase, including before you roll.
-
-A retained die is never randomized while marked retained. The keep survives
-the opponent’s shared roll without spending; on **your** next roll phase it
-still generates that symbol, then retention clears. It does not persist turn
-after turn unless you set it again. Stunned dice cannot be retained. Setting
-retain needs a known showing face.
-
----
-
-## 17. What this rulebook is not
-
-Do not treat the following as current play:
-
-- **Attribute pile** banking, `[Requires]` / `[Spend]` / ritual Active-when
-  **enforcement**, and **legendary commander victory** — removed.
-- Bible §16’s longer phase list (Absorption as its own step) — **overridden**
-  by Roll → Actions.
-- Storing a symbol for later — **dropped**; only retain a die remains.
-- Mulligan, deck-out, stun application, enemy push, a fuel cap on absorbed
-  tokens — not in play (stun/push/cap: deferred or open).
-- Catalogue English that is parked in `DEFERRED_CATALOGUE.md` — not a silent
-  engine effect.
-
----
-
-<!--
-Related docs (agents):
-- docs/OPEN_DESIGN.md — OPEN / ASSUMED / DECIDED / cleanup notes
-- docs/DEFERRED_CATALOGUE.md — unmodelled print
-- docs/KEYWORDS.md — print keywords (appended on the Rules tab)
-- docs/ARCHITECTURE.md — software advance path
-- src/server/model/config.ts — numeric knobs
-- specs 008–015 — chain, prevent, hooks, strip/destroy, vocabulary, markers, mill
--->
+A starter or extender that does not end the sequence adds 1 to your combo and sets the sequence to combo. You stay the Aggressor.
+
+A finisher ends the sequence. You may also end the sequence yourself. Ending a sequence hands the turn to the opponent. Whether ending a sequence and ending a turn are different operations is not decided. Until it is, they are that one handoff.
+
+Defeating a Fighter ends that sequence. That Fighter’s owner loses their combo, and the turn is handed to the opponent. The Active-Fighter replacement in section 3 still applies.
+
+## 8. Tag
+
+Tag is your action during actions, at most once per turn. It is legal in an opening window or a closing window.
+
+The opening window is before any face, Technique, Assist, card, or sequence end. The closing window is while you are the Aggressor and the sequence is in combo. A Chain, a pending decision, a second Tag, or a finisher already resolved this turn closes both windows. Tag does not close the reroll.
+
+The chosen Fighter must be a living Reserve and must not be locked from Tagging in. Your Active Fighter must not be defeated. Tag enters the Chain. If it resolves and is not negated, that Reserve becomes Active, the previous Active becomes Reserve, and your combo becomes 0. Meter is not spent. A Tag declared in the closing window ends the turn after the switch.
+
+`[Tag out]` is different. It asks the opponent to choose a living Reserve to become their Active Fighter. It does not spend Tag or Meter. If that effect says the Fighter who left cannot Tag in, that Fighter cannot Tag in on the controller’s next turn. The lock ends when that turn ends. No living Reserve: nothing happens. A Fighter who is already defeated is not the target.
+
+## 9. Assist
+
+Assist names one of your Fighters who is not Active. That Fighter may be defeated. The Active Fighter cannot Assist. Each such Fighter can Assist once per turn.
+
+A hit Assist is legal on your turn during actions, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal while answering a Chain. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. The hit aims at the opponent’s Active Fighter. It deals that Strike, counts for combo, and grants Meter from its strength. A finisher ends the sequence, so the turn is handed to the opponent. An extender is legal only in combo, with no Chain open. Tag this turn blocks a finisher Assist.
+
+An Assist that is not a hit can be declared on your turn, or while you have priority and an opponent’s sequence hit or Technique is on the Chain. Magnus Wall is that kind.
+
+## 10. The Chain
+
+A face action, a Technique, a hit Assist, Tag, a Response, and a Modify wait on the Chain before they take effect. The Chain is a stack. The last object added is the top.
+
+The player who added the object acts first. That player may add another legal object or pass. A pass gives priority to the opponent. Two passes in a row, with nothing added between them, resolve the Chain from the top down. No new window opens between objects.
+
+While the Chain is waiting, the player with priority may pass, play a Response, play a Modify that names what it changes, or declare an Assist that is not a hit. A face action, a Technique, ending the sequence, and Tag are not legal then.
+
+A Response is legal only when an opponent’s object is on the Chain and is not already negated. `[Counter]` negates the top card. It does not negate a hit, and it does not end the sequence. `[Parry]` negates a hit that would damage your Fighter and leaves you offensive. It ends the sequence, so the turn is handed to the opponent. `[Block N]` uses the same target. Brace is `[Block 2]`. It lowers the next damage by N. It does not cancel the hit.
+
+A card’s Meter is spent when you play it. A hit’s Meter is spent when the hit resolves and is not negated.
+
+A one-shot card leaves your hand for the graveyard when you play it. A Moveset stays in hand until it resolves, then attaches to the Fighter. A negated object does not apply its effects. A negated hit does not add combo.
+
+## 11. Damage
+
+Damage is applied in this order:
+
+1. A living ally who is redirecting damage takes some of it, up to that number.
+2. Bonus damage on the next hit is added once.
+3. `[Block N]` is subtracted once. While a face is showing a reduction, and a standing reduction on taking damage, are the same kind of reduction. They lower damage. They do not cancel the hit.
+4. What remains is added to the Fighter’s damage. The Fighter is defeated when damage reaches that Fighter’s life.
+
+`[Parry]` cancels the waiting hit before this damage is applied.
+
+## 12. Cards
+
+A draw is not attached to a Fighter, and a draw does not happen again and again without a restriction or a condition. An attached draw is acceptable as part of a Technique or an Assist, and also when it has a restriction, such as draw 2 and discard 1, or pay Meter to draw that many cards. Those amounts are examples.
+
+Anchor’s current print attaches and draws 1 at the start of your turn. That print is being rewritten. Open Manual’s Technique is not printed yet.
+
+## 13. What this rulebook is not
+
+There is no attribute pile, no turn-pool symbols, no Shield resource, no Ritual, and no Overload. Range and Reposition are not used. Dodge is not a current effect. Empower, Pierce, Desynthesize, Convert, and attribute-only verbs are not current print.
