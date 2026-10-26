@@ -28,7 +28,7 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
 1. `AGENTS.md` and `TOOLS.md`
 2. `docs/ARCHITECTURE.md`, `docs/RULEBOOK.md` (how play currently works),
    `docs/KEYWORDS.md` (print vocabulary — proving cards and new tokens use it),
-   when touching absorb, rituals, or legacy cost fields (`docs/specs/016-*` is obsolete)
+   when touching absorb, rituals, or legacy cost fields
 3. `.cursor/rules/engine-purity.mdc`, `.cursor/rules/scope-and-modules.mdc`, `.cursor/rules/rulebook.mdc`, and
    `.cursor/rules/keywords.mdc`
 4. The matching skill — **read it immediately**; do not improvise workflow:
@@ -117,7 +117,7 @@ If the user asks for engine **and** UI in one request: implement engine + spec U
 | StandingTrigger | `src/server/model/cards.ts` |
 | State | `src/server/model/state.ts`, `creatures.ts`, `dice.ts` |
 | Attribute pile | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
-| Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md`, `016-attribute-pile-up.md` |
+| Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md` |
 | Tactic Overcharge (`021`) | `commands/overcharge.ts`, `rules/overcharge.ts` — `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `canOvercharge` / `legalOverchargeFaces`. **Not** spec `013` `optional-overcharge` (face-marker opcode; `RESOLVE_OPTIONAL_OVERCHARGE`) |
 | Tests / scenarios | `src/server/reducer/*.test.ts`, `src/server/testing/scenario.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |

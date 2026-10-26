@@ -1,6 +1,6 @@
 # 033 — AI artifact rewrite
 
-Status: **DRAFT requirements**. Blocked on user confirmation of spec 032 dispositions and spec 031 canon questions where a rewrite would change which game a prompt teaches.
+Status: **DRAFT requirements**. Spec 032’s table is accepted. The rewrite set is every rewrite or decompose row. Spec 031’s source is `docs/GAME_STATE.md`. A rewrite teaches that game. This file does not yet rewrite an artifact.
 
 This file is requirements only. It does not choose a mechanism, name tasks, or replace any prompt.
 
@@ -245,9 +245,11 @@ In this repo that failure looks like the following. The rewrite is done only whe
 
 ## Decisions
 
-**Glossary region.** New keywords and edited card text may use the whole of `docs/KEYWORDS.md`. The entire file may be rewritten so the whole file fulfills card text for the new game version.
+**Glossary region.** New keywords and edited card text may use the whole of `docs/KEYWORDS.md`. That file has been rewritten from `docs/GAME_STATE.md`. The whole file is the allowed region. Dodge is not current print.
 
-Keyword enforcement itself stays decided. Which operators the rewritten glossary keeps follows spec 031 Q25: compare each candidate to `src/server`, and state the engine name next to the new word. Q29 and Q30 are the forge/replace and reduce/block cases.
+**What a rewrite teaches.** Spec 031 has answered the preserve-unless-031 list. The game is `docs/GAME_STATE.md`, stated for players in `docs/RULEBOOK.md` and for print in `docs/KEYWORDS.md`. Spec 030 is not the content model. `docs/MECHANIC_ARCHETYPES.md` is not a source. Forge, ritual, overload, absorb, Shield, and pile spend are not the play a prompt teaches.
+
+Keyword enforcement itself stays decided. Replace is the word for forge. Block is the word for `reduce`.
 
 ## Open questions
 

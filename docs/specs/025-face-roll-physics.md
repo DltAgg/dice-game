@@ -7,8 +7,7 @@ On-roll conditions. On absorb on faces is retired as a design axis (auto-bank
 made it fire with On roll). `[Generate]` on tactics is unchanged.
 
 Related: [`RULEBOOK.md`](../RULEBOOK.md) §§5–7, §11;
-[`KEYWORDS.md`](../KEYWORDS.md); [`016-attribute-pile-up.md`](./016-attribute-pile-up.md);
-[`021-overcharge.md`](./021-overcharge.md); [`004-face-cards.md`](./004-face-cards.md).
+[`KEYWORDS.md`](../KEYWORDS.md); [`004-face-cards.md`](./004-face-cards.md).
 
 Named specials (Tempo Mechanical + Luminar, Control Arcane + Darkness) all use
 this physics. Catalogue tables: [`004-face-cards.md`](./004-face-cards.md).

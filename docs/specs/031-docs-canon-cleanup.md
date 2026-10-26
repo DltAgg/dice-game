@@ -97,7 +97,7 @@ Q2 and Q3 are applied. Text that only described the old game is removed from the
 | `README.md` | The status table and the design-questions paragraph match that source. The specialists table is unchanged. |
 | `docs/ARCHITECTURE.md` | The turn-phase paragraph no longer describes absorb, forge, or ritual as play. The rest of the file is the software layout. |
 | `docs/DEFERRED_CATALOGUE.md` | Keeps Dodge, changing a printed Action, Open Manual, and the sixth face. Pile, tactic, and win-rate rows are removed. |
-| `docs/AGENT_PROMPT.md` | The file stays. The old task text is removed. It is not a source (Q18). |
+| `docs/AGENT_PROMPT.md` | Removed when spec 032’s delete row was accepted. |
 | `docs/MECHANIC_ARCHETYPES.md` | The file stays. The pile-fuel tracker is removed. It is not a source (Q18). A new tracker is not written here. |
 
 Rows D1–D60 still quote the documents from before this pass. Their questions are answered in **Decisions**. This section does not close a row by editing its quote.

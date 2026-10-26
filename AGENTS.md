@@ -95,12 +95,10 @@ or go/no-go after that work exists. Policy:
 | `docs/specs/006-deck-persistence.md` | Deck builder / loadouts |
 | `docs/specs/007-peerjs.md` | Online host authority |
 | `docs/specs/014-match-metrics.md` | Observer telemetry, dashboard, agent export |
-| `docs/specs/016-attribute-pile-up.md` | **Obsolete** — historical attribute-pile spec |
 | `docs/specs/017-layer-split.md` | `src/server` vs `src/client` import rules |
 | `docs/specs/018-ast-engine.md` | Opcode AST, validator / compiler / executor |
 | `docs/specs/019-content-json.md` | Per-entity / per-loadout JSON catalogues |
 | `docs/specs/020-module-split.md` | Reducer commands + MatchBoard carve |
-| `docs/specs/021-overcharge.md` | Tactic `[Overcharge]` (hand-card spend). Not spec `013` `optional-overcharge`. |
 | `docs/specs/026-ai-playtest.md` | Headless two-AI local playtest (`src/ai`; public `@server` only) |
 | `docs/specs/027-local-vs-ai.md` | Lobby + store Play vs AI (`chooseAction` as a player adapter) |
 | `docs/specs/028-tag-fighter-prototype.md` | Earlier 3v3 prototype. Where it disagrees with spec `030`, follow `030` |
