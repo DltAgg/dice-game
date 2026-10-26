@@ -18,19 +18,9 @@ description: >-
    `modify`, `damage`, …). A genuinely new verb adds one `IOpcodeHandler` class
    under `src/server/ast/opcodes/` plus a compile mapping. Do not attach functions
    to `GameState` or catalogue documents.
-5. **Intent actions** — players declare choices (`PLAY_CARD`, `ATTACK`,
-   `OVERCHARGE_CARD`, …); amounts and legality are derived by the host/engine.
-   Spec `021` tactic `[Overcharge]` (`OVERCHARGE_CARD` + `faceCardId`,
-   `PlayerState.overchargeByFace`, queries `canOvercharge` /
-   `legalOverchargeFaces`) is **not** spec `013`
-   `optional-overcharge` (Mechanical face-marker opcode).
+5. **Intent actions** — players declare choices. Amounts and legality are derived by the host. The current actions are in `docs/RULEBOOK.md`.
 6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
-7. **Proving cards** — print uses holder voice and
-   [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Follow
-   [`docs/specs/030-offensive-control.md`](../../../docs/specs/030-offensive-control.md):
-   Response or Modify, not pile `playCost`, not a new card type. A new token
-   joins Mark/Strip X — do not add Dose-style verbs. New tokens are Mark/Strip
-   arguments, not new opcodes.
+7. **Proving cards** — read [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) before print. The source is [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Response or Modify, not a new card type. A new token joins `[Mark]` / `[Strip]`. The change is not done when the print and the glossary disagree.
 
 ## Typical change: new effect kind
 
@@ -55,9 +45,7 @@ Prefer composing existing opcodes + `ValueExpr` + `Duration` in catalogue JSON
 | Effect stack | `src/server/reducer/resolution.ts` |
 | Zones / cards helpers | `src/server/reducer/zones.ts` |
 | Setup | `src/server/setup/createMatch.ts` |
-| Absorb / On absorb | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
 | Queries | `src/server/rules/*` |
-| Tactic Overcharge (`021`) | `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `src/server/rules/overcharge.ts` (`canOvercharge` / `legalOverchargeFaces`). **Not** spec `013` `optional-overcharge`. |
 | Scenario helpers | `src/server/testing/*` |
 
 ## Networking boundary
@@ -68,17 +56,9 @@ Never put rules in `src/client/networking/` or the UI.
 
 ## Phases
 
-`TURN_PHASE_ORDER`: `roll` → `actions`.
-`END_TURN` is an action, not a phase. Symbol generation happens inside `ROLL_DICE`,
-which then enters `actions`. Usable rolled attributes **auto-absorb** (On absorb
-still fires; there is no persistent pile). Shield absorbs onto a creature.
-Printed `[Spend]` / `[Requires]` are not enforced — see `docs/RULEBOOK.md`.
-There is no leftover-rolled flip. The actions phase is one window for absorb,
-attacks, plays, forges, Overcharge, and ready rituals (any order).
-Ready rituals may activate during actions; not during roll.
-New proving cards follow spec `030` (Response or Modify, named faces). Do not
-extend pile absorb, natural/synthetic forge, or ritual types when that card
-can use the current model.
+`TURN_PHASE_ORDER`: `roll` → `actions`. `END_TURN` is an action, not a phase.
+How that turn plays is [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md). Do not
+extend pile absorb, forge, Overcharge, or ritual types. Those are not current play.
 
 ## When content-only is enough
 

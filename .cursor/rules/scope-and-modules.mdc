@@ -22,7 +22,9 @@ This repo already paid for a megamodule rewrite. Do not start another.
 - **OOP:** new verbs are one `IOpcodeHandler` class, registered, tested. No
   methods or closures on `GameState` or catalogue JSON (serializable DTOs).
 - **DRY:** share `dealDamage`, zone helpers, prompt openers — do not copy the
-  switch. Reuse `[Mark]` / `[Strip]` / `[Modify]`; do not mint Dose-style verbs.
+  switch. New print uses the whole of `docs/KEYWORDS.md`. Reuse `[Mark]` /
+  `[Strip]` / `[Modify]`. Do not mint a verb. The change is not done when
+  the print and the glossary disagree.
 - **KISS:** the smallest change that matches print. Empty structured fields +
   `DEFERRED_CATALOGUE.md` beat a fake implementation.
 - **YAGNI:** no “flexibility” stubs, no parallel AST, no HTTP server, no extra

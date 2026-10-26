@@ -5,6 +5,10 @@ File: `src/server/content/creatures/<creature-id>.json` (id constant in
 Types: `src/server/model/creatures.ts`, `fighterTechniques.ts`
 Schema: `src/server/content/schema/creature.schema.json`
 
+The source is [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Print is
+[`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Read it before Assist or
+Technique text.
+
 Print says **Fighter**. The JSON type stays a creature definition. Do not
 rename the file layout.
 
@@ -12,32 +16,28 @@ rename the file layout.
 
 | Piece | Field | Notes |
 |---|---|---|
-| HP | `life` | Damage is state, not a second max |
-| Base die | `baseDie` | Face ids. Length is `facesPerDie`. The match copies this onto the current die. The player does not build it in the deck |
-| Simple Actions | on each face's `primaryEffects` | Own die only. Not a pile-cost attack |
-| Techniques | `techniques` | `FighterTechniqueDefinition`. Primary face on this Fighter's die. Secondary is a named face, a face type, a sequence role, or a strike class (`hitStrength` and/or `hitType`, such as a light kick) on **another of your dice**. The Technique itself has both `hitStrength` and `hitType`. Ordered, not a set |
-| Assist | `assistName`, `assistRulesText`, `assistEffects` | Fighter-owned. Not a card. May be offensive, defensive, utility, or meter-enhanced. Uses the chain |
-| Exceptional Assist | `exceptionalAssistMeter` | Omit to use the shared Assist meter knob. Not a cost for merely having an Assist |
+| Life | `life` | Defeated when damage reaches life |
+| Base die | `baseDie` | Face ids. The match copies this onto the current die. The player does not build it in the deck |
+| Face actions | on each face | Any living Fighter, Active or Reserve |
+| Techniques | `techniques` | Active Fighter only. Primary is that Fighter's showing face. Secondary is another of your rolled dice. The Technique has `hitStrength` and `hitType`. Strength sets Meter, not damage |
+| Assist | `assistName`, `assistRulesText`, `assistEffects` | Not the Active Fighter. May be defeated. Not a card. Once per turn |
+| Assist Meter | `exceptionalAssistMeter` | Omit it and the Assist spends 0. A number greater than 0 is spent |
 | Passive | `passiveRulesText`, optional `standingAbilities` | Optional. Data-driven hooks only when the engine already models the clause |
 
-A KOed Fighter cannot become Active and cannot Tag. They still roll, and
-they can still Assist, until a later rule says otherwise. Do not author a
-bonus die, reroll, or card for the KO.
+A defeated Fighter stays defeated and can still Assist. Defeating the Active
+Fighter opens a choice of a living Reserve when no decision is already
+pending. That choice spends no Tag and no Meter.
 
-`archetype` is a label a card's `archetypeRestriction` can match. It does
-not ban deck construction.
+`archetype` is a label. It does not ban deck construction. Defeating a
+Fighter marked legendary does not by itself end the match. Do not set
+`legendary` as a win condition.
 
 ## Schema leftovers
 
-The creature schema still requires `attacks` (at least one) and may still
-describe pile costs and a legendary win. Do not design that array as the
-Fighter. If validation still requires it, keep the smallest legal attack
-with no `[Requires]` / `[Spend]`, and put the real moves on faces and
-`techniques`. Do not set `legendary`.
-
-`requiredTechniques` on an attack is the old toolkit gate (`strike`,
-`guard`, …). New moves use `FighterTechniqueDefinition`, not that gate, and
-do not require a Guard face.
+The creature schema still requires `attacks` (at least one). Do not design
+that array as the Fighter. If validation still requires it, keep the
+smallest legal attack with empty `rulesText` and no `[Requires]` / `[Spend]`.
+Put the real moves on faces and `techniques`.
 
 ## Shape
 
@@ -47,7 +47,7 @@ do not require a Guard face.
   "name": "Magnus",
   "life": 20,
   "passiveRulesText": "",
-  "assistName": "Clinch",
+  "assistName": "Wall",
   "assistRulesText": "",
   "attacks": [
     {
@@ -63,14 +63,12 @@ do not require a Guard face.
 
 That attack exists because the schema requires one. It is not the moveset.
 Put real moves on faces and `techniques`. Fill `baseDie` with face ids this
-change adds or that already exist. Fill `techniques` only when both inputs
-exist.
+change adds or that already exist.
 
 ## Do not author
 
-- ATK/DEF or any other generic stat block
 - A personal deck, hand, or die-construction list
-- An Assist card
-- A Tag face "so they can tag"
+- An Assist card, or an Assist that negates a card
+- A Tag face
 - Shield as a starting resource
 - The same Technique copied onto every Fighter with the name changed

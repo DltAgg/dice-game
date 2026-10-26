@@ -123,7 +123,7 @@ filename (`prompt-engineer.md`, `author-interactions/SKILL.md`).
 | `src/server` rules, hooks, AST | `engine-developer` |
 | Play surface, stores, PeerJS | `match-ui` |
 | Builtin lists / constructed critique (one shared deck) | `deck-designer` |
-| Playtest debrief / `MECHANIC_ARCHETYPES.md` | `post-playtest` |
+| Playtest debrief | `post-playtest` |
 
 You may tell those specialists what to **read** (skills, rules, specs that
 already exist). You may not implement their layer.

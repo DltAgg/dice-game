@@ -37,7 +37,7 @@ identity, cost, or print unless the mechanic cannot be expressed as specified
    - Timing English on a proving card (`On roll:` / `On absorb:` / `On …:`) → `.cursor/skills/standardize-card-effects/SKILL.md`.
 5. When the change touches undecided or parked print: `docs/OPEN_DESIGN.md` and `docs/DEFERRED_CATALOGUE.md`.
    When a fuel / attack / generate change would shift **deck feel**, read and
-   update `docs/MECHANIC_ARCHETYPES.md` (do not reintroduce `RETARGETED` leaks).
+   `docs/MECHANIC_ARCHETYPES.md` is not a source. Do not update it as the feel tracker.
 
 Player-facing rules: `docs/RULEBOOK.md`. If `OPEN_DESIGN.md` is `OPEN` /
 `DEFERRED`, **stop and ask** — do not assume a rule.
@@ -67,10 +67,7 @@ Implement engine requirements so content can stay data-driven:
 - Incomplete printed clauses: keep accurate English, leave structured fields empty or omit, row in `docs/DEFERRED_CATALOGUE.md`. Never approximate silently.
 - Proving-card print follows holder voice (`you` = the player whose field the card sits on) and `docs/KEYWORDS.md`. Do not invent a 1-cost proving card when a 2+ cost expresses the mechanic. New tokens join `[Mark]` / `[Strip]`; do not mint Dose/Envenom verbs.
 - Hooks are **shared events** + catalogue filters. Never coupled types (`on-ally-attack`, `on-opponent-roll-symbol`). Identity is instance id, not definition id or printed name.
-- **Attribute pile (spec `016`) is obsolete.** Do not bank into or spend from
-  `PlayerState.attributePool` (the field is gone). On absorb still fires;
-  Shield absorb stays `{ kind: "creature" }`. Printed `[Requires]` / `[Spend]`
-  / ritual `activeWhen` are catalogue leftovers, not live pile gates.
+- Do not bank an attribute pile or spend Shield. Printed `[Requires]`, `[Spend]`, and ritual gates are not current play. Proving-card print follows `docs/KEYWORDS.md`. Cards are Response or Modify, not `type: "reaction"`.
 - Filters live on ability data (`self` | `ally` | `ally-other` | `any`, `controller` | `opponent` | `any`), not in reducer branch names.
 - Hosts share one trigger union: equipment, creature standing passives, ready continuous rituals. Walk all hosts the same way.
 - Stun is `DEFERRED` in `OPEN_DESIGN.md`. Do not design or build stun unless the user reopens it.
@@ -116,15 +113,11 @@ If the user asks for engine **and** UI in one request: implement engine + spec U
 | Commands | `src/server/reducer/commands/` |
 | StandingTrigger | `src/server/model/cards.ts` |
 | State | `src/server/model/state.ts`, `creatures.ts`, `dice.ts` |
-| Attribute pile | `src/server/reducer/attributeBank.ts`, `rollBank.ts`, `commands/absorb.ts` |
-| Reactions / prevent / hooks | `docs/specs/008-reaction-chain.md`, `009-true-prevent.md`, `010-trigger-hooks.md` |
-| Tactic Overcharge (`021`) | `commands/overcharge.ts`, `rules/overcharge.ts` — `OVERCHARGE_CARD` + `faceCardId`, `PlayerState.overchargeByFace`, `canOvercharge` / `legalOverchargeFaces`. **Not** spec `013` `optional-overcharge` (face-marker opcode; `RESOLVE_OPTIONAL_OVERCHARGE`) |
+| Reactions / Chain / damage | `src/server/reducer/chain.ts`, `resolution.ts`. How they play is `docs/RULEBOOK.md` |
 | Tests / scenarios | `src/server/reducer/*.test.ts`, `src/server/testing/scenario.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 
-Phases: `roll` → `actions`. `END_TURN` is an action, not a phase.
-Ready rituals may activate during actions, not during roll. Absorb (creature +
-ritual) is legal throughout actions on the same unabsorbed pool as `[Requires]`.
+Phases: `roll` → `actions`. `END_TURN` is an action, not a phase. How the turn plays is `docs/RULEBOOK.md`. Do not extend absorb, forge, Overcharge, or ritual as current play.
 
 ## Specs
 

@@ -21,7 +21,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 | New verb / hook / phase | `engine-developer` + `develop-engine` or `implement-hooks`. One handler class or one `fire*`. |
 | Lobby / board / decks UI | `match-ui`. Query engine; do not copy legality. |
 | Legal lists / “does this card have a home?” | `deck-designer`. One shared deck. Edit `loadouts/*.json`. Fighter text is a play check, not a construction ban. |
-| Playtest debrief (notes ± metrics, wrong-archetype feel) | `post-playtest` + `review-playtest`. Update `docs/MECHANIC_ARCHETYPES.md`; brief owners; do not implement. |
+| Playtest debrief (notes ± metrics, wrong-archetype feel) | `post-playtest` + `review-playtest`. Brief owners. Do not implement. `docs/MECHANIC_ARCHETYPES.md` is not a source. |
 | Playtest “felt like the wrong archetype” (already debriefed) | `card-designer` (print) / `engine-developer` (physics) / `deck-designer` (list). |
 | New/rewrite agent, skill, rule, AGENTS.md routing | `prompt-engineer` + `author-interactions`. One artifact. |
 | Spans two columns above | Parent **delegates**; does not implement both. |
@@ -38,7 +38,7 @@ Mechanical gate: `src/architecture/module-budget.test.ts` (part of `npm test`).
 
 ## OOP / DRY / KISS / YAGNI (this repo)
 
-1. **Compose** `mark` / `strip` / `modify` / `damage` / `heal` in JSON.
+1. **Compose** effects the glossary already names. New tokens use `mark` / `strip`. Read `docs/KEYWORDS.md` before print. The change is not done when the print and the glossary disagree.
 2. **New verb** = one `IOpcodeHandler` + compile mapping + proving card + tests.
 3. **Commands** stay in `src/server/reducer/commands/`; `reduce.ts` is a facade.
 4. **UI** dispatches `GameAction` and reads queries. No second rules engine.

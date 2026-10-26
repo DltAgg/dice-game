@@ -47,7 +47,8 @@ npm run typecheck && npm test && npm run lint
 | Module budget | `src/architecture/module-budget.test.ts` (no megamodules / freeze) |
 | Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
 | Keyword glossary | `docs/KEYWORDS.md` (update when print vocabulary / tokens change; Rules tab) |
-| Mechanic × archetype feel | `docs/MECHANIC_ARCHETYPES.md` (post-playtest agent updates this; same change as a later retarget) |
+| Source for play | `docs/GAME_STATE.md` |
+| Mechanic × archetype feel | `docs/MECHANIC_ARCHETYPES.md` is not a source |
 | Match store | `src/client/store/matchStore.ts` |
 | Deck store / localStorage | `src/client/store/deckStore.ts`, `src/client/decks/` |
 | Match metrics / IndexedDB | `src/client/metrics/`, `src/client/ui/metrics/`, `src/client/store/metricsStore.ts` |
@@ -60,8 +61,8 @@ npm run typecheck && npm test && npm run lint
 | File | Checks |
 |---|---|
 | `src/server/content/cards.consistency.test.ts` | Attachment subtype ↔ region lockstep |
-| `src/server/content/cardText.test.ts` | English type / forge / requirement printing |
-| `src/server/rules/loadout.test.ts` | Deck 40–50, ≤3 copies, known ids |
+| `src/server/content/cardText.test.ts` | Card text checks. New print follows `docs/KEYWORDS.md` |
+| `src/server/rules/loadout.test.ts` | Deck legality and known ids. The current deck is 10–24 cards, at most 3 copies |
 | `src/architecture/engine-purity.test.ts` | Engine stays pure |
 | `src/architecture/module-budget.test.ts` | File size freeze; no `src/game`; thin catalogue loaders |
 | `src/server/reducer/*.test.ts` | Behavior of play / forge / combat / etc. |
@@ -99,8 +100,8 @@ Details: `docs/specs/007-peerjs.md`.
 | Skill | Use when |
 |---|---|
 | `.cursor/skills/slice-changes/` | Large / cross-layer work — stop megamodule rewrites |
-| `.cursor/skills/author-content/` | Design then author catalogue cards (uniqueness / forge / dice-resonance) |
-| `.cursor/skills/standardize-card-effects/` | Normalizing On roll / On absorb text and wiring triggers |
+| `.cursor/skills/author-content/` | Design then author Fighters, named faces, Responses, and Modifies |
+| `.cursor/skills/standardize-card-effects/` | Timing-prefixed print from `docs/KEYWORDS.md` |
 | `.cursor/skills/develop-engine/` | New effect AST, reducer, hooks |
 | `.cursor/skills/implement-hooks/` | Shared standing trigger events (`010`) |
 | `.cursor/skills/match-ui/` | Lobby / MatchBoard / stores |
@@ -113,7 +114,7 @@ Details: `docs/specs/007-peerjs.md`.
 | `.cursor/agents/card-designer.md` | Design then author Fighters, named faces, Responses, and Modifies; redirect a request that breaks that model; new mechanics → engine-developer |
 | `.cursor/agents/engine-developer.md` | Implementing rules in `src/server` (hooks, reducer, resolution, statuses) |
 | `.cursor/agents/match-ui.md` | Lobby / MatchBoard / deck builder / stores / PeerJS adapters |
-| `.cursor/agents/deck-designer.md` | Constructed loadouts; orphan / attribute-identity critique |
+| `.cursor/agents/deck-designer.md` | One shared deck and three Fighters. A play check is not a construction ban |
 
 - No CSV/OCR ingest scripts unless the user explicitly asks to build tooling.
 - No second rules engine in UI or networking.

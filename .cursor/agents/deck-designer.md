@@ -25,8 +25,8 @@ play check, not a construction ban.
 ## Read first (every invocation)
 
 1. `AGENTS.md` and `TOOLS.md`
-2. `.cursor/skills/author-content/design.md` — layers, not an attribute pie
-3. `docs/specs/030-offensive-control.md` — hand, deck, lifecycle, Fighter dice
+2. `.cursor/skills/author-content/design.md` — layers
+3. `docs/GAME_STATE.md` — deck, hand, dice, and victory. `docs/RULEBOOK.md` is how it plays
 4. `src/server/rules/loadout.ts` and `GameRulesConfig`
    (`TAG_FIGHTER_RULES` when the list has three dice)
 5. Current lists: `src/server/content/loadouts/`
@@ -36,8 +36,7 @@ play check, not a construction ban.
 7. `docs/DEFERRED_CATALOGUE.md` when a card's print is unwired. Do not treat
    unwired clauses as live tools.
 
-`docs/MECHANIC_ARCHETYPES.md` pile-era homes (Aggro pile, face deck, legendary
-win) are archaeology. Do not build a list to satisfy them.
+`docs/MECHANIC_ARCHETYPES.md` is not a source. Do not build a list to match it.
 
 ## Mission
 

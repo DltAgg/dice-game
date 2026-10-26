@@ -1,89 +1,9 @@
 # 005 — Local match UI (Milestone 3)
 
-Status: **IMPLEMENTED**
+Not the source. The previous text of this file described a game that is not current play. That text is removed so it cannot be used as a source.
 
-A hotseat local match driven entirely through Zustand → `advance()` →
-`GameState`. No PeerJS, no persistence. Catalogue depth remains deferred
-([`docs/DEFERRED_CATALOGUE.md`](../DEFERRED_CATALOGUE.md)).
+The source is [`docs/GAME_STATE.md`](../GAME_STATE.md). How a match plays is [`docs/RULEBOOK.md`](../RULEBOOK.md). Print is [`docs/KEYWORDS.md`](../KEYWORDS.md).
 
-## Intent
+This file stays only as the accepted inventory row. It does not add a rule.
 
-Prove the architectural stack outside tests:
-
-```text
-UI  →  Zustand match store  →  advance(action)  →  GameState
-```
-
-Two players share one browser (hotseat). The turn player conducts **actions**;
-the inactive side is read-only then. **Roll** is one `ROLL_DICE` from the turn
-player that randomizes **both** seats’ dice (convert Choose one still binds
-the die owner via `pendingChooserId`).
-
-Local **Play vs AI** is a sibling lobby mode (spec
-[`027-local-vs-ai.md`](./027-local-vs-ai.md)): `localPlayerId` is the human
-seat; the other seat is filled by `src/ai`. Hotseat is unchanged
-(`localPlayerId: null`).
-
-## Scope
-
-| In | Out |
-|---|---|
-| Zustand store owning `GameState` + last reject error | PeerJS / host authority |
-| New match (seeded) with prototype squads / decks / face decks | Deck builder |
-| Board: creatures, dice faces, symbols, attribute pile, phase, hand | Fancy card art on the board (catalogue remains separate) |
-| Actions: roll, then **actions** for absorb / attack / play / forge / activate ritual (any order), retain, resolve search, skip to actions from roll, end turn | Reaction chain UI |
-| Forge prompts for a face-pool card (or installed copy) | Auto-picked faces |
-| Pending decision prompts (chooser + waiting banner), including `replace-synthetic-face` (Reforge / Cross forge), `choose-equipment`, and `choose-attribute-tokens` | Second legality engine in React |
-| Sticky error snackbar | |
-| Catalogue still reachable from the app shell | Persistence / resume |
-
-## Pending decisions
-
-`MatchBoard` renders `state.pendingDecision` with a seat-gated chooser for the
-controller and a waiting banner for everyone else. The chooser may complete the
-pending even when they are not the turn player (`actingPlayerIdOf` follows
-`pendingChooserId`). Resolve via
-`useMatchStore.dispatch` only — query `@server` helpers for legal options
-(e.g. `legalSlotsForReplaceSyntheticFace` / `eligiblePoolFacesForReforge` for
-Reforge / Cross forge). Do not special-case catalogue card ids. HandStrip Play
-is enabled when `hasPlayableEffect`, `canAffordPlay`, and `canResolvePlayEffects`
-all pass.
-
-Notable Reforge / Cross forge UX (`replace-synthetic-face`):
-
-1. Pick N replaceable slots on **one** owned die (Cross forge: those slots must show Y).
-2. Pick N **synthetic** destination faces from the controller's pool.
-3. Dispatch `RESOLVE_REPLACE_SYNTHETIC_FACE` with parallel `slotIndexes` /
-   `faceCardIds` (engine handles uninstall / install; no forge-draw).
-
-## UI — two-phase turn
-
-Engine: `TurnPhase` is `roll` | `actions` only. No absorb phase — banking and
-Shield absorb happen during **actions** via `ABSORB_SYMBOL`.
-
-| Surface | Behavior |
-|---|---|
-| Phase bar | **Roll \| Actions** only. Highlight `state.phase`. Auto-`ROLL_DICE` as the turn player rolls **both** seats, then enters actions. Last phase left only via **End turn**. |
-| Symbol pool | During **actions**, the unabsorbed pool is for banking and `[Requires]` spend. Clicking a pool pip can select it for absorb (attribute → pile, Shield → creature). Effect-generated (`available`) and die (`rolled`) pips share the same pool. |
-| Absorb UX | Banking and Shield absorb are legal whenever `phase === "actions"` (and `canAct`). Mid-turn generated pips must be absorbable without changing phase. |
-| Lobby / help | Two-step flow: Roll → Actions. |
-
-Do not reimplement absorb legality in React. Dispatch `ABSORB_SYMBOL`; let
-`advance()` reject.
-
-## Acceptance criteria
-
-- [x] `npm run dev` opens a playable hotseat match
-- [x] Illegal actions leave state unchanged and surface the `GameError` code
-- [x] A match can be played to victory through the UI (manual smoke; reducer autoplay covers rules)
-- [x] Engine purity guard still green; store/UI never imported by `src/server`
-- [x] `replace-synthetic-face` pending has chooser + waiting UI
-- [x] Stay-on-slot UI: pestilence uses catalogue `pestilenceSpreadAt`; remaining forge-lock and cannot-replace shown; forge / forge-faces / Reforge omit locked slots; Activate peel stays
-
-## Layout
-
-```text
-src/store/matchStore.ts     Zustand + advance()
-src/ui/match/MatchBoard.tsx hotseat board
-src/app/App.tsx             shell (Match | Catalogue)
-```
+Hotseat still goes through one store and one `advance()` path. The board does not implement rules.

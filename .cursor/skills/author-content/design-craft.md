@@ -1,12 +1,11 @@
 # Set craft
 
-Model: [design.md](design.md) and
-[`docs/specs/030-offensive-control.md`](../../../docs/specs/030-offensive-control.md).
-Print: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
+Model: [design.md](design.md). The source is
+[`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Print is the whole of
+[`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Read it before print. The
+change is not done when the print and the glossary disagree.
 
-This sibling is **craft**. Do not paste it into the agent. Do not treat
-pile-era spec tables (`002` bridges, natural/synthetic forges, attribute
-exclusives) as cards to clone.
+This sibling is **craft**. Do not paste it into the agent.
 
 ## Catalogue truth
 
@@ -15,9 +14,9 @@ Grep it before choosing a slot. Then read the matching schema. Reuse a field
 that already exists (`modifySubject`, `fighterRestriction`, `baseDie`,
 `primaryEffects`, `techniques`, `assistEffects`, `exceptionalMeterCost`).
 
-Leftover zones (a required `forge` object, `equipment` / `overload` /
-`ritual` regions, `face-natural-technique-guard` in an old list) are not
-slots to fill again.
+A required `forge` object is a validator leftover. Satisfy it. Do not design
+the card around it. Overload and ritual regions are not slots. A moveset
+Modify attaches in the equipment zone. That is not a card type.
 
 ## Designer gates
 
@@ -25,12 +24,10 @@ slots to fill again.
    or a Modify. Do not stack a second resource on top.
 2. **Wrong layer.** If the request is a Block face, a Tag card, or a
    per-fighter deck, stop. [design.md](design.md) has the closest home.
-3. **No separation.** Dice, Fighter, and cards stay distinct. A card does
-   not replace a basic action. A die does not become the defense system.
+3. **No separation.** Dice, Fighter, and cards stay distinct.
 4. **Doesn't fit the rules.** Compose existing opcodes. If the proving card
    needs new vocabulary, brief `engine-developer`. Do not fake it.
-5. **Power level last.** First-playtest work optimizes for covering the loop
-   in [design.md](design.md), not for balance or volume.
+5. **Power level last.** Cover the current loop. Do not chase volume.
 
 ## Uniqueness
 
@@ -42,39 +39,35 @@ back to the user.
 
 Do not copy:
 
-- the last Modify that only draws
-- a face whose only text is generic damage reduction
+- a draw that repeats with no restriction and is not part of a Technique or an Assist
+- a face whose only text is generic Block
 - `[Spend] X, [Generate] Y`
-- `On roll: [Generate 1 SameAttr]` as a die identity
-- a Forge-1 natural/synthetic sticker
+- a Forge sticker
 
 ## What a new piece must touch
 
 Every new face, move, or card cares about at least one of: a rolled input,
-a Simple Action, a Technique, a Response, a Modify subject, an exceptional
+a face action, a Technique, a Response, a Modify subject, an exceptional
 Meter mode, Tag, or Assist.
 
-Shared side effects (a small heal, a draw) still need that hook. They are
-not a reason to bring back an attribute pie.
+Shared side effects (a draw) still need that hook, and a draw needs a
+restriction unless it is part of a Technique or an Assist.
 
 ## Moveset and die writes
 
-A moveset card is Modify `moveset`. One per example Fighter in the
-playtest philosophy is enough to show the subject. A generic moveset omits
-`fighterRestriction`. A Fighter-specific one sets it and does not rewrite
-another Fighter's die.
+A moveset card is Modify `moveset`. It attaches in the equipment zone. A
+generic moveset omits `fighterRestriction`. A Fighter-specific one sets it
+and does not rewrite another Fighter's die.
 
-Modify `die` writes the current die for the rest of the match. Modify `roll`
-only changes which face is showing. Do not author both as one vague "dice
-card."
+Replace (`modifySubject: "die"`) writes the current die for the rest of the
+match. Modify `roll` only changes which face is showing.
 
 ## Anti-patterns
 
 See the table in [design.md](design.md). Also reject:
 
-- Guard, Block, Dodge, or Counter on a new face
+- Guard, Block, Dodge, Counter, or Parry on a new face
 - Meter on a card because it is strong
 - A second lifecycle besides `one-shot` and `persistent`
 - A new timing enum
-- Filling `attacks` with pile `[Requires]` to satisfy the creature schema
-  and calling that the Fighter
+- Filling `attacks` with pile `[Requires]` and calling that the Fighter

@@ -1,6 +1,6 @@
 # 033 — AI artifact rewrite
 
-Status: **DRAFT requirements**. Spec 032’s table is accepted. The rewrite set is every rewrite or decompose row. Spec 031’s source is `docs/GAME_STATE.md`. A rewrite teaches that game. This file does not yet rewrite an artifact.
+Status: **DRAFT requirements**. Spec 032’s table is accepted. The rewrite set is every rewrite or decompose row. Spec 031’s source is `docs/GAME_STATE.md`. A rewrite teaches that game. The accepted spec 032 rewrite and decompose rows now point at `docs/GAME_STATE.md`, or the old rules text has been removed from the file. Use-as-is rows are unchanged.
 
 This file is requirements only. It does not choose a mechanism, name tasks, or replace any prompt.
 

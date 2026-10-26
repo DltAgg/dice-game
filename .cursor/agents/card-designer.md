@@ -23,36 +23,36 @@ requests → skill `slice-changes`.
 
 This is a **3v3 tag fighter**. Each player has three Fighters, one shared
 deck, one shared hand, one shared Meter pool, and one die per Fighter.
-Confirmed model: `docs/specs/030-offensive-control.md`. Layer homes:
-`.cursor/skills/author-content/design.md`.
+The source is `docs/GAME_STATE.md`. How it plays is `docs/RULEBOOK.md`.
+Print is the whole of `docs/KEYWORDS.md`. Layer procedure:
+`.cursor/skills/author-content/design.md`. Where that note names spec 030,
+`docs/GAME_STATE.md` wins.
 
 ## Read first (every invocation)
 
 1. `AGENTS.md` and `TOOLS.md`
-2. `.cursor/skills/author-content/SKILL.md`, then:
-   - Wrong-layer redirects and the first-playtest philosophy → `design.md`
+2. `docs/KEYWORDS.md` before any print or effect data. Reuse `[Mark N X]`,
+   `[Strip N X]`, and `[Modify]`. Do not mint a verb. The change is not
+   done when the print and that file disagree.
+3. `docs/GAME_STATE.md` and `docs/RULEBOOK.md`
+4. `.cursor/skills/author-content/SKILL.md`, then:
+   - Wrong-layer redirects → `design.md`
    - Uniqueness → `design-craft.md`
    - Response / Modify → `tactics.md`
    - Named faces → `faces.md`
    - Fighters → `creatures.md`
-3. The matching schema and type before you add a field:
+5. The matching schema and type before you add a field:
    `src/server/model/cards.ts`, `dice.ts`, `faceTypes.ts`, `creatures.ts`,
    `fighterTechniques.ts`, `effects.ts`, and
    `src/server/content/schema/*.schema.json`
-4. `.cursor/skills/standardize-card-effects/SKILL.md` before writing `rulesText`
-5. `docs/KEYWORDS.md` — reuse `[Mark N X]`, `[Strip N X]`, `[Modify]`.
-   Do not mint a verb. Do not copy the pile-era exclusives or
-   `[Forge 1 Synthetic …]` onto new content.
-6. Live JSON in `src/server/content/{cards,faces,creatures}/`
-7. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is
-   incomplete or a rule is unsettled. OPEN_DESIGN pile, natural/synthetic,
-   and face-deck sections are historical. Do not author from them.
-8. `.cursor/rules/content-catalogues.mdc`
-9. `docs/RULEBOOK.md` for how a shipped rule plays. Do not list individual
-   cards there. New mechanics → engine-developer updates the rulebook.
+6. `.cursor/skills/standardize-card-effects/SKILL.md` before writing `rulesText`
+7. Live JSON in `src/server/content/{cards,faces,creatures}/`
+8. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is
+   incomplete or a rule is unsettled. Do not invent Open Manual’s Technique
+   or Anchor’s replacement print.
+9. `.cursor/rules/content-catalogues.mdc`
 
-`docs/MECHANIC_ARCHETYPES.md` is pile-era archaeology. Do not occupy a slot
-to match those rows.
+`docs/MECHANIC_ARCHETYPES.md` is not a source. Do not occupy a slot to match it.
 
 ## Mission
 
@@ -72,19 +72,24 @@ Hand-author catalogue data. No CSV ingest unless the user asks for tooling.
 
 ## Hard rules
 
-- Two card behaviors. Block, Dodge, Counter, prevent, and redirect are
-  effects. `modifySubject` is `roll`, `die`, `moveset`, `target`, or `tag`.
+- Two card behaviors. `[Block N]`, `[Counter]`, `[Parry]`, and redirect are
+  effects. Dodge is not current print. `modifySubject` is `roll`, `die`,
+  `moveset`, `target`, or `tag`.
 - No generic Guard, Block, Dodge, or Counter face. No natural/synthetic
   kinds. No Shield resource. No attribute-pile `[Spend]` / `[Requires]`.
 - No per-fighter deck or hand. `fighterRestriction` is a play check.
-- Die writes last the match (`modifySubject: "die"`). The next match
-  rebuilds from `baseDie`. No temporary die mods. No deckbuilding dice.
+- Die writes last the match (`modifySubject: "die"`). The player word is
+  Replace. The next match rebuilds from `baseDie`. No temporary die mods.
+  No deckbuilding dice.
 - Lifecycle is `one-shot` or `persistent` only.
 - Schemas may still require `forge` or `attacks`. Satisfy the validator.
   Do not design around those leftovers. Do not set `seizesOffense` or use
   `meterCost` as mana.
 - Effects are **data**. Incomplete print stays accurate in `rulesText` and
   gets a `docs/DEFERRED_CATALOGUE.md` row. Never approximate silently.
+- User-supplied print stays verbatim. If those words are outside
+  `docs/KEYWORDS.md`, the card is not finished, and the supplied words stay
+  intact.
 - Do not grow `EffectDefinition`, `StandingTrigger`, `GameAction`,
   `reduce()`, or `resolution.ts` yourself.
 - Do not add copies to builtin decks unless asked — or unless
@@ -97,7 +102,7 @@ Hand-author catalogue data. No CSV ingest unless the user asks for tooling.
 Do **not** implement it. Do **not** fake it in catalogue data.
 
 1. Confirm the clause is required by print (not flavor).
-2. If spec `030` or `OPEN_DESIGN.md` leaves it open, **stop and ask**.
+2. If `docs/GAME_STATE.md` or `docs/OPEN_DESIGN.md` leaves it open, **stop and ask**.
 3. Launch **engine-developer** with:
 
 ```text
@@ -118,13 +123,13 @@ Must stay deferred: <clauses that must not be approximated>
 
 ```text
 Card Progress:
-- [ ] 1. Inspect schemas + live JSON
+- [ ] 1. Read KEYWORDS.md, then schemas + live JSON
 - [ ] 2. Name the layer; redirect if the request breaks it
 - [ ] 3. Uniqueness (design-craft.md)
-- [ ] 4. Print + KEYWORDS
+- [ ] 4. Print from the whole glossary, or stop if the user’s words are outside it
 - [ ] 5. Map clauses → existing effects OR defer OR engine brief
 - [ ] 6. Author one JSON file
-- [ ] 7. DoD
+- [ ] 7. DoD. Not done if print and KEYWORDS.md disagree
 ```
 
 Ids: `card-*`, `creature-*`, face ids that match the current `faceId`
@@ -151,4 +156,5 @@ npm run typecheck && npm test && npm run lint
 Report: layer occupied and why it is not a reskin; any request you refused
 and the home you proposed; clauses wired vs deferred; whether
 `engine-developer` was invoked; DoD. Ask rather than assume on Fighter
-identity, exceptional Meter, incomplete print, and open spec `030` questions.
+identity, exceptional Meter, incomplete print, and questions still open in
+`docs/OPEN_DESIGN.md`.

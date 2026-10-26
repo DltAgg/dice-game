@@ -6,8 +6,9 @@ alwaysApply: true
 # Living rulebook (every session)
 
 [`docs/RULEBOOK.md`](docs/RULEBOOK.md) is how the game **currently plays**.
-It is not the bible (design canon) and not `OPEN_DESIGN.md` (unsettled questions).
-Print vocabulary is [`docs/KEYWORDS.md`](docs/KEYWORDS.md) — the Rules tab
+The source for that text is [`docs/GAME_STATE.md`](docs/GAME_STATE.md).
+[`docs/OPEN_DESIGN.md`](docs/OPEN_DESIGN.md) is the unsettled questions.
+Print vocabulary is the whole of [`docs/KEYWORDS.md`](docs/KEYWORDS.md). The Rules tab
 shows both.
 
 ## Must update in the same change
@@ -17,9 +18,9 @@ notice different timing, legality, costs, phases, zones, victory, or loadout
 constraints, **edit `docs/RULEBOOK.md` in that same change**. Specs and
 `OPEN_DESIGN.md` do not replace this.
 
-Examples that **require** a rulebook edit: new/changed phase, pile spend rules,
-absorb vs spend, attack fuel, chain windows, prevent order, draw rate,
-loadout caps, win condition.
+Examples that **require** a rulebook edit: a new or changed phase, Meter gain
+or spend, the sequence, Tag, Assist, the Chain, damage order, draw rate,
+deck size, or the win condition.
 
 Examples that **do not**: a new card using existing effects (still update
 `docs/KEYWORDS.md` if you add or rename a keyword); UI/store/PeerJS except the
@@ -29,9 +30,9 @@ Rules tab rendering of the rulebook/glossary; metrics; parked print in
 If you add a token, operator, or physics keyword, edit `docs/KEYWORDS.md` in
 that same change (`.cursor/rules/keywords.mdc`).
 
-If the rule is still `OPEN` / `DEFERRED`, do not write it as fact. Point at
-`OPEN_DESIGN.md`. After implementing a `DECIDED` rule, the rulebook is the
-player-facing wording.
+If the question is still open in `docs/OPEN_DESIGN.md`, do not write it as fact.
+Point at that file. After a rule is settled, the rulebook is the player-facing
+wording. The source file is updated in the same change.
 
 Engine work: this is part of DoD for `engine-developer` / `develop-engine` /
 `implement-hooks`. Catalogue-only work hands the rulebook to engine-developer

@@ -101,13 +101,11 @@ or go/no-go after that work exists. Policy:
 | `docs/specs/020-module-split.md` | Reducer commands + MatchBoard carve |
 | `docs/specs/026-ai-playtest.md` | Headless two-AI local playtest (`src/ai`; public `@server` only) |
 | `docs/specs/027-local-vs-ai.md` | Lobby + store Play vs AI (`chooseAction` as a player adapter) |
-| `docs/specs/028-tag-fighter-prototype.md` | Earlier 3v3 prototype. Where it disagrees with spec `030`, follow `030` |
-| `docs/specs/029-fighter-combat-core.md` | Named faces, Simple Actions, ordered Techniques |
-| `docs/specs/030-offensive-control.md` | Current content model: Response, Modify, Meter, Tag, Assist, dice, deck |
+| `docs/GAME_STATE.md` | Source for how the match plays. Spec 030 is not that source |
 | `docs/RULEBOOK.md` | Living how-the-game-plays (must stay current with engine rules) |
-| `docs/KEYWORDS.md` | Print keywords (`[Mark]`, `[Empower]`, …). Rules tab shows player sections |
-| `docs/OPEN_DESIGN.md` | Unresolved design decisions |
-| `docs/MECHANIC_ARCHETYPES.md` | Mechanic × window × deck-style feel (playtest tracker) |
+| `docs/KEYWORDS.md` | Print keywords. Rules tab shows player sections |
+| `docs/OPEN_DESIGN.md` | Unsettled questions |
+| `docs/MECHANIC_ARCHETYPES.md` | Not a source |
 | `docs/DEFERRED_CATALOGUE.md` | Print clauses not fully modelled |
 
 ## Definition of Done

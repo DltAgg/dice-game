@@ -13,11 +13,11 @@ alwaysApply: true
 - Incomplete printed clauses → `docs/DEFERRED_CATALOGUE.md`, not approximate silent effects.
 - Player-facing how-it-plays: `docs/RULEBOOK.md`. Update it in the same change as any rules edit that changes play (`.cursor/rules/rulebook.mdc`).
 - Print / token / mechanic keywords: `docs/KEYWORDS.md` (`.cursor/rules/keywords.mdc`). New and edited print uses the glossary; new tokens join `[Mark]` / `[Strip]`, they do not get a new verb.
-- Mechanic × archetype feel (playtests): `docs/MECHANIC_ARCHETYPES.md`. After a session, subagent `.cursor/agents/post-playtest.md` (skill `review-playtest`) updates it and briefs owners. Same opcode, different window, different deck style.
+- After a playtest, subagent `.cursor/agents/post-playtest.md` (skill `review-playtest`) reconstructs the session and briefs owners. `docs/MECHANIC_ARCHETYPES.md` is not a source.
 - DoD: `npm run typecheck && npm test && npm run lint`.
 - Commit / push only when the user asks.
 - Print voice is the holder (`you` = the player whose field the card sits on; `opponent` = their opponent, including after a hand-off).
-- Content model is the 3v3 tag fighter (`docs/specs/030-offensive-control.md`): named dice as inputs, Fighters, Response and Modify cards, one shared Meter pool, Tag as an operation, Assist on the Fighter. No attribute-pile fuel, no natural/synthetic face kinds, no Shield resource, no per-fighter decks, no deckbuilding dice. Do not author Instant/Reaction/Equipment/Overload/Ritual as card types.
+- Content model is the 3v3 tag fighter in `docs/GAME_STATE.md`: named dice as inputs, Fighters, Response and Modify cards, one shared Meter pool, Tag as an operation, Assist on the Fighter. No attribute-pile fuel, no natural/synthetic face kinds, no Shield resource, no per-fighter decks, no deckbuilding dice. Do not author Instant, Reaction, Overload, or Ritual as card types. A moveset Modify may attach in the equipment zone. Spec 030 is not the source.
 - Content design then authoring → subagent `.cursor/agents/card-designer.md` (skill `author-content` + `.cursor/skills/author-content/design.md`). A request that breaks that model is redirected to the closest valid layer, not authored. Playtest debrief → `.cursor/agents/post-playtest.md` first. New mechanics → `engine-developer`, not the parent.
 - Engine/reducer/hooks/resolution → subagent `.cursor/agents/engine-developer.md` (skills `develop-engine`, `implement-hooks`).
 - Standing trigger hooks → `.cursor/skills/implement-hooks/SKILL.md`.

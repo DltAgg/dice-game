@@ -6,13 +6,11 @@ What player-facing behavior is being introduced?
 
 ## Rules
 
-Exact game rules, each one cited back to the bible section it comes from. If a
-rule is not in the bible and was not decided in a design discussion, it does
-not belong here — open an entry in `OPEN_DESIGN.md` instead.
-
-When this spec ships in the engine, fold the player-facing wording into
-`docs/RULEBOOK.md` in the same change. Print keywords and new tokens go in
-`docs/KEYWORDS.md` (prefer `[Mark N X]` over a new verb).
+The source is `docs/GAME_STATE.md`. Player-facing wording goes in
+`docs/RULEBOOK.md` in the same change that ships the rule. Print goes in
+`docs/KEYWORDS.md`. Prefer `[Mark N X]` / `[Strip N X]` over a new verb.
+A question that is not settled does not belong here. Open it in
+`docs/OPEN_DESIGN.md`.
 
 ## State Changes
 
@@ -20,32 +18,8 @@ Which GameState fields can change?
 
 ## Actions
 
-Which player/system actions are introduced?
+Which `GameAction` values, and who may send them?
 
-## Validation
+## Acceptance
 
-When is an action legal?
-
-## Resolution
-
-How does the reducer resolve the action?
-
-## Networking
-
-Does this action require host authority?
-
-## Persistence
-
-Does this affect local persistent data?
-
-## UI
-
-What must the player be able to see/interact with?
-
-## Acceptance Criteria
-
-- [ ] ...
-
-## Tests
-
-- [ ] ...
+What a test can check. No game code in the spec itself.

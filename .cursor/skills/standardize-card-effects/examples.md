@@ -1,109 +1,16 @@
-# Examples — leftover catalogue shapes
+# Worked print
 
-Do not copy these onto new Fighters, faces, or cards. New content uses
-Response, Modify, and named offensive faces
-([SKILL.md](SKILL.md), [design.md](../author-content/design.md)).
-The blocks below show how older print was split into timing lines.
+These shapes match [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Do not
+copy an older sheet.
 
-## Face print: Revelation / Instinct / Primordial Fury
+| Print | Effect |
+|---|---|
+| `[Strike 2].` | `damage` amount 2, or `assist-hit` amount 2 when it is an Assist |
+| `[Block 2].` | `reduce-damage` amount 2. Does not cancel the hit |
+| `[Counter].` | `negate-card`. Does not end the sequence |
+| `[Parry].` | `grant-attack-prevent`, and the card ends the sequence |
+| Replace | Modify subject `die` |
 
-These are the house style for **timing lines** (even when still print-only) —
-not a mechanical template. Dual-pip faces, forge riders, and bridges still
-split into `On roll:` / `On absorb:` without becoming Cogtooth
-(`On roll: [Generate 1 SameAttr]`). Slot uniqueness is
-[design-craft.md](../author-content/design-craft.md), not this file.
-
-```ts
-// Revelation
-"On roll: generate 1 Luminar.\n" +
-  "On absorb: heal 2 on a creature that has less than half its Life remaining."
-
-// Instinct
-"On roll: an allied creature's next attack deals +1 damage.\n" +
-  "On absorb: this creature may perform a Basic Attack if it has not attacked this turn."
-
-// Primordial Fury
-"On roll: if an allied creature has attacked this turn, [Generate 1 Wild].\n" +
-  "On absorb: this creature's next Basic Attack deals +1 damage."
-```
-
-**When wiring later**, map only clauses the engine can express. Examples of
-honest partial wiring:
-
-| Clause | If vocabulary exists | If not |
-|---|---|---|
-| On roll: ally next-attack +1 | `onRoll: [{ type: "grant-next-attack-bonus", amount: 1, target: { kind: "choose-ally" } }]` | Keep text; `onRoll: []` |
-| On absorb: Basic if not attacked | Needs extra-attack effect | Keep text; `onAbsorb: []` |
-| On absorb: next Basic +1 | `onAbsorb: [{ type: "next-attack-bonus", amount: 1 }]` | Keep text; `onAbsorb: []` |
-| On roll: generate 1 Wild if attacked | Needs conditional roll effect | Keep text; `onRoll: []` |
-| On roll: [Generate 1 X] | `onRoll: [{ type: "generate-symbol", symbol: "…", amount: 1 }]` | Keep text; defer |
-
-## Before → after (face text)
-
-**Before (mixed):**
-> When this face is rolled or absorbed, heal an ally or draw.
-
-**After (standard):**
-```text
-On roll: heal 1 on an allied creature.
-On absorb: draw 1 card.
-```
-
-## Equipment: Venomous Fangs
-
-**Print:** On deal damage: apply 1 Toxin marker.
-
-**Data:**
-```ts
-abilities: [
-  {
-    type: "on-deal-damage",
-    effects: [
-      { type: "apply-toxin", amount: 1, target: { kind: "declared-target" } },
-    ],
-  },
-],
-```
-
-Hook supplies `declared-target` = creature that took HP damage.
-
-## Overload: Mutant Spores
-
-**Print:** Toxin faces only. When absorbed, heal 1.
-
-**Data:**
-```ts
-overload: {
-  faceSymbols: ["toxin"],
-  onRoll: [],
-  onAbsorb: [{ type: "heal", amount: 1, target: { kind: "most-damaged-ally" } }],
-},
-```
-
-## New card from CSV (process sketch)
-
-1. Columns: Card text, Play cost, Card name (see author-content `csv-tactics.md`).
-2. Rewrite text into timing lines / regions.
-3. Classify type (`tactic` | `ritual`) + subtypes.
-4. For each clause: existing effect? → wire. Else → DEFERRED row.
-5. Add definition; run DoD.
-
-## Fully wired simple face (Crush-style)
-
-```ts
-face({
-  id: CRUSH,
-  name: "Crush",
-  kind: "synthetic",
-  symbol: "martial",
-  rulesText: "The next attack this turn deals +1 damage.",
-  onRoll: [{ type: "next-attack-bonus", amount: 1 }],
-  onAbsorb: [],
-  maxOverloads: 2,
-  forgeRestriction: null,
-}),
-```
-
-Single timing → one region; no need for an “On roll:” prefix if the card has
-only roll text historically — but **new** dual-region faces should always use
-the On roll / On absorb pair for consistency.
+Timing stays a prefix: `On roll:`, `On attack:`. Never “Whenever…”.
+User-supplied print stays verbatim. If it is outside the glossary, do not
+finish the card.

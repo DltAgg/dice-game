@@ -35,7 +35,7 @@ description: >-
 ## QoL already in the board
 
 - Auto-roll on entering `roll` for the active seat.
-- Phase bar on the pile strip: skip ahead / end turn; disabled when `!canAct`.
+- Phase bar: roll, then actions. End turn is an action. Disabled when `!canAct`. Do not draw a pile strip.
 
 ## Specs
 

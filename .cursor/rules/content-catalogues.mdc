@@ -14,36 +14,37 @@ Author definitions as JSON documents (one file per entity):
 - One shared deck per team → `src/server/content/loadouts/<id>.json`
 
 JSON must satisfy `src/server/content/schema/*.schema.json`. Inspect the
-schema before adding a field. Content model:
-`.cursor/skills/author-content/design.md` and
-`docs/specs/030-offensive-control.md`.
+schema before adding a field. The source is `docs/GAME_STATE.md`. Layer
+procedure: `.cursor/skills/author-content/design.md`. Where that note and
+this rule disagree, `docs/GAME_STATE.md` wins.
 
 Id constants stay in `cards.ts` / `creatures.ts` / `faces.ts`.
-Effects are AST `op` nodes or legacy `type` members compiled by `AstCompiler`.
+Effects are data, compiled by `AstCompiler`.
 
 Rules:
 
-- `type` is `response` or `modify`. Block, Dodge, Counter, prevent, and
-  redirect are effects. `modifySubject` is `roll`, `die`, `moveset`,
-  `target`, or `tag`. Do not author Instant, Reaction, Equipment, Overload,
-  or Ritual as the card kind. Leftover regions with those names are not a
-  pattern.
+- Read `docs/KEYWORDS.md` before `rulesText` or effect data. The change is
+  not done when they disagree. User-supplied print stays verbatim.
+- `type` is `response` or `modify`. `[Block N]`, `[Counter]`, `[Parry]`, and
+  redirect are effects. Dodge is not current print. `modifySubject` is
+  `roll`, `die`, `moveset`, `target`, or `tag`. Do not author Instant,
+  Reaction, Overload, or Ritual as the card kind. A moveset Modify attaches
+  in the equipment zone. That is not a card type.
 - Faces are named inputs (name, type, primary, secondary). No generic Guard,
-  Block, Dodge, or Counter face. The `face-natural|synthetic|untyped-` id
-  prefix is a validator token, not a kind. No Shield resource. No
+  Block, Dodge, Counter, or Parry face. The `face-natural|synthetic|untyped-`
+  id prefix is a validator token, not a kind. No Shield resource. No
   deckbuilding dice. `baseDie` on the Fighter is the die a match starts from.
 - `fighterRestriction` is a play check, not a deck ban. One deck and one hand
   per player. Tag is an operation. Assist is Fighter-owned.
 - Lifecycle is `one-shot` or `persistent`. Meter is exceptional
   (`exceptionalMeterCost`), not mana on every strong card.
-- `rulesText` uses [`docs/KEYWORDS.md`](docs/KEYWORDS.md). Prefer
-  `[Mark N X]` / `[Strip N X]` / `[Modify]`. Do not copy pile-era
-  `[Forge 1 Synthetic …]` or attribute exclusives onto new print.
+- Prefer `[Mark N X]` / `[Strip N X]` / `[Modify]`. Do not print `[Forge]`,
+  `[Requires]`, `[Spend]`, `[Generate]`, `[Empower]`, `[Pierce]`,
+  `[Convert]`, `[Desynthesize]`, or an attribute-only verb.
 - Structured fields only when every clause is modelled. Gaps go to
   `docs/DEFERRED_CATALOGUE.md`.
 - Schemas may still require `forge` or `attacks`. Satisfy them. Do not
-  design pile `[Spend]` / `[Requires]` or a legendary win around those fields.
+  design the card around those fields.
 - Print voice is the holder: `you` / `opponent`.
 - Follow `.cursor/skills/author-content/SKILL.md`.
-- Live JSON is catalogue truth. `docs/MECHANIC_ARCHETYPES.md` pile-era rows
-  are not a pattern.
+- Live JSON is catalogue truth. `docs/MECHANIC_ARCHETYPES.md` is not a source.

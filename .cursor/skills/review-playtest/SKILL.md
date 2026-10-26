@@ -2,7 +2,7 @@
 name: review-playtest
 description: >-
   Debrief a Dice Skirmish playtest from notes and optional Metrics exports:
-  reconstruct what happened, update docs/MECHANIC_ARCHETYPES.md, and brief
+  reconstruct what happened and brief
   card-designer / engine-developer / deck-designer / match-ui. Use after a
   playtest, when a list felt like the wrong archetype, or when the user
   pastes a Metrics dump plus qualitative notes. Do not use to author cards,
@@ -24,7 +24,7 @@ Live print stays JSON. Rules stay `reduce()`. Lists stay `deck-designer`.
 |---|---|
 | Player notes (“Control felt like Aggro”, “infinite attacks”) | Treat as feel authority |
 | Lists / seats (Tempo, Control, custom) | Read those `loadouts/*.json` and named creatures/cards/faces |
-| Metrics JSON or Markdown (Copy agent prompt + Download JSON) | Run [analyze-match-metrics](../analyze-match-metrics/SKILL.md) for playability, stall, lethality, forge vs Overcharge |
+| Metrics JSON or Markdown (Copy agent prompt + Download JSON) | Run [analyze-match-metrics](../analyze-match-metrics/SKILL.md) for pace, stall, and lethality |
 | Neither notes nor lists | Ask. Do not guess the archetype from metrics seat labels alone |
 
 Notes win on **feel**. Metrics win on **counts**. If they disagree, say so
@@ -41,11 +41,7 @@ swings, not a Strike-3 closer).
 | Players stall on UI (priority, pending, illegible board) + high think / reject rate | `match-ui` | Restyle MatchBoard here |
 | Bible-silent **rule** | Propose `OPEN` in `OPEN_DESIGN.md` only if asked | Mark `DECIDED` |
 
-Historical rows only: `[Generate]` On roll versus `[Generate]` of an attribute
-an attack just `[Spend]` (MA-01, MA-02). Do not brief a new pile `[Spend]`.
-Read the era note in
-[`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md)
-before proposing a new id.
+Do not brief a new pile `[Spend]`, forge, or Overcharge. `docs/MECHANIC_ARCHETYPES.md` is not a source.
 
 ## Workflow
 
@@ -54,26 +50,21 @@ Playtest Progress:
 - [ ] 1. Intake: lists, notes, metrics yes/no
 - [ ] 2. Metrics pass if an export exists (analyze-match-metrics answer shape)
 - [ ] 3. Feel vs the current layers (design.md), not the pile-era archetype table
-- [ ] 4. Mechanic × window → existing MA row or new id
-- [ ] 5. Grep live JSON (`generate-symbol` + `discards`, etc.)
+- [ ] 4. Name the mechanic and the window in the brief
+- [ ] 5. Grep the live JSON that was played
 - [ ] 6. Classify owner (table above)
-- [ ] 7. Update MECHANIC_ARCHETYPES.md (index + entry; never delete RETARGETED/ANTI)
-- [ ] 8. Briefs only; do not implement
+- [ ] 7. Briefs only; do not implement. Do not edit MECHANIC_ARCHETYPES.md
 ```
-
-Paste new feel rows from the template at the bottom of
-`docs/MECHANIC_ARCHETYPES.md`. Status: `WATCH` | `HOME` | `LEAK` | `RETARGETED` | `ANTI`.
 
 ## Specialist brief (one concern)
 
 ```text
-Playtest: YYYY-MM-DD · lists · MA-id
+Playtest: YYYY-MM-DD · lists
 Print / rule authority: <verbatim notes or rulesText>
-Mechanic × window: <e.g. attack follow-up Generate-same as discards>
+Mechanic × window: <what happened, and when>
 Live JSON: <ids>
-Why not a reskin of an existing HOME row:
-Must not: <reintroduce MA-01, steal exclusive verb, fake deferred print>
-Suggested slice: <one creature attack | one opcode | one loadout file>
+Must not: fake deferred print, or restore pile, forge, or Shield
+Suggested slice: <one card | one opcode | one loadout file>
 ```
 
 Launch **one** owner per brief. If two layers are required, parent uses
@@ -92,7 +83,7 @@ One paragraph: what the session played as vs the intended archetype, and why
 - Live JSON ids that prove the print.
 
 ## Catalogue
-MA-id status change (or new row). Path: docs/MECHANIC_ARCHETYPES.md.
+Do not update `docs/MECHANIC_ARCHETYPES.md`. It is not a source.
 
 ## Suggested changes
 1. Owner + one-concern brief (do not implement).
@@ -106,6 +97,6 @@ Only if lists, notes, or sample size are insufficient.
 
 - Authoring catalogue JSON or reducer branches from this skill
 - Deleting `RETARGETED` / `ANTI` rows
-- Treating On-roll Generate-same as the same leak as attack-spend refund
+- Treating an old pile counter as a reason to restore that pile
 - Metrics-only dump with no feel → use `analyze-match-metrics`, not this skill
 - “Just implement the plan” across engine + UI + cards

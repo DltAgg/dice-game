@@ -114,16 +114,18 @@ Read first list. Do not add a fifth always-on rule for it.
 ## Content terminology
 
 When you tune card-designer, deck-designer, author-content,
-standardize-card-effects, or the content rules, use one model
-(`docs/specs/030-offensive-control.md`):
+standardize-card-effects, or the content rules, the source is
+`docs/GAME_STATE.md`. Print is the whole of `docs/KEYWORDS.md`. Read that
+glossary before the edit. The change is not done when an artifact's print
+instructions and the glossary disagree. Do not paste the glossary into a
+file whose job is not print.
 
 Die, Fighter, Response, Modify, Meter, Tag, Assist.
 
-Do not put back attribute-pile fuel, Instant/Reaction/Equipment/Overload/Ritual
+Do not put back attribute-pile fuel, Instant, Reaction, Overload, or Ritual
 as card types, natural/synthetic faces, Shield as a resource, per-fighter
-decks, or deckbuilding dice. Do not create a second authoring skill for the
-same job. A user-asked terminology alignment across that existing set is one
-concern.
+decks, or deckbuilding dice. A moveset Modify may attach in the equipment
+zone. Do not create a second authoring skill for the same job.
 
 ## Anti-patterns
 

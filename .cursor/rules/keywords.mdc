@@ -5,28 +5,16 @@ alwaysApply: true
 
 # Keywords
 
-Print vocabulary lives in [`docs/KEYWORDS.md`](docs/KEYWORDS.md). The **Rules**
-tab shows its player sections (HTML comments are agent-only).
+Print vocabulary is the whole of [`docs/KEYWORDS.md`](docs/KEYWORDS.md). The **Rules** tab shows its player sections (HTML comments are agent-only). The game that print describes is [`docs/GAME_STATE.md`](docs/GAME_STATE.md). How it plays is [`docs/RULEBOOK.md`](docs/RULEBOOK.md).
 
-When authoring cards, new mechanics, hooks, tokens, keywords, or other rules
-print:
+When authoring cards, new mechanics, hooks, tokens, keywords, or other rules print:
 
-1. Read `docs/KEYWORDS.md` first.
-2. Prefer an existing operator + argument over a new verb — `[Mark N X]`,
-   `[Strip N X]`, `[Modify]`. Do **not** mint Dose / Envenom / Brand /
-   Contaminate, or a verb for Block, Dodge, Counter, or Tag. Those are
-   effects or operations, not types. Do not copy the glossary's pile-era
-   `[Forge 1 Synthetic …]` lines or attribute-exclusive table onto new
-   Fighters, faces, or cards.
-3. A new **token** joins **X** on `[Mark]` / `[Strip]`. It does not get its
-   own keyword. Do not author Shield as a resource.
-4. Add a **physics** keyword (`[Empower]`, `[Pierce]`, `[Reduce]`, `[Prevent]`) only when
-   the operation is not placing or removing a token.
-5. Timing prefixes stay prefixes: `On roll: [Mark 1 Toxin].` Never “Whenever…”.
-6. Same change: update `docs/KEYWORDS.md`. If play itself changed, also
-   `docs/RULEBOOK.md`. Map print to AST opcodes (`mark`, `strip`, `modify`).
-   New tokens are `X` arguments, not new opcodes. Unique one-offs stay named
-   until a second card needs the same composition.
+1. Read `docs/KEYWORDS.md` before writing print or effect data.
+2. Use an operator that file already names. Prefer `[Mark N X]`, `[Strip N X]`, and `[Modify]` for a new token or a change to a roll, a die, a moveset, a target, or a Tag. Do not mint a verb. Block, Counter, Parry, and Tag already have print in the glossary. Dodge is not current print.
+3. A new token joins **X** on `[Mark]` / `[Strip]`. It does not get its own keyword. Shield is not a resource.
+4. Do not print `[Forge]`, `[Requires]`, `[Spend]`, `[Generate]`, `[Empower]`, `[Pierce]`, `[Convert]`, `[Desynthesize]`, or an attribute-only verb. `[Block N]` is the print for lowering damage.
+5. Timing stays a prefix, as the glossary writes it (`On roll:`, `On attack:`). Never “Whenever…”.
+6. The change is not done when print and the glossary disagree. A keyword you introduce is missing until it is in `docs/KEYWORDS.md`. A keyword in that file that no current Tag Skirmish card uses is extra until you remove it, unless the user explicitly kept it. `[Mark]`, `[Strip]`, and `[Modify]` are kept for a new token. Do not mass-rewrite existing `rulesText` unless asked.
+7. If play itself changed, update `docs/RULEBOOK.md` in the same change. A new token maps to `mark` or `strip`. Do not add an opcode for a verb the glossary does not name.
 
-Do not mass-rewrite existing `rulesText` unless asked. **New and edited**
-print uses the glossary.
+**New and edited** print uses the whole glossary. User-supplied print stays verbatim. If those words are outside the glossary, the card is not finished, and the supplied words stay intact.

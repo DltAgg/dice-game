@@ -3,8 +3,7 @@ name: implement-hooks
 description: >-
   Design and implement standing trigger hooks as shared rules events with rich
   context ids and catalogue-side filters. Use when adding on-attack, on-take-damage,
-  on-discard, extending on-roll-symbol / on-absorb, wiring equipment / creature /
-  continuous-ritual standing abilities, or when the user mentions trigger hooks,
+  on-discard, or on-take-damage, wiring a Fighter standing ability, or when the user mentions trigger hooks,
   StandingTrigger, or spec 010.
 ---
 
@@ -18,8 +17,8 @@ filters. Do not invent coupled hook names (`on-ally-attack`,
 Companion skills: [develop-engine](../develop-engine/SKILL.md),
 [standardize-card-effects](../standardize-card-effects/SKILL.md),
 [author-content](../author-content/SKILL.md). Spec: `docs/specs/010-trigger-hooks.md`.
-Absorb semantics: `docs/RULEBOOK.md` §§6–7 (no pile; spec `016` obsolete).
-Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
+How the match plays is [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md).
+Read [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) before proving-card print. The change is not done when they disagree.
 
 ## Principles
 
@@ -45,7 +44,7 @@ Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
 |---|---|
 | `on-attack` | `attackerId`, `attackerOwnerId`, `attackKind`, `targetId` |
 | `on-roll-symbol` | `rollingPlayerId`, `symbol` |
-| `on-absorb` | `{ kind: "player", id }` when banking into the pile; `{ kind: "creature", id }` when granting Shield. Filter `absorberOwnerId`, `symbol` (+ face kind when filtering Natural) |
+| `on-absorb` | Not current play. Do not wire a new card to pile banking or Shield |
 | `on-deal-damage` | bearer = source; damaged creature as declared target |
 | `on-take-damage` | `damagedCreatureId`, incoming amount (pre or post prevent — document which) |
 | `on-discard` | `discardingPlayerId` |
@@ -66,9 +65,7 @@ type PlayerRelation = "controller" | "opponent" | "any";
 | `On attack, another ally:` | `on-attack` + `attackerRelation: "ally-other"` |
 | `On roll Corruption:` (host controller) | `on-roll-symbol` + `rollingPlayer: "controller"` |
 | `On opponent roll Corruption:` | `on-roll-symbol` + `rollingPlayer: "opponent"` |
-| `On absorb:` / `On absorb <Symbol>:` | `on-absorb` + `absorberRelation: "ally"` when gear/ritual means “you bank” (default `self` only matches Shield onto host creature) |
-| `On absorb <Symbol>, once per turn:` | `on-absorb` + `oncePerTurn` + usually `ally` (Lens Choir) |
-| `On absorb Natural:` (any bank on your side) | `on-absorb` + `absorberRelation: "any"` (+ Natural filter; untyped Shield does not match) |
+| `On take damage:` `[Block N]` | `on-take-damage` + `reduceBy`. Lowers damage. Does not cancel the hit |
 | `On start of turn:` | `on-turn-start` + `whoseTurn: "controller"` (default) |
 | `On start of opponent's turn:` | `on-turn-start` + `whoseTurn: "opponent"` |
 
@@ -79,11 +76,10 @@ Hook Progress:
 - [ ] 1. Name the rules event (not the card relationship)
 - [ ] 2. Extend / reuse StandingTrigger + context; update 010
 - [ ] 3. Implement fire* in triggers.ts; call from the single event site
-- [ ] 4. Walk equipment + creature standing + ready continuous rituals
+- [ ] 4. Walk Fighter standing abilities and attached moveset cards
 - [ ] 5. Wire proving cards; defer incomplete print honestly
 - [ ] 6. Update `docs/RULEBOOK.md` if the new hook changes player-facing timing
-- [ ] 7. Print uses `docs/KEYWORDS.md` (`On deal damage: [Mark 1 Toxin].`); new
-      tokens do not get a new hook name if `On X: [Mark N Y]` already covers them
+- [ ] 7. Read `docs/KEYWORDS.md` before print. A new token uses `[Mark N X]` and does not get a new hook name
 - [ ] 8. Tests + DoD
 ```
 
@@ -93,9 +89,8 @@ Hook Progress:
 |---|---|
 | Attack declared | `attack()` in `reduce.ts` after costs / before or with chain push |
 | Symbol shown on roll | existing `ROLL_DICE` path (pass `rollingPlayerId`) |
-| Absorb (attribute bank / Shield) | `bankAttributeIntoPile` / Shield path in `commands/absorb.ts` → `queueAbsorbTriggers` |
-| HP dealt | `dealDamage` / attack damage path |
-| Incoming damage modify | inside `dealDamage` **before** prevent/shield when `[Reduce N]` / `reduceBy` |
+| HP dealt | `dealDamage` |
+| Incoming damage lowered | inside `dealDamage`, `[Block N]` / `reduceBy`, before the Fighter is defeated |
 | Discard | `discardSpecificCards` (and any other discard entry) |
 | Position change | `setCreaturePosition` in `zones.ts` only |
 | Turn begins | `finishTurn` in `reduce.ts` after `tickToxins` |

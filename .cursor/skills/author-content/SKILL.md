@@ -14,16 +14,22 @@ description: >-
 under `src/server/content`. There is no CSV ingest. Do not transcribe the
 last file, and do not invent a second content model.
 
-Confirmed content model: [`docs/specs/030-offensive-control.md`](../../../docs/specs/030-offensive-control.md).
-Layer homes and the first-playtest philosophy: [design.md](design.md).
-Uniqueness and wrong-layer redirects: [design-craft.md](design-craft.md).
-Print keywords: [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) — reuse
-`[Mark N X]`, `[Strip N X]`, and `[Modify]`. Do not mint a new verb.
-How a shipped rule currently plays: [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md).
-New cards that only use existing effects do not belong in the rulebook.
+The source is [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). How a
+shipped rule plays is [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md).
+Print is the whole of [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md).
+Read that glossary before print or effect data. Reuse `[Mark N X]`,
+`[Strip N X]`, and `[Modify]`. Do not mint a new verb. The change is not
+done when the print and the glossary disagree. User-supplied print stays
+verbatim. If those words are outside the glossary, the card is not finished,
+and the supplied words stay intact.
 
-Pile-era feel rows in [`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md)
-are archaeology. Do not author a new card to match them.
+Layer procedure: [design.md](design.md). Where that note names spec 030,
+`docs/GAME_STATE.md` wins. Uniqueness: [design-craft.md](design-craft.md).
+New cards that only use existing effects do not belong in the rulebook.
+Do not invent Open Manual’s Technique or Anchor’s replacement print.
+
+[`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md) is not
+a source. Do not author a new card to match it.
 
 ## Choose the catalogue
 
@@ -39,22 +45,21 @@ rules modules — reuse them; do not add a Tag card type or an Assist card.
 
 ## Hard rules
 
-1. **Two card behaviors.** `type` is `"response"` or `"modify"`. Block, Dodge,
-   Counter, prevent, and redirect are effects on a Response. Roll, die,
-   moveset, target, and tag are `modifySubject` values, not types. Do not
-   mint `DiceModificationCard`, `RollModificationCard`, `TagCard`,
-   `AssistCard`, or `SituationCard`.
+1. **Two card behaviors.** `type` is `"response"` or `"modify"`. `[Block N]`,
+   `[Counter]`, `[Parry]`, and redirect are effects on a Response. Dodge is
+   not current print. Roll, die, moveset, target, and tag are `modifySubject`
+   values, not types. Do not mint `DiceModificationCard`,
+   `RollModificationCard`, `TagCard`, `AssistCard`, or `SituationCard`.
 2. **Dice are inputs.** A face has a name, a type, a primary effect, and a
    secondary effect. Attacks, grabs, movement, and other character offensive
-   tools belong here. Generic Block, Dodge, Counter, and damage reduction do
-   not. A rolled face is not spent for the match. The same face instance
-   cannot fill two inputs of one action. A later action may use it again.
-   "Another die" is another die of the same player.
+   tools belong here. Generic Block, Dodge, Counter, and Parry do not. A
+   rolled face is not spent for the match. The same face instance cannot
+   fill two inputs of one action. A later action may use it again. "Another
+   die" is another die of the same player.
 3. **Fighters are not stat blocks.** Identity is the base die, named faces,
-   Simple Actions (own die), Techniques (primary = Active Fighter's own die,
-   secondary = another own die, ordered), one Assist (Fighter-owned, not a
-   card), optional Passive, and HP. Print says Fighter. Engine types stay
-   `Creature*`.
+   face actions, Techniques (primary = Active Fighter's showing face,
+   secondary = another own die), one Assist (Fighter-owned, not a card), and
+   life. Print says Fighter. Engine types stay `Creature*`.
 4. **One deck, one hand, one Meter pool.** Fighters do not restrict
    construction. `fighterRestriction` is a play check ("Magnus is on your
    team" / "Magnus is Active"), not a deck ban. Meter is an exceptional
@@ -64,12 +69,14 @@ rules modules — reuse them; do not add a Tag card type or an Assist card.
    or alter a Tag (`modifySubject: "tag"`).
 6. **Lifecycle is only** `one-shot` (play, resolve, discard unless
    `afterResolveZone` is set) or `persistent`. No extra lifecycle categories.
-7. **Die writes** are Modify subject `die`. They last until the next match,
-   which rebuilds each Current Die from that Fighter's `baseDie`. No
-   temporary die mods. No deckbuilding dice.
+   A moveset Modify attaches in the equipment zone. That attachment is not a
+   card type. Overload and ritual are not card kinds.
+7. **Die writes** are Replace: Modify subject `die`. They last until the next
+   match, which rebuilds each die from that Fighter's `baseDie`. No temporary
+   die mods. No deckbuilding dice.
 8. **Legality** is priority + timing + behavior + valid target + state +
-   Meter when that mode needs it. Reuse existing timing keywords. Do not
-   invent `TimingCondition`.
+   Meter when that mode needs it. Reuse existing timing prefixes. Do not
+   invent `TimingCondition`. Never “Whenever…”.
 9. **A Response does not take offense** by itself. The offensive sequence is
    who can keep pressing. Do not set `seizesOffense` to steal the sequence.
 10. Set structured fields only when every printed clause is modelled. Park
@@ -80,34 +87,36 @@ rules modules — reuse them; do not add a Tag card type or an Assist card.
     the card or face. **opponent** = their opponent, including after a
     hand-off. Name both actors when two players must act.
 13. **No live attribute pile.** Do not author `[Requires]` / `[Spend]` /
-    Active-when as fuel. Do not author natural or synthetic face kinds, or
-    Shield as a resource.
+    `[Forge]` / `[Generate]` / `[Empower]` / `[Pierce]` / `[Convert]` /
+    `[Desynthesize]`, natural or synthetic face kinds, or Shield as a
+    resource.
 14. Schemas may still require a `forge` object, an `attacks` array, or a
     `face-(natural|synthetic|untyped)-` id. Satisfy the current validator.
     Do not design around those leftovers, and do not invent a parallel id
-    scheme. Equipment, overload, and ritual regions are leftover zones, not
-    card kinds.
+    scheme.
 
 ## Workflow
 
 ```text
 Card Progress:
-- [ ] 1. Inspect live JSON and the schemas listed above
-- [ ] 2. Name the layer (die / fighter / card / meter / tag / assist)
-- [ ] 3. If the request breaks that layer, stop and propose the closest home
-- [ ] 4. Uniqueness (design-craft.md) — reject reskins and anti-patterns
-- [ ] 5. Print: timing prefixes + docs/KEYWORDS.md (no new verb)
-- [ ] 6. Map clauses → existing effects OR defer OR engine brief
-- [ ] 7. Author one JSON file; id constant in the matching loader
-- [ ] 8. DoD
+- [ ] 1. Read docs/KEYWORDS.md
+- [ ] 2. Inspect live JSON and the schemas listed above
+- [ ] 3. Name the layer (die / fighter / card / meter / tag / assist)
+- [ ] 4. If the request breaks that layer, stop and propose the closest home
+- [ ] 5. Uniqueness (design-craft.md) — reject reskins and anti-patterns
+- [ ] 6. Print from the whole glossary, or stop if the user’s words are outside it
+- [ ] 7. Map clauses → existing effects OR defer OR engine brief
+- [ ] 8. Author one JSON file; id constant in the matching loader
+- [ ] 9. DoD. Not done if print and KEYWORDS.md disagree
 ```
 
 1. Grep `src/server/content/{cards,faces,creatures}/`. Occupy an empty slot
    in the layer that already exists.
 2. Kind is Response, Modify, named face, or Fighter move — see
-   [design.md](design.md). Not instant, reaction, equipment, overload, or
-   ritual.
-3. Timing print → [standardize-card-effects](../standardize-card-effects/SKILL.md).
+   [design.md](design.md). Not instant, reaction, equipment-as-a-type,
+   overload, or ritual.
+3. Timing print → [standardize-card-effects](../standardize-card-effects/SKILL.md),
+   after `docs/KEYWORDS.md`.
 4. Add the exported id in `cards.ts` / `faces.ts` / `creatures.ts`.
 5. Builtin lists change only when asked, and only through deck-designer.
 6. DoD: `npm run typecheck && npm test && npm run lint`
@@ -115,7 +124,7 @@ Card Progress:
 
 ## Progressive references
 
-- Model, redirects, first-playtest philosophy: [design.md](design.md)
+- Model, redirects: [design.md](design.md)
 - Uniqueness and anti-patterns: [design-craft.md](design-craft.md)
 - Response / Modify JSON: [tactics.md](tactics.md)
 - Named faces: [faces.md](faces.md)
@@ -126,14 +135,14 @@ Card Progress:
 
 | Kind | Pattern | Example |
 |---|---|---|
-| Hand card | `card-<kebab>` | `card-standing-block` |
+| Hand card | `card-<kebab>` | `card-brace` |
 | Fighter | `creature-<kebab>` | `creature-magnus` |
-| Face | schema `faceId` pattern, name token after the move | `face-natural-jab` only while the pattern still requires a prefix |
+| Face | schema `faceId` pattern, name token after the move | a prefix only while the schema still requires one |
 | Attack id | `attack-<fighter>-<kebab>` | `attack-magnus-lariat` |
 | Technique id | string on the Fighter | `lariat` |
 
 The `natural` / `synthetic` / `untyped` token in a face id is a validator
-prefix, not a kind. Never `face-synthetic-martial` or `face-untyped-shield`
-as a designed resource.
+prefix, not a kind. Never design `face-synthetic-martial` or
+`face-untyped-shield` as a resource.
 
 Const exports: `SCREAMING_SNAKE`.

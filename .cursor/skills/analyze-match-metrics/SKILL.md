@@ -1,10 +1,8 @@
 ---
 name: analyze-match-metrics
 description: >-
-  Analyze Dice Skirmish match-metrics JSON or Markdown exports to diagnose
-  whether the pile-only game is playable and fun: unpaid attacks, long games,
-  stall/idle, drag, low lethality, forge vs play vs Overcharge, reaction
-  friction, think time. Use when the user pastes a Copy agent prompt, attaches
+  Analyze Dice Skirmish match-metrics JSON or Markdown exports for pace,
+  stall, lethality, and think time. Use when the user pastes a Copy agent prompt, attaches
   Download JSON, mentions the Metrics tab, games going past 10 turns, or asks
   why matches feel slow or unfun. Do not use when they also have playtest notes
   or “felt like the wrong archetype” — that is post-playtest (skill
@@ -12,6 +10,8 @@ description: >-
 ---
 
 # Analyze match metrics
+
+Export field names are telemetry. They are not print and they are not the rules. How the match plays is `docs/RULEBOOK.md`. Do not brief a new pile cost, forge, or Overcharge from a counter in the export.
 
 Read `docs/specs/014-match-metrics.md` if you need collector semantics.
 
