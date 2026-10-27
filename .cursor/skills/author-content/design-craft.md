@@ -3,7 +3,9 @@
 Model: [design.md](design.md). The source is
 [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Print is the whole of
 [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Read it before print. The
-change is not done when the print and the glossary disagree.
+change is not done when the print and the glossary disagree. User-supplied
+print stays verbatim. If those words are outside the glossary, the card is
+not finished, and the supplied words stay intact.
 
 This sibling is **craft**. Do not paste it into the agent.
 

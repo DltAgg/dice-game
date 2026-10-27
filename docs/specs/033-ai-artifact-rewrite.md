@@ -1,6 +1,6 @@
 # 033 — AI artifact rewrite
 
-Status: **DRAFT requirements**. Spec 032’s table is accepted. The rewrite set is every rewrite or decompose row. Spec 031’s source is `docs/GAME_STATE.md`. A rewrite teaches that game. The accepted spec 032 rewrite and decompose rows now point at `docs/GAME_STATE.md`, or the old rules text has been removed from the file. Use-as-is rows are unchanged.
+Status: **DONE**. Spec 032’s table is accepted. The rewrite set is every rewrite or decompose row. Spec 031’s source is `docs/GAME_STATE.md`. A rewrite teaches that game. The accepted spec 032 rewrite and decompose rows now point at `docs/GAME_STATE.md`, or the old rules text has been removed from the file. Use-as-is rows are unchanged. The fail-closed check is `.cursor/rules/keywords.mdc` plus `src/architecture/keyword-agreement.test.ts`. This file records that the check exists. It does not specify the parser. Requirement 7’s heading catalogue is a draft-time snapshot of the old glossary, not the file on disk.
 
 This file is requirements only. It does not choose a mechanism, name tasks, or replace any prompt.
 
@@ -95,7 +95,7 @@ Applies to every in-set artifact that deals with card text, card effects, or bot
 
 The five outcomes are normative. The headings they refer to are the headings in `docs/KEYWORDS.md` today.
 
-#### What the glossary and the keyword rule say today
+#### Draft-time snapshot (not the current glossary)
 
 Player-visible and agent-visible structure of `docs/KEYWORDS.md`:
 
@@ -259,24 +259,24 @@ What counts as a current card for K4 follows the model confirmed in spec 031. If
 
 ## Acceptance criteria
 
-- [ ] The implemented rewrite set is exactly the confirmed spec 032 rows whose disposition is rewrite or decompose, including any user override, and includes no ids invented by this spec.
-- [ ] Each implementation change touches one artifact.
-- [ ] Every in-set artifact that authors or edits print or effect data tells the agent to read `docs/KEYWORDS.md` before that work (K1).
-- [ ] New and edited print uses the whole of `docs/KEYWORDS.md` after that file is rewritten for the new game’s card text (K2). Timing stays a prefix. No new verb is minted when an existing operator can carry the argument. A new token joins `[Mark]` / `[Strip]`.
-- [ ] The glossary rewrite removes text that solely describes an old unused version (spec 031 Q2 and Q3). Which of today’s operators remain is not chosen in this spec (K3).
-- [ ] A change that introduces a keyword is not done while that keyword is missing from the allowed region (K4).
-- [ ] A keyword in the current region that no current card of the spec 031 model uses is not left there unless the user explicitly keeps it (K4).
-- [ ] The later design names a mechanism that fails closed when the glossary and the print disagree. This requirements spec does not name that mechanism.
-- [ ] K4 does not depend on a mass rewrite of existing `rulesText`.
-- [ ] In-set artifacts that do not touch card text do not gain a copy of the glossary tables (K5).
-- [ ] User-supplied wording stays verbatim (requirement 3).
-- [ ] No new specialist re-owns cards, the engine, the match UI, or loadouts (requirement 4).
-- [ ] Every path a rewritten artifact cites exists (requirement 5).
-- [ ] The rewrite contains no game code (requirement 6).
-- [ ] Architecture and workflow constraints listed as preserve are still present in each rewritten artifact that had them.
-- [ ] Every concern listed as preserve-unless-031 is still present unless spec 031 says otherwise.
-- [ ] Where spec 030 or `docs/RULEBOOK.md` and `docs/KEYWORDS.md` disagree, the rewritten artifact does not pick the spec or the rulebook over the glossary; the game it teaches is the one spec 031 confirms, and K1–K5 still hold.
-- [ ] The gaps in requirement 7 are treated as inputs to those outcomes. This requirements document is not the edit that fixes them.
+- [x] The implemented rewrite set is exactly the confirmed spec 032 rows whose disposition is rewrite or decompose, including any user override, and includes no ids invented by this spec.
+- [x] Each implementation change touches one artifact. The user later directed the remaining set, and then this check, to be finished in one pass.
+- [x] Every in-set artifact that authors or edits print or effect data tells the agent to read `docs/KEYWORDS.md` before that work (K1).
+- [x] New and edited print uses the whole of `docs/KEYWORDS.md` after that file is rewritten for the new game’s card text (K2). Timing stays a prefix. No new verb is minted when an existing operator can carry the argument. A new token joins `[Mark]` / `[Strip]`.
+- [x] The glossary rewrite removes text that solely describes an old unused version (spec 031 Q2 and Q3). Which of today’s operators remain is not chosen in this spec (K3).
+- [x] A change that introduces a keyword is not done while that keyword is missing from the allowed region (K4).
+- [x] A keyword in the current region that no current card of the spec 031 model uses is not left there unless the user explicitly keeps it (K4). `[Mark]`, `[Strip]`, and `[Modify]` stay for a new token.
+- [x] The later design names a mechanism that fails closed when the glossary and the print disagree. This requirements spec does not name that mechanism. The check is `src/architecture/keyword-agreement.test.ts`, named from `.cursor/rules/keywords.mdc`.
+- [x] K4 does not depend on a mass rewrite of existing `rulesText`.
+- [x] In-set artifacts that do not touch card text do not gain a copy of the glossary tables (K5).
+- [x] User-supplied wording stays verbatim (requirement 3).
+- [x] No new specialist re-owns cards, the engine, the match UI, or loadouts (requirement 4).
+- [x] Every path a rewritten artifact cites exists (requirement 5).
+- [x] The rewrite contains no game code (requirement 6). The agreement check is a test, not a rules change.
+- [x] Architecture and workflow constraints listed as preserve are still present in each rewritten artifact that had them.
+- [x] Every concern listed as preserve-unless-031 is still present unless spec 031 says otherwise.
+- [x] Where spec 030 or `docs/RULEBOOK.md` and `docs/KEYWORDS.md` disagree, the rewritten artifact does not pick the spec or the rulebook over the glossary; the game it teaches is the one spec 031 confirms, and K1–K5 still hold.
+- [x] The gaps in requirement 7 are treated as inputs to those outcomes. This requirements document is not the edit that fixes them.
 
 ## Not in this spec
 

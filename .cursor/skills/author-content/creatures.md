@@ -7,7 +7,9 @@ Schema: `src/server/content/schema/creature.schema.json`
 
 The source is [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Print is
 [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Read it before Assist or
-Technique text.
+Technique text. User-supplied print stays verbatim. If those words are
+outside the glossary, the card is not finished, and the supplied words stay
+intact.
 
 Print says **Fighter**. The JSON type stays a creature definition. Do not
 rename the file layout.

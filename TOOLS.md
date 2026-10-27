@@ -45,6 +45,7 @@ npm run typecheck && npm test && npm run lint
 | Loadout legality | `src/server/rules/loadout.ts` |
 | Purity guard | `src/architecture/engine-purity.test.ts` |
 | Module budget | `src/architecture/module-budget.test.ts` (no megamodules / freeze) |
+| Keyword agreement | `src/architecture/keyword-agreement.test.ts` (Tag Skirmish print matches `docs/KEYWORDS.md`) |
 | Living rulebook | `docs/RULEBOOK.md` (update when play changes) |
 | Keyword glossary | `docs/KEYWORDS.md` (update when print vocabulary / tokens change; Rules tab) |
 | Source for play | `docs/GAME_STATE.md` |
@@ -65,6 +66,7 @@ npm run typecheck && npm test && npm run lint
 | `src/server/rules/loadout.test.ts` | Deck legality and known ids. The current deck is 10–24 cards, at most 3 copies |
 | `src/architecture/engine-purity.test.ts` | Engine stays pure |
 | `src/architecture/module-budget.test.ts` | File size freeze; no `src/game`; thin catalogue loaders |
+| `src/architecture/keyword-agreement.test.ts` | Tag Skirmish print and `docs/KEYWORDS.md` name the same brackets |
 | `src/server/reducer/*.test.ts` | Behavior of play / forge / combat / etc. |
 
 Focused run:

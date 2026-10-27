@@ -18,7 +18,7 @@ Companion skills: [develop-engine](../develop-engine/SKILL.md),
 [standardize-card-effects](../standardize-card-effects/SKILL.md),
 [author-content](../author-content/SKILL.md). Spec: `docs/specs/010-trigger-hooks.md`.
 How the match plays is [`docs/RULEBOOK.md`](../../../docs/RULEBOOK.md).
-Read [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) before proving-card print. The change is not done when they disagree.
+Read [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) before proving-card print. The change is not done when they disagree. User-supplied print stays verbatim. If those words are outside the glossary, the card is not finished, and the supplied words stay intact.
 
 ## Principles
 

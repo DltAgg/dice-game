@@ -7,6 +7,7 @@ Schema: `src/server/content/schema/face.schema.json` and `faceId` in
 
 The source is [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Print is
 [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md). Read it before `rulesText`.
+User-supplied print stays verbatim. If those words are outside the glossary, the card is not finished, and the supplied words stay intact.
 
 A face answers: what input is on this die right now? It is not a mana pip
 and not a deckbuilding part. The face deck is not current online play.

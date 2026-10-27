@@ -20,7 +20,7 @@ description: >-
    to `GameState` or catalogue documents.
 5. **Intent actions** — players declare choices. Amounts and legality are derived by the host. The current actions are in `docs/RULEBOOK.md`.
 6. **Failures** — return `GameError` + original state; do not throw for illegal moves.
-7. **Proving cards** — read [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) before print. The source is [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Response or Modify, not a new card type. A new token joins `[Mark]` / `[Strip]`. The change is not done when the print and the glossary disagree.
+7. **Proving cards** — read [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) before print. The source is [`docs/GAME_STATE.md`](../../../docs/GAME_STATE.md). Response or Modify, not a new card type. A new token joins `[Mark]` / `[Strip]`. The change is not done when the print and the glossary disagree. User-supplied print stays verbatim. If those words are outside the glossary, the card is not finished, and the supplied words stay intact.
 
 ## Typical change: new effect kind
 

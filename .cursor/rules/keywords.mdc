@@ -14,7 +14,7 @@ When authoring cards, new mechanics, hooks, tokens, keywords, or other rules pri
 3. A new token joins **X** on `[Mark]` / `[Strip]`. It does not get its own keyword. Shield is not a resource.
 4. Do not print `[Forge]`, `[Requires]`, `[Spend]`, `[Generate]`, `[Empower]`, `[Pierce]`, `[Convert]`, `[Desynthesize]`, or an attribute-only verb. `[Block N]` is the print for lowering damage.
 5. Timing stays a prefix, as the glossary writes it (`On roll:`, `On attack:`). Never “Whenever…”.
-6. The change is not done when print and the glossary disagree. A keyword you introduce is missing until it is in `docs/KEYWORDS.md`. A keyword in that file that no current Tag Skirmish card uses is extra until you remove it, unless the user explicitly kept it. `[Mark]`, `[Strip]`, and `[Modify]` are kept for a new token. Do not mass-rewrite existing `rulesText` unless asked.
+6. The change is not done when print and the glossary disagree. A keyword you introduce is missing until it is in `docs/KEYWORDS.md`. A keyword in that file that no current Tag Skirmish card uses is extra until you remove it, unless the user explicitly kept it. `[Mark]`, `[Strip]`, and `[Modify]` are kept for a new token. Do not mass-rewrite existing `rulesText` unless asked. `npm test` runs `src/architecture/keyword-agreement.test.ts`, which fails the build on that disagreement.
 7. If play itself changed, update `docs/RULEBOOK.md` in the same change. A new token maps to `mark` or `strip`. Do not add an opcode for a verb the glossary does not name.
 
 **New and edited** print uses the whole glossary. User-supplied print stays verbatim. If those words are outside the glossary, the card is not finished, and the supplied words stay intact.
