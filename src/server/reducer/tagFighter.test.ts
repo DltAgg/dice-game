@@ -872,6 +872,39 @@ describe("spec 030 assist windows", () => {
     ).toBe(true);
   });
 
+  it("sends 4 of the Chain's next Strike to Magnus and spends the redirect", () => {
+    let state = p1Actions();
+    state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
+    state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P2 }));
+    state = expectOk(advance(state, { type: "ADVANCE_PHASE", playerId: P2 }));
+    const attacker = fighterOf(state, P2, MAGNUS_ID);
+    state = withActiveFighter(state, P2, attacker);
+    state = showCreatureFace(state, attacker, asFaceCardId("face-natural-magnus-heavy"));
+    const hit = expectOk(advance(state, { type: "USE_FACE", playerId: P2, creatureId: attacker }));
+    state = expectOk(advance(hit, { type: "PASS_PRIORITY", playerId: P2 }));
+    const wall = fighterOf(state, P1, MAGNUS_ID);
+    const vega = state.players[P1]?.activeCreatureId;
+    if (vega === null || vega === undefined) throw new Error("active");
+    const assisted = expectOk(
+      advance(state, { type: "ASSIST", playerId: P1, reserveCreatureId: wall }),
+    );
+    const resolved = resolveOpenChain(assisted);
+    expect(resolved.creatures[vega]?.damage).toBe(1);
+    expect(resolved.creatures[wall]?.damage).toBe(4);
+    expect(resolved.creatures[wall]?.redirectDamageThisTurn).toBe(0);
+  });
+
+  it("drops an unused Wall redirect when its Chain ends", () => {
+    const open = p1Actions();
+    const magnus = fighterOf(open, P1, MAGNUS_ID);
+    const declared = expectOk(
+      advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: magnus }),
+    );
+    const resolved = resolveOpenChain(declared);
+    expect(resolved.creatures[magnus]?.damage).toBe(0);
+    expect(resolved.creatures[magnus]?.redirectDamageThisTurn).toBe(0);
+  });
+
   it("plays Vega Cross as an extender light punch only in combo", () => {
     let state = p1Actions();
     const vega = fighterOf(state, P1, VEGA_ID);

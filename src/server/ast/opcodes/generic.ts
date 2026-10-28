@@ -24,6 +24,7 @@ export interface ResolutionKernel {
       readonly ignoreShield?: number;
       readonly fromAttack?: boolean;
       readonly dealerId?: PlayerId;
+      readonly chainAttack?: boolean;
     },
   ): number;
   fireOnDealDamage(draft: Draft, sourceId: CreatureId, targetId: CreatureId): void;
@@ -52,6 +53,7 @@ class DamageHandler implements IOpcodeHandler {
         ignoreShield: ctx.pending.ignoreShield,
         fromAttack: ctx.pending.fromAttack,
         dealerId: ctx.pending.controllerId,
+        chainAttack: ctx.pending.chainAttack === true,
       });
       if (dealt > 0 && ctx.pending.sourceCreatureId !== null) {
         this.kernel.fireOnDealDamage(ctx.draft, ctx.pending.sourceCreatureId, targetId);

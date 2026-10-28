@@ -164,7 +164,7 @@ The Tag Skirmish loadout also has a `faceDeck`, and each Fighter has a `baseDie`
 
 `dealDamage` in `src/server/reducer/resolution.ts` does this, in order:
 
-1. A living ally with `redirectDamageThisTurn` takes some of the damage, up to that number. The redirected part is applied to that ally without the original options.
+1. A living ally with `redirectDamageThisTurn` takes some of this damage only when the damage is marked `chainAttack` (a hit or Technique Strike on the Chain). The ally takes up to that number. The redirected part is applied to that ally without the original options, and the charge is spent even when the Strike was smaller. Any charge still left is cleared when that Chain finishes (`clearChainRedirects`).
 2. `nextIncomingDamageBonus` is added once, then cleared.
 3. `nextIncomingDamageReduce` is subtracted once, then cleared. Brace’s `[Block 2]` adds to that number through `reduce-damage`. While-showing `reduce` and `reduceBy` are the same kind of reduction: Block. They lower damage. They do not cancel the hit.
 4. While-showing `reduce` on the damaged Fighter’s controller lowers the damage. Silenced showing slots do not add it.
@@ -185,7 +185,8 @@ This list is the Tag Skirmish squad and deck only: Vega, Magnus, Ryu, and the ca
 | `[Moveset]` | `modifySubject` `moveset` and `addedTechnique` | The card attaches in the equipment zone. |
 | Tag | Modify subject `tag`, or the `TAG` action | Call Out. |
 | Change the showing face | Modify subject `roll` | Open Palm. The roll changes which slot is showing and does not rewrite the face on the slot. |
-| Redirect | Modify subject `target`, or `arm-redirect-damage` | Shift, and Magnus’s Assist. |
+| `[Redirect N]` | `arm-redirect-damage`, spent on the next `chainAttack` Strike | Magnus Wall. A hit or a Technique. Ends with that Chain. |
+| Redirect that hit | Modify subject `target` | Shift. The whole hit changes target. |
 | `[Draw N]` | `draw-cards` | Anchor. That print is being rewritten. |
 | `[Block N]` | `reduce-damage`, stored as `nextIncomingDamageReduce` | Brace is `[Block 2]`. Lowers the next damage by N. Does not cancel the hit. |
 | `[Counter]` | `negate-card` | The Counter card. Negates the previous chain card. Refuses a hit (`combat-action` or `attack`). Does not end the sequence. |

@@ -105,12 +105,20 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
     if (!blocked) {
       grantSequenceHitMeter(draft, link);
       for (const effect of [...link.effects].reverse()) {
+        const chainAttack = effect.type === "damage" || effect.type === "assist-hit";
         pushEffect(
           draft,
           link.controllerId,
           effect,
           link.sourceCreatureId,
           link.declaredTargetCreatureId,
+          null,
+          null,
+          null,
+          0,
+          null,
+          false,
+          chainAttack,
         );
       }
       drainResolution(draft);

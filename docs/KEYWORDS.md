@@ -20,6 +20,8 @@ Cards are Response or Modify. Block, Counter, Parry, and redirect are effects, n
 
 Meter is one shared pool. A card’s play cost, when it has one, is the Meter you spend to play that card. Do not also write “Spend N Meter” for that same cost. Meter for a mode that is not the only way to play the card stays in the rules text.
 
+`[Redirect N]` sends N of the next attack damage in this Chain to the named Fighter. That damage may be a hit or a Technique. Damage above N stays on the Fighter who was hit. The redirect ends when that Chain ends.
+
 `[Draw N]` does not attach to a Fighter and does not repeat without a restriction or a condition, unless it is part of a Technique or an Assist.
 
 Timing stays a prefix (`On roll:`, `On attack:`). Never “Whenever…”.

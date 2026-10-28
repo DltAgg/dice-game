@@ -62,6 +62,7 @@ Prefer members already in `src/server/model/effects.ts`.
 | `+N damage` | `next-attack-bonus` |
 | `[Mark N X]` / `[Strip N X]` | `mark` / `strip` |
 | `[Draw N]` | `draw-cards`. Not attached, and not repeating, unless it is part of a Technique or an Assist or it has a restriction |
+| `[Redirect N]` | `arm-redirect-damage`. The next hit or Technique Strike in this Chain, up to N, then the charge ends |
 | `[Block N]` | `reduce-damage` |
 | `[Counter]` | `negate-card`. Does not end the sequence |
 | `[Parry]` | `grant-attack-prevent`, and the card ends the sequence |

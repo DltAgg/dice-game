@@ -95,7 +95,7 @@ Assist names one of your Fighters who is not Active. That Fighter may be defeate
 
 A hit Assist is legal on your turn during actions, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal while answering a Chain. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. The hit aims at the opponent’s Active Fighter. It deals that Strike, counts for combo, and grants Meter from its strength. A finisher ends the sequence, so the turn is handed to the opponent. A finisher is legal while the sequence is open or in combo. An extender is legal only in combo, with no Chain open. Tag this turn blocks a finisher Assist.
 
-An Assist that is not a hit can be declared on your turn, or while you have priority and an opponent’s sequence hit or Technique is on the Chain. Magnus Wall is that kind.
+An Assist that is not a hit can be declared on your turn, or while you have priority and an opponent’s sequence hit or Technique is on the Chain. Magnus Wall is that kind. Its print is `When attacked: [Redirect 4] to this fighter.` `[Redirect 4]` sends 4 of the next attack damage in that Chain to Magnus. A hit and a Technique both count. Damage above 4 stays on the Fighter who was hit. The redirect ends when that Chain ends.
 
 ## 10. The Chain
 
@@ -115,7 +115,7 @@ A one-shot card leaves your hand for the graveyard when you play it. A Moveset s
 
 Damage is applied in this order:
 
-1. A living ally who is redirecting damage takes some of it, up to that number.
+1. `[Redirect N]` on a living ally takes up to N of this attack damage, when this damage is a hit or a Technique in the Chain where that redirect was armed. That ally takes that much. The rest stays here. The redirect is then spent.
 2. Bonus damage on the next hit is added once.
 3. `[Block N]` is subtracted once. While a face is showing a reduction, and a standing reduction on taking damage, are the same kind of reduction. They lower damage. They do not cancel the hit.
 4. What remains is added to the Fighter’s damage. The Fighter is defeated when damage reaches that Fighter’s life.

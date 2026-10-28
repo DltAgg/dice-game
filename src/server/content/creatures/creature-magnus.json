@@ -6,7 +6,7 @@
   "archetype": "grappler",
   "passiveRulesText": "Grappler. Grabs and the heavy hit.",
   "assistName": "Wall",
-  "assistRulesText": "Until end of turn, up to 4 damage that would hit another of your Fighters is dealt to Magnus instead.",
+  "assistRulesText": "When attacked: [Redirect 4] to this fighter.",
   "exceptionalAssistMeter": 0,
   "assistEffects": [
     {

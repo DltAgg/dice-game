@@ -4,7 +4,7 @@ import type { PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { attackIgnoreShieldAmount } from "../../rules/discounts.js";
-import { emit, type Draft } from "../draft.js";
+import { emit, patchCreature, type Draft } from "../draft.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { tryFlushRollBankQueue } from "../rollBank.js";
 import {
@@ -81,6 +81,7 @@ function drainChain(draft: Draft): GameError | null {
     if (draft.pendingDecision !== null) return null;
   }
 
+  clearChainRedirects(draft);
   flushPendingOffenseSettle(draft);
   if (draft.pendingDecision !== null) return null;
   if (!draft.endSequenceAfterChain) return null;
@@ -89,6 +90,14 @@ function drainChain(draft: Draft): GameError | null {
   if (draft.status === "finished" || draft.phase !== "actions") return null;
   endTurn(draft, draft.activePlayerId);
   return null;
+}
+
+/** `[Redirect N]` lasts only for the Chain it was armed in. */
+function clearChainRedirects(draft: Draft): void {
+  for (const creature of Object.values(draft.creatures)) {
+    if (creature.redirectDamageThisTurn === 0) continue;
+    patchCreature(draft, creature.id, { redirectDamageThisTurn: 0 });
+  }
 }
 
 function conductLink(draft: Draft, link: ChainLink): void {

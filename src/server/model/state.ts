@@ -141,6 +141,11 @@ export interface PendingEffect {
    * split of that Strike). Attack-prevent consumes only then. Spec `009`.
    */
   readonly fromAttack: boolean;
+  /**
+   * True when this effect is Strike damage from a hit or Technique on the
+   * Chain. `[Redirect N]` applies only then.
+   */
+  readonly chainAttack?: boolean;
 }
 
 export interface PlayerState {

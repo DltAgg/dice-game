@@ -119,6 +119,7 @@ export function pushEffect(
   ignoreShield = 0,
   sourceCardInstanceId: CardInstanceId | null = null,
   fromAttack = false,
+  chainAttack = false,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -132,6 +133,7 @@ export function pushEffect(
     sourceCardInstanceId,
     ignoreShield,
     fromAttack,
+    ...(chainAttack ? { chainAttack: true } : {}),
   });
 }
 
@@ -477,6 +479,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
           ignoreShield: pending.ignoreShield,
           fromAttack: pending.fromAttack,
           dealerId: pending.controllerId,
+          chainAttack: pending.chainAttack === true,
         });
         if (dealt > 0 && pending.sourceCreatureId !== null) {
           fireOnDealDamage(draft, pending.sourceCreatureId, targetId);
@@ -1756,6 +1759,7 @@ export function dealDamage(
     readonly ignoreShield?: number;
     readonly fromAttack?: boolean;
     readonly dealerId?: PlayerId;
+    readonly chainAttack?: boolean;
   },
 ): number {
   const creature = draft.creatures[creatureId];
@@ -1766,7 +1770,7 @@ export function dealDamage(
 
   let incoming = amount;
 
-  const redirected = takeRedirect(draft, creatureId, incoming);
+  const redirected = takeRedirect(draft, creatureId, incoming, options?.chainAttack === true);
   if (redirected.amount > 0 && redirected.to !== null) {
     dealDamage(draft, redirected.to, redirected.amount);
     incoming -= redirected.amount;
@@ -1846,7 +1850,9 @@ function takeRedirect(
   draft: Draft,
   creatureId: CreatureId,
   amount: number,
+  chainAttack: boolean,
 ): { readonly amount: number; readonly to: CreatureId | null } {
+  if (!chainAttack) return { amount: 0, to: null };
   const target = draft.creatures[creatureId];
   if (target === undefined || amount <= 0) return { amount: 0, to: null };
   const owner = draft.players[target.ownerId];
@@ -1856,9 +1862,7 @@ function takeRedirect(
     const ally = draft.creatures[allyId];
     if (ally === undefined || ally.defeated || ally.redirectDamageThisTurn <= 0) continue;
     const shifted = Math.min(amount, ally.redirectDamageThisTurn);
-    patchCreature(draft, allyId, {
-      redirectDamageThisTurn: ally.redirectDamageThisTurn - shifted,
-    });
+    patchCreature(draft, allyId, { redirectDamageThisTurn: 0 });
     return { amount: shifted, to: allyId };
   }
   return { amount: 0, to: null };

@@ -147,8 +147,9 @@ export interface CreatureState {
    */
   readonly spentOncePerTurnTriggers: readonly string[];
   /**
-   * Aegis: remaining damage that would hit another ally is redirected here.
-   * Cleared at end of turn.
+   * `[Redirect N]` still waiting in this Chain. The next hit or Technique
+   * Strike against another of this Fighter's allies moves up to this much
+   * damage here, then the charge is spent. Cleared when that Chain ends.
    */
   readonly redirectDamageThisTurn: number;
   /**
