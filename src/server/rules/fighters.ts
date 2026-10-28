@@ -9,7 +9,7 @@ import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { GameState, PlayerState } from "../model/state.js";
 import type { Technique } from "../model/techniques.js";
 import { opponentOf } from "./creatures.js";
-import { finisherBlockedByTag, sequenceRoleFits } from "./offensive.js";
+import { sequenceRoleFits } from "./offensive.js";
 
 export type AssistHitEffect = Extract<EffectDefinition, { readonly type: "assist-hit" }>;
 
@@ -135,7 +135,6 @@ export function assistDeclarationError(
     if (state.activePlayerId !== playerId) return "NOT_ACTIVE_PLAYER";
     if (state.aggressorPlayerId !== playerId) return "INVALID_TARGET";
     if (!sequenceRoleFits(state.offensiveState, hit.sequenceRole)) return "INVALID_TARGET";
-    if (finisherBlockedByTag(state, playerId, hit.sequenceRole)) return "INVALID_TARGET";
     if (opponentActiveId(state, playerId) === null) return "INVALID_TARGET";
   } else if (pending?.type === "reaction-priority") {
     if (pending.priorityPlayerId !== playerId) return "NOT_PRIORITY_PLAYER";

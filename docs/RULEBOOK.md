@@ -63,7 +63,7 @@ No card in the current list has an ordinary Meter cost. Open Palm spends 2 Meter
 
 The sequence is not a phase. It is **open** or in **combo**.
 
-Entering actions makes you the Aggressor and opens the sequence. Only the Aggressor declares hits. From open, the legal roles are starter and finisher. From combo, the legal roles are extender and finisher. A finisher is illegal on a turn that already declared Tag. A finisher from open still ends the sequence.
+Entering actions makes you the Aggressor and opens the sequence. Only the Aggressor declares hits. From open, the legal roles are starter and finisher. From combo, the legal roles are extender and finisher. Tag on this turn leaves those roles as they are. A finisher from open still ends the sequence.
 
 A face action uses the showing face of one of your living Fighters, Active or Reserve. A Technique is only the Active Fighter. It uses two different dice you own that are showing a face. One of those dice is showing the Technique’s primary face. The other matches the Technique. Either of those faces may be the Active Fighter’s. One showing face cannot fill both inputs. The Technique’s sequence role is what the sequence checks. Both target the opponent’s Active Fighter.
 
@@ -93,7 +93,7 @@ The chosen Fighter must be a living Reserve and must not be locked from Tagging 
 
 Assist names one of your Fighters who is not Active. That Fighter may be defeated. The Active Fighter cannot Assist. Each such Fighter can Assist once per turn.
 
-A hit Assist is legal on your turn during actions, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal while answering a Chain. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. The hit aims at the opponent’s Active Fighter. It deals that Strike, counts for combo, and grants Meter from its strength. A finisher ends the sequence, so the turn is handed to the opponent. A finisher is legal while the sequence is open or in combo. An extender is legal only in combo, with no Chain open. Tag this turn blocks a finisher Assist.
+A hit Assist is legal on your turn during actions, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal while answering a Chain. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. The hit aims at the opponent’s Active Fighter. It deals that Strike, counts for combo, and grants Meter from its strength. A finisher ends the sequence, so the turn is handed to the opponent. A finisher is legal while the sequence is open or in combo. An extender is legal only in combo, with no Chain open. Tag on this turn leaves those roles as they are.
 
 An Assist that is not a hit can be declared on your turn, or while you have priority and an opponent’s sequence hit or Technique is on the Chain. Magnus Wall is that kind. Its print is `When attacked: [Redirect 4] to this fighter.` `[Redirect 4]` sends 4 of the next attack damage in that Chain to Magnus. A hit and a Technique both count. Damage above 4 stays on the Fighter who was hit. The redirect ends when that Chain ends.
 

@@ -73,8 +73,10 @@ The unused equipment play path is not current play.
 
 The sequence is who can keep pressing. Starter, extender, and finisher are
 properties of a hit (`sequenceRole`), not card types and not phases. Only
-the Aggressor declares. Open accepts a starter. Combo accepts an extender or
-a finisher. A finisher, and any other sequence end, hands the turn to the
+the Aggressor declares. From open, the legal roles are starter and finisher.
+From combo, the legal roles are extender and finisher. Tag on this turn
+leaves those roles as they are. A finisher, and any other sequence end, hands
+the turn to the
 opponent until that distinction is decided. Tag and a hit Assist use the
 Chain. Resolution is last-in, first-out.
 

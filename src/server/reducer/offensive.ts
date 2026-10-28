@@ -5,7 +5,7 @@ import type { CreatureId, PlayerId } from "../model/ids.js";
 import type { SequenceRole } from "../model/offensive.js";
 import type { ChainLink } from "../model/state.js";
 import { canSpendMeter } from "../rules/meter.js";
-import { finisherBlockedByTag, sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
+import { sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
 import { opponentOf } from "../rules/creatures.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "./chain.js";
 import { endTurn } from "./commands/turn.js";
@@ -24,7 +24,6 @@ export function sequenceDeclarationError(
   if (draft.phase !== "actions") return "INVALID_PHASE";
   if (draft.aggressorPlayerId !== playerId) return "INVALID_TARGET";
   if (!sequenceRoleFits(draft.offensiveState, role)) return "INVALID_TARGET";
-  if (finisherBlockedByTag(draft, playerId, role)) return "INVALID_TARGET";
   if (!canSpendMeter(draft, playerId, meterCost)) return "INSUFFICIENT_METER";
   return null;
 }

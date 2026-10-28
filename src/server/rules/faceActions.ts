@@ -12,7 +12,7 @@ import {
 import type { CreatureId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { dieForCreature, isActiveFighter, opponentActiveId } from "./fighters.js";
-import { finisherBlockedByTag, sequenceMeterAffordable, sequenceRoleFits } from "./offensive.js";
+import { sequenceMeterAffordable, sequenceRoleFits } from "./offensive.js";
 
 export function faceActionKey(dieId: DieId): string {
   return `face-action:${dieId}`;
@@ -143,7 +143,6 @@ export function canUseFace(
   if (face?.sequenceRole !== undefined) {
     if (state.aggressorPlayerId !== playerId) return false;
     if (!sequenceRoleFits(state.offensiveState, face.sequenceRole)) return false;
-    if (finisherBlockedByTag(state, playerId, face.sequenceRole)) return false;
     if (!sequenceMeterAffordable(state, playerId, face.meterCost)) return false;
   }
   return true;
@@ -192,7 +191,6 @@ export function matchingTechniques(
     if (technique.sequenceRole !== undefined) {
       if (state.aggressorPlayerId !== playerId) continue;
       if (!sequenceRoleFits(state.offensiveState, technique.sequenceRole)) continue;
-      if (finisherBlockedByTag(state, playerId, technique.sequenceRole)) continue;
       if (!sequenceMeterAffordable(state, playerId, technique.meterCost)) continue;
     }
     for (const otherDieId of others) {

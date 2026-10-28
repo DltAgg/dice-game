@@ -1,6 +1,5 @@
 import {
   dieForCreature,
-  finisherBlockedByTag,
   legalFaceActions,
   matchingTechniques,
   sequenceMeterAffordable,
@@ -113,9 +112,6 @@ function sequenceFaceRefusal(
   if (face === undefined || role === undefined) return null;
   if (state.aggressorPlayerId !== playerId) {
     return `${face.name} can only hit while you are on offense.`;
-  }
-  if (finisherBlockedByTag(state, playerId, role)) {
-    return `${face.name} can't be used after Tag this turn.`;
   }
   if (!sequenceRoleFits(state.offensiveState, role)) {
     if (role === "extender" && starterHitWaiting(state, playerId)) {

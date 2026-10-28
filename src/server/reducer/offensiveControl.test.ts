@@ -4,7 +4,7 @@ import type { DieFaceLayout } from "../model/dice.js";
 import type { CreatureDefinitionId, DieId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { canRerollDice } from "../rules/offensive.js";
-import { legalFaceActions } from "../rules/faceActions.js";
+import { legalFaceActions, matchingTechniques } from "../rules/faceActions.js";
 import { advance } from "./reduce.js";
 import {
   asTestAttackId,
@@ -184,6 +184,16 @@ function install(): void {
         secondary: { faceType: "grab" },
         sequenceRole: "extender",
         effects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
+      },
+      {
+        id: "technique-seq-power-bomb",
+        name: "Power Bomb",
+        primaryFaceId: LARIAT,
+        hitStrength: "heavy",
+        hitType: "punch",
+        secondary: { faceType: "grab" },
+        sequenceRole: "finisher",
+        effects: [{ type: "damage", amount: 5, target: { kind: "declared-target" } }],
       },
     ],
   });
@@ -695,13 +705,11 @@ describe("030 offensive control", () => {
     expect(resolved.endSequenceAfterChain).toBe(false);
   });
 
-  it("refuses a finisher after Tag this turn and leaves the sequence", () => {
+  it("allows a starter, extender, and finisher after Tag on the same turn", () => {
     let state = readyMixed(false);
-    state = resolveOpenChain(expectOk(useFace(state, P1)));
-    state = show(state, P1, 0, 2);
     const player = state.players[P1];
     if (player === undefined) throw new Error("player");
-    const tagged = {
+    const taggedOpen = {
       ...state,
       players: {
         ...state.players,
@@ -711,15 +719,56 @@ describe("030 offensive control", () => {
         },
       },
     };
-    expect(legalFaceActions(tagged, P1)).toEqual([]);
-    const denied = useFace(tagged, P1);
-    expect(denied.ok).toBe(false);
-    if (!denied.ok) {
-      expect(denied.error).toBe("INVALID_TARGET");
-      expect(denied.state.offensiveState).toBe("combo");
-      expect(denied.state.activePlayerId).toBe(P1);
-      expect(denied.state.phase).toBe("actions");
-    }
+    expect(legalFaceActions(show(taggedOpen, P1, 0, 0), P1)).toContain(activeId(taggedOpen, P1));
+    expect(legalFaceActions(show(taggedOpen, P1, 0, 2), P1)).toContain(activeId(taggedOpen, P1));
+    const extenderWhileOpen = useFace(show(taggedOpen, P1, 0, 1), P1);
+    expect(extenderWhileOpen.ok).toBe(false);
+
+    state = resolveOpenChain(expectOk(useFace(state, P1)));
+    expect(state.offensiveState).toBe("combo");
+    const comboPlayer = state.players[P1];
+    if (comboPlayer === undefined) throw new Error("player");
+    const tagged = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: {
+          ...comboPlayer,
+          spentOncePerTurnKeys: [...comboPlayer.spentOncePerTurnKeys, "tag-this-turn"],
+        },
+      },
+    };
+    const starterWhileCombo = useFace(show(tagged, P1, 0, 0), P1);
+    expect(starterWhileCombo.ok).toBe(false);
+    expect(legalFaceActions(show(tagged, P1, 0, 1), P1)).toContain(activeId(tagged, P1));
+    const finisherFace = show(tagged, P1, 0, 2);
+    const declared = expectOk(useFace(finisherFace, P1));
+    expect(declared.chainStack.at(-1)?.sequenceRole).toBe("finisher");
+    expect(declared.offensiveState).toBe("combo");
+    expect(declared.activePlayerId).toBe(P1);
+
+    const technique = show(show(tagged, P1, 0, 1), P1, 1, 3);
+    const active = activeId(technique, P1);
+    expect(
+      matchingTechniques(technique, P1, active).some(
+        (match) => match.techniqueId === "technique-seq-power-bomb",
+      ),
+    ).toBe(true);
+    expect(
+      matchingTechniques(technique, P1, active).some(
+        (match) => match.techniqueId === "technique-seq-lariat-extend",
+      ),
+    ).toBe(true);
+    const used = expectOk(
+      advance(technique, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: active,
+        techniqueId: "technique-seq-power-bomb",
+        secondaryDieId: dieIdAt(technique, P1, 1),
+      }),
+    );
+    expect(used.chainStack.at(-1)?.sequenceRole).toBe("finisher");
   });
 
   it("passes the turn once when a finisher KOs", () => {
