@@ -10,12 +10,13 @@ import {
 } from "@server";
 import {
   BoardModal,
-  FaceChoiceContent,
   TacticChoiceContent,
 } from "../modals/BoardModal";
 import {
   btnClass,
 } from "../styles";
+import { DiceFacesModal } from "./DiceFacesModal";
+import { diceCountForPlayer } from "./diceFaceGroups";
 
 export function DockPeekButton({
   label,
@@ -65,9 +66,9 @@ export function ZoneDocks({
   state: GameState;
   playerId: PlayerId;
 }) {
-  const [open, setOpen] = useState<"graveyard" | "faces" | null>(null);
+  const [open, setOpen] = useState<"graveyard" | "dice" | null>(null);
   const gy = graveyardOf(state, playerId);
-  const facePool = state.players[playerId]?.facePool ?? [];
+  const diceCount = diceCountForPlayer(state, playerId);
 
   useEffect(() => {
     setOpen(null);
@@ -84,11 +85,11 @@ export function ZoneDocks({
           onOpen={() => setOpen("graveyard")}
         />
         <DockPeekButton
-          label="Faces"
-          count={facePool.length}
-          open={open === "faces"}
-          ariaLabel={`View face deck (${String(facePool.length)})`}
-          onOpen={() => setOpen("faces")}
+          label="Dice"
+          count={diceCount}
+          open={open === "dice"}
+          ariaLabel={`View dice (${String(diceCount)})`}
+          onOpen={() => setOpen("dice")}
         />
       </div>
       {open === "graveyard" && (
@@ -115,29 +116,12 @@ export function ZoneDocks({
           </button>
         </BoardModal>
       )}
-      {open === "faces" && (
-        <BoardModal
-          title="Face deck"
-          subtitle={`${String(facePool.length)} card${facePool.length === 1 ? "" : "s"} left to forge onto a die.`}
+      {open === "dice" && (
+        <DiceFacesModal
+          state={state}
+          playerId={playerId}
           onDismiss={() => setOpen(null)}
-        >
-          <ul className="mt-4 space-y-2">
-            {facePool.map((faceCardId, index) => (
-              <li
-                key={`${faceCardId}-${String(index)}`}
-                className="rounded border border-stone-700 bg-stone-900 px-3 py-2"
-              >
-                <FaceChoiceContent faceCardId={faceCardId} />
-              </li>
-            ))}
-            {facePool.length === 0 && (
-              <li className="text-sm text-stone-500">No face cards left in your pool.</li>
-            )}
-          </ul>
-          <button type="button" className={`${btnClass} mt-4`} onClick={() => setOpen(null)}>
-            Close
-          </button>
-        </BoardModal>
+        />
       )}
     </>
   );
