@@ -29,7 +29,9 @@ function readJson(path: string): unknown {
 function operatorsIn(text: string): Set<string> {
   const found = new Set<string>();
   for (const match of text.matchAll(BRACKET)) {
-    const parts = match[1]!.replace(/\s+/g, " ").trim().toLowerCase().split(" ");
+    const raw = match[1];
+    if (raw === undefined) continue;
+    const parts = raw.replace(/\s+/g, " ").trim().toLowerCase().split(" ");
     const head: string[] = [];
     for (const part of parts) {
       if (/^(n|x|\d+)$/.test(part)) break;
@@ -41,9 +43,11 @@ function operatorsIn(text: string): Set<string> {
 }
 
 function phrasesIn(text: string): string[] {
-  return [...text.matchAll(BRACKET)].map((match) =>
-    match[1]!.replace(/\s+/g, " ").trim().toLowerCase(),
-  );
+  return [...text.matchAll(BRACKET)].flatMap((match) => {
+    const raw = match[1];
+    if (raw === undefined) return [];
+    return [raw.replace(/\s+/g, " ").trim().toLowerCase()];
+  });
 }
 
 function sectionBody(glossary: string, heading: string): string {
