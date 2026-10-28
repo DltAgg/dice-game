@@ -69,6 +69,8 @@ Entering actions makes you the Aggressor and opens the sequence. Only the Aggres
 
 A face action uses the showing face of one of your living Fighters, Active or Reserve. A Technique is only the Active Fighter. It uses two different dice you own that are showing a face. One of those dice is showing the Technique’s primary face. The other matches the Technique. Either of those faces may be the Active Fighter’s. One showing face cannot fill both inputs. The Technique’s sequence role is what the sequence checks. Both target the opponent’s Active Fighter.
 
+The other face matches that Technique by any punch, any kick, any light, any medium, or any heavy, or by one strength together with one strike. It is not a movement face.
+
 Ryu Form’s Replace writes Form onto the chosen slot for the rest of the match and makes that slot the showing face, including a slot that was not showing. Form can open the sequence while it is still open. A later roll can show a different slot. A starter is still illegal once the sequence is in combo.
 
 A die is not spent by a face action or a Technique. The same face and the same Technique cannot be declared again while that action is on the Chain or already used in this sequence.

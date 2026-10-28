@@ -21,7 +21,7 @@ rename the file layout.
 | Life | `life` | Defeated when damage reaches life |
 | Base die | `baseDie` | Face ids. The match copies this onto the current die. The player does not build it in the deck |
 | Face actions | on each face | Any living Fighter, Active or Reserve |
-| Techniques | `techniques` | Active Fighter only. Primary is that Fighter's showing face. Secondary is another of your rolled dice. The Technique has `hitStrength` and `hitType`. Strength sets Meter, not damage |
+| Techniques | `techniques` | Active Fighter only. Primary is that Fighter's showing face. Secondary is another of your rolled dice: any punch, any kick, a single strength, or one strength and one strike. The Technique has `hitStrength` and `hitType`. Strength sets Meter, not damage |
 | Assist | `assistName`, `assistRulesText`, `assistEffects` | Not the Active Fighter. May be defeated. Not a card. Once per turn |
 | Assist Meter | `exceptionalAssistMeter` | Omit it and the Assist spends 0. A number greater than 0 is spent |
 | Passive | `passiveRulesText`, optional `standingAbilities` | Optional. Data-driven hooks only when the engine already models the clause |

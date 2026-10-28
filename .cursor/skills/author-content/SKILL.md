@@ -51,8 +51,10 @@ rules modules — reuse them; do not add a Tag card type or an Assist card.
    values, not types. Do not mint `DiceModificationCard`,
    `RollModificationCard`, `TagCard`, `AssistCard`, or `SituationCard`.
 2. **Dice are inputs.** A face has a name, a type, a primary effect, and a
-   secondary effect. Attacks, grabs, movement, and other character offensive
-   tools belong here. Generic Block, Dodge, Counter, and Parry do not. A
+   secondary effect. Strikes, grabs, and other character offensive tools
+   belong here. Movement is not a face type. A Technique’s other face is any
+   punch, any kick, a single strength, or one strength and one strike.
+   Generic Block, Dodge, Counter, and Parry do not. A
    rolled face is not spent for the match. The same face instance cannot
    fill two inputs of one action. A later action may use it again. "Another
    die" is another die of the same player.

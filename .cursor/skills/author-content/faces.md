@@ -17,7 +17,7 @@ and not a deckbuilding part. The face deck is not current online play.
 | Field | Role |
 |---|---|
 | `name` | The move the player reads |
-| `faceType` | Label only. No inherent damage. Use an offensive tool the enum already allows |
+| `faceType` | Label only. No inherent damage. A strike face is `attack`. Movement is not a face type. A gate that used to say attack or movement is `hitType`, `hitStrength`, or both |
 | `hitStrength` | `light`, `medium`, or `heavy`. Strength sets Meter, not damage |
 | `hitType` | `kick` or `punch` |
 | `primaryEffects` | When this face is the hit, and when it is the first face of a Technique |

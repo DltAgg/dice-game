@@ -24,7 +24,7 @@ Use these words everywhere. Do not rename them per card.
 
 | Layer | What it is | What it is not |
 |---|---|---|
-| **Die** | Named faces: name, type, primary effect, secondary effect. Attacks, grabs, movement, character offensive tools. | Generic Block, Dodge, Counter, or Parry. A face is not spent by a hit. |
+| **Die** | Named faces: name, type, primary effect, secondary effect. Strikes (punch or kick; light, medium, or heavy), grabs, and other character offensive tools. Movement is not a face type. | Generic Block, Dodge, Counter, or Parry. A face is not spent by a hit. |
 | **Fighter** | Identity: `baseDie`, those named faces, face actions, Techniques, one Assist, life. | A generic stat block. A deck, a hand, or a card type. |
 | **Card** | `response` or `modify` only. A moveset Modify may attach in the equipment zone. | Instant, Reaction, Overload, Ritual, Counter, Tag, Assist, or Situation as a type. |
 | **Meter** | One shared pool. It starts at 0, is not cleared on turn end or Tag, and the cap is 8. A sequence hit grants its printed gain plus 2, 3, or 4 for light, medium, or heavy. The owner of the Fighter who was hit gains 1. | Meter per HP. Generic card mana. A cost on every strong card. |
@@ -41,8 +41,10 @@ Response does not by itself take offense.
 
 **Face action:** the showing face of a living Fighter, Active or Reserve.
 **Technique:** the Active Fighter only. Primary is that Fighter's showing
-face. Secondary is another of your rolled dice. One face instance cannot
-fill both inputs of that one action.
+face. Secondary is another of your rolled dice: any punch, any kick, a
+single strength, or one strength and one strike. Attack versus movement is
+not that requirement. One face instance cannot fill both inputs of that one
+action.
 
 ## Legality
 
