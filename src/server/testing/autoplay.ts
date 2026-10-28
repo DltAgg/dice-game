@@ -826,6 +826,9 @@ export function playTurn(state: GameState, policy: AutoplayPolicy = DEFAULT_POLI
   const playerId = state.activePlayerId;
 
   let current = step(state, { type: "ROLL_DICE", playerId });
+  if (current.phase === "roll" && current.pendingDecision === null) {
+    current = step(current, { type: "ADVANCE_PHASE", playerId });
+  }
   current = absorb(current, playerId, policy);
 
   current = fight(current, playerId, policy);

@@ -65,7 +65,8 @@ function rollShowingSynthetic(state: GameState): GameState {
   let rolled = withPhase(state, "roll");
   rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
   rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: SHIELD_SLOT });
-  return expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+  const shown = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+  return expectOk(advance(shown, { type: "ADVANCE_PHASE", playerId: P1 }));
 }
 
 function playStampOnDie(state: GameState, dieId: DieId): GameState {

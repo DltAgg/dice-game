@@ -43,10 +43,11 @@ function inActions(): GameState {
     ],
   });
   const rolled = expectOk(advance(match, { type: "ROLL_DICE", playerId: P1 }));
-  if (rolled.phase !== "actions" || rolled.pendingDecision !== null) {
-    throw new Error(`expected actions, phase ${rolled.phase}`);
+  const opened = expectOk(advance(rolled, { type: "ADVANCE_PHASE", playerId: P1 }));
+  if (opened.phase !== "actions" || opened.pendingDecision !== null) {
+    throw new Error(`expected actions, phase ${opened.phase}`);
   }
-  return rolled;
+  return opened;
 }
 
 function fighter(state: GameState, definitionId: CreatureDefinitionId): CreatureId {

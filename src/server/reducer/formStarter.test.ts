@@ -53,14 +53,15 @@ function skirmishActions(): GameState {
     ],
   });
   const rolled = expectOk(advance(match, { type: "ROLL_DICE", playerId: P1 }));
+  const opened = expectOk(advance(rolled, { type: "ADVANCE_PHASE", playerId: P1 }));
   if (
-    rolled.phase !== "actions" ||
-    rolled.pendingDecision !== null ||
-    rolled.offensiveState !== "open"
+    opened.phase !== "actions" ||
+    opened.pendingDecision !== null ||
+    opened.offensiveState !== "open"
   ) {
-    throw new Error(`expected an open sequence, phase ${rolled.phase}`);
+    throw new Error(`expected an open sequence, phase ${opened.phase}`);
   }
-  return rolled;
+  return opened;
 }
 
 function fighterOf(state: GameState, definitionId: CreatureDefinitionId): CreatureId {

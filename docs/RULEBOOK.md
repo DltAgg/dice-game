@@ -45,9 +45,7 @@ Each player has a Meter pool. It starts at 0. The cap is 8. It is not cleared wh
 
 A turn has two phases: **roll**, then **actions**. Ending the turn is an action, not a third phase.
 
-On your roll, you roll both players’ dice, including Reserve and defeated Fighters. The turn then enters actions. The roll does not absorb symbols.
-
-During actions, before another action closes it, you may reroll once. The reroll names one or more of your own dice. It does not roll the opponent’s dice. There is no second reroll. Tag and passing priority do not close the reroll. A pending decision does. Any other action closes it.
+On your roll, you roll both players’ dice, including Reserve and defeated Fighters, and you stay in the roll. You may then reroll any number of your own dice once. That reroll does not roll the opponent’s dice. There is no second reroll. You then continue into actions. The roll does not absorb symbols.
 
 When you end the turn, the opponent becomes the active player, the turn number goes up by 1, that player draws 1, victory is checked, and the phase becomes roll.
 
@@ -83,7 +81,7 @@ Defeating a Fighter ends that sequence. That Fighter’s owner loses their combo
 
 Tag is your action during actions, at most once per turn. It is legal in an opening window or a closing window.
 
-The opening window is before any face, Technique, Assist, card, or sequence end. The closing window is while you are the Aggressor and the sequence is in combo. A Chain, a pending decision, a second Tag, or a finisher already resolved this turn closes both windows. Tag does not close the reroll.
+The opening window is before any face, Technique, Assist, card, or sequence end. The closing window is while you are the Aggressor and the sequence is in combo. A Chain, a pending decision, a second Tag, or a finisher already resolved this turn closes both windows.
 
 The chosen Fighter must be a living Reserve and must not be locked from Tagging in. Your Active Fighter must not be defeated. Tag enters the Chain. If it resolves and is not negated, that Reserve becomes Active, the previous Active becomes Reserve, and your combo becomes 0. Meter is not spent. A Tag declared in the closing window ends the turn after the switch.
 

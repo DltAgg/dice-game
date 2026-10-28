@@ -144,6 +144,7 @@ describe("host/client over fake transport", () => {
       playerId: P1,
     });
     expect(ok).toBe(true);
+    expect(hostSession.submitLocalAction({ type: "ADVANCE_PHASE", playerId: P1 })).toBe(true);
     expect(hostBox.state?.phase).toBe("actions");
     expect(guestBox.state?.phase).toBe("actions");
     expect(guestBox.state).toEqual(hostBox.state);
@@ -229,6 +230,7 @@ describe("host/client over fake transport", () => {
     clientSession.claimSeat("p2", loadout);
     hostSession.startMatch();
     hostSession.submitLocalAction({ type: "ROLL_DICE", playerId: P1 });
+    hostSession.submitLocalAction({ type: "ADVANCE_PHASE", playerId: P1 });
     const afterRoll = guestBox.state;
 
     guestBox.state = null;
@@ -485,6 +487,7 @@ describe("room seats and spectators over fake transport", () => {
 
     const ok = p1Client.submitAction({ type: "ROLL_DICE", playerId: P2 });
     expect(ok).toBe(true);
+    expect(p1Client.submitAction({ type: "ADVANCE_PHASE", playerId: P1 })).toBe(true);
     expect(hostBox.state?.phase).toBe("actions");
     expect(advances).toContain("ROLL_DICE:ok");
     expect(hostSession.localPlayerId).toBeNull();
@@ -532,6 +535,7 @@ describe("guest reconnection over fake transport", () => {
       playerId: P1,
     });
     expect(rolled).toBe(true);
+    expect(hostSession.submitLocalAction({ type: "ADVANCE_PHASE", playerId: P1 })).toBe(true);
     expect(hostBox.state?.phase).toBe("actions");
     const matchId = hostBox.state?.matchId;
 
@@ -600,6 +604,7 @@ describe("guest reconnection over fake transport", () => {
     expect(staleBox.welcomes).toBeGreaterThanOrEqual(1);
 
     hostSession.submitLocalAction({ type: "ROLL_DICE", playerId: P1 });
+    hostSession.submitLocalAction({ type: "ADVANCE_PHASE", playerId: P1 });
     expect(staleBox.state?.phase).toBe("actions");
 
     const replacement = attachFakeGuest(host, "guest-reload");
@@ -709,6 +714,7 @@ describe("guest reconnection over fake transport", () => {
     firstClient.claimSeat("p2", loadout);
     firstHost.startMatch();
     firstHost.submitLocalAction({ type: "ROLL_DICE", playerId: P1 });
+    firstHost.submitLocalAction({ type: "ADVANCE_PHASE", playerId: P1 });
     expect(snapshotBox.state?.phase).toBe("actions");
     const frozen = snapshotBox.state!;
     const frozenRoom = firstHost.persistedRoom();

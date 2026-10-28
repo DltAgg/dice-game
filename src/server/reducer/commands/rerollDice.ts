@@ -8,7 +8,7 @@ import { publishShownFaceRolls, rollOneDie } from "./rollDice.js";
 
 /**
  * Once-per-turn reroll of any number of the actor's own dice (spec `030`).
- * Stays in `actions`. Does not roll the opponent's dice.
+ * Stays in `roll`. Does not roll the opponent's dice.
  */
 export function rerollDice(
   draft: Draft,
@@ -17,7 +17,7 @@ export function rerollDice(
   rng: RNG,
 ): GameError | null {
   if (!canRerollDice(draft, playerId)) {
-    if (draft.phase !== "actions") return "INVALID_PHASE";
+    if (draft.phase !== "roll") return "INVALID_PHASE";
     if (draft.players[playerId]?.spentOncePerTurnKeys.includes(TURN_REROLL_KEY)) {
       return "ALREADY_USED";
     }
