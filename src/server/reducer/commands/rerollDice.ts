@@ -5,10 +5,11 @@ import { canRerollDice, TURN_REROLL_KEY } from "../../rules/offensive.js";
 import { emit, type Draft } from "../draft.js";
 import { markPlayerSpent } from "../triggerSpent.js";
 import { publishShownFaceRolls, rollOneDie } from "./rollDice.js";
+import { enterPhase } from "./turn.js";
 
 /**
  * Once-per-turn reroll of any number of the actor's own dice (spec `030`).
- * Stays in `roll`. Does not roll the opponent's dice.
+ * A successful reroll enters `actions`. Does not roll the opponent's dice.
  */
 export function rerollDice(
   draft: Draft,
@@ -17,7 +18,6 @@ export function rerollDice(
   rng: RNG,
 ): GameError | null {
   if (!canRerollDice(draft, playerId)) {
-    if (draft.phase !== "roll") return "INVALID_PHASE";
     if (draft.players[playerId]?.spentOncePerTurnKeys.includes(TURN_REROLL_KEY)) {
       return "ALREADY_USED";
     }
@@ -43,5 +43,5 @@ export function rerollDice(
     if (entry !== undefined) rolled.push(entry);
   }
   publishShownFaceRolls(draft, rolled);
-  return null;
+  return enterPhase(draft, "actions");
 }

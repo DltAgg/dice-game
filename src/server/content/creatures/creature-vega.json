@@ -35,7 +35,7 @@
       "hitType": "punch",
       "secondary": { "faceType": "projectile" },
       "sequenceRole": "starter",
-      "rulesText": "On attack: Kick + Projectile: [Strike 3].",
+      "rulesText": "Kick + Projectile: [Strike 3].",
       "effects": [
         {
           "type": "damage",

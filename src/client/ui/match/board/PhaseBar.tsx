@@ -1,4 +1,5 @@
 import {
+  openingRollDone,
   TURN_PHASE_ORDER,
   type GameState,
   type TurnPhase,
@@ -34,7 +35,9 @@ export function PhaseBar({
         {TURN_PHASE_ORDER.map((phase, index) => {
           const isCurrent = index === currentIndex;
           const isPast = index < currentIndex;
-          const canJump = !controlsLocked && !isPast && !isCurrent && state.phase !== "roll";
+          const canLeaveRoll = state.phase === "roll" && openingRollDone(state);
+          const canJump =
+            !controlsLocked && !isPast && !isCurrent && (state.phase !== "roll" || canLeaveRoll);
           return (
             <button
               key={phase}
@@ -47,7 +50,9 @@ export function PhaseBar({
                     ? "Current phase: Roll — both players’ dice"
                     : `Current phase: ${PHASE_LABELS[phase]}`
                   : canJump
-                    ? `Skip to ${PHASE_LABELS[phase]}`
+                    ? state.phase === "roll"
+                      ? "Continue to actions"
+                      : `Skip to ${PHASE_LABELS[phase]}`
                     : PHASE_LABELS[phase]
               }
               className={

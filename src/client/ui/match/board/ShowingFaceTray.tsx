@@ -10,6 +10,7 @@ import {
   type PlayerId,
 } from "@server";
 import { btnHandPrimary } from "../styles";
+import { RollPhaseControls } from "./RollPhaseControls";
 import {
   hitButtonLabel,
   showingFaceChips,
@@ -31,6 +32,7 @@ export function ShowingFaceTray({
   canAct,
   onUseFace,
   onUseTechnique,
+  onReroll,
 }: {
   state: GameState;
   playerId: PlayerId;
@@ -39,6 +41,7 @@ export function ShowingFaceTray({
   canAct: boolean;
   onUseFace: (creatureId: CreatureId) => void;
   onUseTechnique: (creatureId: CreatureId, techniqueId: string, secondaryDieId: DieId) => void;
+  onReroll: (dieIds: readonly DieId[]) => void;
 }) {
   const [slots, setSlots] = useState<[CreatureId | null, CreatureId | null]>([null, null]);
   const player = state.players[playerId];
@@ -154,6 +157,14 @@ export function ShowingFaceTray({
           );
         })}
       </div>
+      {playerId === actingPlayerId && (
+        <RollPhaseControls
+          state={state}
+          activePlayerId={playerId}
+          canAct={canAct}
+          onReroll={onReroll}
+        />
+      )}
       {interactive && staged.kind === "pending" && (
         <p className="mt-2 text-[0.7rem] text-stone-500">{staged.message}</p>
       )}

@@ -45,7 +45,7 @@ Each player has a Meter pool. It starts at 0. The cap is 8. It is not cleared wh
 
 A turn has two phases: **roll**, then **actions**. Ending the turn is an action, not a third phase.
 
-On your roll, you roll both players’ dice, including Reserve and defeated Fighters, and you stay in the roll. You may then reroll any number of your own dice once. That reroll does not roll the opponent’s dice. There is no second reroll. You then continue into actions. The roll does not absorb symbols.
+On your roll, you roll both players’ dice, including Reserve and defeated Fighters, and you stay in the roll. You may then reroll any number of your own dice once. That reroll does not roll the opponent’s dice, and it moves you into actions. There is no second reroll. You may instead continue into actions without rerolling. The roll does not absorb symbols.
 
 When you end the turn, the opponent becomes the active player, the turn number goes up by 1, that player draws 1, victory is checked, and the phase becomes roll.
 

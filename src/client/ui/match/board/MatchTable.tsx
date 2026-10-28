@@ -24,6 +24,7 @@ export function MatchTable({
   onAssist,
   onUseFace,
   onUseTechnique,
+  onReroll,
   onGoToPhase,
   onEndTurn,
   onEndSequence,
@@ -44,6 +45,7 @@ export function MatchTable({
   onAssist: (reserveCreatureId: CreatureId) => void;
   onUseFace: (creatureId: CreatureId) => void;
   onUseTechnique: (creatureId: CreatureId, techniqueId: string, secondaryDieId: DieId) => void;
+  onReroll: (dieIds: readonly DieId[]) => void;
   onGoToPhase: (phase: TurnPhase) => void;
   onEndTurn: () => void;
   onEndSequence: () => void;
@@ -77,6 +79,7 @@ export function MatchTable({
       canAct={canAct}
       onUseFace={onUseFace}
       onUseTechnique={onUseTechnique}
+      onReroll={onReroll}
     />
   );
 

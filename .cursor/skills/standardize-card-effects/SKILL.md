@@ -48,7 +48,9 @@ card type.
 
 Timing prefixes that already exist stay prefixes: `On roll:`, `On attack:`,
 `On deal damage:`, `On take damage:`, `On start of turn:`. A prefix is
-eligibility in that window. It is not a new `TimingCondition`.
+eligibility in that window. It is not a new `TimingCondition`. A Technique
+requirement lists the faces (`X + Y:`). Do not prefix that line with
+`On attack:`.
 
 ## Map to effects that exist
 

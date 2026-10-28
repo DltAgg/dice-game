@@ -82,9 +82,9 @@ A match starts on turn 1, phase `roll`. The first player in the setup list is `a
 
 The active player plays `ROLL_DICE`. That roll covers both players’ dice, including dice of Reserve and defeated Fighters. The phase stays `roll`. The opening roll does not absorb symbols. A second `ROLL_DICE` in that same roll is `ALREADY_USED`.
 
-After that roll, `rerollAvailable` is true. The active player may `REROLL_DICE` once this turn, naming one or more of their own dice. It does not roll the opponent’s dice. There is no second reroll. The phase stays `roll`.
+After that roll, `rerollAvailable` is true. The active player may `REROLL_DICE` once this turn, naming one or more of their own dice. It does not roll the opponent’s dice. There is no second reroll. A successful `REROLL_DICE` enters `actions`: `beginOffensiveWindow` runs once, and `rerollAvailable` becomes false.
 
-The active player then plays `ADVANCE_PHASE`. The phase becomes `actions`. Entering `actions` calls `beginOffensiveWindow` once, and `rerollAvailable` is false. `ADVANCE_PHASE` from `roll` is illegal until the opening roll has happened.
+Skipping the reroll is `ADVANCE_PHASE`. That enters `actions` the same way. `ADVANCE_PHASE` from `roll` is illegal until the opening roll has happened.
 
 `END_TURN` is the active player’s action. The opponent becomes `activePlayerId`, the turn number increases by 1, that opponent draws 1, victory is checked, and the phase becomes `roll`.
 

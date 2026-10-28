@@ -103,9 +103,9 @@ export interface ChainLink {
  *
  * Turn phases are `roll` and `actions` only — banking happens during actions.
  * `ROLL_DICE` stays in `roll`. The active player may reroll their own dice
- * once, then `ADVANCE_PHASE` enters `actions`. Rolled pips, Shield absorb
- * onto a creature, attacks, plays, forges, and ready-ritual activates all
- * share that actions window.
+ * once; that reroll enters `actions`. Skipping the reroll is `ADVANCE_PHASE`.
+ * Rolled pips, Shield absorb onto a creature, attacks, plays, forges, and
+ * ready-ritual activates all share that actions window.
  * Unabsorbed pool symbols stay absorbable until used or the turn ends.
  * Rituals cannot activate during roll.
  */

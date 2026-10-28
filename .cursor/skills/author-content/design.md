@@ -16,7 +16,7 @@ Print says **Fighter**. Engine types stay `Creature*`.
 Each player has three Fighters, one shared deck, one shared hand, one shared
 Meter pool, and one die per Fighter. One Fighter is Active. The others are
 Reserve. A defeated Fighter stays defeated. That Fighter can still Assist.
-All three dice roll, including a defeated Fighter's die. After the opening roll you stay in the roll, you may reroll any number of your own dice once, then you continue to actions.
+All three dice roll, including a defeated Fighter's die. After the opening roll you stay in the roll. You may reroll any number of your own dice once, and that reroll moves you into actions. You may also continue to actions without rerolling.
 
 ## Layers
 
@@ -44,7 +44,7 @@ Response does not by itself take offense.
 face. Secondary is another of your rolled dice: any punch, any kick, a
 single strength, or one strength and one strike. Attack versus movement is
 not that requirement. One face instance cannot fill both inputs of that one
-action.
+action. Print that requirement as `X + Y:`. Do not prefix it with `On attack:`.
 
 ## Legality
 

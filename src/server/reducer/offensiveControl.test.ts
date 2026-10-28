@@ -293,7 +293,9 @@ describe("030 offensive control", () => {
     const rerolled = expectOk(
       advance(rolled, { type: "REROLL_DICE", playerId: P1, dieIds }),
     );
-    expect(rerolled.phase).toBe("roll");
+    expect(rerolled.phase).toBe("actions");
+    expect(rerolled.rerollAvailable).toBe(false);
+    expect(rerolled.offensiveState).toBe("open");
     expect(canRerollDice(rerolled, P1)).toBe(false);
     expect(eventTypes(rerolled)).toContain("dice-rerolled");
     const rolledDice = rerolled.log.flatMap((entry) =>
@@ -331,12 +333,7 @@ describe("030 offensive control", () => {
     expect(notOwner.ok).toBe(false);
     if (!notOwner.ok) expect(notOwner.error).toBe("NOT_ACTIVE_PLAYER");
 
-    const continued = expectOk(advance(rerolled, { type: "ADVANCE_PHASE", playerId: P1 }));
-    expect(continued.phase).toBe("actions");
-    expect(continued.rerollAvailable).toBe(false);
-    expect(continued.offensiveState).toBe("open");
-    expect(canRerollDice(continued, P1)).toBe(false);
-    const ended = expectOk(advance(continued, { type: "END_TURN", playerId: P1 }));
+    const ended = expectOk(advance(rerolled, { type: "END_TURN", playerId: P1 }));
     expect(ended.players[P1]?.spentOncePerTurnKeys).not.toContain("turn-reroll");
   });
 
@@ -532,10 +529,10 @@ describe("030 offensive control", () => {
     const p2Face = rerolled.dice[dieIdAt(rerolled, P2, 0)];
     const p2Showing = p2Face?.slots[p2Face.rolledSlotIndex ?? 0]?.faceCardId;
     expect(p2Showing).toBe(METER_JAB);
-    const continued = expectOk(advance(rerolled, { type: "ADVANCE_PHASE", playerId: P1 }));
+    expect(rerolled.phase).toBe("actions");
 
     const state = withMeter(
-      withMeter(withHand(withHand(continued, P2, [REVERSAL.id]), P1, [ANSWER.id]), P1, 2),
+      withMeter(withHand(withHand(rerolled, P2, [REVERSAL.id]), P1, [ANSWER.id]), P1, 2),
       P2,
       2,
     );

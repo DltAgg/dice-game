@@ -35,7 +35,7 @@
       "hitType": "punch",
       "secondary": { "sequenceRole": "extender" },
       "sequenceRole": "starter",
-      "rulesText": "On attack: Focus + Extender: [Strike 2].",
+      "rulesText": "Focus + Extender: [Strike 2].",
       "effects": [
         {
           "type": "damage",
@@ -52,7 +52,7 @@
       "hitType": "punch",
       "secondary": { "hitType": "punch" },
       "sequenceRole": "extender",
-      "rulesText": "On attack: Projectile + punch: [Strike 3].",
+      "rulesText": "Projectile + punch: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -69,7 +69,7 @@
       "hitType": "punch",
       "secondary": { "hitType": "kick" },
       "sequenceRole": "finisher",
-      "rulesText": "On attack: Projectile + kick: [Strike 4].",
+      "rulesText": "Projectile + kick: [Strike 4].",
       "effects": [
         {
           "type": "damage",

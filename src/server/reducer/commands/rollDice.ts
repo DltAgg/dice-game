@@ -36,7 +36,7 @@ import {
  * created, showing slots known) before
  * On roll fires so dice-geometry conditions can see both of **that owner's**
  * faces (spec `025`). The active player issues the single `ROLL_DICE`.
- * The phase stays `roll` until `ADVANCE_PHASE`.
+ * The phase stays `roll` until `ADVANCE_PHASE` or a successful once-per-turn reroll.
  */
 export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null {
   if (draft.phase !== "roll") return "INVALID_PHASE";

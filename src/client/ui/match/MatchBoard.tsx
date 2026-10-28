@@ -16,6 +16,7 @@ import {
   legalTargetsFor,
   slotCannotBeReplacedByForge,
   TURN_PHASE_ORDER,
+  openingRollDone,
   type CardInstance,
   type CardInstanceId,
   type CreatureId,
@@ -31,7 +32,6 @@ import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@client/decks";
 import { actingPlayerIdOf, localSeatCanAct, localSeatIsPendingChooser, seatedAction } from "./seatGate";
 import { AttackArrowOverlay } from "./board/AttackArrowOverlay";
 import { MatchTable } from "./board/MatchTable";
-import { RollPhaseControls } from "./board/RollPhaseControls";
 import { isTagSkirmishMatch } from "./board/tagAssistLegality";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
 import { HandStrip } from "./board/HandStrip";
@@ -240,7 +240,8 @@ export function MatchBoard() {
   }, [intent, state.symbols]);
 
   const goToPhase = (target: TurnPhase) => {
-    if (!canAct || finished || pending !== null || phase === "roll") return;
+    if (!canAct || finished || pending !== null) return;
+    if (phase === "roll" && !openingRollDone(state)) return;
     const from = TURN_PHASE_ORDER.indexOf(phase);
     const to = TURN_PHASE_ORDER.indexOf(target);
     if (to <= from) return;
@@ -1309,17 +1310,6 @@ export function MatchBoard() {
         />
       )}
 
-      <RollPhaseControls
-        state={state}
-        activePlayerId={activeId}
-        canAct={canAct && pending === null}
-        onReroll={(dieIds) => {
-          tryDispatch({ type: "REROLL_DICE", playerId: activeId, dieIds });
-        }}
-        onContinue={() => {
-          tryDispatch({ type: "ADVANCE_PHASE", playerId: activeId });
-        }}
-      />
       <MatchTable
         tagSkirmish={tagSkirmish}
         state={state}
@@ -1341,6 +1331,9 @@ export function MatchBoard() {
         onAssist={onAssistReserve}
         onUseFace={onUseFace}
         onUseTechnique={onUseTechnique}
+        onReroll={(dieIds) => {
+          tryDispatch({ type: "REROLL_DICE", playerId: activeId, dieIds });
+        }}
         onGoToPhase={goToPhase}
         onEndTurn={endTurn}
         onEndSequence={onEndSequence}

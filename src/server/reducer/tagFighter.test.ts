@@ -227,14 +227,11 @@ describe("028 tag-fighter prototype", () => {
     const rerolled = expectOk(
       advance(state, { type: "REROLL_DICE", playerId: P1, dieIds: [dieId] }),
     );
-    expect(rerolled.phase).toBe("roll");
+    expect(rerolled.phase).toBe("actions");
     expect(rerolled.actEngaged).toBe(false);
-    const continued = expectOk(advance(rerolled, { type: "ADVANCE_PHASE", playerId: P1 }));
-    expect(continued.actEngaged).toBe(false);
-    expect(continued.phase).toBe("actions");
-    const reserve = creature(continued, P1, 1);
+    const reserve = creature(rerolled, P1, 1);
     const tagged = expectOk(
-      advanceResolvingChain(continued, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
+      advanceResolvingChain(rerolled, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
     );
     expect(tagged.players[P1]?.activeCreatureId).toBe(reserve);
     expect(tagged.activePlayerId).toBe(P1);

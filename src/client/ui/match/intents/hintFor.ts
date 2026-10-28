@@ -351,7 +351,7 @@ export function hintFor(intent: Intent, state: GameState, isPendingChooser: bool
 
   switch (state.phase) {
     case "roll":
-      return "Both players’ dice roll automatically. You may reroll any number of your own dice once, then continue to actions. Convert Choose one is picked by the die owner.";
+      return "Both players’ dice roll automatically. Reroll any number of your own dice once to move into actions, or press Actions without rerolling. Convert Choose one is picked by the die owner.";
     case "actions":
       return "Bank attribute pips into your pile (one click), grant Shield onto a creature, spend, attack, play tactics, and activate ready rituals. End turn from the phase bar when finished.";
   }
