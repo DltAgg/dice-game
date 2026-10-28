@@ -50,9 +50,9 @@
       "primaryFaceId": "face-natural-ryu-projectile",
       "hitStrength": "medium",
       "hitType": "punch",
-      "secondary": { "faceType": "attack" },
+      "secondary": { "hitType": "punch" },
       "sequenceRole": "extender",
-      "rulesText": "Projectile + Attack: [Strike 3].",
+      "rulesText": "On attack: Projectile + punch: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -67,9 +67,9 @@
       "primaryFaceId": "face-natural-ryu-projectile",
       "hitStrength": "heavy",
       "hitType": "punch",
-      "secondary": { "faceType": "movement" },
+      "secondary": { "hitType": "kick" },
       "sequenceRole": "finisher",
-      "rulesText": "Projectile + Movement: [Strike 4].",
+      "rulesText": "On attack: Projectile + kick: [Strike 4].",
       "effects": [
         {
           "type": "damage",

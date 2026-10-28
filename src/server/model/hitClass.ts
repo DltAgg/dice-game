@@ -1,6 +1,6 @@
 /**
  * Strength and strike of a hit or Technique. Not a face type (attack, grab,
- * movement) and not a sequence role (starter, extender, finisher).
+ * guard, projectile, tag) and not a sequence role (starter, extender, finisher).
  */
 export const HIT_STRENGTHS = ["light", "medium", "heavy"] as const;
 

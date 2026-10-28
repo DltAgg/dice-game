@@ -21,6 +21,8 @@ const JAB = testFace({
   name: "Jab",
   rulesText: "",
   faceType: "attack",
+  hitStrength: "light",
+  hitType: "punch",
   primaryEffects: [{ type: "damage", amount: 1, target: { kind: "declared-target" } }],
 });
 const LARIAT = testFace({
@@ -28,6 +30,8 @@ const LARIAT = testFace({
   name: "Lariat",
   rulesText: "",
   faceType: "attack",
+  hitStrength: "heavy",
+  hitType: "punch",
   primaryEffects: [{ type: "damage", amount: 2, target: { kind: "declared-target" } }],
 });
 
@@ -40,7 +44,7 @@ const TECHNIQUE = {
   primaryFaceId: LARIAT.id,
   hitStrength: "heavy" as const,
   hitType: "punch" as const,
-  secondary: { faceType: "attack" as const },
+  secondary: { hitType: "punch" as const },
   effects: [{ type: "damage" as const, amount: 1, target: { kind: "declared-target" as const } }],
 };
 
@@ -75,7 +79,7 @@ const ADDED = {
   primaryFaceId: LARIAT.id,
   hitStrength: "heavy" as const,
   hitType: "punch" as const,
-  secondary: { faceType: "attack" as const },
+  secondary: { hitType: "punch" as const },
   effects: [{ type: "damage" as const, amount: 1, target: { kind: "declared-target" as const } }],
 };
 const OWN_MOVE = testCard({

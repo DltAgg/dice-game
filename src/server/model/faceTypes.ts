@@ -9,7 +9,6 @@ export const FACE_TYPES = [
   "attack",
   "grab",
   "guard",
-  "movement",
   "projectile",
   "tag",
 ] as const;

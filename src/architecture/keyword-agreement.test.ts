@@ -29,7 +29,7 @@ function readJson(path: string): unknown {
 function operatorsIn(text: string): Set<string> {
   const found = new Set<string>();
   for (const match of text.matchAll(BRACKET)) {
-    const parts = match[1].replace(/\s+/g, " ").trim().toLowerCase().split(" ");
+    const parts = match[1]!.replace(/\s+/g, " ").trim().toLowerCase().split(" ");
     const head: string[] = [];
     for (const part of parts) {
       if (/^(n|x|\d+)$/.test(part)) break;
@@ -42,7 +42,7 @@ function operatorsIn(text: string): Set<string> {
 
 function phrasesIn(text: string): string[] {
   return [...text.matchAll(BRACKET)].map((match) =>
-    match[1].replace(/\s+/g, " ").trim().toLowerCase(),
+    match[1]!.replace(/\s+/g, " ").trim().toLowerCase(),
   );
 }
 

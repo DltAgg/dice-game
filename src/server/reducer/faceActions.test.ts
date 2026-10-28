@@ -82,7 +82,7 @@ function installGrapplerCatalogue(): void {
   testFace({
     id: MOVEMENT,
     name: "Movement",
-    faceType: "movement",
+    faceType: "attack",
     primaryEffects: [],
     secondaryEffects: [],
   });
@@ -495,7 +495,7 @@ describe("029 fighter combat core", () => {
       testFace({
         id,
         name: "Filler",
-        faceType: "movement",
+        faceType: "attack",
         primaryEffects: [],
         secondaryEffects: [],
       });

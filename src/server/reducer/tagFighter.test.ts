@@ -873,7 +873,7 @@ describe("spec 030 assist windows", () => {
     );
     expect(state.offensiveState).toBe("combo");
     expect(state.players[P1]?.comboCount).toBe(1);
-    expect(state.creatures[defender]?.damage).toBe(2);
+    expect(state.creatures[defender]?.damage).toBe(1);
     expect(state.players[P1]?.meter).toBe(2);
     expect(state.players[P2]?.meter).toBe(1);
 
@@ -900,12 +900,12 @@ describe("spec 030 assist windows", () => {
       ],
     });
     expect(declared.players[P1]?.activeCreatureId).toBe(magnus);
-    expect(declared.creatures[defender]?.damage).toBe(2);
+    expect(declared.creatures[defender]?.damage).toBe(1);
 
     const resolved = resolveOpenChain(declared);
     expect(resolved.offensiveState).toBe("combo");
     expect(resolved.players[P1]?.comboCount).toBe(2);
-    expect(resolved.creatures[defender]?.damage).toBe(4);
+    expect(resolved.creatures[defender]?.damage).toBe(3);
     expect(resolved.players[P1]?.meter).toBe(4);
     expect(resolved.players[P2]?.meter).toBe(2);
     expect(resolved.players[P1]?.activeCreatureId).toBe(magnus);

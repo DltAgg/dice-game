@@ -90,7 +90,7 @@ function install(): void {
         primaryFaceId: HEAVY_FACE,
         hitStrength: "medium",
         hitType: "punch",
-        secondary: { faceType: "attack" },
+        secondary: { hitType: "punch" },
         sequenceRole: "starter",
         effects: [{ type: "damage", amount: 5, target: { kind: "declared-target" } }],
       },

@@ -2,7 +2,7 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-vega-rush",
   "name": "Rush",
-  "faceType": "movement",
+  "faceType": "attack",
   "sequenceRole": "finisher",
   "hitStrength": "heavy",
   "hitType": "kick",

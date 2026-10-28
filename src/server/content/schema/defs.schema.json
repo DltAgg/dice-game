@@ -1286,7 +1286,7 @@
       "title": "FaceType",
       "description": "Named-action type on a die face (spec 029). Extensible; no inherent gameplay meaning.",
       "type": "string",
-      "enum": ["attack", "grab", "guard", "movement", "projectile", "tag"]
+      "enum": ["attack", "grab", "guard", "projectile", "tag"]
     },
     "sequenceRole": {
       "title": "SequenceRole",

@@ -22,7 +22,7 @@ describe("Grappler proving catalogue (spec 029)", () => {
     expect(jab?.secondaryEffects?.[0]).toMatchObject({ type: "next-attack-bonus", amount: 1 });
     expect(getFaceCard(GRAPPLER_COMMAND_GRAB)?.faceType).toBe("grab");
     expect(getFaceCard(GRAPPLER_GUARD)?.faceType).toBe("guard");
-    expect(getFaceCard(GRAPPLER_MOVEMENT)?.faceType).toBe("movement");
+    expect(getFaceCard(GRAPPLER_MOVEMENT)?.faceType).toBe("attack");
     expect(getFaceCard(GRAPPLER_TAG)?.faceType).toBe("tag");
 
     const grappler = getCreatureDefinition(GRAPPLER);

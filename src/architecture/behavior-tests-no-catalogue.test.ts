@@ -19,6 +19,7 @@ const ALLOWED = new Set([
   // Integration coverage of the shipped tag-skirmish faces and techniques.
   "src/client/ui/match/board/showingFaceDrop.test.ts",
   "src/server/reducer/playtestCombo.test.ts",
+  "src/server/reducer/formStarter.test.ts",
 ]);
 
 const LOOKUP_ONLY = /^(?:getCard|getFaceCard|getCreatureDefinition)$/;

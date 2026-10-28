@@ -12,14 +12,14 @@ describe("showing face tooltip", () => {
         { label: "Type", value: "Kick" },
         { label: "Strength", value: "Medium" },
         { label: "Role", value: "Extender" },
-        { label: "Action", value: "Movement" },
+        { label: "Action", value: "Attack" },
       ],
       abilities: [
         { label: "Primary", text: "[Strike 2]." },
         { label: "Secondary", text: "+1 damage." },
       ],
       notes: [],
-      line: "Kick / Medium / Extender / Movement",
+      line: "Kick / Medium / Extender / Attack",
     });
   });
 

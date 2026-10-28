@@ -2,7 +2,7 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-vega-dash",
   "name": "Dash",
-  "faceType": "movement",
+  "faceType": "attack",
   "sequenceRole": "extender",
   "hitStrength": "medium",
   "hitType": "kick",

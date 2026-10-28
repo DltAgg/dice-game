@@ -49,7 +49,7 @@ const identityPair = (): readonly [DieFaceLayout, DieFaceLayout] => [
 
 describe("validateTacticsDeck", () => {
   it("accepts the Tag Skirmish tactics list under TAG_FIGHTER_RULES", () => {
-    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(20);
+    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(22);
     expect(validateTacticsDeck(TAG_SKIRMISH_LOADOUT.deck, TAG_FIGHTER_RULES)).toEqual({
       ok: true,
     });

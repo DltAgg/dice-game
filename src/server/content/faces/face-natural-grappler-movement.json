@@ -2,7 +2,7 @@
   "$schema": "../schema/face.schema.json",
   "id": "face-natural-grappler-movement",
   "name": "Movement",
-  "faceType": "movement",
+  "faceType": "attack",
   "rulesText": "Primary: no modelled effect yet. Secondary: none.",
   "onRoll": [],
   "onAbsorb": [],
