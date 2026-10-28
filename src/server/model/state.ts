@@ -102,8 +102,10 @@ export interface ChainLink {
  * legal move is noise rather than a decision point.
  *
  * Turn phases are `roll` and `actions` only — banking happens during actions.
- * `ROLL_DICE` enters `actions`. Rolled pips, Shield absorb onto a creature,
- * attacks, plays, forges, and ready-ritual activates all share that window.
+ * `ROLL_DICE` stays in `roll`. The active player may reroll their own dice
+ * once, then `ADVANCE_PHASE` enters `actions`. Rolled pips, Shield absorb
+ * onto a creature, attacks, plays, forges, and ready-ritual activates all
+ * share that actions window.
  * Unabsorbed pool symbols stay absorbable until used or the turn ends.
  * Rituals cannot activate during roll.
  */
@@ -275,7 +277,7 @@ export interface GameState {
   readonly offensiveState: OffensiveStateName;
   /** Action ids already used in this offensive sequence. Cleared on return to `open`. */
   readonly usedSequenceActionIds: readonly string[];
-  /** True immediately after the initial roll, until the reroll or any other Act action. */
+  /** True after the opening roll, until the phase becomes `actions`. */
   readonly rerollAvailable: boolean;
   /** True after the first Act action that is not the opening reroll or Tag. */
   readonly actEngaged: boolean;

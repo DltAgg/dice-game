@@ -5,6 +5,7 @@ import { type DieId, type PlayerId } from "../../model/ids.js";
 import type { RNG } from "../../rng/rng.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { diceOf, isDieStunned, keepsPreviousResult } from "../../rules/dice.js";
+import { openingRollDone } from "../../rules/offensive.js";
 import { isSlotSilenced } from "../../rules/silence.js";
 import { emit, patchDie, type Draft } from "../draft.js";
 import { drainResolution } from "../resolution.js";
@@ -23,7 +24,6 @@ import {
   skipRollYieldAndOvercharge,
   type ShownFaceRollEntry,
 } from "./rollPips.js";
-import { enterPhase } from "./turn.js";
 
 /* ---------------------------------------------------------------- roll --- */
 
@@ -36,9 +36,11 @@ import { enterPhase } from "./turn.js";
  * created, showing slots known) before
  * On roll fires so dice-geometry conditions can see both of **that owner's**
  * faces (spec `025`). The active player issues the single `ROLL_DICE`.
+ * The phase stays `roll` until `ADVANCE_PHASE`.
  */
 export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null {
   if (draft.phase !== "roll") return "INVALID_PHASE";
+  if (openingRollDone(draft)) return "ALREADY_USED";
 
   const rolled: ShownFaceRollEntry[] = [];
 
@@ -53,7 +55,8 @@ export function rollDice(draft: Draft, playerId: PlayerId, rng: RNG): GameError 
   }
 
   publishShownFaceRolls(draft, rolled);
-  return enterPhase(draft, "actions");
+  draft.rerollAvailable = true;
+  return null;
 }
 
 /**

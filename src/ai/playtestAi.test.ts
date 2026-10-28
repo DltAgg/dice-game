@@ -1,3 +1,4 @@
+import { advance } from "@server";
 import { describe, expect, it } from "vitest";
 import { PLAYTEST_P1, createPlaytestMatch } from "./setup.js";
 import { legalActions } from "./candidates/index.js";
@@ -9,6 +10,21 @@ describe("headless AI playtest", () => {
     const state = createPlaytestMatch(1, "tempo", "control");
     const legal = legalActions(state, PLAYTEST_P1);
     expect(legal).toEqual([{ type: "ROLL_DICE", playerId: PLAYTEST_P1 }]);
+  });
+
+  it("stays in roll after the opening roll and offers a reroll or continue", () => {
+    const start = createPlaytestMatch(1, "tempo", "control");
+    const rolled = advance(start, { type: "ROLL_DICE", playerId: PLAYTEST_P1 });
+    expect(rolled.ok).toBe(true);
+    if (!rolled.ok) return;
+    expect(rolled.state.phase).toBe("roll");
+    const legal = legalActions(rolled.state, PLAYTEST_P1);
+    expect(legal.some((action) => action.type === "ADVANCE_PHASE")).toBe(true);
+    const rerolls = legal.filter((action) => action.type === "REROLL_DICE");
+    expect(rerolls).toHaveLength(7);
+    expect(legal.every((action) => action.type === "ADVANCE_PHASE" || action.type === "REROLL_DICE")).toBe(
+      true,
+    );
   });
 
   it("plays a seeded match without throwing", { timeout: 120_000 }, () => {

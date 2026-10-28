@@ -95,12 +95,18 @@ export function reduce(state: GameState, action: GameAction, rng: RNG): ReduceRe
   const error = applyAction(draft, action, rng);
   if (error !== null) return fail(state, error);
 
-  if (action.type !== "ROLL_DICE" && action.type !== "PASS_PRIORITY" && action.type !== "TAG") {
+  if (
+    draft.phase !== "roll" &&
+    action.type !== "ROLL_DICE" &&
+    action.type !== "PASS_PRIORITY" &&
+    action.type !== "TAG"
+  ) {
     draft.rerollAvailable = false;
   }
   if (
     action.type !== "ROLL_DICE" &&
     action.type !== "REROLL_DICE" &&
+    action.type !== "ADVANCE_PHASE" &&
     action.type !== "PASS_PRIORITY" &&
     action.type !== "TAG"
   ) {

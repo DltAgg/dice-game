@@ -386,6 +386,7 @@ describe("Stamp vs inherent pips", () => {
     rolled = withDie(rolled, dieIdOf(rolled), { retained: true, rolledSlotIndex: 0 });
     rolled = withDie(rolled, dieIdOf(rolled, 1), { retained: true, rolledSlotIndex: SHIELD_SLOT });
     rolled = expectOk(advance(rolled, { type: "ROLL_DICE", playerId: P1 }));
+    rolled = expectOk(advance(rolled, { type: "ADVANCE_PHASE", playerId: P1 }));
     const dieId = dieIdOf(rolled);
     const mechAfterRoll = poolOf(rolled, "mechanical");
     const rolledFromDie = Object.values(rolled.symbols).filter(

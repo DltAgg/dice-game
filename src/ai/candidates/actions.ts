@@ -21,7 +21,9 @@ import {
   resolveFaceForForge,
   ritualsOf,
   tagInLocked,
+  TURN_REROLL_KEY,
   type CreatureId,
+  type DieId,
   type GameAction,
   type GameState,
   type PlayerId,
@@ -214,12 +216,43 @@ function reactionIntents(state: GameState, playerId: PlayerId): readonly GameAct
   return actions;
 }
 
+function nonEmptyDieSubsets(dieIds: readonly DieId[]): readonly (readonly DieId[])[] {
+  const subsets: DieId[][] = [];
+  const count = dieIds.length;
+  const limit = 1 << count;
+  for (let mask = 1; mask < limit; mask += 1) {
+    const subset: DieId[] = [];
+    for (let index = 0; index < count; index += 1) {
+      if ((mask & (1 << index)) === 0) continue;
+      const dieId = dieIds[index];
+      if (dieId !== undefined) subset.push(dieId);
+    }
+    subsets.push(subset);
+  }
+  return subsets;
+}
+
+function rollPhaseCandidates(state: GameState, playerId: PlayerId): readonly GameAction[] {
+  const spentReroll =
+    state.players[playerId]?.spentOncePerTurnKeys.includes(TURN_REROLL_KEY) ?? false;
+  if (!state.rerollAvailable && !spentReroll) {
+    return [{ type: "ROLL_DICE", playerId }];
+  }
+  const dieIds = diceOf(state, playerId).map((die) => die.id);
+  return [
+    { type: "ADVANCE_PHASE", playerId },
+    ...nonEmptyDieSubsets(dieIds).map((ids) => ({
+      type: "REROLL_DICE" as const,
+      playerId,
+      dieIds: ids,
+    })),
+  ];
+}
+
 /** Intents for the turn player when no pending decision is open. */
 export function turnCandidates(state: GameState, playerId: PlayerId): readonly GameAction[] {
   if (state.activePlayerId !== playerId) return [];
-  if (state.phase === "roll") {
-    return [{ type: "ROLL_DICE", playerId }];
-  }
+  if (state.phase === "roll") return rollPhaseCandidates(state, playerId);
   return [
     ...absorbIntents(state, playerId),
     ...attackIntents(state, playerId),

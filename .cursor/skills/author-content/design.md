@@ -16,7 +16,7 @@ Print says **Fighter**. Engine types stay `Creature*`.
 Each player has three Fighters, one shared deck, one shared hand, one shared
 Meter pool, and one die per Fighter. One Fighter is Active. The others are
 Reserve. A defeated Fighter stays defeated. That Fighter can still Assist.
-All three dice roll, including a defeated Fighter's die.
+All three dice roll, including a defeated Fighter's die. After the opening roll you stay in the roll, you may reroll any number of your own dice once, then you continue to actions.
 
 ## Layers
 

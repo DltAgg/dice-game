@@ -80,9 +80,11 @@ Phases are `roll`, then `actions` (`TURN_PHASE_ORDER`). Ending the turn is the `
 
 A match starts on turn 1, phase `roll`. The first player in the setup list is `activePlayerId`. Setup deals the opening hand. It does not draw again before that first roll.
 
-The active player plays `ROLL_DICE`. That roll covers both players’ dice, including dice of Reserve and defeated Fighters. The phase then becomes `actions`. The opening roll does not absorb symbols.
+The active player plays `ROLL_DICE`. That roll covers both players’ dice, including dice of Reserve and defeated Fighters. The phase stays `roll`. The opening roll does not absorb symbols. A second `ROLL_DICE` in that same roll is `ALREADY_USED`.
 
-During `actions`, before another action closes it, the active player may `REROLL_DICE` once this turn. The reroll names one or more of that player’s own dice. It does not roll the opponent’s dice. There is no second reroll. The phase stays `actions`. `Tag` and passing priority do not close the reroll. A pending decision does. Any other action sets `rerollAvailable` false (`src/server/reducer/reduce.ts`).
+After that roll, `rerollAvailable` is true. The active player may `REROLL_DICE` once this turn, naming one or more of their own dice. It does not roll the opponent’s dice. There is no second reroll. The phase stays `roll`.
+
+The active player then plays `ADVANCE_PHASE`. The phase becomes `actions`. Entering `actions` calls `beginOffensiveWindow` once, and `rerollAvailable` is false. `ADVANCE_PHASE` from `roll` is illegal until the opening roll has happened.
 
 `END_TURN` is the active player’s action. The opponent becomes `activePlayerId`, the turn number increases by 1, that opponent draws 1, victory is checked, and the phase becomes `roll`.
 
@@ -124,7 +126,7 @@ Defeating a Fighter ends that sequence (`promoteOnKo`). The defeated owner’s c
 
 ## Tag
 
-`TAG` is the active player’s action during `actions`, at most once per turn. It is legal in an opening window or a closing window (`tagWindow` in `src/server/rules/offensive.ts`). The opening window is before any face, Technique, Assist, card, attack, or sequence end. The closing window is while that player is the Aggressor and the offensive state is `combo`. A Chain, a pending decision, a second Tag, or a Finisher already resolved this turn closes both windows. `Tag` does not close the reroll window.
+`TAG` is the active player’s action during `actions`, at most once per turn. It is legal in an opening window or a closing window (`tagWindow` in `src/server/rules/offensive.ts`). The opening window is before any face, Technique, Assist, card, attack, or sequence end. The closing window is while that player is the Aggressor and the offensive state is `combo`. A Chain, a pending decision, a second Tag, or a Finisher already resolved this turn closes both windows.
 
 The chosen Fighter must be a living Reserve and must not be Tag-in locked. The Active Fighter must not be defeated. The Tag enters the Chain. If it resolves and is not negated, that Reserve becomes Active, the previous Active becomes the other position, and that player’s combo count becomes 0. Meter is not spent. A Tag declared in the closing window ends the turn after the switch (`conductTag`).
 

@@ -2,6 +2,7 @@ import type { GameError } from "../../model/errors.js";
 import type { PlayerId, SymbolInstanceId } from "../../model/ids.js";
 import { TURN_PHASE_ORDER, type TurnPhase } from "../../model/state.js";
 import { opponentOf } from "../../rules/creatures.js";
+import { openingRollDone } from "../../rules/offensive.js";
 import { emit, type Draft } from "../draft.js";
 import { setComboCount } from "../meter.js";
 import { beginOffensiveWindow } from "../offensive.js";
@@ -25,15 +26,19 @@ export function advancePhase(draft: Draft): GameError | null {
   const next = TURN_PHASE_ORDER[index + 1];
   // The final phase is left by ending the turn, not by advancing past it.
   if (next === undefined) return "INVALID_PHASE";
+  if (draft.phase === "roll" && !openingRollDone(draft)) return "INVALID_PHASE";
   return enterPhase(draft, next);
 }
 
 export function enterPhase(draft: Draft, phase: TurnPhase): GameError | null {
   draft.phase = phase;
   emit(draft, { type: "phase-entered", phase });
+  if (phase === "roll") {
+    draft.rerollAvailable = false;
+  }
   if (phase === "actions") {
     beginOffensiveWindow(draft, draft.activePlayerId);
-    draft.rerollAvailable = true;
+    draft.rerollAvailable = false;
     draft.actEngaged = false;
     draft.usedSequenceActionIds = [];
   }
@@ -91,7 +96,6 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   drawCards(draft, nextPlayerId, draft.config.cardsDrawnPerTurn);
 
   checkVictory(draft);
-  beginOffensiveWindow(draft, nextPlayerId);
   return enterPhase(draft, "roll");
 }
 

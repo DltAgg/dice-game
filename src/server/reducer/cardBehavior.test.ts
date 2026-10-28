@@ -606,8 +606,13 @@ describe("030 card behavior", () => {
 
     const victimTurn = expectOk(
       advance(
-        expectOk(advance(switched, { type: "END_TURN", playerId: P1 })),
-        { type: "ROLL_DICE", playerId: P2 },
+        expectOk(
+          advance(
+            expectOk(advance(switched, { type: "END_TURN", playerId: P1 })),
+            { type: "ROLL_DICE", playerId: P2 },
+          ),
+        ),
+        { type: "ADVANCE_PHASE", playerId: P2 },
       ),
     );
     expect(victimTurn.turn).toBeLessThan(victimTurn.creatures[outgoing]?.tagInLockedUntilTurn ?? 0);
@@ -628,8 +633,13 @@ describe("030 card behavior", () => {
     expect(afterVictim.creatures[outgoing]?.tagInLockedUntilTurn).toBe(afterVictim.turn);
     const nextVictim = expectOk(
       advance(
-        expectOk(advance(afterVictim, { type: "END_TURN", playerId: P1 })),
-        { type: "ROLL_DICE", playerId: P2 },
+        expectOk(
+          advance(
+            expectOk(advance(afterVictim, { type: "END_TURN", playerId: P1 })),
+            { type: "ROLL_DICE", playerId: P2 },
+          ),
+        ),
+        { type: "ADVANCE_PHASE", playerId: P2 },
       ),
     );
     const freed = resolveOpenChain(

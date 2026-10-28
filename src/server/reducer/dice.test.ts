@@ -24,7 +24,7 @@ function withFirstDie(state: GameState, patch: Partial<DieState>): [GameState, D
 }
 
 describe("rolling dice", () => {
-  it("generates one symbol per die and opens the actions window", () => {
+  it("generates one symbol per die and stays in the roll", () => {
     const state = expectOk(advance(newMatch(), roll));
 
     const generated = Object.values(state.symbols);
@@ -35,7 +35,19 @@ describe("rolling dice", () => {
     }).length;
     expect(generated).toHaveLength(yielding);
     expect(generated.length).toBeGreaterThan(0);
-    expect(state.phase).toBe("actions");
+    expect(state.phase).toBe("roll");
+    expect(state.rerollAvailable).toBe(true);
+    const again = advance(state, roll);
+    expect(again.ok).toBe(false);
+    if (!again.ok) expect(again.error).toBe("ALREADY_USED");
+    expect(again.state).toBe(state);
+    const early = advance(newMatch(), { type: "ADVANCE_PHASE", playerId: P1 });
+    expect(early.ok).toBe(false);
+    if (!early.ok) expect(early.error).toBe("INVALID_PHASE");
+    const actions = expectOk(advance(state, { type: "ADVANCE_PHASE", playerId: P1 }));
+    expect(actions.phase).toBe("actions");
+    expect(actions.rerollAvailable).toBe(false);
+    expect(actions.offensiveState).toBe("open");
     for (const symbol of generated) {
       expect(symbol.status).toBe("absorbed");
       expect(symbol.absorbedByCreatureId).toBeNull();
@@ -202,12 +214,24 @@ describe("rolling dice", () => {
     if (!result.ok) expect(result.error).toBe("INVALID_TARGET");
   });
 
-  it("rejects a roll outside the roll phase without touching state", () => {
+  it("rejects a second roll in the same roll phase without touching state", () => {
     const rolled = expectOk(advance(newMatch(), roll));
     const result = advance(rolled, roll);
 
     expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("ALREADY_USED");
     expect(result.state).toBe(rolled);
+    expect(rolled.phase).toBe("roll");
+  });
+
+  it("rejects a roll outside the roll phase without touching state", () => {
+    const rolled = expectOk(advance(newMatch(), roll));
+    const actions = expectOk(advance(rolled, { type: "ADVANCE_PHASE", playerId: P1 }));
+    const result = advance(actions, roll);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("INVALID_PHASE");
+    expect(result.state).toBe(actions);
   });
 
   it("rejects a roll from the player who is not active", () => {

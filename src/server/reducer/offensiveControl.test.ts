@@ -282,14 +282,19 @@ describe("030 offensive control", () => {
     const rolled = expectOk(
       advance(matchWith(METER_DIE), { type: "ROLL_DICE", playerId: P1 }),
     );
-    expect(rolled.phase).toBe("actions");
-    expect(rolled.offensiveState).toBe("open");
+    expect(rolled.phase).toBe("roll");
+    expect(rolled.rerollAvailable).toBe(true);
     expect(canRerollDice(rolled, P1)).toBe(true);
+    const secondRoll = advance(rolled, { type: "ROLL_DICE", playerId: P1 });
+    expect(secondRoll.ok).toBe(false);
+    if (!secondRoll.ok) expect(secondRoll.error).toBe("ALREADY_USED");
 
     const dieIds = [dieIdAt(rolled, P1, 0), dieIdAt(rolled, P1, 1)];
     const rerolled = expectOk(
       advance(rolled, { type: "REROLL_DICE", playerId: P1, dieIds }),
     );
+    expect(rerolled.phase).toBe("roll");
+    expect(canRerollDice(rerolled, P1)).toBe(false);
     expect(eventTypes(rerolled)).toContain("dice-rerolled");
     const rolledDice = rerolled.log.flatMap((entry) =>
       entry.event.type === "die-rolled" ? [entry.event.dieId] : [],
@@ -326,7 +331,12 @@ describe("030 offensive control", () => {
     expect(notOwner.ok).toBe(false);
     if (!notOwner.ok) expect(notOwner.error).toBe("NOT_ACTIVE_PLAYER");
 
-    const ended = expectOk(advance(rerolled, { type: "END_TURN", playerId: P1 }));
+    const continued = expectOk(advance(rerolled, { type: "ADVANCE_PHASE", playerId: P1 }));
+    expect(continued.phase).toBe("actions");
+    expect(continued.rerollAvailable).toBe(false);
+    expect(continued.offensiveState).toBe("open");
+    expect(canRerollDice(continued, P1)).toBe(false);
+    const ended = expectOk(advance(continued, { type: "END_TURN", playerId: P1 }));
     expect(ended.players[P1]?.spentOncePerTurnKeys).not.toContain("turn-reroll");
   });
 
@@ -387,9 +397,15 @@ describe("030 offensive control", () => {
     const afterFinish = resolveOpenChain(expectOk(useFace(showingFinisher, P1)));
     expect(afterFinish.activePlayerId).toBe(P2);
     expect(afterFinish.phase).toBe("roll");
-    expect(afterFinish.offensiveState).toBe("open");
-    expect(afterFinish.aggressorPlayerId).toBe(P2);
     expect(afterFinish.turn).toBe(extended.turn + 1);
+    const p2Actions = expectOk(
+      advance(
+        expectOk(advance(afterFinish, { type: "ROLL_DICE", playerId: P2 })),
+        { type: "ADVANCE_PHASE", playerId: P2 },
+      ),
+    );
+    expect(p2Actions.offensiveState).toBe("open");
+    expect(p2Actions.aggressorPlayerId).toBe(P2);
     expect(afterFinish.players[P1]?.comboCount).toBe(0);
     expect(comboCounts(afterFinish, P1)).toEqual([1, 2, 3, 0]);
     const again = advance(afterFinish, {
@@ -477,7 +493,10 @@ describe("030 offensive control", () => {
 
   it("spends and grants meter while resolving, and rejects a short meter", () => {
     const rolled = expectOk(
-      advance(matchWith(METER_DIE), { type: "ROLL_DICE", playerId: P1 }),
+      advance(
+        expectOk(advance(matchWith(METER_DIE), { type: "ROLL_DICE", playerId: P1 })),
+        { type: "ADVANCE_PHASE", playerId: P1 },
+      ),
     );
     const short = withMeter(rolled, P1, 1);
     const denied = useFace(short, P1);
@@ -513,9 +532,10 @@ describe("030 offensive control", () => {
     const p2Face = rerolled.dice[dieIdAt(rerolled, P2, 0)];
     const p2Showing = p2Face?.slots[p2Face.rolledSlotIndex ?? 0]?.faceCardId;
     expect(p2Showing).toBe(METER_JAB);
+    const continued = expectOk(advance(rerolled, { type: "ADVANCE_PHASE", playerId: P1 }));
 
     const state = withMeter(
-      withMeter(withHand(withHand(rerolled, P2, [REVERSAL.id]), P1, [ANSWER.id]), P1, 2),
+      withMeter(withHand(withHand(continued, P2, [REVERSAL.id]), P1, [ANSWER.id]), P1, 2),
       P2,
       2,
     );
@@ -626,8 +646,14 @@ describe("030 offensive control", () => {
     const ended = expectOk(advance(opened, { type: "END_SEQUENCE", playerId: P1 }));
     expect(ended.activePlayerId).toBe(P2);
     expect(ended.phase).toBe("roll");
-    expect(ended.offensiveState).toBe("open");
-    expect(ended.aggressorPlayerId).toBe(P2);
+    const p2Actions = expectOk(
+      advance(
+        expectOk(advance(ended, { type: "ROLL_DICE", playerId: P2 })),
+        { type: "ADVANCE_PHASE", playerId: P2 },
+      ),
+    );
+    expect(p2Actions.offensiveState).toBe("open");
+    expect(p2Actions.aggressorPlayerId).toBe(P2);
     expect(ended.turn).toBe(opened.turn + 1);
     expect(ended.pendingDecision).toBeNull();
     expect(ended.chainStack).toHaveLength(0);
@@ -740,6 +766,13 @@ describe("030 offensive control", () => {
     expect(after.activePlayerId).toBe(P2);
     expect(after.turn).toBe(turn + 1);
     expect(after.phase).toBe("roll");
-    expect(after.aggressorPlayerId).toBe(P2);
+    const p2Actions = expectOk(
+      advance(
+        expectOk(advance(after, { type: "ROLL_DICE", playerId: P2 })),
+        { type: "ADVANCE_PHASE", playerId: P2 },
+      ),
+    );
+    expect(p2Actions.aggressorPlayerId).toBe(P2);
+    expect(p2Actions.offensiveState).toBe("open");
   });
 });

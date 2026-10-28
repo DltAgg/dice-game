@@ -31,6 +31,7 @@ import { PROTOTYPE_SAVED_DECK_ID, validateSavedDeck } from "@client/decks";
 import { actingPlayerIdOf, localSeatCanAct, localSeatIsPendingChooser, seatedAction } from "./seatGate";
 import { AttackArrowOverlay } from "./board/AttackArrowOverlay";
 import { MatchTable } from "./board/MatchTable";
+import { RollPhaseControls } from "./board/RollPhaseControls";
 import { isTagSkirmishMatch } from "./board/tagAssistLegality";
 import { ErrorSnackbar } from "./board/ErrorSnackbar";
 import { HandStrip } from "./board/HandStrip";
@@ -1308,6 +1309,17 @@ export function MatchBoard() {
         />
       )}
 
+      <RollPhaseControls
+        state={state}
+        activePlayerId={activeId}
+        canAct={canAct && pending === null}
+        onReroll={(dieIds) => {
+          tryDispatch({ type: "REROLL_DICE", playerId: activeId, dieIds });
+        }}
+        onContinue={() => {
+          tryDispatch({ type: "ADVANCE_PHASE", playerId: activeId });
+        }}
+      />
       <MatchTable
         tagSkirmish={tagSkirmish}
         state={state}

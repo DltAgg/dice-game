@@ -48,10 +48,11 @@ function inActions(): GameState {
     ],
   });
   const rolled = expectOk(advance(match, { type: "ROLL_DICE", playerId: P1 }));
-  if (rolled.phase !== "actions" || rolled.pendingDecision !== null) {
-    throw new Error(`expected an open actions window, phase ${rolled.phase}`);
+  const opened = expectOk(advance(rolled, { type: "ADVANCE_PHASE", playerId: P1 }));
+  if (opened.phase !== "actions" || opened.pendingDecision !== null) {
+    throw new Error(`expected an open actions window, phase ${opened.phase}`);
   }
-  return rolled;
+  return opened;
 }
 
 function fighter(state: GameState, definitionId: CreatureDefinitionId): CreatureId {
@@ -98,8 +99,14 @@ describe("playtest hits and techniques", () => {
     const stopped = expectOk(advance(combo, { type: "END_SEQUENCE", playerId: P1 }));
     expect(stopped.activePlayerId).toBe(P2);
     expect(stopped.phase).toBe("roll");
-    expect(stopped.offensiveState).toBe("open");
-    expect(stopped.aggressorPlayerId).toBe(P2);
+    const p2Actions = expectOk(
+      advance(
+        expectOk(advance(stopped, { type: "ROLL_DICE", playerId: P2 })),
+        { type: "ADVANCE_PHASE", playerId: P2 },
+      ),
+    );
+    expect(p2Actions.offensiveState).toBe("open");
+    expect(p2Actions.aggressorPlayerId).toBe(P2);
     expect(legalFaceActions(stopped, P1)).toEqual([]);
   });
 

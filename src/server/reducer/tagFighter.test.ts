@@ -221,16 +221,20 @@ describe("028 tag-fighter prototype", () => {
 
   it("keeps the opening window open across the one reroll", () => {
     let state = show(tagMatch(), P1, 0, 0);
-    state = { ...state, rerollAvailable: true };
+    state = { ...state, phase: "roll", rerollAvailable: true };
     const dieId = state.players[P1]?.dieIds[0];
     if (dieId === undefined) throw new Error("missing die");
     const rerolled = expectOk(
       advance(state, { type: "REROLL_DICE", playerId: P1, dieIds: [dieId] }),
     );
+    expect(rerolled.phase).toBe("roll");
     expect(rerolled.actEngaged).toBe(false);
-    const reserve = creature(rerolled, P1, 1);
+    const continued = expectOk(advance(rerolled, { type: "ADVANCE_PHASE", playerId: P1 }));
+    expect(continued.actEngaged).toBe(false);
+    expect(continued.phase).toBe("actions");
+    const reserve = creature(continued, P1, 1);
     const tagged = expectOk(
-      advanceResolvingChain(rerolled, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
+      advanceResolvingChain(continued, { type: "TAG", playerId: P1, reserveCreatureId: reserve }),
     );
     expect(tagged.players[P1]?.activeCreatureId).toBe(reserve);
     expect(tagged.activePlayerId).toBe(P1);
@@ -696,7 +700,7 @@ describe("028 tag-fighter prototype", () => {
         }),
       ),
     );
-    expect(finished.offensiveState).toBe("open");
+    expect(finished.phase).toBe("roll");
     expect(finished.activePlayerId).toBe(P2);
     const tagged = advance(finished, {
       type: "TAG",
@@ -705,6 +709,14 @@ describe("028 tag-fighter prototype", () => {
     });
     expect(tagged.ok).toBe(false);
     if (!tagged.ok) expect(tagged.error).toBe("NOT_ACTIVE_PLAYER");
+    const p2Actions = expectOk(
+      advance(
+        expectOk(advance(finished, { type: "ROLL_DICE", playerId: P2 })),
+        { type: "ADVANCE_PHASE", playerId: P2 },
+      ),
+    );
+    expect(p2Actions.offensiveState).toBe("open");
+    expect(p2Actions.aggressorPlayerId).toBe(P2);
   });
 
   it("keeps the shared Meter pool across a Tag and the next turn", () => {
@@ -753,10 +765,11 @@ function liveAssistMatch(): GameState {
 
 function p1Actions(): GameState {
   const rolled = expectOk(advance(liveAssistMatch(), { type: "ROLL_DICE", playerId: P1 }));
-  if (rolled.phase !== "actions" || rolled.pendingDecision !== null) {
-    throw new Error(`expected an open actions window, phase ${rolled.phase}`);
+  const opened = expectOk(advance(rolled, { type: "ADVANCE_PHASE", playerId: P1 }));
+  if (opened.phase !== "actions" || opened.pendingDecision !== null) {
+    throw new Error(`expected an open actions window, phase ${opened.phase}`);
   }
-  return rolled;
+  return opened;
 }
 
 function fighterOf(
@@ -812,6 +825,7 @@ describe("spec 030 assist windows", () => {
     let state = p1Actions();
     state = expectOk(advance(state, { type: "END_TURN", playerId: P1 }));
     state = expectOk(advance(state, { type: "ROLL_DICE", playerId: P2 }));
+    state = expectOk(advance(state, { type: "ADVANCE_PHASE", playerId: P2 }));
     const vega = fighterOf(state, P2, VEGA_ID);
     state = showCreatureFace(state, vega, fighterBaseDie(VEGA_ID)[0]!);
     const hit = expectOk(advance(state, { type: "USE_FACE", playerId: P2, creatureId: vega }));

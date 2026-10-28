@@ -42,17 +42,29 @@ export function finisherBlockedByTag(
 }
 
 /**
- * The one reroll is available immediately after the initial roll, until the
- * player rerolls or takes another Act action (spec `030`).
+ * The one reroll is available in `roll` after the opening roll, until it is
+ * spent. A pending decision closes it for that choice (spec `030`).
  */
 export function canRerollDice(state: GameState, playerId: PlayerId): boolean {
-  if (state.phase !== "actions") return false;
+  if (state.phase !== "roll") return false;
   if (state.pendingDecision !== null) return false;
   if (state.activePlayerId !== playerId) return false;
   if (!state.rerollAvailable) return false;
   const player = state.players[playerId];
   if (player === undefined) return false;
   return !player.spentOncePerTurnKeys.includes(TURN_REROLL_KEY);
+}
+
+/**
+ * True once this roll phase's opening `ROLL_DICE` has happened.
+ * `rerollAvailable` is that signal. The spent `turn-reroll` key covers the
+ * same fact if a later action cleared the flag.
+ */
+export function openingRollDone(state: GameState): boolean {
+  if (state.rerollAvailable) return true;
+  const player = state.players[state.activePlayerId];
+  if (player === undefined) return false;
+  return player.spentOncePerTurnKeys.includes(TURN_REROLL_KEY);
 }
 
 /** True when this sequence action was already declared or has resolved. */
