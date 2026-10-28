@@ -1,4 +1,5 @@
 import {
+  ALL_FACE_CARDS,
   formatAttackLine,
   formatEffectRegion,
   formatTypeLine,
@@ -11,7 +12,7 @@ import {
   type FaceCardId,
   type GameState,
 } from "@server";
-import { KeywordRichText } from "@client/ui/keywords/KeywordReminders";
+import { KeywordRemindersTooltip, KeywordRichText } from "@client/ui/keywords/KeywordReminders";
 import {
   formatCostDetail,
 } from "../intents/format";
@@ -237,6 +238,82 @@ export function CausedByLine({ state }: { state: GameState }) {
   );
 }
 
+function sequenceRoleLabel(role: ChainLink["sequenceRole"]): string {
+  if (role === "starter") return "Starter";
+  if (role === "extender") return "Extender";
+  if (role === "finisher") return "Finisher";
+  return "";
+}
+
+function printHover(
+  name: string,
+  detail: string,
+  print: string,
+  negated: boolean,
+) {
+  return (
+    <NameInspectHover
+      name={name}
+      negated={negated}
+      aside={print !== "" ? <KeywordRemindersTooltip print={print} /> : undefined}
+    >
+      <p className="text-sm font-medium text-stone-100">{name}</p>
+      {detail !== "" && <p className="mt-1 text-xs text-stone-400">{detail}</p>}
+      {print !== "" && (
+        <p className="mt-2 font-[family-name:var(--font-card)] text-[0.7rem] leading-relaxed text-stone-300">
+          <KeywordRichText text={print} />
+        </p>
+      )}
+    </NameInspectHover>
+  );
+}
+
+function CombatActionHover({ state, link }: { state: GameState; link: ChainLink }) {
+  if (link.tagReserveId !== undefined) {
+    const reserve = state.creatures[link.tagReserveId];
+    const def =
+      reserve !== undefined ? getCreatureDefinition(reserve.definitionId) : undefined;
+    const into = def?.name ?? "a Reserve Fighter";
+    return printHover("Tag", `Switch the Active Fighter to ${into}.`, "", link.negated);
+  }
+
+  if (link.assistReserveId !== undefined) {
+    const reserve = state.creatures[link.assistReserveId];
+    const def =
+      reserve !== undefined ? getCreatureDefinition(reserve.definitionId) : undefined;
+    const name = def?.assistName !== undefined && def.assistName !== "" ? def.assistName : "Assist";
+    const owner = def?.name ?? "Fighter";
+    const role = sequenceRoleLabel(link.sequenceRole);
+    const detail = [owner, "Assist", role].filter((part) => part !== "").join(" · ");
+    return printHover(name, detail, def?.assistRulesText ?? "", link.negated);
+  }
+
+  const actionId = link.sequenceActionId ?? "";
+  if (actionId.startsWith("face:")) {
+    const faceId = actionId.slice("face:".length);
+    const face = ALL_FACE_CARDS.find((entry) => entry.id === faceId);
+    if (face !== undefined) return <FaceInspectHover face={face} negated={link.negated} />;
+  }
+
+  if (actionId.startsWith("technique:")) {
+    const techniqueId = actionId.slice("technique:".length);
+    const source =
+      link.sourceCreatureId !== null ? state.creatures[link.sourceCreatureId] : undefined;
+    const def =
+      source !== undefined ? getCreatureDefinition(source.definitionId) : undefined;
+    const technique = [...(def?.techniques ?? []), ...(source?.addedTechniques ?? [])].find(
+      (entry) => entry.id === techniqueId,
+    );
+    if (technique !== undefined) {
+      const role = sequenceRoleLabel(technique.sequenceRole ?? link.sequenceRole);
+      const detail = [def?.name ?? "", role].filter((part) => part !== "").join(" · ");
+      return printHover(technique.name, detail, technique.rulesText ?? "", link.negated);
+    }
+  }
+
+  return <span className="font-medium text-amber-50">{link.kind}</span>;
+}
+
 export function ChainLinkHover({
   state,
   link,
@@ -252,6 +329,10 @@ export function ChainLinkHover({
 
   if (def !== undefined) {
     return <TacticInspectHover def={def} negated={link.negated} />;
+  }
+
+  if (link.kind === "combat-action") {
+    return <CombatActionHover state={state} link={link} />;
   }
 
   if (link.kind === "attack" && link.attackerId !== null && link.attackId !== null) {

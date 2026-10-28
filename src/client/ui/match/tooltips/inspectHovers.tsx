@@ -155,14 +155,17 @@ export function TacticInspectHover({
 
 export function FaceInspectHover({
   face,
+  negated = false,
   placement = "above",
 }: {
   face: NonNullable<ReturnType<typeof getFaceCard>>;
+  negated?: boolean;
   placement?: "above" | "below";
 }) {
   return (
     <NameInspectHover
       name={face.name}
+      negated={negated}
       placement={placement}
       aside={<KeywordRemindersTooltip print={facePrintText(face)} />}
     >
