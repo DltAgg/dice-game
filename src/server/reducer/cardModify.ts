@@ -4,7 +4,7 @@ import { patchCreature, patchDie, type Draft } from "./draft.js";
 import { performTagSwitch } from "./commands/tag.js";
 import { attachEquipment, moveCard } from "./zones.js";
 
-/** Apply a Modify when its Chain link conducts. Roll writes the result only. */
+/** Apply a Modify when its Chain link conducts. Roll writes the showing slot. A moveset Replace also shows the rewritten slot. A die rewrite does not. */
 export function applyCardModify(draft: Draft, link: ChainLink): void {
   const modify = link.modify;
   if (modify === undefined) return;
@@ -55,7 +55,7 @@ export function applyCardModify(draft: Draft, link: ChainLink): void {
         const slots = die.slots.map((slot, index) =>
           index === slotIndex ? { ...slot, faceCardId: replaceFaceId } : slot,
         );
-        patchDie(draft, modify.dieId, { slots });
+        patchDie(draft, modify.dieId, { slots, rolledSlotIndex: slotIndex });
       }
     }
     if (cardInstanceId !== null) {

@@ -100,9 +100,11 @@ The sequence is not a phase. The states the engine sets are `open` and `combo`. 
 
 Entering `actions` calls `beginOffensiveWindow` for `activePlayerId`. That player is the Aggressor, the state is `open`, and the used sequence-action list is cleared. A new match starts the same way for the first player.
 
-Only the Aggressor may declare a sequence hit. In `open`, the only legal role is starter. In `combo`, the legal roles are extender and finisher. A finisher is illegal on a turn that already declared Tag (`finisherBlockedByTag`).
+Only the Aggressor may declare a sequence hit. In `open`, the legal roles are starter and finisher. In `combo`, the legal roles are extender and finisher. A finisher is illegal on a turn that already declared Tag (`finisherBlockedByTag`). A finisher declared from `open` still ends the sequence.
 
-A face action uses the showing face of one of your living Fighters, Active or Reserve. A Technique is only the Active Fighter. Its primary face is that Fighter’s showing face. Its secondary is a different one of your rolled dice, and that face must match the Technique’s secondary requirement. The declared target is the opponent’s Active Fighter.
+A face action uses the showing face of one of your living Fighters, Active or Reserve. A Technique is only the Active Fighter. Its two inputs are two different dice you own that are showing a face. One die is showing the Technique’s primary face. The other matches the Technique’s secondary requirement. Either die may be the Active Fighter’s die. One showing face cannot fill both inputs. The Technique’s sequence role is the sequence gate for that action. The declared target is the opponent’s Active Fighter.
+
+Ryu Form (`card-ryu-form`) is a moveset Modify whose `replaceFaceId` is Form (`face-natural-ryu-form`). When that Replace conducts, the chosen slot keeps Form for the rest of the match and `rolledSlotIndex` becomes that slot, including when the slot was not showing. Form can open the sequence while it is still `open`. A later roll can show a different slot. A Modify subject `die` rewrite does not change `rolledSlotIndex`. A starter is still illegal in `combo`.
 
 `consumeDiceOnFaceActions` is false, so a die is not marked spent by a face action or a Technique. The same face id (`face:<id>`) and the same Technique id (`technique:<id>`) cannot be declared again while that id is on the Chain or in `usedSequenceActionIds`. `attacksPerCreaturePerCombat` is the cap on the old attack action. It does not cap these hits.
 
@@ -130,7 +132,7 @@ The chosen Fighter must be a living Reserve and must not be Tag-in locked. The A
 
 `ASSIST` names one of your Fighters who is not Active. That Fighter may be defeated. The Active Fighter cannot Assist. The Fighter needs a non-empty `assistEffects` list. Each such Fighter can Assist once per turn.
 
-A hit Assist spends `exceptionalAssistMeter` when that number is greater than 0. It is legal on your turn during `actions`, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal in a reaction window. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. Both are `assist-hit`. The link is a `combat-action` aimed at the opponent’s Active Fighter. Conduct goes through `conductCombatAction`: Strike damage, combo, and Meter from strength. A finisher ends the sequence, so the turn is handed to the opponent. An extender is legal only in `combo`, with no Chain open. Tag this turn blocks a finisher Assist.
+A hit Assist spends `exceptionalAssistMeter` when that number is greater than 0. It is legal on your turn during `actions`, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal in a reaction window. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. Both are `assist-hit`. The link is a `combat-action` aimed at the opponent’s Active Fighter. Conduct goes through `conductCombatAction`: Strike damage, combo, and Meter from strength. A finisher ends the sequence, so the turn is handed to the opponent. A finisher is legal while the sequence is `open` or in `combo`. An extender is legal only in `combo`, with no Chain open. Tag this turn blocks a finisher Assist.
 
 An Assist that is not a hit can be declared on your turn during `actions`, or in a reaction window when you have priority and an opponent’s sequence hit or Technique is on the Chain. Magnus Wall is that kind. If it resolves and is not negated, its effects are applied (`conductAssist`).
 
@@ -152,7 +154,7 @@ A one-shot Response or Modify leaves the hand for the graveyard when it is playe
 
 The current preset’s shared deck has 10 to 24 cards, with at most 3 copies of one card. The opening hand is 5. Each later turn draws 1. There is no maximum hand size (`maxHandSize` is null, and `drawCards` does not discard down). Drawing from an empty deck loses, as recorded under Victory.
 
-The Tag Skirmish loadout also has a `faceDeck`, and each Fighter has a `baseDie`. The face deck is not current play. It is the future physical representation of a face after Replace. Ryu Form (`card-ryu-form`) replaces a slot with Form (`face-natural-ryu-form`) and has no separate face card on the table today. In the physical game that Form card comes from the face deck. The online game does not need that physical card. The forge-pool rule that copies an already-installed face (`eligibleFacesForForge`) is not current play.
+The Tag Skirmish loadout also has a `faceDeck`, and each Fighter has a `baseDie`. The face deck is not current play. It is the future physical representation of a face after Replace. Ryu Form (`card-ryu-form`) replaces a slot with Form (`face-natural-ryu-form`) and has no separate face card on the table today. That Replace also makes the rewritten slot the showing face, as recorded under Sequence. In the physical game that Form card comes from the face deck. The online game does not need that physical card. The forge-pool rule that copies an already-installed face (`eligibleFacesForForge`) is not current play.
 
 ## Damage
 
@@ -175,10 +177,10 @@ This list is the Tag Skirmish squad and deck only: Vega, Magnus, Ryu, and the ca
 | `[Strike N]` | `damage`, or `assist-hit` when the Strike is an Assist | Faces, Techniques, Vega Cross, and Ryu Seal. |
 | `+N damage` | `next-attack-bonus` | Secondary effect on a face. |
 | `[Tag out]` and cannot `[Tag in]` | `tag-out` with `preventTagIn` | Vega Drill. |
-| `[Replace]`, and Reforge Grip’s slot rewrite | `replaceFaceId`, or Modify subject `die` | One operation. Lasts for the rest of the match. |
+| `[Replace]`, and Reforge Grip’s slot rewrite | `replaceFaceId`, or Modify subject `die` | One operation. Lasts for the rest of the match. A moveset `replaceFaceId` also makes that slot the showing face. A subject `die` rewrite does not. |
 | `[Moveset]` | `modifySubject` `moveset` and `addedTechnique` | The card attaches in the equipment zone. |
 | Tag | Modify subject `tag`, or the `TAG` action | Call Out. |
-| Change the showing face | Modify subject `roll` | Open Palm. |
+| Change the showing face | Modify subject `roll` | Open Palm. The roll changes which slot is showing and does not rewrite the face on the slot. |
 | Redirect | Modify subject `target`, or `arm-redirect-damage` | Shift, and Magnus’s Assist. |
 | `[Draw N]` | `draw-cards` | Anchor. That print is being rewritten. |
 | `[Block N]` | `reduce-damage`, stored as `nextIncomingDamageReduce` | Brace is `[Block 2]`. Lowers the next damage by N. Does not cancel the hit. |

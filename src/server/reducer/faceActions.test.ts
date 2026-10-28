@@ -304,24 +304,69 @@ describe("029 fighter combat core", () => {
     expect(damageOf(result, P2)).toBe(before + 3);
   });
 
-  it("ordered primary role: Grab on own die + Lariat secondary does not fire Power Lariat", () => {
-    let state = grapplerMatch();
-    state = show(state, P1, 0, 2);
-    state = show(state, P1, 1, 2);
-    const matches = matchingTechniques(state, P1, activeId(state, P1));
-    expect(matches.some((m) => m.techniqueId === "technique-grappler-power-lariat")).toBe(false);
-    const failed = advance(state, {
-      type: "USE_TECHNIQUE",
-      playerId: P1,
-      creatureId: activeId(state, P1),
-      techniqueId: "technique-grappler-power-lariat",
-      secondaryDieId: dieIdAt(state, P1, 1),
-    });
-    expect(failed.ok).toBe(false);
-    if (!failed.ok) {
-      expect(failed.state).toBe(state);
-      expect(failed.error).toBe("ATTACK_NOT_FUELLED");
-    }
+  it("resolves a technique when the primary face is showing on either die", () => {
+    let owned = grapplerMatch();
+    owned = show(owned, P1, 0, 0);
+    owned = show(owned, P1, 1, 0);
+    const active = activeId(owned, P1);
+    const other = dieIdAt(owned, P1, 1);
+    expect(matchingTechniques(owned, P1, active)).toEqual(
+      expect.arrayContaining([
+        { techniqueId: "technique-grappler-power-lariat", secondaryDieId: other },
+      ]),
+    );
+    const ownedBefore = damageOf(owned, P2);
+    const ownedResult = expectOk(
+      advance(owned, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: active,
+        techniqueId: "technique-grappler-power-lariat",
+        secondaryDieId: other,
+      }),
+    );
+    expect(damageOf(ownedResult, P2)).toBe(ownedBefore + 4);
+    expect(ownedResult.log.some((entry) => {
+      const event = entry.event;
+      return (
+        event.type === "technique-used" &&
+        event.primaryDieId === dieIdAt(owned, P1, 0) &&
+        event.secondaryDieId === other
+      );
+    })).toBe(true);
+
+    let swapped = grapplerMatch();
+    swapped = show(swapped, P1, 0, 2);
+    swapped = show(swapped, P1, 1, 2);
+    const swappedActive = activeId(swapped, P1);
+    const swappedOther = dieIdAt(swapped, P1, 1);
+    const activeDie = dieIdAt(swapped, P1, 0);
+    expect(matchingTechniques(swapped, P1, swappedActive)).toEqual(
+      expect.arrayContaining([
+        { techniqueId: "technique-grappler-power-lariat", secondaryDieId: swappedOther },
+      ]),
+    );
+    const swappedBefore = damageOf(swapped, P2);
+    const swappedResult = expectOk(
+      advance(swapped, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: swappedActive,
+        techniqueId: "technique-grappler-power-lariat",
+        secondaryDieId: swappedOther,
+      }),
+    );
+    expect(damageOf(swappedResult, P2)).toBe(swappedBefore + 4);
+    expect(swappedResult.log.some((entry) => {
+      const event = entry.event;
+      return (
+        event.type === "technique-used" &&
+        event.primaryDieId === swappedOther &&
+        event.secondaryDieId === activeDie &&
+        event.primaryFaceCardId === LARIAT &&
+        event.secondaryFaceCardId === COMMAND_GRAB
+      );
+    })).toBe(true);
   });
 
   it("illegal: wrong face, unrolled die, same die as secondary, non-matching secondary", () => {

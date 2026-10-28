@@ -4,13 +4,12 @@ import type { GameError } from "../../model/errors.js";
 import type { CreatureId, DieId, PlayerId } from "../../model/ids.js";
 import { dieForCreature, isActiveFighter } from "../../rules/fighters.js";
 import {
+  assignTechniqueInputs,
   defaultFaceActionTarget,
   dieIsFaceActionSpent,
   faceActionKey,
   findTechnique,
   secondaryDiceFor,
-  secondaryMatches,
-  showingFaceCard,
 } from "../../rules/faceActions.js";
 import { emit, type Draft } from "../draft.js";
 import { openCombatAction, sequenceActionUsed, sequenceDeclarationError } from "../offensive.js";
@@ -56,19 +55,16 @@ export function useTechnique(
   if (creature === undefined) return "UNKNOWN_ENTITY";
   if (creature.defeated) return "CREATURE_DEFEATED";
 
-  const primaryDie = dieForCreature(draft, creatureId);
-  if (primaryDie === undefined) return "UNKNOWN_ENTITY";
-  if (primaryDie.rolledSlotIndex === null) return "INVALID_TARGET";
-  if (dieIsFaceActionSpent(draft, playerId, primaryDie.id)) return "ALREADY_USED";
+  const activeDie = dieForCreature(draft, creatureId);
+  if (activeDie === undefined) return "UNKNOWN_ENTITY";
+  if (activeDie.rolledSlotIndex === null) return "INVALID_TARGET";
+  if (dieIsFaceActionSpent(draft, playerId, activeDie.id)) return "ALREADY_USED";
 
-  if (secondaryDieId === primaryDie.id) return "INVALID_TARGET";
-  if (!secondaryDiceFor(draft, playerId, primaryDie.id).includes(secondaryDieId)) {
+  if (secondaryDieId === activeDie.id) return "INVALID_TARGET";
+  if (!secondaryDiceFor(draft, playerId, activeDie.id).includes(secondaryDieId)) {
     return "INVALID_TARGET";
   }
   if (dieIsFaceActionSpent(draft, playerId, secondaryDieId)) return "ALREADY_USED";
-
-  const primaryFace = showingFaceCard(draft, primaryDie.id);
-  if (primaryFace === undefined) return "INVALID_TARGET";
 
   const definition = getCreatureDefinition(creature.definitionId);
   const technique = findTechnique(
@@ -76,11 +72,11 @@ export function useTechnique(
     techniqueId,
   );
   if (technique === undefined) return "CARD_NOT_AVAILABLE";
-  if (primaryFace.id !== technique.primaryFaceId) return "ATTACK_NOT_FUELLED";
 
-  const secondaryFace = showingFaceCard(draft, secondaryDieId);
-  if (secondaryFace === undefined) return "INVALID_TARGET";
-  if (!secondaryMatches(secondaryFace, technique.secondary)) return "ATTACK_NOT_FUELLED";
+  const assignment = assignTechniqueInputs(draft, technique, activeDie.id, secondaryDieId);
+  if (assignment === null) return "ATTACK_NOT_FUELLED";
+  const primaryFace = assignment.primaryFace;
+  const secondaryFace = assignment.secondaryFace;
 
   const baseEffects = technique.effects;
   if (baseEffects.length === 0 && (secondaryFace.secondaryEffects?.length ?? 0) === 0) {
@@ -102,7 +98,7 @@ export function useTechnique(
   }
 
   if (role === undefined && draft.config.consumeDiceOnFaceActions) {
-    markPlayerSpent(draft, playerId, faceActionKey(primaryDie.id));
+    markPlayerSpent(draft, playerId, faceActionKey(activeDie.id));
     markPlayerSpent(draft, playerId, faceActionKey(secondaryDieId));
   }
 
@@ -117,8 +113,8 @@ export function useTechnique(
     playerId,
     creatureId,
     techniqueId,
-    primaryDieId: primaryDie.id,
-    secondaryDieId,
+    primaryDieId: assignment.primaryDieId,
+    secondaryDieId: assignment.secondaryDieId,
     primaryFaceCardId: primaryFace.id,
     secondaryFaceCardId: secondaryFace.id,
   });

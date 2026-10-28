@@ -100,8 +100,8 @@ export type GameAction =
       readonly creatureId: CreatureId;
     }
   /**
-   * Spec `029`. Resolve a named two-face Fighter technique (own die primary +
-   * another die secondary).
+   * Spec `029`. The Active Fighter uses a Technique. `secondaryDieId` is the
+   * other die you own. Either of those two dice may show the primary face.
    */
   | {
       readonly type: "USE_TECHNIQUE";

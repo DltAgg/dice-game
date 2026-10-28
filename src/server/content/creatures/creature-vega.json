@@ -19,8 +19,8 @@
     }
   ],
   "baseDie": [
-    "face-natural-vega-jab",
-    "face-natural-vega-jab",
+    "face-natural-jab",
+    "face-natural-jab",
     "face-natural-vega-kick",
     "face-natural-vega-dash",
     "face-natural-vega-dash",
@@ -29,13 +29,13 @@
   "techniques": [
     {
       "id": "technique-vega-step-jab",
-      "name": "Step Jab",
-      "primaryFaceId": "face-natural-vega-jab",
+      "name": "Step Kick",
+      "primaryFaceId": "face-natural-vega-kick",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "faceType": "projectile" },
       "sequenceRole": "starter",
-      "rulesText": "Jab + Projectile: [Strike 3].",
+      "rulesText": "On attack: Kick + Projectile: [Strike 3].",
       "effects": [
         {
           "type": "damage",

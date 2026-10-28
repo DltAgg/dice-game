@@ -29,19 +29,19 @@ export function dieIsFaceActionSpent(
 
 /**
  * Another rolled die owned by the same player. Never an opponent die.
- * The primary die is excluded, so one rolled face cannot fill both inputs
- * of the same Technique. Spec `030`.
+ * `activeDieId` is the Active Fighter's die and is excluded, so one showing
+ * face cannot fill both inputs of the same Technique. Spec `030`.
  */
 export function secondaryDiceFor(
   state: Pick<GameState, "players" | "dice" | "config">,
   playerId: PlayerId,
-  primaryDieId: DieId,
+  activeDieId: DieId,
 ): readonly DieId[] {
   const player = state.players[playerId];
   if (player === undefined) return [];
   const out: DieId[] = [];
   for (const dieId of player.dieIds) {
-    if (dieId === primaryDieId) continue;
+    if (dieId === activeDieId) continue;
     const die = state.dice[dieId];
     if (die === undefined || die.ownerId !== playerId) continue;
     if (die.rolledSlotIndex === null) continue;
@@ -60,6 +60,54 @@ export function showingFaceCard(
   const slot = die.slots[die.rolledSlotIndex];
   if (slot === undefined) return undefined;
   return getFaceCard(slot.faceCardId);
+}
+
+export interface TechniqueInputAssignment {
+  readonly primaryDieId: DieId;
+  readonly secondaryDieId: DieId;
+  readonly primaryFace: FaceCardDefinition;
+  readonly secondaryFace: FaceCardDefinition;
+}
+
+/**
+ * Assign the Technique's two inputs across the Active Fighter's die and one
+ * other die. Either die may show `primaryFaceId`. When both assignments fit,
+ * the Active Fighter's die stays the primary so the other face still supplies
+ * the secondary bonus.
+ */
+export function assignTechniqueInputs(
+  state: Pick<GameState, "dice">,
+  technique: Pick<FighterTechniqueDefinition, "primaryFaceId" | "secondary">,
+  activeDieId: DieId,
+  otherDieId: DieId,
+): TechniqueInputAssignment | null {
+  if (activeDieId === otherDieId) return null;
+  const activeFace = showingFaceCard(state, activeDieId);
+  const otherFace = showingFaceCard(state, otherDieId);
+  if (activeFace === undefined || otherFace === undefined) return null;
+  if (
+    activeFace.id === technique.primaryFaceId &&
+    secondaryMatches(otherFace, technique.secondary)
+  ) {
+    return {
+      primaryDieId: activeDieId,
+      secondaryDieId: otherDieId,
+      primaryFace: activeFace,
+      secondaryFace: otherFace,
+    };
+  }
+  if (
+    otherFace.id === technique.primaryFaceId &&
+    secondaryMatches(activeFace, technique.secondary)
+  ) {
+    return {
+      primaryDieId: otherDieId,
+      secondaryDieId: activeDieId,
+      primaryFace: otherFace,
+      secondaryFace: activeFace,
+    };
+  }
+  return null;
 }
 
 export function secondaryMatches(
@@ -96,6 +144,7 @@ export function canUseFace(
     if (state.aggressorPlayerId !== playerId) return false;
     if (!sequenceRoleFits(state.offensiveState, face.sequenceRole)) return false;
     if (finisherBlockedByTag(state, playerId, face.sequenceRole)) return false;
+    if (!sequenceMeterAffordable(state, playerId, face.meterCost)) return false;
   }
   return true;
 }
@@ -125,11 +174,10 @@ export function matchingTechniques(
   if (!isActiveFighter(player, creatureId)) return [];
   const creature = state.creatures[creatureId];
   if (creature === undefined || creature.defeated) return [];
-  const primaryDie = dieForCreature(state, creatureId);
-  if (primaryDie === undefined || primaryDie.rolledSlotIndex === null) return [];
-  if (dieIsFaceActionSpent(state, playerId, primaryDie.id)) return [];
-  const primaryFace = showingFaceCard(state, primaryDie.id);
-  if (primaryFace === undefined) return [];
+  const activeDie = dieForCreature(state, creatureId);
+  if (activeDie === undefined || activeDie.rolledSlotIndex === null) return [];
+  if (dieIsFaceActionSpent(state, playerId, activeDie.id)) return [];
+  if (showingFaceCard(state, activeDie.id) === undefined) return [];
 
   const definition = getCreatureDefinition(creature.definitionId);
   const techniques = [
@@ -138,21 +186,18 @@ export function matchingTechniques(
   ];
   if (techniques.length === 0) return [];
 
-  const secondaries = secondaryDiceFor(state, playerId, primaryDie.id);
+  const others = secondaryDiceFor(state, playerId, activeDie.id);
   const out: MatchingTechnique[] = [];
   for (const technique of techniques) {
-    if (primaryFace.id !== technique.primaryFaceId) continue;
     if (technique.sequenceRole !== undefined) {
       if (state.aggressorPlayerId !== playerId) continue;
       if (!sequenceRoleFits(state.offensiveState, technique.sequenceRole)) continue;
       if (finisherBlockedByTag(state, playerId, technique.sequenceRole)) continue;
       if (!sequenceMeterAffordable(state, playerId, technique.meterCost)) continue;
     }
-    for (const secondaryDieId of secondaries) {
-      const secondaryFace = showingFaceCard(state, secondaryDieId);
-      if (secondaryFace === undefined) continue;
-      if (!secondaryMatches(secondaryFace, technique.secondary)) continue;
-      out.push({ techniqueId: technique.id, secondaryDieId });
+    for (const otherDieId of others) {
+      if (assignTechniqueInputs(state, technique, activeDie.id, otherDieId) === null) continue;
+      out.push({ techniqueId: technique.id, secondaryDieId: otherDieId });
     }
   }
   return out;

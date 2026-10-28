@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-magnus-jab",
+  "id": "face-natural-jab",
   "name": "Jab",
   "faceType": "attack",
   "sequenceRole": "starter",
   "hitStrength": "light",
   "hitType": "punch",
-  "rulesText": "Starter. Light punch. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Starter. Light punch. Primary: [Strike 1]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 2,
+      "amount": 1,
       "target": { "kind": "declared-target" }
     }
   ],

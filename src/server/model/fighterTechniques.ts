@@ -24,7 +24,10 @@ export type FighterTechniqueSecondary =
 export interface FighterTechniqueDefinition {
   readonly id: string;
   readonly name: string;
-  /** Showing face on the Fighter's own bound die that unlocks this move. */
+  /**
+   * One of the two showing dice must show this face. Either die may be the
+   * Active Fighter's die.
+   */
   readonly primaryFaceId: FaceCardId;
   /** Strength of this Technique. Paired with `hitType`. */
   readonly hitStrength: HitStrength;

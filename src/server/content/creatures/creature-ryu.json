@@ -19,7 +19,7 @@
     }
   ],
   "baseDie": [
-    "face-natural-ryu-jab",
+    "face-natural-jab",
     "face-natural-ryu-projectile",
     "face-natural-ryu-projectile",
     "face-natural-ryu-focus",
@@ -29,13 +29,13 @@
   "techniques": [
     {
       "id": "technique-ryu-check-fire",
-      "name": "Check Fire",
-      "primaryFaceId": "face-natural-ryu-jab",
+      "name": "Check Focus",
+      "primaryFaceId": "face-natural-ryu-focus",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "sequenceRole": "extender" },
       "sequenceRole": "starter",
-      "rulesText": "Jab + Extender: [Strike 2].",
+      "rulesText": "On attack: Focus + Extender: [Strike 2].",
       "effects": [
         {
           "type": "damage",

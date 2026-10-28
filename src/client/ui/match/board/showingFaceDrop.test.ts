@@ -1,19 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { RYU, VEGA } from "@server/content/creatures.js";
+import { BRACE } from "@server/content/cards.js";
+import { MAGNUS, RYU, VEGA } from "@server/content/creatures.js";
 import { TAG_SKIRMISH_LOADOUT } from "@server/content/loadouts/index.js";
 import { TAG_FIGHTER_RULES } from "@server/model/config.js";
 import type { DieState } from "@server/model/dice.js";
 import { asFaceCardId, type CreatureDefinitionId, type CreatureId, type FaceCardId } from "@server/model/ids.js";
 import type { GameState } from "@server/model/state.js";
+import { legalFaceActions, showingFaceCard } from "@server/rules/faceActions.js";
 import { dieForCreature } from "@server/rules/fighters.js";
 import { createMatch } from "@server/setup/createMatch.js";
-import { expectOk, P1, P2 } from "@server/testing/scenario.js";
+import { expectOk, handCardIdAt, P1, P2, resolveOpenChain, withHand } from "@server/testing/scenario.js";
 import { advance } from "@server/reducer/reduce.js";
-import { stagedShowingDrop } from "./showingFaceDrop";
+import { hitButtonLabel, stagedShowingDrop } from "./showingFaceDrop";
 
-const JAB = asFaceCardId("face-natural-vega-jab");
+const JAB = asFaceCardId("face-natural-jab");
+const KICK = asFaceCardId("face-natural-vega-kick");
 const PROJECTILE = asFaceCardId("face-natural-ryu-projectile");
 const FOCUS = asFaceCardId("face-natural-ryu-focus");
+const GRAB = asFaceCardId("face-natural-magnus-grab");
+const DASH = asFaceCardId("face-natural-vega-dash");
 
 function inActions(): GameState {
   const match = createMatch({
@@ -72,15 +77,37 @@ describe("staged showing-face drops", () => {
     state = show(state, ryu, FOCUS);
     expect(stagedShowingDrop(state, P1, [ryu, null])).toEqual({
       kind: "pending",
-      message: "That face can't hit.",
+      message: "Focus is an extender. Land a starter first.",
     });
+  });
+
+  it("offers Rush as a finisher from an open sequence and tells Charge it needs Meter", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const ryu = fighter(state, RYU);
+    const rush = asFaceCardId("face-natural-vega-rush");
+    const charge = asFaceCardId("face-natural-ryu-charge");
+    state = show(show(state, vega, rush), ryu, charge);
+    expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({ kind: "hit", creatureId: vega });
+    expect(stagedShowingDrop(state, P1, [ryu, null])).toEqual({
+      kind: "pending",
+      message: "Charge needs 1 Meter.",
+    });
+    const paid = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: { ...state.players[P1]!, meter: 1 },
+      },
+    };
+    expect(stagedShowingDrop(paid, P1, [ryu, null])).toEqual({ kind: "hit", creatureId: ryu });
   });
 
   it("matches a Technique only when one face is the Active Fighter", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
-    state = show(show(state, vega, JAB), ryu, PROJECTILE);
+    state = show(show(state, vega, KICK), ryu, PROJECTILE);
     const technique = stagedShowingDrop(state, P1, [ryu, vega]);
     expect(technique.kind).toBe("technique");
     if (technique.kind === "technique") {
@@ -89,5 +116,49 @@ describe("staged showing-face drops", () => {
     }
     const magnus = state.players[P1]!.creatureIds.find((id) => id !== vega && id !== ryu)!;
     expect(stagedShowingDrop(state, P1, [ryu, magnus]).kind).toBe("pending");
+  });
+
+  it("uses both Dash extender sentences, then offers the hit once combo starts", () => {
+    let state = withHand(inActions(), P2, [BRACE]);
+    const vega = fighter(state, VEGA);
+    const magnus = fighter(state, MAGNUS);
+    state = show(show(state, magnus, GRAB), vega, DASH);
+
+    expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({
+      kind: "pending",
+      message: "Dash is an extender. Land a starter first.",
+    });
+
+    const declared = expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: magnus }));
+    expect(declared.offensiveState).toBe("open");
+    expect(declared.pendingDecision).not.toBeNull();
+    expect(legalFaceActions(declared, P1)).not.toContain(vega);
+    expect(stagedShowingDrop(declared, P1, [vega, null])).toEqual({
+      kind: "pending",
+      message: "The current hit has to resolve before Dash can extend.",
+    });
+
+    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
+    const answered = expectOk(
+      advance(yielded, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(yielded, P2, 0),
+      }),
+    );
+    expect(stagedShowingDrop(answered, P1, [vega, null])).toEqual({
+      kind: "pending",
+      message: "The current hit has to resolve before Dash can extend.",
+    });
+
+    const combo = resolveOpenChain(answered);
+    expect(combo.offensiveState).toBe("combo");
+    expect(combo.chainStack).toHaveLength(0);
+    expect(combo.pendingDecision).toBeNull();
+    expect(legalFaceActions(combo, P1)).toContain(vega);
+    expect(stagedShowingDrop(combo, P1, [vega, null])).toEqual({ kind: "hit", creatureId: vega });
+    const die = dieForCreature(combo, vega);
+    const face = die === undefined ? undefined : showingFaceCard(combo, die.id);
+    expect(hitButtonLabel(face, face?.name ?? "Dash")).toBe("Extender · Dash");
   });
 });

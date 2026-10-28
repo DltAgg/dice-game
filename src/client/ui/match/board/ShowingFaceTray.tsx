@@ -10,7 +10,12 @@ import {
   type PlayerId,
 } from "@server";
 import { btnHandPrimary } from "../styles";
-import { showingFaceChips, type ShowingFaceChip, stagedShowingDrop } from "./showingFaceDrop";
+import {
+  hitButtonLabel,
+  showingFaceChips,
+  type ShowingFaceChip,
+  stagedShowingDrop,
+} from "./showingFaceDrop";
 import { ShowingFaceHover } from "./ShowingFaceTooltip";
 
 /**
@@ -56,6 +61,7 @@ export function ShowingFaceTray({
     activeCreature === undefined ? undefined : getCreatureDefinition(activeCreature.definitionId);
 
   const faceFor = (chip: ShowingFaceChip) => showingFaceCard(state, chip.dieId);
+  const hitChip = staged.kind === "hit" ? chipById.get(staged.creatureId) : undefined;
 
   const assign = (index: 0 | 1, creatureId: CreatureId) => {
     setSlots((prev) => {
@@ -160,7 +166,7 @@ export function ShowingFaceTray({
             setSlots([null, null]);
           }}
         >
-          Hit · {chipById.get(staged.creatureId)?.name ?? "Face"}
+          {hitButtonLabel(hitChip === undefined ? undefined : faceFor(hitChip), hitChip?.name ?? "Face")}
         </button>
       )}
       {interactive && staged.kind === "technique" && (

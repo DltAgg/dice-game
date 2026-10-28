@@ -16,7 +16,7 @@
     }
   ],
   "baseDie": [
-    "face-natural-magnus-jab",
+    "face-natural-jab",
     "face-natural-magnus-grab",
     "face-natural-magnus-grab",
     "face-natural-magnus-lariat",
@@ -26,13 +26,13 @@
   "techniques": [
     {
       "id": "technique-magnus-collar-tie",
-      "name": "Collar Tie",
-      "primaryFaceId": "face-natural-magnus-jab",
+      "name": "Lariat Tie",
+      "primaryFaceId": "face-natural-magnus-lariat",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "hitStrength": "light", "hitType": "kick" },
       "sequenceRole": "starter",
-      "rulesText": "Jab + light kick: [Strike 3].",
+      "rulesText": "On attack: Lariat + light kick: [Strike 3].",
       "effects": [
         {
           "type": "damage",

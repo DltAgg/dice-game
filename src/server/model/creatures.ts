@@ -177,8 +177,8 @@ export interface CreatureState {
   readonly enabledTechniqueIds?: readonly string[];
   /**
    * Techniques added by a Moveset card. Used like a printed Technique:
-   * the Active Fighter's showing face is the primary, and another face
-   * must match the secondary. Spec `030`.
+   * two different dice you own, either of which may show the primary face.
+   * Spec `030`.
    */
   readonly addedTechniques?: readonly FighterTechniqueDefinition[];
   /**

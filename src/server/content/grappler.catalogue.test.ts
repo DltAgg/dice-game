@@ -4,7 +4,7 @@ import {
   getFaceCard,
   GRAPPLER_COMMAND_GRAB,
   GRAPPLER_GUARD,
-  GRAPPLER_JAB,
+  JAB,
   GRAPPLER_LARIAT,
   GRAPPLER_MOVEMENT,
   GRAPPLER_TAG,
@@ -15,7 +15,11 @@ describe("Grappler proving catalogue (spec 029)", () => {
     const lariat = getFaceCard(GRAPPLER_LARIAT);
     expect(lariat?.faceType).toBe("attack");
     expect(lariat?.primaryEffects?.[0]).toMatchObject({ type: "damage", amount: 2 });
-    expect(getFaceCard(GRAPPLER_JAB)?.faceType).toBe("attack");
+    const jab = getFaceCard(JAB);
+    expect(jab?.faceType).toBe("attack");
+    expect(jab?.sequenceRole).toBe("starter");
+    expect(jab?.primaryEffects?.[0]).toMatchObject({ type: "damage", amount: 1 });
+    expect(jab?.secondaryEffects?.[0]).toMatchObject({ type: "next-attack-bonus", amount: 1 });
     expect(getFaceCard(GRAPPLER_COMMAND_GRAB)?.faceType).toBe("grab");
     expect(getFaceCard(GRAPPLER_GUARD)?.faceType).toBe("guard");
     expect(getFaceCard(GRAPPLER_MOVEMENT)?.faceType).toBe("movement");
@@ -27,5 +31,9 @@ describe("Grappler proving catalogue (spec 029)", () => {
     expect(ids).toContain("technique-grappler-power-lariat");
     expect(ids).toContain("technique-grappler-lariat-guard");
     expect(ids).toContain("technique-grappler-jab-command");
+    expect(
+      grappler?.techniques?.find((technique) => technique.id === "technique-grappler-jab-command")
+        ?.primaryFaceId,
+    ).toBe(JAB);
   });
 });

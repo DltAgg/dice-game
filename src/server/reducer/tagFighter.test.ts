@@ -912,7 +912,7 @@ describe("spec 030 assist windows", () => {
     expect(resolved.chainStack).toHaveLength(0);
   });
 
-  it("refuses Vega's extender and Ryu's finisher while the sequence is open", () => {
+  it("refuses Vega's extender while the sequence is open and lets Ryu's finisher Assist end it", () => {
     let open = p1Actions();
     const magnus = fighterOf(open, P1, MAGNUS_ID);
     const vega = fighterOf(open, P1, VEGA_ID);
@@ -928,11 +928,6 @@ describe("spec 030 assist windows", () => {
     if (!vegaAssist.ok) expect(vegaAssist.error).toBe("INVALID_TARGET");
     expect(open.offensiveState).toBe("open");
 
-    const ryuAssist = advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu });
-    expect(ryuAssist.ok).toBe(false);
-    if (!ryuAssist.ok) expect(ryuAssist.error).toBe("INVALID_TARGET");
-    expect(open.players[P1]?.meter).toBe(0);
-
     const blocked = advance(withActiveFighter(open, P1, vega), {
       type: "ASSIST",
       playerId: P1,
@@ -940,6 +935,12 @@ describe("spec 030 assist windows", () => {
     });
     expect(blocked.ok).toBe(false);
     if (!blocked.ok) expect(blocked.error).toBe("INVALID_TARGET");
+
+    const declared = expectOk(advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu }));
+    const finished = resolveOpenChain(declared);
+    expect(finished.activePlayerId).toBe(P2);
+    expect(finished.phase).toBe("roll");
+    expect(finished.offensiveState).toBe("open");
   });
 
   it("lets a KOed Reserve Assist and refuses Assist against your own hit", () => {

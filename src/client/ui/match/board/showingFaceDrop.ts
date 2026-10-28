@@ -1,10 +1,14 @@
 import {
   dieForCreature,
+  finisherBlockedByTag,
   legalFaceActions,
   matchingTechniques,
+  sequenceMeterAffordable,
+  sequenceRoleFits,
   showingFaceCard,
   type CreatureId,
   type DieId,
+  type FaceCardDefinition,
   type GameState,
   type MatchingTechnique,
   type PlayerId,
@@ -67,6 +71,8 @@ export function stagedShowingDrop(
     if (legalFaceActions(state, playerId).includes(creatureId)) {
       return { kind: "hit", creatureId };
     }
+    const refusal = sequenceFaceRefusal(state, playerId, creatureId);
+    if (refusal !== null) return { kind: "pending", message: refusal };
     if (creatureId === activeId) {
       return { kind: "pending", message: "Drop another face to use a Technique." };
     }
@@ -93,4 +99,57 @@ export function stagedShowingDrop(
     return { kind: "pending", message: "Those faces are not a Technique." };
   }
   return { kind: "technique", creatureId: primary, matches };
+}
+
+/** Why a sequence face cannot be dropped as a hit. Null when that is not the reason. */
+function sequenceFaceRefusal(
+  state: GameState,
+  playerId: PlayerId,
+  creatureId: CreatureId,
+): string | null {
+  const die = dieForCreature(state, creatureId);
+  const face = die === undefined ? undefined : showingFaceCard(state, die.id);
+  const role = face?.sequenceRole;
+  if (face === undefined || role === undefined) return null;
+  if (state.aggressorPlayerId !== playerId) {
+    return `${face.name} can only hit while you are on offense.`;
+  }
+  if (finisherBlockedByTag(state, playerId, role)) {
+    return `${face.name} can't be used after Tag this turn.`;
+  }
+  if (!sequenceRoleFits(state.offensiveState, role)) {
+    if (role === "extender" && starterHitWaiting(state, playerId)) {
+      return `The current hit has to resolve before ${face.name} can extend.`;
+    }
+    if (role === "extender") return `${face.name} is an extender. Land a starter first.`;
+    if (role === "starter") return `${face.name} is a starter. It only opens the sequence.`;
+    return `${face.name} can't hit right now.`;
+  }
+  if (!sequenceMeterAffordable(state, playerId, face.meterCost)) {
+    return `${face.name} needs ${String(face.meterCost ?? 0)} Meter.`;
+  }
+  return null;
+}
+
+/**
+ * A starter combat action is already on the chain, so combo has not started.
+ * Legality stays with `legalFaceActions`; this only chooses the pending sentence.
+ */
+function starterHitWaiting(state: GameState, playerId: PlayerId): boolean {
+  if (state.offensiveState !== "open") return false;
+  return state.chainStack.some(
+    (link) =>
+      link.controllerId === playerId &&
+      link.kind === "combat-action" &&
+      link.sequenceRole === "starter" &&
+      !link.negated,
+  );
+}
+
+/** Tray label for a showing face that `legalFaceActions` already allows as a hit. */
+export function hitButtonLabel(face: FaceCardDefinition | undefined, name: string): string {
+  if (face?.sequenceRole === "finisher") return `Finisher · ${name}`;
+  if (face?.sequenceRole === "starter") return `Starter · ${name}`;
+  if (face?.sequenceRole === "extender") return `Extender · ${name}`;
+  return `Hit · ${name}`;
 }

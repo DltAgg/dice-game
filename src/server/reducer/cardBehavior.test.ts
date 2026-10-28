@@ -659,6 +659,7 @@ describe("030 card behavior", () => {
       ),
     );
     expect(resolved.dice[dieId]?.slots[2]?.faceCardId).toBe(GUARD);
+    expect(resolved.dice[dieId]?.rolledSlotIndex).toBe(2);
     expect(resolved.creatures[fighter]?.addedTechniques?.map((technique) => technique.id)).toContain(
       "technique-beh-replaced",
     );

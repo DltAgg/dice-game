@@ -64,7 +64,7 @@
     {
       "id": "technique-grappler-jab-command",
       "name": "Jab Command",
-      "primaryFaceId": "face-natural-grappler-jab",
+      "primaryFaceId": "face-natural-jab",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": {

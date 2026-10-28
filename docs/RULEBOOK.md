@@ -25,7 +25,7 @@ Each player brings three Fighters, one die for each Fighter, and one shared deck
 
 Cards are **Response** or **Modify**. Tag is an operation, not a card type. Assist is on the Fighter, not a card.
 
-The face deck is not used in the online game. It is the future physical card for a face after Replace. Replace writes that face onto the die for the rest of the match.
+The face deck is not used in the online game. It is the future physical card for a face after Replace. Replace writes that face onto the die for the rest of the match. Ryu Form’s Replace also makes that slot the showing face.
 
 ## 3. The table
 
@@ -65,9 +65,11 @@ No card in the current list has an ordinary Meter cost. Open Palm spends 2 Meter
 
 The sequence is not a phase. It is **open** or in **combo**.
 
-Entering actions makes you the Aggressor and opens the sequence. Only the Aggressor declares hits. From open, the only legal role is starter. From combo, the legal roles are extender and finisher. A finisher is illegal on a turn that already declared Tag.
+Entering actions makes you the Aggressor and opens the sequence. Only the Aggressor declares hits. From open, the legal roles are starter and finisher. From combo, the legal roles are extender and finisher. A finisher is illegal on a turn that already declared Tag. A finisher from open still ends the sequence.
 
-A face action uses the showing face of one of your living Fighters, Active or Reserve. A Technique is only the Active Fighter. Its primary face is that Fighter’s showing face. Its secondary is a different one of your rolled dice, and that face must match the Technique. Both target the opponent’s Active Fighter.
+A face action uses the showing face of one of your living Fighters, Active or Reserve. A Technique is only the Active Fighter. It uses two different dice you own that are showing a face. One of those dice is showing the Technique’s primary face. The other matches the Technique. Either of those faces may be the Active Fighter’s. One showing face cannot fill both inputs. The Technique’s sequence role is what the sequence checks. Both target the opponent’s Active Fighter.
+
+Ryu Form’s Replace writes Form onto the chosen slot for the rest of the match and makes that slot the showing face, including a slot that was not showing. Form can open the sequence while it is still open. A later roll can show a different slot. A starter is still illegal once the sequence is in combo.
 
 A die is not spent by a face action or a Technique. The same face and the same Technique cannot be declared again while that action is on the Chain or already used in this sequence.
 
@@ -91,7 +93,7 @@ The chosen Fighter must be a living Reserve and must not be locked from Tagging 
 
 Assist names one of your Fighters who is not Active. That Fighter may be defeated. The Active Fighter cannot Assist. Each such Fighter can Assist once per turn.
 
-A hit Assist is legal on your turn during actions, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal while answering a Chain. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. The hit aims at the opponent’s Active Fighter. It deals that Strike, counts for combo, and grants Meter from its strength. A finisher ends the sequence, so the turn is handed to the opponent. An extender is legal only in combo, with no Chain open. Tag this turn blocks a finisher Assist.
+A hit Assist is legal on your turn during actions, while you are the Aggressor, and only when that hit’s sequence role fits. It is not legal while answering a Chain. Vega Cross is an extender: light punch, `[Strike 2]`. Ryu Seal is a finisher: medium punch, `[Strike 3]`. The hit aims at the opponent’s Active Fighter. It deals that Strike, counts for combo, and grants Meter from its strength. A finisher ends the sequence, so the turn is handed to the opponent. A finisher is legal while the sequence is open or in combo. An extender is legal only in combo, with no Chain open. Tag this turn blocks a finisher Assist.
 
 An Assist that is not a hit can be declared on your turn, or while you have priority and an opponent’s sequence hit or Technique is on the Chain. Magnus Wall is that kind.
 

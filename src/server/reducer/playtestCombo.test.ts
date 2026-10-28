@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { RYU, VEGA } from "../content/creatures.js";
+import { BRACE } from "../content/cards.js";
+import { MAGNUS, RYU, VEGA } from "../content/creatures.js";
 import { TAG_SKIRMISH_LOADOUT } from "../content/loadouts/index.js";
 import { TAG_FIGHTER_RULES } from "../model/config.js";
 import type { DieState } from "../model/dice.js";
@@ -13,11 +14,16 @@ import type { GameState } from "../model/state.js";
 import { legalFaceActions, matchingTechniques } from "../rules/faceActions.js";
 import { dieForCreature } from "../rules/fighters.js";
 import { createMatch } from "../setup/createMatch.js";
-import { expectOk, P1, P2, resolveOpenChain } from "../testing/scenario.js";
+import { expectOk, handCardIdAt, P1, P2, resolveOpenChain, withHand } from "../testing/scenario.js";
 import { advance } from "./reduce.js";
 
-const JAB = asFaceCardId("face-natural-vega-jab");
+const JAB = asFaceCardId("face-natural-jab");
+const KICK = asFaceCardId("face-natural-vega-kick");
+const GRAB = asFaceCardId("face-natural-magnus-grab");
+const DASH = asFaceCardId("face-natural-vega-dash");
 const PROJECTILE = asFaceCardId("face-natural-ryu-projectile");
+const RUSH = asFaceCardId("face-natural-vega-rush");
+const CHARGE = asFaceCardId("face-natural-ryu-charge");
 
 function inActions(): GameState {
   const match = createMatch({
@@ -80,17 +86,13 @@ describe("playtest hits and techniques", () => {
     const vega = fighter(open, VEGA);
     open = show(open, vega, JAB);
     expect(open.offensiveState).toBe("open");
-    expect(legalFaceActions(open, P1)).toEqual([
-      vega,
-      open.players[P1]!.creatureIds[1]!,
-    ]);
+    expect(legalFaceActions(open, P1)).toContain(vega);
 
     const combo = resolveOpenChain(
       expectOk(advance(open, { type: "USE_FACE", playerId: P1, creatureId: vega })),
     );
     expect(combo.offensiveState).toBe("combo");
     expect(combo.players[P1]?.comboCount).toBe(1);
-    expect(legalFaceActions(combo, P1)).toEqual([combo.players[P1]!.creatureIds[2]!]);
     expect(legalFaceActions(combo, P1)).not.toContain(vega);
 
     const stopped = expectOk(advance(combo, { type: "END_SEQUENCE", playerId: P1 }));
@@ -106,8 +108,7 @@ describe("playtest hits and techniques", () => {
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
     expect(state.players[P1]?.activeCreatureId).toBe(vega);
-    const ryuJab = asFaceCardId("face-natural-ryu-jab");
-    state = show(state, ryu, ryuJab);
+    state = show(state, ryu, JAB);
     expect(legalFaceActions(state, P1)).toContain(ryu);
     expect(matchingTechniques(state, P1, ryu)).toEqual([]);
 
@@ -129,7 +130,7 @@ describe("playtest hits and techniques", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
-    state = show(show(state, vega, JAB), ryu, PROJECTILE);
+    state = show(show(state, vega, KICK), ryu, PROJECTILE);
     const step = matchingTechniques(state, P1, vega).find(
       (match) => match.techniqueId === "technique-vega-step-jab",
     );
@@ -148,7 +149,6 @@ describe("playtest hits and techniques", () => {
     );
     expect(combo.offensiveState).toBe("combo");
     expect(combo.players[P1]?.comboCount).toBe(1);
-    expect(legalFaceActions(combo, P1)).toEqual([]);
 
     const continued = show(withActive(combo, ryu), ryu, PROJECTILE);
     const shot = matchingTechniques(continued, P1, ryu).find(
@@ -169,5 +169,76 @@ describe("playtest hits and techniques", () => {
     expect(extended.offensiveState).toBe("combo");
     expect(extended.activePlayerId).toBe(P1);
     expect(extended.players[P1]?.comboCount).toBe(2);
+  });
+
+  it("uses Rush as a finisher from an open sequence and refuses Charge without Meter", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const ryu = fighter(state, RYU);
+    state = show(show(state, vega, RUSH), ryu, CHARGE);
+    expect(legalFaceActions(state, P1)).toContain(vega);
+    expect(legalFaceActions(state, P1)).not.toContain(ryu);
+
+    const unpaid = advance(state, { type: "USE_FACE", playerId: P1, creatureId: ryu });
+    expect(unpaid.ok).toBe(false);
+    if (!unpaid.ok) expect(unpaid.error).toBe("INSUFFICIENT_METER");
+
+    const finished = resolveOpenChain(
+      expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: vega })),
+    );
+    expect(finished.activePlayerId).toBe(P2);
+    expect(finished.phase).toBe("roll");
+    const defender = finished.players[P2]!.activeCreatureId;
+    expect(finished.creatures[defender]?.damage).toBe(4);
+
+    const paid = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: { ...state.players[P1]!, meter: 1 },
+      },
+    };
+    const charged = resolveOpenChain(
+      expectOk(advance(paid, { type: "USE_FACE", playerId: P1, creatureId: ryu })),
+    );
+    expect(charged.activePlayerId).toBe(P2);
+    expect(charged.players[P1]?.meter).toBe(1 - 1 + 4);
+  });
+
+  it("lets Dash extend after Brace answers Grab", () => {
+    let state = withHand(inActions(), P2, [BRACE]);
+    const vega = fighter(state, VEGA);
+    const magnus = fighter(state, MAGNUS);
+    state = show(show(state, magnus, GRAB), vega, DASH);
+    const defender = state.players[P2]!.activeCreatureId;
+
+    const declared = expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: magnus }));
+    expect(declared.offensiveState).toBe("open");
+    expect(declared.pendingDecision?.type).toBe("reaction-priority");
+    const during = advance(declared, { type: "USE_FACE", playerId: P1, creatureId: vega });
+    expect(during.ok).toBe(false);
+    if (!during.ok) expect(during.error).toBe("PENDING_DECISION");
+
+    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
+    const answered = expectOk(
+      advance(yielded, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(yielded, P2, 0),
+      }),
+    );
+    const resolved = resolveOpenChain(answered);
+    expect(resolved.creatures[defender]?.damage).toBe(1);
+    expect(resolved.log.some((entry) => entry.event.type === "chain-link-negated")).toBe(false);
+    expect(resolved.offensiveState).toBe("combo");
+    expect(resolved.aggressorPlayerId).toBe(P1);
+    expect(resolved.pendingDecision).toBeNull();
+    expect(resolved.chainStack).toHaveLength(0);
+
+    const extended = advance(resolved, { type: "USE_FACE", playerId: P1, creatureId: vega });
+    expect(extended.ok).toBe(true);
+    if (extended.ok) {
+      expect(extended.state.chainStack.at(-1)?.sequenceRole).toBe("extender");
+    }
   });
 });

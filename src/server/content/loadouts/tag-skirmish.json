@@ -17,30 +17,28 @@
     { "cardId": "card-anchor", "copies": 2 }
   ],
   "faceDeck": [
-    "face-natural-magnus-jab",
+    "face-natural-jab",
     "face-natural-magnus-grab",
     "face-natural-magnus-lariat",
     "face-natural-magnus-heavy",
-    "face-natural-vega-jab",
     "face-natural-vega-kick",
     "face-natural-vega-dash",
     "face-natural-vega-rush",
-    "face-natural-ryu-jab",
     "face-natural-ryu-projectile",
     "face-natural-ryu-focus",
     "face-natural-ryu-charge"
   ],
   "startingDice": [
     [
-      "face-natural-vega-jab",
-      "face-natural-vega-jab",
+      "face-natural-jab",
+      "face-natural-jab",
       "face-natural-vega-kick",
       "face-natural-vega-dash",
       "face-natural-vega-dash",
       "face-natural-vega-rush"
     ],
     [
-      "face-natural-magnus-jab",
+      "face-natural-jab",
       "face-natural-magnus-grab",
       "face-natural-magnus-grab",
       "face-natural-magnus-lariat",
@@ -48,7 +46,7 @@
       "face-natural-magnus-heavy"
     ],
     [
-      "face-natural-ryu-jab",
+      "face-natural-jab",
       "face-natural-ryu-projectile",
       "face-natural-ryu-projectile",
       "face-natural-ryu-focus",

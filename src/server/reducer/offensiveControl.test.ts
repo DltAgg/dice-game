@@ -407,7 +407,7 @@ describe("030 offensive control", () => {
     if (!denied.ok) expect(denied.error).toBe("INVALID_TARGET");
   });
 
-  it("applies a secondary bonus through the chain and keeps primary/secondary order", () => {
+  it("applies a secondary bonus through the chain from either die", () => {
     const showing = show(show(readyMixed(), P1, 0, 1), P1, 1, 3);
     const opened = expectOk(
       advance(showing, {
@@ -423,14 +423,31 @@ describe("030 offensive control", () => {
     expect(resolved.offensiveState).toBe("combo");
 
     const swapped = show(show(readyMixed(), P1, 0, 3), P1, 1, 1);
-    const illegal = advance(swapped, {
-      type: "USE_TECHNIQUE",
-      playerId: P1,
-      creatureId: activeId(swapped, P1),
-      techniqueId: "technique-seq-lariat-grab",
-      secondaryDieId: dieIdAt(swapped, P1, 1),
-    });
-    expect(illegal.ok).toBe(false);
+    const swappedOther = dieIdAt(swapped, P1, 1);
+    const swappedOpened = expectOk(
+      advance(swapped, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: activeId(swapped, P1),
+        techniqueId: "technique-seq-lariat-grab",
+        secondaryDieId: swappedOther,
+      }),
+    );
+    expect(
+      swappedOpened.log.some((entry) => {
+        const event = entry.event;
+        return (
+          event.type === "technique-used" &&
+          event.primaryDieId === swappedOther &&
+          event.secondaryDieId === dieIdAt(swapped, P1, 0) &&
+          event.primaryFaceCardId === LARIAT &&
+          event.secondaryFaceCardId === GRAB
+        );
+      }),
+    ).toBe(true);
+    const swappedResolved = resolveOpenChain(swappedOpened);
+    expect(damageOf(swappedResolved, P2)).toBe(4);
+    expect(swappedResolved.offensiveState).toBe("combo");
 
     const specific = show(show(readyMixed(), P1, 0, 1), P1, 1, 2);
     const specificOk = resolveOpenChain(

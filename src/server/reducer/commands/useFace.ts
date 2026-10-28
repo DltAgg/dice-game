@@ -35,11 +35,7 @@ export function useFace(
   const effects = face?.primaryEffects ?? [];
   if (effects.length === 0) return "CARD_HAS_NO_EFFECT";
 
-  // Re-check with full GameState shape (draft is a GameState mutation target).
-  if (!canUseFace(draft, playerId, creatureId)) return "INVALID_TARGET";
-
   const role = face?.sequenceRole;
-  if (role === undefined && playerId !== draft.activePlayerId) return "INVALID_TARGET";
   const sequenceActionId = face === undefined ? null : `face:${face.id}`;
   if (role !== undefined) {
     const sequenceError = sequenceDeclarationError(
@@ -52,7 +48,11 @@ export function useFace(
     if (sequenceActionId !== null && sequenceActionUsed(draft, sequenceActionId)) {
       return "ALREADY_USED";
     }
+  } else if (!canUseFace(draft, playerId, creatureId)) {
+    return "INVALID_TARGET";
   }
+
+  if (role === undefined && playerId !== draft.activePlayerId) return "INVALID_TARGET";
 
   if (role === undefined && draft.config.consumeDiceOnFaceActions) {
     markPlayerSpent(draft, playerId, faceActionKey(die.id));
