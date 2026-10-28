@@ -21,7 +21,7 @@ Drawing a card when your deck is empty loses. There is no reshuffle. Milling car
 
 ## 2. What you bring
 
-Each player brings three Fighters, one die for each Fighter, and one shared deck of 10 to 24 cards. A deck has at most 3 copies of one card. The opening hand is 5. There is no maximum hand size.
+Each player brings three Fighters, one die for each Fighter, and one shared deck of 10 to 24 cards. A deck has at most 3 copies of one card. A tag-fighter deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. The opening hand is 5. There is no maximum hand size.
 
 Cards are **Response** or **Modify**. Tag is an operation, not a card type. Assist is on the Fighter, not a card.
 

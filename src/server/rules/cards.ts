@@ -64,6 +64,7 @@ export function lifecycleOf(card: CardDefinition): CardLifecycle {
 
 export function ritualDurationOf(card: CardDefinition): CardDuration | null {
   if (card.ritual === undefined) return null;
+  // `combat` is deckbuilding-only. It does not select a duration.
   if (card.subtypes.includes("continuous") || card.subtypes.includes("reaction")) {
     return "continuous";
   }

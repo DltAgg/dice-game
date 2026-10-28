@@ -57,6 +57,12 @@ export interface GameRulesConfig {
    */
   readonly deckMaxCopiesPerCard: number;
   /**
+   * Tag-fighter construction. At most this many cards whose subtype includes
+   * `combat`, counting copies. Null means no cap. The subtype does not
+   * change how the card resolves.
+   */
+  readonly deckMaxResponseCombat: number | null;
+  /**
    * Spec `030` playtest. Exact tactics-deck size. Null means a number has
    * not been chosen, and `deckMinCards` / `deckMaxCards` still apply.
    * A number requires that count and skips the range.
@@ -170,6 +176,7 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   deckMinCards: 40,
   deckMaxCards: 50,
   deckMaxCopiesPerCard: 3,
+  deckMaxResponseCombat: null,
   deckSize: null,
   faceDeckMaxCards: 12,
   faceDeckMaxPerAttribute: 3,
@@ -205,6 +212,7 @@ export const TAG_FIGHTER_RULES: GameRulesConfig = {
   frontlineSlots: 1,
   deckMinCards: 10,
   deckMaxCards: 24,
+  deckMaxResponseCombat: 9,
   openingHandSize: 5,
   cardsDrawnPerTurn: 1,
   consumeDiceOnFaceActions: false,

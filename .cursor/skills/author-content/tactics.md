@@ -24,7 +24,7 @@ on a new card.
   "id": "card-brace",
   "name": "Brace",
   "type": "response",
-  "subtypes": [],
+  "subtypes": ["combat"],
   "lifecycle": "one-shot",
   "rulesText": "[Block 2].",
   "forge": { "faces": 1, "target": "own-die" }
@@ -62,12 +62,15 @@ until its link resolves, then moves to the equipment zone.
 
 | Print intent | Fields |
 |---|---|
-| `[Block N]`, `[Counter]`, `[Parry]`, redirect | `type: "response"` plus the effect the engine already has |
+| `[Block N]`, `[Parry]` | `type: "response"`, subtype `combat`, plus the effect the engine already has |
+| `[Counter]` | `type: "response"` plus the effect the engine already has. Counter is not `combat` |
 | Change the showing face | `type: "modify"`, `modifySubject: "roll"` |
 | Replace a die slot for the rest of the match | `type: "modify"`, `modifySubject: "die"` |
 | Add a Technique and attach | `type: "modify"`, `modifySubject: "moveset"` |
-| Redirect a target that already exists | `type: "modify"`, `modifySubject: "target"` |
+| Redirect a target that already exists | `type: "modify"`, `modifySubject: "target"`. Shift uses subtype `combat` |
 | Cause or alter a Tag | `type: "modify"`, `modifySubject: "tag"` |
+
+Parry, Brace, and Shift use subtype `combat`. A tag-fighter deck has at most 9 cards of that subtype, counting copies (`deckMaxResponseCombat` on `TAG_FIGHTER_RULES`). Combat is a deckbuilding subtype. It is not an effect, and it does not change how the card is played. Shift stays `type: "modify"`. Counter does not use `combat`. `DEFAULT_RULES_CONFIG` has no cap.
 
 `[Counter]` negates the previous chain card and does not end the sequence.
 `[Parry]` negates the waiting hit and ends the sequence. `[Block N]` lowers
@@ -83,6 +86,7 @@ Print is the holder's voice. Empty `rulesText` is not a design.
 ## Do not author
 
 - A Counter, Tag, or Assist type line
+- Combat as an effect or a `[Combat]` keyword. It is only the `combat` subtype
 - `[Spend]` / `[Requires]` / `[Forge]` as the card's identity
 - A persistent card that is secretly a Ritual
 - Open Manual’s Technique, or a replacement for Anchor’s print

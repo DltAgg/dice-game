@@ -152,13 +152,22 @@ export function validateStartingDice(
 }
 
 /**
- * Tactics deck legality: size in [deckMinCards, deckMaxCards], known card
- * ids, and at most deckMaxCopiesPerCard of any single id.
+ * Cards whose subtype includes `combat`, counting copies. Unknown ids are
+ * not combat cards. The subtype does not change how a card resolves.
  */
-export function validateTacticsDeck(
+export function responseCombatCount(deck: readonly CardId[]): number {
+  let count = 0;
+  for (const cardId of deck) {
+    const card = getCard(cardId);
+    if (card !== undefined && card.subtypes.includes("combat")) count += 1;
+  }
+  return count;
+}
+
+function tacticsDeckSizeFailure(
   deck: readonly CardId[],
   config: GameRulesConfig,
-): LoadoutValidation {
+): LoadoutValidation | null {
   if (config.deckSize !== null) {
     if (deck.length !== config.deckSize) {
       return {
@@ -166,17 +175,45 @@ export function validateTacticsDeck(
         reason: `tactics deck has ${String(deck.length)} cards, deck size ${String(config.deckSize)}`,
       };
     }
-  } else if (deck.length < config.deckMinCards) {
+    return null;
+  }
+  if (deck.length < config.deckMinCards) {
     return {
       ok: false,
       reason: `tactics deck has ${String(deck.length)} cards, min ${String(config.deckMinCards)}`,
     };
-  } else if (deck.length > config.deckMaxCards) {
+  }
+  if (deck.length > config.deckMaxCards) {
     return {
       ok: false,
       reason: `tactics deck has ${String(deck.length)} cards, max ${String(config.deckMaxCards)}`,
     };
   }
+  return null;
+}
+
+/**
+ * Tactics deck legality: size in [deckMinCards, deckMaxCards], known card
+ * ids, at most deckMaxCopiesPerCard of any single id, and — when
+ * deckMaxResponseCombat is not null — at most that many combat-subtype
+ * cards in total.
+ */
+export function validateTacticsDeck(
+  deck: readonly CardId[],
+  config: GameRulesConfig,
+): LoadoutValidation {
+  const sizeFailure = tacticsDeckSizeFailure(deck, config);
+  const combatCap = config.deckMaxResponseCombat;
+  if (combatCap !== null) {
+    const combatCount = responseCombatCount(deck);
+    if (combatCount > combatCap) {
+      return {
+        ok: false,
+        reason: `tactics deck has ${String(combatCount)} response combat cards, max ${String(combatCap)}`,
+      };
+    }
+  }
+  if (sizeFailure !== null) return sizeFailure;
 
   const copies = new Map<CardId, number>();
   for (const cardId of deck) {

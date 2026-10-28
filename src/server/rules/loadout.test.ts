@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_CARDS, OPEN_PALM } from "../content/cards.js";
+import { ALL_CARDS, BRACE, COUNTER, OPEN_PALM, PARRY, SHIFT, getCard } from "../content/cards.js";
 import { MAGNUS, RYU, VEGA } from "../content/creatures.js";
 import {
   AGGRO_LOADOUT,
@@ -17,6 +17,7 @@ import type { DieFaceLayout } from "../model/dice.js";
 import { asCardId } from "../model/ids.js";
 import {
   leftoverFacePool,
+  responseCombatCount,
   validateLoadout,
   validateStartingDice,
   validateTacticsDeck,
@@ -49,7 +50,8 @@ const identityPair = (): readonly [DieFaceLayout, DieFaceLayout] => [
 
 describe("validateTacticsDeck", () => {
   it("accepts the Tag Skirmish tactics list under TAG_FIGHTER_RULES", () => {
-    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(20);
+    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(22);
+    expect(responseCombatCount(TAG_SKIRMISH_LOADOUT.deck)).toBe(6);
     expect(validateTacticsDeck(TAG_SKIRMISH_LOADOUT.deck, TAG_FIGHTER_RULES)).toEqual({
       ok: true,
     });
@@ -114,6 +116,78 @@ describe("validateTacticsDeck", () => {
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/unknown card/);
+  });
+
+  it("caps response combat cards under TAG_FIGHTER_RULES", () => {
+    expect(TAG_FIGHTER_RULES.deckMaxResponseCombat).toBe(9);
+    expect(DEFAULT_RULES_CONFIG.deckMaxResponseCombat).toBeNull();
+
+    const three = (id: typeof PARRY) => [id, id, id];
+    const nine = [...three(PARRY), ...three(BRACE), ...three(SHIFT)];
+    expect(responseCombatCount(nine)).toBe(9);
+    expect(validateTacticsDeck([...nine, OPEN_PALM], TAG_FIGHTER_RULES)).toEqual({ ok: true });
+    expect(validateTacticsDeck([...nine, OPEN_PALM, OPEN_PALM], TAG_FIGHTER_RULES)).toEqual({
+      ok: true,
+    });
+
+    const over = validateTacticsDeck([...nine, PARRY], TAG_FIGHTER_RULES);
+    expect(over).toEqual({
+      ok: false,
+      reason: "tactics deck has 10 response combat cards, max 9",
+    });
+
+    const uncapped = { ...DEFAULT_RULES_CONFIG, deckMinCards: 0, deckMaxCopiesPerCard: 12 };
+    expect(validateTacticsDeck(Array.from({ length: 10 }, () => PARRY), uncapped)).toEqual({
+      ok: true,
+    });
+  });
+
+  it("keeps Parry, Brace, and Shift playable as before, with subtype combat", () => {
+    expect(getCard(PARRY)).toMatchObject({
+      type: "response",
+      subtypes: ["combat"],
+      lifecycle: "one-shot",
+      endsSequence: true,
+      rulesText: "[Parry].",
+      effect: {
+        effects: [
+          {
+            type: "grant-attack-prevent",
+            amount: 1,
+            target: { kind: "chain-attack-target" },
+          },
+        ],
+      },
+    });
+    expect(getCard(BRACE)).toMatchObject({
+      type: "response",
+      subtypes: ["combat"],
+      lifecycle: "one-shot",
+      rulesText: "[Block 2].",
+      effect: {
+        effects: [
+          {
+            type: "reduce-damage",
+            amount: 2,
+            target: { kind: "chain-attack-target" },
+          },
+        ],
+      },
+    });
+    const shift = getCard(SHIFT);
+    expect(shift).toMatchObject({
+      type: "modify",
+      subtypes: ["combat"],
+      lifecycle: "one-shot",
+      modifySubject: "target",
+      rulesText: "Redirect that hit onto the Fighter you choose.",
+    });
+    expect(shift?.effect).toBeUndefined();
+
+    const counter = getCard(COUNTER);
+    expect(counter?.type).toBe("response");
+    expect(counter?.subtypes).toEqual([]);
+    expect(counter?.subtypes.includes("combat")).toBe(false);
   });
 
   it("knows every Tag Skirmish catalogue card", () => {

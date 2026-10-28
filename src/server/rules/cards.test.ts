@@ -4,7 +4,14 @@ import type { CardDefinition } from "../model/cards.js";
 import { asCardId } from "../model/ids.js";
 import { TEST_REQUIRES_GATE } from "../testing/fixtures/index.js";
 import { newMatch, P1 } from "../testing/scenario.js";
-import { canAffordForge, canAffordPlay, isReactionCard, meterPlayCost, ritualDurationOf } from "./cards.js";
+import {
+  canAffordForge,
+  canAffordPlay,
+  isReactionCard,
+  lifecycleOf,
+  meterPlayCost,
+  ritualDurationOf,
+} from "./cards.js";
 
 function exampleCard(overrides: Partial<CardDefinition> = {}): CardDefinition {
   return {
@@ -130,5 +137,18 @@ describe("ritualDurationOf", () => {
     const leftover = exampleCard({ ...ritualBase, subtypes: ["instant"] });
     expect(ritualDurationOf(leftover)).toBe("instant");
     expect(isReactionCard(leftover)).toBe(false);
+  });
+
+  it("treats a combat-only subtype like an empty subtype list", () => {
+    const empty = exampleCard({ ...ritualBase, subtypes: [] });
+    const combat = exampleCard({ ...ritualBase, subtypes: ["combat"] });
+    expect(ritualDurationOf(combat)).toBe(ritualDurationOf(empty));
+    expect(lifecycleOf(combat)).toBe(lifecycleOf(empty));
+    expect(isReactionCard(combat)).toBe(isReactionCard(empty));
+
+    const responseEmpty = exampleCard({ type: "response", subtypes: [] });
+    const responseCombat = exampleCard({ type: "response", subtypes: ["combat"] });
+    expect(isReactionCard(responseCombat)).toBe(isReactionCard(responseEmpty));
+    expect(lifecycleOf(responseCombat)).toBe(lifecycleOf(responseEmpty));
   });
 });

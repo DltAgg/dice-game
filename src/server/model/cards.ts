@@ -48,7 +48,13 @@ export type CardSubtype =
    * May respond from the field in a reaction window; stays and exhausts
    * (once per turn) like continuous.
    */
-  | "reaction";
+  | "reaction"
+  /**
+   * Deckbuilding cap tag. It does not change ritual duration, reaction
+   * legality, chain behavior, or where the card goes. A card whose only
+   * subtype is combat resolves like a card with subtypes [].
+   */
+  | "combat";
 
 /**
  * How a Ritual behaves after activation. Derived from subtypes: `continuous`
