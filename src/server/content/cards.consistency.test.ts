@@ -6,7 +6,8 @@ import { ALL_CARDS } from "./cards.js";
 /**
  * A card is Modify or Response. Equipment, overload, and ritual are regions
  * on that card, not types. Instant / Continuous / Reaction stay subtype
- * modifiers on a ritual region.
+ * modifiers on a ritual region. `combat` is a deckbuilding cap tag and does
+ * not change resolution.
  */
 
 const CARD_TYPES = ["modify", "response"] as const satisfies readonly CardType[];
@@ -33,8 +34,9 @@ describe("card type ↔ region consistency", () => {
       instant: true,
       continuous: true,
       reaction: true,
+      combat: true,
     };
-    expect(Object.keys(known).sort()).toEqual(["continuous", "instant", "reaction"]);
+    expect(Object.keys(known).sort()).toEqual(["combat", "continuous", "instant", "reaction"]);
     expect(CARD_TYPES.every((type) => !(type in known))).toBe(true);
   });
 

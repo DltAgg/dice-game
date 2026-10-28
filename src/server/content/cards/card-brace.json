@@ -3,7 +3,7 @@
   "id": "card-brace",
   "name": "Brace",
   "type": "response",
-  "subtypes": [],
+  "subtypes": ["combat"],
   "lifecycle": "one-shot",
   "rulesText": "[Block 2].",
   "forge": { "faces": 1, "target": "own-die" },

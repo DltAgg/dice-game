@@ -3,7 +3,7 @@
   "id": "card-parry",
   "name": "Parry",
   "type": "response",
-  "subtypes": [],
+  "subtypes": ["combat"],
   "lifecycle": "one-shot",
   "rulesText": "[Parry].",
   "forge": { "faces": 1, "target": "own-die" },

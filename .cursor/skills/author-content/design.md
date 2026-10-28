@@ -26,7 +26,7 @@ Use these words everywhere. Do not rename them per card.
 |---|---|---|
 | **Die** | Named faces: name, type, primary effect, secondary effect. Strikes (punch or kick; light, medium, or heavy), grabs, and other character offensive tools. Movement is not a face type. | Generic Block, Dodge, Counter, or Parry. A face is not spent by a hit. |
 | **Fighter** | Identity: `baseDie`, those named faces, face actions, Techniques, one Assist, life. | A generic stat block. A deck, a hand, or a card type. |
-| **Card** | `response` or `modify` only. A moveset Modify may attach in the equipment zone. | Instant, Reaction, Overload, Ritual, Counter, Tag, Assist, or Situation as a type. |
+| **Card** | `response` or `modify` only. Parry, Brace, and Shift use subtype `combat`. A tag-fighter deck has at most 9 cards of that subtype, counting copies. Combat is a deckbuilding subtype, not an effect. A moveset Modify may attach in the equipment zone. | Instant, Reaction, Overload, Ritual, Counter, Tag, Assist, or Situation as a type. Combat as a keyword effect. |
 | **Meter** | One shared pool. It starts at 0, is not cleared on turn end or Tag, and the cap is 8. A sequence hit grants its printed gain plus 2, 3, or 4 for light, medium, or heavy. The owner of the Fighter who was hit gains 1. | Meter per HP. Generic card mana. A cost on every strong card. |
 | **Tag** | A gameplay operation, at most once per turn. A card may cause or alter it. | A face. A `TagCard` subsystem. |
 | **Assist** | Fighter-owned. The Fighter is not Active and may be defeated. Once per turn. | A card. The Reserve does not become Active. |

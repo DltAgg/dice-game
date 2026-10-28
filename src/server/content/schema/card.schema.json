@@ -16,7 +16,7 @@
     },
     "type": { "$ref": "defs.schema.json#/$defs/cardType" },
     "subtypes": {
-      "description": "Modifiers after Modify or Response. A ritual region uses continuous or reaction. Instant subtype is retired.",
+      "description": "Modifiers after Modify or Response. A ritual region uses continuous or reaction. Instant subtype is retired. combat counts toward the response-combat deck cap and does not change resolution.",
       "type": "array",
       "uniqueItems": true,
       "items": { "$ref": "defs.schema.json#/$defs/cardSubtype" }

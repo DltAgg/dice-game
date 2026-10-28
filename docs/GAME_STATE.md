@@ -156,7 +156,7 @@ A one-shot Response or Modify leaves the hand for the graveyard when it is playe
 
 ## Deck and hand
 
-The current preset’s shared deck has 10 to 24 cards, with at most 3 copies of one card. The opening hand is 5. Each later turn draws 1. There is no maximum hand size (`maxHandSize` is null, and `drawCards` does not discard down). Drawing from an empty deck loses, as recorded under Victory.
+The current preset’s shared deck has 10 to 24 cards, with at most 3 copies of one card. `TAG_FIGHTER_RULES` sets `deckMaxResponseCombat` to 9, so that deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. `DEFAULT_RULES_CONFIG` sets `deckMaxResponseCombat` to null and has no cap. The opening hand is 5. Each later turn draws 1. There is no maximum hand size (`maxHandSize` is null, and `drawCards` does not discard down). Drawing from an empty deck loses, as recorded under Victory.
 
 The Tag Skirmish loadout also has a `faceDeck`, and each Fighter has a `baseDie`. The face deck is not current play. It is the future physical representation of a face after Replace. Ryu Form (`card-ryu-form`) replaces a slot with Form (`face-natural-ryu-form`) and has no separate face card on the table today. That Replace also makes the rewritten slot the showing face, as recorded under Sequence. In the physical game that Form card comes from the face deck. The online game does not need that physical card. The forge-pool rule that copies an already-installed face (`eligibleFacesForForge`) is not current play.
 

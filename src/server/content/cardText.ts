@@ -32,6 +32,7 @@ const SUBTYPE_LABEL: Readonly<Record<CardSubtype, string>> = {
   instant: "Instant",
   continuous: "Continuous",
   reaction: "Reaction",
+  combat: "Combat",
 };
 
 export const attributeLabel = (attribute: Attribute): string => ATTRIBUTE_LABEL[attribute];

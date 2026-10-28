@@ -42,9 +42,9 @@
     },
     "cardSubtype": {
       "title": "CardSubtype",
-      "description": "Ritual type-line modifier only. Instant subtype is retired (leftover copies still leave for GY after activation). Prefer continuous or reaction.",
+      "description": "Type-line modifier. continuous and reaction change ritual duration. instant is retired (leftover copies still leave for GY after activation). combat is a deckbuilding cap tag and does not change how the card resolves.",
       "type": "string",
-      "enum": ["instant", "continuous", "reaction"]
+      "enum": ["instant", "continuous", "reaction", "combat"]
     },
     "faceKind": {
       "title": "FaceKind",

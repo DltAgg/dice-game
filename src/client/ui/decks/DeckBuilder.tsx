@@ -3,6 +3,7 @@ import {
   ALL_CARDS,
   BASIC_FACE_CARDS,
   CREATURES,
+  responseCombatCount,
   rulesConfigForLoadout,
   leftoverFacePool,
   isOpeningBasicFace,
@@ -42,6 +43,7 @@ import {
   type PreviewTarget,
 } from "./deckBuilderSearch";
 import { btnClass } from "./deckBuilderStyles";
+import { deckAfterTacticAdd } from "./addTacticCopy";
 import {
   addCopy,
   countOf,
@@ -228,6 +230,21 @@ export function DeckBuilder() {
     setSquad(next);
   };
 
+  const addTactic = (cardId: CardId) => {
+    if (readonly) return;
+    const result = deckAfterTacticAdd(draft, cardId, cfg.deckMaxCopiesPerCard);
+    if (result.refusedReason !== null) {
+      setMessage(result.refusedReason);
+      return;
+    }
+    if (result.deck === deck) return;
+    setMessage(null);
+    setDeck([...result.deck]);
+  };
+
+  const combatCap = cfg.deckMaxResponseCombat;
+  const combatCount = combatCap !== null ? responseCombatCount(deck) : null;
+
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -237,7 +254,8 @@ export function DeckBuilder() {
           </h1>
         <p className="mt-1 max-w-xl text-sm text-[var(--ink-muted)]">
           Hover any card to inspect it. Build a loadout (
-          {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies;
+          {cfg.deckMinCards}–{cfg.deckMaxCards} tactics, ≤{cfg.deckMaxCopiesPerCard} copies
+          {combatCap !== null ? `, ≤${String(combatCap)} Combat` : ""};
           face deck ≤{cfg.faceDeckMaxCards}
           {UI_CONFIG.showDeckBuilderOpeningDice
             ? `; opening dice ≤${String(cfg.startingMaxSyntheticsPerPlayer)} synthetics total, ≤${String(cfg.startingMaxSyntheticsPerDie)} per die`
@@ -329,6 +347,9 @@ export function DeckBuilder() {
             </h2>
             <span className="font-mono text-xs text-stone-500">
               {deck.length}/{cfg.deckMinCards}–{cfg.deckMaxCards}
+              {combatCount !== null && combatCap !== null
+                ? ` · Combat ${String(combatCount)}/${String(combatCap)}`
+                : ""}
             </span>
           </div>
           <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
@@ -352,7 +373,7 @@ export function DeckBuilder() {
                     active={active}
                     readonly={readonly}
                     onHover={() => setPreview({ kind: "tactic", id })}
-                    onAdd={() => setDeck(addCopy(deck, id, cfg.deckMaxCopiesPerCard))}
+                    onAdd={() => addTactic(id)}
                     onRemove={() => setDeck(removeOne(deck, id))}
                   />
                 </li>
@@ -416,9 +437,7 @@ export function DeckBuilder() {
                         active={active}
                         readonly={readonly}
                         onHover={() => setPreview({ kind: "tactic", id: card.id })}
-                        onAdd={() =>
-                          setDeck(addCopy(deck, card.id, cfg.deckMaxCopiesPerCard))
-                        }
+                        onAdd={() => addTactic(card.id)}
                         onRemove={() => setDeck(removeOne(deck, card.id))}
                       />
                     </li>
