@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-crescent",
+  "name": "Crescent",
+  "faceType": "attack",
+  "sequenceRole": "finisher",
+  "hitStrength": "medium",
+  "hitType": "kick",
+  "rulesText": "Medium Kick · Finisher. Primary: [Strike 2]. Secondary: +1 damage.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 2,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

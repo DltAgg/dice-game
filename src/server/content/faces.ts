@@ -21,6 +21,18 @@ export const PROJECTILE: FaceCardId = asFaceCardId("face-natural-projectile");
 export const FOCUS: FaceCardId = asFaceCardId("face-natural-focus");
 export const CHARGE: FaceCardId = asFaceCardId("face-natural-charge");
 
+/** Combination probes. Not on a Fighter's base die. */
+export const SNAP: FaceCardId = asFaceCardId("face-natural-snap");
+export const HOOK: FaceCardId = asFaceCardId("face-natural-hook");
+export const UPPERCUT: FaceCardId = asFaceCardId("face-natural-uppercut");
+export const HAYMAKER: FaceCardId = asFaceCardId("face-natural-haymaker");
+export const SHIN: FaceCardId = asFaceCardId("face-natural-shin");
+export const SWEEP: FaceCardId = asFaceCardId("face-natural-sweep");
+export const KNEE: FaceCardId = asFaceCardId("face-natural-knee");
+export const CRESCENT: FaceCardId = asFaceCardId("face-natural-crescent");
+export const STOMP: FaceCardId = asFaceCardId("face-natural-stomp");
+export const ROUNDHOUSE: FaceCardId = asFaceCardId("face-natural-roundhouse");
+
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);
 

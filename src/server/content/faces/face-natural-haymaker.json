@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-haymaker",
+  "name": "Haymaker",
+  "faceType": "attack",
+  "sequenceRole": "starter",
+  "hitStrength": "heavy",
+  "hitType": "punch",
+  "rulesText": "Heavy Punch · Starter. Primary: [Strike 3]. Secondary: +1 damage.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 3,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

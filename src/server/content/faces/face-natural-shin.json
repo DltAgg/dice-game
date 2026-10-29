@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-shin",
+  "name": "Shin",
+  "faceType": "attack",
+  "sequenceRole": "starter",
+  "hitStrength": "light",
+  "hitType": "kick",
+  "rulesText": "Light Kick · Starter. Primary: [Strike 1]. Secondary: +1 damage.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 1,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}
