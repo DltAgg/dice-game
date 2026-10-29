@@ -11,7 +11,6 @@ import { lookupOverlayCreature } from "./runtimeOverlay.js";
 export const VEGA: CreatureDefinitionId = asCreatureDefinitionId("creature-vega");
 export const MAGNUS: CreatureDefinitionId = asCreatureDefinitionId("creature-magnus");
 export const RYU: CreatureDefinitionId = asCreatureDefinitionId("creature-ryu");
-export const GRAPPLER: CreatureDefinitionId = asCreatureDefinitionId("creature-grappler");
 
 const creatureModules = import.meta.glob("./creatures/creature-*.json", {
   eager: true,

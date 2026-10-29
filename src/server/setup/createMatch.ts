@@ -37,8 +37,8 @@ export interface PlayerSetup {
    */
   readonly faceDeck?: readonly FaceCardId[];
   /**
-   * Two constructed d6 layouts. Required for live matches. Engine tests use
-   * `legacyStartingLayout()` via `newMatch`.
+   * Two constructed d6 layouts. Required for live matches. Engine tests
+   * supply their own layouts through `newMatch`.
    */
   readonly startingDice: StartingDiceLayout;
 }

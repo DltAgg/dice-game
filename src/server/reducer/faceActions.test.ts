@@ -26,7 +26,7 @@ import {
 } from "../testing/fixtures/index.js";
 import { expectOk, newMatch, P1, P2 } from "../testing/scenario.js";
 
-/** Overlay mirror of catalogue Grappler (live JSON stays in content/). */
+/** Test overlay for two-face techniques. Ids are fixtures, not catalogue fighters. */
 const LARIAT = asTestFaceId("grappler-lariat");
 const JAB = asTestFaceId("grappler-jab");
 const COMMAND_GRAB = asTestFaceId("grappler-command-grab");

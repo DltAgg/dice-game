@@ -1,4 +1,4 @@
-import type { DieFaceLayout, FaceCardDefinition, StartingDiceLayout } from "../model/dice.js";
+import type { FaceCardDefinition } from "../model/dice.js";
 import { asFaceCardId, type FaceCardId } from "../model/ids.js";
 import faceOrder from "./faces/_order.json";
 import { catalogueFromModules } from "./catalogueLoader.js";
@@ -8,14 +8,6 @@ import { lookupOverlayFace } from "./runtimeOverlay.js";
  * Face cards backing die faces (spec `004` / `028` / `030`).
  * A face is a named card. It is not natural, synthetic, an attribute, or Shield.
  */
-
-export const TECHNIQUE_STRIKE: FaceCardId = asFaceCardId("face-natural-technique-strike");
-export const TECHNIQUE_GUARD: FaceCardId = asFaceCardId("face-natural-technique-guard");
-export const TECHNIQUE_HEAVY: FaceCardId = asFaceCardId("face-natural-technique-heavy");
-export const TECHNIQUE_SPECIAL: FaceCardId = asFaceCardId("face-natural-technique-special");
-export const TECHNIQUE_TAG: FaceCardId = asFaceCardId("face-natural-technique-tag");
-export const TECHNIQUE_ASSIST: FaceCardId = asFaceCardId("face-natural-technique-assist");
-export const TECHNIQUE_SIGNATURE: FaceCardId = asFaceCardId("face-natural-technique-signature");
 
 export const JAB: FaceCardId = asFaceCardId("face-natural-jab");
 
@@ -52,30 +44,3 @@ export const BASIC_FACE_CARDS: readonly FaceCardDefinition[] = [];
 
 /** Named faces a deck can pack. */
 export const SPECIAL_FACE_CARDS: readonly FaceCardDefinition[] = ALL_FACE_CARDS;
-
-const basicDieLayout = (): DieFaceLayout => [
-  TECHNIQUE_STRIKE,
-  TECHNIQUE_GUARD,
-  TECHNIQUE_HEAVY,
-  TECHNIQUE_SPECIAL,
-  TECHNIQUE_TAG,
-  TECHNIQUE_ASSIST,
-];
-
-/** Expands `DEFAULT_BASIC_LAYOUT` into two identical dice (engine tests only). */
-export function legacyStartingLayout(): StartingDiceLayout {
-  const die = basicDieLayout();
-  return [die, die];
-}
-
-/**
- * Scenario / forge-test face pool: Tag Skirmish technique faces (unique ids).
- */
-export const ENGINE_TEST_FACE_DECK: readonly FaceCardId[] = [
-  TECHNIQUE_STRIKE,
-  TECHNIQUE_GUARD,
-  TECHNIQUE_HEAVY,
-  TECHNIQUE_SPECIAL,
-  TECHNIQUE_TAG,
-  TECHNIQUE_ASSIST,
-];

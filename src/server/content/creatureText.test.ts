@@ -2,18 +2,17 @@ import { describe, expect, it } from "vitest";
 import type { AttackDefinition } from "../model/creatures.js";
 import { asAttackId } from "../model/ids.js";
 import { secondaryMatches } from "../rules/faceActions.js";
-import { ALL_CREATURES, GRAPPLER, MAGNUS, RYU, VEGA } from "./creatures.js";
+import { ALL_CREATURES, MAGNUS, RYU, VEGA } from "./creatures.js";
 import { ALL_FACE_CARDS, getFaceCard, JAB, MAGNUS_LARIAT, RYU_FOCUS, VEGA_KICK } from "./faces.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine } from "./creatureText.js";
 
 const TAG_SQUAD = [VEGA, MAGNUS, RYU] as const;
 
 describe("creature catalogue", () => {
-  it("includes the Tag Skirmish trio plus proving Grappler", () => {
+  it("includes the Tag Skirmish trio", () => {
     const ids = new Set(ALL_CREATURES.map((creature) => creature.id));
     for (const id of TAG_SQUAD) expect(ids.has(id)).toBe(true);
-    expect(ids.has(GRAPPLER)).toBe(true);
-    expect(ids.size).toBe(TAG_SQUAD.length + 1);
+    expect(ids.size).toBe(TAG_SQUAD.length);
   });
 
   it("gives every fighter a passive", () => {
@@ -86,12 +85,6 @@ describe("creature catalogue", () => {
         expect(technique.hitType, technique.id).toBeDefined();
       }
     }
-  });
-
-  it("keeps a native attack on the proving Grappler", () => {
-    const grappler = ALL_CREATURES.find((entry) => entry.id === GRAPPLER);
-    expect((grappler?.attacks.length ?? 0) > 0).toBe(true);
-    expect(grappler?.attacks.some((attack) => attack.effect !== undefined)).toBe(true);
   });
 });
 
