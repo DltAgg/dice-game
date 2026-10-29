@@ -59,11 +59,9 @@ design a 12-card face deck or opening layouts as the player's dice.
 Read `validateLoadout` and the config you pass it. Do not invent a second
 copy of the numbers.
 
-Spec `030` leaves the real deck size open (`deckSize` null). While it is
-null, the validator still uses `deckMinCards` / `deckMaxCards`. That range
-is not the confirmed size. `TAG_FIGHTER_RULES` is the 3-die preset. The old
-40–50 tactic band and the 12-card face deck are not this game's construction
-rules.
+`deckSize` stays null. `TAG_FIGHTER_RULES` is the 3-die preset: 30 to 40
+cards. The old 40–50 tactic band on `DEFAULT_RULES_CONFIG` and the 12-card
+face deck are not this game's construction rules.
 
 Copy cap is `deckMaxCopiesPerCard`. Construction checks size, copies, and
 that the card id exists. It does not check Fighter play requirements.

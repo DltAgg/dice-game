@@ -48,7 +48,7 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
 
 - Match board: roll, then actions, the Chain, pending decisions, the phase bar, and sticky `GameError`. How the turn plays is `docs/RULEBOOK.md`. Do not reimplement it.
 - Lobby: local hotseat | host room | join room; pick **legal** loadouts.
-- Deck builder: three Fighters and one shared deck of 10 to 24 cards. Save illegal drafts for later. **Play** still refuses illegal loadouts. Do not invent a face deck or a 40–50 card rule.
+- Deck builder: three Fighters and one shared deck of 30 to 40 cards. Save illegal drafts for later. **Play** still refuses illegal loadouts. Do not invent a face deck or a 40–50 card rule.
 - Catalogue views: render existing content; do not author cards.
 - Metrics dashboard: `src/client/ui/metrics/`, store `src/client/store/metricsStore.ts`, collector hook in `matchStore` / host `onAdvance`. Observer only — spec `014`.
 - Persistence: `src/client/decks/` (`DeckRepository`, localStorage, `schemaVersion`).
@@ -62,7 +62,7 @@ shell tabs). Do not restyle the first viewport into a generic dashboard.
   `src/server` (`legalTargetsFor`, `validateLoadout`, formatters, etc.).
 - Loadout legality is `validateLoadout` in `src/server/rules/loadout.ts` (via
   `validateSavedDeck`). UI may show the reason; it must not invent 40–50 / ≤3
-  copy rules. The current deck is 10 to 24 cards, at most 3 copies.
+  copy rules. The current deck is 30 to 40 cards, at most 3 copies.
 - Online: `mode` is `local` | `host` | `client`. Host owns `advance()` and
   overrides `action.playerId` by seat. Client sends `submit-action` and
   replaces state with what the host sent. Seat-gate with `localPlayerId`.

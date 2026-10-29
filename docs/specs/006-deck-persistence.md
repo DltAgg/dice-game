@@ -6,4 +6,4 @@ The source is [`docs/GAME_STATE.md`](../GAME_STATE.md). How a match plays is [`d
 
 This file stays only as the accepted inventory row. It does not add a rule.
 
-A saved loadout is still validated, then a match is created from it. The current deck is 10 to 24 cards.
+A saved loadout is still validated, then a match is created from it. The current deck is 30 to 40 cards.

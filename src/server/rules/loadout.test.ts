@@ -50,7 +50,7 @@ const identityPair = (): readonly [DieFaceLayout, DieFaceLayout] => [
 
 describe("validateTacticsDeck", () => {
   it("accepts the Tag Skirmish tactics list under TAG_FIGHTER_RULES", () => {
-    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(24);
+    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(30);
     expect(responseCombatCount(TAG_SKIRMISH_LOADOUT.deck)).toBe(6);
     expect(validateTacticsDeck(TAG_SKIRMISH_LOADOUT.deck, TAG_FIGHTER_RULES)).toEqual({
       ok: true,
@@ -124,9 +124,24 @@ describe("validateTacticsDeck", () => {
 
     const three = (id: typeof PARRY) => [id, id, id];
     const nine = [...three(PARRY), ...three(BRACE), ...three(SHIFT)];
+    const filler = [
+      asCardId("card-counter"),
+      asCardId("card-reforge-grip"),
+      asCardId("card-vega-drill"),
+      asCardId("card-ryu-form"),
+      asCardId("card-open-manual"),
+      asCardId("card-call-out"),
+      asCardId("card-anchor"),
+    ].flatMap((id) => three(id));
+    const atLeastMin = (head: readonly (typeof PARRY)[]) =>
+      [...head, ...filler].slice(0, TAG_FIGHTER_RULES.deckMinCards);
     expect(responseCombatCount(nine)).toBe(9);
-    expect(validateTacticsDeck([...nine, OPEN_PALM], TAG_FIGHTER_RULES)).toEqual({ ok: true });
-    expect(validateTacticsDeck([...nine, OPEN_PALM, OPEN_PALM], TAG_FIGHTER_RULES)).toEqual({
+    expect(validateTacticsDeck(atLeastMin([...nine, OPEN_PALM]), TAG_FIGHTER_RULES)).toEqual({
+      ok: true,
+    });
+    expect(
+      validateTacticsDeck(atLeastMin([...nine, OPEN_PALM, OPEN_PALM]), TAG_FIGHTER_RULES),
+    ).toEqual({
       ok: true,
     });
 

@@ -18,7 +18,7 @@ those fields. Do not author new content from them.
 | Game engine | Three dice, roll then actions, Meter, sequence, Chain. `TAG_FIGHTER_RULES` |
 | Content | Fighters, named faces, Response and Modify cards. Older JSON may still carry unused fields |
 | UI | **M3** hotseat + **M4** deck builder + catalogues |
-| Persistence | **M4** — `DeckRepository` over localStorage; shared deck 10–24 cards, at most 3 copies |
+| Persistence | **M4** — `DeckRepository` over localStorage; shared deck 30–40 cards, at most 3 copies |
 | Networking | **M5** — PeerJS host authority (room seats, spectators, host-observe) |
 
 Unfinished catalogue effects are parked in

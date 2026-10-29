@@ -21,7 +21,7 @@ Drawing a card when your deck is empty loses. There is no reshuffle. Milling car
 
 ## 2. What you bring
 
-Each player brings three Fighters, one die for each Fighter, and one shared deck of 10 to 24 cards. A deck has at most 3 copies of one card. A tag-fighter deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. The opening hand is 5. There is no maximum hand size.
+Each player brings three Fighters, one die for each Fighter, and one shared deck of 30 to 40 cards. A deck has at most 3 copies of one card. A tag-fighter deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. The opening hand is 5. There is no maximum hand size.
 
 A deck may also include at most 2 EX cards for each Fighter, counted separately. Two for Magnus and two for Vega are allowed. Three copies of one EX card are not, even though another card may still have 3 copies. An EX card may name a Fighter who is not in your squad. You still cannot play it unless that Fighter is on your squad, alive, and your Active Fighter.
 

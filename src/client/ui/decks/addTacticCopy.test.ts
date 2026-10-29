@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TAG_SKIRMISH_LOADOUT, asCardId, type CardId } from "@server";
+import { TAG_FIGHTER_RULES, TAG_SKIRMISH_LOADOUT, asCardId, type CardId } from "@server";
 import type { DeckDraft } from "@client/decks";
 import { deckAfterTacticAdd } from "./addTacticCopy.js";
 
@@ -7,12 +7,6 @@ const PARRY = asCardId("card-parry");
 const BRACE = asCardId("card-brace");
 const SHIFT = asCardId("card-shift");
 const OPEN_PALM = asCardId("card-open-palm");
-const COUNTER = asCardId("card-counter");
-const REFORGE_GRIP = asCardId("card-reforge-grip");
-const VEGA_DRILL = asCardId("card-vega-drill");
-const RYU_FORM = asCardId("card-ryu-form");
-const OPEN_MANUAL = asCardId("card-open-manual");
-const CALL_OUT = asCardId("card-call-out");
 const ANCHOR = asCardId("card-anchor");
 
 function draftWith(deck: readonly CardId[]): DeckDraft {
@@ -46,19 +40,8 @@ describe("deckAfterTacticAdd", () => {
   });
 
   it("keeps a deck-size add, and a copy-cap add does not change the list", () => {
-    const deck = [
-      ...three(COUNTER),
-      ...three(OPEN_PALM),
-      ...three(REFORGE_GRIP),
-      ...three(VEGA_DRILL),
-      ...three(RYU_FORM),
-      ...three(OPEN_MANUAL),
-      ...three(CALL_OUT),
-      PARRY,
-      PARRY,
-      BRACE,
-    ];
-    expect(deck).toHaveLength(24);
+    const deck = Array.from({ length: TAG_FIGHTER_RULES.deckMaxCards }, () => OPEN_PALM);
+    expect(deck).toHaveLength(40);
     const grown = deckAfterTacticAdd(draftWith(deck), ANCHOR, 3);
     expect(grown.refusedReason).toBeNull();
     expect(grown.deck).toEqual([...deck, ANCHOR]);

@@ -63,7 +63,7 @@ npm run typecheck && npm test && npm run lint
 |---|---|
 | `src/server/content/cards.consistency.test.ts` | Attachment subtype ↔ region lockstep |
 | `src/server/content/cardText.test.ts` | Card text checks. New print follows `docs/KEYWORDS.md` |
-| `src/server/rules/loadout.test.ts` | Deck legality and known ids. The current deck is 10–24 cards, at most 3 copies |
+| `src/server/rules/loadout.test.ts` | Deck legality and known ids. The current deck is 30–40 cards, at most 3 copies |
 | `src/architecture/engine-purity.test.ts` | Engine stays pure |
 | `src/architecture/module-budget.test.ts` | File size freeze; no `src/game`; thin catalogue loaders |
 | `src/architecture/keyword-agreement.test.ts` | Tag Skirmish print and `docs/KEYWORDS.md` name the same brackets |

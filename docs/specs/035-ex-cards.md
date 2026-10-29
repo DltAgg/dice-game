@@ -191,7 +191,7 @@ Because `finishTurn` does not run, the combo reset, the draw, the toxin tick, an
 
 Do not mint a bracket. Do not add `[EX]`, `[Reroll]`, or `[Spend]`. Do not put EX under `### New tokens`. `[Strike N]`, `[Counter]`, and `[Parry]` stay the print for those effects. `docs/KEYWORDS.md` current-print prose says a Modify may also replace a qualifying attack when it is EX.
 
-Tag Skirmish includes one copy of each card. The list was 22 cards and the cap is 24, so the builtin deck does not carry a second copy of either.
+Tag Skirmish includes one copy of each card. The shared deck is 30 to 40 cards. A second copy of either EX card still fits that range and the per-Fighter cap of 2.
 
 ### Conflicts recorded
 
