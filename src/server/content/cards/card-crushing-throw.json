@@ -1,0 +1,25 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-crushing-throw",
+  "name": "Crushing Throw",
+  "type": "modify",
+  "subtypes": ["ex"],
+  "lifecycle": "one-shot",
+  "fighterRestriction": "creature-magnus",
+  "meterCost": 8,
+  "exGate": {
+    "sequenceRole": "finisher",
+    "hitType": "punch",
+    "hitStrength": "heavy"
+  },
+  "exStrike": 6,
+  "exReroll": {
+    "scope": "restricted-fighter",
+    "times": 2,
+    "strikePerFaceId": "face-natural-magnus-grab",
+    "strikePer": 2
+  },
+  "exAttackBan": true,
+  "rulesText": "Heavy Punch Finisher. [Strike 6]. Reroll your Magnus die 2 times. [Strike 2] for each Grab rolled. Magnus cannot attack during your next turn.",
+  "forge": { "faces": 1, "target": "own-die" }
+}

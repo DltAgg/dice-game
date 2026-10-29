@@ -196,7 +196,8 @@ function tacticsDeckSizeFailure(
  * Tactics deck legality: size in [deckMinCards, deckMaxCards], known card
  * ids, at most deckMaxCopiesPerCard of any single id, and — when
  * deckMaxResponseCombat is not null — at most that many combat-subtype
- * cards in total.
+ * cards in total. At most two EX-subtype cards per `fighterRestriction`
+ * (copies count; spec `035`).
  */
 export function validateTacticsDeck(
   deck: readonly CardId[],
@@ -226,6 +227,27 @@ export function validateTacticsDeck(
       return {
         ok: false,
         reason: `tactics deck has ${String(next)} copies of "${cardId}", max ${String(config.deckMaxCopiesPerCard)}`,
+      };
+    }
+  }
+
+  const exByFighter = new Map<CreatureDefinitionId, number>();
+  for (const cardId of deck) {
+    const card = getCard(cardId)!;
+    if (!(card.subtypes as readonly string[]).includes("ex")) continue;
+    if (card.fighterRestriction === undefined) {
+      return {
+        ok: false,
+        reason: `tactics deck includes EX card "${cardId}" without a fighter restriction`,
+      };
+    }
+    const fighterId = card.fighterRestriction;
+    const exCount = (exByFighter.get(fighterId) ?? 0) + 1;
+    exByFighter.set(fighterId, exCount);
+    if (exCount > 2) {
+      return {
+        ok: false,
+        reason: `tactics deck has ${String(exCount)} EX cards for "${fighterId}", max 2`,
       };
     }
   }

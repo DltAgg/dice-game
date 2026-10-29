@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_CARDS, BRACE, COUNTER, OPEN_PALM, PARRY, SHIFT, getCard } from "../content/cards.js";
+import { ALL_CARDS, AIR_LAUNCHER, BRACE, CRUSHING_THROW, COUNTER, OPEN_PALM, PARRY, SHIFT, getCard } from "../content/cards.js";
 import { MAGNUS, RYU, VEGA } from "../content/creatures.js";
 import {
   AGGRO_LOADOUT,
@@ -190,10 +190,54 @@ describe("validateTacticsDeck", () => {
     expect(counter?.subtypes.includes("combat")).toBe(false);
   });
 
-  it("knows every Tag Skirmish catalogue card", () => {
-    expect(ALL_CARDS.map((card) => card.id).sort()).toEqual(
-      [...new Set(TAG_SKIRMISH_LOADOUT.deck)].slice().sort(),
+  it("includes every Tag Skirmish deck card in the catalogue", () => {
+    const catalogueIds = new Set(ALL_CARDS.map((card) => card.id));
+    for (const id of new Set(TAG_SKIRMISH_LOADOUT.deck)) {
+      expect(catalogueIds.has(id)).toBe(true);
+    }
+  });
+
+  it("caps EX cards per fighter restriction", () => {
+    const exRules = { ...TAG_FIGHTER_RULES, deckMinCards: 0, deckMaxCopiesPerCard: 3 };
+
+    expect(validateTacticsDeck([], exRules)).toEqual({ ok: true });
+    expect(validateTacticsDeck([CRUSHING_THROW], exRules)).toEqual({ ok: true });
+    expect(validateTacticsDeck([CRUSHING_THROW, CRUSHING_THROW], exRules)).toEqual({ ok: true });
+
+    expect(
+      validateTacticsDeck(
+        [CRUSHING_THROW, CRUSHING_THROW, AIR_LAUNCHER, AIR_LAUNCHER],
+        exRules,
+      ),
+    ).toEqual({ ok: true });
+
+    const threeMagnus = validateTacticsDeck(
+      [CRUSHING_THROW, CRUSHING_THROW, CRUSHING_THROW],
+      exRules,
     );
+    expect(threeMagnus.ok).toBe(false);
+    if (!threeMagnus.ok) {
+      expect(threeMagnus.reason).toMatch(/EX cards for "creature-magnus", max 2/);
+      expect(threeMagnus.reason).not.toMatch(/copies of/);
+      expect(threeMagnus.reason).not.toMatch(/response combat/);
+    }
+
+    expect(responseCombatCount([CRUSHING_THROW, AIR_LAUNCHER])).toBe(0);
+  });
+
+  it("allows an EX card in the deck when its Fighter is not in the squad", () => {
+    const exRules = { ...TAG_FIGHTER_RULES, deckMinCards: 0 };
+    expect(validateTacticsDeck([CRUSHING_THROW], exRules)).toEqual({ ok: true });
+    expect(
+      validateLoadout(
+        {
+          ...TAG_SKIRMISH_LOADOUT,
+          squad: [VEGA, RYU, VEGA],
+          deck: [...TAG_SKIRMISH_LOADOUT.deck, CRUSHING_THROW],
+        },
+        TAG_FIGHTER_RULES,
+      ),
+    ).toEqual({ ok: true });
   });
 });
 

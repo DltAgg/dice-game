@@ -21,6 +21,8 @@ export const OPEN_MANUAL: CardId = asCardId("card-open-manual");
 export const SHIFT: CardId = asCardId("card-shift");
 export const CALL_OUT: CardId = asCardId("card-call-out");
 export const ANCHOR: CardId = asCardId("card-anchor");
+export const CRUSHING_THROW: CardId = asCardId("card-crushing-throw");
+export const AIR_LAUNCHER: CardId = asCardId("card-air-launcher");
 
 const cardModules = import.meta.glob("./cards/card-*.json", { eager: true, import: "default" });
 const loadedCards = catalogueFromModules<CardDefinition>(cardModules, cardOrder);

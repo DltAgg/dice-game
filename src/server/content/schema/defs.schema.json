@@ -42,9 +42,9 @@
     },
     "cardSubtype": {
       "title": "CardSubtype",
-      "description": "Type-line modifier. continuous and reaction change ritual duration. instant is retired (leftover copies still leave for GY after activation). combat is a deckbuilding cap tag and does not change how the card resolves.",
+      "description": "Type-line modifier. ex is a Modify subcategory (spec 035); it is not a card type and does not change ritual duration. continuous and reaction change ritual duration. instant is retired (leftover copies still leave for GY after activation). combat is a deckbuilding cap tag and does not change how the card resolves.",
       "type": "string",
-      "enum": ["instant", "continuous", "reaction", "combat"]
+      "enum": ["instant", "continuous", "reaction", "combat", "ex"]
     },
     "faceKind": {
       "title": "FaceKind",

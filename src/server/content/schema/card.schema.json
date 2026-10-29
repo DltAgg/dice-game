@@ -98,6 +98,45 @@
       "type": "string",
       "enum": ["deck", "hand", "graveyard", "equipment", "overload", "ritual"],
       "description": "Spec 030. One-shot destination after the card resolves. Omit to discard (graveyard)."
+    },
+    "exGate": {
+      "description": "Spec 035. Sequence hit gate for playing this EX card.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequenceRole", "hitType"],
+      "properties": {
+        "sequenceRole": { "$ref": "defs.schema.json#/$defs/sequenceRole" },
+        "hitType": { "$ref": "defs.schema.json#/$defs/hitType" },
+        "hitStrength": { "$ref": "defs.schema.json#/$defs/hitStrength" }
+      }
+    },
+    "exStrike": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Spec 035. Strike damage applied when the EX body resolves."
+    },
+    "exReroll": {
+      "description": "Spec 035. Reroll scope and count for the EX body.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "times"],
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": ["restricted-fighter", "controller"]
+        },
+        "times": { "type": "integer", "minimum": 1 },
+        "strikePerFaceId": { "$ref": "defs.schema.json#/$defs/faceId" },
+        "strikePer": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "exAttackBan": {
+      "type": "boolean",
+      "description": "Spec 035. When true, the restricted Fighter cannot attack on the controller's next turn."
+    },
+    "exExtraActionPhase": {
+      "type": "boolean",
+      "description": "Spec 035. When true, queue an extra actions phase after the EX resolves."
     }
   },
   "allOf": [
