@@ -23,7 +23,9 @@ Drawing a card when your deck is empty loses. There is no reshuffle. Milling car
 
 Each player brings three Fighters, one die for each Fighter, and one shared deck of 10 to 24 cards. A deck has at most 3 copies of one card. A tag-fighter deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. The opening hand is 5. There is no maximum hand size.
 
-Cards are **Response** or **Modify**. Tag is an operation, not a card type. Assist is on the Fighter, not a card.
+A deck may also include at most 2 EX cards for each Fighter, counted separately. Two for Magnus and two for Vega are allowed. Three copies of one EX card are not, even though another card may still have 3 copies. An EX card may name a Fighter who is not in your squad. You still cannot play it unless that Fighter is on your squad and alive.
+
+Cards are **Response** or **Modify**. An EX card is a Modify, not a card type. Tag is an operation, not a card type. Assist is on the Fighter, not a card.
 
 The face deck is not used in the online game. It is the future physical card for a face after Replace. Replace writes that face onto the die for the rest of the match. Ryu Form’s Replace also makes that slot the showing face.
 
@@ -49,15 +51,19 @@ On your roll, you roll both players’ dice, including Reserve and defeated Figh
 
 When you end the turn, the opponent becomes the active player, the turn number goes up by 1, that player draws 1, victory is checked, and the phase becomes roll.
 
+An extra actions phase is not that. It is another actions window for the same player, on the same turn, after a sequence ends. You do not draw, the turn number does not go up, and you do not get another opening reroll. Section 13 says when you get one.
+
 ## 6. Meter
 
 A sequence hit that resolves, is not negated, and whose target is not already defeated spends that hit’s Meter cost first. If the spend fails, the hit does not grant Meter and does not apply its effects. If it succeeds, you gain the hit’s printed Meter gain, and also 2, 3, or 4 when the hit is light, medium, or heavy. The owner of the Fighter you hit gains 1. This is not Meter per damage.
 
 Light, medium, and heavy do not set the damage. The damage is the printed `[Strike N]`.
 
-Playing a card spends its Meter cost when you play it. An exceptional mode also spends its extra Meter. An Assist spends Meter only when that Assist prints a cost greater than 0. A Tag switch does not spend Meter.
+Playing a card spends its Meter cost when the play is legal, before anyone else can answer. An illegal play spends nothing. An exceptional mode also spends its extra Meter. An Assist spends Meter only when that Assist prints a cost greater than 0. A Tag switch does not spend Meter.
 
-No card in the current list has an ordinary Meter cost. Open Palm spends 2 Meter to play it outside a Chain. Call Out spends 2 Meter. Both are that exceptional cost.
+A sequence hit’s Meter is a different payment. It is spent when that hit resolves and is not negated, as the first paragraph says. An EX card spends its own Meter when you play it. The hit it replaces does not also spend or grant its sequence-hit Meter.
+
+No card in the tag-skirmish deck has an ordinary Meter cost. Open Palm spends 2 Meter to play it outside a Chain. Call Out spends 2 Meter. Both are that exceptional cost. An EX card’s cost is ordinary Meter, paid when you play it. That cost may be 8, the whole pool. A later Parry or Counter does not give that Meter back. You cannot spend the same Meter twice.
 
 ## 7. The sequence
 
@@ -75,7 +81,9 @@ A die is not spent by a face action or a Technique. The same face and the same T
 
 A starter or extender that does not end the sequence adds 1 to your combo and sets the sequence to combo. You stay the Aggressor.
 
-A finisher ends the sequence. You may also end the sequence yourself. Ending a sequence hands the turn to the opponent. Whether ending a sequence and ending a turn are different operations is not decided. Until it is, they are that one handoff.
+A finisher ends the sequence. You may also end the sequence yourself. Ending a sequence hands the turn to the opponent, unless an extra actions phase is waiting. Then the sequence still ends, and you take that extra actions phase instead of handing the turn over. Whether every other sequence end is a different operation from ending a turn is not decided. Until it is, every other end is that one handoff.
+
+You may replace a hit you just declared with an EX card, as section 13 describes. The replaced hit does not deal its own Strike. If it is not negated, it still counts as the sequence role it was declared as. A finisher still ends the sequence.
 
 Defeating a Fighter ends that sequence. That Fighter’s owner loses their combo, and the turn is handed to the opponent. The Active-Fighter replacement in section 3 still applies.
 
@@ -103,11 +111,11 @@ A face action, a Technique, a hit Assist, Tag, a Response, and a Modify wait on 
 
 The player who added the object acts first. That player may add another legal object or pass. A pass gives priority to the opponent. Two passes in a row, with nothing added between them, resolve the Chain from the top down. No new window opens between objects.
 
-While the Chain is waiting, the player with priority may pass, play a Response, play a Modify that names what it changes, or declare an Assist that is not a hit. A face action, a Technique, ending the sequence, and Tag are not legal then.
+While the Chain is waiting, the player with priority may pass, play a Response, play a Modify that names what it changes, declare an Assist that is not a hit, or play an EX card when section 13 says that play is legal. A face action, a Technique, ending the sequence, and Tag are not legal then.
 
-A Response is legal only when an opponent’s object is on the Chain and is not already negated. `[Counter]` negates the top card. It does not negate a hit, and it does not end the sequence. `[Parry]` negates a hit that would damage your Fighter and leaves you offensive. It ends the sequence, so the turn is handed to the opponent. `[Block N]` uses the same target. Brace is `[Block 2]`. It lowers the next damage by N. It does not cancel the hit.
+A Response is legal only when an opponent’s object is on the Chain and is not already negated. `[Counter]` negates the top card. It does not negate a hit, and it does not end the sequence. It is also not legal when the top object is an EX card. `[Parry]` negates a hit that would damage your Fighter, including a hit an EX card replaced, and leaves you offensive. It ends the sequence, so the turn is handed to the opponent, unless an extra actions phase is waiting. `[Block N]` uses the same target. Brace is `[Block 2]`. It lowers the next damage by N. It does not cancel the hit. Other Responses and Modifies are unchanged.
 
-A card’s Meter is spent when you play it. A hit’s Meter is spent when the hit resolves and is not negated.
+A card’s Meter is spent when you play it, and only if that play is legal. A hit’s Meter is spent when the hit resolves and is not negated. A hit an EX card replaced does not spend or grant that hit Meter. Meter spent on the EX card is not returned if the hit is later negated.
 
 A one-shot card leaves your hand for the graveyard when you play it. A Moveset stays in hand until it resolves, then attaches to the Fighter. A negated object does not apply its effects. A negated hit does not add combo.
 
@@ -128,6 +136,26 @@ A draw is not attached to a Fighter, and a draw does not happen again and again 
 
 Anchor’s current print attaches and draws 1 at the start of your turn. That print is being rewritten. Open Manual’s Technique is not printed yet.
 
-## 13. What this rulebook is not
+## 13. EX
+
+EX is a Modify you play on a hit you just declared, while you still have priority and that hit is the top of the Chain. You have not passed yet, and that hit is still the top object. The hit is yours, it is not negated, and it matches that card. After you pass, or after anything else is added above the hit, that EX card is illegal. It uses the priority you already have.
+
+The card names one Fighter. That Fighter must be on your squad and alive. The gate is the hit’s role, strike, and strength. The deck limit in section 2 is separate from this: the squad check happens when you play.
+
+Playing it spends its Meter, then puts the EX card on the Chain above the hit. You keep priority. The hit’s printed Strike does not happen. If the hit is a finisher, the sequence still ends.
+
+`[Parry]` can still negate that hit. If it does, the EX card’s effect does not happen. The Meter you spent stays spent. `[Counter]` is illegal while an EX card is the top of the Chain. Counter remains illegal against a hit.
+
+**Crushing Throw** is Magnus’s EX card. It costs 8 Meter. It replaces a heavy punch finisher. Power Bomb is that kind of hit. The printed Strike is replaced by `[Strike 6]`, then you reroll Magnus’s die twice, then `[Strike 2]` for each of those two rolls that lands on Grab. Both rolls count, and the die ends on the second roll. Only Magnus’s die rolls. Then Magnus cannot attack on your next turn.
+
+That ban is your next turn. An extra actions phase on this turn is still this turn, so Magnus can still attack during it. On the banned turn, Magnus cannot use a face, a Technique, or a hit Assist. You can still play Responses. Magnus can still use a non-hit Assist. You can still Tag. Your other Fighters can still attack. If the hit was negated, the ban does not start.
+
+**Air Launcher** is Vega’s EX card. It costs 8 Meter. It replaces a kick finisher of any strength. Chase Kick is that kind of hit. The printed Strike is replaced by `[Strike 3]`. Then you reroll each of your dice once, including Reserve and defeated Fighters. The opponent’s dice stay as they are. This is not your once-per-turn reroll, and you do not get another opening reroll. Then you take one extra actions phase.
+
+The sequence still ends, because the hit was a finisher. When it would hand the turn over, you stay the active player and start that extra actions phase. The turn number stays, you do not draw, and you do not reroll for the opening of a turn. One Air Launcher gives one extra phase. Playing it again on a later sequence can give another. Choosing to end the turn does not spend a stored extra phase. The extra phase is not a new turn. If the hit was negated, you do not get the phase.
+
+These two cards are the EX rules. They are not in the tag-skirmish deck yet.
+
+## 14. What this rulebook is not
 
 There is no attribute pile, no turn-pool symbols, no Shield resource, no Ritual, and no Overload. Range and Reposition are not used. Dodge is not a current effect. Empower, Pierce, Desynthesize, Convert, and attribute-only verbs are not current print.
