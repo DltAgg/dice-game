@@ -5,6 +5,7 @@ import type { ChainLink } from "../../model/state.js";
 import { assistDeclarationError, assistHitEffect, assistKey, opponentActiveId } from "../../rules/fighters.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
+import { attackBanError } from "../exCard.js";
 import { spendMeter } from "../meter.js";
 import { openCombatAction } from "../offensive.js";
 import { drainResolution, pushEffect } from "../resolution.js";
@@ -27,6 +28,10 @@ export function assist(
   if (definition === undefined || effects.length === 0) return "CARD_HAS_NO_EFFECT";
   const hit = assistHitEffect(effects);
   if (hit === "many") return "INVALID_TARGET";
+  if (hit !== null) {
+    const banned = attackBanError(creature, draft.turn);
+    if (banned !== null) return banned;
+  }
 
   const cost = definition.exceptionalAssistMeter ?? 0;
   if (cost > 0) {

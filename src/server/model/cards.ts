@@ -1,5 +1,6 @@
 import type { EffectDefinition } from "./effects.js";
 import type { FighterTechniqueDefinition } from "./fighterTechniques.js";
+import type { HitStrength, HitType } from "./hitClass.js";
 import type {
   CardId,
   CardInstanceId,
@@ -9,6 +10,7 @@ import type {
   FaceCardId,
   PlayerId,
 } from "./ids.js";
+import type { SequenceRole } from "./offensive.js";
 import type { SymbolRequirement, SymbolType } from "./symbols.js";
 
 /**
@@ -54,7 +56,12 @@ export type CardSubtype =
    * legality, chain behavior, or where the card goes. A card whose only
    * subtype is combat resolves like a card with subtypes [].
    */
-  | "combat";
+  | "combat"
+  /**
+   * Replaces a qualifying sequence hit from the priority that declaration
+   * already gave the player. Spec `035`. Not a card type and not a bracket.
+   */
+  | "ex";
 
 /**
  * How a Ritual behaves after activation. Derived from subtypes: `continuous`
@@ -337,6 +344,16 @@ export interface CardDefinition {
    * living.
    */
   readonly fighterRestriction?: CreatureDefinitionId;
+  /** Spec `035`. Present on an EX card. The hit this card may replace. */
+  readonly exGate?: ExGate;
+  /** Spec `035`. Chain-attack Strike when the EX body resolves. */
+  readonly exStrike?: number;
+  /** Spec `035`. Forced rerolls after that Strike. */
+  readonly exReroll?: ExReroll;
+  /** Spec `035`. When the body resolves, that Fighter cannot attack on turn + 2. */
+  readonly exAttackBan?: boolean;
+  /** Spec `035`. When the body resolves, queue one extra actions phase. */
+  readonly exExtraActionPhase?: boolean;
   /**
    * Spec `028`. Legal if any living squad fighter's `archetype` matches.
    */
@@ -398,6 +415,28 @@ export type CardLifecycle = "one-shot" | "persistent";
  * `roll` changes the showing face. `die` writes a slot permanently.
  */
 export type ModifySubject = "roll" | "die" | "moveset" | "target" | "tag";
+
+/**
+ * Spec `035`. The sequence hit an EX card may replace. Strength is optional:
+ * when it is omitted, any strength of that role and strike matches.
+ */
+export interface ExGate {
+  readonly sequenceRole: SequenceRole;
+  readonly hitType: HitType;
+  readonly hitStrength?: HitStrength;
+}
+
+/**
+ * Spec `035`. Forced rerolls after the EX Strike. `times` is sequential.
+ * `strikePer` is chain-attack damage once per result whose face id equals
+ * `strikePerFaceId`.
+ */
+export interface ExReroll {
+  readonly scope: "restricted-fighter" | "controller";
+  readonly times: number;
+  readonly strikePerFaceId?: FaceCardId;
+  readonly strikePer?: number;
+}
 
 /** Chosen when a Modify is declared. Conduct reads this off the Chain link. */
 export interface CardModifyIntent {

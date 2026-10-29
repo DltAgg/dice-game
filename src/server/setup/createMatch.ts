@@ -274,6 +274,7 @@ export function createMatch(setup: MatchSetup): GameState {
     offenseSeizedBy: null,
     pendingOffenseSettle: null,
     endSequenceAfterChain: false,
+    extraActionPhases: 0,
     winner: null,
     log: [
       { seq: 0, turn: 1, event: { type: "match-started", firstPlayerId: first.id } },

@@ -9,6 +9,7 @@ import {
   showingFaceCard,
 } from "../../rules/faceActions.js";
 import { emit, type Draft } from "../draft.js";
+import { attackBanError } from "../exCard.js";
 import { openCombatAction, sequenceActionUsed, sequenceDeclarationError } from "../offensive.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { markPlayerSpent } from "../triggerSpent.js";
@@ -25,6 +26,8 @@ export function useFace(
   const creature = draft.creatures[creatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
   if (creature.defeated) return "CREATURE_DEFEATED";
+  const banned = attackBanError(creature, draft.turn);
+  if (banned !== null) return banned;
 
   const die = dieForCreature(draft, creatureId);
   if (die === undefined) return "UNKNOWN_ENTITY";
@@ -77,6 +80,7 @@ export function useFace(
       meterCost: face.meterCost ?? 0,
       meterGain: face.meterGain ?? 0,
       ...(face.hitStrength !== undefined ? { hitStrength: face.hitStrength } : {}),
+      ...(face.hitType !== undefined ? { hitType: face.hitType } : {}),
       sequenceActionId: `face:${face.id}`,
       endsSequence: face.endsSequence === true,
       passesInitiative: face.passesInitiative === true,

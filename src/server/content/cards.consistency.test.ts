@@ -35,8 +35,15 @@ describe("card type ↔ region consistency", () => {
       continuous: true,
       reaction: true,
       combat: true,
+      ex: true,
     };
-    expect(Object.keys(known).sort()).toEqual(["combat", "continuous", "instant", "reaction"]);
+    expect(Object.keys(known).sort()).toEqual([
+      "combat",
+      "continuous",
+      "ex",
+      "instant",
+      "reaction",
+    ]);
     expect(CARD_TYPES.every((type) => !(type in known))).toBe(true);
   });
 
