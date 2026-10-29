@@ -6,7 +6,7 @@
   "sequenceRole": "extender",
   "hitStrength": "heavy",
   "hitType": "punch",
-  "rulesText": "Extender. Heavy punch. Primary: [Strike 3]. Secondary: +1 damage.",
+  "rulesText": "Heavy Punch · Extender. Primary: [Strike 3]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

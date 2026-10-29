@@ -6,7 +6,7 @@
   "sequenceRole": "extender",
   "hitStrength": "light",
   "hitType": "kick",
-  "rulesText": "Extender. Light kick. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Light Kick · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

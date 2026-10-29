@@ -6,7 +6,7 @@
   "sequenceRole": "finisher",
   "hitStrength": "heavy",
   "hitType": "punch",
-  "rulesText": "Finisher. Heavy punch. Primary: [Strike 5]. Secondary: +2 damage.",
+  "rulesText": "Heavy Punch · Finisher. Primary: [Strike 5]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

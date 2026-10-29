@@ -6,7 +6,7 @@
   "sequenceRole": "finisher",
   "hitStrength": "heavy",
   "hitType": "kick",
-  "rulesText": "Finisher. Heavy kick. Primary: [Strike 4]. Secondary: +2 damage.",
+  "rulesText": "Heavy Kick · Finisher. Primary: [Strike 4]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

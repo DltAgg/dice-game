@@ -11,14 +11,6 @@ import { lookupOverlayFace } from "./runtimeOverlay.js";
 
 export const JAB: FaceCardId = asFaceCardId("face-natural-jab");
 
-export const GRAPPLER_LARIAT: FaceCardId = asFaceCardId("face-natural-grappler-lariat");
-export const GRAPPLER_COMMAND_GRAB: FaceCardId = asFaceCardId(
-  "face-natural-grappler-command-grab",
-);
-export const GRAPPLER_GUARD: FaceCardId = asFaceCardId("face-natural-grappler-guard");
-export const GRAPPLER_MOVEMENT: FaceCardId = asFaceCardId("face-natural-grappler-movement");
-export const GRAPPLER_TAG: FaceCardId = asFaceCardId("face-natural-grappler-tag");
-
 export const MAGNUS_GRAB: FaceCardId = asFaceCardId("face-natural-magnus-grab");
 export const MAGNUS_LARIAT: FaceCardId = asFaceCardId("face-natural-magnus-lariat");
 export const MAGNUS_HEAVY: FaceCardId = asFaceCardId("face-natural-magnus-heavy");

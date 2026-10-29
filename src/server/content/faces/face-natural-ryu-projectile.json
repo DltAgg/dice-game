@@ -6,7 +6,7 @@
   "sequenceRole": "starter",
   "hitStrength": "medium",
   "hitType": "punch",
-  "rulesText": "Starter. Medium punch. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Medium Punch · Starter. Primary: [Strike 2]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

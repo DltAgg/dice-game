@@ -6,7 +6,7 @@
   "sequenceRole": "extender",
   "hitStrength": "medium",
   "hitType": "kick",
-  "rulesText": "Extender. Medium kick. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Medium Kick · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

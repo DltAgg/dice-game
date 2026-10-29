@@ -6,7 +6,7 @@
   "sequenceRole": "starter",
   "hitStrength": "light",
   "hitType": "punch",
-  "rulesText": "Starter. Light punch. Primary: [Strike 1]. Secondary: +1 damage.",
+  "rulesText": "Light Punch · Starter. Primary: [Strike 1]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
