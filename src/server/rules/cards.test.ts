@@ -93,15 +93,16 @@ describe("meterPlayCost", () => {
     const callOut = getCard(asCardId("card-call-out"));
     if (callOut === undefined) throw new Error("call out");
     expect(meterPlayCost(callOut)).toBe(2);
-    expect(callOut.rulesText).toBe("Tag to a living Reserve Fighter.");
+    expect(callOut.rulesText).toBe("[Tag in] a Reserve Fighter.");
   });
 
-  it("leaves outside-chain Meter off the play cost when the card can be played free", () => {
+  it("counts Open Palm's 2 Meter on every play", () => {
     const palm = getCard(asCardId("card-open-palm"));
     if (palm === undefined) throw new Error("open palm");
-    expect(palm.exceptionalMeterCost).toBe(2);
-    expect(meterPlayCost(palm)).toBe(0);
-    expect(palm.rulesText).toContain("Spend 2 Meter to play this outside a chain");
+    expect(palm.meterCost).toBe(2);
+    expect(palm.exceptionalMeterCost).toBeUndefined();
+    expect(meterPlayCost(palm)).toBe(2);
+    expect(palm.rulesText).toBe("[Choose face] of selected die.");
   });
 });
 

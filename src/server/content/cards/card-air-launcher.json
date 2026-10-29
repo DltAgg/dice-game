@@ -17,6 +17,6 @@
     "times": 1
   },
   "exExtraActionPhase": true,
-  "rulesText": "Vega is Active. Kick Finisher. [Strike 3]. Reroll your dice. Take an extra actions phase.",
+  "rulesText": "Requires: Vega as Active Fighter and a Kick Finisher Attack.\n[Strike 3].\n Reroll your dice and take an extra actions phase.",
   "forge": { "faces": 1, "target": "own-die" }
 }

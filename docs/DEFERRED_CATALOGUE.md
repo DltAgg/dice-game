@@ -14,5 +14,4 @@ The playable team is Vega, Magnus, and Ryu. Older lists are not a source.
 |---|---|
 | **Dodge** (the attack misses) | Not current play. No miss effect. |
 | **Change an Action's damage, sequence role, or whether it ends the sequence** | A Moveset card adds a new Technique. It does not rewrite a printed one. |
-| **Open Manual** | The Technique the card adds is not printed. The card cannot be played until that Technique is authored. |
 | **A sixth distinct face on each die** | Not a current rule. The face deck is not current play. Each die has 6 slots. The current dice repeat names. |

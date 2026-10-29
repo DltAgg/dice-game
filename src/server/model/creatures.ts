@@ -69,6 +69,16 @@ export interface CreatureDefinition {
   /** English passive text as printed under the art. Empty when none. */
   readonly passiveRulesText: string;
   /**
+   * Starter Strike that still lands on this Fighter is halved, rounding down.
+   * Extenders and finishers are unchanged.
+   */
+  readonly halveStarterDamage?: boolean;
+  /**
+   * A Grappler's first starter of the sequence against this Fighter does not
+   * hit and does not enter combo. The next starter hits.
+   */
+  readonly grapplerStarterWhiff?: boolean;
+  /**
    * Data-driven standing passives (`010`). Prefer relation filters on shared
    * hooks over special-cased reducer branches.
    */

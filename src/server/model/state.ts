@@ -151,6 +151,11 @@ export interface PendingEffect {
    * Chain. `[Redirect N]` applies only then.
    */
   readonly chainAttack?: boolean;
+  /**
+   * Sequence role of the combat-action that queued this effect. Starter
+   * damage against a Fighter who halves starters reads this.
+   */
+  readonly sequenceRole?: SequenceRole;
 }
 
 export interface PlayerState {

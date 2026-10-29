@@ -8,11 +8,7 @@ The previous register described the attribute-pile game. That text is removed so
 
 **Sequence end and turn end.** Whenever a sequence ends, the turn is handed to the opponent. Whether those are two different operations is not decided. The rulebook uses that one handoff until it is.
 
-**Open Manual.** The Technique the card adds is not printed. Do not invent it.
-
-**Anchor.** The current print attaches to a Fighter and draws 1 at the start of your turn. That print is being rewritten. The replacement text is not settled.
-
-**Draw amounts.** A restricted draw may be draw 2 and discard 1, or pay X Meter to draw that many cards. Those are examples. X is not set. “Pattern” is not defined.
+**Draw amounts.** A restricted draw may discard, cost Meter, or wait on a specific action. Those examples are not a closed list. “Pattern” is not defined.
 
 **Dodge.** Not a current effect. No miss rule is settled.
 

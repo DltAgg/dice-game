@@ -47,12 +47,12 @@
     {
       "id": "technique-vega-confirm-kick",
       "name": "Confirm Kick",
-      "primaryFaceId": "face-natural-vega-kick",
+      "primaryFaceId": "face-natural-vega-dash",
       "hitStrength": "medium",
       "hitType": "kick",
       "secondary": { "hitStrength": "light", "hitType": "kick" },
       "sequenceRole": "extender",
-      "rulesText": "Kick + light kick: [Strike 3].",
+      "rulesText": "Dash + light kick: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -64,12 +64,12 @@
     {
       "id": "technique-vega-chase-kick",
       "name": "Chase Kick",
-      "primaryFaceId": "face-natural-vega-kick",
+      "primaryFaceId": "face-natural-vega-rush",
       "hitStrength": "heavy",
       "hitType": "kick",
       "secondary": { "hitStrength": "heavy", "hitType": "punch" },
       "sequenceRole": "finisher",
-      "rulesText": "Kick + heavy punch: [Strike 4].",
+      "rulesText": "Rush + heavy punch: [Strike 4].",
       "effects": [
         {
           "type": "damage",

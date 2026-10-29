@@ -48,8 +48,8 @@ Print is the whole of `docs/KEYWORDS.md`. Layer procedure:
 6. `.cursor/skills/standardize-card-effects/SKILL.md` before writing `rulesText`
 7. Live JSON in `src/server/content/{cards,faces,creatures}/`
 8. `docs/DEFERRED_CATALOGUE.md` and `docs/OPEN_DESIGN.md` when print is
-   incomplete or a rule is unsettled. Do not invent Open Manual’s Technique
-   or Anchor’s replacement print.
+   incomplete or a rule is unsettled. Do not rewrite Low Blow unless asked.
+   Do not rewrite Anchor unless asked.
 9. `.cursor/rules/content-catalogues.mdc`
 
 `docs/MECHANIC_ARCHETYPES.md` is not a source. Do not occupy a slot to match it.

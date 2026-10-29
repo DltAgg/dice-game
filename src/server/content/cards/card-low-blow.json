@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema/card.schema.json",
+  "id": "card-low-blow",
+  "name": "Low Blow",
+  "type": "modify",
+  "subtypes": [],
+  "lifecycle": "persistent",
+  "modifySubject": "moveset",
+  "fighterRestriction": "creature-magnus",
+  "replaceFaceId": "face-natural-magnus-grab",
+  "rulesText": "Stays on Fighter.\n[Replace] to Grab. [Moveset Low Blow].\nLow Blow · Medium Punch · Starter\nGrab + Light kick: [Strike 4].",
+  "addedTechnique": {
+    "id": "technique-magnus-low-blow",
+    "name": "Low Blow",
+    "primaryFaceId": "face-natural-magnus-grab",
+    "hitStrength": "medium",
+    "hitType": "punch",
+    "secondary": { "hitStrength": "light", "hitType": "kick" },
+    "sequenceRole": "starter",
+    "effects": [
+      {
+        "type": "damage",
+        "amount": 4,
+        "target": { "kind": "declared-target" }
+      }
+    ],
+    "rulesText": "Grab + Light kick: [Strike 4]."
+  },
+  "forge": { "faces": 1, "target": "own-die" }
+}

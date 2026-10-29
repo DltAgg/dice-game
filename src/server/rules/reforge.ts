@@ -7,6 +7,7 @@ import type { FaceCardId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import type { Draft } from "../reducer/draft.js";
 import { matchingFacesInPool, slotCannotBeReplacedByForge } from "./faces.js";
+import { canSpendMeter } from "./meter.js";
 
 type ChooseEffectModeEffect = Extract<EffectDefinition, { readonly type: "choose-effect-mode" }>;
 type ReplaceSyntheticFaceEffect = Extract<
@@ -20,11 +21,16 @@ type ReforgePlayError = Extract<
 
 export type ChooseEffectModeResolution =
   | { readonly kind: "whiff" }
-  | { readonly kind: "auto"; readonly mode: readonly EffectDefinition[] }
+  | {
+      readonly kind: "auto";
+      readonly mode: readonly EffectDefinition[];
+      readonly meterCost: number;
+    }
   | {
       readonly kind: "choose";
       readonly modes: readonly (readonly EffectDefinition[])[];
       readonly modeLabels: readonly string[];
+      readonly modeMeterCosts: readonly number[];
     };
 
 export interface ReforgeSpec {
@@ -154,24 +160,35 @@ function defaultModeLabel(index: number): string {
  * Drop illegal Reforge / Cross forge modes. Keep original labels aligned with
  * the surviving modes. Empty modes are never dropped.
  */
+function modeMeterCost(costs: readonly number[] | undefined, index: number): number {
+  const cost = costs?.[index] ?? 0;
+  return cost > 0 ? cost : 0;
+}
+
 export function legalChooseEffectModes(
   state: GameState | Draft,
   controllerId: PlayerId,
   modes: readonly (readonly EffectDefinition[])[],
   modeLabels?: readonly string[],
+  modeMeterCosts?: readonly number[],
 ): {
   readonly modes: readonly (readonly EffectDefinition[])[];
   readonly modeLabels: readonly string[];
+  readonly modeMeterCosts: readonly number[];
 } {
   const keptModes: (readonly EffectDefinition[])[] = [];
   const keptLabels: string[] = [];
+  const keptCosts: number[] = [];
   for (let index = 0; index < modes.length; index += 1) {
     const mode = modes[index];
     if (mode === undefined || !isEffectModeLegal(state, controllerId, mode)) continue;
+    const cost = modeMeterCost(modeMeterCosts, index);
+    if (!canSpendMeter(state, controllerId, cost)) continue;
     keptModes.push(mode);
     keptLabels.push(modeLabels?.[index] ?? defaultModeLabel(index));
+    keptCosts.push(cost);
   }
-  return { modes: keptModes, modeLabels: keptLabels };
+  return { modes: keptModes, modeLabels: keptLabels, modeMeterCosts: keptCosts };
 }
 
 /**
@@ -183,12 +200,23 @@ export function chooseEffectModeResolution(
   effect: ChooseEffectModeEffect,
 ): ChooseEffectModeResolution {
   if (effect.modes.length === 0) return { kind: "whiff" };
-  const legal = legalChooseEffectModes(state, controllerId, effect.modes, effect.modeLabels);
+  const legal = legalChooseEffectModes(
+    state,
+    controllerId,
+    effect.modes,
+    effect.modeLabels,
+    effect.modeMeterCosts,
+  );
   if (legal.modes.length === 0) return { kind: "whiff" };
   if (legal.modes.length === 1) {
-    return { kind: "auto", mode: legal.modes[0]! };
+    return { kind: "auto", mode: legal.modes[0]!, meterCost: legal.modeMeterCosts[0] ?? 0 };
   }
-  return { kind: "choose", modes: legal.modes, modeLabels: legal.modeLabels };
+  return {
+    kind: "choose",
+    modes: legal.modes,
+    modeLabels: legal.modeLabels,
+    modeMeterCosts: legal.modeMeterCosts,
+  };
 }
 
 function replaceSyntheticFaceBlockReason(

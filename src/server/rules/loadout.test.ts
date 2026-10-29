@@ -129,7 +129,7 @@ describe("validateTacticsDeck", () => {
       asCardId("card-reforge-grip"),
       asCardId("card-vega-drill"),
       asCardId("card-ryu-form"),
-      asCardId("card-open-manual"),
+      asCardId("card-low-blow"),
       asCardId("card-call-out"),
       asCardId("card-anchor"),
     ].flatMap((id) => three(id));
@@ -195,7 +195,7 @@ describe("validateTacticsDeck", () => {
       subtypes: ["combat"],
       lifecycle: "one-shot",
       modifySubject: "target",
-      rulesText: "Redirect that hit onto the Fighter you choose.",
+      rulesText: "[Redirect] that hit onto the Fighter you choose.",
     });
     expect(shift?.effect).toBeUndefined();
 

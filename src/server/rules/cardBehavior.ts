@@ -222,7 +222,10 @@ export function legalModifyPlays(
   if (mode === null) return [];
   const player = state.players[playerId];
   if (player === undefined) return [];
-  if (mode === "exceptional" && player.meter < (definition.exceptionalMeterCost ?? 0)) return [];
+  const meterNeeded =
+    (definition.meterCost ?? 0) +
+    (mode === "exceptional" ? (definition.exceptionalMeterCost ?? 0) : 0);
+  if (player.meter < meterNeeded) return [];
 
   const subject = definition.modifySubject;
   const choices: ModifyPlayChoice[] = [];

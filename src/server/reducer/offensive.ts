@@ -6,6 +6,7 @@ import type { SequenceRole } from "../model/offensive.js";
 import type { ChainLink } from "../model/state.js";
 import { canSpendMeter } from "../rules/meter.js";
 import { sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
+import { grapplerStarterWhiffs, starterWhiffMark } from "../rules/starterGuard.js";
 import { opponentOf } from "../rules/creatures.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "./chain.js";
 import { endTurn } from "./commands/turn.js";
@@ -99,7 +100,12 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
     targetId !== null &&
     (draft.creatures[targetId] === undefined || draft.creatures[targetId]?.defeated === true);
   const replaced = link.exReplaced === true;
-  if (!negated && !targetGone && !replaced) {
+  const whiff =
+    !negated &&
+    !targetGone &&
+    !replaced &&
+    grapplerStarterWhiffs(draft, link.sourceCreatureId, targetId, role);
+  if (!negated && !targetGone && !replaced && !whiff) {
     const spent = spendMeter(draft, link.controllerId, link.meterCost ?? 0);
     blocked = spent !== null;
     if (!blocked) {
@@ -119,6 +125,7 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
           null,
           false,
           chainAttack,
+          link.sequenceRole ?? null,
         );
       }
       drainResolution(draft);
@@ -135,7 +142,7 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
     };
     return;
   }
-  settleOffense(draft, link.controllerId, role, blocked, link);
+  settleOffense(draft, link.controllerId, role, blocked, link, whiff);
 }
 
 /** After a paused combat-action body finishes and the chain is idle. */
@@ -151,7 +158,7 @@ export function flushPendingOffenseSettle(draft: Draft): void {
           passesInitiative: pending.passesInitiative,
           sequenceActionId: pending.sequenceActionId,
         };
-  settleOffense(draft, pending.actorId, pending.role, pending.negated, sequence);
+  settleOffense(draft, pending.actorId, pending.role, pending.negated, sequence, false);
 }
 
 function settleOffense(
@@ -163,7 +170,9 @@ function settleOffense(
     readonly endsSequence?: boolean;
     readonly passesInitiative?: boolean;
     readonly sequenceActionId?: string;
+    readonly declaredTargetCreatureId?: CreatureId | null;
   },
+  whiff: boolean,
 ): void {
   const seizedBy = draft.offenseSeizedBy;
   draft.offenseSeizedBy = null;
@@ -180,6 +189,14 @@ function settleOffense(
     return;
   }
   if (negated) return;
+  if (whiff) {
+    const ids = [...draft.usedSequenceActionIds];
+    if (link.sequenceActionId !== undefined) ids.push(link.sequenceActionId);
+    const targetId = link.declaredTargetCreatureId;
+    if (targetId != null) ids.push(starterWhiffMark(targetId));
+    draft.usedSequenceActionIds = ids;
+    return;
+  }
   const actor = draft.players[actorId];
   if (actor !== undefined) setComboCount(draft, actorId, actor.comboCount + 1);
   // A finisher finishes the sequence by the same turn pass as `endTurn`.

@@ -116,8 +116,8 @@ Read [`docs/KEYWORDS.md`](../../../docs/KEYWORDS.md) before print or effect
 data. Holder voice. Timing prefixes stay prefixes (`On roll:`, `On attack:`).
 Never "Whenever…". New tokens join `[Mark]` / `[Strip]`. Do not mint a verb.
 The change is not done when the print and the glossary disagree.
-User-supplied print stays verbatim. Do not invent Open Manual’s Technique
-or Anchor’s replacement print.
+User-supplied print stays verbatim. Do not rewrite Low Blow unless asked.
+Do not rewrite Anchor unless asked.
 
 ## Anti-patterns
 

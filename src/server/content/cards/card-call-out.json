@@ -7,6 +7,6 @@
   "lifecycle": "one-shot",
   "modifySubject": "tag",
   "exceptionalMeterCost": 2,
-  "rulesText": "Tag to a living Reserve Fighter.",
+  "rulesText": "[Tag in] a Reserve Fighter.",
   "forge": { "faces": 1, "target": "own-die" }
 }

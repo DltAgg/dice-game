@@ -4,15 +4,25 @@
   "name": "Anchor",
   "type": "modify",
   "subtypes": [],
-  "lifecycle": "persistent",
-  "rulesText": "Attach to one of your Fighters.\nAt the start of your turn: [Draw 1].",
+  "lifecycle": "one-shot",
+  "rulesText": "Choose one:\n· [Draw 2]; [Discard 1].\n· Spend 4 meter: [Draw 3]; [Discard 1].",
   "forge": { "faces": 1, "target": "own-die" },
-  "equipment": {
-    "mayTargetOpponent": false,
-    "abilities": [
+  "effect": {
+    "effects": [
       {
-        "type": "on-turn-start",
-        "effects": [{ "type": "draw-cards", "amount": 1 }]
+        "type": "choose-effect-mode",
+        "modeLabels": ["[Draw 2]; [Discard 1].", "Spend 4 meter: [Draw 3]; [Discard 1]."],
+        "modeMeterCosts": [0, 4],
+        "modes": [
+          [
+            { "type": "draw-cards", "amount": 2 },
+            { "type": "discard-cards", "amount": 1 }
+          ],
+          [
+            { "type": "draw-cards", "amount": 3 },
+            { "type": "discard-cards", "amount": 1 }
+          ]
+        ]
       }
     ]
   }

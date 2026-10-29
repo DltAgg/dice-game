@@ -47,9 +47,9 @@
       "primaryFaceId": "face-natural-magnus-lariat",
       "hitStrength": "heavy",
       "hitType": "punch",
-      "secondary": { "hitType": "kick" },
+      "secondary": { "hitStrength": "medium", "hitType": "kick" },
       "sequenceRole": "extender",
-      "rulesText": "Lariat + kick: [Strike 4].",
+      "rulesText": "Lariat + medium kick: [Strike 4].",
       "effects": [
         {
           "type": "damage",
@@ -64,9 +64,9 @@
       "primaryFaceId": "face-natural-magnus-grab",
       "hitStrength": "heavy",
       "hitType": "punch",
-      "secondary": { "hitType": "punch" },
+      "secondary": { "hitStrength": "heavy", "hitType": "punch" },
       "sequenceRole": "finisher",
-      "rulesText": "Grab + punch: [Strike 5].",
+      "rulesText": "Grab + heavy punch: [Strike 5].",
       "effects": [
         {
           "type": "damage",

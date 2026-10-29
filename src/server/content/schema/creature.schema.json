@@ -23,6 +23,14 @@
       "type": "string",
       "description": "English passive text as printed under the art. Empty string when none."
     },
+    "halveStarterDamage": {
+      "type": "boolean",
+      "description": "Starter Strike that still lands on this Fighter is halved, rounding down. Extenders and finishers are unchanged."
+    },
+    "grapplerStarterWhiff": {
+      "type": "boolean",
+      "description": "A Grappler's first starter of the sequence against this Fighter does not hit and does not enter combo."
+    },
     "standingAbilities": {
       "description": "Data-driven standing passives (spec 010). Prefer relation filters on shared hooks (on-absorb, on-attack, …) over special-cased reducer branches.",
       "type": "array",

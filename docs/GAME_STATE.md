@@ -34,7 +34,7 @@ A card can be attached to a Fighter. The engine zone is `"equipment"`. A moveset
 
 Card types in `src/server/model/cards.ts` are `modify` and `response`. A Modify that attaches may be called Equipment. An EX card is not a third type. It is a Modify whose `subtypes` include `ex` (spec `035`).
 
-`src/server/content/cards/card-anchor.json` is a Modify named Anchor. Its current print attaches to a Fighter and draws 1 at the start of your turn. That print is not part of a Technique or an Assist. The user will rewrite the card. This file does not state the replacement print.
+`src/server/content/cards/card-anchor.json` is a one-shot Modify named Anchor. It does not attach. You play it on your turn during actions. It enters the Chain. When it resolves and is not negated, you choose one option: `[Draw 2]`, then `[Discard 1]`; or spend 4 Meter, then `[Draw 3]`, then `[Discard 1]`. You choose the discarded cards from your hand after the draw. The 4 Meter is spent when you choose that option, not when the card is played. If you have less than 4 Meter, that option is not offered and the first option resolves without a prompt.
 
 The equipment play path that is not used by a moveset Modify is not current play. This file does not describe it.
 
@@ -110,7 +110,7 @@ A face action uses the showing face of one of your living Fighters, Active or Re
 
 That secondary requirement is a named face, a sequence role, a face type still listed in `FACE_TYPES`, or a hit class. A hit class is `hitType` (punch or kick), `hitStrength` (light, medium, or heavy), or both together. `movement` is not a face type. Attack versus movement is not a requirement. A face that used to be movement is `faceType` `attack` and keeps its strength and strike.
 
-Ryu Form (`card-ryu-form`) is a moveset Modify whose `replaceFaceId` is Form (`face-natural-ryu-form`). When that Replace conducts, the chosen slot keeps Form for the rest of the match and `rolledSlotIndex` becomes that slot, including when the slot was not showing. Form can open the sequence while it is still `open`. A later roll can show a different slot. A Modify subject `die` rewrite does not change `rolledSlotIndex`. A starter is still illegal in `combo`.
+Ryu Form (`card-ryu-form`) is a moveset Modify whose `replaceFaceId` is Form (`face-natural-ryu-form`). When that Replace conducts, the chosen slot keeps Form for the rest of the match and `rolledSlotIndex` becomes that slot, including when the slot was not showing. Form can open the sequence while it is still `open`. A later roll can show a different slot. A Modify subject `die` rewrite does not change `rolledSlotIndex`. A starter is still illegal in `combo`. Low Blow (`card-low-blow`) is that same Replace for Magnus, writing Grab (`face-natural-magnus-grab`) and showing that slot. Its Technique is Low Blow: medium punch, starter, Grab plus a light kick, `[Strike 4]`.
 
 `consumeDiceOnFaceActions` is false, so a die is not marked spent by a face action or a Technique. The same face id (`face:<id>`) and the same Technique id (`technique:<id>`) cannot be declared again while that id is on the Chain or in `usedSequenceActionIds`. `attacksPerCreaturePerCombat` is the cap on the old attack action. It does not cap these hits.
 
@@ -120,7 +120,8 @@ A sequence hit that is marked `exReplaced` does not apply its original effects, 
 
 A sequence hit that resolves and is not negated does one of these:
 
-- A starter or extender that does not end the sequence adds 1 to that player’s combo count and sets the state to `combo`. The Aggressor stays the same.
+- A starter or extender that hits and does not end the sequence adds 1 to that player’s combo count and sets the state to `combo`. The Aggressor stays the same.
+- Ryu (`creature-ryu`) sets `halveStarterDamage` and `grapplerStarterWhiff`. A starter Strike that still lands on him is `Math.floor(amount / 2)` after redirect and before other modifiers. Extenders and finishers are full. A source Fighter whose `archetype` is `grappler` whiffs the first starter of that sequence against him: the action id is marked used, `starter-whiff:<targetId>` is stored in `usedSequenceActionIds`, the sequence stays `open`, combo does not increase, and the hit grants no Meter. The next starter hits at half damage and enters `combo`. That mark clears when `usedSequenceActionIds` is cleared.
 - A finisher ends the sequence. The turn is handed to the opponent, unless an extra actions phase is queued. Then the same player stays the Aggressor for that phase. Otherwise the opponent’s next `actions` window makes them the Aggressor.
 - `END_SEQUENCE` is the Aggressor’s action. It ends the sequence, so the turn is handed to the opponent, unless an extra actions phase is queued.
 
@@ -154,7 +155,7 @@ During the window the priority player may pass, play a Response, play a Modify t
 
 A Response is legal only when an opponent’s object is on the Chain and is not already negated. Counter negates the top object when that object is a card. It refuses a hit (`combat-action` or `attack`). It also refuses an EX card: `linkMatchesNegateCard` is false when that card’s `subtypes` include `ex`. Ordinary attacks stay uncounterable. Parry is legal when a waiting hit would damage your Fighter, including a hit marked `exReplaced`. The attack’s kind stays `combat-action`, so Parry still sees it. Brace uses that same target check.
 
-A card’s Meter is spent when the card is played, before the window reopens, and only if that play was legal. Crushing Throw and Air Launcher set `meterCost` to 8. Open Palm’s 2 Meter is `exceptionalMeterCost`, paid to play it outside a Chain. Call Out’s 2 Meter is the same field, and Call Out is played in that exceptional mode. A sequence hit’s `meterCost` is spent when the hit resolves and is not negated, as recorded under Meter. An `exReplaced` hit skips that spend and its Meter gain. A hit Assist spends `exceptionalAssistMeter` when it is declared. There is no automatic refund.
+A card’s Meter is spent when the card is played, before the window reopens, and only if that play was legal. Crushing Throw and Air Launcher set `meterCost` to 8. Open Palm’s 2 Meter is `meterCost`, spent on every play. Call Out’s 2 Meter is `exceptionalMeterCost`, and Call Out is played in that exceptional mode. A sequence hit’s `meterCost` is spent when the hit resolves and is not negated, as recorded under Meter. An `exReplaced` hit skips that spend and its Meter gain. A hit Assist spends `exceptionalAssistMeter` when it is declared. There is no automatic refund.
 
 A one-shot Response or Modify leaves the hand for the graveyard when it is played. A moveset Modify stays in hand until its link resolves, then moves to the equipment zone. A negated object does not apply its effects. A negated hit does not add combo. A negated EX card does not apply its body. Meter spent to play it stays spent.
 
@@ -212,14 +213,13 @@ This list is the Tag Skirmish squad and deck only: Vega, Magnus, Ryu, and the ca
 | `[Replace]`, and Reforge Grip’s slot rewrite | `replaceFaceId`, or Modify subject `die` | One operation. Lasts for the rest of the match. A moveset `replaceFaceId` also makes that slot the showing face. A subject `die` rewrite does not. |
 | `[Moveset]` | `modifySubject` `moveset` and `addedTechnique` | The card attaches in the equipment zone. |
 | Tag | Modify subject `tag`, or the `TAG` action | Call Out. |
-| Change the showing face | Modify subject `roll` | Open Palm. The roll changes which slot is showing and does not rewrite the face on the slot. |
+| Change the showing face | Modify subject `roll` | Open Palm. `[Choose face]` of a die you select. The roll changes which slot is showing and does not rewrite the face on the slot. |
 | `[Redirect N]` | `arm-redirect-damage`, spent on the next `chainAttack` Strike | Magnus Wall. A hit or a Technique. Ends with that Chain. |
 | Redirect that hit | Modify subject `target` | Shift. The whole hit changes target. |
-| `[Draw N]` | `draw-cards` | Anchor. That print is being rewritten. |
+| `[Draw N]` | `draw-cards` | Anchor. The draw happens before the discard on the same line. |
+| `[Discard N]` | `discard-cards` | Anchor. You choose the cards from your hand. |
 | `[Block N]` | `reduce-damage`, stored as `nextIncomingDamageReduce` | Brace is `[Block 2]`. Lowers the next damage by N. Does not cancel the hit. |
 | `[Counter]` | `negate-card` | The Counter card. Negates the previous chain card. Refuses a hit (`combat-action` or `attack`). Also refuses an EX card (`subtypes` includes `ex`). Does not end the sequence. |
 | `[Parry]` | `grant-attack-prevent`, and `endsSequence` | The Parry card. Negates the waiting hit, including one marked `exReplaced`, and leaves you offensive. Ends the sequence, so the turn is handed to the opponent. Does not refund Meter spent to play an EX card. |
 
 Counter and Parry are separate. Only Parry ends the sequence. Counter does not negate an EX card. Parry does negate an EX-replaced hit. No Assist negates a card. EX is not a row in this table: it is not a bracket. Crushing Throw and Air Launcher are in the tag-skirmish deck. Spec `035`.
-
-Open Manual’s Technique is not printed yet. This file does not invent it.

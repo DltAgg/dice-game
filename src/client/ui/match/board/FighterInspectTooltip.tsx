@@ -140,7 +140,8 @@ function FighterInspectPair({
           )}
           {def.assistRulesText !== undefined && def.assistRulesText !== "" && (
             <p>
-              <span className="text-stone-500">Assist:</span> {def.assistRulesText}
+              <span className="text-stone-500">Assist:</span>{" "}
+              <KeywordRichText text={def.assistRulesText} />
             </p>
           )}
           {def.attacks.map((attack) => (

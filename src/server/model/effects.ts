@@ -252,13 +252,16 @@ export type EffectDefinition =
   /**
    * Pending: controller chooses one of N modes. Each mode is an array of
    * effects that replace this node on the stack. `modeLabels` are short
-   * player-facing strings (e.g. `"Mechanical → Luminar"`). If only one mode
-   * is legal the engine auto-picks it; if none are legal, the effect whiffs.
+   * player-facing strings (e.g. `"Mechanical → Luminar"`).
+   * `modeMeterCosts` is Meter spent when that mode is chosen. Omit or 0 is
+   * free. A mode the controller cannot pay is not offered. One legal mode
+   * is chosen without a prompt. None legal: the effect whiffs.
    */
   | {
       readonly type: "choose-effect-mode";
       readonly modes: readonly (readonly EffectDefinition[])[];
       readonly modeLabels?: readonly string[];
+      readonly modeMeterCosts?: readonly number[];
     }
   /** Pending: choose an owned retainable die and mark it retained. */
   | { readonly type: "retain-die" }

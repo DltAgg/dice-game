@@ -17,11 +17,13 @@ import {
   type PlayerId,
   type SymbolInstanceId,
 } from "../model/ids.js";
+import type { SequenceRole } from "../model/offensive.js";
 import type { PendingEffect } from "../model/state.js";
 import type { SymbolStatus, SymbolType } from "../model/symbols.js";
 import { isAttributeSymbol } from "../model/symbols.js";
 import { isSyntheticOnlyAttribute } from "../model/attributes.js";
 import { evaluateCondition } from "./conditions.js";
+import { starterStrikeAmount } from "../rules/starterGuard.js";
 import { whileShowingTotals } from "../rules/whileShowing.js";
 import { replayableGraveyardTactics, searchableInGraveyard } from "../rules/cards.js";
 import { livingCreaturesOf, opponentOf } from "../rules/creatures.js";
@@ -49,7 +51,7 @@ import { chainAttackTargetId, isRitualNegatableLinkKind, linkMatchesNegateCard }
 import { bankAttributeIntoPile } from "./attributeBank.js";
 import { emit, nextInstanceId, patchCreature, patchDie, patchPlayer, type Draft } from "./draft.js";
 import { fireOnDealDamage, fireOnTakeDamageEffects, fireOnToxinDamage, applyOnTakeDamageReduce } from "./triggers.js";
-import { grantMeterFromStrike } from "./meter.js";
+import { grantMeterFromStrike, spendMeter } from "./meter.js";
 import { checkVictory, promoteOnKo } from "./victory.js";
 import {
   applyDestroyDeclaredCard,
@@ -120,6 +122,7 @@ export function pushEffect(
   sourceCardInstanceId: CardInstanceId | null = null,
   fromAttack = false,
   chainAttack = false,
+  sequenceRole: SequenceRole | null = null,
 ): void {
   draft.resolutionStack.push({
     id: asEffectInstanceId(nextInstanceId(draft, "effect")),
@@ -134,6 +137,7 @@ export function pushEffect(
     ignoreShield,
     fromAttack,
     ...(chainAttack ? { chainAttack: true } : {}),
+    ...(sequenceRole !== null ? { sequenceRole } : {}),
   });
 }
 
@@ -480,6 +484,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
           fromAttack: pending.fromAttack,
           dealerId: pending.controllerId,
           chainAttack: pending.chainAttack === true,
+          ...(pending.sequenceRole !== undefined ? { sequenceRole: pending.sequenceRole } : {}),
         });
         if (dealt > 0 && pending.sourceCreatureId !== null) {
           fireOnDealDamage(draft, pending.sourceCreatureId, targetId);
@@ -870,6 +875,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
       const next = chooseEffectModeResolution(draft, pending.controllerId, effect);
       if (next.kind === "whiff") return false;
       if (next.kind === "auto") {
+        if (spendMeter(draft, pending.controllerId, next.meterCost) !== null) return false;
         for (const child of [...next.mode].reverse()) {
           pushEffect(
             draft,
@@ -891,6 +897,7 @@ function applyEffectBody(draft: Draft, pending: PendingEffect): boolean {
         controllerId: pending.controllerId,
         modes: next.modes,
         modeLabels: next.modeLabels,
+        modeMeterCosts: next.modeMeterCosts,
         ...effectChoiceSource(draft, pending),
         sourceDieId: pending.sourceDieId,
         sourceSlotIndex: pending.sourceSlotIndex,
@@ -1760,6 +1767,7 @@ export function dealDamage(
     readonly fromAttack?: boolean;
     readonly dealerId?: PlayerId;
     readonly chainAttack?: boolean;
+    readonly sequenceRole?: SequenceRole;
   },
 ): number {
   const creature = draft.creatures[creatureId];
@@ -1772,9 +1780,12 @@ export function dealDamage(
 
   const redirected = takeRedirect(draft, creatureId, incoming, options?.chainAttack === true);
   if (redirected.amount > 0 && redirected.to !== null) {
-    dealDamage(draft, redirected.to, redirected.amount);
+    dealDamage(draft, redirected.to, redirected.amount, {
+      ...(options?.sequenceRole !== undefined ? { sequenceRole: options.sequenceRole } : {}),
+    });
     incoming -= redirected.amount;
   }
+  incoming = starterStrikeAmount(draft, creatureId, incoming, options?.sequenceRole);
   if (incoming <= 0) return 0;
 
   const afterRedirect = draft.creatures[creatureId];

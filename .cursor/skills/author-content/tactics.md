@@ -39,8 +39,8 @@ on a new card.
   "subtypes": [],
   "lifecycle": "one-shot",
   "modifySubject": "roll",
-  "rulesText": "Change which face that die is showing.",
-  "exceptionalMeterCost": 2,
+  "meterCost": 2,
+  "rulesText": "[Choose face] of selected die.",
   "forge": { "faces": 1, "target": "own-die" }
 }
 ```
@@ -89,4 +89,4 @@ Print is the holder's voice. Empty `rulesText` is not a design.
 - Combat as an effect or a `[Combat]` keyword. It is only the `combat` subtype
 - `[Spend]` / `[Requires]` / `[Forge]` as the card's identity
 - A persistent card that is secretly a Ritual
-- Open Manual’s Technique, or a replacement for Anchor’s print
+- A rewrite of Low Blow, or a rewrite of Anchor, unless asked

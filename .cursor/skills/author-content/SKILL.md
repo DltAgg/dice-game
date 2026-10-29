@@ -26,7 +26,7 @@ and the supplied words stay intact.
 Layer procedure: [design.md](design.md). Where that note names spec 030,
 `docs/GAME_STATE.md` wins. Uniqueness: [design-craft.md](design-craft.md).
 New cards that only use existing effects do not belong in the rulebook.
-Do not invent Open Manual’s Technique or Anchor’s replacement print.
+Do not rewrite Low Blow unless asked. Do not rewrite Anchor unless asked.
 
 [`docs/MECHANIC_ARCHETYPES.md`](../../../docs/MECHANIC_ARCHETYPES.md) is not
 a source. Do not author a new card to match it.

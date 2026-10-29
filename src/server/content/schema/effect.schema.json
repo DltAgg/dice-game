@@ -664,6 +664,11 @@
         "modeLabels": {
           "type": "array",
           "items": { "type": "string" }
+        },
+        "modeMeterCosts": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "description": "Meter spent when that mode is chosen. Omit or 0 is free. A mode the controller cannot pay is not offered."
         }
       }
     },

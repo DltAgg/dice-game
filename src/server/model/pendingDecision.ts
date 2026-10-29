@@ -139,6 +139,7 @@ export type PendingDecision =
       readonly controllerId: PlayerId;
       readonly modes: readonly (readonly EffectDefinition[])[];
       readonly modeLabels: readonly string[];
+      readonly modeMeterCosts: readonly number[];
       readonly sourceCardInstanceId: CardInstanceId | null;
       readonly sourceFaceCardId: FaceCardId | null;
       readonly sourceDieId: DieId | null;

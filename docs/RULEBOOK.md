@@ -63,7 +63,7 @@ Playing a card spends its Meter cost when the play is legal, before anyone else 
 
 A sequence hit’s Meter is a different payment. It is spent when that hit resolves and is not negated, as the first paragraph says. An EX card spends its own Meter when you play it. The hit it replaces does not also spend or grant its sequence-hit Meter.
 
-Crushing Throw and Air Launcher each cost 8 Meter, the whole pool, paid when you play them. Open Palm spends 2 Meter to play it outside a Chain. Call Out spends 2 Meter. Both of those are an exceptional cost. A later Parry or Counter does not give that Meter back. You cannot spend the same Meter twice.
+Crushing Throw and Air Launcher each cost 8 Meter, the whole pool, paid when you play them. Open Palm costs 2 Meter whenever you play it. You choose one of your dice, then `[Choose face]` on that die. That face becomes the one showing. Call Out spends 2 Meter. That is an exceptional cost. A later Parry or Counter does not give that Meter back. You cannot spend the same Meter twice.
 
 ## 7. The sequence
 
@@ -79,7 +79,7 @@ Ryu Form’s Replace writes Form onto the chosen slot for the rest of the match 
 
 A die is not spent by a face action or a Technique. The same face and the same Technique cannot be declared again while that action is on the Chain or already used in this sequence.
 
-A starter or extender that does not end the sequence adds 1 to your combo and sets the sequence to combo. You stay the Aggressor.
+A starter or extender that hits and does not end the sequence adds 1 to your combo and sets the sequence to combo. You stay the Aggressor. A starter that hits Ryu deals half that Strike, rounded down. An extender or a finisher that hits Ryu deals its full Strike. A Grappler’s first Starter against Ryu does not hit: it deals no damage, grants no Meter, and leaves the sequence open. That Grappler needs a second Starter to hit Ryu and enter combo. That second Starter still deals half damage. A new sequence requires two Starters again.
 
 A finisher ends the sequence. You may also end the sequence yourself. Ending a sequence hands the turn to the opponent, unless an extra actions phase is waiting. Then the sequence still ends, and you take that extra actions phase instead of handing the turn over. Whether every other sequence end is a different operation from ending a turn is not decided. Until it is, every other end is that one handoff.
 
@@ -134,7 +134,7 @@ Damage is applied in this order:
 
 A draw is not attached to a Fighter, and a draw does not happen again and again without a restriction or a condition. An attached draw is acceptable as part of a Technique or an Assist, and also when it has a restriction, such as draw 2 and discard 1, or pay Meter to draw that many cards. Those amounts are examples.
 
-Anchor’s current print attaches and draws 1 at the start of your turn. That print is being rewritten. Open Manual’s Technique is not printed yet.
+Anchor is a Modify you play on your turn. When it resolves, choose one: `[Draw 2]; [Discard 1]`. Or spend 4 Meter: `[Draw 3]; [Discard 1]`. You draw first, then you choose the card you discard. The 4 Meter is spent when you choose that option. If you have less than 4 Meter, you draw 2 and discard 1.
 
 ## 13. EX
 

@@ -2,6 +2,7 @@ import type { Draft } from "../../reducer/draft.js";
 import type { PendingEffect } from "../../model/state.js";
 import type { TargetSelector } from "../../model/effects.js";
 import type { CreatureId, PlayerId } from "../../model/ids.js";
+import type { SequenceRole } from "../../model/offensive.js";
 import { ValueEvaluator } from "../evaluate.js";
 import type { ExecutionContext, IOpcodeHandler } from "../registry.js";
 import { OpcodeRegistry } from "../registry.js";
@@ -25,6 +26,7 @@ export interface ResolutionKernel {
       readonly fromAttack?: boolean;
       readonly dealerId?: PlayerId;
       readonly chainAttack?: boolean;
+      readonly sequenceRole?: SequenceRole;
     },
   ): number;
   fireOnDealDamage(draft: Draft, sourceId: CreatureId, targetId: CreatureId): void;
@@ -54,6 +56,9 @@ class DamageHandler implements IOpcodeHandler {
         fromAttack: ctx.pending.fromAttack,
         dealerId: ctx.pending.controllerId,
         chainAttack: ctx.pending.chainAttack === true,
+        ...(ctx.pending.sequenceRole !== undefined
+          ? { sequenceRole: ctx.pending.sequenceRole }
+          : {}),
       });
       if (dealt > 0 && ctx.pending.sourceCreatureId !== null) {
         this.kernel.fireOnDealDamage(ctx.draft, ctx.pending.sourceCreatureId, targetId);

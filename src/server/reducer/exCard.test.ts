@@ -37,7 +37,7 @@ const RYU = asCreatureDefinitionId("creature-ryu");
 const GRAB = asFaceCardId("face-natural-magnus-grab");
 const FOCUS = asFaceCardId("face-natural-ryu-focus");
 const HEAVY = asFaceCardId("face-natural-magnus-heavy");
-const KICK = asFaceCardId("face-natural-vega-kick");
+const RUSH = asFaceCardId("face-natural-vega-rush");
 const JAB = asFaceCardId("face-natural-jab");
 const CHARGE = asFaceCardId("face-natural-ryu-charge");
 const COUNTER = asCardId("card-counter");
@@ -303,12 +303,12 @@ function useTechnique(
   );
 }
 
-/** Active Magnus showing Grab, Ryu showing Focus, Crushing Throw in hand, Meter set. */
+/** Active Magnus showing Grab, Ryu showing Charge, Crushing Throw in hand, Meter set. */
 function powerBombWindow(meter = 8, cards: readonly CardId[] = [THROW.id]): GameState {
   const opened = actions();
   const magnus = fighter(opened, P1, MAGNUS);
   const ryu = fighter(opened, P1, RYU);
-  const shown = show(show(withActive(opened, P1, magnus), magnus, GRAB), ryu, FOCUS);
+  const shown = show(show(withActive(opened, P1, magnus), magnus, GRAB), ryu, CHARGE);
   return withHand(withMeter(shown, P1, meter), P1, cards);
 }
 
@@ -320,7 +320,7 @@ function chaseWindow(cards: readonly CardId[]): GameState {
   const opened = actions();
   const vega = fighter(opened, P1, VEGA);
   const magnus = fighter(opened, P1, MAGNUS);
-  const shown = show(show(opened, vega, KICK), magnus, HEAVY);
+  const shown = show(show(opened, vega, RUSH), magnus, HEAVY);
   return withHand(withMeter(shown, P1, 8), P1, cards);
 }
 
@@ -386,7 +386,7 @@ describe("spec 035 EX cards", () => {
     const declared = declarePowerBomb(powerBombWindow(0, []));
     const defender = defenderId(declared);
     const resolved = resolveOpenChain(declared);
-    expect(damage(resolved, defender)).toBe(7);
+    expect(damage(resolved, defender)).toBe(6);
     expect(meterDeltas(resolved, P1)).toContain(4);
     expect(meterOf(resolved, P2)).toBe(1);
   });

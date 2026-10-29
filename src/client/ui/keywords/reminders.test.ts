@@ -52,15 +52,15 @@ describe("lookupKeywordReminders", () => {
     const rows = lookupKeywordReminders(print);
     expect(rows.map((row) => row.token)).toEqual([
       "[Forge]",
-      "[Spend: Toxin]",
-      "[Empower 1]",
-      "[Mark 1 Toxin]",
+      "[Spend: X]",
+      "[Empower N]",
+      "[Mark N X]",
       "Toxin",
     ]);
-    expect(rows.find((row) => row.token === "[Empower 1]")?.reminder).toBe(
+    expect(rows.find((row) => row.token === "[Empower N]")?.reminder).toBe(
       "Next attack this turn deals +N.",
     );
-    expect(rows.find((row) => row.token === "[Mark 1 Toxin]")?.reminder).toBe(
+    expect(rows.find((row) => row.token === "[Mark N X]")?.reminder).toBe(
       "Put N of token X on the printed target, now.",
     );
     expect(rows.find((row) => row.token === "Toxin")?.reminder).toMatch(/ticks 1 damage/i);
@@ -68,12 +68,15 @@ describe("lookupKeywordReminders", () => {
 
   it("distinguishes [Mark N X on attacks] from [Mark N X]", () => {
     const rows = lookupKeywordReminders("[Mark 1 Toxin on attacks]");
-    expect(rows[0]?.token).toBe("[Mark 1 Toxin on attacks]");
+    expect(rows[0]?.token).toBe("[Mark N X on attacks]");
     expect(rows[0]?.reminder).toMatch(/until end of turn/i);
     expect(rows.map((row) => row.token)).toContain("Toxin");
   });
 
   it("skips unknown tokens instead of inventing a mechanic", () => {
+    expect(lookupKeywordReminders("[Choose face] of selected die.").map((row) => row.token)).toEqual([
+      "[Choose face]",
+    ]);
     expect(lookupKeywordReminders("[Exterminate] the wounded. [Synthetic]")).toEqual([]);
     expect(lookupKeywordReminders("[Strike equal]")).toEqual([]);
   });
@@ -125,45 +128,44 @@ describe("lookupKeywordReminders", () => {
 
     const tokens = lookupKeywordReminders(print).map((row) => row.token);
     expect(tokens).toEqual([
-      "[Strip 3 Shield]",
-      "[Generate 1 Arcane]",
-      "[Forge 1 Synthetic Mechanical]",
+      "[Strip N X]",
+      "[Generate N X]",
+      "[Forge]",
       "[Overcharge]",
-      "[Negate Instant]",
-      "[Destroy Ritual]",
-      "[Destroy Overload]",
+      "[Negate]",
+      "[Destroy]",
       "[Bounce]",
-      "[Strike 3]",
-      "[Heal 1]",
-      "[Draw 2]",
-      "[Pierce 1]",
-      "[Reduce 1]",
-      "[Prevent]",
+      "[Strike N]",
+      "[Heal N]",
+      "[Draw N]",
+      "[Pierce N]",
+      "[Reduce N]",
+      "[Prevent N]",
       "[Silence]",
       "[Desynthesize]",
-      "[Drain 2]",
-      "[Convert 1]",
-      "[Discount 2]",
-      "[Insight 3]",
-      "[Search 1]",
-      "[Recall 1]",
-      "[Mill 2]",
+      "[Drain N]",
+      "[Convert N]",
+      "[Discount N]",
+      "[Insight N]",
+      "[Search N]",
+      "[Recall N]",
+      "[Mill N]",
       "[Reposition]",
-      "[Reforge 2 Mechanical]",
-      "[Cross forge 1 Mechanical / Luminar]",
+      "[Reforge N X]",
+      "[Cross forge N Y / Z]",
       "[Stamp]",
       "[Double]",
       "[Resonance]",
       "[Reroll]",
       "[Retain]",
-      "[Active when: Arcane]",
+      "[Active when: X]",
       "Shield",
     ]);
   });
 
   it("treats Generate as a pool-symbol reminder", () => {
     const rows = lookupKeywordReminders("[Generate 1 Toxin]");
-    expect(rows.map((row) => row.token)).toEqual(["[Generate 1 Toxin]"]);
+    expect(rows.map((row) => row.token)).toEqual(["[Generate N X]"]);
   });
 
   it("looks up [Overcharge] as the hand-card spend", () => {
@@ -173,13 +175,47 @@ describe("lookupKeywordReminders", () => {
     expect(rows[0]?.reminder).toMatch(/attribute face card/i);
   });
 
+  it("recognizes the tag-fighter keywords on current print", () => {
+    const print = [
+      "[Block 2].",
+      "[Counter].",
+      "[Parry].",
+      "[Replace] to Grab. [Moveset Low Blow].",
+      "[Tag in] a Reserve Fighter.",
+      "[Tag out] the opponent's Active Fighter and it cannot [Tag in] until the end of its next turn.",
+      "[Redirect] that hit onto the Fighter you choose.",
+      "[Redirect 4] to this fighter.",
+    ].join(" ");
+
+    const rows = lookupKeywordReminders(print);
+    expect(rows.map((row) => row.token)).toEqual([
+      "[Block N]",
+      "[Counter]",
+      "[Parry]",
+      "[Replace]",
+      "[Moveset X]",
+      "[Tag in]",
+      "[Tag out]",
+      "[Redirect N]",
+    ]);
+    expect(rows.find((row) => row.token === "[Tag out]")?.reminder).not.toMatch(/living/i);
+    expect(rows.find((row) => row.token === "[Tag in]")?.reminder).not.toMatch(/living/i);
+  });
+
   it("matches Reforge N Attribute and Cross forge N Y / Z", () => {
     expect(lookupKeywordReminders("[Reforge 2 Mechanical]").map((row) => row.token)).toEqual([
-      "[Reforge 2 Mechanical]",
+      "[Reforge N X]",
     ]);
     expect(
       lookupKeywordReminders("[Cross forge 1 Mechanical / Luminar]").map((row) => row.token),
-    ).toEqual(["[Cross forge 1 Mechanical / Luminar]"]);
+    ).toEqual(["[Cross forge N Y / Z]"]);
+  });
+
+  it("shows one generic row when the same keyword is printed more than once", () => {
+    const rows = lookupKeywordReminders(
+      "[Strike 2]. [Strike 4]. [Moveset Low Blow]. [Moveset Beast Form]. [Tag in]. [Tag in].",
+    );
+    expect(rows.map((row) => row.token)).toEqual(["[Strike N]", "[Moveset X]", "[Tag in]"]);
   });
 });
 
@@ -196,6 +232,6 @@ describe("tacticPrintText", () => {
     const print = tacticPrintText(card);
     expect(print).not.toContain("[Forge]");
     expect(print).toContain("[Strike 2]");
-    expect(lookupKeywordReminders(print).map((row) => row.token)).toEqual(["[Strike 2]"]);
+    expect(lookupKeywordReminders(print).map((row) => row.token)).toEqual(["[Strike N]"]);
   });
 });

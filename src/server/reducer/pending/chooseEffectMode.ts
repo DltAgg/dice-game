@@ -7,6 +7,7 @@ import {
   fireConvertRollExtras,
 } from "../commands/convertRoll.js";
 import { emit, type Draft } from "../draft.js";
+import { spendMeter } from "../meter.js";
 import { pushEffect } from "../resolution.js";
 
 /**
@@ -27,6 +28,8 @@ export function resolveChooseEffectMode(
 
   const chosenMode = pending.modes[modeIndex];
   if (chosenMode === undefined) return "INVALID_CHOICE";
+  const paid = spendMeter(draft, playerId, pending.modeMeterCosts[modeIndex] ?? 0);
+  if (paid !== null) return paid;
 
   const label = pending.modeLabels[modeIndex] ?? `Mode ${String(modeIndex + 1)}`;
   const dieId = pending.sourceDieId;
