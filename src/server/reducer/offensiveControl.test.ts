@@ -720,7 +720,7 @@ describe("030 offensive control", () => {
       },
     };
     expect(legalFaceActions(show(taggedOpen, P1, 0, 0), P1)).toContain(activeId(taggedOpen, P1));
-    expect(legalFaceActions(show(taggedOpen, P1, 0, 2), P1)).toContain(activeId(taggedOpen, P1));
+    expect(legalFaceActions(show(taggedOpen, P1, 0, 2), P1)).not.toContain(activeId(taggedOpen, P1));
     const extenderWhileOpen = useFace(show(taggedOpen, P1, 0, 1), P1);
     expect(extenderWhileOpen.ok).toBe(false);
 

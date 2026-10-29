@@ -20,7 +20,7 @@ rename the file layout.
 |---|---|---|
 | Life | `life` | Defeated when damage reaches life |
 | Base die | `baseDie` | Face ids. The match copies this onto the current die. The player does not build it in the deck |
-| Face actions | on each face | Any living Fighter, Active or Reserve |
+| Face actions | on each face | Any of your Fighters, Active, Reserve, or defeated |
 | Techniques | `techniques` | Active Fighter only. Primary is that Fighter's showing face. Secondary is another of your rolled dice: any punch, any kick, a single strength, or one strength and one strike. The Technique has `hitStrength` and `hitType`. Strength sets Meter, not damage. Print the requirement as `X + Y: [Strike N]`. Do not prefix it with `On attack:` |
 | Assist | `assistName`, `assistRulesText`, `assistEffects` | Not the Active Fighter. May be defeated. Not a card. Once per turn. `[Redirect N]` is the next hit or Technique Strike in this Chain, up to N, then it ends |
 | Assist Meter | `exceptionalAssistMeter` | Omit it and the Assist spends 0. A number greater than 0 is spent |

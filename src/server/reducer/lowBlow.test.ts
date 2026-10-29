@@ -116,6 +116,7 @@ describe("Low Blow", () => {
     const magnus = fighterOf(opened, MAGNUS_ID);
     const vega = fighterOf(opened, VEGA_ID);
     const dieId = dieIdOf(opened, magnus);
+    const showingBefore = opened.dice[dieId]?.rolledSlotIndex;
     const handed = withHand(opened, P1, [LOW_BLOW]);
     const played = resolveOpenChain(
       expectOk(
@@ -131,12 +132,12 @@ describe("Low Blow", () => {
       ),
     );
     expect(played.dice[dieId]?.slots[0]?.faceCardId).toBe(GRAB);
-    expect(played.dice[dieId]?.rolledSlotIndex).toBe(0);
+    expect(played.dice[dieId]?.rolledSlotIndex).toBe(showingBefore);
     expect(played.creatures[magnus]?.addedTechniques?.map((technique) => technique.id)).toContain(
       "technique-magnus-low-blow",
     );
 
-    const ready = withActive(played, magnus);
+    const ready = withActive(showFace(played, magnus, GRAB), magnus);
     const vegaDie = dieIdOf(ready, vega);
     const before = damageOf(ready);
     const declared = expectOk(

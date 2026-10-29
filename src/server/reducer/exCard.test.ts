@@ -309,7 +309,7 @@ function powerBombWindow(meter = 8, cards: readonly CardId[] = [THROW.id]): Game
   const magnus = fighter(opened, P1, MAGNUS);
   const ryu = fighter(opened, P1, RYU);
   const shown = show(show(withActive(opened, P1, magnus), magnus, GRAB), ryu, CHARGE);
-  return withHand(withMeter(shown, P1, meter), P1, cards);
+  return { ...withHand(withMeter(shown, P1, meter), P1, cards), offensiveState: "combo" };
 }
 
 function declarePowerBomb(state: GameState): GameState {
@@ -321,7 +321,7 @@ function chaseWindow(cards: readonly CardId[]): GameState {
   const vega = fighter(opened, P1, VEGA);
   const magnus = fighter(opened, P1, MAGNUS);
   const shown = show(show(opened, vega, RUSH), magnus, HEAVY);
-  return withHand(withMeter(shown, P1, 8), P1, cards);
+  return { ...withHand(withMeter(shown, P1, 8), P1, cards), offensiveState: "combo" };
 }
 
 function declareChase(state: GameState): GameState {
@@ -674,11 +674,10 @@ describe("spec 035 EX cards", () => {
     });
     const opened = openActions(match, P1);
     const bannedFighter = fighter(opened, P1, BAN_FIGHTER);
-    const ready = withHand(
-      withMeter(show(opened, bannedFighter, HEAVY), P1, 8),
-      P1,
-      [BAN_EX.id],
-    );
+    const ready = {
+      ...withHand(withMeter(show(opened, bannedFighter, HEAVY), P1, 8), P1, [BAN_EX.id]),
+      offensiveState: "combo" as const,
+    };
     const n = ready.turn;
     const declared = expectOk(
       advance(ready, { type: "USE_FACE", playerId: P1, creatureId: bannedFighter }),
@@ -761,7 +760,10 @@ describe("spec 035 EX cards", () => {
       ...opened,
       dice: { ...opened.dice, [die.id]: { ...die, slots, rolledSlotIndex: 0 } },
     };
-    const ready = withHand(withMeter(shown, P1, 8), P1, [LAUNCH.id]);
+    const ready = {
+      ...withHand(withMeter(shown, P1, 8), P1, [LAUNCH.id]),
+      offensiveState: "combo" as const,
+    };
     const declared = expectOk(advance(ready, { type: "USE_FACE", playerId: P1, creatureId: vega }));
     expect(declared.chainStack[0]).toMatchObject({
       hitType: "kick",
@@ -787,11 +789,10 @@ describe("spec 035 EX cards", () => {
     const opened = actions();
     const ryu = fighter(opened, P1, RYU);
     const magnus = fighter(opened, P1, MAGNUS);
-    const ryuActive = withHand(
-      withMeter(show(withActive(opened, P1, ryu), ryu, CHARGE), P1, 8),
-      P1,
-      [THROW.id],
-    );
+    const ryuActive = {
+      ...withHand(withMeter(show(withActive(opened, P1, ryu), ryu, CHARGE), P1, 8), P1, [THROW.id]),
+      offensiveState: "combo" as const,
+    };
     const declared = expectOk(advance(ryuActive, { type: "USE_FACE", playerId: P1, creatureId: ryu }));
     const refused = play(declared, P1);
     expect(refused.ok).toBe(false);
@@ -799,11 +800,14 @@ describe("spec 035 EX cards", () => {
     expect(refused.state).toBe(declared);
     expect(meterOf(declared, P1)).toBe(8);
 
-    const magnusActive = withHand(
-      withMeter(show(withActive(opened, P1, magnus), ryu, CHARGE), P1, 8),
-      P1,
-      [THROW.id],
-    );
+    const magnusActive = {
+      ...withHand(
+        withMeter(show(withActive(opened, P1, magnus), ryu, CHARGE), P1, 8),
+        P1,
+        [THROW.id],
+      ),
+      offensiveState: "combo" as const,
+    };
     const otherHit = expectOk(
       advance(magnusActive, { type: "USE_FACE", playerId: P1, creatureId: ryu }),
     );
@@ -852,11 +856,10 @@ describe("spec 035 EX cards", () => {
   it("deals 6, not 5 or 11, when Crushing Throw replaces Magnus Heavy", () => {
     const opened = actions();
     const magnus = fighter(opened, P1, MAGNUS);
-    const ready = withHand(
-      withMeter(show(withActive(opened, P1, magnus), magnus, HEAVY), P1, 8),
-      P1,
-      [THROW.id],
-    );
+    const ready = {
+      ...withHand(withMeter(show(withActive(opened, P1, magnus), magnus, HEAVY), P1, 8), P1, [THROW.id]),
+      offensiveState: "combo" as const,
+    };
     const declared = expectOk(
       advance(ready, { type: "USE_FACE", playerId: P1, creatureId: magnus }),
     );

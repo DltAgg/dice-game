@@ -30,8 +30,6 @@ const FORM_ID = asFaceCardId("face-natural-ryu-form");
 const VEGA_ID = asCreatureDefinitionId("creature-vega");
 const MAGNUS_ID = asCreatureDefinitionId("creature-magnus");
 const RYU_ID = asCreatureDefinitionId("creature-ryu");
-const HIDDEN_SLOT = 3;
-
 function fighterBaseDie(id: CreatureDefinitionId): DieFaceLayout {
   const die = getCreatureDefinition(id)?.baseDie;
   if (die === undefined || die.length !== 6) throw new Error(String(id));
@@ -130,18 +128,30 @@ function damageOf(state: GameState): number {
 }
 
 describe("Ryu Form showing starter", () => {
-  it("shows Form after replacing a hidden slot and strikes as a starter", () => {
+  it("writes Form onto a hidden slot and leaves the showing face", () => {
+    const opened = skirmishActions();
+    const ryu = fighterOf(opened, RYU_ID);
+    const shown = showSlot(opened, ryu, 5);
+    const dieId = dieIdOf(shown, ryu);
+    const showingFace = shown.dice[dieId]?.slots[5]?.faceCardId;
+    const formed = playForm(shown, ryu, 0);
+
+    expect(formed.offensiveState).toBe("open");
+    expect(formed.dice[dieId]?.rolledSlotIndex).toBe(5);
+    expect(formed.dice[dieId]?.slots[0]?.faceCardId).toBe(FORM_ID);
+    expect(formed.dice[dieId]?.slots[5]?.faceCardId).toBe(showingFace);
+    expect(showingFaceCard(formed, dieId)?.id).toBe(showingFace);
+    expect(showingFaceCard(formed, dieId)?.id).not.toBe(FORM_ID);
+  });
+
+  it("strikes with Form when that slot is already showing", () => {
     const opened = skirmishActions();
     const ryu = fighterOf(opened, RYU_ID);
     const shown = showSlot(opened, ryu, 0);
     const dieId = dieIdOf(shown, ryu);
-    const hiddenFace = shown.dice[dieId]?.slots[0]?.faceCardId;
-    const formed = playForm(shown, ryu, HIDDEN_SLOT);
+    const formed = playForm(shown, ryu, 0);
 
-    expect(formed.offensiveState).toBe("open");
-    expect(formed.dice[dieId]?.rolledSlotIndex).toBe(HIDDEN_SLOT);
-    expect(formed.dice[dieId]?.slots[HIDDEN_SLOT]?.faceCardId).toBe(FORM_ID);
-    expect(formed.dice[dieId]?.slots[0]?.faceCardId).toBe(hiddenFace);
+    expect(formed.dice[dieId]?.rolledSlotIndex).toBe(0);
     expect(showingFaceCard(formed, dieId)?.id).toBe(FORM_ID);
     expect(canUseFace(formed, P1, ryu)).toBe(true);
 
@@ -168,9 +178,9 @@ describe("Ryu Form showing starter", () => {
     );
     expect(jab.offensiveState).toBe("combo");
 
-    const formed = playForm(jab, ryu, HIDDEN_SLOT);
+    const formed = playForm(jab, ryu, 0);
     const dieId = dieIdOf(formed, ryu);
-    expect(formed.dice[dieId]?.rolledSlotIndex).toBe(HIDDEN_SLOT);
+    expect(formed.dice[dieId]?.rolledSlotIndex).toBe(0);
     expect(showingFaceCard(formed, dieId)?.id).toBe(FORM_ID);
     expect(formed.offensiveState).toBe("combo");
     expect(canUseFace(formed, P1, ryu)).toBe(false);
@@ -183,12 +193,12 @@ describe("Ryu Form showing starter", () => {
     }
   });
 
-  it("resolves Beast Form as a starter the same turn Form replaces a hidden slot", () => {
+  it("resolves Beast Form as a starter the same turn Form replaces the showing slot", () => {
     const opened = skirmishActions();
     const ryu = fighterOf(opened, RYU_ID);
     const vega = fighterOf(opened, VEGA_ID);
     const ready = showFace(withActive(showSlot(opened, ryu, 0), ryu), vega, VEGA_KICK);
-    const formed = playForm(ready, ryu, HIDDEN_SLOT);
+    const formed = playForm(ready, ryu, 0);
     const dieId = dieIdOf(formed, ryu);
     const vegaDie = dieForCreature(formed, vega);
     if (vegaDie === undefined) throw new Error("vega die");

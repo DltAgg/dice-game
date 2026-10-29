@@ -82,23 +82,32 @@ describe("staged showing-face drops", () => {
     });
   });
 
-  it("offers Rush as a finisher from an open sequence and tells Charge it needs Meter", () => {
+  it("refuses Rush and Charge as the first hit, then tells Charge it needs Meter in combo", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
     const rush = asFaceCardId("face-natural-vega-rush");
     const charge = asFaceCardId("face-natural-ryu-charge");
     state = show(show(state, vega, rush), ryu, charge);
-    expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({ kind: "hit", creatureId: vega });
+    expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({
+      kind: "pending",
+      message: "Rush is a finisher. Land a starter first.",
+    });
     expect(stagedShowingDrop(state, P1, [ryu, null])).toEqual({
+      kind: "pending",
+      message: "Charge is a finisher. Land a starter first.",
+    });
+    const combo = { ...state, offensiveState: "combo" as const };
+    expect(stagedShowingDrop(combo, P1, [vega, null])).toEqual({ kind: "hit", creatureId: vega });
+    expect(stagedShowingDrop(combo, P1, [ryu, null])).toEqual({
       kind: "pending",
       message: "Charge needs 1 Meter.",
     });
     const paid = {
-      ...state,
+      ...combo,
       players: {
-        ...state.players,
-        [P1]: { ...state.players[P1]!, meter: 1 },
+        ...combo.players,
+        [P1]: { ...combo.players[P1]!, meter: 1 },
       },
     };
     expect(stagedShowingDrop(paid, P1, [ryu, null])).toEqual({ kind: "hit", creatureId: ryu });

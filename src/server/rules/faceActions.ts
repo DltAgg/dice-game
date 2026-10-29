@@ -134,7 +134,7 @@ export function canUseFace(
   if (player === undefined) return false;
   if (!player.creatureIds.includes(creatureId)) return false;
   const creature = state.creatures[creatureId];
-  if (creature === undefined || creature.defeated) return false;
+  if (creature === undefined) return false;
   const die = dieForCreature(state, creatureId);
   if (die === undefined || die.rolledSlotIndex === null) return false;
   if (dieIsFaceActionSpent(state, playerId, die.id)) return false;

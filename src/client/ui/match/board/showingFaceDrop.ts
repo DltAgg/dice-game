@@ -118,6 +118,7 @@ function sequenceFaceRefusal(
       return `The current hit has to resolve before ${face.name} can extend.`;
     }
     if (role === "extender") return `${face.name} is an extender. Land a starter first.`;
+    if (role === "finisher") return `${face.name} is a finisher. Land a starter first.`;
     if (role === "starter") return `${face.name} is a starter. It only opens the sequence.`;
     return `${face.name} can't hit right now.`;
   }

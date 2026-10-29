@@ -144,10 +144,8 @@ describe("Ryu starter guard", () => {
     const fresh = skirmishActions();
     const magnus = fighterOf(fresh, MAGNUS_ID, P1);
     const ryu = fighterOf(fresh, RYU_ID, P2);
-    const finished = useFace(
-      showFace(withActive(withActive(fresh, P1, magnus), P2, ryu), magnus, HEAVY),
-      magnus,
-    );
+    const showingHeavy = showFace(withActive(withActive(fresh, P1, magnus), P2, ryu), magnus, HEAVY);
+    const finished = useFace({ ...showingHeavy, offensiveState: "combo" }, magnus);
     expect(damageOf(finished, ryu)).toBe(5);
   });
 

@@ -94,7 +94,8 @@ export function assistKey(creatureId: CreatureId): string {
  * required only when `exceptionalAssistMeter` is greater than 0. Spec `030`.
  *
  * An Assist whose effect is a hit uses that hit’s sequence role. An extender
- * is legal only in combo, while you are the Aggressor, with no Chain open.
+ * or a finisher is legal only in combo, while you are the Aggressor, with no
+ * Chain open.
  */
 export function assistDeclarationError(
   state: Pick<

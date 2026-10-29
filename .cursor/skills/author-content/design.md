@@ -39,7 +39,7 @@ Response does not by itself take offense.
 **Modify** changes the situation. `modifySubject`: `roll`, `die`, `moveset`,
 `target`, `tag`. A die write is Replace and lasts the rest of the match.
 
-**Face action:** the showing face of a living Fighter, Active or Reserve.
+**Face action:** the showing face of one of your Fighters, Active, Reserve, or defeated.
 **Technique:** the Active Fighter only. Primary is that Fighter's showing
 face. Secondary is another of your rolled dice: any punch, any kick, a
 single strength, or one strength and one strike. Attack versus movement is
@@ -73,7 +73,7 @@ The unused equipment play path is not current play.
 
 The sequence is who can keep pressing. Starter, extender, and finisher are
 properties of a hit (`sequenceRole`), not card types and not phases. Only
-the Aggressor declares. From open, the legal roles are starter and finisher.
+the Aggressor declares. From open, the only legal role is starter.
 From combo, the legal roles are extender and finisher. Tag on this turn
 leaves those roles as they are. A finisher, and any other sequence end, hands
 the turn to the

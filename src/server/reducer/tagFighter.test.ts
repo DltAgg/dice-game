@@ -880,6 +880,7 @@ describe("spec 030 assist windows", () => {
     const attacker = fighterOf(state, P2, MAGNUS_ID);
     state = withActiveFighter(state, P2, attacker);
     state = showCreatureFace(state, attacker, asFaceCardId("face-natural-magnus-heavy"));
+    state = { ...state, offensiveState: "combo" };
     const hit = expectOk(advance(state, { type: "USE_FACE", playerId: P2, creatureId: attacker }));
     state = expectOk(advance(hit, { type: "PASS_PRIORITY", playerId: P2 }));
     const wall = fighterOf(state, P1, MAGNUS_ID);
@@ -956,7 +957,7 @@ describe("spec 030 assist windows", () => {
     expect(resolved.chainStack).toHaveLength(0);
   });
 
-  it("refuses Vega's extender while the sequence is open and lets Ryu's finisher Assist end it", () => {
+  it("refuses Vega's extender and Ryu's finisher while the sequence is open, then lets the finisher end a combo", () => {
     let open = p1Actions();
     const magnus = fighterOf(open, P1, MAGNUS_ID);
     const vega = fighterOf(open, P1, VEGA_ID);
@@ -980,11 +981,15 @@ describe("spec 030 assist windows", () => {
     expect(blocked.ok).toBe(false);
     if (!blocked.ok) expect(blocked.error).toBe("INVALID_TARGET");
 
-    const declared = expectOk(advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu }));
+    const early = advance(open, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu });
+    expect(early.ok).toBe(false);
+    if (!early.ok) expect(early.error).toBe("INVALID_TARGET");
+
+    const combo = { ...open, offensiveState: "combo" as const };
+    const declared = expectOk(advance(combo, { type: "ASSIST", playerId: P1, reserveCreatureId: ryu }));
     const finished = resolveOpenChain(declared);
     expect(finished.activePlayerId).toBe(P2);
     expect(finished.phase).toBe("roll");
-    expect(finished.offensiveState).toBe("open");
   });
 
   it("lets a KOed Reserve Assist and refuses Assist against your own hit", () => {

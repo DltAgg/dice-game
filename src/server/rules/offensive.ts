@@ -13,13 +13,12 @@ export const TAG_TURN_KEY = "tag-this-turn";
 export const TURN_REROLL_KEY = "turn-reroll";
 
 /**
- * No sequence (`open`) accepts a starter or a finisher. A sequence in
- * progress (`combo`) accepts an extender or a finisher. `finished` accepts
- * nothing. Those same roles stay legal after Tag on this turn. A finisher
- * from `open` still ends the sequence.
+ * No sequence (`open`) accepts a starter. A sequence in progress (`combo`)
+ * accepts an extender or a finisher. `finished` accepts nothing. Those same
+ * roles stay legal after Tag on this turn. A finisher ends the sequence.
  */
 export function sequenceRoleFits(state: OffensiveStateName, role: SequenceRole): boolean {
-  if (state === "open") return role === "starter" || role === "finisher";
+  if (state === "open") return role === "starter";
   if (state === "combo") return role === "extender" || role === "finisher";
   return false;
 }

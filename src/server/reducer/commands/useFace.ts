@@ -25,7 +25,6 @@ export function useFace(
   if (!player.creatureIds.includes(creatureId)) return "INVALID_TARGET";
   const creature = draft.creatures[creatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
-  if (creature.defeated) return "CREATURE_DEFEATED";
   const banned = attackBanError(creature, draft.turn);
   if (banned !== null) return banned;
 
