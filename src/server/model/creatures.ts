@@ -69,13 +69,15 @@ export interface CreatureDefinition {
   /** English passive text as printed under the art. Empty when none. */
   readonly passiveRulesText: string;
   /**
-   * Starter Strike that still lands on this Fighter is halved, rounding down.
-   * Extenders and finishers are unchanged.
+   * While this Fighter is Active, a Starter Strike that still lands on him
+   * is halved, rounding down, on every turn he is Active. Extenders and
+   * finishers are unchanged.
    */
   readonly halveStarterDamage?: boolean;
   /**
-   * A Grappler's first starter of the sequence against this Fighter does not
-   * hit and does not enter combo. The next starter hits.
+   * While this Fighter is Active, a Grappler Active Fighter's first starter
+   * of the turn against him does not hit and does not enter combo. The next
+   * starter hits. Each later turn asks again.
    */
   readonly grapplerStarterWhiff?: boolean;
   /**

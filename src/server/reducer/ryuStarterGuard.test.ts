@@ -15,7 +15,7 @@ import type { GameState } from "../model/state.js";
 import { dieForCreature } from "../rules/fighters.js";
 import { starterWhiffMark } from "../rules/starterGuard.js";
 import { createMatch } from "../setup/createMatch.js";
-import { expectOk, P1, P2, resolveOpenChain } from "../testing/scenario.js";
+import { advanceResolvingChain, expectOk, P1, P2, resolveOpenChain } from "../testing/scenario.js";
 import { advance } from "./reduce.js";
 
 const VEGA_ID = asCreatureDefinitionId("creature-vega");
@@ -99,6 +99,20 @@ function useFace(state: GameState, creatureId: CreatureId): GameState {
   );
 }
 
+function passToNextActions(state: GameState): GameState {
+  const actor = state.activePlayerId;
+  const ended = expectOk(advance(state, { type: "END_SEQUENCE", playerId: actor }));
+  const next = ended.activePlayerId;
+  const rolled = expectOk(advance(ended, { type: "ROLL_DICE", playerId: next }));
+  return expectOk(advance(rolled, { type: "ADVANCE_PHASE", playerId: next }));
+}
+
+function tagTo(state: GameState, playerId: PlayerId, creatureId: CreatureId): GameState {
+  return expectOk(
+    advanceResolvingChain(state, { type: "TAG", playerId, reserveCreatureId: creatureId }),
+  );
+}
+
 function dieIdOf(state: GameState, creatureId: CreatureId): DieId {
   const die = dieForCreature(state, creatureId);
   if (die === undefined) throw new Error("die");
@@ -172,7 +186,7 @@ describe("Ryu starter guard", () => {
     expect(whiff.players[P1]?.comboCount).toBe(0);
     expect(whiff.players[P1]?.meter).toBe(meter);
     expect(whiff.usedSequenceActionIds).toContain(`face:${GRAB}`);
-    expect(whiff.usedSequenceActionIds).toContain(starterWhiffMark(ryu));
+    expect(whiff.usedSequenceActionIds).toContain(starterWhiffMark(ryu, whiff.turn));
 
     const kicking = showFace(showFace(whiff, magnus, LARIAT), vega, KICK);
     const before = damageOf(kicking, ryu);
@@ -190,6 +204,111 @@ describe("Ryu starter guard", () => {
     expect(damageOf(hit, ryu)).toBe(before + 2);
     expect(hit.offensiveState).toBe("combo");
     expect(hit.players[P1]?.comboCount).toBe(1);
+  });
+
+  it("does not whiff a grappler face while Ryu is the Active attacker", () => {
+    const opened = skirmishActions();
+    const ryu = fighterOf(opened, RYU_ID, P1);
+    const magnus = fighterOf(opened, MAGNUS_ID, P1);
+    const defender = fighterOf(opened, RYU_ID, P2);
+    const ready = showFace(withActive(withActive(opened, P1, ryu), P2, defender), magnus, GRAB);
+    const hit = useFace(ready, magnus);
+    expect(damageOf(hit, defender)).toBe(1);
+    expect(hit.offensiveState).toBe("combo");
+    expect(hit.players[P1]?.comboCount).toBe(1);
+  });
+
+  it("whiffs when the Active attacker is a grappler even if the face belongs to Ryu", () => {
+    const opened = skirmishActions();
+    const magnus = fighterOf(opened, MAGNUS_ID, P1);
+    const ryuFace = fighterOf(opened, RYU_ID, P1);
+    const defender = fighterOf(opened, RYU_ID, P2);
+    const ready = showFace(
+      withActive(withActive(opened, P1, magnus), P2, defender),
+      ryuFace,
+      PROJECTILE,
+    );
+    const meter = ready.players[P1]?.meter ?? 0;
+    const whiff = useFace(ready, ryuFace);
+    expect(damageOf(whiff, defender)).toBe(0);
+    expect(whiff.offensiveState).toBe("open");
+    expect(whiff.players[P1]?.comboCount).toBe(0);
+    expect(whiff.players[P1]?.meter).toBe(meter);
+  });
+
+  it("whiffs a grappler again on a later turn even if the old mark is still listed", () => {
+    const opened = skirmishActions();
+    const magnus = fighterOf(opened, MAGNUS_ID, P1);
+    const ryu = fighterOf(opened, RYU_ID, P2);
+    const ready = showFace(withActive(withActive(opened, P1, magnus), P2, ryu), magnus, GRAB);
+    const whiff = useFace(ready, magnus);
+    const stuck = showFace(
+      {
+        ...whiff,
+        turn: whiff.turn + 1,
+        offensiveState: "open",
+        usedSequenceActionIds: whiff.usedSequenceActionIds.filter((id) =>
+          id.startsWith("starter-whiff:"),
+        ),
+      },
+      magnus,
+      GRAB,
+    );
+    const again = useFace(stuck, magnus);
+    expect(damageOf(again, ryu)).toBe(0);
+    expect(again.offensiveState).toBe("open");
+    expect(again.usedSequenceActionIds).toContain(starterWhiffMark(ryu, stuck.turn));
+  });
+
+  it("whiffs a grappler's first starter again after a full turn cycle", () => {
+    const opened = skirmishActions();
+    const magnus = fighterOf(opened, MAGNUS_ID, P1);
+    const ryu = fighterOf(opened, RYU_ID, P2);
+    const ready = showFace(withActive(withActive(opened, P1, magnus), P2, ryu), magnus, GRAB);
+    const first = useFace(ready, magnus);
+    expect(first.offensiveState).toBe("open");
+    const later = passToNextActions(passToNextActions(first));
+    expect(later.activePlayerId).toBe(P1);
+    expect(later.phase).toBe("actions");
+    expect(later.turn).toBeGreaterThan(first.turn);
+    const again = useFace(showFace(later, magnus, GRAB), magnus);
+    expect(damageOf(again, ryu)).toBe(0);
+    expect(again.offensiveState).toBe("open");
+    expect(again.usedSequenceActionIds).toContain(starterWhiffMark(ryu, again.turn));
+  });
+
+  it("applies the passive every time Ryu tags in as the Active Fighter", () => {
+    const opened = skirmishActions();
+    const magnus = fighterOf(opened, MAGNUS_ID, P1);
+    const vega = fighterOf(opened, VEGA_ID, P2);
+    const ryu = fighterOf(opened, RYU_ID, P2);
+    const p2 = passToNextActions(withActive(opened, P1, magnus));
+    const tagged = tagTo(p2, P2, ryu);
+    expect(tagged.players[P2]?.activeCreatureId).toBe(ryu);
+    const p1 = passToNextActions(tagged);
+    const first = useFace(showFace(withActive(p1, P1, magnus), magnus, GRAB), magnus);
+    expect(damageOf(first, ryu)).toBe(0);
+    expect(first.offensiveState).toBe("open");
+
+    const p2Out = passToNextActions(first);
+    const taggedOut = tagTo(p2Out, P2, vega);
+    expect(taggedOut.players[P2]?.activeCreatureId).toBe(vega);
+    const p2Back = passToNextActions(passToNextActions(taggedOut));
+    const taggedBack = tagTo(p2Back, P2, ryu);
+    expect(taggedBack.players[P2]?.activeCreatureId).toBe(ryu);
+    const p1Again = passToNextActions(taggedBack);
+    const attacker = fighterOf(p1Again, RYU_ID, P1);
+    const halved = useFace(
+      showFace(withActive(withActive(p1Again, P1, attacker), P2, ryu), attacker, PROJECTILE),
+      attacker,
+    );
+    expect(damageOf(halved, ryu)).toBe(1);
+    expect(halved.offensiveState).toBe("combo");
+    const afterOut = passToNextActions(passToNextActions(halved));
+    const grappler = useFace(showFace(withActive(afterOut, P1, magnus), magnus, GRAB), magnus);
+    expect(grappler.players[P2]?.activeCreatureId).toBe(ryu);
+    expect(damageOf(grappler, ryu)).toBe(1);
+    expect(grappler.offensiveState).toBe("open");
   });
 
   it("lets a grappler's starter hit another fighter for full damage", () => {

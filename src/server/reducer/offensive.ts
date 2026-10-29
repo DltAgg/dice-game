@@ -193,7 +193,7 @@ function settleOffense(
     const ids = [...draft.usedSequenceActionIds];
     if (link.sequenceActionId !== undefined) ids.push(link.sequenceActionId);
     const targetId = link.declaredTargetCreatureId;
-    if (targetId != null) ids.push(starterWhiffMark(targetId));
+    if (targetId != null) ids.push(starterWhiffMark(targetId, draft.turn));
     draft.usedSequenceActionIds = ids;
     return;
   }
