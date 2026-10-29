@@ -14,6 +14,7 @@ import {
   handOf,
   hasPlayableEffect,
   isEnabledHandReaction,
+  isLegalExPlay,
   legalModifyPlays,
   type CardInstance,
   type CardInstanceId,
@@ -153,12 +154,14 @@ export function HandStrip({
           const isSelected = selected === card.id;
           const modifyOffers =
             def.modifySubject !== undefined ? legalModifyPlays(state, playerId, def) : [];
+          const canEx = reactionsLive && isLegalExPlay(state, playerId, def);
           const canPlay =
-            hasPlayableEffect(def) &&
-            canAffordPlay(state, playerId, def) &&
-            (def.modifySubject !== undefined
-              ? modifyOffers.length > 0
-              : actionsLive && canResolvePlayEffects(state, playerId, def));
+            canEx ||
+            (hasPlayableEffect(def) &&
+              canAffordPlay(state, playerId, def) &&
+              (def.modifySubject !== undefined
+                ? modifyOffers.length > 0
+                : actionsLive && canResolvePlayEffects(state, playerId, def)));
           const canRespond = reactionsLive && isEnabledHandReaction(state, playerId, def);
 
           return (
@@ -181,7 +184,7 @@ export function HandStrip({
                 {formatCostDetail(def, def.subtypes.join("/"))}
               </p>
               <div className="mt-3 flex flex-nowrap gap-1.5">
-                {(actionsLive || modifyOffers.length > 0) && (
+                {(actionsLive || modifyOffers.length > 0 || canEx) && (
                   <>
                     <button
                       type="button"

@@ -10,6 +10,7 @@ import {
   isAttributeSymbol,
   legalModifyPlays,
   isEnabledHandReaction,
+  isLegalExPlay,
   isUnabsorbedPoolSymbol,
   hasLegalReactionOffer,
   legalCreaturesForFilter,
@@ -371,6 +372,10 @@ export function MatchBoard() {
       if (localPlayerId !== null && localPlayerId !== pending.priorityPlayerId) return;
       if (offerModify(actingId, card)) return;
       const def = getCard(card.cardId);
+      if (def !== undefined && isLegalExPlay(state, actingId, def)) {
+        tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
+        return;
+      }
       if (def === undefined || !isEnabledHandReaction(state, actingId, def)) return;
       tryDispatch({ type: "PLAY_CARD", playerId: actingId, cardInstanceId: card.id });
       return;

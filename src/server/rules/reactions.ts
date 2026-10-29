@@ -9,9 +9,11 @@ import {
   linkMatchesNegateCard,
 } from "../reducer/chain.js";
 import type { Draft } from "../reducer/draft.js";
+import { exPlayError, isExCard } from "../reducer/exCard.js";
 import { legalModifyPlays } from "./cardBehavior.js";
 import { canAffordPlay, handOf, isReactionCard, ritualsOf } from "./cards.js";
-import { assistDeclarationError } from "./fighters.js";
+import { cardRestrictionError, assistDeclarationError } from "./fighters.js";
+import { canSpendMeter } from "./meter.js";
 
 /** Top of the reaction chain (LILO), or `undefined` when empty. */
 export function topChainLinkOf(state: GameState): ChainLink | undefined {
@@ -42,6 +44,21 @@ export function negateEffectsLegalAgainstTop(
     }
   }
   return true;
+}
+
+/**
+ * EX the priority seat can play right now: gate, living Fighter, and Meter.
+ * An unaffordable EX does not hold the window open.
+ */
+export function isLegalExPlay(
+  state: GameState,
+  playerId: PlayerId,
+  definition: CardDefinition,
+): boolean {
+  if (!isExCard(definition)) return false;
+  if (cardRestrictionError(state, playerId, definition) !== null) return false;
+  if (!canSpendMeter(state, playerId, definition.meterCost ?? 0)) return false;
+  return exPlayError(state as Draft, playerId, definition) === null;
 }
 
 /** Hand reaction legal to offer during a reaction window (chain-target gate). */
@@ -154,6 +171,7 @@ export function hasLegalReactionOffer(state: GameState, playerId: PlayerId): boo
   for (const card of handOf(state, playerId)) {
     const definition = getCard(card.cardId);
     if (definition === undefined) continue;
+    if (isLegalExPlay(state, playerId, definition)) return true;
     if (isEnabledHandReaction(state, playerId, definition)) return true;
     if (legalModifyPlays(state, playerId, definition).length > 0) return true;
   }

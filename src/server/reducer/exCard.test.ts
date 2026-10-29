@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { BRACE, COUNTER, PARRY } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
 import { TAG_FIGHTER_RULES } from "../model/config.js";
 import type { CardInstance } from "../model/cards.js";
 import type { DieFaceLayout } from "../model/dice.js";
 import {
+  asCardId,
   asCardInstanceId,
   asCreatureDefinitionId,
   asFaceCardId,
@@ -17,6 +17,7 @@ import {
 import type { GameState } from "../model/state.js";
 import type { RNG } from "../rng/rng.js";
 import { dieForCreature } from "../rules/fighters.js";
+import { hasLegalReactionOffer } from "../rules/reactions.js";
 import { TURN_REROLL_KEY } from "../rules/offensive.js";
 import { createMatch } from "../setup/createMatch.js";
 import { testCard, testCreature, testFace } from "../testing/fixtures/builders.js";
@@ -39,6 +40,11 @@ const HEAVY = asFaceCardId("face-natural-magnus-heavy");
 const KICK = asFaceCardId("face-natural-vega-kick");
 const JAB = asFaceCardId("face-natural-jab");
 const CHARGE = asFaceCardId("face-natural-ryu-charge");
+const COUNTER = asCardId("card-counter");
+const PARRY = asCardId("card-parry");
+const BRACE = asCardId("card-brace");
+const CRUSHING_THROW = asCardId("card-crushing-throw");
+const AIR_LAUNCHER = asCardId("card-air-launcher");
 const POWER_BOMB = "technique-magnus-power-bomb";
 const CHASE_KICK = "technique-vega-chase-kick";
 const BAN_FIGHTER = asCreatureDefinitionId("creature-test-ex-ban");
@@ -801,6 +807,32 @@ describe("spec 035 EX cards", () => {
     expect(ended.turn).toBe(opened.turn + 1);
     expect(ended.activePlayerId).toBe(P2);
     expect(ended.phase).toBe("roll");
+  });
+
+  it("plays the catalogue EX cards and holds priority while one is legal", () => {
+    const declared = declarePowerBomb(powerBombWindow(8, [CRUSHING_THROW]));
+    expect(hasLegalReactionOffer(declared, P1)).toBe(true);
+    expect(hasLegalReactionOffer(declared, P2)).toBe(false);
+    const short = declarePowerBomb(powerBombWindow(7, [CRUSHING_THROW]));
+    expect(hasLegalReactionOffer(short, P1)).toBe(false);
+
+    const defender = defenderId(declared);
+    const played = expectOk(play(declared, P1));
+    expect(meterOf(played, P1)).toBe(0);
+    const resolved = resolvePlayed(played, [0, 3]);
+    expect(damage(resolved, defender)).toBe(6);
+    expect(resolved.activePlayerId).toBe(P2);
+    expect(resolved.creatures[fighter(resolved, P1, MAGNUS)]?.attackBannedOnTurn).toBe(3);
+
+    const chase = declareChase(chaseWindow([AIR_LAUNCHER]));
+    expect(hasLegalReactionOffer(chase, P1)).toBe(true);
+    const launched = expectOk(play(chase, P1));
+    const after = resolvePlayed(launched, [0, 1, 4]);
+    expect(damage(after, defenderId(after))).toBe(3);
+    expect(after.activePlayerId).toBe(P1);
+    expect(after.turn).toBe(chase.turn);
+    expect(after.phase).toBe("actions");
+    expect(after.rerollAvailable).toBe(false);
   });
 
   it("deals 6, not 5 or 11, when Crushing Throw replaces Magnus Heavy", () => {
