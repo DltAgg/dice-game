@@ -51,7 +51,7 @@ const identityPair = (): readonly [DieFaceLayout, DieFaceLayout] => [
 describe("validateTacticsDeck", () => {
   it("accepts the Tag Skirmish tactics list under TAG_FIGHTER_RULES", () => {
     expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(30);
-    expect(responseCombatCount(TAG_SKIRMISH_LOADOUT.deck)).toBe(6);
+    expect(responseCombatCount(TAG_SKIRMISH_LOADOUT.deck)).toBe(7);
     expect(validateTacticsDeck(TAG_SKIRMISH_LOADOUT.deck, TAG_FIGHTER_RULES)).toEqual({
       ok: true,
     });
@@ -243,12 +243,12 @@ describe("validateTacticsDeck", () => {
   it("allows an EX card in the deck when its Fighter is not in the squad", () => {
     const exRules = { ...TAG_FIGHTER_RULES, deckMinCards: 0 };
     expect(validateTacticsDeck([CRUSHING_THROW], exRules)).toEqual({ ok: true });
+    expect(TAG_SKIRMISH_LOADOUT.deck).toContain(CRUSHING_THROW);
     expect(
       validateLoadout(
         {
           ...TAG_SKIRMISH_LOADOUT,
           squad: [VEGA, RYU, VEGA],
-          deck: [CRUSHING_THROW, ...TAG_SKIRMISH_LOADOUT.deck.slice(1)],
         },
         TAG_FIGHTER_RULES,
       ),

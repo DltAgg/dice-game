@@ -4,19 +4,18 @@
   "name": "Tag Skirmish",
   "squad": ["creature-vega", "creature-magnus", "creature-ryu"],
   "deckCounts": [
-    { "cardId": "card-brace", "copies": 2 },
+    { "cardId": "card-brace", "copies": 3 },
     { "cardId": "card-counter", "copies": 3 },
     { "cardId": "card-parry", "copies": 2 },
     { "cardId": "card-open-palm", "copies": 3 },
-    { "cardId": "card-reforge-grip", "copies": 3 },
     { "cardId": "card-vega-drill", "copies": 2 },
     { "cardId": "card-ryu-form", "copies": 2 },
     { "cardId": "card-low-blow", "copies": 3 },
     { "cardId": "card-shift", "copies": 2 },
     { "cardId": "card-call-out", "copies": 3 },
     { "cardId": "card-anchor", "copies": 3 },
-    { "cardId": "card-crushing-throw", "copies": 1 },
-    { "cardId": "card-air-launcher", "copies": 1 }
+    { "cardId": "card-crushing-throw", "copies": 2 },
+    { "cardId": "card-air-launcher", "copies": 2 }
   ],
   "faceDeck": [
     "face-natural-jab",

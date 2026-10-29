@@ -23,6 +23,18 @@ function titled(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+/** A sentence whose only clauses are the structured hit class and/or role. */
+function repeatsStructuredFace(sentence: string, skip: ReadonlySet<string>): boolean {
+  const parts = sentence
+    .replace(/\.$/, "")
+    .trim()
+    .toLowerCase()
+    .split(/\s*·\s*/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+  return parts.length > 0 && parts.every((part) => skip.has(part));
+}
+
 /** Printed sentences that only repeat the structured type, strength, or role. */
 function extraNotes(face: FaceCardDefinition): readonly string[] {
   const skip = new Set<string>();
@@ -37,7 +49,7 @@ function extraNotes(face: FaceCardDefinition): readonly string[] {
       .split(/(?<=\.)\s+/)
       .map((sentence) => sentence.trim())
       .filter((sentence) => sentence.length > 0)
-      .filter((sentence) => !skip.has(sentence.replace(/\.$/, "").toLowerCase()));
+      .filter((sentence) => !repeatsStructuredFace(sentence, skip));
     if (kept.length > 0) notes.push(kept.join(" "));
   }
   return notes;

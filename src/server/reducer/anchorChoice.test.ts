@@ -75,7 +75,7 @@ describe("Anchor", () => {
   it("offers draw 2 or spend 4 to draw 3, then discard 1", () => {
     const definition = getCard(ANCHOR_ID);
     expect(definition?.rulesText).toBe(
-      "[Draw 2]; [Discard 1].\nSpend 4 meter: [Draw 3]; [Discard 1].",
+      "Choose one:\n· [Draw 2]; [Discard 1].\n· Spend 4 meter: [Draw 3]; [Discard 1].",
     );
     expect(definition?.lifecycle).toBe("one-shot");
     expect(definition?.equipment).toBeUndefined();
