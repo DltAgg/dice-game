@@ -20,7 +20,7 @@
   ],
   "baseDie": [
     "face-natural-jab",
-    "face-natural-jab",
+    "face-natural-grab",
     "face-natural-kick",
     "face-natural-dash",
     "face-natural-dash",
@@ -33,9 +33,9 @@
       "primaryFaceId": "face-natural-kick",
       "hitStrength": "light",
       "hitType": "punch",
-      "secondary": { "faceType": "projectile" },
+      "secondary": { "hitStrength": "light", "hitType": "punch" },
       "sequenceRole": "starter",
-      "rulesText": "Kick + Projectile: [Strike 3].",
+      "rulesText": "Kick + light punch: [Strike 3].",
       "effects": [
         {
           "type": "damage",

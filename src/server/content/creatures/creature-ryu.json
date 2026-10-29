@@ -21,12 +21,12 @@
     }
   ],
   "baseDie": [
-    "face-natural-jab",
     "face-natural-projectile",
     "face-natural-projectile",
     "face-natural-focus",
     "face-natural-focus",
-    "face-natural-charge"
+    "face-natural-crescent",
+    "face-natural-rush"
   ],
   "techniques": [
     {

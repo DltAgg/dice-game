@@ -16,12 +16,12 @@
     }
   ],
   "baseDie": [
-    "face-natural-jab",
     "face-natural-grab",
     "face-natural-grab",
     "face-natural-lariat",
-    "face-natural-lariat",
-    "face-natural-heavy"
+    "face-natural-kick",
+    "face-natural-heavy",    
+    "face-natural-rush"
   ],
   "techniques": [
     {
