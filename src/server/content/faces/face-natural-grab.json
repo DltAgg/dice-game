@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-magnus-heavy",
-  "name": "Heavy",
-  "faceType": "attack",
-  "sequenceRole": "finisher",
-  "hitStrength": "heavy",
+  "id": "face-natural-grab",
+  "name": "Grab",
+  "faceType": "grab",
+  "sequenceRole": "starter",
+  "hitStrength": "medium",
   "hitType": "punch",
-  "rulesText": "Heavy Punch · Finisher. Primary: [Strike 5]. Secondary: +2 damage.",
+  "rulesText": "Medium Punch · Starter. Primary: [Strike 3]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 5,
+      "amount": 3,
       "target": { "kind": "declared-target" }
     }
   ],

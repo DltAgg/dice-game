@@ -19,40 +19,40 @@
   ],
   "faceDeck": [
     "face-natural-jab",
-    "face-natural-magnus-grab",
-    "face-natural-magnus-lariat",
-    "face-natural-magnus-heavy",
-    "face-natural-vega-kick",
-    "face-natural-vega-dash",
-    "face-natural-vega-rush",
-    "face-natural-ryu-projectile",
-    "face-natural-ryu-focus",
-    "face-natural-ryu-charge"
+    "face-natural-grab",
+    "face-natural-lariat",
+    "face-natural-heavy",
+    "face-natural-kick",
+    "face-natural-dash",
+    "face-natural-rush",
+    "face-natural-projectile",
+    "face-natural-focus",
+    "face-natural-charge"
   ],
   "startingDice": [
     [
       "face-natural-jab",
       "face-natural-jab",
-      "face-natural-vega-kick",
-      "face-natural-vega-dash",
-      "face-natural-vega-dash",
-      "face-natural-vega-rush"
+      "face-natural-kick",
+      "face-natural-dash",
+      "face-natural-dash",
+      "face-natural-rush"
     ],
     [
       "face-natural-jab",
-      "face-natural-magnus-grab",
-      "face-natural-magnus-grab",
-      "face-natural-magnus-lariat",
-      "face-natural-magnus-lariat",
-      "face-natural-magnus-heavy"
+      "face-natural-grab",
+      "face-natural-grab",
+      "face-natural-lariat",
+      "face-natural-lariat",
+      "face-natural-heavy"
     ],
     [
       "face-natural-jab",
-      "face-natural-ryu-projectile",
-      "face-natural-ryu-projectile",
-      "face-natural-ryu-focus",
-      "face-natural-ryu-focus",
-      "face-natural-ryu-charge"
+      "face-natural-projectile",
+      "face-natural-projectile",
+      "face-natural-focus",
+      "face-natural-focus",
+      "face-natural-charge"
     ]
   ]
 }

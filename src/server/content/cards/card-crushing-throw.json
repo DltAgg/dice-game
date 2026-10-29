@@ -16,7 +16,7 @@
   "exReroll": {
     "scope": "restricted-fighter",
     "times": 2,
-    "strikePerFaceId": "face-natural-magnus-grab",
+    "strikePerFaceId": "face-natural-grab",
     "strikePer": 2
   },
   "exAttackBan": true,

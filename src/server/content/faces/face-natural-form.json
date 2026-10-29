@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-ryu-form",
+  "id": "face-natural-form",
   "name": "Form",
   "faceType": "attack",
   "sequenceRole": "starter",

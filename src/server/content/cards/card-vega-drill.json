@@ -11,7 +11,7 @@
   "addedTechnique": {
     "id": "technique-vega-drill",
     "name": "Drill",
-    "primaryFaceId": "face-natural-vega-dash",
+    "primaryFaceId": "face-natural-dash",
     "hitStrength": "heavy",
     "hitType": "punch",
     "sequenceRole": "finisher",

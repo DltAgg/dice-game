@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-vega-dash",
+  "id": "face-natural-dash",
   "name": "Dash",
   "faceType": "attack",
   "sequenceRole": "extender",

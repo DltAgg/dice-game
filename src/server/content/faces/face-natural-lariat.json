@@ -1,19 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-ryu-charge",
-  "name": "Charge",
+  "id": "face-natural-lariat",
+  "name": "Lariat",
   "faceType": "attack",
-  "sequenceRole": "finisher",
-  "meterCost": 1,
+  "sequenceRole": "extender",
   "hitStrength": "heavy",
   "hitType": "punch",
-  "rulesText": "Heavy Punch · Finisher. Spend 1 Meter. Primary: [Strike 4]. Secondary: +1 damage.",
+  "rulesText": "Heavy Punch · Extender. Primary: [Strike 3]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 4,
+      "amount": 3,
       "target": { "kind": "declared-target" }
     }
   ],

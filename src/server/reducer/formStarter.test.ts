@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { RYU_FORM } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { VEGA_KICK } from "../content/faces.js";
+import { KICK } from "../content/faces.js";
 import { TAG_FIGHTER_RULES } from "../model/config.js";
 import type { DieFaceLayout } from "../model/dice.js";
 import {
@@ -26,7 +26,7 @@ import {
 } from "../testing/scenario.js";
 import { advance } from "./reduce.js";
 
-const FORM_ID = asFaceCardId("face-natural-ryu-form");
+const FORM_ID = asFaceCardId("face-natural-form");
 const VEGA_ID = asCreatureDefinitionId("creature-vega");
 const MAGNUS_ID = asCreatureDefinitionId("creature-magnus");
 const RYU_ID = asCreatureDefinitionId("creature-ryu");
@@ -197,7 +197,7 @@ describe("Ryu Form showing starter", () => {
     const opened = skirmishActions();
     const ryu = fighterOf(opened, RYU_ID);
     const vega = fighterOf(opened, VEGA_ID);
-    const ready = showFace(withActive(showSlot(opened, ryu, 0), ryu), vega, VEGA_KICK);
+    const ready = showFace(withActive(showSlot(opened, ryu, 0), ryu), vega, KICK);
     const formed = playForm(ready, ryu, 0);
     const dieId = dieIdOf(formed, ryu);
     const vegaDie = dieForCreature(formed, vega);

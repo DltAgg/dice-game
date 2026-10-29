@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-vega-rush",
-  "name": "Rush",
+  "id": "face-natural-focus",
+  "name": "Focus",
   "faceType": "attack",
-  "sequenceRole": "finisher",
-  "hitStrength": "heavy",
-  "hitType": "kick",
-  "rulesText": "Heavy Kick · Finisher. Primary: [Strike 4]. Secondary: +2 damage.",
+  "sequenceRole": "extender",
+  "hitStrength": "light",
+  "hitType": "punch",
+  "rulesText": "Light Punch · Extender. Primary: [Strike 1]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 4,
+      "amount": 1,
       "target": { "kind": "declared-target" }
     }
   ],

@@ -9,7 +9,7 @@ Contract under test:
 - Play window: you have reaction priority, the top link is your non-negated combat-action matching that card's `exGate`, and nothing sits above it. After you pass, or after any other link is added, the play is illegal. A later pass that hands priority back does not reopen it.
 - Replacement: the original Strike does not also resolve. The link stays `combat-action`. Meter is paid in `playCard` (it already spends `meterCost` there). An illegal play spends nothing. Parry does not refund.
 - Counter already refuses a hit. It must also refuse an EX card on top. Ordinary attacks do not become counterable. Parry can negate the replaced combat-action and ends the sequence. A negated EX skips Strike, rerolls, the attack ban, and the extra phase.
-- Crushing Throw (Magnus, 8, heavy punch finisher): Strike 6, reroll only the Magnus die twice (the second result replaces the first on the die), Strike 2 for each result whose face id is `face-natural-magnus-grab`, then that Magnus cannot attack on the controller's next turn (turn N+2). Other fighters and non-attacks stay legal. The ban is applied only when the body resolves.
+- Crushing Throw (Magnus, 8, heavy punch finisher): Strike 6, reroll only the Magnus die twice (the second result replaces the first on the die), Strike 2 for each result whose face id is `face-natural-grab`, then that Magnus cannot attack on the controller's next turn (turn N+2). Other fighters and non-attacks stay legal. The ban is applied only when the body resolves.
 - Air Launcher (Vega, 8, kick finisher, any strength): Strike 3, reroll all of your dice once (not the opponent's, and not the `REROLL_DICE` action), then one extra actions phase on the same turn, at the moment the finisher would have passed the turn. That phase is `beginOffensiveWindow`, no draw, no turn increment, `rerollAvailable` stays false. One play grants one phase.
 - A sequence hit's `meterCost` is still spent in `conductCombatAction`. A card's `meterCost` is still spent at play.
 
@@ -37,8 +37,8 @@ No current test declares `technique-magnus-power-bomb` or `technique-vega-chase-
 
 | Attack | Active die shows | Other die shows | Unreplaced damage | Why |
 |---|---|---|---|---|
-| Power Bomb | Magnus `face-natural-magnus-grab` | Ryu `face-natural-ryu-focus` (punch, +2) | 7 | 5 + 2. Focus is on Ryu's die, so it is a legal secondary. Grab and Heavy share Magnus's die and cannot both show. |
-| Chase Kick | Vega `face-natural-vega-kick` | Magnus `face-natural-magnus-heavy` (heavy punch, +2) | 6 | 4 + 2. |
+| Power Bomb | Magnus `face-natural-grab` | Ryu `face-natural-focus` (punch, +2) | 7 | 5 + 2. Focus is on Ryu's die, so it is a legal secondary. Grab and Heavy share Magnus's die and cannot both show. |
+| Chase Kick | Vega `face-natural-kick` | Magnus `face-natural-heavy` (heavy punch, +2) | 6 | 4 + 2. |
 
 Power Bomb's secondary gate is any punch. Chase Kick's secondary gate is a heavy punch. `secondaryDiceFor` excludes the active die and every opponent die.
 
@@ -47,7 +47,7 @@ Control each replacement test with the same faces and no EX:
 - Power Bomb alone deals 7. Crushing Throw with both rerolls non-Grab deals 6. Both applied deals 13 (7 + 6) or 7 + 6 + grab strikes. Those three numbers are distinct.
 - Chase Kick alone deals 6. Air Launcher deals 3. Both applied deals 9.
 
-Magnus Heavy as a face (`USE_FACE`, no secondary die) is also a heavy punch finisher and its primary Strike is 5 with no bonus. If `exGate` is the class and role, that face is a legal Crushing Throw window and the damage is 6, not 5, not 11. Ryu Charge (`face-natural-ryu-charge`) is a heavy punch finisher on the wrong fighter, and its face `meterCost` of 1 is spent in `conductCombatAction`, not at declaration.
+Magnus Heavy as a face (`USE_FACE`, no secondary die) is also a heavy punch finisher and its primary Strike is 5 with no bonus. If `exGate` is the class and role, that face is a legal Crushing Throw window and the damage is 6, not 5, not 11. Ryu Charge (`face-natural-charge`) is a heavy punch finisher on the wrong fighter, and its face `meterCost` of 1 is spent in `conductCombatAction`, not at declaration.
 
 ### Meter after a hit that actually resolves
 
@@ -96,9 +96,9 @@ Priority after `openCombatAction` belongs to the attacker (`openReactionWindow(.
 | Wrong gate, light punch | Active Magnus showing `face-natural-jab`. `USE_FACE`. | `PLAY_CARD` Crushing Throw. | Illegal. Jab is a light punch starter. |
 | Wrong gate, kick | Active Vega, Chase Kick declared (Kick + Heavy). | `PLAY_CARD` Crushing Throw. | Illegal. Kick finisher is not a heavy punch finisher. |
 | Wrong gate, right class, wrong role | Active Magnus, Lariat Throw (`technique-magnus-lariat-throw`, heavy punch extender). Needs a combo first: a legal starter, resolve it, then the extender. | `PLAY_CARD` Crushing Throw. | Illegal. |
-| Wrong fighter | Active Ryu showing `face-natural-ryu-charge` (heavy punch finisher). Meter at least 1 so the face itself is affordable. `USE_FACE`. | `PLAY_CARD` Crushing Throw. | Illegal even though the class and role match. Magnus is not Active, and the source is Ryu. |
+| Wrong fighter | Active Ryu showing `face-natural-charge` (heavy punch finisher). Meter at least 1 so the face itself is affordable. `USE_FACE`. | `PLAY_CARD` Crushing Throw. | Illegal even though the class and role match. Magnus is not Active, and the source is Ryu. |
 | Named Fighter Active, other source | Active Magnus, Ryu in Reserve showing Charge. `USE_FACE` on Ryu. Meter 8. | `PLAY_CARD` Crushing Throw. | Illegal. Magnus is Active, but the hit is Ryu's. Meter unchanged. |
-| Heavy face, same gate | Active Magnus showing `face-natural-magnus-heavy`. `USE_FACE`. Meter 8. | `PLAY_CARD` Crushing Throw, then resolve with two non-Grab scripted slots. | Legal. Damage is 6, not 5, not 11. |
+| Heavy face, same gate | Active Magnus showing `face-natural-heavy`. `USE_FACE`. Meter 8. | `PLAY_CARD` Crushing Throw, then resolve with two non-Grab scripted slots. | Legal. Damage is 6, not 5, not 11. |
 
 Air Launcher's gate is a kick finisher of any strength. Chase Kick (heavy) is the catalogue case and must be legal. A `testCard` / test technique that is a light kick finisher on Vega must also be legal. A heavy punch finisher must not be. If the only test is Chase Kick, a gate that secretly requires heavy still passes.
 

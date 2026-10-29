@@ -11,15 +11,15 @@ import { lookupOverlayFace } from "./runtimeOverlay.js";
 
 export const JAB: FaceCardId = asFaceCardId("face-natural-jab");
 
-export const MAGNUS_GRAB: FaceCardId = asFaceCardId("face-natural-magnus-grab");
-export const MAGNUS_LARIAT: FaceCardId = asFaceCardId("face-natural-magnus-lariat");
-export const MAGNUS_HEAVY: FaceCardId = asFaceCardId("face-natural-magnus-heavy");
-export const VEGA_KICK: FaceCardId = asFaceCardId("face-natural-vega-kick");
-export const VEGA_DASH: FaceCardId = asFaceCardId("face-natural-vega-dash");
-export const VEGA_RUSH: FaceCardId = asFaceCardId("face-natural-vega-rush");
-export const RYU_PROJECTILE: FaceCardId = asFaceCardId("face-natural-ryu-projectile");
-export const RYU_FOCUS: FaceCardId = asFaceCardId("face-natural-ryu-focus");
-export const RYU_CHARGE: FaceCardId = asFaceCardId("face-natural-ryu-charge");
+export const GRAB: FaceCardId = asFaceCardId("face-natural-grab");
+export const LARIAT: FaceCardId = asFaceCardId("face-natural-lariat");
+export const HEAVY: FaceCardId = asFaceCardId("face-natural-heavy");
+export const KICK: FaceCardId = asFaceCardId("face-natural-kick");
+export const DASH: FaceCardId = asFaceCardId("face-natural-dash");
+export const RUSH: FaceCardId = asFaceCardId("face-natural-rush");
+export const PROJECTILE: FaceCardId = asFaceCardId("face-natural-projectile");
+export const FOCUS: FaceCardId = asFaceCardId("face-natural-focus");
+export const CHARGE: FaceCardId = asFaceCardId("face-natural-charge");
 
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);

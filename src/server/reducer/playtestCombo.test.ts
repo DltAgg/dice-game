@@ -18,12 +18,12 @@ import { expectOk, handCardIdAt, P1, P2, resolveOpenChain, withHand } from "../t
 import { advance } from "./reduce.js";
 
 const JAB = asFaceCardId("face-natural-jab");
-const KICK = asFaceCardId("face-natural-vega-kick");
-const GRAB = asFaceCardId("face-natural-magnus-grab");
-const DASH = asFaceCardId("face-natural-vega-dash");
-const PROJECTILE = asFaceCardId("face-natural-ryu-projectile");
-const RUSH = asFaceCardId("face-natural-vega-rush");
-const CHARGE = asFaceCardId("face-natural-ryu-charge");
+const KICK = asFaceCardId("face-natural-kick");
+const GRAB = asFaceCardId("face-natural-grab");
+const DASH = asFaceCardId("face-natural-dash");
+const PROJECTILE = asFaceCardId("face-natural-projectile");
+const RUSH = asFaceCardId("face-natural-rush");
+const CHARGE = asFaceCardId("face-natural-charge");
 
 function inActions(): GameState {
   const match = createMatch({

@@ -5,7 +5,7 @@ import { showingFaceTooltip } from "./showingFaceTooltip";
 
 describe("showing face tooltip", () => {
   it("lists type, strength, role, action, and printed abilities", () => {
-    const dash = getFaceCard(asFaceCardId("face-natural-vega-dash"));
+    const dash = getFaceCard(asFaceCardId("face-natural-dash"));
     if (dash === undefined) throw new Error("dash");
     expect(showingFaceTooltip(dash)).toEqual({
       facts: [
@@ -24,7 +24,7 @@ describe("showing face tooltip", () => {
   });
 
   it("keeps a meter sentence that is not the type or strength", () => {
-    const charge = getFaceCard(asFaceCardId("face-natural-ryu-charge"));
+    const charge = getFaceCard(asFaceCardId("face-natural-charge"));
     if (charge === undefined) throw new Error("charge");
     const detail = showingFaceTooltip(charge);
     expect(detail.facts).toEqual([

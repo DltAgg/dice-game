@@ -14,11 +14,11 @@ import { advance } from "@server/reducer/reduce.js";
 import { hitButtonLabel, stagedShowingDrop } from "./showingFaceDrop";
 
 const JAB = asFaceCardId("face-natural-jab");
-const KICK = asFaceCardId("face-natural-vega-kick");
-const PROJECTILE = asFaceCardId("face-natural-ryu-projectile");
-const FOCUS = asFaceCardId("face-natural-ryu-focus");
-const GRAB = asFaceCardId("face-natural-magnus-grab");
-const DASH = asFaceCardId("face-natural-vega-dash");
+const KICK = asFaceCardId("face-natural-kick");
+const PROJECTILE = asFaceCardId("face-natural-projectile");
+const FOCUS = asFaceCardId("face-natural-focus");
+const GRAB = asFaceCardId("face-natural-grab");
+const DASH = asFaceCardId("face-natural-dash");
 
 function inActions(): GameState {
   const match = createMatch({
@@ -86,8 +86,8 @@ describe("staged showing-face drops", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
-    const rush = asFaceCardId("face-natural-vega-rush");
-    const charge = asFaceCardId("face-natural-ryu-charge");
+    const rush = asFaceCardId("face-natural-rush");
+    const charge = asFaceCardId("face-natural-charge");
     state = show(show(state, vega, rush), ryu, charge);
     expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({
       kind: "pending",

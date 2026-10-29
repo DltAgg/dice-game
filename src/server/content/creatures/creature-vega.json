@@ -21,16 +21,16 @@
   "baseDie": [
     "face-natural-jab",
     "face-natural-jab",
-    "face-natural-vega-kick",
-    "face-natural-vega-dash",
-    "face-natural-vega-dash",
-    "face-natural-vega-rush"
+    "face-natural-kick",
+    "face-natural-dash",
+    "face-natural-dash",
+    "face-natural-rush"
   ],
   "techniques": [
     {
       "id": "technique-vega-step-jab",
       "name": "Step Kick",
-      "primaryFaceId": "face-natural-vega-kick",
+      "primaryFaceId": "face-natural-kick",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "faceType": "projectile" },
@@ -47,7 +47,7 @@
     {
       "id": "technique-vega-confirm-kick",
       "name": "Confirm Kick",
-      "primaryFaceId": "face-natural-vega-dash",
+      "primaryFaceId": "face-natural-dash",
       "hitStrength": "medium",
       "hitType": "kick",
       "secondary": { "hitStrength": "light", "hitType": "kick" },
@@ -64,7 +64,7 @@
     {
       "id": "technique-vega-chase-kick",
       "name": "Chase Kick",
-      "primaryFaceId": "face-natural-vega-rush",
+      "primaryFaceId": "face-natural-rush",
       "hitStrength": "heavy",
       "hitType": "kick",
       "secondary": { "hitStrength": "heavy", "hitType": "punch" },

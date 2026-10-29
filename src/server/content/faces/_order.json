@@ -1,13 +1,13 @@
 [
   "face-natural-jab",
-  "face-natural-magnus-grab",
-  "face-natural-magnus-lariat",
-  "face-natural-magnus-heavy",
-  "face-natural-vega-kick",
-  "face-natural-vega-dash",
-  "face-natural-vega-rush",
-  "face-natural-ryu-projectile",
-  "face-natural-ryu-focus",
-  "face-natural-ryu-charge",
-  "face-natural-ryu-form"
+  "face-natural-grab",
+  "face-natural-lariat",
+  "face-natural-heavy",
+  "face-natural-kick",
+  "face-natural-dash",
+  "face-natural-rush",
+  "face-natural-projectile",
+  "face-natural-focus",
+  "face-natural-charge",
+  "face-natural-form"
 ]

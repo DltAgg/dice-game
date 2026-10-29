@@ -1,18 +1,19 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-ryu-projectile",
-  "name": "Projectile",
-  "faceType": "projectile",
-  "sequenceRole": "starter",
-  "hitStrength": "medium",
+  "id": "face-natural-charge",
+  "name": "Charge",
+  "faceType": "attack",
+  "sequenceRole": "finisher",
+  "meterCost": 1,
+  "hitStrength": "heavy",
   "hitType": "punch",
-  "rulesText": "Medium Punch · Starter. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Heavy Punch · Finisher. Spend 1 Meter. Primary: [Strike 4]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 2,
+      "amount": 4,
       "target": { "kind": "declared-target" }
     }
   ],

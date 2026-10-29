@@ -3,7 +3,7 @@ import type { AttackDefinition } from "../model/creatures.js";
 import { asAttackId } from "../model/ids.js";
 import { secondaryMatches } from "../rules/faceActions.js";
 import { ALL_CREATURES, MAGNUS, RYU, VEGA } from "./creatures.js";
-import { ALL_FACE_CARDS, getFaceCard, JAB, MAGNUS_LARIAT, RYU_FOCUS, VEGA_KICK } from "./faces.js";
+import { ALL_FACE_CARDS, FOCUS, getFaceCard, JAB, KICK, LARIAT } from "./faces.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine } from "./creatureText.js";
 
 const TAG_SQUAD = [VEGA, MAGNUS, RYU] as const;
@@ -30,7 +30,7 @@ describe("creature catalogue", () => {
     const step = VEGA && ALL_CREATURES.find((entry) => entry.id === VEGA);
     const stepKick = step?.techniques?.find((technique) => technique.id === "technique-vega-step-jab");
     expect(stepKick?.name).toBe("Step Kick");
-    expect(stepKick?.primaryFaceId).toBe(VEGA_KICK);
+    expect(stepKick?.primaryFaceId).toBe(KICK);
     expect(stepKick?.sequenceRole).toBe("starter");
     expect(stepKick?.effects[0]).toMatchObject({ type: "damage", amount: 3 });
     expect(stepKick?.secondary).toEqual({
@@ -39,7 +39,7 @@ describe("creature catalogue", () => {
     const collar = ALL_CREATURES.find((entry) => entry.id === MAGNUS);
     const lariatTie = collar?.techniques?.find((technique) => technique.id === "technique-magnus-collar-tie");
     expect(lariatTie?.name).toBe("Lariat Tie");
-    expect(lariatTie?.primaryFaceId).toBe(MAGNUS_LARIAT);
+    expect(lariatTie?.primaryFaceId).toBe(LARIAT);
     expect(lariatTie?.sequenceRole).toBe("starter");
     expect(lariatTie?.effects[0]).toMatchObject({ type: "damage", amount: 3 });
     expect(lariatTie?.secondary).toEqual({
@@ -49,7 +49,7 @@ describe("creature catalogue", () => {
     const check = ALL_CREATURES.find((entry) => entry.id === RYU);
     const checkFocus = check?.techniques?.find((technique) => technique.id === "technique-ryu-check-fire");
     expect(checkFocus?.name).toBe("Check Focus");
-    expect(checkFocus?.primaryFaceId).toBe(RYU_FOCUS);
+    expect(checkFocus?.primaryFaceId).toBe(FOCUS);
     expect(checkFocus?.sequenceRole).toBe("starter");
     expect(checkFocus?.effects[0]).toMatchObject({ type: "damage", amount: 2 });
     expect(checkFocus?.secondary).toEqual({

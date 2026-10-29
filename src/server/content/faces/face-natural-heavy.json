@@ -1,22 +1,22 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-magnus-lariat",
-  "name": "Lariat",
+  "id": "face-natural-heavy",
+  "name": "Heavy",
   "faceType": "attack",
-  "sequenceRole": "extender",
+  "sequenceRole": "finisher",
   "hitStrength": "heavy",
   "hitType": "punch",
-  "rulesText": "Heavy Punch · Extender. Primary: [Strike 3]. Secondary: +1 damage.",
+  "rulesText": "Heavy Punch · Finisher. Primary: [Strike 5]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 3,
+      "amount": 5,
       "target": { "kind": "declared-target" }
     }
   ],
-  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 2 }],
   "maxOverloads": 0,
   "forgeRestriction": null
 }
