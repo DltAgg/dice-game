@@ -96,7 +96,8 @@ Priority after `openCombatAction` belongs to the attacker (`openReactionWindow(.
 | Wrong gate, light punch | Active Magnus showing `face-natural-jab`. `USE_FACE`. | `PLAY_CARD` Crushing Throw. | Illegal. Jab is a light punch starter. |
 | Wrong gate, kick | Active Vega, Chase Kick declared (Kick + Heavy). | `PLAY_CARD` Crushing Throw. | Illegal. Kick finisher is not a heavy punch finisher. |
 | Wrong gate, right class, wrong role | Active Magnus, Lariat Throw (`technique-magnus-lariat-throw`, heavy punch extender). Needs a combo first: a legal starter, resolve it, then the extender. | `PLAY_CARD` Crushing Throw. | Illegal. |
-| Wrong fighter | Active Ryu showing `face-natural-ryu-charge` (heavy punch finisher). Meter at least 1 so the face itself is affordable. `USE_FACE`. | `PLAY_CARD` Crushing Throw. | Illegal even though the class and role match. Source definition is Ryu. |
+| Wrong fighter | Active Ryu showing `face-natural-ryu-charge` (heavy punch finisher). Meter at least 1 so the face itself is affordable. `USE_FACE`. | `PLAY_CARD` Crushing Throw. | Illegal even though the class and role match. Magnus is not Active, and the source is Ryu. |
+| Named Fighter Active, other source | Active Magnus, Ryu in Reserve showing Charge. `USE_FACE` on Ryu. Meter 8. | `PLAY_CARD` Crushing Throw. | Illegal. Magnus is Active, but the hit is Ryu's. Meter unchanged. |
 | Heavy face, same gate | Active Magnus showing `face-natural-magnus-heavy`. `USE_FACE`. Meter 8. | `PLAY_CARD` Crushing Throw, then resolve with two non-Grab scripted slots. | Legal. Damage is 6, not 5, not 11. |
 
 Air Launcher's gate is a kick finisher of any strength. Chase Kick (heavy) is the catalogue case and must be legal. A `testCard` / test technique that is a light kick finisher on Vega must also be legal. A heavy punch finisher must not be. If the only test is Chase Kick, a gate that secretly requires heavy still passes.

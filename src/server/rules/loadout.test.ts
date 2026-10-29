@@ -50,7 +50,7 @@ const identityPair = (): readonly [DieFaceLayout, DieFaceLayout] => [
 
 describe("validateTacticsDeck", () => {
   it("accepts the Tag Skirmish tactics list under TAG_FIGHTER_RULES", () => {
-    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(22);
+    expect(TAG_SKIRMISH_LOADOUT.deck).toHaveLength(24);
     expect(responseCombatCount(TAG_SKIRMISH_LOADOUT.deck)).toBe(6);
     expect(validateTacticsDeck(TAG_SKIRMISH_LOADOUT.deck, TAG_FIGHTER_RULES)).toEqual({
       ok: true,
@@ -233,7 +233,7 @@ describe("validateTacticsDeck", () => {
         {
           ...TAG_SKIRMISH_LOADOUT,
           squad: [VEGA, RYU, VEGA],
-          deck: [...TAG_SKIRMISH_LOADOUT.deck, CRUSHING_THROW],
+          deck: [CRUSHING_THROW, ...TAG_SKIRMISH_LOADOUT.deck.slice(1)],
         },
         TAG_FIGHTER_RULES,
       ),

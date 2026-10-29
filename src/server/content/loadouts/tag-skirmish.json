@@ -14,7 +14,9 @@
     { "cardId": "card-open-manual", "copies": 2 },
     { "cardId": "card-shift", "copies": 2 },
     { "cardId": "card-call-out", "copies": 2 },
-    { "cardId": "card-anchor", "copies": 2 }
+    { "cardId": "card-anchor", "copies": 2 },
+    { "cardId": "card-crushing-throw", "copies": 1 },
+    { "cardId": "card-air-launcher", "copies": 1 }
   ],
   "faceDeck": [
     "face-natural-jab",

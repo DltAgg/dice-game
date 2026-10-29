@@ -20,6 +20,6 @@
     "strikePer": 2
   },
   "exAttackBan": true,
-  "rulesText": "Heavy Punch Finisher. [Strike 6]. Reroll your Magnus die 2 times. [Strike 2] for each Grab rolled. Magnus cannot attack during your next turn.",
+  "rulesText": "Magnus is Active. Heavy Punch Finisher. [Strike 6]. Reroll your Magnus die 2 times. [Strike 2] for each Grab rolled. Magnus cannot attack during your next turn.",
   "forge": { "faces": 1, "target": "own-die" }
 }

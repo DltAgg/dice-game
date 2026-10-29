@@ -53,7 +53,9 @@ The gate is the object `exGate` on the card:
 - `hitType` (`HitType`)
 - `hitStrength` (`HitStrength`), optional
 
-The top `combat-action` matches when its `sequenceRole` and `hitType` equal the gate. When `hitStrength` is present, the link's `hitStrength` must equal it. When `hitStrength` is omitted, any strength matches. The check does not look at the technique id or the face id. The attack does not have to come from the `fighterRestriction` Fighter. That Fighter only has to be living on the player's squad so the card can be played.
+The top `combat-action` matches when its `sequenceRole` and `hitType` equal the gate. When `hitStrength` is present, the link's `hitStrength` must equal it. When `hitStrength` is omitted, any strength matches. The check does not look at the technique id or the face id.
+
+The `fighterRestriction` Fighter must also be that player's Active Fighter (`activeCreatureId`), and the hit's `sourceCreatureId` must be that Fighter. Living on the squad is not enough. Air Launcher is legal only when Vega is Active and the hit is Vega's kick finisher. Crushing Throw is legal only when Magnus is Active and the hit is Magnus's heavy punch finisher. A matching hit from another Fighter is illegal, including when the named Fighter is Active and someone else declared the hit.
 
 Crushing Throw's gate is finisher, punch, heavy. Power Bomb (`technique-magnus-power-bomb` on `creature-magnus`) matches: heavy punch finisher, Strike 5, Grab + punch. The EX replaces that Strike 5.
 
@@ -189,7 +191,7 @@ Because `finishTurn` does not run, the combo reset, the draw, the toxin tick, an
 
 Do not mint a bracket. Do not add `[EX]`, `[Reroll]`, or `[Spend]`. Do not put EX under `### New tokens`. `[Strike N]`, `[Counter]`, and `[Parry]` stay the print for those effects. `docs/KEYWORDS.md` current-print prose says a Modify may also replace a qualifying attack when it is EX.
 
-These two cards are not added to the tag-skirmish deck in this spec.
+Tag Skirmish includes one copy of each card. The list was 22 cards and the cap is 24, so the builtin deck does not carry a second copy of either.
 
 ### Conflicts recorded
 
@@ -238,7 +240,7 @@ A test can check each of these. This list is the behavior, not the test code.
 6. After a sequence hit is declared, `pendingDecision` is `reaction-priority` and the declarer has priority. A matching EX card is legal then. It is illegal after that player passes, when any link sits above that `combat-action`, when the top link is not a non-negated `combat-action` that player controls, and when `exGate` does not match. Each illegal play returns an error and does not change Meter.
 7. A successful play spends `meterCost` before the window reopens, sets `exReplaced` on that `combat-action`, pushes the EX card above it, leaves the attack's kind as `combat-action`, and leaves priority with the same player.
 8. The replaced attack's original effects do not run, its original Strike does not happen, and its sequence-hit Meter spend and gain do not run. The link still settles its sequence role. A non-negated finisher still ends the sequence.
-9. Power Bomb matches Crushing Throw. Chase Kick matches Air Launcher. A heavy punch that is not a finisher does not match Crushing Throw. A heavy punch finisher does not match Air Launcher.
+9. Power Bomb matches Crushing Throw when Magnus is Active and declared it. Chase Kick matches Air Launcher when Vega is Active and declared it. A heavy punch that is not a finisher does not match Crushing Throw. A heavy punch finisher does not match Air Launcher. A matching hit from another Fighter does not match, whether or not the named Fighter is Active.
 10. Playing an EX card with Meter below `meterCost` returns an error and leaves Meter unchanged. Playing it at Meter 8 with `meterCost` 8 spends 8 and leaves 0. A second play that needs Meter cannot spend Meter the first play already spent.
 11. Parry stays legal against the replaced `combat-action` under the existing target and timing checks, including when the EX link sits above it. It negates that attack and ends the sequence. The EX body does not apply. Meter spent to play the EX card is not refunded.
 12. Counter stays illegal against a top link whose kind is `combat-action` or `attack`. Counter is also illegal when the top link is an EX card, returns an error, and spends nothing. Counter against a non-EX card that is the top link stays legal. Other Responses and Modifies are unchanged.

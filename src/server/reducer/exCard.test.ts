@@ -783,20 +783,34 @@ describe("spec 035 EX cards", () => {
     expect(crushing.extraActionPhases).toBe(0);
   });
 
-  it("lets a heavy punch from another Fighter match Crushing Throw", () => {
+  it("refuses Crushing Throw unless Magnus is Active and declared the hit", () => {
     const opened = actions();
     const ryu = fighter(opened, P1, RYU);
-    const ready = withHand(withMeter(show(withActive(opened, P1, ryu), ryu, CHARGE), P1, 8), P1, [
-      THROW.id,
-    ]);
-    const declared = expectOk(advance(ready, { type: "USE_FACE", playerId: P1, creatureId: ryu }));
-    const defender = defenderId(declared);
-    const played = expectOk(play(declared, P1));
-    expect(played.chainStack[0]?.exReplaced).toBe(true);
-    const resolved = resolvePlayed(played, [0, 3]);
-    expect(damage(resolved, defender)).toBe(6);
-    expect(meterOf(resolved, P1)).toBe(0);
-    expect(resolved.activePlayerId).toBe(P2);
+    const magnus = fighter(opened, P1, MAGNUS);
+    const ryuActive = withHand(
+      withMeter(show(withActive(opened, P1, ryu), ryu, CHARGE), P1, 8),
+      P1,
+      [THROW.id],
+    );
+    const declared = expectOk(advance(ryuActive, { type: "USE_FACE", playerId: P1, creatureId: ryu }));
+    const refused = play(declared, P1);
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.error).toBe("CARD_NOT_AVAILABLE");
+    expect(refused.state).toBe(declared);
+    expect(meterOf(declared, P1)).toBe(8);
+
+    const magnusActive = withHand(
+      withMeter(show(withActive(opened, P1, magnus), ryu, CHARGE), P1, 8),
+      P1,
+      [THROW.id],
+    );
+    const otherHit = expectOk(
+      advance(magnusActive, { type: "USE_FACE", playerId: P1, creatureId: ryu }),
+    );
+    const stillRefused = play(otherHit, P1);
+    expect(stillRefused.ok).toBe(false);
+    expect(stillRefused.state).toBe(otherHit);
+    expect(meterOf(otherHit, P1)).toBe(8);
   });
 
   it("does not spend a queued extra actions phase on END_TURN", () => {

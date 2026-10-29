@@ -23,7 +23,7 @@ Drawing a card when your deck is empty loses. There is no reshuffle. Milling car
 
 Each player brings three Fighters, one die for each Fighter, and one shared deck of 10 to 24 cards. A deck has at most 3 copies of one card. A tag-fighter deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. The opening hand is 5. There is no maximum hand size.
 
-A deck may also include at most 2 EX cards for each Fighter, counted separately. Two for Magnus and two for Vega are allowed. Three copies of one EX card are not, even though another card may still have 3 copies. An EX card may name a Fighter who is not in your squad. You still cannot play it unless that Fighter is on your squad and alive.
+A deck may also include at most 2 EX cards for each Fighter, counted separately. Two for Magnus and two for Vega are allowed. Three copies of one EX card are not, even though another card may still have 3 copies. An EX card may name a Fighter who is not in your squad. You still cannot play it unless that Fighter is on your squad, alive, and your Active Fighter.
 
 Cards are **Response** or **Modify**. An EX card is a Modify, not a card type. Tag is an operation, not a card type. Assist is on the Fighter, not a card.
 
@@ -63,7 +63,7 @@ Playing a card spends its Meter cost when the play is legal, before anyone else 
 
 A sequence hit’s Meter is a different payment. It is spent when that hit resolves and is not negated, as the first paragraph says. An EX card spends its own Meter when you play it. The hit it replaces does not also spend or grant its sequence-hit Meter.
 
-No card in the tag-skirmish deck has an ordinary Meter cost. Open Palm spends 2 Meter to play it outside a Chain. Call Out spends 2 Meter. Both are that exceptional cost. An EX card’s cost is ordinary Meter, paid when you play it. That cost may be 8, the whole pool. A later Parry or Counter does not give that Meter back. You cannot spend the same Meter twice.
+Crushing Throw and Air Launcher each cost 8 Meter, the whole pool, paid when you play them. Open Palm spends 2 Meter to play it outside a Chain. Call Out spends 2 Meter. Both of those are an exceptional cost. A later Parry or Counter does not give that Meter back. You cannot spend the same Meter twice.
 
 ## 7. The sequence
 
@@ -140,21 +140,21 @@ Anchor’s current print attaches and draws 1 at the start of your turn. That pr
 
 EX is a Modify you play on a hit you just declared, while you still have priority and that hit is the top of the Chain. You have not passed yet, and that hit is still the top object. The hit is yours, it is not negated, and it matches that card. After you pass, or after anything else is added above the hit, that EX card is illegal. It uses the priority you already have.
 
-The card names one Fighter. That Fighter must be on your squad and alive. The gate is the hit’s role, strike, and strength. The deck limit in section 2 is separate from this: the squad check happens when you play.
+The card names one Fighter. That Fighter must be your Active Fighter. The hit you replace must be that Fighter’s, and it must match the card: role, strike, and strength. Another Fighter’s hit does not qualify, even when the named Fighter is the one in front. The deck limit in section 2 is separate from this.
 
 Playing it spends its Meter, then puts the EX card on the Chain above the hit. You keep priority. The hit’s printed Strike does not happen. If the hit is a finisher, the sequence still ends.
 
 `[Parry]` can still negate that hit. If it does, the EX card’s effect does not happen. The Meter you spent stays spent. `[Counter]` is illegal while an EX card is the top of the Chain. Counter remains illegal against a hit.
 
-**Crushing Throw** is Magnus’s EX card. It costs 8 Meter. It replaces a heavy punch finisher. Power Bomb is that kind of hit. The printed Strike is replaced by `[Strike 6]`, then you reroll Magnus’s die twice, then `[Strike 2]` for each of those two rolls that lands on Grab. Both rolls count, and the die ends on the second roll. Only Magnus’s die rolls. Then Magnus cannot attack on your next turn.
+**Crushing Throw** is Magnus’s EX card. It costs 8 Meter. Magnus must be your Active Fighter, and the hit must be Magnus’s heavy punch finisher. Power Bomb is that kind of hit. The printed Strike is replaced by `[Strike 6]`, then you reroll Magnus’s die twice, then `[Strike 2]` for each of those two rolls that lands on Grab. Both rolls count, and the die ends on the second roll. Only Magnus’s die rolls. Then Magnus cannot attack on your next turn.
 
 That ban is your next turn. An extra actions phase on this turn is still this turn, so Magnus can still attack during it. On the banned turn, Magnus cannot use a face, a Technique, or a hit Assist. You can still play Responses. Magnus can still use a non-hit Assist. You can still Tag. Your other Fighters can still attack. If the hit was negated, the ban does not start.
 
-**Air Launcher** is Vega’s EX card. It costs 8 Meter. It replaces a kick finisher of any strength. Chase Kick is that kind of hit. The printed Strike is replaced by `[Strike 3]`. Then you reroll each of your dice once, including Reserve and defeated Fighters. The opponent’s dice stay as they are. This is not your once-per-turn reroll, and you do not get another opening reroll. Then you take one extra actions phase.
+**Air Launcher** is Vega’s EX card. It costs 8 Meter. Vega must be your Active Fighter, and the hit must be Vega’s kick finisher of any strength. Chase Kick is that kind of hit. The printed Strike is replaced by `[Strike 3]`. Then you reroll each of your dice once, including Reserve and defeated Fighters. The opponent’s dice stay as they are. This is not your once-per-turn reroll, and you do not get another opening reroll. Then you take one extra actions phase.
 
 The sequence still ends, because the hit was a finisher. When it would hand the turn over, you stay the active player and start that extra actions phase. The turn number stays, you do not draw, and you do not reroll for the opening of a turn. One Air Launcher gives one extra phase. Playing it again on a later sequence can give another. Choosing to end the turn does not spend a stored extra phase. The extra phase is not a new turn. If the hit was negated, you do not get the phase.
 
-These two cards are the EX rules. They are not in the tag-skirmish deck yet.
+Tag Skirmish includes one copy of each of these cards.
 
 ## 14. What this rulebook is not
 

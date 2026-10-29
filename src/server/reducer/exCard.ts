@@ -48,11 +48,29 @@ export function exPlayError(
     top.kind !== "combat-action" ||
     top.negated ||
     top.controllerId !== playerId ||
-    !gateMatches(top, definition.exGate)
+    !gateMatches(top, definition.exGate) ||
+    !hitFromActiveFighter(draft, playerId, definition, top)
   ) {
     return "CARD_NOT_AVAILABLE";
   }
   return null;
+}
+
+/** The EX Fighter is Active, and this hit is that Fighter's. */
+function hitFromActiveFighter(
+  draft: Draft,
+  playerId: PlayerId,
+  definition: CardDefinition,
+  link: ChainLink,
+): boolean {
+  const restriction = definition.fighterRestriction;
+  if (restriction === undefined) return false;
+  const activeId = draft.players[playerId]?.activeCreatureId;
+  if (activeId === undefined) return false;
+  const active = draft.creatures[activeId];
+  if (active === undefined || active.defeated) return false;
+  if (active.definitionId !== restriction) return false;
+  return link.sourceCreatureId === active.id;
 }
 
 /** Mark the attack under an EX card. Called only after Meter spend succeeds. */
