@@ -348,7 +348,7 @@ function applyAction(draft: Draft, action: GameAction, rng: RNG): GameError | nu
     case "ACTIVATE_FACE":
       return activateFace(draft, action.playerId, action.dieId, action.slotIndex);
     case "PASS_PRIORITY":
-      return passPriority(draft, action.playerId);
+      return passPriority(draft, action.playerId, rng);
     case "ADVANCE_PHASE":
       return advancePhase(draft);
     case "END_TURN":

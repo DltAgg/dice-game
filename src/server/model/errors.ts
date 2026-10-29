@@ -17,6 +17,8 @@ export type GameError =
   | "FACE_NOT_AVAILABLE"
   | "CREATURE_DEFEATED"
   | "ATTACK_ALREADY_USED"
+  /** Spec `035`. This Fighter cannot attack while `attackBannedOnTurn` is this turn. */
+  | "ATTACK_BANNED"
   /** A once-per-turn action (tactic Overcharge) was already used this turn. */
   | "ALREADY_USED"
   | "DIE_STUNNED"

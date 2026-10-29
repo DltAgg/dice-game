@@ -12,6 +12,7 @@ import {
   secondaryDiceFor,
 } from "../../rules/faceActions.js";
 import { emit, type Draft } from "../draft.js";
+import { attackBanError } from "../exCard.js";
 import { openCombatAction, sequenceActionUsed, sequenceDeclarationError } from "../offensive.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { markPlayerSpent } from "../triggerSpent.js";
@@ -54,6 +55,8 @@ export function useTechnique(
   const creature = draft.creatures[creatureId];
   if (creature === undefined) return "UNKNOWN_ENTITY";
   if (creature.defeated) return "CREATURE_DEFEATED";
+  const banned = attackBanError(creature, draft.turn);
+  if (banned !== null) return banned;
 
   const activeDie = dieForCreature(draft, creatureId);
   if (activeDie === undefined) return "UNKNOWN_ENTITY";
@@ -130,6 +133,7 @@ export function useTechnique(
       meterCost: technique.meterCost ?? 0,
       meterGain: technique.meterGain ?? 0,
       hitStrength: technique.hitStrength,
+      hitType: technique.hitType,
       sequenceActionId,
       endsSequence: technique.endsSequence === true,
       passesInitiative: technique.passesInitiative === true,

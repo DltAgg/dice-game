@@ -46,6 +46,7 @@ export function linkMatchesNegateCard(
   cardTypes: readonly CardType[] | "any",
 ): boolean {
   if (link.negated || !isNegatableLinkKind(link.kind)) return false;
+  if (linkSubtypes(draft, link).includes("ex")) return false;
   if (cardTypes === "any") return true;
   if (link.cardInstanceId === null) return false;
   const instance = draft.cards[link.cardInstanceId];
@@ -58,6 +59,13 @@ export function linkMatchesNegateCard(
 /** Seal the Rite / `negate-ritual` — ritual place or activate only. Spec `008`. */
 export const isRitualNegatableLinkKind = (kind: ChainLinkKind): boolean =>
   kind === "ritual-place" || kind === "ritual-activate";
+
+function linkSubtypes(draft: Draft, link: ChainLink): readonly string[] {
+  if (link.cardInstanceId === null) return [];
+  const instance = draft.cards[link.cardInstanceId];
+  if (instance === undefined) return [];
+  return getCard(instance.cardId)?.subtypes ?? [];
+}
 
 export function topChainLink(draft: Draft): ChainLink | undefined {
   return draft.chainStack[draft.chainStack.length - 1];

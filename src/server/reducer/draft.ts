@@ -71,6 +71,7 @@ export interface Draft {
   offenseSeizedBy: PlayerId | null;
   pendingOffenseSettle: PendingOffenseSettle | null;
   endSequenceAfterChain: boolean;
+  extraActionPhases: number;
   winner: PlayerId | null;
   log: LoggedEvent[];
   rng: RngState;

@@ -189,4 +189,9 @@ export interface CreatureState {
    * and ends when that turn ends. Assist and a KO replacement ignore it.
    */
   readonly tagInLockedUntilTurn?: number;
+  /**
+   * Spec `035`. This Fighter cannot declare a face action, a Technique, or a
+   * hit Assist while `GameState.turn` equals this value. Absent means no ban.
+   */
+  readonly attackBannedOnTurn?: number;
 }

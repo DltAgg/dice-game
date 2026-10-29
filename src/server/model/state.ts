@@ -91,6 +91,11 @@ export interface ChainLink {
   readonly tagReserveId?: CreatureId;
   /** Set when the link is an Assist. Conducted by the shared chain. */
   readonly assistReserveId?: CreatureId;
+  /**
+   * Spec `035`. Set on the combat-action an EX card replaced. Conduct skips
+   * that hit's Strike, its Meter spend, and its sequence-hit grant.
+   */
+  exReplaced?: boolean;
 }
 
 /**
@@ -301,6 +306,11 @@ export interface GameState {
    * chain is idle. Ending the sequence passes the turn.
    */
   readonly endSequenceAfterChain: boolean;
+  /**
+   * Spec `035`. Extra actions phases queued by a resolved EX body. A sequence
+   * handoff spends one. `END_TURN` does not.
+   */
+  readonly extraActionPhases: number;
   readonly winner: PlayerId | null;
   readonly log: readonly LoggedEvent[];
 

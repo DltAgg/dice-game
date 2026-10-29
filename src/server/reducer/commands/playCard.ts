@@ -27,6 +27,7 @@ import {
   topChainLink,
 } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
+import { exPlayError, isExCard, markReplacedAttack } from "../exCard.js";
 import { spendMeter } from "../meter.js";
 import { payCardRequires, payHeaderCost } from "../payments.js";
 import { moveCard, overloadFitsFace } from "../zones.js";
@@ -59,6 +60,7 @@ export function playCard(
 
   const definition = getCard(card.cardId);
   if (definition === undefined) return "UNKNOWN_ENTITY";
+  const ex = isExCard(definition);
 
   const restriction = cardRestrictionError(draft, playerId, definition);
   if (restriction !== null) return restriction;
@@ -74,9 +76,12 @@ export function playCard(
   });
   if (behaviorError !== null) return behaviorError;
 
-  // During a reaction window only a Response, a ritual reaction, or a
-  // Modify that names a subject may be added.
-  if (
+  // During a reaction window only a Response, a ritual reaction, a Modify
+  // that names a subject, or a legal EX card may be added.
+  if (ex) {
+    const gate = exPlayError(draft, playerId, definition);
+    if (gate !== null) return gate;
+  } else if (
     inReactionWindow &&
     !isReactionCard(definition) &&
     definition.modifySubject === undefined
@@ -98,7 +103,9 @@ export function playCard(
   }
 
   const region = definition.effect;
-  if (region === undefined && definition.modifySubject === undefined) return "CARD_HAS_NO_EFFECT";
+  if (region === undefined && definition.modifySubject === undefined && !ex) {
+    return "CARD_HAS_NO_EFFECT";
+  }
   const effects = region?.effects ?? [];
 
   if (declaredTargetCreatureId !== null) {
@@ -166,10 +173,11 @@ export function playCard(
   if (headerCostError !== null) return headerCostError;
   const meterError = spendMeter(draft, playerId, definition.meterCost ?? 0);
   if (meterError !== null) return meterError;
-  if (mode === "exceptional") {
+  if (mode === "exceptional" && !ex) {
     const exceptional = spendMeter(draft, playerId, definition.exceptionalMeterCost ?? 0);
     if (exceptional !== null) return exceptional;
   }
+  if (ex) markReplacedAttack(draft);
 
   emit(draft, { type: "card-played", playerId, cardInstanceId, cardId: card.cardId });
   // A moveset Modify stays in hand until it resolves onto the Fighter.

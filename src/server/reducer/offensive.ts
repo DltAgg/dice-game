@@ -98,7 +98,8 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
   const targetGone =
     targetId !== null &&
     (draft.creatures[targetId] === undefined || draft.creatures[targetId]?.defeated === true);
-  if (!negated && !targetGone) {
+  const replaced = link.exReplaced === true;
+  if (!negated && !targetGone && !replaced) {
     const spent = spendMeter(draft, link.controllerId, link.meterCost ?? 0);
     blocked = spent !== null;
     if (!blocked) {
@@ -232,8 +233,24 @@ export function endOffensiveSequence(draft: Draft, playerId: PlayerId): GameErro
 }
 
 function passTurnAfterSequence(draft: Draft, actorId: PlayerId): void {
+  handoffSequenceTurn(draft, actorId);
+}
+
+/**
+ * Spec `035`. A queued extra actions phase replaces this sequence handoff
+ * once. `END_TURN` does not call this. A finisher that already spent the
+ * count leaves `endSequenceAfterChain` clear, so the chain drain does not
+ * grant a second phase.
+ */
+export function handoffSequenceTurn(draft: Draft, actorId: PlayerId): void {
   if (draft.status === "finished") return;
   draft.usedSequenceActionIds = [];
   draft.pendingOffenseSettle = null;
+  if (draft.extraActionPhases > 0) {
+    draft.extraActionPhases -= 1;
+    beginOffensiveWindow(draft, actorId);
+    draft.rerollAvailable = false;
+    return;
+  }
   endTurn(draft, actorId);
 }

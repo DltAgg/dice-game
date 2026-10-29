@@ -2,9 +2,11 @@ import { getCreatureDefinition } from "../../content/creatures.js";
 import type { GameError } from "../../model/errors.js";
 import type { PlayerId } from "../../model/ids.js";
 import type { ChainLink } from "../../model/state.js";
+import { createRng, type RNG } from "../../rng/rng.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { attackIgnoreShieldAmount } from "../../rules/discounts.js";
 import { emit, patchCreature, type Draft } from "../draft.js";
+import { conductEx, linkIsExCard } from "../exCard.js";
 import { drainResolution, pushEffect } from "../resolution.js";
 import { tryFlushRollBankQueue } from "../rollBank.js";
 import {
@@ -18,11 +20,15 @@ import { relocateResolvedOneShot } from "./playCard.js";
 import { finishRitualActivation } from "./ritual.js";
 import { conductAssist } from "./assist.js";
 import { conductTag } from "./tag.js";
-import { endTurn } from "./turn.js";
-import { conductCombatAction, flushPendingOffenseSettle, noteOffenseSeize } from "../offensive.js";
+import {
+  conductCombatAction,
+  flushPendingOffenseSettle,
+  handoffSequenceTurn,
+  noteOffenseSeize,
+} from "../offensive.js";
 import { applyCardModify } from "../cardModify.js";
 
-export function passPriority(draft: Draft, playerId: PlayerId): GameError | null {
+export function passPriority(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null {
   const pending = draft.pendingDecision;
   if (pending === null || pending.type !== "reaction-priority") return "INVALID_PHASE";
   if (pending.priorityPlayerId !== playerId) return "NOT_PRIORITY_PLAYER";
@@ -35,7 +41,7 @@ export function passPriority(draft: Draft, playerId: PlayerId): GameError | null
       playerId,
       nextPriorityPlayerId: null,
     });
-    return drainChain(draft);
+    return drainChain(draft, rng);
   }
 
   const nextPriorityPlayerId = opponentOf(draft, playerId);
@@ -52,21 +58,21 @@ export function passPriority(draft: Draft, playerId: PlayerId): GameError | null
   return null;
 }
 
-export function resumeAfterEffectPause(draft: Draft): GameError | null {
+export function resumeAfterEffectPause(draft: Draft, rng: RNG = createRng(draft.rng)): GameError | null {
   drainResolution(draft);
   if (draft.pendingDecision !== null) return null;
   tryFlushRollBankQueue(draft);
   if (draft.pendingDecision !== null) return null;
   flushPendingOffenseSettle(draft);
   if (draft.pendingDecision !== null) return null;
-  return drainChain(draft);
+  return drainChain(draft, rng);
 }
 
 /**
  * After both seats pass, resolve the remaining chain LILO without reopening
  * windows between links (ASSUMED in `008`).
  */
-function drainChain(draft: Draft): GameError | null {
+function drainChain(draft: Draft, rng: RNG): GameError | null {
   while (draft.chainStack.length > 0) {
     if (draft.pendingDecision !== null) return null;
 
@@ -77,7 +83,7 @@ function drainChain(draft: Draft): GameError | null {
       draft.endSequenceAfterChain = true;
     }
 
-    conductLink(draft, link);
+    conductLink(draft, link, rng);
     if (draft.pendingDecision !== null) return null;
   }
 
@@ -86,9 +92,10 @@ function drainChain(draft: Draft): GameError | null {
   if (draft.pendingDecision !== null) return null;
   if (!draft.endSequenceAfterChain) return null;
   draft.endSequenceAfterChain = false;
-  // A finisher in this same chain already passed the turn.
+  // A finisher in this same chain already passed the turn, or already spent
+  // a queued extra actions phase inside that settle.
   if (draft.status === "finished" || draft.phase !== "actions") return null;
-  endTurn(draft, draft.activePlayerId);
+  handoffSequenceTurn(draft, draft.activePlayerId);
   return null;
 }
 
@@ -100,7 +107,7 @@ function clearChainRedirects(draft: Draft): void {
   }
 }
 
-function conductLink(draft: Draft, link: ChainLink): void {
+function conductLink(draft: Draft, link: ChainLink, rng: RNG): void {
   const negated = link.negated;
   emit(draft, {
     type: "chain-link-resolved",
@@ -143,6 +150,7 @@ function conductLink(draft: Draft, link: ChainLink): void {
 
   switch (link.kind) {
     case "tactic-effect": {
+      if (linkIsExCard(draft, link)) conductEx(draft, link, rng);
       applyCardModify(draft, link);
       for (const effect of [...link.effects].reverse()) {
         pushEffect(
