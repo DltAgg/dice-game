@@ -32,9 +32,12 @@ function hasLivingReserve(draft: Draft, ownerId: PlayerId, defeatedId: CreatureI
 }
 
 /**
- * KO (spec `030`). The sequence returns to Open and initiative passes to the
- * opponent. The turn does not end here. When the defeated Fighter is Active
- * and a living Reserve remains, the owner must choose who becomes Active.
+ * KO (spec `030`). The defeated owner's combo count becomes 0. The sequence
+ * returns to Open and initiative passes to the opponent of that owner. A
+ * starter or extender that caused the defeat settles after this and keeps
+ * the player who hit as the Aggressor, in combo. The turn does not end here.
+ * When the defeated Fighter is Active and a living Reserve remains, the owner
+ * must choose who becomes Active.
  * A choice already waiting is left alone — there is no second decision queue.
  */
 export function promoteOnKo(draft: Draft, defeatedId: CreatureId): void {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BRACE } from "@server/content/cards.js";
+import { BRACE, SHIFT } from "@server/content/cards.js";
 import { MAGNUS, RYU, VEGA } from "@server/content/creatures.js";
 import { TAG_SKIRMISH_LOADOUT } from "@server/content/loadouts/index.js";
 import { TAG_FIGHTER_RULES } from "@server/model/config.js";
@@ -170,5 +170,112 @@ describe("staged showing-face drops", () => {
     const die = dieForCreature(combo, vega);
     const face = die === undefined ? undefined : showingFaceCard(combo, die.id);
     expect(hitButtonLabel(face, face?.name ?? "Dash")).toBe("Extender · Dash");
+  });
+
+  it("keeps the attacker on offense after Check Focus is Shifted", () => {
+    let state = inActions();
+    const ryu = fighter(state, RYU);
+    const vega = fighter(state, VEGA);
+    const p2Ryu = state.players[P2]!.creatureIds.find(
+      (id) => state.creatures[id]?.definitionId === RYU,
+    )!;
+    const p2Reserve = state.players[P2]!.creatureIds.find((id) => id !== p2Ryu)!;
+    state = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: { ...state.players[P1]!, activeCreatureId: ryu },
+        [P2]: { ...state.players[P2]!, activeCreatureId: p2Ryu },
+      },
+    };
+    state = show(show(state, ryu, FOCUS), vega, DASH);
+    const secondary = dieForCreature(state, vega);
+    if (secondary === undefined) throw new Error("dash die");
+    const declared = expectOk(
+      advance(state, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: ryu,
+        techniqueId: "technique-ryu-check-fire",
+        secondaryDieId: secondary.id,
+      }),
+    );
+    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
+    const shifted = withHand(yielded, P2, [SHIFT]);
+    const answered = expectOk(
+      advance(shifted, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(shifted, P2, 0),
+        declaredTargetCreatureId: p2Reserve,
+      }),
+    );
+    const resolved = resolveOpenChain(answered);
+    expect(resolved.aggressorPlayerId).toBe(P1);
+    expect(resolved.offensiveState).toBe("combo");
+    expect(resolved.usedSequenceActionIds).toEqual(["technique:technique-ryu-check-fire"]);
+    expect(stagedShowingDrop(resolved, P1, [vega, null])).toEqual({
+      kind: "hit",
+      creatureId: vega,
+    });
+    const extended = expectOk(
+      advance(resolved, { type: "USE_FACE", playerId: P1, creatureId: vega }),
+    );
+    expect(extended.chainStack.some((link) => link.sequenceRole === "extender")).toBe(true);
+    expect(extended.aggressorPlayerId).toBe(P1);
+  });
+
+  it("lets Dash extend after Shift redirects Check Focus onto the attacker's wounded fighter", () => {
+    let state = inActions();
+    const ryu = fighter(state, RYU);
+    const vega = fighter(state, VEGA);
+    const p2Ryu = state.players[P2]!.creatureIds.find(
+      (id) => state.creatures[id]?.definitionId === RYU,
+    )!;
+    const wounded = state.creatures[vega];
+    if (wounded === undefined) throw new Error("vega");
+    state = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: { ...state.players[P1]!, activeCreatureId: ryu },
+        [P2]: { ...state.players[P2]!, activeCreatureId: p2Ryu },
+      },
+      creatures: {
+        ...state.creatures,
+        [vega]: { ...wounded, damage: 12 },
+      },
+    };
+    state = show(show(state, ryu, FOCUS), vega, DASH);
+    const secondary = dieForCreature(state, vega);
+    if (secondary === undefined) throw new Error("dash die");
+    const declared = expectOk(
+      advance(state, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: ryu,
+        techniqueId: "technique-ryu-check-fire",
+        secondaryDieId: secondary.id,
+      }),
+    );
+    const yielded = expectOk(advance(declared, { type: "PASS_PRIORITY", playerId: P1 }));
+    const shifted = withHand(yielded, P2, [SHIFT]);
+    const answered = expectOk(
+      advance(shifted, {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(shifted, P2, 0),
+        declaredTargetCreatureId: vega,
+      }),
+    );
+    const resolved = resolveOpenChain(answered);
+    expect(resolved.creatures[vega]?.defeated).toBe(true);
+    expect(resolved.activePlayerId).toBe(P1);
+    expect(resolved.offensiveState).toBe("combo");
+    expect(resolved.aggressorPlayerId).toBe(P1);
+    expect(stagedShowingDrop(resolved, P1, [vega, null])).toEqual({
+      kind: "hit",
+      creatureId: vega,
+    });
   });
 });

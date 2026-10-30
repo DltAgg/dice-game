@@ -71,7 +71,7 @@ The sequence is not a phase. It is **open** or in **combo**.
 
 Entering actions makes you the Aggressor and opens the sequence. Only the Aggressor declares hits. From open, the only legal role is starter. From combo, the legal roles are extender and finisher. Tag on this turn leaves those roles as they are.
 
-A face action uses the showing face of one of your Fighters. That Fighter may be Active, Reserve, or defeated. A Technique is only the Active Fighter. It uses two different dice you own that are showing a face. One of those dice is showing the Technique’s primary face. The other matches the Technique. Either of those faces may be the Active Fighter’s. One showing face cannot fill both inputs. The Technique’s sequence role is what the sequence checks. Both target the opponent’s Active Fighter.
+A face action uses the showing face of one of your Fighters. That Fighter may be Active, Reserve, or defeated. A Technique is only the Active Fighter. It uses two different dice you own that are showing a face. One of those dice is showing the Technique’s primary face. The other matches the Technique. Either of those faces may be the Active Fighter’s. One showing face cannot fill both inputs. The Technique’s sequence role is what the sequence checks. Both target the opponent’s Active Fighter when the hit resolves. Tag, Call Out, and `[Tag out]` that resolve before the hit change who that is, so the hit lands on the new Active Fighter. Shift is what aims that hit at a chosen Fighter instead.
 
 The other face matches that Technique by any punch, any kick, any light, any medium, or any heavy, or by one strength together with one strike. It is not a movement face.
 
@@ -85,7 +85,7 @@ A finisher ends the sequence. You may also end the sequence yourself. Ending a s
 
 You may replace a hit you just declared with an EX card, as section 13 describes. The replaced hit does not deal its own Strike. If it is not negated, it still counts as the sequence role it was declared as. A finisher still ends the sequence.
 
-Defeating a Fighter ends that sequence. That Fighter’s owner loses their combo, and the turn is handed to the opponent. The Active-Fighter replacement in section 3 still applies.
+Defeating a Fighter clears that owner’s combo. A starter or extender that caused the defeat still enters combo, and the player who hit stays the Aggressor. A finisher that caused the defeat still ends the sequence and hands the turn to the opponent. The Active-Fighter replacement in section 3 still applies.
 
 ## 8. Tag
 

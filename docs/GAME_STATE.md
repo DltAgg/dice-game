@@ -106,7 +106,7 @@ Entering `actions` calls `beginOffensiveWindow` for `activePlayerId`. That playe
 
 Only the Aggressor may declare a sequence hit. In `open`, the only legal role is starter. In `combo`, the legal roles are extender and finisher. Those same roles stay legal after Tag on this turn (`sequenceRoleFits`). A finisher ends the sequence.
 
-A face action uses the showing face of one of your Fighters, Active, Reserve, or defeated. A Technique is only the Active Fighter. Its two inputs are two different dice you own that are showing a face. One die is showing the Technique’s primary face. The other matches the Technique’s secondary requirement. Either die may be the Active Fighter’s die. One showing face cannot fill both inputs. The Technique’s sequence role is the sequence gate for that action. The declared target is the opponent’s Active Fighter.
+A face action uses the showing face of one of your Fighters, Active, Reserve, or defeated. A Technique is only the Active Fighter. Its two inputs are two different dice you own that are showing a face. One die is showing the Technique’s primary face. The other matches the Technique’s secondary requirement. Either die may be the Active Fighter’s die. One showing face cannot fill both inputs. The Technique’s sequence role is the sequence gate for that action. The declared target is the opponent’s Active Fighter when the hit resolves. Tag, Call Out, and `[Tag out]` that resolve before the hit change who that is, so the hit lands on the new Active Fighter. Shift is what aims that hit at a chosen Fighter instead.
 
 That secondary requirement is a named face, a sequence role, a face type still listed in `FACE_TYPES`, or a hit class. A hit class is `hitType` (punch or kick), `hitStrength` (light, medium, or heavy), or both together. `movement` is not a face type. Attack versus movement is not a requirement. A face that used to be movement is `faceType` `attack` and keeps its strength and strike.
 
@@ -127,7 +127,7 @@ A sequence hit that resolves and is not negated does one of these:
 
 Counter negates the previous chain card and does not end the sequence. It refuses a hit and an EX card. Parry negates an attack, including one marked `exReplaced`, and ends the sequence, so the turn is handed to the opponent unless an extra actions phase is queued. No card in the current list sets `passesInitiative` or `seizesOffense`.
 
-Defeating a Fighter ends that sequence (`promoteOnKo`). The defeated owner’s combo count becomes 0, and the turn is handed to the opponent. If the defeated Fighter was Active, a living Reserve remains, and no decision is already pending, that owner chooses the new Active Fighter.
+Defeating a Fighter clears that owner’s combo count (`promoteOnKo`). A starter or extender that caused the defeat still enters `combo`, and the player who hit stays the Aggressor. A finisher that caused the defeat still ends the sequence, so the turn is handed to the opponent unless an extra actions phase is queued. If the defeated Fighter was Active, a living Reserve remains, and no decision is already pending, that owner chooses the new Active Fighter before the hit finishes settling.
 
 ## Tag
 

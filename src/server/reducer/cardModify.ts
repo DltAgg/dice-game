@@ -79,6 +79,7 @@ export function applyCardModify(draft: Draft, link: ChainLink): void {
     if (current === undefined) return;
     draft.chainStack[index] = {
       ...current,
+      followsActive: false,
       declaredTargetCreatureId: current.declaredTargetCreatureId !== null ? next : null,
       attackTargetId: current.attackTargetId !== null ? next : current.attackTargetId,
     };

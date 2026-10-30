@@ -52,6 +52,11 @@ export interface ChainLink {
   readonly effects: readonly EffectDefinition[];
   readonly sourceCreatureId: CreatureId | null;
   readonly declaredTargetCreatureId: CreatureId | null;
+  /**
+   * Sequence hits aim at the opponent's Active Fighter when this is omitted
+   * or true. Shift sets false so the chosen Fighter stays the target.
+   */
+  readonly followsActive?: boolean;
   readonly equipTargetCreatureId: CreatureId | null;
   readonly overloadFaceCardId: FaceCardId | null;
   readonly attackerId: CreatureId | null;

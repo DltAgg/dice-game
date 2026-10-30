@@ -8,6 +8,7 @@ import { canSpendMeter } from "../rules/meter.js";
 import { sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
 import { grapplerStarterWhiffs, starterWhiffMark } from "../rules/starterGuard.js";
 import { opponentOf } from "../rules/creatures.js";
+import { aimedHit } from "./activeHitTarget.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "./chain.js";
 import { endTurn } from "./commands/turn.js";
 import { emit, type Draft } from "./draft.js";
@@ -93,9 +94,10 @@ export function noteOffenseSeize(draft: Draft, link: ChainLink): void {
 export function conductCombatAction(draft: Draft, link: ChainLink): void {
   const role = link.sequenceRole;
   if (role === undefined) return;
-  const negated = link.negated;
+  const aimed = aimedHit(draft, link);
+  const negated = aimed.negated;
   let blocked = negated;
-  const targetId = link.declaredTargetCreatureId;
+  const targetId = aimed.declaredTargetCreatureId;
   const targetGone =
     targetId !== null &&
     (draft.creatures[targetId] === undefined || draft.creatures[targetId]?.defeated === true);
@@ -104,20 +106,20 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
     !negated &&
     !targetGone &&
     !replaced &&
-    grapplerStarterWhiffs(draft, link.sourceCreatureId, targetId, role);
+    grapplerStarterWhiffs(draft, aimed.sourceCreatureId, targetId, role);
   if (!negated && !targetGone && !replaced && !whiff) {
-    const spent = spendMeter(draft, link.controllerId, link.meterCost ?? 0);
+    const spent = spendMeter(draft, aimed.controllerId, aimed.meterCost ?? 0);
     blocked = spent !== null;
     if (!blocked) {
-      grantSequenceHitMeter(draft, link);
-      for (const effect of [...link.effects].reverse()) {
+      grantSequenceHitMeter(draft, aimed);
+      for (const effect of [...aimed.effects].reverse()) {
         const chainAttack = effect.type === "damage" || effect.type === "assist-hit";
         pushEffect(
           draft,
-          link.controllerId,
+          aimed.controllerId,
           effect,
-          link.sourceCreatureId,
-          link.declaredTargetCreatureId,
+          aimed.sourceCreatureId,
+          aimed.declaredTargetCreatureId,
           null,
           null,
           null,
@@ -125,7 +127,7 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
           null,
           false,
           chainAttack,
-          link.sequenceRole ?? null,
+          aimed.sequenceRole ?? null,
         );
       }
       drainResolution(draft);
@@ -133,16 +135,16 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
   }
   if (draft.pendingDecision !== null) {
     draft.pendingOffenseSettle = {
-      actorId: link.controllerId,
+      actorId: aimed.controllerId,
       role,
       negated: blocked,
-      endsSequence: link.endsSequence === true,
-      passesInitiative: link.passesInitiative === true,
-      sequenceActionId: link.sequenceActionId ?? null,
+      endsSequence: aimed.endsSequence === true,
+      passesInitiative: aimed.passesInitiative === true,
+      sequenceActionId: aimed.sequenceActionId ?? null,
     };
     return;
   }
-  settleOffense(draft, link.controllerId, role, blocked, link, whiff);
+  settleOffense(draft, aimed.controllerId, role, blocked, aimed, whiff);
 }
 
 /** After a paused combat-action body finishes and the chain is idle. */
@@ -211,6 +213,9 @@ function settleOffense(
     return;
   }
   draft.offensiveState = "combo";
+  // A KO during this hit passes initiative to the other player first.
+  // The hit still connected, so the player who hit stays on offense.
+  draft.aggressorPlayerId = actorId;
   if (link.sequenceActionId !== undefined) {
     draft.usedSequenceActionIds = [...draft.usedSequenceActionIds, link.sequenceActionId];
   }

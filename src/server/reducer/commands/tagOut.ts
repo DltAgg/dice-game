@@ -4,6 +4,7 @@ import { isLivingReserve } from "../../rules/fighters.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { tagInLockUntilTurn } from "../../rules/offensive.js";
 import { emit, patchCreature, type Draft } from "../draft.js";
+import { syncWaitingHitsToActive } from "../activeHitTarget.js";
 import { setActiveFighter } from "../victory.js";
 import { resumeAfterEffectPause } from "./priority.js";
 
@@ -60,6 +61,7 @@ export function resolveTagOut(
   const fromCreatureId = pending.fromCreatureId;
   draft.pendingDecision = null;
   setActiveFighter(draft, playerId, creatureId);
+  syncWaitingHitsToActive(draft, playerId);
   if (pending.preventTagIn === true) {
     patchCreature(draft, fromCreatureId, {
       tagInLockedUntilTurn: tagInLockUntilTurn(draft.turn),

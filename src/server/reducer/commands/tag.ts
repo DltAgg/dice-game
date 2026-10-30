@@ -4,6 +4,7 @@ import type { ChainLink } from "../../model/state.js";
 import { opponentOf } from "../../rules/creatures.js";
 import { isLivingReserve } from "../../rules/fighters.js";
 import { TAG_TURN_KEY, tagInLocked, tagWindow } from "../../rules/offensive.js";
+import { syncWaitingHitsToActive } from "../activeHitTarget.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "../chain.js";
 import { emit, type Draft } from "../draft.js";
 import { setComboCount } from "../meter.js";
@@ -61,6 +62,7 @@ export function performTagSwitch(
 
   const fromCreatureId = player.activeCreatureId;
   setActiveFighter(draft, playerId, reserveCreatureId);
+  syncWaitingHitsToActive(draft, playerId);
   setComboCount(draft, playerId, 0);
   emit(draft, {
     type: "tag-switched",
