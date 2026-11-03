@@ -30,9 +30,9 @@
       "primaryFaceId": "face-natural-lariat",
       "hitStrength": "light",
       "hitType": "punch",
-      "secondary": { "hitStrength": "light", "hitType": "kick" },
+      "secondary": { "hitType": "kick" },
       "sequenceRole": "starter",
-      "rulesText": "Lariat + light kick: [Strike 3].",
+      "rulesText": "Lariat + kick: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -47,9 +47,9 @@
       "primaryFaceId": "face-natural-lariat",
       "hitStrength": "heavy",
       "hitType": "punch",
-      "secondary": { "hitStrength": "medium", "hitType": "kick" },
+      "secondary": { "hitStrength": "medium" },
       "sequenceRole": "extender",
-      "rulesText": "Lariat + medium kick: [Strike 4].",
+      "rulesText": "Lariat + medium: [Strike 4].",
       "effects": [
         {
           "type": "damage",
@@ -64,9 +64,9 @@
       "primaryFaceId": "face-natural-grab",
       "hitStrength": "heavy",
       "hitType": "punch",
-      "secondary": { "hitStrength": "heavy", "hitType": "punch" },
+      "secondary": { "hitStrength": "heavy" },
       "sequenceRole": "finisher",
-      "rulesText": "Grab + heavy punch: [Strike 5].",
+      "rulesText": "Grab + heavy: [Strike 5].",
       "effects": [
         {
           "type": "damage",

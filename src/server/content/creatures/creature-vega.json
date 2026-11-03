@@ -33,9 +33,9 @@
       "primaryFaceId": "face-natural-kick",
       "hitStrength": "light",
       "hitType": "punch",
-      "secondary": { "hitStrength": "light", "hitType": "punch" },
+      "secondary": { "hitStrength": "light" },
       "sequenceRole": "starter",
-      "rulesText": "Kick + light punch: [Strike 3].",
+      "rulesText": "Kick + light: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -50,9 +50,9 @@
       "primaryFaceId": "face-natural-dash",
       "hitStrength": "medium",
       "hitType": "kick",
-      "secondary": { "hitStrength": "light", "hitType": "kick" },
+      "secondary": { "sequenceRole": "extender" },
       "sequenceRole": "extender",
-      "rulesText": "Dash + light kick: [Strike 3].",
+      "rulesText": "Dash + Extender: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -67,9 +67,9 @@
       "primaryFaceId": "face-natural-rush",
       "hitStrength": "heavy",
       "hitType": "kick",
-      "secondary": { "hitStrength": "heavy", "hitType": "punch" },
+      "secondary": { "hitType": "punch" },
       "sequenceRole": "finisher",
-      "rulesText": "Rush + heavy punch: [Strike 4].",
+      "rulesText": "Rush + punch: [Strike 4].",
       "effects": [
         {
           "type": "damage",

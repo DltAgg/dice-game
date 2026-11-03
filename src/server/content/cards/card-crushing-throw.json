@@ -9,8 +9,7 @@
   "meterCost": 8,
   "exGate": {
     "sequenceRole": "finisher",
-    "hitType": "punch",
-    "hitStrength": "heavy"
+    "hitType": "punch"
   },
   "exStrike": 6,
   "exReroll": {
@@ -20,6 +19,6 @@
     "strikePer": 2
   },
   "exAttackBan": true,
-  "rulesText": "Requires: Magnus as Active Fighter and a Heavy Punch Finisher Attack.\n[Strike 6].\nReroll your Magnus die 2 times, [Strike 2] for each Grab rolled.\nMagnus cannot attack during your next turn.",
+  "rulesText": "Requires: Magnus as Active Fighter and a Punch Finisher Attack.\n[Strike 6].\nReroll your Magnus die 2 times, [Strike 2] for each Grab rolled.\nMagnus cannot attack during your next turn.",
   "forge": { "faces": 1, "target": "own-die" }
 }
