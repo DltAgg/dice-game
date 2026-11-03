@@ -167,6 +167,16 @@ const TARGET_MOD = testCard({
   rulesText: "Redirect.",
 });
 
+const COUNTER = testCard({
+  id: "card-test-beh-counter",
+  name: "Counter",
+  type: "response",
+  subtypes: [],
+  playCost: { martial: 2 },
+  rulesText: "Counter.",
+  effect: { effects: [{ type: "negate-card", cardTypes: "any" }] },
+});
+
 const TAG_MOD = testCard({
   id: "card-test-beh-tag",
   name: "Tag Modify",
@@ -699,6 +709,65 @@ describe("030 card behavior", () => {
     });
     expect(rejected.ok).toBe(false);
     if (!rejected.ok) expect(rejected.error).toBe("INVALID_TARGET");
+  });
+
+  it("keeps the last Shift played when a second Shift answers the first", () => {
+    const opened = withHand(withHand(declare(ready()), P1, [TARGET_MOD.id]), P2, [TARGET_MOD.id]);
+    const myFighter = creatureAt(opened, P2, 1);
+    const hisFighter = creatureAt(opened, P1, 0);
+    const first = expectOk(
+      advance(opened, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(opened, P1, 0),
+        declaredTargetCreatureId: myFighter,
+      }),
+    );
+    const answered = expectOk(
+      advance(pass(first, P1), {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(first, P2, 0),
+        declaredTargetCreatureId: hisFighter,
+      }),
+    );
+    const resolved = resolveOpenChain(answered);
+    expect(resolved.creatures[hisFighter]?.damage).toBe(2);
+    expect(resolved.creatures[myFighter]?.damage).toBe(0);
+    expect(resolved.creatures[creatureAt(resolved, P2, 0)]?.damage).toBe(0);
+  });
+
+  it("lets the earlier Shift aim the hit when the answering Shift is countered", () => {
+    const opened = withHand(withHand(declare(ready()), P1, [TARGET_MOD.id]), P2, [TARGET_MOD.id]);
+    const myFighter = creatureAt(opened, P2, 1);
+    const hisFighter = creatureAt(opened, P1, 0);
+    const first = expectOk(
+      advance(opened, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(opened, P1, 0),
+        declaredTargetCreatureId: myFighter,
+      }),
+    );
+    const answered = expectOk(
+      advance(pass(first, P1), {
+        type: "PLAY_CARD",
+        playerId: P2,
+        cardInstanceId: handCardIdAt(first, P2, 0),
+        declaredTargetCreatureId: hisFighter,
+      }),
+    );
+    const holdingCounter = withHand(pass(answered, P2), P1, [COUNTER.id]);
+    const countered = expectOk(
+      advance(holdingCounter, {
+        type: "PLAY_CARD",
+        playerId: P1,
+        cardInstanceId: handCardIdAt(holdingCounter, P1, 0),
+      }),
+    );
+    const resolved = resolveOpenChain(countered);
+    expect(resolved.creatures[myFighter]?.damage).toBe(2);
+    expect(resolved.creatures[hisFighter]?.damage).toBe(0);
   });
 
   it("tags through the action, and spends Meter only for an exceptional tag card", () => {

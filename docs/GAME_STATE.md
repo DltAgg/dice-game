@@ -106,7 +106,7 @@ Entering `actions` calls `beginOffensiveWindow` for `activePlayerId`. That playe
 
 Only the Aggressor may declare a sequence hit. In `open`, the only legal role is starter. In `combo`, the legal roles are extender and finisher. Those same roles stay legal after Tag on this turn (`sequenceRoleFits`). A finisher ends the sequence.
 
-A face action uses the showing face of one of your Fighters, Active, Reserve, or defeated. A Technique is only the Active Fighter. Its two inputs are two different dice you own that are showing a face. One die is showing the Technique’s primary face. The other matches the Technique’s secondary requirement. Either die may be the Active Fighter’s die. One showing face cannot fill both inputs. The Technique’s sequence role is the sequence gate for that action. The declared target is the opponent’s Active Fighter when the hit resolves. Tag, Call Out, and `[Tag out]` that resolve before the hit change who that is, so the hit lands on the new Active Fighter. Shift is what aims that hit at a chosen Fighter instead.
+A face action uses the showing face of one of your Fighters, Active, Reserve, or defeated. A Technique is only the Active Fighter. Its two inputs are two different dice you own that are showing a face. One die is showing the Technique’s primary face. The other matches the Technique’s secondary requirement. Either die may be the Active Fighter’s die. One showing face cannot fill both inputs. The Technique’s sequence role is the sequence gate for that action. The declared target is the opponent’s Active Fighter when the hit resolves. Tag, Call Out, and `[Tag out]` that resolve before the hit change who that is, so the hit lands on the new Active Fighter. Shift is what aims that hit at a chosen Fighter instead. When more than one Shift aims that hit, the last one played is the aim that stays. `followsActive: false` is that pin: a later Shift in the drain sees it and leaves the hit alone.
 
 That secondary requirement is a named face, a sequence role, a face type still listed in `FACE_TYPES`, or a hit class. A hit class is `hitType` (punch or kick), `hitStrength` (light, medium, or heavy), or both together. `movement` is not a face type. Attack versus movement is not a requirement. A face that used to be movement is `faceType` `attack` and keeps its strength and strike.
 
@@ -215,7 +215,7 @@ This list is the Tag Skirmish squad and deck only: Vega, Magnus, Ryu, and the ca
 | Tag | Modify subject `tag`, or the `TAG` action | Call Out. |
 | Change the showing face | Modify subject `roll` | Open Palm. `[Choose face]` of a die you select. The roll changes which slot is showing and does not rewrite the face on the slot. |
 | `[Redirect N]` | `arm-redirect-damage`, spent on the next `chainAttack` Strike | Magnus Wall. A hit or a Technique. Ends with that Chain. |
-| Redirect that hit | Modify subject `target` | Shift. The whole hit changes target. |
+| Redirect that hit | Modify subject `target` | Shift. The whole hit changes target. The last Shift played on that hit is the aim that stays. |
 | `[Draw N]` | `draw-cards` | Anchor. The draw happens before the discard on the same line. |
 | `[Discard N]` | `discard-cards` | Anchor. You choose the cards from your hand. |
 | `[Block N]` | `reduce-damage`, stored as `nextIncomingDamageReduce` | Brace is `[Block 2]`. Lowers the next damage by N. Does not cancel the hit. |
