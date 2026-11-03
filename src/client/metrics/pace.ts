@@ -1,3 +1,4 @@
+import { sequencePressure } from "./fighting.js";
 import {
   ARMING_TURN_WINDOW,
   BASELINE_TURNS,
@@ -10,7 +11,34 @@ import type { MatchRecording, TurnRecord } from "./types.js";
  * No combat close *and* no player-facing action or decision.
  * Draw-for-turn is ignored so automatic draws do not look like play.
  */
+function fightingBusy(turn: TurnRecord): boolean {
+  const fighting = turn.fighting;
+  if (fighting === undefined) return false;
+  return (
+    fighting.facesUsed +
+      fighting.techniquesUsed +
+      fighting.assists +
+      fighting.tags +
+      fighting.rerolls +
+      fighting.endSequences +
+      fighting.meterGained +
+      fighting.meterSpent +
+      fighting.responses +
+      fighting.exPlays +
+      fighting.shifts +
+      fighting.movesets +
+      fighting.whiffs +
+      fighting.koSwaps +
+      fighting.tagCalls +
+      fighting.replaces +
+      fighting.rollChanges +
+      fighting.otherModifies >
+    0
+  );
+}
+
 export function isIdleTurn(turn: TurnRecord): boolean {
+  if (fightingBusy(turn)) return false;
   return (
     turn.damageDealt <= STALL_DAMAGE_THRESHOLD &&
     turn.attacksDeclared === 0 &&
@@ -29,7 +57,7 @@ export function isIdleTurn(turn: TurnRecord): boolean {
 }
 
 export function isStallTurn(turn: TurnRecord): boolean {
-  return turn.stall || (turn.damageDealt <= STALL_DAMAGE_THRESHOLD && turn.attacksDeclared === 0);
+  return turn.damageDealt <= STALL_DAMAGE_THRESHOLD && sequencePressure(turn) === 0;
 }
 
 export type PaceVerdict = "on-pace" | "empty-early" | "dragging" | "grinding" | "long-active";

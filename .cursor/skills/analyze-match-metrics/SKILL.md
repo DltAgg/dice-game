@@ -23,9 +23,11 @@ model: `docs/specs/030-offensive-control.md`.
 
 ## Goal
 
-Read the export for pace, stall, and lethality. Exports from the pile-fuel
-era still mention forge, Overcharge, and unpaid attacks. Describe those
-numbers. Do not turn them into a request for new pile-cost cards.
+Read the export for pace and for how the tag fighter was actually played:
+sequence shape, Meter, Tag, Assist, Chain answers, and who took the damage.
+Schema 2 is that sample. Schema 1 still mentions forge, Overcharge, and unpaid
+attacks. Describe those leftover numbers. Do not turn them into a request for
+pile-cost cards.
 
 ## Input
 
@@ -43,9 +45,9 @@ Pace is **per match**, not a 11–20 band (`src/client/metrics/pace.ts`):
 |---|---|
 | Baseline (red flag) | `totalTurns > 10` |
 | Overtime | `max(0, turns − 10)` |
-| Idle turn | no attack, damage, absorb, play, forge, ritual, heal/prevent, pending, reaction, or chain |
-| Stall turn | 0 HP damage and 0 attacks (setup can still stall) |
-| Late idle | idle after turns 1–2 (arming window) |
+| Idle turn | no sequence hit, Tag, Assist, card, Meter change, damage, or Chain |
+| Stall turn | 0 HP damage and 0 sequence hits (Tag or a card can still be setup) |
+| Late idle | idle after turns 1–2 |
 | Drag score | overtime + late idle |
 | Verdict | `on-pace` / `empty-early` / `dragging` / `grinding` / `long-active` |
 | Slow think | ≥ 15s between observations |
@@ -56,46 +58,43 @@ Pace is **per match**, not a 11–20 band (`src/client/metrics/pace.ts`):
 1. **Baseline:** `summary.pctOverBaseline`, `medianTurns`. Past 10 is a red flag.
 2. **Why it ran long:** per-match `dragScore`, `paceVerdict`, `overtimeTurns`,
    `idleTurnCount` vs stall. Dragging = empty overtime. Grinding = setup/stall
-   without a close. Long-active = combat happened, still too many turns.
-3. **Can they swing?** 0 attacks is not “chose setup.” Check rejected
-   `ATTACK` / `INSUFFICIENT_SYMBOLS` (often rituals, not attacks), attack
-   `discards` vs a 2-die roll, and 1-pip leftovers that pay a 1-cost card or
-   Overcharge (0 pile) but not a 2-token basic. `turn.absorbs` counts
-   `symbol-absorbed` **and** `symbols-consumed` — not spare pile.
-4. **Close:** `meanDamagePerTurn`, stall-turn rate, turn kinds, HP at end,
-   `medianFirstDefeatTurn`, `medianFirstDamageTurn`, `medianFirstAttackTurn`,
-   deaths-by-turn, `pctNeverDefeat`. First death on turns 1–3 is too early for
-   a three-creature skirmish; after turn 10 (or never) the close is not arriving.
-   Split cannot-pay-attack from cannot-kill (prevent/Shield) from not converting
-   setup.
-5. **Forge as a line:** `playVsForgeMix` / Overcharge vs `FORGE_CARD`.
-   Overcharge is 0 pile and juices every copy of a face; synthetic forge pays
-   `playCost`. Say whether a player would pick forge.
-6. **Seat / lists:** `firstPlayerWinRate`, `p1WinRate`, deck-pair mix.
-7. **Clock vs rules:** `medianThinkMs` / `p90ThinkMs` vs idle. High think +
-   low idle = UX / reading / reactions. Low think + high idle = the rules are
-   not converting turns into play. Many `PASS_PRIORITY` with tiny think is
-   window spam, not reading time.
+   without a close. Long-active = hits happened, still too many turns. A
+   sequence hit counts as combat. Tag, Assist, or a card with no hit is setup.
+3. **Sequence:** schema 2 `fighting` on each match, and the export section
+   “Sequence, Meter, Tag, Assist”. Starters, extenders, finishers, and
+   `endSequences`. Finishers should close the turn. Ending with no finisher is
+   a choice. Whiffs are Ryu’s grappler check.
+4. **Meter:** `meterGained` versus `meterSpent`, and `INSUFFICIENT_METER` in
+   `rejectionCounts`. Unspent Meter and rejected spends are different problems.
+   Light, medium, and heavy hits are why the pool moved.
+5. **Bench and Chain:** Tags and Assists per match, `fighterActivity` for who
+   hit and who was hit, and Counter / Parry / Brace / Shift against
+   `reaction-priority-opened`. Many `PASS_PRIORITY` with tiny think is window
+   spam. EX plays are an offensive replace, not a defensive answer.
+6. **Close:** `meanDamagePerTurn`, first KO, deaths-by-turn, `pctNeverDefeat`.
+   First KO on turns 1–3 is early for three Fighters. After turn 10, or never,
+   the close is not arriving.
+7. **Seat / lists / clock:** `firstPlayerWinRate`, deck pairs, `medianThinkMs`
+   / `p90ThinkMs`. High think + low idle = reading or reactions. Low think +
+   high idle = turns are not becoming hits.
+8. **Schema 1 leftovers:** forge, absorb, ritual, and unpaid-attack counters.
+   Describe them only as old data. Do not brief a pile, a forge line, or Shield.
 
 ## Answer shape
 
 ```markdown
 ## Verdict
-One paragraph: playable/fun or not, and why (unpaid attacks / grinding close /
-forge not a line / think time) — plus dragging / grinding / long-active.
+One paragraph: whether the sample shows the tag fighter being played, and why
+(sequence bailed / Meter unspent / bench unused / chains passed / close late)
+— plus dragging / grinding / long-active.
 
 ## Evidence
-Bullets with numbers from the export (cite drag, idle, overtime, attacks per
-seat, play vs forge vs Overcharge per match).
+Bullets with numbers from the export (cite drag, sequence roles, Meter spent
+of gained, Tags and Assists, Chain answers, and first KO).
 
 ## Experiments to try
-1. Concrete rules or UX change that makes matches fun to play (cite a spec /
-   bible section if you know it). Prefer paying a basic off a normal roll
-   over adding attack rewards.
-2. What to measure next (which chart should move).
-
-## Missing data
-Only if the sample is too small, guest-only, or pile/attack-legal is absent.
+1. One rules or UX change the numbers support. Name which chart should move.
+2. What is still missing if the sample is schema 1, guest-only, or tiny.
 ```
 
 Do not change `src/server` from this skill. If a rules experiment is agreed,

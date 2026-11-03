@@ -1,24 +1,21 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  aggregateFighting,
   aggregateRecordings,
   BASELINE_TURNS,
   buildMetricsExport,
+  firstDefeatTurn,
   formatAgentPrompt,
   formatMetricsMarkdown,
   insightsFor,
-  firstAttackTurn,
-  firstDamageTurn,
-  firstDefeatTurn,
-  forgeCardCountOf,
-  forgeCardsOnTurn,
   matchPace,
   recordedAsLabel,
-  turnKind,
   type Insight,
   type MatchRecording,
 } from "@client/metrics";
 import { useMetricsStore } from "@client/store/metricsStore";
-import { BarList, formatDuration, formatPct, SparkBars, StackedLineChart, StatCard, TurnHistogram } from "./charts";
+import { BarList, formatDuration, formatPct, StatCard, TurnHistogram } from "./charts";
+import { MatchDetail } from "./MatchDetail";
 
 function downloadText(filename: string, text: string, mime: string): void {
   const blob = new Blob([text], { type: mime });
@@ -67,9 +64,11 @@ export function MetricsDashboard() {
   }, [refresh]);
 
   const aggregates = useMemo(() => aggregateRecordings(recordings), [recordings]);
+  const fighting = useMemo(() => aggregateFighting(recordings), [recordings]);
   const insights = useMemo(() => insightsFor(recordings), [recordings]);
   const selected = recordings.find((row) => row.recordingId === selectedId) ?? null;
   const exported = useMemo(() => buildMetricsExport(recordings), [recordings]);
+  const stamp = exported.exportedAt.slice(0, 19).replaceAll(":", "");
 
   const flash = (key: string) => {
     setCopied(key);
@@ -80,47 +79,28 @@ export function MetricsDashboard() {
     <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--ink)]">
-            Metrics
-          </h1>
+          <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--ink)]">Metrics</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--ink-muted)]">
-            Local observer for hotseat, vs AI, and online matches. Recordings live in IndexedDB (with a
-            localStorage fallback) so a refresh does not wipe them. Nothing here is rules — the
-            collector only watches <span className="text-stone-300">advance()</span>. Copy agent prompt is
-            instructions only; attach the Download JSON file in the chat.
+            Observer for the tag fighter: sequence hits, Meter, Tag, Assist, and how the Chain was
+            answered. It watches the match and does not change it. Recordings stay in this browser.
+            Copy agent prompt is instructions only; attach the Download JSON file in the chat.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="rounded border border-stone-700 px-3 py-1 text-sm text-stone-300 hover:border-stone-500"
-            onClick={() => void refresh()}
-          >
+          <button type="button" className="rounded border border-stone-700 px-3 py-1 text-sm text-stone-300 hover:border-stone-500" onClick={() => void refresh()}>
             Refresh
           </button>
           <button
             type="button"
             className="rounded border border-stone-700 px-3 py-1 text-sm text-stone-300 hover:border-stone-500"
-            onClick={() => {
-              downloadText(
-                `dice-skirmish-metrics-${exported.exportedAt.slice(0, 19).replaceAll(":", "")}.json`,
-                JSON.stringify(exported, null, 2),
-                "application/json",
-              );
-            }}
+            onClick={() => downloadText(`dice-skirmish-metrics-${stamp}.json`, JSON.stringify(exported, null, 2), "application/json")}
           >
             Download JSON
           </button>
           <button
             type="button"
             className="rounded border border-stone-700 px-3 py-1 text-sm text-stone-300 hover:border-stone-500"
-            onClick={() => {
-              downloadText(
-                `dice-skirmish-metrics-${exported.exportedAt.slice(0, 10)}.md`,
-                formatMetricsMarkdown(exported),
-                "text/markdown",
-              );
-            }}
+            onClick={() => downloadText(`dice-skirmish-metrics-${exported.exportedAt.slice(0, 10)}.md`, formatMetricsMarkdown(exported), "text/markdown")}
           >
             Download Markdown
           </button>
@@ -139,14 +119,9 @@ export function MetricsDashboard() {
       </header>
 
       {notice !== null ? (
-        <p className="rounded border border-red-900 bg-red-950/40 px-3 py-2 text-sm text-red-100">
-          {notice}
-        </p>
+        <p className="rounded border border-red-900 bg-red-950/40 px-3 py-2 text-sm text-red-100">{notice}</p>
       ) : null}
-
-      {loading && recordings.length === 0 ? (
-        <p className="text-sm text-[var(--ink-muted)]">Loading recordings…</p>
-      ) : null}
+      {loading && recordings.length === 0 ? <p className="text-sm text-[var(--ink-muted)]">Loading recordings…</p> : null}
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -157,20 +132,14 @@ export function MetricsDashboard() {
         <StatCard
           label="Median turns"
           value={aggregates.medianTurns?.toFixed(1) ?? "—"}
-          hint={`mean ${aggregates.meanTurns?.toFixed(1) ?? "—"}`}
+          hint={`mean ${aggregates.meanTurns?.toFixed(1) ?? "—"} · past ${String(BASELINE_TURNS)}: ${formatPct(aggregates.pctOverBaseline)}`}
           warn={aggregates.medianTurns !== null && aggregates.medianTurns > BASELINE_TURNS}
         />
         <StatCard
-          label={`Past ${String(BASELINE_TURNS)}-turn baseline`}
-          value={formatPct(aggregates.pctOverBaseline)}
-          hint="Share of finished matches — red flag"
-          warn={aggregates.pctOverBaseline !== null && aggregates.pctOverBaseline >= 50}
-        />
-        <StatCard
-          label="Median drag"
-          value={aggregates.medianDragScore?.toFixed(1) ?? "—"}
-          hint="Overtime past 10 + idle after arming"
-          warn={aggregates.medianDragScore !== null && aggregates.medianDragScore >= 4}
+          label="HP damage / turn"
+          value={aggregates.meanDamagePerTurn?.toFixed(2) ?? "—"}
+          hint={`first KO T${aggregates.medianFirstDefeatTurn?.toFixed(0) ?? "—"} · never ${formatPct(aggregates.pctNeverDefeat)}`}
+          warn={aggregates.meanDamagePerTurn !== null && aggregates.meanDamagePerTurn < 2}
         />
         <StatCard
           label="Median duration"
@@ -178,143 +147,99 @@ export function MetricsDashboard() {
           hint={`think p50 ${formatDuration(aggregates.medianThinkMs)} · p90 ${formatDuration(aggregates.p90ThinkMs)}`}
         />
         <StatCard
-          label="HP damage / turn"
-          value={aggregates.meanDamagePerTurn?.toFixed(2) ?? "—"}
-          hint="Finished matches only"
-          warn={aggregates.meanDamagePerTurn !== null && aggregates.meanDamagePerTurn < 2}
-        />
-        <StatCard
-          label="Median first death"
-          value={aggregates.medianFirstDefeatTurn?.toFixed(1) ?? "—"}
-          hint={`dmg T${aggregates.medianFirstDamageTurn?.toFixed(0) ?? "—"} · atk T${aggregates.medianFirstAttackTurn?.toFixed(0) ?? "—"} · never ${formatPct(aggregates.pctNeverDefeat)}`}
-          warn={
-            (aggregates.medianFirstDefeatTurn !== null && aggregates.medianFirstDefeatTurn <= 3) ||
-            (aggregates.pctNeverDefeat !== null && aggregates.pctNeverDefeat >= 40)
+          label="Sequence hits"
+          value={fighting.sampledMatches === 0 ? "—" : `${String(fighting.starters)}/${String(fighting.extenders)}/${String(fighting.finishers)}`}
+          hint={
+            fighting.meanHitsPerTurn === null
+              ? "Starter / extender / finisher"
+              : `${fighting.meanHitsPerTurn.toFixed(2)} hits/turn · end ${String(fighting.endSequences)}`
           }
         />
         <StatCard
-          label="First-player wins"
-          value={formatPct(aggregates.firstPlayerWinRate === null ? null : aggregates.firstPlayerWinRate * 100)}
-          hint={`n=${String(aggregates.firstPlayerDecided)} · P1 ${formatPct(aggregates.p1WinRate === null ? null : aggregates.p1WinRate * 100)}`}
-          warn={
-            aggregates.firstPlayerWinRate !== null &&
-            aggregates.firstPlayerDecided >= 6 &&
-            (aggregates.firstPlayerWinRate >= 0.7 || aggregates.firstPlayerWinRate <= 0.3)
+          label="Meter spent"
+          value={fighting.meterGained === 0 ? "—" : formatPct(fighting.meterSpendRate === null ? null : fighting.meterSpendRate * 100)}
+          hint={`${String(fighting.meterSpent)} of ${String(fighting.meterGained)} gained`}
+          warn={fighting.meterSpendRate !== null && fighting.meterGained >= 8 && fighting.meterSpendRate < 0.25}
+        />
+        <StatCard
+          label="Tag / Assist"
+          value={
+            fighting.meanTagsPerMatch === null
+              ? "—"
+              : `${fighting.meanTagsPerMatch.toFixed(1)} / ${fighting.meanAssistsPerMatch?.toFixed(1) ?? "—"}`
           }
+          hint="Mean per finished match"
         />
         <StatCard
-          label="Idle / stall turns"
-          value={`${formatPct(aggregates.meanLateIdleRate === null ? null : aggregates.meanLateIdleRate * 100)} / ${formatPct(aggregates.stallTurnRate === null ? null : aggregates.stallTurnRate * 100)}`}
-          hint="Late idle (no action/decision) vs 0-dmg 0-atk"
-        />
-        <StatCard
-          label="Reject rate"
-          value={formatPct(aggregates.rejectRate === null ? null : aggregates.rejectRate * 100)}
-          hint="Illegal clicks vs attempts"
-        />
-        <StatCard
-          label="Hand cards play / forge"
-          value={`${String(aggregates.totalCardsPlayed)} / ${String(aggregates.totalCardsForged)}`}
-          hint={`${aggregates.meanEffectPerTurn?.toFixed(2) ?? "—"} effect/turn · ${aggregates.meanForgePerTurn?.toFixed(2) ?? "—"} forge/turn`}
+          label="Chain answers"
+          value={formatPct(fighting.defenseAnswerRate === null ? null : fighting.defenseAnswerRate * 100)}
+          hint={`${String(fighting.defenseAnswers)} answers / ${String(fighting.reactionWindows)} windows`}
         />
       </section>
 
+      {aggregates.matchCount > 0 && fighting.sampledMatches === 0 ? (
+        <p className="rounded border border-stone-800 bg-black/20 px-3 py-2 text-sm text-[var(--ink-muted)]">
+          Stored matches were recorded before sequence, Meter, Tag, and Assist tracking. Play a new
+          match to fill the charts below. Pace and damage from those older recordings still show above.
+        </p>
+      ) : null}
+
       <section className="grid gap-6 lg:grid-cols-2">
-        <ChartPanel
-          title="Turns per finished match"
-          caption={`Red line is the ${String(BASELINE_TURNS)}-turn baseline. Bars past it are overtime — drag score then says whether those turns were idle or a real fight.`}
-        >
+        <ChartPanel title="Turns per finished match" caption={`Red line is the ${String(BASELINE_TURNS)}-turn baseline.`}>
           <TurnHistogram turns={aggregates.finishedTurns} baselineAt={BASELINE_TURNS} />
         </ChartPanel>
-        <ChartPanel
-          title="Pace verdict"
-          caption="Per finished match: on-pace, empty-early, dragging (empty overtime), grinding (setup without a close), long-active."
-        >
+        <ChartPanel title="Pace" caption="On-pace, empty-early, dragging, grinding, or long-active.">
           <BarList items={aggregates.verdictMix} warnKeys={new Set(["dragging", "grinding", "empty-early"])} />
         </ChartPanel>
-        <ChartPanel title="How you played" caption="Hotseat, local vs AI, host, or guest observer. Same matchId is deduped; vs AI is not the same as hotseat.">
-          <BarList items={aggregates.recordedAsMix} />
+        {fighting.sampledMatches > 0 ? (
+          <>
+            <ChartPanel title="Sequence roles" caption="Starter opens, extender keeps the combo, finisher ends it.">
+              <BarList items={fighting.sequenceMix} />
+            </ChartPanel>
+            <ChartPanel title="Hit strength" caption="Light, medium, and heavy change the Meter a hit grants.">
+              <BarList items={fighting.strengthMix} />
+            </ChartPanel>
+            <ChartPanel title="What players committed to" caption="Faces, Techniques, Assists, Tags, rerolls, and ending the sequence.">
+              <BarList items={fighting.commitmentMix} />
+            </ChartPanel>
+            <ChartPanel title="Chain answers" caption="Counter, Parry, Brace, and Shift against reaction windows.">
+              <BarList items={fighting.defenseMix} />
+            </ChartPanel>
+            <ChartPanel title="Declared hits" caption="Face, Technique, and Assist names.">
+              <BarList items={fighting.hitNames} />
+            </ChartPanel>
+            <ChartPanel title="Fighter actions" caption="Faces, Techniques, Assists, and Tags in. The label includes damage taken.">
+              <BarList items={fighting.fighterMix} />
+            </ChartPanel>
+            <ChartPanel title="Seat split" caption="Hits, Meter spent, and Tags by seat.">
+              <BarList items={fighting.seatMix} />
+            </ChartPanel>
+            <ChartPanel title="Rejected attempts" caption="Illegal clicks. INSUFFICIENT_METER means the pool was short.">
+              <BarList items={fighting.rejectionMix} warnKeys={new Set(["INSUFFICIENT_METER"])} />
+            </ChartPanel>
+          </>
+        ) : null}
+        <ChartPanel title="Cards played" caption="Each play, including Responses, Modifies, and EX.">
+          <BarList items={aggregates.cardPlayMix} />
         </ChartPanel>
-        <ChartPanel title="Wall-clock duration" caption="How long sessions actually take at the table.">
-          <BarList items={aggregates.durationHistogram} />
-        </ChartPanel>
-        <ChartPanel title="Action mix" caption="Host/local include GameAction types; guests may show state-ticks.">
-          <BarList items={aggregates.actionMix} warnKeys={new Set(["(rejected)"])} />
-        </ChartPanel>
-        <ChartPanel title="Event mix" caption="Reducer log — damage, reactions, forges, absorbs.">
-          <BarList items={aggregates.eventMix} />
-        </ChartPanel>
-        <ChartPanel title="Pending decisions" caption="Search, discard, choose, forge-faces, reaction priority.">
-          <BarList items={aggregates.pendingMix} />
-        </ChartPanel>
-        <ChartPanel
-          title="First creature death"
-          caption="Bible §45: death on turns 1–3 is early for a three-creature skirmish. After turn 10 (or never) the close is not arriving."
-        >
-          <BarList
-            items={aggregates.firstDefeatHistogram}
-            warnKeys={new Set(["1–3 early", "11+ overtime", "never"])}
-          />
-        </ChartPanel>
-        <ChartPanel
-          title="Creature deaths by turn"
-          caption="Mean deaths that turn among matches that reached it."
-        >
-          <BarList items={aggregates.deathsByTurnMix} />
-        </ChartPanel>
-        <ChartPanel
-          title="Opening seat"
-          caption="Finished matches with a known first player. Host/local recordings only for think time; seat bias is rules-side."
-        >
-          <BarList items={aggregates.firstPlayerWinMix} />
-        </ChartPanel>
-        <ChartPanel
-          title="Deck pairs"
-          caption="Finished matches. Label is P1 deck vs P2 deck with P1 wins / sample."
-        >
-          <BarList items={aggregates.deckPairMix} />
-        </ChartPanel>
-        <ChartPanel title="Think time by action (p90)" caption="Wall-clock gaps before that action.">
+        <ChartPanel title="Think time by action (p90)" caption="Wall-clock gap before that action. Host and local clocks are the fair ones.">
           <BarList
             items={Object.fromEntries(
-              Object.entries(aggregates.thinkByAction).map(([type, stats]) => [
-                type,
-                stats.p90 ?? 0,
-              ]),
+              Object.entries(aggregates.thinkByAction).map(([type, stats]) => [type, stats.p90 ?? 0]),
             )}
           />
         </ChartPanel>
-        <ChartPanel
-          title="Play vs forge"
-          caption="Tactic cards spent for their effect region vs spent to install a face (FORGE_CARD). Face-install count can be higher when a card forges more than one face."
-        >
-          <BarList items={aggregates.playVsForgeMix} />
+        <ChartPanel title="Opening seat" caption="Finished matches with a known first player.">
+          <BarList items={aggregates.firstPlayerWinMix} />
         </ChartPanel>
-        <ChartPanel
-          title="Effect vs forge by turn"
-          caption={`Stacked mean cards that turn among matches that reached it. Green = effect (PLAY_CARD), gold = forge (FORGE_CARD). Pearson r of match rates ${aggregates.playForgeCorrelation === null ? "needs two matches with variance" : `= ${aggregates.playForgeCorrelation.toFixed(2)}`} (n=${String(aggregates.playForgeRates.length)}).`}
-        >
-          <StackedLineChart
-            title="Effect plays and forge plays stacked by turn"
-            aLabel="Effect"
-            bLabel="Forge"
-            xLabel="Turn"
-            yLabel="Mean cards"
-            points={aggregates.playForgeByTurn.map((point) => ({
-              x: point.turn,
-              a: point.meanEffect,
-              b: point.meanForge,
-            }))}
-          />
+        <ChartPanel title="How you played" caption="Hotseat, local vs AI, host, or guest. Same match is kept once.">
+          <BarList items={aggregates.recordedAsMix} />
         </ChartPanel>
-        <ChartPanel title="Cards played (effect)" caption="PLAY_CARD — catalogue names from card-played events.">
-          <BarList items={aggregates.cardPlayMix} />
+        <ChartPanel title="Deck pairs" caption="Finished matches. Label is P1 deck vs P2 deck.">
+          <BarList items={aggregates.deckPairMix} />
         </ChartPanel>
-        <ChartPanel
-          title="Cards played to forge"
-          caption="FORGE_CARD — one count per tactic spent, even if it installs several faces."
-        >
-          <BarList items={aggregates.cardForgeMix} />
+        <ChartPanel title="First Fighter defeated" caption="Turns 1–3 are early. After turn 10, or never, the close is late.">
+          <BarList items={aggregates.firstDefeatHistogram} warnKeys={new Set(["1–3 early", "11+ overtime", "never"])} />
         </ChartPanel>
       </section>
 
@@ -322,13 +247,9 @@ export function MetricsDashboard() {
         <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">Insights</h2>
         <ul className="mt-3 flex flex-col gap-2">
           {insights.map((insight) => (
-            <li
-              key={insight.id}
-              className={`rounded border px-3 py-2 text-sm ${severityClass(insight.severity)}`}
-            >
+            <li key={insight.id} className={`rounded border px-3 py-2 text-sm ${severityClass(insight.severity)}`}>
               <p className="font-semibold">
-                {insight.title}{" "}
-                <span className="font-mono text-xs opacity-70">{insight.severity}</span>
+                {insight.title} <span className="font-mono text-xs opacity-70">{insight.severity}</span>
               </p>
               <p className="mt-1 text-[var(--ink-muted)]">{insight.detail}</p>
             </li>
@@ -338,17 +259,13 @@ export function MetricsDashboard() {
 
       <section>
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">
-            Recorded matches
-          </h2>
+          <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">Recorded matches</h2>
           {recordings.length > 0 ? (
             <button
               type="button"
               className="text-xs text-stone-500 hover:text-red-300"
               onClick={() => {
-                if (window.confirm("Delete every stored recording on this browser?")) {
-                  void clearAll();
-                }
+                if (window.confirm("Delete every stored recording on this browser?")) void clearAll();
               }}
             >
               Clear all
@@ -361,19 +278,18 @@ export function MetricsDashboard() {
           </p>
         ) : (
           <div className="mt-3 overflow-x-auto rounded border border-stone-800">
-            <table className="w-full min-w-[44rem] text-left text-sm">
+            <table className="w-full min-w-[52rem] text-left text-sm">
               <thead className="bg-black/30 text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
                 <tr>
                   <th className="px-3 py-2">When</th>
                   <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Turns</th>
                   <th className="px-3 py-2">Pace</th>
-                  <th className="px-3 py-2">Drag</th>
-                  <th className="px-3 py-2">Idle/stall</th>
-                  <th className="px-3 py-2">Duration</th>
+                  <th className="px-3 py-2">Sequence</th>
+                  <th className="px-3 py-2">Meter</th>
+                  <th className="px-3 py-2">Tag/Assist</th>
                   <th className="px-3 py-2">Dmg/turn</th>
-                  <th className="px-3 py-2">First death</th>
-                  <th className="px-3 py-2">Play/forge</th>
+                  <th className="px-3 py-2">First KO</th>
                   <th className="px-3 py-2">Decks</th>
                   <th className="px-3 py-2">Winner</th>
                   <th className="px-3 py-2" />
@@ -381,39 +297,35 @@ export function MetricsDashboard() {
               </thead>
               <tbody>
                 {recordings.map((row) => {
-                  const dpt =
-                    row.totalTurns > 0 ? (row.totalDamageDealt / row.totalTurns).toFixed(2) : "—";
+                  const pace = matchPace(row);
                   const death = firstDefeatTurn(row);
                   const active = row.recordingId === selectedId;
-                  const pace = matchPace(row);
-                  const turnsClass = pace.overBaseline ? "text-red-300" : "text-stone-200";
+                  const sequence =
+                    row.fighting === undefined
+                      ? "—"
+                      : `${String(row.fighting.starters)}/${String(row.fighting.extenders)}/${String(row.fighting.finishers)}`;
                   return (
                     <tr
                       key={row.recordingId}
                       className={`cursor-pointer border-t border-stone-800/80 ${active ? "bg-[var(--accent)]/10" : "hover:bg-white/5"}`}
                       onClick={() => select(active ? null : row.recordingId)}
                     >
-                      <td className="px-3 py-2 font-mono text-xs text-stone-300">
-                        {row.startedAt.slice(0, 19).replace("T", " ")}
-                      </td>
-                      <td className="px-3 py-2 text-[var(--ink-muted)]">
-                        {statusLabel(row.status)} · {recordedAsLabel(row.recordedAs)}
-                      </td>
-                      <td className={`px-3 py-2 font-mono ${turnsClass}`}>{row.totalTurns}</td>
+                      <td className="px-3 py-2 font-mono text-xs text-stone-300">{row.startedAt.slice(0, 19).replace("T", " ")}</td>
+                      <td className="px-3 py-2 text-[var(--ink-muted)]">{statusLabel(row.status)} · {recordedAsLabel(row.recordedAs)}</td>
+                      <td className={`px-3 py-2 font-mono ${pace.overBaseline ? "text-red-300" : "text-stone-200"}`}>{row.totalTurns}</td>
                       <td className="px-3 py-2 text-xs text-stone-300">{pace.verdict}</td>
-                      <td className="px-3 py-2 font-mono text-xs">{pace.dragScore}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{sequence}</td>
                       <td className="px-3 py-2 font-mono text-xs">
-                        {pace.idleTurns}/{pace.stallTurns}
+                        {row.fighting === undefined ? "—" : `${String(row.fighting.meterSpent)}/${String(row.fighting.meterGained)}`}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs">{formatDuration(row.durationMs)}</td>
-                      <td className="px-3 py-2 font-mono text-xs">{dpt}</td>
+                      <td className="px-3 py-2 font-mono text-xs">
+                        {row.fighting === undefined ? "—" : `${String(row.fighting.tags)}/${String(row.fighting.assists)}`}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs">
+                        {row.totalTurns > 0 ? (row.totalDamageDealt / row.totalTurns).toFixed(2) : "—"}
+                      </td>
                       <td className="px-3 py-2 font-mono text-xs">{death === null ? "—" : death}</td>
-                      <td className="px-3 py-2 font-mono text-xs">
-                        {row.totalCardsPlayed}/{forgeCardCountOf(row)}
-                      </td>
-                      <td className="px-3 py-2 text-xs text-stone-400">
-                        {row.p1DeckName} vs {row.p2DeckName}
-                      </td>
+                      <td className="px-3 py-2 text-xs text-stone-400">{row.p1DeckName} vs {row.p2DeckName}</td>
                       <td className="px-3 py-2 font-mono text-xs">{row.winnerId ?? "—"}</td>
                       <td className="px-3 py-2">
                         <button
@@ -441,141 +353,12 @@ export function MetricsDashboard() {
   );
 }
 
-function ChartPanel({
-  title,
-  caption,
-  children,
-}: {
-  title: string;
-  caption: string;
-  children: ReactNode;
-}) {
+function ChartPanel({ title, caption, children }: { title: string; caption: string; children: ReactNode }) {
   return (
     <section className="rounded border border-stone-800 bg-black/20 p-4">
       <h3 className="text-sm font-semibold text-[var(--ink)]">{title}</h3>
       <p className="mt-1 text-xs text-[var(--ink-muted)]">{caption}</p>
       <div className="mt-3">{children}</div>
-    </section>
-  );
-}
-
-function MatchDetail({ recording }: { recording: MatchRecording }) {
-  const pace = matchPace(recording);
-  const damage = recording.turns.map((turn) => turn.damageDealt);
-  const tones = recording.turns.map(turnKind);
-  const hpP1 = recording.turns.map((turn) =>
-    turn.hp.filter((creature) => creature.ownerId === "p1").reduce((sum, creature) => sum + creature.remaining, 0),
-  );
-  const think = recording.actions.filter((sample) => !sample.reconstructed).map((sample) => sample.deltaMs);
-
-  return (
-    <section className="rounded border border-stone-800 bg-black/20 p-4">
-      <h2 className="font-[family-name:var(--font-display)] text-xl text-[var(--ink)]">
-        {recording.matchId}
-      </h2>
-      <p className="mt-1 text-xs text-[var(--ink-muted)]">
-        seed {String(recording.seed)} · {recording.p1DeckName} vs {recording.p2DeckName} · recorded as{" "}
-        {recordedAsLabel(recording.recordedAs)}
-        {recording.roomCode !== null ? ` · room ${recording.roomCode}` : ""} · {pace.verdict} · drag{" "}
-        {String(pace.dragScore)} (overtime {String(pace.overtimeTurns)} + late idle {String(pace.lateIdleTurns)})
-        {" · "}
-        {String(recording.totalCardsPlayed)} played / {String(forgeCardCountOf(recording))} forged
-        {" · "}
-        first dmg T{firstDamageTurn(recording) ?? "—"} · atk T{firstAttackTurn(recording) ?? "—"} · death T
-        {firstDefeatTurn(recording) ?? "—"}
-      </p>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
-            Damage per turn (green combat · gold setup · red idle)
-          </p>
-          <SparkBars values={damage} tones={tones} />
-        </div>
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">P1 HP remaining by turn</p>
-          <SparkBars values={hpP1} />
-        </div>
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">Creature deaths by turn</p>
-          <SparkBars values={recording.turns.map((turn) => turn.creaturesDefeated)} />
-        </div>
-        <div className="lg:col-span-2">
-          <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
-            Effect vs forge by turn (stacked)
-          </p>
-          <StackedLineChart
-            title="Effect plays and forge plays stacked by turn"
-            aLabel="Effect"
-            bLabel="Forge"
-            xLabel="Turn"
-            yLabel="Cards"
-            points={recording.turns.map((row) => ({
-              x: row.turn,
-              a: row.cardsPlayed,
-              b: forgeCardsOnTurn(row, recording),
-            }))}
-          />
-        </div>
-      </div>
-
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[36rem] text-left text-xs">
-          <thead className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
-            <tr>
-              <th className="py-1 pr-3">Turn</th>
-              <th className="py-1 pr-3">Seat</th>
-              <th className="py-1 pr-3">Dmg</th>
-              <th className="py-1 pr-3">Atk</th>
-              <th className="py-1 pr-3">Deaths</th>
-              <th className="py-1 pr-3">Plays</th>
-              <th className="py-1 pr-3">Forge cards/faces</th>
-              <th className="py-1 pr-3">Pending</th>
-              <th className="py-1 pr-3">Rxn</th>
-              <th className="py-1 pr-3">Clock</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recording.turns.map((row) => {
-              const kind = turnKind(row);
-              return (
-              <tr key={row.turn} className="border-t border-stone-800/80">
-                <td className="py-1 pr-3 font-mono">
-                  {row.turn}{" "}
-                  <span className={kind === "idle" ? "text-red-300" : kind === "setup" ? "text-amber-200/80" : "text-stone-500"}>
-                    {kind}
-                  </span>
-                </td>
-                <td className="py-1 pr-3">{row.playerId}</td>
-                <td className="py-1 pr-3 font-mono">{row.damageDealt}</td>
-                <td className="py-1 pr-3 font-mono">{row.attacksDeclared}</td>
-                <td className="py-1 pr-3 font-mono">{row.creaturesDefeated}</td>
-                <td className="py-1 pr-3 font-mono">{row.cardsPlayed}</td>
-                <td className="py-1 pr-3 font-mono">
-                  {row.cardsForged ?? 0}/{row.forges}
-                </td>
-                <td className="py-1 pr-3 font-mono">{row.pendingDecisionOpens}</td>
-                <td className="py-1 pr-3 font-mono">{row.reactionWindows}</td>
-                <td className="py-1 pr-3 font-mono">{formatDuration(row.durationMs)}</td>
-              </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="mt-4 text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
-        Recent actions ({String(think.length)} timed)
-      </p>
-      <ul className="mt-2 max-h-48 overflow-auto font-mono text-[11px] text-stone-400">
-        {recording.actions.slice(-40).map((sample) => (
-          <li key={sample.seq}>
-            t{sample.turn} {sample.actionType ?? "tick"} {sample.accepted ? "ok" : sample.errorCode}{" "}
-            Δ{formatDuration(sample.deltaMs)}
-            {sample.eventTypes.length > 0 ? ` · ${sample.eventTypes.join(",")}` : ""}
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }

@@ -14,6 +14,19 @@ import {
   uniqueForgeCardInstanceIds,
   zonesByPlayer,
 } from "./snapshot.js";
+import {
+  addFightingCounts,
+  emptyFightingCounts,
+  emptyFightingTurn,
+  mergeFighters,
+  mergeNames,
+  mergeSeats,
+  noteFightingAction,
+  noteFightingEvent,
+  noteWhiffs,
+  snapshotFightingTurn,
+  type FightingPiece,
+} from "./fighting.js";
 import { METRICS_SCHEMA_VERSION, SLOW_THINK_MS, STALL_DAMAGE_THRESHOLD } from "./thresholds.js";
 import type { ActionSample, MatchRecording, ObservationContext, TurnRecord } from "./types.js";
 
@@ -62,6 +75,10 @@ function applyEventsToTurn(turn: TurnRecord, events: readonly GameEvent[], state
   const damageDealt = turn.damageDealt + sumDamage(events);
   const attacksDeclared =
     turn.attacksDeclared + events.filter((event) => event.type === "attack-declared").length;
+  const sequenceHits =
+    (turn.fighting?.facesUsed ?? 0) +
+    (turn.fighting?.techniquesUsed ?? 0) +
+    (turn.fighting?.assistHits ?? 0);
   return {
     ...turn,
     damageDealt,
@@ -87,7 +104,7 @@ function applyEventsToTurn(turn: TurnRecord, events: readonly GameEvent[], state
       turn.reactionWindows + events.filter((event) => event.type === "reaction-priority-opened").length,
     chainLinksAdded:
       turn.chainLinksAdded + events.filter((event) => event.type === "chain-link-added").length,
-    stall: damageDealt <= STALL_DAMAGE_THRESHOLD && attacksDeclared === 0,
+    stall: damageDealt <= STALL_DAMAGE_THRESHOLD && attacksDeclared + sequenceHits === 0,
     hp: creatureHpSnapshots(state),
     zonesByPlayer: zonesByPlayer(state),
   };
@@ -150,6 +167,11 @@ export function blankRecording(state: GameState, ctx: ObservationContext): Match
     hpRemainingAtEnd: hp,
     turns: [],
     actions: [],
+    fighting: emptyFightingCounts(),
+    fightingBySeat: {},
+    fighterActivity: {},
+    hitNames: {},
+    rejectionCounts: {},
   };
 }
 
@@ -223,10 +245,29 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
 
   let workingIndex = Math.max(0, turns.length - 1);
   let working = turns[workingIndex];
+  let fightingTotals = recording.fighting ?? emptyFightingCounts();
+  let fightingBySeat = { ...(recording.fightingBySeat ?? {}) };
+  let fighterActivity = { ...(recording.fighterActivity ?? {}) };
+  let hitNames = { ...(recording.hitNames ?? {}) };
   if (working === undefined) {
     working = emptyTurn(state.turn, state.activePlayerId, at);
     turns.push(working);
     workingIndex = turns.length - 1;
+  }
+
+  const takeFighting = (noted: FightingPiece | null): void => {
+    if (noted === null) return;
+    working = noted.turn.fighting === undefined ? { ...noted.turn, fighting: emptyFightingTurn() } : noted.turn;
+    fightingTotals = addFightingCounts(fightingTotals, noted.delta);
+    fightingBySeat = mergeSeats(fightingBySeat, noted.seats);
+    fighterActivity = mergeFighters(fighterActivity, noted.fighters);
+    hitNames = mergeNames(hitNames, noted.names);
+    stampTurn(workingIndex, working);
+  };
+
+  if (accepted) {
+    takeFighting(noteWhiffs(working, prevState, state));
+    if (action !== null) takeFighting(noteFightingAction(working, action, (prevState ?? state).phase));
   }
 
   if (action !== null) {
@@ -258,6 +299,7 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
       }
 
       working = applyEventsToTurn(working, [event], state);
+      takeFighting(noteFightingEvent(working, event, state));
       if (
         event.type === "face-forged" &&
         event.cardInstanceId !== null &&
@@ -269,6 +311,10 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
       if (event.type === "turn-ended") {
         working = closeTurn(working, at);
       }
+      stampTurn(workingIndex, working);
+    }
+    if (working.endedAt === null && state.turn === working.turn) {
+      working = snapshotFightingTurn(working, state);
       stampTurn(workingIndex, working);
     }
   }
@@ -325,6 +371,14 @@ function fold(recording: MatchRecording, observation: Observation, ctx: Observat
     localPlayerId: ctx.localPlayerId,
     turns,
     actions: [...recording.actions, sample],
+    fighting: fightingTotals,
+    fightingBySeat,
+    fighterActivity,
+    hitNames,
+    rejectionCounts:
+      !accepted && error !== null
+        ? bumpCount(recording.rejectionCounts ?? {}, error)
+        : (recording.rejectionCounts ?? {}),
   };
 }
 
@@ -359,7 +413,7 @@ export function isMetricsRecording(value: unknown): value is MatchRecording {
   if (typeof value !== "object" || value === null) return false;
   const rec = value as Partial<MatchRecording>;
   return (
-    rec.schemaVersion === METRICS_SCHEMA_VERSION &&
+    (rec.schemaVersion === 1 || rec.schemaVersion === METRICS_SCHEMA_VERSION) &&
     typeof rec.recordingId === "string" &&
     typeof rec.matchId === "string" &&
     typeof rec.startedAt === "string" &&

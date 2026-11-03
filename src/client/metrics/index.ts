@@ -3,6 +3,9 @@ export type {
   ActionSample,
   Clock,
   CreatureHpSnapshot,
+  FighterActivity,
+  FightingCounts,
+  FightingTurn,
   MatchMode,
   MatchRecording,
   MetricsRepository,
@@ -14,6 +17,13 @@ export type {
 export { recordedAsFor, recordedAsLabel, recordedAsMix } from "./recordedAs.js";
 export { applyObservation, abandonRecording, blankRecording, isMetricsRecording, isUnplayedRecording } from "./observe.js";
 export { matchPace, isIdleTurn, isStallTurn, turnKind, type MatchPace, type PaceVerdict } from "./pace.js";
+export { turnHits, hasFightingSample } from "./fighting.js";
+export {
+  aggregateFighting,
+  fightingInsights,
+  firstSequenceTurn,
+  type FightingAggregates,
+} from "./fightingRead.js";
 export {
   firstAttackTurn,
   firstDamageTurn,

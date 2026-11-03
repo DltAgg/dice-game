@@ -20,6 +20,7 @@ import {
   FIRST_PLAYER_WIN_MIN_N,
   LOW_LETHALITY_DAMAGE_PER_TURN,
 } from "./thresholds.js";
+import { fightingInsights } from "./fightingRead.js";
 import { matchPace, type MatchPace, type PaceVerdict } from "./pace.js";
 import { recordedAsMix } from "./recordedAs.js";
 import { forgeCardCountOf, forgeCardsOnTurn, mean, median, pearsonCorrelation, percentile } from "./snapshot.js";
@@ -460,7 +461,7 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       id: "low-lethality",
       severity: "high",
       title: "Low lethality — matches may not be able to close",
-      detail: `Mean HP damage per turn is ${agg.meanDamagePerTurn.toFixed(2)} (flag below ${String(LOW_LETHALITY_DAMAGE_PER_TURN)}). Check absorb-to-attack delay, prevent/shield, and attack fueling — first turns are expected to arm rather than swing.`,
+      detail: `Mean HP damage per turn is ${agg.meanDamagePerTurn.toFixed(2)} (flag below ${String(LOW_LETHALITY_DAMAGE_PER_TURN)}). Sequence hits, Tag, and Assist are the swing. A low number means those hits are not landing, or Parry and Block are eating them.`,
       evidence: { meanDamagePerTurn: Number(agg.meanDamagePerTurn.toFixed(2)) },
     });
   }
@@ -470,7 +471,7 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       id: "stall-turns",
       severity: "warn",
       title: "Many turns deal no damage and declare no attacks",
-      detail: `${(agg.stallTurnRate * 100).toFixed(0)}% of closed turns are stalls. Split stall into idle (roll/pass, no decisions) vs setup (absorb/play/forge without attacking). Setup on turns 1–2 is expected; idle after that is empty length.`,
+      detail: `${(agg.stallTurnRate * 100).toFixed(0)}% of closed turns are stalls (no HP damage and no sequence hit). Split that into idle (roll and pass) versus setup (Tag, Assist, cards, or Meter with no hit).`,
       evidence: { stallTurnRate: Number((agg.stallTurnRate * 100).toFixed(1)) },
     });
   }
@@ -502,7 +503,7 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       id: "late-first-death",
       severity: "warn",
       title: "The board is slow to take a creature off",
-      detail: `Median first death is ${agg.medianFirstDefeatTurn?.toFixed(1) ?? "—"} (after turn ${String(FIRST_DEATH_LATE_TURN)} is late). ${agg.pctNeverDefeat?.toFixed(0) ?? "—"}% of finished matches never logged a defeat. Pair with damage per turn and play/forge mix to see whether the board is failing to convert setup into kills.`,
+      detail: `Median first death is ${agg.medianFirstDefeatTurn?.toFixed(1) ?? "—"} (after turn ${String(FIRST_DEATH_LATE_TURN)} is late). ${agg.pctNeverDefeat?.toFixed(0) ?? "—"}% of finished matches never logged a defeat. Pair with sequence hits and Meter spend to see whether combos are failing to take a Fighter off.`,
       evidence: {
         medianFirstDefeatTurn: agg.medianFirstDefeatTurn,
         pctNeverDefeat: agg.pctNeverDefeat === null ? null : Number(agg.pctNeverDefeat.toFixed(1)),
@@ -577,6 +578,8 @@ export function insightsFor(recordings: readonly MatchRecording[]): Insight[] {
       evidence: { rejectRate: Number((agg.rejectRate * 100).toFixed(1)) },
     });
   }
+
+  insights.push(...fightingInsights(unique));
 
   if (insights.length === 0 && finished.length > 0) {
     insights.push({

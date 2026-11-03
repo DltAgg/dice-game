@@ -1,7 +1,8 @@
 import type { GameAction, GameError, MatchStatus, PlayerId, TurnPhase } from "@server";
 import { METRICS_SCHEMA_VERSION } from "./thresholds.js";
 
-export type MetricsSchemaVersion = typeof METRICS_SCHEMA_VERSION;
+/** Schema 1 is the pile-era recording. Schema 2 adds sequence, Meter, Tag, and Assist. */
+export type MetricsSchemaVersion = 1 | typeof METRICS_SCHEMA_VERSION;
 
 /** Who recorded, and how the local seats were bound. */
 export type MatchMode = "local" | "local-ai" | "host" | "client";
@@ -55,6 +56,8 @@ export interface TurnRecord {
   readonly stall: boolean;
   readonly hp: readonly CreatureHpSnapshot[];
   readonly zonesByPlayer: Readonly<Record<string, ZoneSnapshot>>;
+  /** Present on recordings made after the tag-fighter metrics revamp. */
+  readonly fighting?: FightingTurn;
 }
 
 export interface ActionSample {
@@ -111,6 +114,69 @@ export interface MatchRecording {
   readonly hpRemainingAtEnd: Readonly<Record<string, number>>;
   readonly turns: readonly TurnRecord[];
   readonly actions: readonly ActionSample[];
+  /** Match-wide sequence, Meter, Tag, Assist, and answer counts. Schema 2. */
+  readonly fighting?: FightingCounts;
+  readonly fightingBySeat?: Readonly<Record<string, FightingCounts>>;
+  readonly fighterActivity?: Readonly<Record<string, FighterActivity>>;
+  /** Face, Technique, and Assist names that were declared. */
+  readonly hitNames?: Readonly<Record<string, number>>;
+  readonly rejectionCounts?: Readonly<Record<string, number>>;
+}
+
+/** Counts that describe a tag-fighter turn or seat. All zeros is a real sample. */
+export interface FightingCounts {
+  readonly facesUsed: number;
+  readonly techniquesUsed: number;
+  readonly assists: number;
+  readonly assistHits: number;
+  readonly tags: number;
+  readonly rerolls: number;
+  readonly rerollsSkipped: number;
+  readonly starters: number;
+  readonly extenders: number;
+  readonly finishers: number;
+  readonly endSequences: number;
+  readonly meterGained: number;
+  readonly meterSpent: number;
+  readonly negates: number;
+  readonly passes: number;
+  readonly responses: number;
+  readonly counters: number;
+  readonly parries: number;
+  readonly braces: number;
+  readonly exPlays: number;
+  readonly shifts: number;
+  readonly tagCalls: number;
+  readonly movesets: number;
+  readonly replaces: number;
+  readonly rollChanges: number;
+  readonly otherModifies: number;
+  readonly koSwaps: number;
+  readonly tagOuts: number;
+  readonly whiffs: number;
+  readonly discards: number;
+  readonly lightHits: number;
+  readonly mediumHits: number;
+  readonly heavyHits: number;
+}
+
+export interface FightingTurn extends FightingCounts {
+  readonly meterEnd: number | null;
+  readonly comboPeak: number;
+  readonly activeFighterName: string | null;
+}
+
+export interface FighterActivity {
+  readonly key: string;
+  readonly name: string;
+  readonly ownerId: string;
+  readonly definitionId: string;
+  readonly facesUsed: number;
+  readonly techniquesUsed: number;
+  readonly assists: number;
+  readonly tagsIn: number;
+  readonly damageTaken: number;
+  readonly defeated: number;
 }
 
 export interface ObservationContext {

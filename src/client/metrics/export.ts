@@ -1,3 +1,4 @@
+import { aggregateFighting } from "./fightingRead.js";
 import { aggregateRecordings, insightsFor } from "./insights.js";
 import { matchPace } from "./pace.js";
 import {
@@ -9,36 +10,33 @@ import { forgeCardCountOf } from "./snapshot.js";
 import { BASELINE_TURNS, METRICS_SCHEMA_VERSION } from "./thresholds.js";
 import type { MatchRecording } from "./types.js";
 
-export const METRICS_PROMPT_PREAMBLE = `You are helping make Dice Skirmish playable and fun again.
+export const METRICS_PROMPT_PREAMBLE = `You are reading Dice Skirmish tag-fighter match metrics.
 
-The prototype no longer has a persistent **attribute pile**. Rolled faces still produce symbols; On absorb still fires; Shield still absorbs onto creatures. Printed costs may exist in catalogue data without being enforced. Ignore leftover energy* and pile-fuel keys on old recordings. Do not propose bringing the pile back.
-
-Matches currently have **no automatic victory**. Diagnose pace, combat, dice, and cards — not unpaid pile attacks.
+The match is a 3v3 tag fighter. Each player has three Fighters, one shared deck, one shared Meter pool (cap 8), and one die per Fighter. Play is a sequence: starter, then extender, then finisher. Tag and Assist bring the bench in. Responses answer the Chain (Counter, Parry, Brace, Shift). EX replaces a matching hit. How it plays is docs/RULEBOOK.md. This dump is not the rules.
 
 The dump is an observer outside reduce()/advance(). It never changes GameState. Wall-clock think time is time between observations. Guest think times include network delay; prefer recordedAs host / local / local-ai. Deduped by matchId (richer sample wins).
 
-Pace flags (per match, not an 11–20 bucket):
+Schema 2 records sequence hits, Meter gained and spent, Tag, Assist, reroll versus skip, whiffs, KO swaps, and which cards answered the Chain. Schema 1 recordings still have forge, absorb, and ritual counters. Those counters are leftover. Do not treat them as the current game, and do not propose bringing a pile, forge line, or Shield resource back.
+
+Pace flags (per match):
 - Red flag: totalTurns > ${String(BASELINE_TURNS)}. Overtime = max(0, turns − ${String(BASELINE_TURNS)}).
-- Idle: no attack, damage, absorb, play, forge, ritual, heal/prevent, pending, reaction, or chain.
-- Stall: 0 HP damage and 0 attacks (setup can still stall). Late idle = idle after turns 1–2.
+- Idle: no sequence hit, Tag, Assist, card, Meter change, damage, or Chain.
+- Stall: 0 HP damage and 0 sequence hits (a Tag or a card can still be setup). Late idle = idle after turns 1–2.
 - Drag = overtime + late idle.
-- Verdicts: on-pace, empty-early, dragging (empty overtime), grinding (setup/stall, cannot close), long-active (combat happened, still too many turns).
+- Verdicts: on-pace, empty-early, dragging (empty overtime), grinding (setup without a close), long-active (hits happened, still too many turns).
 
-Playability (pile-only fuel):
-- 0 attacks is not “chose setup.” Check INSUFFICIENT_SYMBOLS, attack discards vs a 2-die roll, and 1-pip leftovers that can pay a 1-cost card or Overcharge (0 pile) but not a 2-token basic.
-- turn.absorbs counts symbol-absorbed **and** symbols-consumed — it is not spare pile.
-- Separate cannot-pay-attack from cannot-kill (prevent/Shield, zero-damage attacks) from not converting setup.
-
-Fun:
-- Close (bible §45): first death on turns 1–3 is too early for a three-creature skirmish; after turn ${String(BASELINE_TURNS)} or never with overtime, the close is not arriving.
-- Forge vs play vs Overcharge: Overcharge is 0 pile and juices every copy of a face; synthetic forge pays playCost. Say whether forge is a line a player would pick.
-- Reaction volume vs dwell: many PASS_PRIORITY with tiny think is window spam, not reading time.
+Read behavior from schema 2 when it is present:
+- Sequence shape: starters, extenders, finishers, and end-sequence. A finisher should close the turn. Ending early is a choice.
+- Meter: gained on hits versus spent on cards, Assists, and EX. Unspent Meter and INSUFFICIENT_METER rejects are different problems.
+- Bench: Tags per match, Assists per match, which Fighter took the actions and the damage.
+- Chain: reaction windows versus Counter, Parry, Brace, and Shift. Many passes with tiny think is window spam.
+- Reroll: used versus skipped after the opening roll.
+- Close: first KO. Turns 1–3 are early for three Fighters. After turn ${String(BASELINE_TURNS)}, or never, the close is not arriving.
 
 Please:
-1. Per match, correlate overtime with idle vs setup vs combat.
-2. Say whether the sample is dragging, grinding, or long-active — then whether it is unfun because unpaid attacks, unpayable forge, prevent-not-killing, or UX think.
-3. Propose concrete rules or UX experiments that make matches fun to play (cite the numbers). Prefer paying a basic off a normal roll over adding attack rewards. Do not invent engine behavior that is not in the evidence.
-4. List missing instrumentation (pile snapshot, attack-legal, prevent vs Shield).
+1. Per match, say whether overtime is idle, setup, or a sequence that is not converting into a KO.
+2. Say what players actually did: who hit, who tagged, who spent Meter, who answered the Chain.
+3. Propose one rules or UX experiment that the numbers support. Do not invent engine behavior that is not in the evidence.
 
 Do not propose a second rules engine in the UI.`;
 
@@ -52,6 +50,7 @@ export interface MetricsExport {
 }
 
 export interface CompactMatch {
+  readonly schemaVersion: MatchRecording["schemaVersion"];
   readonly recordingId: string;
   readonly matchId: string;
   readonly status: MatchRecording["status"];
@@ -84,6 +83,11 @@ export interface CompactMatch {
   readonly cardForgeCounts: Readonly<Record<string, number>>;
   readonly totalCardsPlayed: number;
   readonly totalCardsForged: number;
+  readonly fighting: MatchRecording["fighting"];
+  readonly fightingBySeat: MatchRecording["fightingBySeat"];
+  readonly fighterActivity: MatchRecording["fighterActivity"];
+  readonly hitNames: MatchRecording["hitNames"];
+  readonly rejectionCounts: MatchRecording["rejectionCounts"];
   readonly turns: MatchRecording["turns"];
   readonly actions: MatchRecording["actions"];
 }
@@ -91,6 +95,7 @@ export interface CompactMatch {
 function compactMatch(recording: MatchRecording): CompactMatch {
   const pace = matchPace(recording);
   return {
+    schemaVersion: recording.schemaVersion,
     recordingId: recording.recordingId,
     matchId: recording.matchId,
     status: recording.status,
@@ -124,6 +129,11 @@ function compactMatch(recording: MatchRecording): CompactMatch {
     cardForgeCounts: recording.cardForgeCounts ?? {},
     totalCardsPlayed: recording.totalCardsPlayed,
     totalCardsForged: forgeCardCountOf(recording),
+    fighting: recording.fighting,
+    fightingBySeat: recording.fightingBySeat,
+    fighterActivity: recording.fighterActivity,
+    hitNames: recording.hitNames,
+    rejectionCounts: recording.rejectionCounts,
     turns: recording.turns,
     actions: recording.actions,
   };
@@ -148,6 +158,45 @@ function fmtMs(ms: number | null): string {
   if (ms < 1000) return `${String(Math.round(ms))}ms`;
   if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
   return `${(ms / 60_000).toFixed(1)}m`;
+}
+
+function fightingSection(exported: MetricsExport): string {
+  const fighting = aggregateFighting(exported.matches as unknown as readonly MatchRecording[]);
+  if (fighting.sampledMatches === 0) {
+    return "No schema 2 sample yet. Play a match to record sequence, Meter, Tag, and Assist.";
+  }
+  const spend =
+    fighting.meterSpendRate === null ? "—" : `${(fighting.meterSpendRate * 100).toFixed(0)}%`;
+  const answer =
+    fighting.defenseAnswerRate === null ? "—" : `${(fighting.defenseAnswerRate * 100).toFixed(0)}%`;
+  return [
+    `Sampled matches: ${String(fighting.sampledMatches)} (${String(fighting.finishedSampled)} finished).`,
+    `Sequence: starter ${String(fighting.starters)}, extender ${String(fighting.extenders)}, finisher ${String(fighting.finishers)}, end-sequence ${String(fighting.endSequences)}.`,
+    `Meter: gained ${String(fighting.meterGained)}, spent ${String(fighting.meterSpent)} (${spend} spent).`,
+    `Tag ${String(fighting.tags)} · Assist ${String(fighting.assists)} (${String(fighting.assistHits)} hits) · reroll ${String(fighting.rerolls)} / skip ${String(fighting.rerollsSkipped)} · whiff ${String(fighting.whiffs)}.`,
+    `Chain answers: ${String(fighting.defenseAnswers)} / ${String(fighting.reactionWindows)} windows (${answer}). EX ${String(fighting.exPlays)}.`,
+    "",
+    "Roles",
+    mixTable(fighting.sequenceMix),
+    "",
+    "Strength",
+    mixTable(fighting.strengthMix),
+    "",
+    "What players committed to",
+    mixTable(fighting.commitmentMix),
+    "",
+    "Chain answers",
+    mixTable(fighting.defenseMix),
+    "",
+    "Declared hits",
+    mixTable(fighting.hitNames),
+    "",
+    "Fighter actions (faces + techniques + assists + tags in)",
+    mixTable(fighting.fighterMix),
+    "",
+    "Rejections",
+    mixTable(fighting.rejectionMix),
+  ].join("\n");
 }
 
 function fmtPct(value: number | null): string {
@@ -245,6 +294,10 @@ ${mixTable(s.recordedAsMix)}
 ### Deck pairs (finished)
 
 ${mixTable(s.deckPairMix)}
+
+### Sequence, Meter, Tag, Assist
+
+${fightingSection(exported)}
 
 ### Cards played (effect)
 

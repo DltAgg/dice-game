@@ -10,7 +10,7 @@ import {
   withHand,
   withPhase,
 } from "@server/testing/scenario.js";
-import { applyObservation, isUnplayedRecording } from "./observe.js";
+import { applyObservation, isMetricsRecording, isUnplayedRecording } from "./observe.js";
 import type { ObservationContext } from "./types.js";
 
 const ctx = (nowMs: number, recordingId = "rec-1"): ObservationContext => ({
@@ -260,5 +260,41 @@ describe("applyObservation", () => {
 
     expect(recording.totalCardsForged).toBe(1);
     expect(recording.cardForgeCounts["Test Playable (card-test-playable)"]).toBe(1);
+  });
+
+  it("counts an ended sequence and a rejected action on the tag-fighter sample", () => {
+    const start = newMatch({ seed: 7 });
+    let { recording } = applyObservation(
+      null,
+      { prevState: null, state: start, action: null, accepted: true, error: null },
+      ctx(1_000),
+    );
+    expect(recording.schemaVersion).toBe(2);
+    expect(recording.fighting).toBeDefined();
+
+    const endSequence: GameAction = { type: "END_SEQUENCE", playerId: P1 };
+    recording = applyObservation(
+      recording,
+      { prevState: start, state: start, action: endSequence, accepted: true, error: null },
+      ctx(2_000),
+    ).recording;
+    expect(recording.fighting?.endSequences).toBe(1);
+    expect(recording.fightingBySeat?.[P1]?.endSequences).toBe(1);
+
+    const rejected: GameAction = { type: "END_SEQUENCE", playerId: P2 };
+    recording = applyObservation(
+      recording,
+      {
+        prevState: start,
+        state: start,
+        action: rejected,
+        accepted: false,
+        error: "NOT_ACTIVE_PLAYER",
+      },
+      ctx(3_000),
+    ).recording;
+    expect(recording.fighting?.endSequences).toBe(1);
+    expect(recording.rejectionCounts?.NOT_ACTIVE_PLAYER).toBe(1);
+    expect(isMetricsRecording({ ...recording, schemaVersion: 1 })).toBe(true);
   });
 });

@@ -9,8 +9,8 @@ describe("metrics export", () => {
     expect(exported.schemaVersion).toBe(METRICS_SCHEMA_VERSION);
     expect(exported.exportedAt).toBe("2026-08-18T15:00:00.000Z");
     expect(exported.promptPreamble).toContain("10");
-    expect(exported.promptPreamble).toContain("playable and fun");
-    expect(exported.promptPreamble).toContain("no longer has a persistent");
+    expect(exported.promptPreamble).toContain("tag-fighter");
+    expect(exported.promptPreamble).toContain("Schema 2");
     expect(exported.promptPreamble).not.toContain("The JSON (or Markdown) that follows");
     expect(exported.matches).toHaveLength(1);
     expect(exported.matches[0]?.totalTurns).toBe(22);
@@ -22,6 +22,7 @@ describe("metrics export", () => {
     const md = formatMetricsMarkdown(exported);
     expect(md).toContain("Dice Skirmish metrics briefing");
     expect(md).toContain("Turn-length histogram");
+    expect(md).toContain("Sequence, Meter, Tag, Assist");
     expect(md).toContain("Cards played (effect)");
     expect(md).toContain("Cards played to forge");
     expect(md).toContain("Play vs forge (hand cards spent)");
@@ -31,7 +32,7 @@ describe("metrics export", () => {
     expect(md).toContain("How you played");
 
     const prompt = formatAgentPrompt(exported);
-    expect(prompt).toContain("playable and fun");
+    expect(prompt).toContain("tag-fighter");
     expect(prompt).toContain("Download JSON");
     expect(prompt).not.toContain("```json");
     expect(prompt).not.toContain('"schemaVersion"');

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { emptyFightingTurn } from "./fighting.js";
 import { fakeRecording } from "./fixtures.js";
-import { matchPace, paceVerdict } from "./pace.js";
+import { isIdleTurn, isStallTurn, matchPace, paceVerdict } from "./pace.js";
 import type { TurnRecord } from "./types.js";
 
 const turn = (over: Partial<TurnRecord>): TurnRecord => ({
@@ -78,6 +79,15 @@ describe("matchPace", () => {
     expect(fight.lateIdleTurns).toBe(0);
     expect(fight.dragScore).toBe(2);
     expect(fight.verdict).toBe("long-active");
+  });
+
+  it("treats a sequence hit with no legacy attack as combat", () => {
+    const hit = turn({
+      fighting: { ...emptyFightingTurn(), facesUsed: 1, starters: 1, lightHits: 1 },
+      stall: true,
+    });
+    expect(isStallTurn(hit)).toBe(false);
+    expect(isIdleTurn(hit)).toBe(false);
   });
 
   it("calls setup-heavy overtime grinding rather than dragging", () => {

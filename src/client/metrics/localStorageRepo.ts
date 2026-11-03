@@ -16,7 +16,10 @@ function readBlob(): MatchRecording[] {
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== "object" || parsed === null) return [];
     const blob = parsed as Partial<StorageBlob>;
-    if (blob.schemaVersion !== METRICS_SCHEMA_VERSION || !Array.isArray(blob.recordings)) {
+    if (
+      (blob.schemaVersion !== 1 && blob.schemaVersion !== METRICS_SCHEMA_VERSION) ||
+      !Array.isArray(blob.recordings)
+    ) {
       return [];
     }
     return blob.recordings.filter(isMetricsRecording);
