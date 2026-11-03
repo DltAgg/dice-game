@@ -8,7 +8,7 @@
   "modifySubject": "moveset",
   "fighterRestriction": "creature-magnus",
   "replaceFaceId": "face-natural-grab",
-  "rulesText": "Stays on Fighter.\n[Replace] to Grab. [Moveset Low Blow].\nLow Blow · Medium Punch · Starter\nGrab + Light kick: [Strike 4].",
+  "rulesText": "Stays on Fighter.\n[Replace] to Grab. [Moveset Low Blow].\nLow Blow · Medium Punch · Starter\nGrab + Light: [Strike 4].",
   "addedTechnique": {
     "id": "technique-magnus-low-blow",
     "name": "Low Blow",

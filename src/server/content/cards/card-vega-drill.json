@@ -7,7 +7,7 @@
   "lifecycle": "persistent",
   "modifySubject": "moveset",
   "fighterRestriction": "creature-vega",
-  "rulesText": "Stays on Fighter.\n[Moveset Drill].\nDrill · Heavy Punch · Finisher\nDash + Heavy punch: [Strike 2]. [Tag out] the opponent's Active Fighter and it cannot [Tag in] until the end of its next turn.",
+  "rulesText": "Stays on Fighter.\n[Moveset Drill].\nDrill · Heavy Punch · Finisher\nDash + Heavy: [Strike 2]. [Tag out] the opponent's Active Fighter and it cannot [Tag in] until the end of its next turn.",
   "addedTechnique": {
     "id": "technique-vega-drill",
     "name": "Drill",
