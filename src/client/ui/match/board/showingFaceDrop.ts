@@ -1,5 +1,7 @@
 import {
   dieForCreature,
+  fighterAttackBanned,
+  getCreatureDefinition,
   legalFaceActions,
   matchingTechniques,
   sequenceMeterAffordable,
@@ -16,6 +18,7 @@ import {
 export interface ShowingFaceChip {
   readonly creatureId: CreatureId;
   readonly dieId: DieId;
+  readonly fighterName: string;
   readonly name: string;
   readonly active: boolean;
 }
@@ -36,12 +39,14 @@ export function showingFaceChips(state: GameState, playerId: PlayerId): readonly
   if (player === undefined) return [];
   const chips: ShowingFaceChip[] = [];
   for (const creatureId of player.creatureIds) {
+    const creature = state.creatures[creatureId];
     const die = dieForCreature(state, creatureId);
     const face = die === undefined ? undefined : showingFaceCard(state, die.id);
-    if (die === undefined || face === undefined) continue;
+    if (creature === undefined || die === undefined || face === undefined) continue;
     chips.push({
       creatureId,
       dieId: die.id,
+      fighterName: getCreatureDefinition(creature.definitionId)?.name ?? "Fighter",
       name: face.name,
       active: player.activeCreatureId === creatureId,
     });
@@ -87,6 +92,8 @@ export function stagedShowingDrop(
   if (primary === null || secondaryCreature === null) {
     return { kind: "pending", message: "One face must be the Active Fighter's." };
   }
+  const banned = attackBanRefusal(state, primary);
+  if (banned !== null) return { kind: "pending", message: banned };
   const secondaryDie = dieForCreature(state, secondaryCreature);
   if (secondaryDie === undefined) {
     return { kind: "pending", message: "Those faces are not a Technique." };
@@ -100,12 +107,24 @@ export function stagedShowingDrop(
   return { kind: "technique", creatureId: primary, matches };
 }
 
+function attackBanRefusal(state: GameState, creatureId: CreatureId): string | null {
+  if (!fighterAttackBanned(state.creatures[creatureId], state.turn)) return null;
+  const definitionId = state.creatures[creatureId]?.definitionId;
+  const name =
+    definitionId === undefined
+      ? "This Fighter"
+      : (getCreatureDefinition(definitionId)?.name ?? "This Fighter");
+  return `${name} cannot attack this turn.`;
+}
+
 /** Why a sequence face cannot be dropped as a hit. Null when that is not the reason. */
 function sequenceFaceRefusal(
   state: GameState,
   playerId: PlayerId,
   creatureId: CreatureId,
 ): string | null {
+  const banned = attackBanRefusal(state, creatureId);
+  if (banned !== null) return banned;
   const die = dieForCreature(state, creatureId);
   const face = die === undefined ? undefined : showingFaceCard(state, die.id);
   const role = face?.sequenceRole;

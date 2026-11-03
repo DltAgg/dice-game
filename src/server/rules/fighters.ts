@@ -26,6 +26,14 @@ export function assistHitEffect(
   return found;
 }
 
+/** Crushing Throw stamps this turn on that Fighter only. Other Fighters stay legal. */
+export function fighterAttackBanned(
+  creature: Pick<CreatureState, "attackBannedOnTurn"> | undefined,
+  turn: number,
+): boolean {
+  return creature?.attackBannedOnTurn === turn;
+}
+
 export function dieForCreature(
   state: Pick<GameState, "players" | "dice" | "creatures">,
   creatureId: CreatureId,
@@ -107,6 +115,7 @@ export function assistDeclarationError(
     | "aggressorPlayerId"
     | "offensiveState"
     | "chainStack"
+    | "turn"
     | "players"
     | "creatures"
     | "playerOrder"
@@ -128,6 +137,7 @@ export function assistDeclarationError(
   if (definition === undefined || effects.length === 0) return "CARD_HAS_NO_EFFECT";
   const hit = assistHitEffect(effects);
   if (hit === "many") return "INVALID_TARGET";
+  if (hit !== null && fighterAttackBanned(creature, state.turn)) return "ATTACK_BANNED";
 
   const pending = state.pendingDecision;
   if (hit !== null) {

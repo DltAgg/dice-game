@@ -11,7 +11,7 @@ import {
 } from "../model/fighterTechniques.js";
 import type { CreatureId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
-import { dieForCreature, isActiveFighter, opponentActiveId } from "./fighters.js";
+import { dieForCreature, fighterAttackBanned, isActiveFighter, opponentActiveId } from "./fighters.js";
 import { sequenceMeterAffordable, sequenceRoleFits } from "./offensive.js";
 
 export function faceActionKey(dieId: DieId): string {
@@ -135,6 +135,7 @@ export function canUseFace(
   if (!player.creatureIds.includes(creatureId)) return false;
   const creature = state.creatures[creatureId];
   if (creature === undefined) return false;
+  if (fighterAttackBanned(creature, state.turn)) return false;
   const die = dieForCreature(state, creatureId);
   if (die === undefined || die.rolledSlotIndex === null) return false;
   if (dieIsFaceActionSpent(state, playerId, die.id)) return false;
@@ -173,6 +174,7 @@ export function matchingTechniques(
   if (!isActiveFighter(player, creatureId)) return [];
   const creature = state.creatures[creatureId];
   if (creature === undefined || creature.defeated) return [];
+  if (fighterAttackBanned(creature, state.turn)) return [];
   const activeDie = dieForCreature(state, creatureId);
   if (activeDie === undefined || activeDie.rolledSlotIndex === null) return [];
   if (dieIsFaceActionSpent(state, playerId, activeDie.id)) return [];

@@ -11,7 +11,7 @@ import { dieForCreature } from "@server/rules/fighters.js";
 import { createMatch } from "@server/setup/createMatch.js";
 import { expectOk, handCardIdAt, P1, P2, resolveOpenChain, withHand } from "@server/testing/scenario.js";
 import { advance } from "@server/reducer/reduce.js";
-import { hitButtonLabel, stagedShowingDrop } from "./showingFaceDrop";
+import { hitButtonLabel, showingFaceChips, stagedShowingDrop } from "./showingFaceDrop";
 
 const JAB = asFaceCardId("face-natural-jab");
 const KICK = asFaceCardId("face-natural-kick");
@@ -68,6 +68,39 @@ function show(state: GameState, creatureId: CreatureId, faceId: FaceCardId): Gam
 }
 
 describe("staged showing-face drops", () => {
+  it("names Magnus on the ban and still lets Vega hit", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const magnus = fighter(state, MAGNUS);
+    const creature = state.creatures[magnus];
+    if (creature === undefined) throw new Error("magnus");
+    state = {
+      ...state,
+      players: {
+        ...state.players,
+        [P1]: { ...state.players[P1]!, activeCreatureId: vega },
+      },
+      creatures: {
+        ...state.creatures,
+        [magnus]: { ...creature, attackBannedOnTurn: state.turn },
+      },
+    };
+    state = show(show(state, vega, JAB), magnus, GRAB);
+    expect(showingFaceChips(state, P1).find((chip) => chip.creatureId === magnus)?.fighterName).toBe(
+      "Magnus",
+    );
+    expect(showingFaceChips(state, P1).find((chip) => chip.creatureId === vega)?.fighterName).toBe(
+      "Vega",
+    );
+    expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({ kind: "hit", creatureId: vega });
+    expect(stagedShowingDrop(state, P1, [magnus, null])).toEqual({
+      kind: "pending",
+      message: "Magnus cannot attack this turn.",
+    });
+    state = show(show(state, vega, KICK), magnus, KICK);
+    expect(stagedShowingDrop(state, P1, [vega, magnus]).kind).toBe("technique");
+  });
+
   it("uses any Fighter's legal showing face as a hit", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);

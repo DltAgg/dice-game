@@ -5,7 +5,7 @@ import type { GameError } from "../model/errors.js";
 import type { CreatureDefinitionId, DieId, PlayerId } from "../model/ids.js";
 import type { ChainLink } from "../model/state.js";
 import type { RNG } from "../rng/rng.js";
-import { dieForCreature } from "../rules/fighters.js";
+import { dieForCreature, fighterAttackBanned } from "../rules/fighters.js";
 import { patchCreature, type Draft } from "./draft.js";
 import { drainResolution, pushEffect } from "./resolution.js";
 import { rollOneDie } from "./commands/rollDice.js";
@@ -19,7 +19,7 @@ export function attackBanError(
   creature: Pick<CreatureState, "attackBannedOnTurn">,
   turn: number,
 ): GameError | null {
-  if (creature.attackBannedOnTurn === turn) return "ATTACK_BANNED";
+  if (fighterAttackBanned(creature, turn)) return "ATTACK_BANNED";
   return null;
 }
 

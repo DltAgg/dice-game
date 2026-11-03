@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getCreatureDefinition } from "../content/creatures.js";
+import { TAG_SKIRMISH_LOADOUT } from "../content/loadouts/index.js";
 import { TAG_FIGHTER_RULES } from "../model/config.js";
 import type { CardInstance } from "../model/cards.js";
 import type { DieFaceLayout } from "../model/dice.js";
@@ -16,6 +17,7 @@ import {
 } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import type { RNG } from "../rng/rng.js";
+import { legalFaceActions } from "../rules/faceActions.js";
 import { dieForCreature } from "../rules/fighters.js";
 import { hasLegalReactionOffer } from "../rules/reactions.js";
 import { TURN_REROLL_KEY } from "../rules/offensive.js";
@@ -35,6 +37,7 @@ const VEGA = asCreatureDefinitionId("creature-vega");
 const MAGNUS = asCreatureDefinitionId("creature-magnus");
 const RYU = asCreatureDefinitionId("creature-ryu");
 const GRAB = asFaceCardId("face-natural-grab");
+const KICK = asFaceCardId("face-natural-kick");
 const FOCUS = asFaceCardId("face-natural-focus");
 const HEAVY = asFaceCardId("face-natural-heavy");
 const RUSH = asFaceCardId("face-natural-rush");
@@ -865,5 +868,84 @@ describe("spec 035 EX cards", () => {
     );
     const resolved = resolvePlayed(expectOk(play(declared, P1)), [0, 3]);
     expect(damage(resolved, defenderId(declared))).toBe(6);
+  });
+
+  it("lets Vega attack on the banned turn after Tag switches Magnus out", () => {
+    const squad = TAG_SKIRMISH_LOADOUT.squad;
+    const seat = {
+      squad,
+      deck: [] as const,
+      faceDeck: TAG_SKIRMISH_LOADOUT.faceDeck,
+      startingDice: TAG_SKIRMISH_LOADOUT.startingDice,
+    };
+    const match = createMatch({
+      matchId: "match-ex-tag-ban",
+      seed: 4,
+      config: { ...TAG_FIGHTER_RULES, deckMinCards: 0, deckOutEnabled: false },
+      players: [
+        { id: P1, ...seat },
+        { id: P2, ...seat },
+      ],
+    });
+    const opened = openActions(match, P1);
+    const magnus = fighter(opened, P1, MAGNUS);
+    const vega = fighter(opened, P1, VEGA);
+    const ryu = fighter(opened, P1, RYU);
+    const ready = {
+      ...withHand(
+        withMeter(show(show(withActive(opened, P1, magnus), magnus, GRAB), vega, RUSH), P1, 8),
+        P1,
+        [CRUSHING_THROW],
+      ),
+      offensiveState: "combo" as const,
+    };
+    const declared = useTechnique(ready, magnus, POWER_BOMB, vega);
+    const n = declared.turn;
+    const resolved = resolvePlayed(expectOk(play(declared, P1)), [0, 1]);
+    expect(resolved.creatures[magnus]?.attackBannedOnTurn).toBe(n + 2);
+    expect(resolved.creatures[vega]?.attackBannedOnTurn).toBeUndefined();
+    expect(resolved.creatures[ryu]?.attackBannedOnTurn).toBeUndefined();
+
+    const banned = openActions(endSequence(resolved, P2), P1);
+    expect(banned.turn).toBe(n + 2);
+    expect(banned.players[P1]?.activeCreatureId).toBe(magnus);
+    const tagged = resolveOpenChain(
+      expectOk(advance(banned, { type: "TAG", playerId: P1, reserveCreatureId: vega })),
+    );
+    expect(tagged.activePlayerId).toBe(P1);
+    expect(tagged.phase).toBe("actions");
+    expect(tagged.players[P1]?.activeCreatureId).toBe(vega);
+    expect(tagged.creatures[vega]?.attackBannedOnTurn).toBeUndefined();
+    expect(tagged.creatures[magnus]?.attackBannedOnTurn).toBe(n + 2);
+
+    const shown = show(show(tagged, vega, JAB), magnus, GRAB);
+    expect(legalFaceActions(shown, P1)).toContain(vega);
+    expect(legalFaceActions(shown, P1)).not.toContain(magnus);
+    const vegaHit = advance(shown, {
+      type: "USE_FACE",
+      playerId: P1,
+      creatureId: vega,
+    });
+    expect(vegaHit.ok).toBe(true);
+
+    const step = show(show(tagged, vega, KICK), magnus, KICK);
+    const secondary = dieForCreature(step, magnus);
+    if (secondary === undefined) throw new Error("magnus die");
+    const technique = advance(step, {
+      type: "USE_TECHNIQUE",
+      playerId: P1,
+      creatureId: vega,
+      techniqueId: "technique-vega-step-jab",
+      secondaryDieId: secondary.id,
+    });
+    expect(technique.ok).toBe(true);
+
+    const magnusHit = advance(show(tagged, magnus, GRAB), {
+      type: "USE_FACE",
+      playerId: P1,
+      creatureId: magnus,
+    });
+    expect(magnusHit.ok).toBe(false);
+    if (!magnusHit.ok) expect(magnusHit.error).toBe("ATTACK_BANNED");
   });
 });

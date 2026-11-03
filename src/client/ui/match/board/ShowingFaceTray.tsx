@@ -88,7 +88,11 @@ export function ShowingFaceTray({
             <button
               type="button"
               draggable={interactive}
-              aria-label={chip.active ? `${chip.name}, Active Fighter` : chip.name}
+              aria-label={
+                chip.active
+                  ? `${chip.fighterName}, ${chip.name}, Active Fighter`
+                  : `${chip.fighterName}, ${chip.name}`
+              }
               onDragStart={(event) => {
                 event.dataTransfer.setData("text/plain", chip.creatureId);
                 event.dataTransfer.effectAllowed = "copy";
@@ -99,7 +103,7 @@ export function ShowingFaceTray({
                   : "cursor-grab rounded border border-stone-600 bg-stone-950 px-2 py-1 text-sm text-stone-100"
               }
             >
-              {chip.name}
+              {chip.fighterName} · {chip.name}
             </button>
           </HoveredFaceName>
         ))}
@@ -149,7 +153,7 @@ export function ShowingFaceTray({
                       })
                     }
                   >
-                    {chip.name}
+                    {chip.fighterName} · {chip.name}
                   </button>
                 </HoveredFaceName>
               )}
@@ -177,7 +181,10 @@ export function ShowingFaceTray({
             setSlots([null, null]);
           }}
         >
-          {hitButtonLabel(hitChip === undefined ? undefined : faceFor(hitChip), hitChip?.name ?? "Face")}
+          {hitButtonLabel(
+            hitChip === undefined ? undefined : faceFor(hitChip),
+            hitChip === undefined ? "Face" : `${hitChip.fighterName} · ${hitChip.name}`,
+          )}
         </button>
       )}
       {interactive && staged.kind === "technique" && (
