@@ -15,7 +15,7 @@
     "primaryFaceId": "face-natural-form",
     "hitStrength": "medium",
     "hitType": "punch",
-    "secondary": { "hitStrength": "light", "hitType": "kick" },
+    "secondary": { "hitType": "kick" },
     "sequenceRole": "starter",
     "effects": [
       {
@@ -24,7 +24,7 @@
         "target": { "kind": "declared-target" }
       }
     ],
-    "rulesText": "Form + Light kick: [Strike 3]."
+    "rulesText": "Form + Kick: [Strike 3]."
   },
   "forge": { "faces": 1, "target": "own-die" }
 }

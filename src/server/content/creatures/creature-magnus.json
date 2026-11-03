@@ -32,7 +32,7 @@
       "hitType": "punch",
       "secondary": { "hitType": "kick" },
       "sequenceRole": "starter",
-      "rulesText": "Lariat + kick: [Strike 3].",
+      "rulesText": "Lariat + Kick: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -49,7 +49,7 @@
       "hitType": "punch",
       "secondary": { "hitStrength": "medium" },
       "sequenceRole": "extender",
-      "rulesText": "Lariat + medium: [Strike 4].",
+      "rulesText": "Lariat + Medium: [Strike 4].",
       "effects": [
         {
           "type": "damage",
@@ -66,7 +66,7 @@
       "hitType": "punch",
       "secondary": { "hitStrength": "heavy" },
       "sequenceRole": "finisher",
-      "rulesText": "Grab + heavy: [Strike 5].",
+      "rulesText": "Grab + Heavy: [Strike 5].",
       "effects": [
         {
           "type": "damage",

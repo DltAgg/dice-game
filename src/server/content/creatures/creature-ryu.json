@@ -54,7 +54,7 @@
       "hitType": "punch",
       "secondary": { "hitType": "punch" },
       "sequenceRole": "extender",
-      "rulesText": "Projectile + punch: [Strike 3].",
+      "rulesText": "Projectile + Punch: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -71,7 +71,7 @@
       "hitType": "punch",
       "secondary": { "hitType": "kick" },
       "sequenceRole": "finisher",
-      "rulesText": "Projectile + kick: [Strike 4].",
+      "rulesText": "Projectile + Kick: [Strike 4].",
       "effects": [
         {
           "type": "damage",

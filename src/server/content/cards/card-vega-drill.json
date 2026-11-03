@@ -15,7 +15,7 @@
     "hitStrength": "heavy",
     "hitType": "punch",
     "sequenceRole": "finisher",
-    "secondary": { "hitStrength": "heavy", "hitType": "punch" },
+    "secondary": { "hitStrength": "heavy" },
     "effects": [
       {
         "type": "damage",
@@ -28,7 +28,7 @@
         "preventTagIn": true
       }
     ],
-    "rulesText": "Heavy punch. Finisher. Dash + Heavy punch: [Strike 2]. [Tag out] the opponent's Active Fighter and it cannot [Tag in] until the end of its next turn."
+    "rulesText": "Heavy punch. Finisher. Dash + Heavy: [Strike 2]. [Tag out] the opponent's Active Fighter and it cannot [Tag in] until the end of its next turn."
   },
   "forge": { "faces": 1, "target": "own-die" }
 }

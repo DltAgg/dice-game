@@ -15,7 +15,7 @@
     "primaryFaceId": "face-natural-grab",
     "hitStrength": "medium",
     "hitType": "punch",
-    "secondary": { "hitStrength": "light", "hitType": "kick" },
+    "secondary": { "hitStrength": "light" },
     "sequenceRole": "starter",
     "effects": [
       {
@@ -24,7 +24,7 @@
         "target": { "kind": "declared-target" }
       }
     ],
-    "rulesText": "Grab + Light kick: [Strike 4]."
+    "rulesText": "Grab + Light: [Strike 4]."
   },
   "forge": { "faces": 1, "target": "own-die" }
 }

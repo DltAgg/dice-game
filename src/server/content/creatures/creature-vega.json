@@ -35,7 +35,7 @@
       "hitType": "punch",
       "secondary": { "hitStrength": "light" },
       "sequenceRole": "starter",
-      "rulesText": "Kick + light: [Strike 3].",
+      "rulesText": "Kick + Light: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -69,7 +69,7 @@
       "hitType": "kick",
       "secondary": { "hitType": "punch" },
       "sequenceRole": "finisher",
-      "rulesText": "Rush + punch: [Strike 4].",
+      "rulesText": "Rush + Punch: [Strike 4].",
       "effects": [
         {
           "type": "damage",
