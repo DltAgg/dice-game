@@ -4,7 +4,7 @@
   "name": "Ryu",
   "life": 12,
   "archetype": "zoner",
-  "passiveRulesText": "Starter attacks deal half damage to Ryu. Grappler fighters need to use 2 starters, the 1st Starter attack does not hit, to enter combo against Ryu.",
+  "passiveRulesText": "· Starter attacks deal half damage to Ryu.\n· Grappler fighters need to use 2 starters, the 1st Starter attack does not hit, to enter combo against Ryu.",
   "halveStarterDamage": true,
   "grapplerStarterWhiff": true,
   "assistName": "Seal",

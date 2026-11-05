@@ -324,8 +324,7 @@ describe("Magnus passive", () => {
     const text = getCreatureDefinition(MAGNUS_ID)?.passiveRulesText ?? "";
     expect(text).toContain("Grab hits you execute");
     expect(text).toContain("Techniques you execute deal +1 damage");
-    expect(text).toContain("light punch");
-    expect(text).toContain("light kick");
+    expect(text).toContain("light action");
     expect(text).toContain("+2 damage");
     const rulebook = readFileSync(join(ROOT, "docs/RULEBOOK.md"), "utf8");
     const source = readFileSync(join(ROOT, "docs/GAME_STATE.md"), "utf8");
