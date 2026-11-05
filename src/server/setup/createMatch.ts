@@ -164,6 +164,7 @@ function buildCreatures(setup: PlayerSetup, config: GameRulesConfig): readonly C
       spentOncePerTurnTriggers: [],
       redirectDamageThisTurn: 0,
       nextIncomingDamageBonus: 0,
+      delayedAttackBonus: null,
     };
   });
 }

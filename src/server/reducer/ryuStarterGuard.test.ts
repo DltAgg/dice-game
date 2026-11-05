@@ -317,7 +317,7 @@ describe("Ryu starter guard", () => {
     const vega = fighterOf(opened, VEGA_ID, P2);
     const ready = showFace(withActive(opened, P1, magnus), magnus, GRAB);
     const hit = useFace(ready, magnus);
-    expect(damageOf(hit, vega)).toBe(2);
+    expect(damageOf(hit, vega)).toBe(3);
     expect(hit.offensiveState).toBe("combo");
   });
 });

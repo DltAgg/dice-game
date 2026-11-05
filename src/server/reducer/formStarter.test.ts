@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { RYU_FORM } from "../content/cards.js";
 import { getCreatureDefinition } from "../content/creatures.js";
-import { KICK } from "../content/faces.js";
 import { TAG_FIGHTER_RULES } from "../model/config.js";
 import type { DieFaceLayout } from "../model/dice.js";
 import {
@@ -10,7 +9,6 @@ import {
   type CreatureDefinitionId,
   type CreatureId,
   type DieId,
-  type FaceCardId,
 } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { canUseFace, matchingTechniques, showingFaceCard } from "../rules/faceActions.js";
@@ -82,17 +80,6 @@ function showSlot(state: GameState, creatureId: CreatureId, slotIndex: number): 
   return {
     ...state,
     dice: { ...state.dice, [die.id]: { ...die, rolledSlotIndex: slotIndex } },
-  };
-}
-
-function showFace(state: GameState, creatureId: CreatureId, faceId: FaceCardId): GameState {
-  const die = dieForCreature(state, creatureId);
-  if (die === undefined) throw new Error("die");
-  const slot = die.slots.findIndex((entry) => entry.faceCardId === faceId);
-  if (slot < 0) throw new Error(faceId);
-  return {
-    ...state,
-    dice: { ...state.dice, [die.id]: { ...die, rolledSlotIndex: slot } },
   };
 }
 
@@ -197,7 +184,7 @@ describe("Ryu Form showing starter", () => {
     const opened = skirmishActions();
     const ryu = fighterOf(opened, RYU_ID);
     const vega = fighterOf(opened, VEGA_ID);
-    const ready = showFace(withActive(showSlot(opened, ryu, 0), ryu), vega, KICK);
+    const ready = showSlot(withActive(showSlot(opened, ryu, 0), ryu), vega, 2);
     const formed = playForm(ready, ryu, 0);
     const dieId = dieIdOf(formed, ryu);
     const vegaDie = dieForCreature(formed, vega);

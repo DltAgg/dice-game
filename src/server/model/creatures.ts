@@ -81,6 +81,19 @@ export interface CreatureDefinition {
    */
   readonly grapplerStarterWhiff?: boolean;
   /**
+   * Added once when this Fighter executes a grab face hit or a Technique.
+   * A Technique whose primary face is a grab still adds this once. Omit
+   * when the Fighter has no such bonus.
+   */
+  readonly executedGrabOrTechniqueBonus?: number;
+  /**
+   * When the opponent declares a light punch or light kick starter, this
+   * Fighter's next sequence attack on the next turn deals this much extra
+   * damage. A later qualifying starter refreshes the same amount. Omit
+   * when the Fighter has no such punish.
+   */
+  readonly lightStarterPunish?: number;
+  /**
    * Data-driven standing passives (`010`). Prefer relation filters on shared
    * hooks over special-cased reducer branches.
    */
@@ -206,4 +219,16 @@ export interface CreatureState {
    * hit Assist while `GameState.turn` equals this value. Absent means no ban.
    */
   readonly attackBannedOnTurn?: number;
+  /**
+   * One delayed sequence-attack bonus. `availableOnTurn` is the turn it
+   * can be spent. `null` when none is armed.
+   */
+  readonly delayedAttackBonus: DelayedAttackBonus | null;
+}
+
+/** A punish stored until a later turn's next sequence attack. */
+export interface DelayedAttackBonus {
+  readonly amount: number;
+  /** `GameState.turn` on which the next sequence attack may spend this. */
+  readonly availableOnTurn: number;
 }

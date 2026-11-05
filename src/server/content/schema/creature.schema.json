@@ -31,6 +31,16 @@
       "type": "boolean",
       "description": "A Grappler's first starter of the sequence against this Fighter does not hit and does not enter combo."
     },
+    "executedGrabOrTechniqueBonus": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Added once when this Fighter executes a grab face hit or a Technique."
+    },
+    "lightStarterPunish": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "After the opponent declares a light punch or light kick starter, this Fighter's next sequence attack on the next turn deals this much extra damage."
+    },
     "standingAbilities": {
       "description": "Data-driven standing passives (spec 010). Prefer relation filters on shared hooks (on-absorb, on-attack, …) over special-cased reducer branches.",
       "type": "array",

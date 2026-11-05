@@ -381,7 +381,7 @@ describe("spec 035 EX cards", () => {
     expect(meterDeltas(played, P1)).toEqual([-8]);
 
     const resolved = resolvePlayed(played, [0, 3]);
-    expect(damage(resolved, defender)).toBe(8);
+    expect(damage(resolved, defender)).toBe(9);
     expect(meterOf(resolved, P1)).toBe(0);
     expect(meterOf(resolved, P2)).toBe(0);
     expect(meterDeltas(resolved, P1)).toEqual([-8]);
@@ -392,17 +392,17 @@ describe("spec 035 EX cards", () => {
     const declared = declarePowerBomb(powerBombWindow(0, []));
     const defender = defenderId(declared);
     const resolved = resolveOpenChain(declared);
-    expect(damage(resolved, defender)).toBe(7);
+    expect(damage(resolved, defender)).toBe(8);
     expect(meterDeltas(resolved, P1)).toContain(4);
     expect(meterOf(resolved, P2)).toBe(1);
   });
 
   it("deals Strike 6 plus 0, 2, or 4 from the Magnus rerolls and leaves other dice", () => {
     const cases = [
-      { slots: [0, 3], damage: 8, finalSlot: 3 },
-      { slots: [0, 1], damage: 10, finalSlot: 1 },
-      { slots: [1, 0], damage: 10, finalSlot: 0 },
-      { slots: [1, 2], damage: 8, finalSlot: 2 },
+      { slots: [0, 3], damage: 9, finalSlot: 3 },
+      { slots: [0, 1], damage: 11, finalSlot: 1 },
+      { slots: [1, 0], damage: 11, finalSlot: 0 },
+      { slots: [1, 2], damage: 9, finalSlot: 2 },
     ] as const;
     for (const row of cases) {
       const declared = declarePowerBomb(powerBombWindow());
@@ -435,7 +435,7 @@ describe("spec 035 EX cards", () => {
     };
     const kept = resolvePlayed(expectOk(play(retained, P1)), [0, 3]);
     expect(kept.dice[die.id]?.rolledSlotIndex).toBe(3);
-    expect(damage(kept, defenderId(declared))).toBe(8);
+    expect(damage(kept, defenderId(declared))).toBe(9);
 
     const stunnedDeclared = declarePowerBomb(powerBombWindow());
     const stunnedDie = dieForCreature(stunnedDeclared, fighter(stunnedDeclared, P1, MAGNUS));
@@ -450,7 +450,7 @@ describe("spec 035 EX cards", () => {
     const slot = stunnedDie.rolledSlotIndex;
     const skipped = resolvePlayed(expectOk(play(stunned, P1)), []);
     expect(skipped.dice[stunnedDie.id]?.rolledSlotIndex).toBe(slot);
-    expect(damage(skipped, defenderId(stunnedDeclared))).toBe(8);
+    expect(damage(skipped, defenderId(stunnedDeclared))).toBe(7);
   });
 
   it("refuses EX after the attacker passes, above another link, with no attack, or on the wrong gate", () => {
@@ -497,11 +497,10 @@ describe("spec 035 EX cards", () => {
 
     const jabbed = actions();
     const magnus = fighter(jabbed, P1, MAGNUS);
-    const jab = withHand(
-      withMeter(show(withActive(jabbed, P1, magnus), magnus, LARIAT), P1, 8),
-      P1,
-      [THROW.id],
-    );
+    const shownLariat = show(withActive(jabbed, P1, magnus), magnus, LARIAT);
+    const jab = withHand(withMeter({ ...shownLariat, offensiveState: "combo" }, P1, 8), P1, [
+      THROW.id,
+    ]);
     const light = expectOk(
       advance(jab, { type: "USE_FACE", playerId: P1, creatureId: magnus }),
     );
@@ -595,7 +594,7 @@ describe("spec 035 EX cards", () => {
     const bannedTurn = openActions(endSequence(resolved, P2), P1);
     expect(bannedTurn.turn).toBe(n + 2);
     const magnus = fighter(bannedTurn, P1, MAGNUS);
-    const jab = show(withActive(bannedTurn, P1, magnus), magnus, LARIAT);
+    const jab = show(withActive(bannedTurn, P1, magnus), magnus, GRAB);
     const attack = advance(jab, { type: "USE_FACE", playerId: P1, creatureId: magnus });
     expect(attack.ok).toBe(true);
   });
@@ -609,7 +608,7 @@ describe("spec 035 EX cards", () => {
     const resolved = expectOk(
       reduce(toDefender, { type: "PASS_PRIORITY", playerId: P1 }, scriptedRng([0, 3])),
     );
-    expect(damage(resolved, defender)).toBe(4);
+    expect(damage(resolved, defender)).toBe(7);
   });
 
   it("bans the restricted Fighter on turn + 2 and leaves other attacks legal later", () => {
@@ -652,7 +651,7 @@ describe("spec 035 EX cards", () => {
 
     const later = openActions(endSequence(endSequence(banned, P1), P2), P1);
     expect(later.turn).toBe(n + 4);
-    const free = show(withActive(later, P1, fighter(later, P1, MAGNUS)), fighter(later, P1, MAGNUS), LARIAT);
+    const free = show(withActive(later, P1, fighter(later, P1, MAGNUS)), fighter(later, P1, MAGNUS), GRAB);
     const freed = expectOk(
       advance(free, {
         type: "USE_FACE",
@@ -710,7 +709,7 @@ describe("spec 035 EX cards", () => {
     const n = declared.turn;
     const defender = defenderId(declared);
     const alone = resolveOpenChain(declareChase(chaseWindow([])));
-    expect(damage(alone, defenderId(alone))).toBe(8);
+    expect(damage(alone, defenderId(alone))).toBe(6);
 
     const played = expectOk(play(declared, P1));
     expect(meterOf(played, P1)).toBe(0);
@@ -844,7 +843,7 @@ describe("spec 035 EX cards", () => {
     const played = expectOk(play(declared, P1));
     expect(meterOf(played, P1)).toBe(0);
     const resolved = resolvePlayed(played, [0, 3]);
-    expect(damage(resolved, defender)).toBe(8);
+    expect(damage(resolved, defender)).toBe(9);
     expect(resolved.activePlayerId).toBe(P2);
     expect(resolved.creatures[fighter(resolved, P1, MAGNUS)]?.attackBannedOnTurn).toBe(3);
 
