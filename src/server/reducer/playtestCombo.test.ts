@@ -83,6 +83,38 @@ function withActive(state: GameState, creatureId: CreatureId): GameState {
 }
 
 describe("playtest hits and techniques", () => {
+  it("lets Vega Chase Kick from Flash Kick and Power Grab once the sequence is in combo", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const magnus = fighter(state, MAGNUS);
+    state = show(show(state, vega, VEGA_FLASH_KICK), magnus, MAGNUS_POWER_GRAB);
+    expect(state.players[P1]?.activeCreatureId).toBe(vega);
+    expect(matchingTechniques(state, P1, vega).map((match) => match.techniqueId)).not.toContain(
+      "technique-vega-chase-kick",
+    );
+    const combo = resolveOpenChain(
+      expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: magnus })),
+    );
+    expect(combo.offensiveState).toBe("combo");
+    const chase = matchingTechniques(combo, P1, vega).find(
+      (match) => match.techniqueId === "technique-vega-chase-kick",
+    );
+    expect(chase).toBeDefined();
+    const declared = expectOk(
+      advance(combo, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: vega,
+        techniqueId: "technique-vega-chase-kick",
+        secondaryDieId: chase!.secondaryDieId,
+      }),
+    );
+    expect(declared.chainStack.at(-1)).toMatchObject({
+      sequenceRole: "extender",
+      hitType: "kick",
+    });
+  });
+
   it("enters Combo from a lone starter face, then leaves it when the sequence ends", () => {
     let open = inActions();
     const vega = fighter(open, VEGA);

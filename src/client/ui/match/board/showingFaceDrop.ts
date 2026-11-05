@@ -1,7 +1,9 @@
 import {
+  assignTechniqueInputs,
   dieForCreature,
   fighterAttackBanned,
   getCreatureDefinition,
+  getFaceCard,
   legalFaceActions,
   matchingTechniques,
   sequenceActionUsed,
@@ -11,9 +13,11 @@ import {
   type CreatureId,
   type DieId,
   type FaceCardDefinition,
+  type FaceCardId,
   type GameState,
   type MatchingTechnique,
   type PlayerId,
+  type SequenceRole,
 } from "@server";
 
 export interface ShowingFaceChip {
@@ -103,7 +107,8 @@ export function stagedShowingDrop(
     (match) => match.secondaryDieId === secondaryDie.id,
   );
   if (matches.length === 0) {
-    return { kind: "pending", message: "Those faces are not a Technique." };
+    const blocked = techniquePairRefusal(state, playerId, primary, secondaryDie.id);
+    return { kind: "pending", message: blocked ?? "Those faces are not a Technique." };
   }
   return { kind: "technique", creatureId: primary, matches };
 }
@@ -116,6 +121,104 @@ function attackBanRefusal(state: GameState, creatureId: CreatureId): string | nu
       ? "This Fighter"
       : (getCreatureDefinition(definitionId)?.name ?? "This Fighter");
   return `${name} cannot attack this turn.`;
+}
+
+/**
+ * The two faces are a Technique that cannot be declared yet, or that Technique
+ * belongs to a Fighter who is not Active.
+ */
+function techniquePairRefusal(
+  state: GameState,
+  playerId: PlayerId,
+  activeId: CreatureId,
+  secondaryDieId: DieId,
+): string | null {
+  const onActive = inputMatch(state, activeId, secondaryDieId);
+  if (onActive !== null) {
+    return blockedTechniqueReason(
+      state,
+      playerId,
+      onActive.name,
+      onActive.role,
+      onActive.primaryFaceId,
+      onActive.techniqueId,
+    );
+  }
+  const player = state.players[playerId];
+  const activeDie = dieForCreature(state, activeId);
+  if (player === undefined || activeDie === undefined) return null;
+  for (const creatureId of player.creatureIds) {
+    if (creatureId === activeId) continue;
+    const onReserve = inputMatch(state, creatureId, activeDie.id);
+    if (onReserve === null) continue;
+    const definitionId = state.creatures[creatureId]?.definitionId;
+    const fighter =
+      definitionId === undefined
+        ? "That Fighter"
+        : (getCreatureDefinition(definitionId)?.name ?? "That Fighter");
+    return `${onReserve.name} needs ${fighter} to be the Active Fighter.`;
+  }
+  return null;
+}
+
+function inputMatch(
+  state: GameState,
+  creatureId: CreatureId,
+  otherDieId: DieId,
+): {
+  name: string;
+  role: SequenceRole | undefined;
+  primaryFaceId: FaceCardId;
+  techniqueId: string;
+} | null {
+  const die = dieForCreature(state, creatureId);
+  const definitionId = state.creatures[creatureId]?.definitionId;
+  const definition = definitionId === undefined ? undefined : getCreatureDefinition(definitionId);
+  if (die === undefined || definition === undefined) return null;
+  for (const technique of definition.techniques ?? []) {
+    if (assignTechniqueInputs(state, technique, die.id, otherDieId) === null) continue;
+    return {
+      name: technique.name,
+      role: technique.sequenceRole,
+      primaryFaceId: technique.primaryFaceId,
+      techniqueId: technique.id,
+    };
+  }
+  return null;
+}
+
+function blockedTechniqueReason(
+  state: GameState,
+  playerId: PlayerId,
+  name: string,
+  role: SequenceRole | undefined,
+  primaryFaceId: FaceCardId,
+  techniqueId: string,
+): string | null {
+  const faceName = getFaceCard(primaryFaceId)?.name ?? "That face";
+  if (sequenceActionUsed(state, `face:${primaryFaceId}`)) {
+    return `${faceName} was already used this sequence.`;
+  }
+  if (sequenceActionUsed(state, `technique:${techniqueId}`)) {
+    return `${name} was already used this sequence.`;
+  }
+  if (role !== undefined && state.aggressorPlayerId !== playerId) {
+    return `${name} can only hit while you are on offense.`;
+  }
+  if (role !== undefined && !sequenceRoleFits(state.offensiveState, role)) {
+    return roleBlock(name, role, state, playerId);
+  }
+  return null;
+}
+
+function roleBlock(name: string, role: SequenceRole, state: GameState, playerId: PlayerId): string {
+  if (role === "extender" && starterHitWaiting(state, playerId)) {
+    return `The current hit has to resolve before ${name} can extend.`;
+  }
+  if (role === "extender") return `${name} is an extender. Land a starter first.`;
+  if (role === "finisher") return `${name} is a finisher. Land a starter first.`;
+  if (role === "starter") return `${name} is a starter. It only opens the sequence.`;
+  return `${name} can't hit right now.`;
 }
 
 /** Why a sequence face cannot be dropped as a hit. Null when that is not the reason. */
@@ -137,13 +240,7 @@ function sequenceFaceRefusal(
     return `${face.name} can only hit while you are on offense.`;
   }
   if (!sequenceRoleFits(state.offensiveState, role)) {
-    if (role === "extender" && starterHitWaiting(state, playerId)) {
-      return `The current hit has to resolve before ${face.name} can extend.`;
-    }
-    if (role === "extender") return `${face.name} is an extender. Land a starter first.`;
-    if (role === "finisher") return `${face.name} is a finisher. Land a starter first.`;
-    if (role === "starter") return `${face.name} is a starter. It only opens the sequence.`;
-    return `${face.name} can't hit right now.`;
+    return roleBlock(face.name, role, state, playerId);
   }
   if (!sequenceMeterAffordable(state, playerId, face.meterCost)) {
     return `${face.name} needs ${String(face.meterCost ?? 0)} Meter.`;

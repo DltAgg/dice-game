@@ -104,6 +104,28 @@ describe("staged showing-face drops", () => {
     expect(stagedShowingDrop(state, P1, [vega, magnus]).kind).toBe("technique");
   });
 
+  it("names Chase Kick when Flash Kick and Power Grab are waiting on a starter or on Vega", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const magnus = fighter(state, MAGNUS);
+    state = show(show(state, vega, VEGA_FLASH_KICK), magnus, MAGNUS_POWER_GRAB);
+    expect(stagedShowingDrop(state, P1, [vega, magnus])).toEqual({
+      kind: "pending",
+      message: "Chase Kick is an extender. Land a starter first.",
+    });
+
+    const combo = resolveOpenChain(
+      expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: magnus })),
+    );
+    const offered = stagedShowingDrop(combo, P1, [vega, magnus]);
+    expect(offered.kind).toBe("technique");
+    if (offered.kind === "technique") {
+      expect(offered.matches.some((match) => match.techniqueId === "technique-vega-chase-kick")).toBe(
+        true,
+      );
+    }
+  });
+
   it("uses any Fighter's legal showing face as a hit", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
