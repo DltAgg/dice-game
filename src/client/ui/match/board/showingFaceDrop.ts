@@ -3,18 +3,15 @@ import {
   dieForCreature,
   fighterAttackBanned,
   getCreatureDefinition,
-  getFaceCard,
   legalFaceActions,
   matchingTechniques,
   sequenceActionUsed,
-  techniquePrimaryKey,
   sequenceMeterAffordable,
   sequenceRoleFits,
   showingFaceCard,
   type CreatureId,
   type DieId,
   type FaceCardDefinition,
-  type FaceCardId,
   type GameState,
   type MatchingTechnique,
   type PlayerId,
@@ -136,14 +133,7 @@ function techniquePairRefusal(
 ): string | null {
   const onActive = inputMatch(state, activeId, secondaryDieId);
   if (onActive !== null) {
-    return blockedTechniqueReason(
-      state,
-      playerId,
-      onActive.name,
-      onActive.role,
-      onActive.primaryFaceId,
-      onActive.techniqueId,
-    );
+    return blockedTechniqueReason(state, playerId, onActive.name, onActive.role, onActive.techniqueId);
   }
   const player = state.players[playerId];
   const activeDie = dieForCreature(state, activeId);
@@ -169,7 +159,6 @@ function inputMatch(
 ): {
   name: string;
   role: SequenceRole | undefined;
-  primaryFaceId: FaceCardId;
   techniqueId: string;
 } | null {
   const die = dieForCreature(state, creatureId);
@@ -181,7 +170,6 @@ function inputMatch(
     return {
       name: technique.name,
       role: technique.sequenceRole,
-      primaryFaceId: technique.primaryFaceId,
       techniqueId: technique.id,
     };
   }
@@ -193,13 +181,8 @@ function blockedTechniqueReason(
   playerId: PlayerId,
   name: string,
   role: SequenceRole | undefined,
-  primaryFaceId: FaceCardId,
   techniqueId: string,
 ): string | null {
-  const faceName = getFaceCard(primaryFaceId)?.name ?? "That face";
-  if (sequenceActionUsed(state, techniquePrimaryKey(primaryFaceId))) {
-    return `${faceName} was already used for a Technique this sequence.`;
-  }
   if (sequenceActionUsed(state, `technique:${techniqueId}`)) {
     return `${name} was already used this sequence.`;
   }

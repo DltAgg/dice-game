@@ -14,11 +14,6 @@ import type { GameState } from "../model/state.js";
 import { dieForCreature, fighterAttackBanned, isActiveFighter, opponentActiveId } from "./fighters.js";
 import { sequenceActionUsed, sequenceMeterAffordable, sequenceRoleFits } from "./offensive.js";
 
-/** Spent by a Technique. A face hit uses `face:<id>` and does not spend this. */
-export function techniquePrimaryKey(faceId: string): string {
-  return `technique-primary:${faceId}`;
-}
-
 export function faceActionKey(dieId: DieId): string {
   return `face-action:${dieId}`;
 }
@@ -198,7 +193,6 @@ export function matchingTechniques(
   for (const technique of techniques) {
     if (technique.sequenceRole !== undefined) {
       if (sequenceActionUsed(state, `technique:${technique.id}`)) continue;
-      if (sequenceActionUsed(state, techniquePrimaryKey(technique.primaryFaceId))) continue;
       if (state.aggressorPlayerId !== playerId) continue;
       if (!sequenceRoleFits(state.offensiveState, technique.sequenceRole)) continue;
       if (!sequenceMeterAffordable(state, playerId, technique.meterCost)) continue;

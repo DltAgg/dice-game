@@ -115,6 +115,49 @@ describe("playtest hits and techniques", () => {
     });
   });
 
+  it("lets Projectile fuel Focused Shot and then Charged Shot", () => {
+    let state = inActions();
+    const ryu = fighter(state, RYU);
+    const magnus = fighter(state, MAGNUS);
+    const vega = fighter(state, VEGA);
+    state = withActive(
+      show(show(show(state, ryu, PROJECTILE), magnus, MAGNUS_POWER_GRAB), vega, VEGA_FLASH_KICK),
+      ryu,
+    );
+    const combo = resolveOpenChain(
+      expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: magnus })),
+    );
+    const focused = matchingTechniques(combo, P1, ryu).find(
+      (match) => match.techniqueId === "technique-ryu-focused-shot",
+    );
+    expect(focused).toBeDefined();
+    const afterFocused = resolveOpenChain(
+      expectOk(
+        advance(combo, {
+          type: "USE_TECHNIQUE",
+          playerId: P1,
+          creatureId: ryu,
+          techniqueId: "technique-ryu-focused-shot",
+          secondaryDieId: focused!.secondaryDieId,
+        }),
+      ),
+    );
+    const charged = matchingTechniques(afterFocused, P1, ryu).find(
+      (match) => match.techniqueId === "technique-ryu-charged-shot",
+    );
+    expect(charged).toBeDefined();
+    const declared = expectOk(
+      advance(afterFocused, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: ryu,
+        techniqueId: "technique-ryu-charged-shot",
+        secondaryDieId: charged!.secondaryDieId,
+      }),
+    );
+    expect(declared.chainStack.at(-1)?.sequenceActionId).toBe("technique:technique-ryu-charged-shot");
+  });
+
   it("lets Chase Kick use Flash Kick after that face already hit", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
@@ -309,7 +352,7 @@ describe("playtest hits and techniques", () => {
     });
   });
 
-  it("spends Dash on Step Kick, so Confirm Kick cannot follow, and the Dash hit still can", () => {
+  it("lets Dash fuel Step Kick and then Confirm Kick, and the Dash hit still can", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
@@ -332,27 +375,27 @@ describe("playtest hits and techniques", () => {
       ),
     );
     expect(combo.offensiveState).toBe("combo");
-    expect(combo.usedSequenceActionIds).toContain("technique-primary:face-dash");
     expect(combo.usedSequenceActionIds).not.toContain("face:face-dash");
     expect(
       matchingTechniques(combo, P1, vega).some(
         (match) => match.techniqueId === "technique-vega-confirm-kick",
       ),
-    ).toBe(false);
+    ).toBe(true);
     expect(legalFaceActions(combo, P1)).toContain(vega);
 
     const dashHit = advance(combo, { type: "USE_FACE", playerId: P1, creatureId: vega });
     expect(dashHit.ok).toBe(true);
 
-    const again = advance(combo, {
-      type: "USE_TECHNIQUE",
-      playerId: P1,
-      creatureId: vega,
-      techniqueId: "technique-vega-confirm-kick",
-      secondaryDieId: confirmDie.id,
-    });
-    expect(again.ok).toBe(false);
-    if (!again.ok) expect(again.error).toBe("ALREADY_USED");
+    const again = expectOk(
+      advance(combo, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: vega,
+        techniqueId: "technique-vega-confirm-kick",
+        secondaryDieId: confirmDie.id,
+      }),
+    );
+    expect(again.chainStack.at(-1)?.sequenceActionId).toBe("technique:technique-vega-confirm-kick");
   });
 
   it("lets Dash extend after Brace answers Grab", () => {
