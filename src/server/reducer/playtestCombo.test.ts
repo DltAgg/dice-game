@@ -115,6 +115,34 @@ describe("playtest hits and techniques", () => {
     });
   });
 
+  it("lets Chase Kick use Flash Kick after that face already hit", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const magnus = fighter(state, MAGNUS);
+    state = show(show(state, vega, VEGA_FLASH_KICK), magnus, MAGNUS_POWER_GRAB);
+    const combo = resolveOpenChain(
+      expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: magnus })),
+    );
+    const hit = resolveOpenChain(
+      expectOk(advance(combo, { type: "USE_FACE", playerId: P1, creatureId: vega })),
+    );
+    expect(hit.usedSequenceActionIds).toContain("face:face-flash-kick");
+    const chase = matchingTechniques(hit, P1, vega).find(
+      (match) => match.techniqueId === "technique-vega-chase-kick",
+    );
+    expect(chase).toBeDefined();
+    const declared = expectOk(
+      advance(hit, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: vega,
+        techniqueId: "technique-vega-chase-kick",
+        secondaryDieId: chase!.secondaryDieId,
+      }),
+    );
+    expect(declared.chainStack.at(-1)?.sequenceActionId).toBe("technique:technique-vega-chase-kick");
+  });
+
   it("enters Combo from a lone starter face, then leaves it when the sequence ends", () => {
     let open = inActions();
     const vega = fighter(open, VEGA);
@@ -281,7 +309,7 @@ describe("playtest hits and techniques", () => {
     });
   });
 
-  it("spends Dash on Step Kick, so Confirm Kick and the Dash hit cannot follow", () => {
+  it("spends Dash on Step Kick, so Confirm Kick cannot follow, and the Dash hit still can", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
@@ -304,17 +332,17 @@ describe("playtest hits and techniques", () => {
       ),
     );
     expect(combo.offensiveState).toBe("combo");
-    expect(combo.usedSequenceActionIds).toContain("face:face-dash");
+    expect(combo.usedSequenceActionIds).toContain("technique-primary:face-dash");
+    expect(combo.usedSequenceActionIds).not.toContain("face:face-dash");
     expect(
       matchingTechniques(combo, P1, vega).some(
         (match) => match.techniqueId === "technique-vega-confirm-kick",
       ),
     ).toBe(false);
-    expect(legalFaceActions(combo, P1)).not.toContain(vega);
+    expect(legalFaceActions(combo, P1)).toContain(vega);
 
     const dashHit = advance(combo, { type: "USE_FACE", playerId: P1, creatureId: vega });
-    expect(dashHit.ok).toBe(false);
-    if (!dashHit.ok) expect(dashHit.error).toBe("ALREADY_USED");
+    expect(dashHit.ok).toBe(true);
 
     const again = advance(combo, {
       type: "USE_TECHNIQUE",

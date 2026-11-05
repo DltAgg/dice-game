@@ -7,6 +7,7 @@ import {
   legalFaceActions,
   matchingTechniques,
   sequenceActionUsed,
+  techniquePrimaryKey,
   sequenceMeterAffordable,
   sequenceRoleFits,
   showingFaceCard,
@@ -196,8 +197,8 @@ function blockedTechniqueReason(
   techniqueId: string,
 ): string | null {
   const faceName = getFaceCard(primaryFaceId)?.name ?? "That face";
-  if (sequenceActionUsed(state, `face:${primaryFaceId}`)) {
-    return `${faceName} was already used this sequence.`;
+  if (sequenceActionUsed(state, techniquePrimaryKey(primaryFaceId))) {
+    return `${faceName} was already used for a Technique this sequence.`;
   }
   if (sequenceActionUsed(state, `technique:${techniqueId}`)) {
     return `${name} was already used this sequence.`;

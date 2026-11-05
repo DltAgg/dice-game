@@ -10,6 +10,7 @@ import {
   faceActionKey,
   findTechnique,
   secondaryDiceFor,
+  techniquePrimaryKey,
 } from "../../rules/faceActions.js";
 import { emit, type Draft } from "../draft.js";
 import { attackBanError } from "../exCard.js";
@@ -89,7 +90,7 @@ export function useTechnique(
   const role = technique.sequenceRole;
   if (role === undefined && playerId !== draft.activePlayerId) return "INVALID_TARGET";
   const sequenceActionId = `technique:${technique.id}`;
-  const primaryFaceActionId = `face:${primaryFace.id}`;
+  const primaryKey = techniquePrimaryKey(primaryFace.id);
   if (role !== undefined) {
     const sequenceError = sequenceDeclarationError(
       draft,
@@ -99,9 +100,9 @@ export function useTechnique(
     );
     if (sequenceError !== null) return sequenceError;
     if (sequenceActionUsed(draft, sequenceActionId)) return "ALREADY_USED";
-    if (sequenceActionUsed(draft, primaryFaceActionId)) return "ALREADY_USED";
-    if (!draft.usedSequenceActionIds.includes(primaryFaceActionId)) {
-      draft.usedSequenceActionIds = [...draft.usedSequenceActionIds, primaryFaceActionId];
+    if (sequenceActionUsed(draft, primaryKey)) return "ALREADY_USED";
+    if (!draft.usedSequenceActionIds.includes(primaryKey)) {
+      draft.usedSequenceActionIds = [...draft.usedSequenceActionIds, primaryKey];
     }
   }
 

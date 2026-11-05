@@ -597,7 +597,7 @@ describe("030 offensive control", () => {
     if (!turnOwner.ok) expect(turnOwner.error).toBe("INVALID_TARGET");
   });
 
-  it("rejects a repeated face, including as a Technique primary", () => {
+  it("rejects a repeated face hit and still allows that face as a Technique primary", () => {
     let state = resolveOpenChain(expectOk(useFace(readyMixed(false), P1)));
     expect(state.offensiveState).toBe("combo");
     state = show(state, P1, 0, 1);
@@ -607,15 +607,18 @@ describe("030 offensive control", () => {
     if (!again.ok) expect(again.error).toBe("ALREADY_USED");
 
     const withGrab = show(show(extended, P1, 0, 1), P1, 1, 3);
-    const technique = advance(withGrab, {
-      type: "USE_TECHNIQUE",
-      playerId: P1,
-      creatureId: activeId(withGrab, P1),
-      techniqueId: "technique-seq-lariat-extend",
-      secondaryDieId: dieIdAt(withGrab, P1, 1),
-    });
-    expect(technique.ok).toBe(false);
-    if (!technique.ok) expect(technique.error).toBe("ALREADY_USED");
+    const technique = expectOk(
+      advance(withGrab, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: activeId(withGrab, P1),
+        techniqueId: "technique-seq-lariat-extend",
+        secondaryDieId: dieIdAt(withGrab, P1, 1),
+      }),
+    );
+    expect(technique.chainStack.some((link) => link.sequenceActionId === "technique:technique-seq-lariat-extend")).toBe(
+      true,
+    );
   });
 
   it("does not apply a later effect after an earlier link KOs its target", () => {
