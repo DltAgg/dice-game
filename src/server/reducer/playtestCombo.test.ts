@@ -158,6 +158,42 @@ describe("playtest hits and techniques", () => {
     expect(declared.chainStack.at(-1)?.sequenceActionId).toBe("technique:technique-ryu-charged-shot");
   });
 
+  it("lets Power Grab fuel Collar Tie and then Power Grab Throw", () => {
+    let state = inActions();
+    const magnus = fighter(state, MAGNUS);
+    const vega = fighter(state, VEGA);
+    state = withActive(show(show(state, magnus, MAGNUS_POWER_GRAB), vega, DASH), magnus);
+    const collar = matchingTechniques(state, P1, magnus).find(
+      (match) => match.techniqueId === "technique-magnus-collar-tie",
+    );
+    expect(collar).toBeDefined();
+    const combo = resolveOpenChain(
+      expectOk(
+        advance(state, {
+          type: "USE_TECHNIQUE",
+          playerId: P1,
+          creatureId: magnus,
+          techniqueId: "technique-magnus-collar-tie",
+          secondaryDieId: collar!.secondaryDieId,
+        }),
+      ),
+    );
+    const thrown = matchingTechniques(combo, P1, magnus).find(
+      (match) => match.techniqueId === "technique-magnus-lariat-throw",
+    );
+    expect(thrown).toBeDefined();
+    const declared = expectOk(
+      advance(combo, {
+        type: "USE_TECHNIQUE",
+        playerId: P1,
+        creatureId: magnus,
+        techniqueId: "technique-magnus-lariat-throw",
+        secondaryDieId: thrown!.secondaryDieId,
+      }),
+    );
+    expect(declared.chainStack.at(-1)?.sequenceActionId).toBe("technique:technique-magnus-lariat-throw");
+  });
+
   it("lets Chase Kick use Flash Kick after that face already hit", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
