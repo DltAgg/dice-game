@@ -32,11 +32,9 @@ new face. Those fields are not the design.
 Do not set a face to guard, dodge, counter, parry, tag, or assist. Tag and
 Assist are not faces. Generic defense is a Response ([design.md](design.md)).
 
-## Id prefix
+## Id
 
-`faceId` may still require `face-natural-`, `face-synthetic-`, or
-`face-untyped-`. That token is not a kind. Do not author
-`face-synthetic-<attribute>` or `face-untyped-shield`.
+The id and the filename are `face-<move>` only. No `natural`, `synthetic`, or `untyped` token. No Fighter name in the id or filename. The player-facing `name` stays the move name and also does not include the Fighter.
 
 Two dice showing the same name are two instances. One instance cannot be
 both the primary and the secondary of the same Technique.
@@ -45,7 +43,7 @@ both the primary and the secondary of the same Technique.
 
 ```json
 {
-  "id": "face-natural-jab",
+  "id": "face-jab",
   "name": "Jab",
   "faceType": "attack",
   "rulesText": "[Strike 1].",
@@ -60,8 +58,7 @@ both the primary and the secondary of the same Technique.
 }
 ```
 
-The id prefix is only there while the schema requires it. Fill
-`primaryEffects` from `effects.ts` when the clause is modelled. Leave them
+Fill `primaryEffects` from `effects.ts` when the clause is modelled. Leave them
 empty and defer the print when it is not. Do not invent a damage number the
 effect list cannot express. `[Strike N]` is the damage.
 

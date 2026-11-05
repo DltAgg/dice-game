@@ -9,36 +9,36 @@ import { lookupOverlayFace } from "./runtimeOverlay.js";
  * A face is a named card. It is not natural, synthetic, an attribute, or Shield.
  */
 
-export const JAB: FaceCardId = asFaceCardId("face-natural-jab");
+export const JAB: FaceCardId = asFaceCardId("face-jab");
 
-export const GRAB: FaceCardId = asFaceCardId("face-natural-grab");
-export const VEGA_QUICK_GRAB: FaceCardId = asFaceCardId("face-natural-vega-quick-grab");
-export const MAGNUS_POWER_GRAB: FaceCardId = asFaceCardId("face-natural-magnus-power-grab");
-export const LARIAT: FaceCardId = asFaceCardId("face-natural-lariat");
-export const HEAVY: FaceCardId = asFaceCardId("face-natural-heavy");
-export const KICK: FaceCardId = asFaceCardId("face-natural-kick");
-export const VEGA_FLASH_KICK: FaceCardId = asFaceCardId("face-natural-vega-flash-kick");
-export const MAGNUS_BOOT_KICK: FaceCardId = asFaceCardId("face-natural-magnus-boot-kick");
-export const DASH: FaceCardId = asFaceCardId("face-natural-dash");
-export const RUSH: FaceCardId = asFaceCardId("face-natural-rush");
-export const RYU_FORWARD_RUSH: FaceCardId = asFaceCardId("face-natural-ryu-forward-rush");
-export const VEGA_BLITZ_RUSH: FaceCardId = asFaceCardId("face-natural-vega-blitz-rush");
-export const MAGNUS_BULL_RUSH: FaceCardId = asFaceCardId("face-natural-magnus-bull-rush");
-export const PROJECTILE: FaceCardId = asFaceCardId("face-natural-projectile");
-export const FOCUS: FaceCardId = asFaceCardId("face-natural-focus");
-export const CHARGE: FaceCardId = asFaceCardId("face-natural-charge");
+export const GRAB: FaceCardId = asFaceCardId("face-grab");
+export const VEGA_QUICK_GRAB: FaceCardId = asFaceCardId("face-quick-grab");
+export const MAGNUS_POWER_GRAB: FaceCardId = asFaceCardId("face-power-grab");
+export const LARIAT: FaceCardId = asFaceCardId("face-lariat");
+export const HEAVY: FaceCardId = asFaceCardId("face-heavy");
+export const KICK: FaceCardId = asFaceCardId("face-kick");
+export const VEGA_FLASH_KICK: FaceCardId = asFaceCardId("face-flash-kick");
+export const MAGNUS_BOOT_KICK: FaceCardId = asFaceCardId("face-boot-kick");
+export const DASH: FaceCardId = asFaceCardId("face-dash");
+export const RUSH: FaceCardId = asFaceCardId("face-rush");
+export const RYU_FORWARD_RUSH: FaceCardId = asFaceCardId("face-forward-rush");
+export const VEGA_BLITZ_RUSH: FaceCardId = asFaceCardId("face-blitz-rush");
+export const MAGNUS_BULL_RUSH: FaceCardId = asFaceCardId("face-bull-rush");
+export const PROJECTILE: FaceCardId = asFaceCardId("face-projectile");
+export const FOCUS: FaceCardId = asFaceCardId("face-focus");
+export const CHARGE: FaceCardId = asFaceCardId("face-charge");
 
 /** Combination probes. Not on a Fighter's base die. */
-export const SNAP: FaceCardId = asFaceCardId("face-natural-snap");
-export const HOOK: FaceCardId = asFaceCardId("face-natural-hook");
-export const UPPERCUT: FaceCardId = asFaceCardId("face-natural-uppercut");
-export const HAYMAKER: FaceCardId = asFaceCardId("face-natural-haymaker");
-export const SHIN: FaceCardId = asFaceCardId("face-natural-shin");
-export const SWEEP: FaceCardId = asFaceCardId("face-natural-sweep");
-export const KNEE: FaceCardId = asFaceCardId("face-natural-knee");
-export const CRESCENT: FaceCardId = asFaceCardId("face-natural-crescent");
-export const STOMP: FaceCardId = asFaceCardId("face-natural-stomp");
-export const ROUNDHOUSE: FaceCardId = asFaceCardId("face-natural-roundhouse");
+export const SNAP: FaceCardId = asFaceCardId("face-snap");
+export const HOOK: FaceCardId = asFaceCardId("face-hook");
+export const UPPERCUT: FaceCardId = asFaceCardId("face-uppercut");
+export const HAYMAKER: FaceCardId = asFaceCardId("face-haymaker");
+export const SHIN: FaceCardId = asFaceCardId("face-shin");
+export const SWEEP: FaceCardId = asFaceCardId("face-sweep");
+export const KNEE: FaceCardId = asFaceCardId("face-knee");
+export const CRESCENT: FaceCardId = asFaceCardId("face-crescent");
+export const STOMP: FaceCardId = asFaceCardId("face-stomp");
+export const ROUNDHOUSE: FaceCardId = asFaceCardId("face-roundhouse");
 
 const faceModules = import.meta.glob("./faces/face-*.json", { eager: true, import: "default" });
 const loadedFaces = catalogueFromModules<FaceCardDefinition>(faceModules, faceOrder);

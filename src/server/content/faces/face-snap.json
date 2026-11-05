@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-snap",
+  "id": "face-snap",
   "name": "Snap",
   "faceType": "attack",
   "sequenceRole": "finisher",

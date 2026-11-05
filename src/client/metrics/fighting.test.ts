@@ -55,7 +55,7 @@ describe("tag-fighter metrics", () => {
         playerId: "p1",
         creatureId: "ryu",
         dieId: "die",
-        faceCardId: "face-natural-jab",
+        faceCardId: "face-jab",
       } as GameEvent,
       state,
     );
@@ -100,8 +100,8 @@ describe("tag-fighter metrics", () => {
         techniqueId: "technique-ryu-check-fire",
         primaryDieId: "d1",
         secondaryDieId: "d2",
-        primaryFaceCardId: "face-natural-focus",
-        secondaryFaceCardId: "face-natural-dash",
+        primaryFaceCardId: "face-focus",
+        secondaryFaceCardId: "face-dash",
       } as GameEvent,
       state,
     );

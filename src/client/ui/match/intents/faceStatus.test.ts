@@ -57,7 +57,7 @@ describe("slotStatusLine", () => {
   it("lists forge yield and Corruption without Overcharge", () => {
     const line = slotStatusLine(
       slot({
-        faceCardId: "face-natural-darkness" as FaceCardId,
+        faceCardId: "face-darkness" as FaceCardId,
         forgeYield: true,
         corruptionMarkers: 2,
       }),
@@ -71,7 +71,7 @@ describe("slotStatusLine", () => {
   it("appends Silenced when isSlotSilenced is true", () => {
     const dieId = "die-1" as DieId;
     const silencedSlot = slot({
-      faceCardId: "face-natural-darkness" as FaceCardId,
+      faceCardId: "face-darkness" as FaceCardId,
       silenceExpiresOnTurn: 5,
     });
     const state = {
@@ -84,7 +84,7 @@ describe("slotStatusLine", () => {
   it("omits Silenced after expiry", () => {
     const dieId = "die-1" as DieId;
     const expiredSlot = slot({
-      faceCardId: "face-natural-darkness" as FaceCardId,
+      faceCardId: "face-darkness" as FaceCardId,
       silenceExpiresOnTurn: 5,
     });
     const state = {
@@ -99,7 +99,7 @@ describe("faceMarkerSummary", () => {
   it("appends Silenced when any copy of the face is silenced", () => {
     const playerId = "p1" as PlayerId;
     const dieId = "die-1" as DieId;
-    const faceCardId = "face-natural-darkness" as FaceCardId;
+    const faceCardId = "face-darkness" as FaceCardId;
     const silencedSlot = slot({
       faceCardId,
       silenceExpiresOnTurn: 4,
@@ -116,7 +116,7 @@ describe("faceMarkerSummary", () => {
 describe("overchargeStatusForFace", () => {
   it("reads pips from overchargeByFace on the unique face card", () => {
     const playerId = "p1" as PlayerId;
-    const faceCardId = "face-natural-darkness" as FaceCardId;
+    const faceCardId = "face-darkness" as FaceCardId;
     const state = {
       players: {
         p1: {
@@ -253,7 +253,7 @@ describe("convertRollCueForFace", () => {
     const playerId = "p1" as PlayerId;
     const dieId = "die-1" as DieId;
     const convertId = CONVERT_FACE.id;
-    const otherId = "face-natural-arcane" as FaceCardId;
+    const otherId = "face-arcane" as FaceCardId;
     const state = {
       turn: 1,
       players: { p1: { dieIds: [dieId] } },

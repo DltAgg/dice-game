@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-stomp",
-  "name": "Stomp",
+  "id": "face-shin",
+  "name": "Shin",
   "faceType": "attack",
   "sequenceRole": "starter",
-  "hitStrength": "heavy",
+  "hitStrength": "light",
   "hitType": "kick",
-  "rulesText": "Heavy Kick · Starter. Primary: [Strike 3]. Secondary: +1 damage.",
+  "rulesText": "Light Kick · Starter. Primary: [Strike 1]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 3,
+      "amount": 1,
       "target": { "kind": "declared-target" }
     }
   ],

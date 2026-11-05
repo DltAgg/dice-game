@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-vega-flash-kick",
-  "name": "Flash Kick",
-  "faceType": "attack",
-  "sequenceRole": "extender",
+  "id": "face-quick-grab",
+  "name": "Quick Grab",
+  "faceType": "grab",
+  "sequenceRole": "starter",
   "hitStrength": "light",
-  "hitType": "kick",
-  "rulesText": "Light Kick · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
+  "hitType": "punch",
+  "rulesText": "Light Punch · Starter. Primary: [Strike 1]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 2,
+      "amount": 1,
       "target": { "kind": "declared-target" }
     }
   ],

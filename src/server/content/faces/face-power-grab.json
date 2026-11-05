@@ -1,12 +1,12 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-hook",
-  "name": "Hook",
-  "faceType": "attack",
-  "sequenceRole": "extender",
+  "id": "face-power-grab",
+  "name": "Power Grab",
+  "faceType": "grab",
+  "sequenceRole": "starter",
   "hitStrength": "medium",
   "hitType": "punch",
-  "rulesText": "Medium Punch · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Medium Punch · Starter. Primary: [Strike 2]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
@@ -16,7 +16,7 @@
       "target": { "kind": "declared-target" }
     }
   ],
-  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 2 }],
   "maxOverloads": 0,
   "forgeRestriction": null
 }

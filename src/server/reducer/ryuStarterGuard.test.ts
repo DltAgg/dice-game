@@ -21,13 +21,13 @@ import { advance } from "./reduce.js";
 const VEGA_ID = asCreatureDefinitionId("creature-vega");
 const MAGNUS_ID = asCreatureDefinitionId("creature-magnus");
 const RYU_ID = asCreatureDefinitionId("creature-ryu");
-const PROJECTILE = asFaceCardId("face-natural-projectile");
-const JAB = asFaceCardId("face-natural-jab");
-const FOCUS = asFaceCardId("face-natural-focus");
-const GRAB = asFaceCardId("face-natural-magnus-power-grab");
-const LARIAT = asFaceCardId("face-natural-lariat");
-const HEAVY = asFaceCardId("face-natural-heavy");
-const KICK = asFaceCardId("face-natural-vega-flash-kick");
+const PROJECTILE = asFaceCardId("face-projectile");
+const JAB = asFaceCardId("face-jab");
+const FOCUS = asFaceCardId("face-focus");
+const GRAB = asFaceCardId("face-power-grab");
+const LARIAT = asFaceCardId("face-lariat");
+const HEAVY = asFaceCardId("face-heavy");
+const KICK = asFaceCardId("face-flash-kick");
 
 function fighterBaseDie(id: CreatureDefinitionId): DieFaceLayout {
   const die = getCreatureDefinition(id)?.baseDie;

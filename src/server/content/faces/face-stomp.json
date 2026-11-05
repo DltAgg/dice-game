@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-sweep",
-  "name": "Sweep",
+  "id": "face-stomp",
+  "name": "Stomp",
   "faceType": "attack",
-  "sequenceRole": "finisher",
-  "hitStrength": "light",
+  "sequenceRole": "starter",
+  "hitStrength": "heavy",
   "hitType": "kick",
-  "rulesText": "Light Kick · Finisher. Primary: [Strike 1]. Secondary: +1 damage.",
+  "rulesText": "Heavy Kick · Starter. Primary: [Strike 3]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 1,
+      "amount": 3,
       "target": { "kind": "declared-target" }
     }
   ],

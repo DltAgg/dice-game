@@ -2,10 +2,9 @@
  * The eight attributes named in bible §26. Their strategic identities (§29)
  * are content concerns; the engine treats an attribute as an opaque tag.
  *
- * Face-kind policy: every attribute may have natural identity faces
- * (`face-natural-<attr>`) **and** named synthetics. Never author blank
- * `face-synthetic-<attr>` generics — synthetic forges always name a special
- * from the owner's pool.
+ * Face-kind policy: every attribute may have identity faces and named
+ * specials. Never author a blank generic face for an attribute. A forge
+ * always names a special from the owner's pool.
  */
 export const ATTRIBUTES = [
   "martial",

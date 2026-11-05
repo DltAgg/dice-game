@@ -17,12 +17,12 @@ import pestilentPlagueIcon from "./assets/faces/icons/pestilent-plague.png";
  */
 
 const SPECIAL_ART: Readonly<Record<string, string>> = {
-  "face-synthetic-arcane-echo": arcaneEchoIcon,
-  "face-synthetic-rending-claw": rendingClawIcon,
-  "face-synthetic-crush": crushIcon,
-  "face-synthetic-blade-rain": bladeRainIcon,
-  "face-synthetic-forbidden-heritage": forbiddenHeritageIcon,
-  "face-synthetic-pestilent-plague": pestilentPlagueIcon,
+  "face-arcane-echo": arcaneEchoIcon,
+  "face-rending-claw": rendingClawIcon,
+  "face-crush": crushIcon,
+  "face-blade-rain": bladeRainIcon,
+  "face-forbidden-heritage": forbiddenHeritageIcon,
+  "face-pestilent-plague": pestilentPlagueIcon,
 };
 
 const BODY_CLASS =

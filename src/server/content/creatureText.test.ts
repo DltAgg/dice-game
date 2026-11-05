@@ -43,7 +43,6 @@ describe("creature catalogue", () => {
     expect(lariatTie?.sequenceRole).toBe("starter");
     expect(lariatTie?.effects[0]).toMatchObject({ type: "damage", amount: 3 });
     expect(lariatTie?.secondary).toEqual({
-      hitStrength: "light",
       hitType: "kick",
     });
     const check = ALL_CREATURES.find((entry) => entry.id === RYU);

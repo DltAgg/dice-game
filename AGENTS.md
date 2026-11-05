@@ -121,7 +121,7 @@ Do not commit unless the user asks. Do not push unless the user asks.
 - `src/server` cannot import React, Zustand, PeerJS, nanoid, `@client/*`, or touch DOM / storage / network / clock / `Math.random`.
 - Headless playtest AI lives in `src/ai` (spec `026`). It imports the public `@server` barrel only. `src/server` must not import it. The client may import `@ai` for local vs-AI (lobby + spec `027`).
 - Effects are **data** (JSON AST / discriminated unions), never functions. New tokens are `[Mark]` / `[Strip]` arguments, not new opcodes.
-- Content ids: `card-*`, `creature-*` (print: Fighter), face ids matching the current `faceId` pattern, `attack-*`, `ability-*` (kebab after prefix). The face-id prefix is not a natural/synthetic kind.
+- Content ids: `card-*`, `creature-*` (print: Fighter), face ids `face-<move>`, `attack-*`, `ability-*` (kebab after prefix). A new face uses `face-<move>` only: no kind token and no Fighter name.
 - Cards are `response` or `modify`. Equipment, overload, and ritual names in older JSON are leftover regions, not kinds to author. Tag is an operation. Assist stays on the Fighter.
 - Grow effect AST only when a concrete card needs it; one opcode handler class + tests in the same change. No unreachable stubs.
 - Do not rewrite `resolution.ts` / MatchBoard / catalogues in one shot; do not grow files past `module-budget.test.ts`.

@@ -17,7 +17,7 @@ import { createMatch } from "../setup/createMatch.js";
 import { expectOk, handCardIdAt, P1, P2, resolveOpenChain, withHand } from "../testing/scenario.js";
 import { advance } from "./reduce.js";
 
-const VEGA_QUICK_GRAB = asFaceCardId("face-natural-vega-quick-grab");
+const VEGA_QUICK_GRAB = asFaceCardId("face-quick-grab");
 
 function inActions(): GameState {
   const match = createMatch({
@@ -66,7 +66,7 @@ function show(state: GameState, creatureId: CreatureId, faceId: FaceCardId): Gam
   return { ...state, dice: { ...state.dice, [die.id]: next } };
 }
 
-/** Vega's Quick Grab would KO the Active Ryu. Grab is strike 2, halved to 1 while Ryu is Active. */
+/** Vega's Quick Grab is Strike 1. Halved against Active Ryu it deals 0, so Ryu at 1 life stays up. */
 function lethalGrab(): { state: GameState; ryu: CreatureId; magnus: CreatureId; vega: CreatureId } {
   let state = inActions();
   const vega = fighter(state, P1, VEGA);
@@ -89,12 +89,13 @@ function lethalGrab(): { state: GameState; ryu: CreatureId; magnus: CreatureId; 
 }
 
 describe("Call Out and a waiting hit", () => {
-  it("KOs Ryu when the hit resolves against him as the Active Fighter", () => {
+  it("does not KO Ryu when the halved light starter resolves against him", () => {
     const { state, ryu, vega } = lethalGrab();
     const resolved = resolveOpenChain(
       expectOk(advance(state, { type: "USE_FACE", playerId: P1, creatureId: vega })),
     );
-    expect(resolved.creatures[ryu]?.defeated).toBe(true);
+    expect(resolved.creatures[ryu]?.defeated).toBe(false);
+    expect(resolved.creatures[ryu]?.damage).toBe(11);
   });
 
   it("lands the hit on the Fighter Call Out tagged in", () => {
@@ -116,7 +117,7 @@ describe("Call Out and a waiting hit", () => {
     expect(resolved.creatures[ryu]?.defeated).toBe(false);
     expect(resolved.creatures[ryu]?.damage).toBe(11);
     expect(resolved.creatures[magnus]?.defeated).toBe(false);
-    expect(resolved.creatures[magnus]?.damage).toBe(2);
+    expect(resolved.creatures[magnus]?.damage).toBe(1);
   });
 
   it("keeps a Redirected hit on the chosen Fighter after Call Out", () => {

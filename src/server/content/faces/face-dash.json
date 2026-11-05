@@ -1,12 +1,12 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-magnus-boot-kick",
-  "name": "Boot Kick",
+  "id": "face-dash",
+  "name": "Dash",
   "faceType": "attack",
   "sequenceRole": "extender",
-  "hitStrength": "light",
+  "hitStrength": "medium",
   "hitType": "kick",
-  "rulesText": "Light Kick · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Medium Kick · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

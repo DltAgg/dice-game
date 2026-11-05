@@ -16,18 +16,18 @@
     }
   ],
   "baseDie": [
-    "face-natural-magnus-power-grab",
-    "face-natural-magnus-power-grab",
-    "face-natural-lariat",
-    "face-natural-magnus-boot-kick",
-    "face-natural-heavy",    
-    "face-natural-magnus-bull-rush"
+    "face-power-grab",
+    "face-power-grab",
+    "face-lariat",
+    "face-boot-kick",
+    "face-heavy",    
+    "face-bull-rush"
   ],
   "techniques": [
     {
       "id": "technique-magnus-collar-tie",
       "name": "Lariat Tie",
-      "primaryFaceId": "face-natural-lariat",
+      "primaryFaceId": "face-lariat",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "hitType": "kick" },
@@ -44,7 +44,7 @@
     {
       "id": "technique-magnus-lariat-throw",
       "name": "Lariat Throw",
-      "primaryFaceId": "face-natural-lariat",
+      "primaryFaceId": "face-lariat",
       "hitStrength": "heavy",
       "hitType": "punch",
       "secondary": { "hitStrength": "medium" },
@@ -61,7 +61,7 @@
     {
       "id": "technique-magnus-power-bomb",
       "name": "Power Bomb",
-      "primaryFaceId": "face-natural-magnus-power-grab",
+      "primaryFaceId": "face-power-grab",
       "hitStrength": "heavy",
       "hitType": "punch",
       "secondary": { "hitStrength": "heavy" },

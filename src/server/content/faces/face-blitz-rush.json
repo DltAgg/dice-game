@@ -1,22 +1,22 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-knee",
-  "name": "Knee",
+  "id": "face-blitz-rush",
+  "name": "Blitz Rush",
   "faceType": "attack",
-  "sequenceRole": "starter",
-  "hitStrength": "medium",
+  "sequenceRole": "finisher",
+  "hitStrength": "heavy",
   "hitType": "kick",
-  "rulesText": "Medium Kick · Starter. Primary: [Strike 2]. Secondary: +1 damage.",
+  "rulesText": "Heavy Kick · Finisher. Primary: [Strike 4]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 2,
+      "amount": 4,
       "target": { "kind": "declared-target" }
     }
   ],
-  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 2 }],
   "maxOverloads": 0,
   "forgeRestriction": null
 }

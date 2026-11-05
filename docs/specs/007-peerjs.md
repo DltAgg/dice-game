@@ -120,10 +120,10 @@ come from local `DeckRepository`.
 {
   "squad": ["creature-…"],
   "deck": ["card-…"],
-  "faceDeck": ["face-synthetic-crush"],
+  "faceDeck": ["face-crush"],
   "startingDice": [
-    ["face-synthetic-crush", "face-natural-martial", "face-natural-wild", "face-natural-arcane", "face-natural-luminar", "face-untyped-shield"],
-    ["face-natural-martial", "face-natural-wild", "face-natural-arcane", "face-natural-luminar", "face-untyped-shield", "face-untyped-shield"]
+    ["face-crush", "face-martial", "face-wild", "face-arcane", "face-luminar", "face-shield"],
+    ["face-martial", "face-wild", "face-arcane", "face-luminar", "face-shield", "face-shield"]
   ]
 }
 ```

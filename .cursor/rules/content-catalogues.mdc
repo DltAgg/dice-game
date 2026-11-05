@@ -31,8 +31,10 @@ Rules:
   Reaction, Overload, or Ritual as the card kind. A moveset Modify attaches
   in the equipment zone. That is not a card type.
 - Faces are named inputs (name, type, primary, secondary). No generic Guard,
-  Block, Dodge, Counter, or Parry face. The `face-natural|synthetic|untyped-`
-  id prefix is a validator token, not a kind. No Shield resource. No
+  Block, Dodge, Counter, or Parry face. The id and the filename are
+  `face-<move>` only. No `natural`, `synthetic`, or `untyped` token. No
+  Fighter name in the id or filename. The player-facing `name` stays the
+  move name and also does not include the Fighter. No Shield resource. No
   deckbuilding dice. `baseDie` on the Fighter is the die a match starts from.
 - `fighterRestriction` is a play check, not a deck ban. One deck and one hand
   per player. Tag is an operation. Assist is Fighter-owned.

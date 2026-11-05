@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-heavy",
+  "id": "face-heavy",
   "name": "Heavy",
   "faceType": "attack",
   "sequenceRole": "finisher",

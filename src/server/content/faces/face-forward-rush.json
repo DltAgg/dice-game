@@ -1,22 +1,22 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-lariat",
-  "name": "Lariat",
+  "id": "face-forward-rush",
+  "name": "Forward Rush",
   "faceType": "attack",
-  "sequenceRole": "extender",
+  "sequenceRole": "finisher",
   "hitStrength": "heavy",
-  "hitType": "punch",
-  "rulesText": "Heavy Punch · Extender. Primary: [Strike 3]. Secondary: +1 damage.",
+  "hitType": "kick",
+  "rulesText": "Heavy Kick · Finisher. Primary: [Strike 4]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 3,
+      "amount": 4,
       "target": { "kind": "declared-target" }
     }
   ],
-  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 2 }],
   "maxOverloads": 0,
   "forgeRestriction": null
 }

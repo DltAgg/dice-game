@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-jab",
-  "name": "Jab",
+  "id": "face-kick",
+  "name": "Kick",
   "faceType": "attack",
-  "sequenceRole": "starter",
+  "sequenceRole": "extender",
   "hitStrength": "light",
-  "hitType": "punch",
-  "rulesText": "Light Punch · Starter. Primary: [Strike 1]. Secondary: +1 damage.",
+  "hitType": "kick",
+  "rulesText": "Light Kick · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 1,
+      "amount": 2,
       "target": { "kind": "declared-target" }
     }
   ],

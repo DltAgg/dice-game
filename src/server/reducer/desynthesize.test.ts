@@ -220,7 +220,7 @@ describe("[Desynthesize] instant", () => {
         ...die,
         slots: die.slots.map((slot) => ({
           ...slot,
-          faceCardId: asFaceCardId("face-untyped-shield"),
+          faceCardId: asFaceCardId("face-shield"),
           faceCardOwnerId: die.ownerId,
         })),
       };

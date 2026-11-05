@@ -1,7 +1,7 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-vega-blitz-rush",
-  "name": "Blitz Rush",
+  "id": "face-rush",
+  "name": "Rush",
   "faceType": "attack",
   "sequenceRole": "finisher",
   "hitStrength": "heavy",

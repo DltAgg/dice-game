@@ -25,8 +25,8 @@ import {
 import { advance } from "./reduce.js";
 
 const LOW_BLOW = asCardId("card-low-blow");
-const MAGNUS_POWER_GRAB = asFaceCardId("face-natural-magnus-power-grab");
-const VEGA_FLASH_KICK = asFaceCardId("face-natural-vega-flash-kick");
+const MAGNUS_POWER_GRAB = asFaceCardId("face-power-grab");
+const VEGA_FLASH_KICK = asFaceCardId("face-flash-kick");
 const VEGA_ID = asCreatureDefinitionId("creature-vega");
 const MAGNUS_ID = asCreatureDefinitionId("creature-magnus");
 const RYU_ID = asCreatureDefinitionId("creature-ryu");

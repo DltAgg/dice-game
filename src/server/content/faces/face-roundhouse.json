@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-roundhouse",
+  "id": "face-roundhouse",
   "name": "Roundhouse",
   "faceType": "attack",
   "sequenceRole": "extender",

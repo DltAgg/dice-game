@@ -1,12 +1,12 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-form",
-  "name": "Form",
+  "id": "face-sweep",
+  "name": "Sweep",
   "faceType": "attack",
-  "sequenceRole": "starter",
+  "sequenceRole": "finisher",
   "hitStrength": "light",
-  "hitType": "punch",
-  "rulesText": "Light Punch · Starter. Primary: [Strike 1]. Secondary: +2 damage.",
+  "hitType": "kick",
+  "rulesText": "Light Kick · Finisher. Primary: [Strike 1]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
@@ -16,7 +16,7 @@
       "target": { "kind": "declared-target" }
     }
   ],
-  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 2 }],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 1 }],
   "maxOverloads": 0,
   "forgeRestriction": null
 }

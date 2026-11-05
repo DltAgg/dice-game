@@ -36,16 +36,16 @@ import { advance, reduce } from "./reduce.js";
 const VEGA = asCreatureDefinitionId("creature-vega");
 const MAGNUS = asCreatureDefinitionId("creature-magnus");
 const RYU = asCreatureDefinitionId("creature-ryu");
-const GRAB = asFaceCardId("face-natural-magnus-power-grab");
-const KICK = asFaceCardId("face-natural-vega-flash-kick");
+const GRAB = asFaceCardId("face-power-grab");
+const KICK = asFaceCardId("face-flash-kick");
 const VEGA_FLASH_KICK = KICK;
-const MAGNUS_BOOT_KICK = asFaceCardId("face-natural-magnus-boot-kick");
-const FOCUS = asFaceCardId("face-natural-focus");
-const HEAVY = asFaceCardId("face-natural-heavy");
-const RUSH = asFaceCardId("face-natural-vega-blitz-rush");
-const LARIAT = asFaceCardId("face-natural-lariat");
-const JAB = asFaceCardId("face-natural-jab");
-const RYU_FORWARD_RUSH = asFaceCardId("face-natural-ryu-forward-rush");
+const MAGNUS_BOOT_KICK = asFaceCardId("face-boot-kick");
+const FOCUS = asFaceCardId("face-focus");
+const HEAVY = asFaceCardId("face-heavy");
+const RUSH = asFaceCardId("face-blitz-rush");
+const LARIAT = asFaceCardId("face-lariat");
+const JAB = asFaceCardId("face-jab");
+const RYU_FORWARD_RUSH = asFaceCardId("face-forward-rush");
 const COUNTER = asCardId("card-counter");
 const PARRY = asCardId("card-parry");
 const BRACE = asCardId("card-brace");
@@ -450,7 +450,7 @@ describe("spec 035 EX cards", () => {
     const slot = stunnedDie.rolledSlotIndex;
     const skipped = resolvePlayed(expectOk(play(stunned, P1)), []);
     expect(skipped.dice[stunnedDie.id]?.rolledSlotIndex).toBe(slot);
-    expect(damage(skipped, defenderId(stunnedDeclared))).toBe(8);
+    expect(damage(skipped, defenderId(stunnedDeclared))).toBe(6);
   });
 
   it("refuses EX after the attacker passes, above another link, with no attack, or on the wrong gate", () => {
@@ -498,7 +498,7 @@ describe("spec 035 EX cards", () => {
     const jabbed = actions();
     const magnus = fighter(jabbed, P1, MAGNUS);
     const jab = withHand(
-      withMeter(show(withActive(jabbed, P1, magnus), magnus, LARIAT), P1, 8),
+      withMeter(show(withActive(jabbed, P1, magnus), magnus, GRAB), P1, 8),
       P1,
       [THROW.id],
     );
@@ -595,7 +595,7 @@ describe("spec 035 EX cards", () => {
     const bannedTurn = openActions(endSequence(resolved, P2), P1);
     expect(bannedTurn.turn).toBe(n + 2);
     const magnus = fighter(bannedTurn, P1, MAGNUS);
-    const jab = show(withActive(bannedTurn, P1, magnus), magnus, LARIAT);
+    const jab = show(withActive(bannedTurn, P1, magnus), magnus, GRAB);
     const attack = advance(jab, { type: "USE_FACE", playerId: P1, creatureId: magnus });
     expect(attack.ok).toBe(true);
   });
@@ -609,7 +609,7 @@ describe("spec 035 EX cards", () => {
     const resolved = expectOk(
       reduce(toDefender, { type: "PASS_PRIORITY", playerId: P1 }, scriptedRng([0, 3])),
     );
-    expect(damage(resolved, defender)).toBe(4);
+    expect(damage(resolved, defender)).toBe(6);
   });
 
   it("bans the restricted Fighter on turn + 2 and leaves other attacks legal later", () => {
@@ -652,7 +652,7 @@ describe("spec 035 EX cards", () => {
 
     const later = openActions(endSequence(endSequence(banned, P1), P2), P1);
     expect(later.turn).toBe(n + 4);
-    const free = show(withActive(later, P1, fighter(later, P1, MAGNUS)), fighter(later, P1, MAGNUS), LARIAT);
+    const free = show(withActive(later, P1, fighter(later, P1, MAGNUS)), fighter(later, P1, MAGNUS), GRAB);
     const freed = expectOk(
       advance(free, {
         type: "USE_FACE",
@@ -710,7 +710,7 @@ describe("spec 035 EX cards", () => {
     const n = declared.turn;
     const defender = defenderId(declared);
     const alone = resolveOpenChain(declareChase(chaseWindow([])));
-    expect(damage(alone, defenderId(alone))).toBe(8);
+    expect(damage(alone, defenderId(alone))).toBe(6);
 
     const played = expectOk(play(declared, P1));
     expect(meterOf(played, P1)).toBe(0);

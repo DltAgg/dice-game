@@ -1,18 +1,18 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-vega-quick-grab",
-  "name": "Quick Grab",
-  "faceType": "grab",
-  "sequenceRole": "starter",
-  "hitStrength": "medium",
+  "id": "face-focus",
+  "name": "Focus",
+  "faceType": "attack",
+  "sequenceRole": "extender",
+  "hitStrength": "light",
   "hitType": "punch",
-  "rulesText": "Medium Punch · Starter. Primary: [Strike 2]. Secondary: +2 damage.",
+  "rulesText": "Light Punch · Extender. Primary: [Strike 1]. Secondary: +2 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [
     {
       "type": "damage",
-      "amount": 2,
+      "amount": 1,
       "target": { "kind": "declared-target" }
     }
   ],

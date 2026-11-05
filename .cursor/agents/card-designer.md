@@ -132,8 +132,7 @@ Card Progress:
 - [ ] 7. DoD. Not done if print and KEYWORDS.md disagree
 ```
 
-Ids: `card-*`, `creature-*`, face ids that match the current `faceId`
-pattern (the kind prefix is not a design axis), `attack-*`.
+Ids: `card-*`, `creature-*`, face ids `face-<move>` (no kind token, no Fighter name), `attack-*`.
 
 ## Out of scope
 

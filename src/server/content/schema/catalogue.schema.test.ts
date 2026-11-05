@@ -47,6 +47,14 @@ describe("catalogue JSON schemas", () => {
     expect(validateFace(readJson(path)), formatErrors(validateFace.errors)).toBe(true);
   });
 
+  it("accepts face-jab and rejects a kind token in the face id", () => {
+    const jab = readJson(join(CONTENT_DIR, "faces", "face-jab.json"));
+    expect(validateFace(jab), formatErrors(validateFace.errors)).toBe(true);
+    for (const token of ["natural", "synthetic", "untyped"]) {
+      expect(validateFace({ ...jab, id: `face-${token}-jab` })).toBe(false);
+    }
+  });
+
   it.each(jsonFiles(join(CONTENT_DIR, "loadouts")))("%s matches loadout.schema.json", (path) => {
     expect(validateLoadout(readJson(path)), formatErrors(validateLoadout.errors)).toBe(true);
   });
@@ -113,7 +121,7 @@ describe("catalogue JSON schemas", () => {
   it("rejects Shield pips of an attribute", () => {
     expect(
       validateFace({
-        id: "face-untyped-shield",
+        id: "face-shield",
         name: "Shield",
         kind: "untyped",
         symbol: "shield",
@@ -130,7 +138,7 @@ describe("catalogue JSON schemas", () => {
   it("rejects an untyped face that is not Shield", () => {
     expect(
       validateFace({
-        id: "face-untyped-star",
+        id: "face-star",
         name: "Star",
         kind: "untyped",
         symbol: "arcane",

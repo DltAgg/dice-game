@@ -92,10 +92,11 @@ rules modules — reuse them; do not add a Tag card type or an Assist card.
     `[Forge]` / `[Generate]` / `[Empower]` / `[Pierce]` / `[Convert]` /
     `[Desynthesize]`, natural or synthetic face kinds, or Shield as a
     resource.
-14. Schemas may still require a `forge` object, an `attacks` array, or a
-    `face-(natural|synthetic|untyped)-` id. Satisfy the current validator.
-    Do not design around those leftovers, and do not invent a parallel id
-    scheme.
+14. Schemas may still require a `forge` object or an `attacks` array.
+    Satisfy the current validator. Do not design around those leftovers.
+    A face id is `face-<move>` only. No `natural`, `synthetic`, or `untyped`
+    token. No Fighter name in the id or filename. The player-facing `name`
+    stays the move name and also does not include the Fighter.
 
 ## Workflow
 
@@ -139,12 +140,10 @@ Card Progress:
 |---|---|---|
 | Hand card | `card-<kebab>` | `card-brace` |
 | Fighter | `creature-<kebab>` | `creature-magnus` |
-| Face | schema `faceId` pattern, name token after the move | a prefix only while the schema still requires one |
+| Face | `face-<move>` | `face-jab` |
 | Attack id | `attack-<fighter>-<kebab>` | `attack-magnus-lariat` |
 | Technique id | string on the Fighter | `lariat` |
 
-The `natural` / `synthetic` / `untyped` token in a face id is a validator
-prefix, not a kind. Never design `face-synthetic-martial` or
-`face-untyped-shield` as a resource.
+The id and the filename are `face-<move>` only. No `natural`, `synthetic`, or `untyped` token. No Fighter name in the id or filename. The player-facing `name` stays the move name and also does not include the Fighter. Never design a Shield face as a resource.
 
 Const exports: `SCREAMING_SNAKE`.

@@ -19,18 +19,18 @@
     }
   ],
   "baseDie": [
-    "face-natural-jab",
-    "face-natural-vega-quick-grab",
-    "face-natural-vega-flash-kick",
-    "face-natural-dash",
-    "face-natural-dash",
-    "face-natural-vega-blitz-rush"
+    "face-jab",
+    "face-quick-grab",
+    "face-flash-kick",
+    "face-dash",
+    "face-dash",
+    "face-blitz-rush"
   ],
   "techniques": [
     {
       "id": "technique-vega-step-jab",
       "name": "Step Kick",
-      "primaryFaceId": "face-natural-vega-flash-kick",
+      "primaryFaceId": "face-flash-kick",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "hitStrength": "light" },
@@ -47,7 +47,7 @@
     {
       "id": "technique-vega-confirm-kick",
       "name": "Confirm Kick",
-      "primaryFaceId": "face-natural-dash",
+      "primaryFaceId": "face-dash",
       "hitStrength": "medium",
       "hitType": "kick",
       "secondary": { "sequenceRole": "extender" },
@@ -64,7 +64,7 @@
     {
       "id": "technique-vega-chase-kick",
       "name": "Chase Kick",
-      "primaryFaceId": "face-natural-vega-blitz-rush",
+      "primaryFaceId": "face-blitz-rush",
       "hitStrength": "heavy",
       "hitType": "kick",
       "secondary": { "hitType": "punch" },

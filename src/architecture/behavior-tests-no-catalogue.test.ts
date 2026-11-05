@@ -20,6 +20,8 @@ const ALLOWED = new Set([
   "src/client/ui/match/board/showingFaceDrop.test.ts",
   "src/server/reducer/playtestCombo.test.ts",
   "src/server/reducer/formStarter.test.ts",
+  "src/server/reducer/callOutTarget.test.ts",
+  "src/server/reducer/exCard.test.ts",
 ]);
 
 const LOOKUP_ONLY = /^(?:getCard|getFaceCard|getCreatureDefinition)$/;

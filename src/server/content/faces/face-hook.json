@@ -1,12 +1,12 @@
 {
   "$schema": "../schema/face.schema.json",
-  "id": "face-natural-crescent",
-  "name": "Crescent",
+  "id": "face-hook",
+  "name": "Hook",
   "faceType": "attack",
-  "sequenceRole": "finisher",
+  "sequenceRole": "extender",
   "hitStrength": "medium",
-  "hitType": "kick",
-  "rulesText": "Medium Kick · Finisher. Primary: [Strike 2]. Secondary: +1 damage.",
+  "hitType": "punch",
+  "rulesText": "Medium Punch · Extender. Primary: [Strike 2]. Secondary: +1 damage.",
   "onRoll": [],
   "onAbsorb": [],
   "primaryEffects": [

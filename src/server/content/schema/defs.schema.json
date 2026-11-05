@@ -99,8 +99,8 @@
     },
     "faceId": {
       "type": "string",
-      "pattern": "^face-(?:natural|synthetic|untyped)-[a-z0-9]+(?:-[a-z0-9]+)*$",
-      "description": "Face card id, e.g. face-synthetic-ossuary or face-untyped-shield."
+      "pattern": "^face-(?:(?!natural(?:-|$))(?!synthetic(?:-|$))(?!untyped(?:-|$))[a-z0-9]+)(?:-(?:(?!natural(?:-|$))(?!synthetic(?:-|$))(?!untyped(?:-|$))[a-z0-9]+))*$",
+      "description": "Face card id, the move only, e.g. face-jab or face-power-grab. No kind token and no Fighter name."
     },
     "attackId": {
       "type": "string",

@@ -13,15 +13,15 @@ import { expectOk, handCardIdAt, P1, P2, resolveOpenChain, withHand } from "@ser
 import { advance } from "@server/reducer/reduce.js";
 import { hitButtonLabel, showingFaceChips, stagedShowingDrop } from "./showingFaceDrop";
 
-const JAB = asFaceCardId("face-natural-jab");
-const MAGNUS_BOOT_KICK = asFaceCardId("face-natural-magnus-boot-kick");
-const PROJECTILE = asFaceCardId("face-natural-projectile");
-const FOCUS = asFaceCardId("face-natural-focus");
-const VEGA_FLASH_KICK = asFaceCardId("face-natural-vega-flash-kick");
-const MAGNUS_POWER_GRAB = asFaceCardId("face-natural-magnus-power-grab");
-const DASH = asFaceCardId("face-natural-dash");
-const VEGA_BLITZ_RUSH = asFaceCardId("face-natural-vega-blitz-rush");
-const CRESCENT = asFaceCardId("face-natural-crescent");
+const JAB = asFaceCardId("face-jab");
+const MAGNUS_BOOT_KICK = asFaceCardId("face-boot-kick");
+const PROJECTILE = asFaceCardId("face-projectile");
+const FOCUS = asFaceCardId("face-focus");
+const VEGA_FLASH_KICK = asFaceCardId("face-flash-kick");
+const MAGNUS_POWER_GRAB = asFaceCardId("face-power-grab");
+const DASH = asFaceCardId("face-dash");
+const VEGA_BLITZ_RUSH = asFaceCardId("face-blitz-rush");
+const CRESCENT = asFaceCardId("face-crescent");
 
 function inActions(): GameState {
   const match = createMatch({
