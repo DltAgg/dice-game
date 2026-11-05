@@ -231,6 +231,7 @@ export const TAG_FIGHTER_RULES: GameRulesConfig = {
   turnDrawMode: "fixed",
   cardsDrawnPerTurn: 1,
   cardsDrawnUpTo: 5,
+  faceDeckMaxCards: 16,
   consumeDiceOnFaceActions: false,
   attacksPerCreaturePerCombat: 2,
   wipeVictory: true,

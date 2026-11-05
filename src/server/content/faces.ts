@@ -12,11 +12,18 @@ import { lookupOverlayFace } from "./runtimeOverlay.js";
 export const JAB: FaceCardId = asFaceCardId("face-natural-jab");
 
 export const GRAB: FaceCardId = asFaceCardId("face-natural-grab");
+export const VEGA_QUICK_GRAB: FaceCardId = asFaceCardId("face-natural-vega-quick-grab");
+export const MAGNUS_POWER_GRAB: FaceCardId = asFaceCardId("face-natural-magnus-power-grab");
 export const LARIAT: FaceCardId = asFaceCardId("face-natural-lariat");
 export const HEAVY: FaceCardId = asFaceCardId("face-natural-heavy");
 export const KICK: FaceCardId = asFaceCardId("face-natural-kick");
+export const VEGA_FLASH_KICK: FaceCardId = asFaceCardId("face-natural-vega-flash-kick");
+export const MAGNUS_BOOT_KICK: FaceCardId = asFaceCardId("face-natural-magnus-boot-kick");
 export const DASH: FaceCardId = asFaceCardId("face-natural-dash");
 export const RUSH: FaceCardId = asFaceCardId("face-natural-rush");
+export const RYU_FORWARD_RUSH: FaceCardId = asFaceCardId("face-natural-ryu-forward-rush");
+export const VEGA_BLITZ_RUSH: FaceCardId = asFaceCardId("face-natural-vega-blitz-rush");
+export const MAGNUS_BULL_RUSH: FaceCardId = asFaceCardId("face-natural-magnus-bull-rush");
 export const PROJECTILE: FaceCardId = asFaceCardId("face-natural-projectile");
 export const FOCUS: FaceCardId = asFaceCardId("face-natural-focus");
 export const CHARGE: FaceCardId = asFaceCardId("face-natural-charge");

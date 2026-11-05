@@ -14,11 +14,14 @@ import { advance } from "@server/reducer/reduce.js";
 import { hitButtonLabel, showingFaceChips, stagedShowingDrop } from "./showingFaceDrop";
 
 const JAB = asFaceCardId("face-natural-jab");
-const KICK = asFaceCardId("face-natural-kick");
+const MAGNUS_BOOT_KICK = asFaceCardId("face-natural-magnus-boot-kick");
 const PROJECTILE = asFaceCardId("face-natural-projectile");
 const FOCUS = asFaceCardId("face-natural-focus");
-const GRAB = asFaceCardId("face-natural-grab");
+const VEGA_FLASH_KICK = asFaceCardId("face-natural-vega-flash-kick");
+const MAGNUS_POWER_GRAB = asFaceCardId("face-natural-magnus-power-grab");
 const DASH = asFaceCardId("face-natural-dash");
+const VEGA_BLITZ_RUSH = asFaceCardId("face-natural-vega-blitz-rush");
+const CRESCENT = asFaceCardId("face-natural-crescent");
 
 function inActions(): GameState {
   const match = createMatch({
@@ -85,7 +88,7 @@ describe("staged showing-face drops", () => {
         [magnus]: { ...creature, attackBannedOnTurn: state.turn },
       },
     };
-    state = show(show(state, vega, JAB), magnus, GRAB);
+    state = show(show(state, vega, JAB), magnus, MAGNUS_POWER_GRAB);
     expect(showingFaceChips(state, P1).find((chip) => chip.creatureId === magnus)?.fighterName).toBe(
       "Magnus",
     );
@@ -97,7 +100,7 @@ describe("staged showing-face drops", () => {
       kind: "pending",
       message: "Magnus cannot attack this turn.",
     });
-    state = show(show(state, vega, KICK), magnus, KICK);
+    state = show(show(state, vega, VEGA_FLASH_KICK), magnus, MAGNUS_BOOT_KICK);
     expect(stagedShowingDrop(state, P1, [vega, magnus]).kind).toBe("technique");
   });
 
@@ -115,42 +118,29 @@ describe("staged showing-face drops", () => {
     });
   });
 
-  it("refuses Rush and Charge as the first hit, then tells Charge it needs Meter in combo", () => {
+  it("refuses finishers as the first hit, then allows them in combo", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
-    const rush = asFaceCardId("face-natural-rush");
-    const charge = asFaceCardId("face-natural-charge");
-    state = show(show(state, vega, rush), ryu, charge);
+    state = show(show(state, vega, VEGA_BLITZ_RUSH), ryu, CRESCENT);
     expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({
       kind: "pending",
-      message: "Rush is a finisher. Land a starter first.",
+      message: "Blitz Rush is a finisher. Land a starter first.",
     });
     expect(stagedShowingDrop(state, P1, [ryu, null])).toEqual({
       kind: "pending",
-      message: "Charge is a finisher. Land a starter first.",
+      message: "Crescent is a finisher. Land a starter first.",
     });
     const combo = { ...state, offensiveState: "combo" as const };
     expect(stagedShowingDrop(combo, P1, [vega, null])).toEqual({ kind: "hit", creatureId: vega });
-    expect(stagedShowingDrop(combo, P1, [ryu, null])).toEqual({
-      kind: "pending",
-      message: "Charge needs 1 Meter.",
-    });
-    const paid = {
-      ...combo,
-      players: {
-        ...combo.players,
-        [P1]: { ...combo.players[P1]!, meter: 1 },
-      },
-    };
-    expect(stagedShowingDrop(paid, P1, [ryu, null])).toEqual({ kind: "hit", creatureId: ryu });
+    expect(stagedShowingDrop(combo, P1, [ryu, null])).toEqual({ kind: "hit", creatureId: ryu });
   });
 
   it("matches a Technique only when one face is the Active Fighter", () => {
     let state = inActions();
     const vega = fighter(state, VEGA);
     const ryu = fighter(state, RYU);
-    state = show(show(state, vega, KICK), ryu, PROJECTILE);
+    state = show(show(state, vega, VEGA_FLASH_KICK), ryu, FOCUS);
     const technique = stagedShowingDrop(state, P1, [ryu, vega]);
     expect(technique.kind).toBe("technique");
     if (technique.kind === "technique") {
@@ -165,7 +155,7 @@ describe("staged showing-face drops", () => {
     let state = withHand(inActions(), P2, [BRACE]);
     const vega = fighter(state, VEGA);
     const magnus = fighter(state, MAGNUS);
-    state = show(show(state, magnus, GRAB), vega, DASH);
+    state = show(show(state, magnus, MAGNUS_POWER_GRAB), vega, DASH);
 
     expect(stagedShowingDrop(state, P1, [vega, null])).toEqual({
       kind: "pending",

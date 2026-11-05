@@ -39,7 +39,7 @@
     "faceDeck": {
       "description": "Named specials (and dual-kind naturals that occupy the 12). Untyped Shield and opening naturals do not consume the face-deck cap when used as startingDice basics.",
       "type": "array",
-      "maxItems": 12,
+      "maxItems": 18,
       "items": { "$ref": "defs.schema.json#/$defs/faceId" }
     },
     "startingDice": {

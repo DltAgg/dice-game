@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema/face.schema.json",
+  "id": "face-natural-vega-blitz-rush",
+  "name": "Blitz Rush",
+  "faceType": "attack",
+  "sequenceRole": "finisher",
+  "hitStrength": "heavy",
+  "hitType": "kick",
+  "rulesText": "Heavy Kick · Finisher. Primary: [Strike 4]. Secondary: +2 damage.",
+  "onRoll": [],
+  "onAbsorb": [],
+  "primaryEffects": [
+    {
+      "type": "damage",
+      "amount": 4,
+      "target": { "kind": "declared-target" }
+    }
+  ],
+  "secondaryEffects": [{ "type": "next-attack-bonus", "amount": 2 }],
+  "maxOverloads": 0,
+  "forgeRestriction": null
+}

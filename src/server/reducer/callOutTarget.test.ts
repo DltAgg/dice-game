@@ -17,7 +17,7 @@ import { createMatch } from "../setup/createMatch.js";
 import { expectOk, handCardIdAt, P1, P2, resolveOpenChain, withHand } from "../testing/scenario.js";
 import { advance } from "./reduce.js";
 
-const GRAB = asFaceCardId("face-natural-grab");
+const VEGA_QUICK_GRAB = asFaceCardId("face-natural-vega-quick-grab");
 
 function inActions(): GameState {
   const match = createMatch({
@@ -66,13 +66,13 @@ function show(state: GameState, creatureId: CreatureId, faceId: FaceCardId): Gam
   return { ...state, dice: { ...state.dice, [die.id]: next } };
 }
 
-/** Vega's Grab would KO the Active Ryu. Grab is strike 3, halved to 1 while Ryu is Active. */
+/** Vega's Quick Grab would KO the Active Ryu. Grab is strike 2, halved to 1 while Ryu is Active. */
 function lethalGrab(): { state: GameState; ryu: CreatureId; magnus: CreatureId; vega: CreatureId } {
   let state = inActions();
   const vega = fighter(state, P1, VEGA);
   const ryu = fighter(state, P2, RYU);
   const magnus = fighter(state, P2, MAGNUS);
-  state = show(state, vega, GRAB);
+  state = show(state, vega, VEGA_QUICK_GRAB);
   state = {
     ...state,
     creatures: {
@@ -116,7 +116,7 @@ describe("Call Out and a waiting hit", () => {
     expect(resolved.creatures[ryu]?.defeated).toBe(false);
     expect(resolved.creatures[ryu]?.damage).toBe(11);
     expect(resolved.creatures[magnus]?.defeated).toBe(false);
-    expect(resolved.creatures[magnus]?.damage).toBe(3);
+    expect(resolved.creatures[magnus]?.damage).toBe(2);
   });
 
   it("keeps a Redirected hit on the chosen Fighter after Call Out", () => {

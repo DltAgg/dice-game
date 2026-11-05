@@ -25,8 +25,8 @@ import {
 import { advance } from "./reduce.js";
 
 const LOW_BLOW = asCardId("card-low-blow");
-const GRAB = asFaceCardId("face-natural-grab");
-const KICK = asFaceCardId("face-natural-kick");
+const MAGNUS_POWER_GRAB = asFaceCardId("face-natural-magnus-power-grab");
+const VEGA_FLASH_KICK = asFaceCardId("face-natural-vega-flash-kick");
 const VEGA_ID = asCreatureDefinitionId("creature-vega");
 const MAGNUS_ID = asCreatureDefinitionId("creature-magnus");
 const RYU_ID = asCreatureDefinitionId("creature-ryu");
@@ -100,19 +100,19 @@ describe("Low Blow", () => {
     const definition = getCard(LOW_BLOW);
     expect(definition?.name).toBe("Low Blow");
     expect(definition?.rulesText).toBe(
-      "Stays on Fighter.\n[Replace] to Grab. [Moveset Low Blow].\nLow Blow · Medium Punch · Starter\nGrab + Light kick: [Strike 4].",
+      "Stays on Fighter.\n[Replace] to Power Grab. [Moveset Low Blow].\nLow Blow · Medium Punch · Starter\nPower Grab + Light: [Strike 4].",
     );
     expect(definition?.addedTechnique).toMatchObject({
       sequenceRole: "starter",
       hitStrength: "medium",
       hitType: "punch",
-      primaryFaceId: GRAB,
-      secondary: { hitStrength: "light", hitType: "kick" },
+      primaryFaceId: MAGNUS_POWER_GRAB,
+      secondary: { hitStrength: "light" },
       effects: [{ type: "damage", amount: 4, target: { kind: "declared-target" } }],
     });
 
     const actions = skirmishActions();
-    const opened = showFace(actions, fighterOf(actions, VEGA_ID), KICK);
+    const opened = showFace(actions, fighterOf(actions, VEGA_ID), VEGA_FLASH_KICK);
     const magnus = fighterOf(opened, MAGNUS_ID);
     const vega = fighterOf(opened, VEGA_ID);
     const dieId = dieIdOf(opened, magnus);
@@ -127,17 +127,17 @@ describe("Low Blow", () => {
           declaredTargetCreatureId: magnus,
           dieId,
           slotIndex: 0,
-          declaredFaceCardId: GRAB,
+          declaredFaceCardId: MAGNUS_POWER_GRAB,
         }),
       ),
     );
-    expect(played.dice[dieId]?.slots[0]?.faceCardId).toBe(GRAB);
+    expect(played.dice[dieId]?.slots[0]?.faceCardId).toBe(MAGNUS_POWER_GRAB);
     expect(played.dice[dieId]?.rolledSlotIndex).toBe(showingBefore);
     expect(played.creatures[magnus]?.addedTechniques?.map((technique) => technique.id)).toContain(
       "technique-magnus-low-blow",
     );
 
-    const ready = withActive(showFace(played, magnus, GRAB), magnus);
+    const ready = withActive(showFace(played, magnus, MAGNUS_POWER_GRAB), magnus);
     const vegaDie = dieIdOf(ready, vega);
     const before = damageOf(ready);
     const declared = expectOk(
@@ -165,7 +165,7 @@ describe("Low Blow", () => {
       declaredTargetCreatureId: vega,
       dieId: dieIdOf(handed, vega),
       slotIndex: 0,
-      declaredFaceCardId: GRAB,
+      declaredFaceCardId: MAGNUS_POWER_GRAB,
     });
     expect(refused.ok).toBe(false);
     if (!refused.ok) expect(refused.error).toBe("INVALID_TARGET");

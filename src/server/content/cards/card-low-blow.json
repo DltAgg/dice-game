@@ -7,12 +7,12 @@
   "lifecycle": "persistent",
   "modifySubject": "moveset",
   "fighterRestriction": "creature-magnus",
-  "replaceFaceId": "face-natural-grab",
-  "rulesText": "Stays on Fighter.\n[Replace] to Grab. [Moveset Low Blow].\nLow Blow · Medium Punch · Starter\nGrab + Light: [Strike 4].",
+  "replaceFaceId": "face-natural-magnus-power-grab",
+  "rulesText": "Stays on Fighter.\n[Replace] to Power Grab. [Moveset Low Blow].\nLow Blow · Medium Punch · Starter\nPower Grab + Light: [Strike 4].",
   "addedTechnique": {
     "id": "technique-magnus-low-blow",
     "name": "Low Blow",
-    "primaryFaceId": "face-natural-grab",
+    "primaryFaceId": "face-natural-magnus-power-grab",
     "hitStrength": "medium",
     "hitType": "punch",
     "secondary": { "hitStrength": "light" },
@@ -24,7 +24,7 @@
         "target": { "kind": "declared-target" }
       }
     ],
-    "rulesText": "Grab + Light: [Strike 4]."
+    "rulesText": "Power Grab + Light: [Strike 4]."
   },
   "forge": { "faces": 1, "target": "own-die" }
 }

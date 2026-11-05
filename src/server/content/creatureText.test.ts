@@ -3,7 +3,7 @@ import type { AttackDefinition } from "../model/creatures.js";
 import { asAttackId } from "../model/ids.js";
 import { secondaryMatches } from "../rules/faceActions.js";
 import { ALL_CREATURES, MAGNUS, RYU, VEGA } from "./creatures.js";
-import { ALL_FACE_CARDS, FOCUS, getFaceCard, JAB, KICK, LARIAT } from "./faces.js";
+import { ALL_FACE_CARDS, FOCUS, getFaceCard, JAB, LARIAT, VEGA_FLASH_KICK } from "./faces.js";
 import { formatAttackCost, formatAttackFuel, formatAttackLine } from "./creatureText.js";
 
 const TAG_SQUAD = [VEGA, MAGNUS, RYU] as const;
@@ -30,11 +30,11 @@ describe("creature catalogue", () => {
     const step = VEGA && ALL_CREATURES.find((entry) => entry.id === VEGA);
     const stepKick = step?.techniques?.find((technique) => technique.id === "technique-vega-step-jab");
     expect(stepKick?.name).toBe("Step Kick");
-    expect(stepKick?.primaryFaceId).toBe(KICK);
+    expect(stepKick?.primaryFaceId).toBe(VEGA_FLASH_KICK);
     expect(stepKick?.sequenceRole).toBe("starter");
     expect(stepKick?.effects[0]).toMatchObject({ type: "damage", amount: 3 });
     expect(stepKick?.secondary).toEqual({
-      faceType: "projectile",
+      hitStrength: "light",
     });
     const collar = ALL_CREATURES.find((entry) => entry.id === MAGNUS);
     const lariatTie = collar?.techniques?.find((technique) => technique.id === "technique-magnus-collar-tie");
@@ -58,7 +58,9 @@ describe("creature catalogue", () => {
     expect(getFaceCard(JAB)?.primaryEffects?.[0]).toMatchObject({ type: "damage", amount: 1 });
     for (const creature of TAG_SQUAD) {
       const definition = ALL_CREATURES.find((entry) => entry.id === creature);
-      expect(definition?.baseDie?.includes(JAB)).toBe(true);
+      if (creature === VEGA) {
+        expect(definition?.baseDie?.includes(JAB)).toBe(true);
+      }
     }
     const dashId = ALL_CREATURES.find((entry) => entry.id === VEGA)?.baseDie?.[3];
     const dash = dashId === undefined ? undefined : getFaceCard(dashId);

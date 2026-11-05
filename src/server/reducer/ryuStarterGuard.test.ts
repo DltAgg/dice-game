@@ -24,10 +24,10 @@ const RYU_ID = asCreatureDefinitionId("creature-ryu");
 const PROJECTILE = asFaceCardId("face-natural-projectile");
 const JAB = asFaceCardId("face-natural-jab");
 const FOCUS = asFaceCardId("face-natural-focus");
-const GRAB = asFaceCardId("face-natural-grab");
+const GRAB = asFaceCardId("face-natural-magnus-power-grab");
 const LARIAT = asFaceCardId("face-natural-lariat");
 const HEAVY = asFaceCardId("face-natural-heavy");
-const KICK = asFaceCardId("face-natural-kick");
+const KICK = asFaceCardId("face-natural-vega-flash-kick");
 
 function fighterBaseDie(id: CreatureDefinitionId): DieFaceLayout {
   const die = getCreatureDefinition(id)?.baseDie;
@@ -134,7 +134,7 @@ describe("Ryu starter guard", () => {
 
   it("rounds a 1-damage starter down to 0 and still enters combo", () => {
     const opened = skirmishActions();
-    const attacker = fighterOf(opened, RYU_ID, P1);
+    const attacker = fighterOf(opened, VEGA_ID, P1);
     const defender = fighterOf(opened, RYU_ID, P2);
     const ready = showFace(withActive(withActive(opened, P1, attacker), P2, defender), attacker, JAB);
     const hit = useFace(ready, attacker);
@@ -317,7 +317,7 @@ describe("Ryu starter guard", () => {
     const vega = fighterOf(opened, VEGA_ID, P2);
     const ready = showFace(withActive(opened, P1, magnus), magnus, GRAB);
     const hit = useFace(ready, magnus);
-    expect(damageOf(hit, vega)).toBe(3);
+    expect(damageOf(hit, vega)).toBe(2);
     expect(hit.offensiveState).toBe("combo");
   });
 });

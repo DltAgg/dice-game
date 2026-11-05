@@ -36,13 +36,16 @@ import { advance, reduce } from "./reduce.js";
 const VEGA = asCreatureDefinitionId("creature-vega");
 const MAGNUS = asCreatureDefinitionId("creature-magnus");
 const RYU = asCreatureDefinitionId("creature-ryu");
-const GRAB = asFaceCardId("face-natural-grab");
-const KICK = asFaceCardId("face-natural-kick");
+const GRAB = asFaceCardId("face-natural-magnus-power-grab");
+const KICK = asFaceCardId("face-natural-vega-flash-kick");
+const VEGA_FLASH_KICK = KICK;
+const MAGNUS_BOOT_KICK = asFaceCardId("face-natural-magnus-boot-kick");
 const FOCUS = asFaceCardId("face-natural-focus");
 const HEAVY = asFaceCardId("face-natural-heavy");
-const RUSH = asFaceCardId("face-natural-rush");
+const RUSH = asFaceCardId("face-natural-vega-blitz-rush");
+const LARIAT = asFaceCardId("face-natural-lariat");
 const JAB = asFaceCardId("face-natural-jab");
-const CHARGE = asFaceCardId("face-natural-charge");
+const RYU_FORWARD_RUSH = asFaceCardId("face-natural-ryu-forward-rush");
 const COUNTER = asCardId("card-counter");
 const PARRY = asCardId("card-parry");
 const BRACE = asCardId("card-brace");
@@ -311,7 +314,7 @@ function powerBombWindow(meter = 8, cards: readonly CardId[] = [THROW.id]): Game
   const opened = actions();
   const magnus = fighter(opened, P1, MAGNUS);
   const ryu = fighter(opened, P1, RYU);
-  const shown = show(show(withActive(opened, P1, magnus), magnus, GRAB), ryu, CHARGE);
+  const shown = show(show(withActive(opened, P1, magnus), magnus, GRAB), ryu, RYU_FORWARD_RUSH);
   return { ...withHand(withMeter(shown, P1, meter), P1, cards), offensiveState: "combo" };
 }
 
@@ -378,7 +381,7 @@ describe("spec 035 EX cards", () => {
     expect(meterDeltas(played, P1)).toEqual([-8]);
 
     const resolved = resolvePlayed(played, [0, 3]);
-    expect(damage(resolved, defender)).toBe(6);
+    expect(damage(resolved, defender)).toBe(8);
     expect(meterOf(resolved, P1)).toBe(0);
     expect(meterOf(resolved, P2)).toBe(0);
     expect(meterDeltas(resolved, P1)).toEqual([-8]);
@@ -389,17 +392,17 @@ describe("spec 035 EX cards", () => {
     const declared = declarePowerBomb(powerBombWindow(0, []));
     const defender = defenderId(declared);
     const resolved = resolveOpenChain(declared);
-    expect(damage(resolved, defender)).toBe(6);
+    expect(damage(resolved, defender)).toBe(7);
     expect(meterDeltas(resolved, P1)).toContain(4);
     expect(meterOf(resolved, P2)).toBe(1);
   });
 
   it("deals Strike 6 plus 0, 2, or 4 from the Magnus rerolls and leaves other dice", () => {
     const cases = [
-      { slots: [0, 3], damage: 6, finalSlot: 3 },
-      { slots: [0, 1], damage: 8, finalSlot: 1 },
-      { slots: [1, 0], damage: 8, finalSlot: 0 },
-      { slots: [1, 2], damage: 10, finalSlot: 2 },
+      { slots: [0, 3], damage: 8, finalSlot: 3 },
+      { slots: [0, 1], damage: 10, finalSlot: 1 },
+      { slots: [1, 0], damage: 10, finalSlot: 0 },
+      { slots: [1, 2], damage: 8, finalSlot: 2 },
     ] as const;
     for (const row of cases) {
       const declared = declarePowerBomb(powerBombWindow());
@@ -432,7 +435,7 @@ describe("spec 035 EX cards", () => {
     };
     const kept = resolvePlayed(expectOk(play(retained, P1)), [0, 3]);
     expect(kept.dice[die.id]?.rolledSlotIndex).toBe(3);
-    expect(damage(kept, defenderId(declared))).toBe(6);
+    expect(damage(kept, defenderId(declared))).toBe(8);
 
     const stunnedDeclared = declarePowerBomb(powerBombWindow());
     const stunnedDie = dieForCreature(stunnedDeclared, fighter(stunnedDeclared, P1, MAGNUS));
@@ -447,7 +450,7 @@ describe("spec 035 EX cards", () => {
     const slot = stunnedDie.rolledSlotIndex;
     const skipped = resolvePlayed(expectOk(play(stunned, P1)), []);
     expect(skipped.dice[stunnedDie.id]?.rolledSlotIndex).toBe(slot);
-    expect(damage(skipped, defenderId(stunnedDeclared))).toBe(6);
+    expect(damage(skipped, defenderId(stunnedDeclared))).toBe(8);
   });
 
   it("refuses EX after the attacker passes, above another link, with no attack, or on the wrong gate", () => {
@@ -495,7 +498,7 @@ describe("spec 035 EX cards", () => {
     const jabbed = actions();
     const magnus = fighter(jabbed, P1, MAGNUS);
     const jab = withHand(
-      withMeter(show(withActive(jabbed, P1, magnus), magnus, JAB), P1, 8),
+      withMeter(show(withActive(jabbed, P1, magnus), magnus, LARIAT), P1, 8),
       P1,
       [THROW.id],
     );
@@ -592,7 +595,7 @@ describe("spec 035 EX cards", () => {
     const bannedTurn = openActions(endSequence(resolved, P2), P1);
     expect(bannedTurn.turn).toBe(n + 2);
     const magnus = fighter(bannedTurn, P1, MAGNUS);
-    const jab = show(withActive(bannedTurn, P1, magnus), magnus, JAB);
+    const jab = show(withActive(bannedTurn, P1, magnus), magnus, LARIAT);
     const attack = advance(jab, { type: "USE_FACE", playerId: P1, creatureId: magnus });
     expect(attack.ok).toBe(true);
   });
@@ -621,7 +624,7 @@ describe("spec 035 EX cards", () => {
     const banned = openActions(endSequence(resolved, P2), P1);
     expect(banned.turn).toBe(n + 2);
     const active = withActive(banned, P1, magnus);
-    const jab = show(active, magnus, JAB);
+    const jab = show(active, magnus, LARIAT);
     const face = advance(jab, { type: "USE_FACE", playerId: P1, creatureId: magnus });
     expect(face.ok).toBe(false);
     if (!face.ok) expect(face.error).toBe("ATTACK_BANNED");
@@ -649,7 +652,7 @@ describe("spec 035 EX cards", () => {
 
     const later = openActions(endSequence(endSequence(banned, P1), P2), P1);
     expect(later.turn).toBe(n + 4);
-    const free = show(withActive(later, P1, fighter(later, P1, MAGNUS)), fighter(later, P1, MAGNUS), JAB);
+    const free = show(withActive(later, P1, fighter(later, P1, MAGNUS)), fighter(later, P1, MAGNUS), LARIAT);
     const freed = expectOk(
       advance(free, {
         type: "USE_FACE",
@@ -707,7 +710,7 @@ describe("spec 035 EX cards", () => {
     const n = declared.turn;
     const defender = defenderId(declared);
     const alone = resolveOpenChain(declareChase(chaseWindow([])));
-    expect(damage(alone, defenderId(alone))).toBe(6);
+    expect(damage(alone, defenderId(alone))).toBe(8);
 
     const played = expectOk(play(declared, P1));
     expect(meterOf(played, P1)).toBe(0);
@@ -793,7 +796,7 @@ describe("spec 035 EX cards", () => {
     const ryu = fighter(opened, P1, RYU);
     const magnus = fighter(opened, P1, MAGNUS);
     const ryuActive = {
-      ...withHand(withMeter(show(withActive(opened, P1, ryu), ryu, CHARGE), P1, 8), P1, [THROW.id]),
+      ...withHand(withMeter(show(withActive(opened, P1, ryu), ryu, RYU_FORWARD_RUSH), P1, 8), P1, [THROW.id]),
       offensiveState: "combo" as const,
     };
     const declared = expectOk(advance(ryuActive, { type: "USE_FACE", playerId: P1, creatureId: ryu }));
@@ -805,7 +808,7 @@ describe("spec 035 EX cards", () => {
 
     const magnusActive = {
       ...withHand(
-        withMeter(show(withActive(opened, P1, magnus), ryu, CHARGE), P1, 8),
+        withMeter(show(withActive(opened, P1, magnus), ryu, RYU_FORWARD_RUSH), P1, 8),
         P1,
         [THROW.id],
       ),
@@ -841,7 +844,7 @@ describe("spec 035 EX cards", () => {
     const played = expectOk(play(declared, P1));
     expect(meterOf(played, P1)).toBe(0);
     const resolved = resolvePlayed(played, [0, 3]);
-    expect(damage(resolved, defender)).toBe(6);
+    expect(damage(resolved, defender)).toBe(8);
     expect(resolved.activePlayerId).toBe(P2);
     expect(resolved.creatures[fighter(resolved, P1, MAGNUS)]?.attackBannedOnTurn).toBe(3);
 
@@ -867,7 +870,7 @@ describe("spec 035 EX cards", () => {
       advance(ready, { type: "USE_FACE", playerId: P1, creatureId: magnus }),
     );
     const resolved = resolvePlayed(expectOk(play(declared, P1)), [0, 3]);
-    expect(damage(resolved, defenderId(declared))).toBe(6);
+    expect(damage(resolved, defenderId(declared))).toBe(8);
   });
 
   it("lets Vega attack on the banned turn after Tag switches Magnus out", () => {
@@ -928,7 +931,7 @@ describe("spec 035 EX cards", () => {
     });
     expect(vegaHit.ok).toBe(true);
 
-    const step = show(show(tagged, vega, KICK), magnus, KICK);
+    const step = show(show(tagged, vega, VEGA_FLASH_KICK), magnus, MAGNUS_BOOT_KICK);
     const secondary = dieForCreature(step, magnus);
     if (secondary === undefined) throw new Error("magnus die");
     const technique = advance(step, {

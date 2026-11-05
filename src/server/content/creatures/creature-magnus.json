@@ -16,12 +16,12 @@
     }
   ],
   "baseDie": [
-    "face-natural-grab",
-    "face-natural-grab",
+    "face-natural-magnus-power-grab",
+    "face-natural-magnus-power-grab",
     "face-natural-lariat",
-    "face-natural-kick",
+    "face-natural-magnus-boot-kick",
     "face-natural-heavy",    
-    "face-natural-rush"
+    "face-natural-magnus-bull-rush"
   ],
   "techniques": [
     {
@@ -61,7 +61,7 @@
     {
       "id": "technique-magnus-power-bomb",
       "name": "Power Bomb",
-      "primaryFaceId": "face-natural-grab",
+      "primaryFaceId": "face-natural-magnus-power-grab",
       "hitStrength": "heavy",
       "hitType": "punch",
       "secondary": { "hitStrength": "heavy" },
