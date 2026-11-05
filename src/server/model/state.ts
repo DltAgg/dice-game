@@ -295,7 +295,7 @@ export interface GameState {
   readonly aggressorPlayerId: PlayerId;
   /** `open` when no sequence is in progress; `combo` while one is. Not a turn phase. */
   readonly offensiveState: OffensiveStateName;
-  /** Action ids already used in this offensive sequence. Cleared on return to `open`. */
+  /** Action ids already used in this sequence. An opponent end can keep them. */
   readonly usedSequenceActionIds: readonly string[];
   /** True after the opening roll, until the phase becomes `actions`. */
   readonly rerollAvailable: boolean;

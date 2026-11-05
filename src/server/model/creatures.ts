@@ -94,6 +94,12 @@ export interface CreatureDefinition {
    */
   readonly lightStarterPunish?: number;
   /**
+   * When this Fighter is the aggressor's living Active Fighter, an opponent's
+   * non-combat effect that would hand off the sequence starts a new one
+   * instead, if a legal starter still exists. Spec `038`.
+   */
+  readonly restartSequenceAfterOpponentEnd?: boolean;
+  /**
    * Data-driven standing passives (`010`). Prefer relation filters on shared
    * hooks over special-cased reducer branches.
    */

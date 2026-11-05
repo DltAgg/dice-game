@@ -26,6 +26,7 @@ import {
   handoffSequenceTurn,
   noteOffenseSeize,
 } from "../offensive.js";
+import { restartSequenceAfterOpponentEnd } from "../sequenceRestart.js";
 import { applyCardModify } from "../cardModify.js";
 
 export function passPriority(draft: Draft, playerId: PlayerId, rng: RNG): GameError | null {
@@ -73,6 +74,8 @@ export function resumeAfterEffectPause(draft: Draft, rng: RNG = createRng(draft.
  * windows between links (ASSUMED in `008`).
  */
 function drainChain(draft: Draft, rng: RNG): GameError | null {
+  let endedBy: PlayerId | null = null;
+  let stoppedSequenceActionId: string | undefined;
   while (draft.chainStack.length > 0) {
     if (draft.pendingDecision !== null) return null;
 
@@ -81,9 +84,14 @@ function drainChain(draft: Draft, rng: RNG): GameError | null {
     // Combat-action finishers already pass the turn when they settle.
     if (!link.negated && link.endsSequence === true && link.kind !== "combat-action") {
       draft.endSequenceAfterChain = true;
+      endedBy = link.controllerId;
     }
-
+    if (link.kind === "combat-action" && link.negated && link.sequenceActionId !== undefined) {
+      stoppedSequenceActionId = link.sequenceActionId;
+    }
+    const marked = draft.endSequenceAfterChain;
     conductLink(draft, link, rng);
+    if (!marked && draft.endSequenceAfterChain) endedBy = link.controllerId;
     if (draft.pendingDecision !== null) return null;
   }
 
@@ -95,6 +103,7 @@ function drainChain(draft: Draft, rng: RNG): GameError | null {
   // A finisher in this same chain already passed the turn, or already spent
   // a queued extra actions phase inside that settle.
   if (draft.status === "finished" || draft.phase !== "actions") return null;
+  if (restartSequenceAfterOpponentEnd(draft, endedBy, stoppedSequenceActionId)) return null;
   handoffSequenceTurn(draft, draft.activePlayerId);
   return null;
 }
