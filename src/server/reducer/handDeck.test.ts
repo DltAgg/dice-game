@@ -112,6 +112,41 @@ describe("hand, deck, and lifecycle", () => {
     expect(extra.players[P2]?.hand).toHaveLength(5);
   });
 
+  it("draws up to a hand size and ignores the fixed draw amount", () => {
+    const opened = matchWith(
+      { openingHandSize: 1, turnDrawMode: "up-to", cardsDrawnPerTurn: 3, cardsDrawnUpTo: 4 },
+      [pile(PRESSURE, 10), pile(OTHER, 10)],
+    );
+    expect(opened.players[P1]?.hand).toHaveLength(4);
+    expect(opened.players[P2]?.hand).toHaveLength(1);
+
+    const second = expectOk(advance(opened, { type: "END_TURN", playerId: P1 }));
+    expect(second.players[P2]?.hand).toHaveLength(4);
+    expect(second.players[P1]?.hand).toHaveLength(4);
+  });
+
+  it("draws nothing under up-to when the hand is already full", () => {
+    const opened = matchWith(
+      { openingHandSize: 5, turnDrawMode: "up-to", cardsDrawnPerTurn: 2, cardsDrawnUpTo: 3 },
+      [pile(PRESSURE, 10), pile(OTHER, 10)],
+    );
+    expect(opened.players[P1]?.hand).toHaveLength(5);
+    expect(opened.players[P2]?.hand).toHaveLength(5);
+
+    const second = expectOk(advance(opened, { type: "END_TURN", playerId: P1 }));
+    expect(second.players[P2]?.hand).toHaveLength(5);
+    expect(second.players[P1]?.hand).toHaveLength(5);
+  });
+
+  it("fixed draw ignores the up-to hand size", () => {
+    const opened = matchWith(
+      { openingHandSize: 5, turnDrawMode: "fixed", cardsDrawnPerTurn: 1, cardsDrawnUpTo: 9 },
+      [pile(PRESSURE, 12), pile(OTHER, 12)],
+    );
+    expect(opened.players[P1]?.hand).toHaveLength(6);
+    expect(opened.players[P2]?.hand).toHaveLength(5);
+  });
+
   it("does not discard to a hand limit", () => {
     const state = matchWith(
       { openingHandSize: 5, cardsDrawnPerTurn: 3, maxHandSize: 2 },

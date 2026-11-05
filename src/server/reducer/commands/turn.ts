@@ -1,3 +1,4 @@
+import { turnStartDrawCount } from "../../model/config.js";
 import type { GameError } from "../../model/errors.js";
 import type { PlayerId, SymbolInstanceId } from "../../model/ids.js";
 import { TURN_PHASE_ORDER, type TurnPhase } from "../../model/state.js";
@@ -93,7 +94,8 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   resetExhaustedRituals(draft, nextPlayerId);
 
   // Same draw as turn 1. Setup deals the opening hand, then this draw.
-  drawCards(draft, nextPlayerId, draft.config.cardsDrawnPerTurn);
+  const nextHand = draft.players[nextPlayerId]?.hand.length ?? 0;
+  drawCards(draft, nextPlayerId, turnStartDrawCount(draft.config, nextHand));
 
   checkVictory(draft);
   return enterPhase(draft, "roll");

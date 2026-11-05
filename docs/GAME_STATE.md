@@ -54,7 +54,7 @@ Faces and face cards stay. They are still useful and will be used later. This fi
 
 The current game is `TAG_FIGHTER_RULES` in `src/server/model/config.ts`. `DEFAULT_RULES_CONFIG` is not the current game. The engine still selects that default when a loadout does not have 3 starting dice. This file does not teach that default.
 
-Under the current preset a player has 3 dice, the opening hand is 5, and each later turn draws 1 card (`cardsDrawnPerTurn`).
+Under the current preset a player has 3 dice and the opening hand is 5. Each turn, including the first, draws under exactly one master rule (`turnDrawMode`). `fixed` draws `cardsDrawnPerTurn` cards. `up-to` draws until that player's hand has `cardsDrawnUpTo` cards, and draws nothing when the hand already has that many. The preset is `fixed` and draws 1. The other amount is stored and not applied. A match never draws under both rules.
 
 ## Board
 
@@ -78,7 +78,7 @@ Defeating a creature marked legendary does not by itself end the match. `checkVi
 
 Phases are `roll`, then `actions` (`TURN_PHASE_ORDER`). Ending the turn is the `END_TURN` action, not a third phase.
 
-A match starts on turn 1, phase `roll`. The first player in the setup list is `activePlayerId`. Setup deals the opening hand. It does not draw again before that first roll.
+A match starts on turn 1, phase `roll`. The first player in the setup list is `activePlayerId`. Setup deals the opening hand to both players. The first player then draws for the start of turn 1 under `turnDrawMode`. The preset draws 1, so that player starts with 6 cards and the other player starts with 5.
 
 The active player plays `ROLL_DICE`. That roll covers both players’ dice, including dice of Reserve and defeated Fighters. The phase stays `roll`. The opening roll does not absorb symbols. A second `ROLL_DICE` in that same roll is `ALREADY_USED`.
 
@@ -86,7 +86,7 @@ After that roll, `rerollAvailable` is true. The active player may `REROLL_DICE` 
 
 Skipping the reroll is `ADVANCE_PHASE`. That enters `actions` the same way. `ADVANCE_PHASE` from `roll` is illegal until the opening roll has happened.
 
-`END_TURN` is the active player’s action. The opponent becomes `activePlayerId`, the turn number increases by 1, that opponent draws 1, victory is checked, and the phase becomes `roll`.
+`END_TURN` is the active player’s action. The opponent becomes `activePlayerId`, the turn number increases by 1, that opponent draws for the start of their turn under the same `turnDrawMode` (the preset draws 1), victory is checked, and the phase becomes `roll`.
 
 ## Meter
 
@@ -185,7 +185,7 @@ Tag Skirmish includes one copy of each card. EX is not a print bracket.
 
 ## Deck and hand
 
-The current preset’s shared deck has 30 to 40 cards, with at most 3 copies of one card. `TAG_FIGHTER_RULES` sets `deckMaxResponseCombat` to 9, so that deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. An EX card whose only subtype is `ex` does not count toward that Combat cap. `validateTacticsDeck` also allows at most 2 EX cards for each `fighterRestriction`, counted separately, copies included. Three copies of one EX card fail that cap even though the copy cap is 3. A deck may include an EX card for a Fighter who is not in the squad. Playing it still requires that Fighter to be on the squad, living, and Active, and the hit must be that Fighter’s. `DEFAULT_RULES_CONFIG` sets `deckMaxResponseCombat` to null and has no Combat cap. The opening hand is 5. Each later turn draws 1. There is no maximum hand size (`maxHandSize` is null, and `drawCards` does not discard down). Drawing from an empty deck loses, as recorded under Victory.
+The current preset’s shared deck has 30 to 40 cards, with at most 3 copies of one card. `TAG_FIGHTER_RULES` sets `deckMaxResponseCombat` to 9, so that deck may include at most 9 Combat cards in total. Parry, Brace (the Block card), and Shift count. Counter does not. Shift stays a Modify; its play does not change. An EX card whose only subtype is `ex` does not count toward that Combat cap. `validateTacticsDeck` also allows at most 2 EX cards for each `fighterRestriction`, counted separately, copies included. Three copies of one EX card fail that cap even though the copy cap is 3. A deck may include an EX card for a Fighter who is not in the squad. Playing it still requires that Fighter to be on the squad, living, and Active, and the hit must be that Fighter’s. `DEFAULT_RULES_CONFIG` sets `deckMaxResponseCombat` to null and has no Combat cap. The opening hand is 5. Each turn then draws under `turnDrawMode`. The preset is `fixed` and draws 1 (`cardsDrawnPerTurn`). `up-to` draws until the hand has `cardsDrawnUpTo` cards and is not applied while `fixed` is selected. There is no maximum hand size (`maxHandSize` is null, and `drawCards` does not discard down). Drawing from an empty deck loses, as recorded under Victory.
 
 The Tag Skirmish loadout also has a `faceDeck`, and each Fighter has a `baseDie`. The face deck is not current play. It is the future physical representation of a face after Replace. Ryu Form (`card-ryu-form`) replaces a slot with Form (`face-natural-form`) and has no separate face card on the table today. That Replace leaves the showing slot where it was, as recorded under Sequence. In the physical game that Form card comes from the face deck. The online game does not need that physical card. The forge-pool rule that copies an already-installed face (`eligibleFacesForForge`) is not current play.
 

@@ -1,7 +1,7 @@
 import { getCreatureDefinition } from "../content/creatures.js";
 import { PROTOTYPE_FACE_DECK } from "../content/loadouts/index.js";
 import type { CardInstance } from "../model/cards.js";
-import { DEFAULT_RULES_CONFIG, type GameRulesConfig } from "../model/config.js";
+import { DEFAULT_RULES_CONFIG, turnStartDrawCount, type GameRulesConfig } from "../model/config.js";
 import type { CreatureState } from "../model/creatures.js";
 import type { DieState, StartingDiceLayout } from "../model/dice.js";
 import {
@@ -285,8 +285,10 @@ export function createMatch(setup: MatchSetup): GameState {
     config,
     nextInstanceSeq: 0,
   };
-  if (config.cardsDrawnPerTurn <= 0) return opened;
+  const openingHand = opened.players[first.id]?.hand.length ?? 0;
+  const turnDraw = turnStartDrawCount(config, openingHand);
+  if (turnDraw <= 0) return opened;
   const draft = createDraft(opened);
-  drawCards(draft, first.id, config.cardsDrawnPerTurn);
+  drawCards(draft, first.id, turnDraw);
   return draft;
 }

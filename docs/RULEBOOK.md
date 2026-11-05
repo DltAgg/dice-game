@@ -39,7 +39,7 @@ When your Active Fighter is defeated and a living Reserve remains, you choose wh
 
 ## 4. Match start
 
-The match starts on turn 1, in the roll. The first player in the setup list takes that turn. Both players are dealt their opening hand. There is no extra draw before the first roll.
+The match starts on turn 1, in the roll. The first player in the setup list takes that turn. Both players are dealt their opening hand of 5. That first player then draws for the start of the turn.
 
 Each player has a Meter pool. It starts at 0. The cap is 8. It is not cleared when the turn ends or when you Tag.
 
@@ -49,7 +49,9 @@ A turn has two phases: **roll**, then **actions**. Ending the turn is an action,
 
 On your roll, you roll both players’ dice, including Reserve and defeated Fighters, and you stay in the roll. You may then reroll any number of your own dice once. That reroll does not roll the opponent’s dice, and it moves you into actions. There is no second reroll. You may instead continue into actions without rerolling. The roll does not absorb symbols.
 
-When you end the turn, the opponent becomes the active player, the turn number goes up by 1, that player draws 1, victory is checked, and the phase becomes roll.
+A match uses one turn-start draw rule. Draw a fixed number: you draw that many cards at the start of your turn. Draw up to a number: you draw until your hand has that many cards, and you draw nothing when it already does. The current match draws a fixed 1. A match never uses both rules.
+
+When you end the turn, the opponent becomes the active player, the turn number goes up by 1, that player draws for the start of their turn, victory is checked, and the phase becomes roll.
 
 An extra actions phase is not that. It is another actions window for the same player, on the same turn, after a sequence ends. You do not draw, the turn number does not go up, and you do not get another opening reroll. Section 13 says when you get one.
 

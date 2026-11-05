@@ -78,10 +78,22 @@ export interface GameRulesConfig {
    */
   readonly openingHandSize: number;
   /**
-   * Spec `030` playtest. Drawn at the start of every turn, including the
-   * first. Not a final balance number.
+   * Which turn-start draw is live. Exactly one. `fixed` draws
+   * `cardsDrawnPerTurn` cards. `up-to` draws until the hand has
+   * `cardsDrawnUpTo` cards. The other amount is stored and not applied.
+   */
+  readonly turnDrawMode: "fixed" | "up-to";
+  /**
+   * Cards drawn at the start of every turn, including the first, when
+   * `turnDrawMode` is `fixed`. Ignored when the mode is `up-to`.
    */
   readonly cardsDrawnPerTurn: number;
+  /**
+   * Hand size filled at the start of every turn, including the first, when
+   * `turnDrawMode` is `up-to`. A hand that already has this many cards draws
+   * nothing. Ignored when the mode is `fixed`.
+   */
+  readonly cardsDrawnUpTo: number;
   /**
    * Spec `030` playtest. Null means no hand limit. A number is stored for
    * a later limit. The current rules do not discard excess cards.
@@ -181,7 +193,9 @@ export const DEFAULT_RULES_CONFIG: GameRulesConfig = {
   faceDeckMaxCards: 12,
   faceDeckMaxPerAttribute: 3,
   openingHandSize: 5,
+  turnDrawMode: "fixed",
   cardsDrawnPerTurn: 1,
+  cardsDrawnUpTo: 5,
   maxHandSize: null,
   deckOutEnabled: true,
   maxStunnedDicePerPlayer: 1,
@@ -214,7 +228,9 @@ export const TAG_FIGHTER_RULES: GameRulesConfig = {
   deckMaxCards: 40,
   deckMaxResponseCombat: 9,
   openingHandSize: 5,
+  turnDrawMode: "fixed",
   cardsDrawnPerTurn: 1,
+  cardsDrawnUpTo: 5,
   consumeDiceOnFaceActions: false,
   attacksPerCreaturePerCombat: 2,
   wipeVictory: true,
@@ -225,4 +241,15 @@ export function rulesConfigForLoadout(startingDiceCount: number): GameRulesConfi
   return startingDiceCount === TAG_FIGHTER_RULES.dicePerPlayer
     ? TAG_FIGHTER_RULES
     : DEFAULT_RULES_CONFIG;
+}
+
+/**
+ * How many cards the incoming player draws at the start of their turn.
+ * Reads only the amount for `turnDrawMode`, so fixed and up-to never both draw.
+ */
+export function turnStartDrawCount(config: GameRulesConfig, handSize: number): number {
+  if (config.turnDrawMode === "up-to") {
+    return Math.max(0, config.cardsDrawnUpTo - handSize);
+  }
+  return Math.max(0, config.cardsDrawnPerTurn);
 }
