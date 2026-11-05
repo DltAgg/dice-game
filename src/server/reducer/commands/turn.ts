@@ -75,6 +75,7 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   // Toxin detonates at end of the creature owner's turn (before the switch).
   tickToxins(draft, playerId);
   clearTurnTriggerState(draft);
+  expireDelayedAttackBonuses(draft);
   if (draft.config.comboResetsOnEndTurn) {
     setComboCount(draft, playerId, 0);
   }
@@ -121,6 +122,15 @@ function expireTurnSymbols(draft: Draft): void {
     delete draft.symbols[symbol.id];
   }
   if (expired.length > 0) emit(draft, { type: "symbols-expired", symbolIds: expired });
+}
+
+/** A punish that was available this turn and was not spent expires with the turn. */
+function expireDelayedAttackBonuses(draft: Draft): void {
+  for (const creature of Object.values(draft.creatures)) {
+    const bonus = creature.delayedAttackBonus;
+    if (bonus === null || bonus.availableOnTurn > draft.turn) continue;
+    draft.creatures[creature.id] = { ...creature, delayedAttackBonus: null };
+  }
 }
 
 function resetCombatCounters(draft: Draft): void {

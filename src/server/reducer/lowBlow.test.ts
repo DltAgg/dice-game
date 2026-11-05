@@ -150,7 +150,7 @@ describe("Low Blow", () => {
       }),
     );
     const hit = resolveOpenChain(declared);
-    expect(damageOf(hit)).toBe(before + 5);
+    expect(damageOf(hit)).toBe(before + 6);
     expect(hit.offensiveState).toBe("combo");
   });
 

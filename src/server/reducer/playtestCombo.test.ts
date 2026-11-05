@@ -272,7 +272,7 @@ describe("playtest hits and techniques", () => {
       }),
     );
     const resolved = resolveOpenChain(answered);
-    expect(resolved.creatures[defender]?.damage).toBe(0);
+    expect(resolved.creatures[defender]?.damage).toBe(1);
     expect(resolved.log.some((entry) => entry.event.type === "chain-link-negated")).toBe(false);
     expect(resolved.offensiveState).toBe("combo");
     expect(resolved.aggressorPlayerId).toBe(P1);

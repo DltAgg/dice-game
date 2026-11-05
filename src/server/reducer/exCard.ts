@@ -5,6 +5,7 @@ import type { GameError } from "../model/errors.js";
 import type { CreatureDefinitionId, DieId, PlayerId } from "../model/ids.js";
 import type { ChainLink } from "../model/state.js";
 import type { RNG } from "../rng/rng.js";
+import { combatStrikeBonus } from "../rules/fighterStrikeBonus.js";
 import { dieForCreature, fighterAttackBanned } from "../rules/fighters.js";
 import { patchCreature, type Draft } from "./draft.js";
 import { drainResolution, pushEffect } from "./resolution.js";
@@ -110,14 +111,20 @@ export function conductEx(draft: Draft, link: ChainLink, rng: RNG): void {
   }
 
   const strike = definition.exStrike ?? 0;
-  if (strike > 0) dealChainStrike(draft, attack, link.controllerId, strike);
+  const bonus = { left: combatStrikeBonus(draft, attack) };
+  const withBonus = (amount: number): number => {
+    const total = amount + bonus.left;
+    bonus.left = 0;
+    return total;
+  };
+  if (strike > 0) dealChainStrike(draft, attack, link.controllerId, withBonus(strike));
   if (draft.pendingDecision !== null) return;
 
   const bonusHits = rollExDice(draft, link.controllerId, definition, rng);
   const per = definition.exReroll?.strikePer ?? 0;
   if (per > 0) {
     for (let hit = 0; hit < bonusHits; hit += 1) {
-      dealChainStrike(draft, attack, link.controllerId, per);
+      dealChainStrike(draft, attack, link.controllerId, withBonus(per));
       if (draft.pendingDecision !== null) return;
     }
   }

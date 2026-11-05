@@ -7,11 +7,18 @@ import type { ChainLink } from "../model/state.js";
 import { canSpendMeter } from "../rules/meter.js";
 import { sequenceActionUsed, sequenceRoleFits } from "../rules/offensive.js";
 import { grapplerStarterWhiffs, starterWhiffMark } from "../rules/starterGuard.js";
+import {
+  combatStrikeBonus,
+  lightStarterPunishTargets,
+  punishAmount,
+  punishIsDue,
+  withStrikeBonus,
+} from "../rules/fighterStrikeBonus.js";
 import { opponentOf } from "../rules/creatures.js";
 import { aimedHit } from "./activeHitTarget.js";
 import { buildEffectLink, openReactionWindow, pushChainLink } from "./chain.js";
 import { endTurn } from "./commands/turn.js";
-import { emit, type Draft } from "./draft.js";
+import { emit, patchCreature, type Draft } from "./draft.js";
 import { grantSequenceHitMeter, setComboCount, spendMeter } from "./meter.js";
 import { drainResolution, pushEffect } from "./resolution.js";
 
@@ -81,6 +88,7 @@ export function openCombatAction(
     endsSequence: args.sequenceRole === "finisher" || args.endsSequence === true,
     passesInitiative: args.passesInitiative === true,
   });
+  armLightStarterPunish(draft, args.playerId, args.sequenceRole, args.hitStrength, args.hitType);
   openReactionWindow(draft, args.playerId, "same");
 }
 
@@ -112,7 +120,8 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
     blocked = spent !== null;
     if (!blocked) {
       grantSequenceHitMeter(draft, aimed);
-      for (const effect of [...aimed.effects].reverse()) {
+      const effects = withStrikeBonus(aimed.effects, combatStrikeBonus(draft, aimed));
+      for (const effect of [...effects].reverse()) {
         const chainAttack = effect.type === "damage" || effect.type === "assist-hit";
         pushEffect(
           draft,
@@ -133,6 +142,7 @@ export function conductCombatAction(draft: Draft, link: ChainLink): void {
       drainResolution(draft);
     }
   }
+  clearDuePunish(draft, aimed.sourceCreatureId);
   if (draft.pendingDecision !== null) {
     draft.pendingOffenseSettle = {
       actorId: aimed.controllerId,
@@ -252,6 +262,28 @@ export function endOffensiveSequence(draft: Draft, playerId: PlayerId): GameErro
   if (draft.aggressorPlayerId !== playerId) return "NOT_ACTIVE_PLAYER";
   passTurnAfterSequence(draft, playerId);
   return null;
+}
+
+function armLightStarterPunish(
+  draft: Draft,
+  attackerId: PlayerId,
+  role: SequenceRole,
+  hitStrength: HitStrength | undefined,
+  hitType: HitType | undefined,
+): void {
+  const availableOnTurn = draft.turn + 1;
+  for (const creatureId of lightStarterPunishTargets(draft, attackerId, role, hitStrength, hitType)) {
+    const amount = punishAmount(draft, creatureId);
+    if (amount <= 0) continue;
+    patchCreature(draft, creatureId, { delayedAttackBonus: { amount, availableOnTurn } });
+  }
+}
+
+/** The attack conducted. A punish that was due this turn is spent, hit or not. */
+function clearDuePunish(draft: Draft, sourceId: CreatureId | null): void {
+  if (!punishIsDue(draft, sourceId, draft.turn)) return;
+  if (sourceId === null) return;
+  patchCreature(draft, sourceId, { delayedAttackBonus: null });
 }
 
 function passTurnAfterSequence(draft: Draft, actorId: PlayerId): void {
