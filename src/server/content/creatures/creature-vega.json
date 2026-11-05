@@ -7,12 +7,12 @@
   "passiveRulesText": "When an opponent's effect would end your sequence, you start a new sequence if you can still declare a starter. The sequence is open, so the next hit must be a starter. Hits and Techniques already used stay spent, including the hit they stopped.",
   "restartSequenceAfterOpponentEnd": true,
   "assistName": "Cross",
-  "assistRulesText": "Hit · Light Punch · Extender: [Strike 2].",
+  "assistRulesText": "Hit · Light Punch · Extender: [Strike 1].",
   "exceptionalAssistMeter": 0,
   "assistEffects": [
     {
       "type": "assist-hit",
-      "amount": 2,
+      "amount": 1,
       "hitStrength": "light",
       "hitType": "punch",
       "sequenceRole": "extender",
@@ -31,16 +31,16 @@
     {
       "id": "technique-vega-step-jab",
       "name": "Step Kick",
-      "primaryFaceId": "face-flash-kick",
+      "primaryFaceId": "face-dash",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "hitStrength": "light" },
       "sequenceRole": "starter",
-      "rulesText": "Kick + Light: [Strike 3].",
+      "rulesText": "Dash + Light: [Strike 2].",
       "effects": [
         {
           "type": "damage",
-          "amount": 3,
+          "amount": 2,
           "target": { "kind": "declared-target" }
         }
       ]
@@ -53,11 +53,11 @@
       "hitType": "kick",
       "secondary": { "sequenceRole": "extender" },
       "sequenceRole": "extender",
-      "rulesText": "Dash + Extender: [Strike 3].",
+      "rulesText": "Dash + Extender: [Strike 2].",
       "effects": [
         {
           "type": "damage",
-          "amount": 3,
+          "amount": 2,
           "target": { "kind": "declared-target" }
         }
       ]
@@ -65,16 +65,16 @@
     {
       "id": "technique-vega-chase-kick",
       "name": "Chase Kick",
-      "primaryFaceId": "face-blitz-rush",
+      "primaryFaceId": "face-flash-kick",
       "hitStrength": "heavy",
       "hitType": "kick",
       "secondary": { "hitType": "punch" },
-      "sequenceRole": "finisher",
-      "rulesText": "Rush + Punch: [Strike 4].",
+      "sequenceRole": "extender",
+      "rulesText": "Flash Kick + Punch: [Strike 3].",
       "effects": [
         {
           "type": "damage",
-          "amount": 4,
+          "amount": 3,
           "target": { "kind": "declared-target" }
         }
       ]

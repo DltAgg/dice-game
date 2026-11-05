@@ -8,12 +8,12 @@
   "halveStarterDamage": true,
   "grapplerStarterWhiff": true,
   "assistName": "Seal",
-  "assistRulesText": "Hit · Medium Punch · Finisher: [Strike 3].",
+  "assistRulesText": "Hit · Medium Punch · Finisher: [Strike 2].",
   "exceptionalAssistMeter": 0,
   "assistEffects": [
     {
       "type": "assist-hit",
-      "amount": 3,
+      "amount": 2,
       "hitStrength": "medium",
       "hitType": "punch",
       "sequenceRole": "finisher",

@@ -28,13 +28,13 @@
   "techniques": [
     {
       "id": "technique-magnus-collar-tie",
-      "name": "Lariat Tie",
-      "primaryFaceId": "face-lariat",
+      "name": "Collar Tie",
+      "primaryFaceId": "face-power-grab",
       "hitStrength": "light",
       "hitType": "punch",
       "secondary": { "hitType": "kick" },
       "sequenceRole": "starter",
-      "rulesText": "Lariat + Kick: [Strike 3].",
+      "rulesText": "Power Grab + Kick: [Strike 3].",
       "effects": [
         {
           "type": "damage",
@@ -45,13 +45,13 @@
     },
     {
       "id": "technique-magnus-lariat-throw",
-      "name": "Lariat Throw",
-      "primaryFaceId": "face-lariat",
+      "name": "Power Grab Throw",
+      "primaryFaceId": "face-power-grab",
       "hitStrength": "heavy",
       "hitType": "punch",
       "secondary": { "hitStrength": "medium" },
-      "sequenceRole": "extender",
-      "rulesText": "Lariat + Medium: [Strike 4].",
+      "sequenceRole": "finisher",
+      "rulesText": "Power Grab + Medium: [Strike 4].",
       "effects": [
         {
           "type": "damage",
@@ -63,12 +63,12 @@
     {
       "id": "technique-magnus-power-bomb",
       "name": "Power Bomb",
-      "primaryFaceId": "face-power-grab",
+      "primaryFaceId": "face-heavy",
       "hitStrength": "heavy",
       "hitType": "punch",
-      "secondary": { "hitStrength": "heavy" },
+      "secondary": { "hitType": "punch" },
       "sequenceRole": "finisher",
-      "rulesText": "Grab + Heavy: [Strike 5].",
+      "rulesText": "Heavy + Punch: [Strike 5].",
       "effects": [
         {
           "type": "damage",
