@@ -77,6 +77,8 @@ export function applyCardModify(draft: Draft, link: ChainLink): void {
     );
     const current = index < 0 ? undefined : draft.chainStack[index];
     if (current === undefined) return;
+    // An EX card already replaced this hit. Shift cannot aim it.
+    if (current.exReplaced === true) return;
     // The chain drains top-down, so this is the latest Shift that can still
     // aim the hit. A Shift under it must leave that choice where it is.
     if (current.followsActive === false) return;

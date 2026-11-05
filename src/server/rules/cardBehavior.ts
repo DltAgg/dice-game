@@ -156,12 +156,13 @@ function modifyContextError(
     return null;
   }
 
-  const redirectable = state.chainStack.some(
+  const redirectable = state.chainStack.find(
     (link) =>
       (link.kind === "combat-action" || link.kind === "attack") &&
       (link.declaredTargetCreatureId !== null || link.attackTargetId !== null),
   );
-  if (!redirectable) return "INVALID_TARGET";
+  if (redirectable === undefined) return "INVALID_TARGET";
+  if (redirectable.exReplaced === true) return "INVALID_TARGET";
   if (intent.targetCreatureId === null) return "INVALID_TARGET";
   const next = state.creatures[intent.targetCreatureId];
   if (next === undefined || next.defeated) return "INVALID_TARGET";

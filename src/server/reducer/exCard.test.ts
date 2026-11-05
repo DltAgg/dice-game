@@ -229,6 +229,13 @@ function defenderId(state: GameState): CreatureId {
   return id;
 }
 
+function reserveId(state: GameState, playerId: PlayerId): CreatureId {
+  const player = state.players[playerId];
+  const id = player?.creatureIds.find((creatureId) => creatureId !== player.activeCreatureId);
+  if (id === undefined) throw new Error("reserve");
+  return id;
+}
+
 function damage(state: GameState, creatureId: CreatureId): number {
   return state.creatures[creatureId]?.damage ?? 0;
 }
@@ -451,6 +458,27 @@ describe("spec 035 EX cards", () => {
     const skipped = resolvePlayed(expectOk(play(stunned, P1)), []);
     expect(skipped.dice[stunnedDie.id]?.rolledSlotIndex).toBe(slot);
     expect(damage(skipped, defenderId(stunnedDeclared))).toBe(7);
+  });
+
+  it("refuses Shift against Crushing Throw and Air Launcher", () => {
+    for (const card of [THROW, LAUNCH]) {
+      const opened = actions();
+      const attacker = fighter(opened, P1, card === THROW ? MAGNUS : VEGA);
+      const face = card === THROW ? HEAVY : RUSH;
+      const ready = {
+        ...withHand(withMeter(show(withActive(opened, P1, attacker), attacker, face), P1, 8), P1, [card.id]),
+        offensiveState: "combo" as const,
+      };
+      const played = expectOk(play(expectOk(advance(ready, { type: "USE_FACE", playerId: P1, creatureId: attacker })), P1));
+      const yielded = pass(played, P1);
+      const reserve = reserveId(yielded, P2);
+      const holding = withHand(yielded, P2, [REDIRECT.id]);
+      const shifted = play(holding, P2, 0, reserve);
+      expect(shifted.ok).toBe(false);
+      if (!shifted.ok) expect(shifted.error).toBe("INVALID_TARGET");
+      expect(holding.chainStack.some((link) => link.exReplaced === true)).toBe(true);
+      expect(holding.players[P2]?.hand).toHaveLength(1);
+    }
   });
 
   it("refuses EX after the attacker passes, above another link, with no attack, or on the wrong gate", () => {

@@ -150,7 +150,7 @@ EX is a Modify you play on a hit you just declared, while you still have priorit
 
 The card names one Fighter. That Fighter must be your Active Fighter. The hit you replace must be that Fighter’s, and it must match the card: role, strike, and strength. Another Fighter’s hit does not qualify, even when the named Fighter is the one in front. The deck limit in section 2 is separate from this.
 
-Playing it spends its Meter, then puts the EX card on the Chain above the hit. You keep priority. The hit’s printed Strike does not happen. If the hit is a finisher, the sequence still ends.
+Playing it spends its Meter, then puts the EX card on the Chain above the hit. You keep priority. The hit’s printed Strike does not happen. If the hit is a finisher, the sequence still ends. Shift cannot aim that hit. That play is illegal, and the hit stays where it was.
 
 `[Parry]` can still negate that hit. If it does, the EX card’s effect does not happen. The Meter you spent stays spent. `[Counter]` is illegal while an EX card is the top of the Chain. Counter remains illegal against a hit.
 
