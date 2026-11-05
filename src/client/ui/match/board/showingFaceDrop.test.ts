@@ -236,7 +236,10 @@ describe("staged showing-face drops", () => {
     const resolved = resolveOpenChain(answered);
     expect(resolved.aggressorPlayerId).toBe(P1);
     expect(resolved.offensiveState).toBe("combo");
-    expect(resolved.usedSequenceActionIds).toEqual(["technique:technique-ryu-check-fire"]);
+    expect(resolved.usedSequenceActionIds).toEqual([
+      "face:face-focus",
+      "technique:technique-ryu-check-fire",
+    ]);
     expect(stagedShowingDrop(resolved, P1, [vega, null])).toEqual({
       kind: "hit",
       creatureId: vega,

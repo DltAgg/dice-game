@@ -4,6 +4,7 @@ import {
   getCreatureDefinition,
   legalFaceActions,
   matchingTechniques,
+  sequenceActionUsed,
   sequenceMeterAffordable,
   sequenceRoleFits,
   showingFaceCard,
@@ -129,6 +130,9 @@ function sequenceFaceRefusal(
   const face = die === undefined ? undefined : showingFaceCard(state, die.id);
   const role = face?.sequenceRole;
   if (face === undefined || role === undefined) return null;
+  if (sequenceActionUsed(state, `face:${face.id}`)) {
+    return `${face.name} was already used this sequence.`;
+  }
   if (state.aggressorPlayerId !== playerId) {
     return `${face.name} can only hit while you are on offense.`;
   }

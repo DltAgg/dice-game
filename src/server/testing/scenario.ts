@@ -51,6 +51,8 @@ const TEST_SETUP_CONFIG = {
   ...DEFAULT_RULES_CONFIG,
   deckMinCards: 0,
   // Empty harness decks must not lose at setup, and must not shift RNG.
+  // Pin fixed so an up-to preset does not draw the harness deck at setup.
+  turnDrawMode: "fixed" as const,
   cardsDrawnPerTurn: 0,
   deckOutEnabled: false,
   // Opening named faces are packed into the harness deck on top of the pool.

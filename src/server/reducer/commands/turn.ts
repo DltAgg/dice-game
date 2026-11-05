@@ -95,11 +95,39 @@ function finishTurn(draft: Draft, playerId: PlayerId, nextPlayerId: PlayerId): G
   resetExhaustedRituals(draft, nextPlayerId);
 
   // Same draw as turn 1. Setup deals the opening hand, then this draw.
+  // A card played on the opponent's turn has already left the hand. Up-to
+  // then sees a full hand and draws nothing, so that card is not replaced.
   const nextHand = draft.players[nextPlayerId]?.hand.length ?? 0;
-  drawCards(draft, nextPlayerId, turnStartDrawCount(draft.config, nextHand));
+  const normal = turnStartDrawCount(draft.config, nextHand);
+  const playedOffTurn = cardsPlayedOnPreviousTurn(draft, nextPlayerId);
+  drawCards(draft, nextPlayerId, Math.max(normal, playedOffTurn));
 
   checkVictory(draft);
   return enterPhase(draft, "roll");
+}
+
+/**
+ * Cards this player played after the previous turn started and before the
+ * turn that just started. That window is the opponent's turn. `finishTurn`
+ * has already logged the new `turn-started`.
+ */
+function cardsPlayedOnPreviousTurn(draft: Draft, playerId: PlayerId): number {
+  let passedStart = false;
+  let count = 0;
+  for (let i = draft.log.length - 1; i >= 0; i -= 1) {
+    const event = draft.log[i]?.event;
+    if (event === undefined) continue;
+    if (event.type === "turn-started") {
+      if (!passedStart) {
+        passedStart = true;
+        continue;
+      }
+      break;
+    }
+    if (!passedStart) continue;
+    if (event.type === "card-played" && event.playerId === playerId) count += 1;
+  }
+  return count;
 }
 
 function detachDice(draft: Draft): void {

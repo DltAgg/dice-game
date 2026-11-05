@@ -249,6 +249,52 @@ describe("playtest hits and techniques", () => {
     });
   });
 
+  it("spends Dash on Step Kick, so Confirm Kick and the Dash hit cannot follow", () => {
+    let state = inActions();
+    const vega = fighter(state, VEGA);
+    const ryu = fighter(state, RYU);
+    state = show(show(state, vega, DASH), ryu, FOCUS);
+    const matches = matchingTechniques(state, P1, vega);
+    const step = matches.find((match) => match.techniqueId === "technique-vega-step-jab");
+    expect(step).toBeDefined();
+    const confirmDie = dieForCreature(state, ryu);
+    if (confirmDie === undefined || step === undefined) throw new Error("inputs");
+
+    const combo = resolveOpenChain(
+      expectOk(
+        advance(state, {
+          type: "USE_TECHNIQUE",
+          playerId: P1,
+          creatureId: vega,
+          techniqueId: step!.techniqueId,
+          secondaryDieId: step!.secondaryDieId,
+        }),
+      ),
+    );
+    expect(combo.offensiveState).toBe("combo");
+    expect(combo.usedSequenceActionIds).toContain("face:face-dash");
+    expect(
+      matchingTechniques(combo, P1, vega).some(
+        (match) => match.techniqueId === "technique-vega-confirm-kick",
+      ),
+    ).toBe(false);
+    expect(legalFaceActions(combo, P1)).not.toContain(vega);
+
+    const dashHit = advance(combo, { type: "USE_FACE", playerId: P1, creatureId: vega });
+    expect(dashHit.ok).toBe(false);
+    if (!dashHit.ok) expect(dashHit.error).toBe("ALREADY_USED");
+
+    const again = advance(combo, {
+      type: "USE_TECHNIQUE",
+      playerId: P1,
+      creatureId: vega,
+      techniqueId: "technique-vega-confirm-kick",
+      secondaryDieId: confirmDie.id,
+    });
+    expect(again.ok).toBe(false);
+    if (!again.ok) expect(again.error).toBe("ALREADY_USED");
+  });
+
   it("lets Dash extend after Brace answers Grab", () => {
     let state = withHand(inActions(), P2, [BRACE]);
     const vega = fighter(state, VEGA);

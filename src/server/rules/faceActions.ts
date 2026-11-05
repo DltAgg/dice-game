@@ -12,7 +12,7 @@ import {
 import type { CreatureId, DieId, PlayerId } from "../model/ids.js";
 import type { GameState } from "../model/state.js";
 import { dieForCreature, fighterAttackBanned, isActiveFighter, opponentActiveId } from "./fighters.js";
-import { sequenceMeterAffordable, sequenceRoleFits } from "./offensive.js";
+import { sequenceActionUsed, sequenceMeterAffordable, sequenceRoleFits } from "./offensive.js";
 
 export function faceActionKey(dieId: DieId): string {
   return `face-action:${dieId}`;
@@ -142,6 +142,7 @@ export function canUseFace(
   const face = showingFaceCard(state, die.id);
   if ((face?.primaryEffects?.length ?? 0) === 0) return false;
   if (face?.sequenceRole !== undefined) {
+    if (sequenceActionUsed(state, `face:${face.id}`)) return false;
     if (state.aggressorPlayerId !== playerId) return false;
     if (!sequenceRoleFits(state.offensiveState, face.sequenceRole)) return false;
     if (!sequenceMeterAffordable(state, playerId, face.meterCost)) return false;
@@ -191,6 +192,8 @@ export function matchingTechniques(
   const out: MatchingTechnique[] = [];
   for (const technique of techniques) {
     if (technique.sequenceRole !== undefined) {
+      if (sequenceActionUsed(state, `technique:${technique.id}`)) continue;
+      if (sequenceActionUsed(state, `face:${technique.primaryFaceId}`)) continue;
       if (state.aggressorPlayerId !== playerId) continue;
       if (!sequenceRoleFits(state.offensiveState, technique.sequenceRole)) continue;
       if (!sequenceMeterAffordable(state, playerId, technique.meterCost)) continue;

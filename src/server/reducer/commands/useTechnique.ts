@@ -89,6 +89,7 @@ export function useTechnique(
   const role = technique.sequenceRole;
   if (role === undefined && playerId !== draft.activePlayerId) return "INVALID_TARGET";
   const sequenceActionId = `technique:${technique.id}`;
+  const primaryFaceActionId = `face:${primaryFace.id}`;
   if (role !== undefined) {
     const sequenceError = sequenceDeclarationError(
       draft,
@@ -98,6 +99,10 @@ export function useTechnique(
     );
     if (sequenceError !== null) return sequenceError;
     if (sequenceActionUsed(draft, sequenceActionId)) return "ALREADY_USED";
+    if (sequenceActionUsed(draft, primaryFaceActionId)) return "ALREADY_USED";
+    if (!draft.usedSequenceActionIds.includes(primaryFaceActionId)) {
+      draft.usedSequenceActionIds = [...draft.usedSequenceActionIds, primaryFaceActionId];
+    }
   }
 
   if (role === undefined && draft.config.consumeDiceOnFaceActions) {

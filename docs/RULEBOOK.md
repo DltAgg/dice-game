@@ -39,7 +39,7 @@ When your Active Fighter is defeated and a living Reserve remains, you choose wh
 
 ## 4. Match start
 
-The match starts on turn 1, in the roll. The first player in the setup list takes that turn. Both players are dealt their opening hand of 5. That first player then draws for the start of the turn.
+The match starts on turn 1, in the roll. The first player in the setup list takes that turn. Both players are dealt their opening hand of 5. That first player then draws for the start of the turn. The current draw fills the hand to 5, so that opening draw adds nothing.
 
 Each player has a Meter pool. It starts at 0. The cap is 8. It is not cleared when the turn ends or when you Tag.
 
@@ -49,7 +49,9 @@ A turn has two phases: **roll**, then **actions**. Ending the turn is an action,
 
 On your roll, you roll both players’ dice, including Reserve and defeated Fighters, and you stay in the roll. You may then reroll any number of your own dice once. That reroll does not roll the opponent’s dice, and it moves you into actions. There is no second reroll. You may instead continue into actions without rerolling. The roll does not absorb symbols.
 
-A match uses one turn-start draw rule. Draw a fixed number: you draw that many cards at the start of your turn. Draw up to a number: you draw until your hand has that many cards, and you draw nothing when it already does. The current match draws a fixed 1. A match never uses both rules.
+A match uses one turn-start draw rule. Draw a fixed number: you draw that many cards at the start of your turn. Draw up to a number: you draw until your hand has that many cards, and you draw nothing when it already does. The current match draws until your hand has 5 cards. A match never uses both rules.
+
+Cards you played during the opponent's turn are drawn back when your turn starts, if that draw would otherwise be smaller than the number you played. A hand that already has 5 cards still draws those cards back. A finisher that hands you the turn uses this same draw.
 
 When you end the turn, the opponent becomes the active player, the turn number goes up by 1, that player draws for the start of their turn, victory is checked, and the phase becomes roll.
 
@@ -79,7 +81,7 @@ The other face matches that Technique by any punch, any kick, any light, any med
 
 Ryu Form’s Replace writes Form onto the chosen slot for the rest of the match. The slot that was showing stays the showing slot. Form opens the sequence when that slot is the one showing and the sequence is still open. A later roll can show a different slot. A starter is still illegal once the sequence is in combo.
 
-A die is not spent by a face action or a Technique. The same face and the same Technique cannot be declared again while that action is on the Chain or already used in this sequence.
+The die stays showing after a face action or a Technique. Declaring a face spends that face. Declaring a Technique spends that Technique and its primary face. A spent face or Technique cannot be declared again while it is on the Chain or already used in this sequence. The secondary face stays available for its own hit and for another Technique.
 
 A starter or extender that hits and does not end the sequence adds 1 to your combo and sets the sequence to combo. You stay the Aggressor. A starter that hits Ryu while he is the Active Fighter deals half that Strike, rounded down, on every turn he is Active, including each time he tags in. An extender or a finisher that hits him deals its full Strike. When your Active Fighter is a Grappler, that Grappler’s first Starter of the turn against that Ryu does not hit: it deals no damage, grants no Meter, and leaves the sequence open. The face you use can belong to another Fighter. The next Starter hits at half damage and enters combo. Each later turn Ryu is Active asks for those two Starters again. When your Active Fighter is not a Grappler, one Starter hits him and enters combo.
 

@@ -74,7 +74,13 @@ function matchWith(
   decks: readonly [readonly CardId[], readonly CardId[]],
 ) {
   return newMatch({
-    config: { ...DEFAULT_RULES_CONFIG, deckMinCards: 0, deckMaxCopiesPerCard: 12, ...config },
+    config: {
+      ...DEFAULT_RULES_CONFIG,
+      deckMinCards: 0,
+      deckMaxCopiesPerCard: 12,
+      turnDrawMode: "fixed" as const,
+      ...config,
+    },
     players: [
       { id: P1, squad: TEST_SQUAD, deck: decks[0] },
       { id: P2, squad: TEST_SQUAD, deck: decks[1] },
